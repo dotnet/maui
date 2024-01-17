@@ -3,32 +3,32 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>8.0.3</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>9.0.100-alpha.1.24066.9</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>9.0.100-alpha.1.24067.2</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-alpha.1.24066.7</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-alpha.1.24066.33</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
     <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
     <!-- Microsoft/Extensions -->
     <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
-    <MicrosoftExtensionsConfigurationVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsConfigurationAbstractionsVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsConfigurationJsonVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsFileProvidersAbstractionsVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingDebugVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsLoggingDebugVersion>
-    <MicrosoftExtensionsPrimitivesVersion>9.0.0-alpha.1.24066.7</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftExtensionsConfigurationVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingDebugVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsLoggingDebugVersion>
+    <MicrosoftExtensionsPrimitivesVersion>9.0.0-alpha.1.24066.33</MicrosoftExtensionsPrimitivesVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.99.0-preview.1.123</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.99.0-preview.1.126</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>17.0.9804-net9-p1</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>14.0.9804-net9-p1</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>17.0.9804-net9-p1</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>17.0.9804-net9-p1</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>17.2.9035-net9-p1</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>14.2.9035-net9-p1</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>17.2.9035-net9-p1</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>17.2.9035-net9-p1</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.134</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
