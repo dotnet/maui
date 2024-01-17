@@ -27,13 +27,57 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_oldViews = new List<View>();
 			_carouselViewLoopManager = new CarouselViewLoopManager();
+
+			ViewConfiguration viewConfig = ViewConfiguration.Get(context);
+			_viewScaledTouchSlop = viewConfig.ScaledTouchSlop;
 		}
 
 		public bool IsSwipeEnabled { get; set; }
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
-			if (!IsSwipeEnabled)
+			MotionEventActions action = ev.Action;
+
+			switch (action)
+			{
+				case MotionEventActions.PointerDown:
+				case MotionEventActions.Down:
+					_ptrCount++;
+
+					if (_ptrCount == 1 && _primStartTouchEventY == -1 && _primStartTouchEventY == -1)
+					{
+						_primStartTouchEventX = ev.GetX(0);
+						_primStartTouchEventY = ev.GetY(0);
+					}
+
+					if (ev.PointerCount == 2 && _ptrCount == 2)
+					{
+						// Starting distance between fingers
+						_secStartTouchEventX = ev.GetX(1);
+						_secStartTouchEventY = ev.GetY(1);
+						_primSecStartTouchDistance = Distance(ev, 0, 1);
+					}
+					break;
+				case MotionEventActions.PointerUp:
+				case MotionEventActions.Up:
+				case MotionEventActions.Cancel:
+					_ptrCount--;
+
+					if (_ptrCount < 2)
+					{
+						_secStartTouchEventX = -1;
+						_secStartTouchEventY = -1;
+					}
+
+					if (_ptrCount < 1)
+					{
+						_primStartTouchEventX = -1;
+						_primStartTouchEventY = -1;
+					}
+					break;
+			}
+
+			if (!IsSwipeEnabled || IsPinchGesture(ev))
 				return false;
 
 			return base.OnInterceptTouchEvent(ev);
@@ -605,6 +649,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+		}
+
+		int _ptrCount = 0;
+		float _primStartTouchEventX = -1;
+		float _primStartTouchEventY = -1;
+		float _secStartTouchEventX = -1;
+		float _secStartTouchEventY = -1;
+		float _primSecStartTouchDistance = 0;
+		int _viewScaledTouchSlop;
+
+		bool IsPinchGesture(MotionEvent ev)
+		{
+			if (ev.PointerCount == 2)
+			{
+				float distanceCurrent = Distance(ev, 0, 1);
+				float diffPrimX = _primStartTouchEventX - ev.GetX(0);
+				float diffPrimY = _primStartTouchEventY - ev.GetY(0);
+				float diffSecX = _secStartTouchEventX - ev.GetX(1);
+				float diffSecY = _secStartTouchEventY - ev.GetY(1);
+
+				if (// if the distance between the two fingers has increased past
+					// our threshold
+					Math.Abs(distanceCurrent - _primSecStartTouchDistance) > _viewScaledTouchSlop
+						// and the fingers are moving in opposing directions
+						&& (diffPrimY * diffSecY) <= 0
+						&& (diffPrimX * diffSecX) <= 0)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		float Distance(MotionEvent ev, int first, int second)
+		{
+			if (ev.PointerCount >= 2)
+			{
+				float x = ev.GetX(first) - ev.GetX(second);
+				float y = ev.GetY(first) - ev.GetY(second);
+
+				return (float)Math.Sqrt(x * x + y * y);
+			}
+			else
+			{
+				return 0;
+			}
 		}
 
 		class CarouselViewOnGlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
