@@ -10,12 +10,12 @@ namespace Microsoft.Maui.AppiumTests
 	{
 		internal static readonly string IgnoreMessage = "These tests take a while and we are more interested in iOS Scrolling Behavior since it is not out-of-the-box.";
 
-		internal static async void EntriesScrollingTest(IApp app, string galleryName)
+		internal static async Task EntriesScrollingTest(IApp app, string galleryName)
 		{
 			await RunScrollingTest(app, galleryName, false);
 		}
 
-		internal static async void EditorsScrollingTest(IApp app, string galleryName)
+		internal static async Task EditorsScrollingTest(IApp app, string galleryName)
 		{
 			await RunScrollingTest(app, galleryName, true);
 		}
@@ -40,9 +40,9 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				var didReachEndofPage = false;
 				if (isEditor)
-					await ClickText(app, $"Editor{i}", isEditor, out didReachEndofPage);
+					didReachEndofPage = await ClickText(app, $"Editor{i}", isEditor);
 				else
-					await ClickText(app, $"Entry{i}", isEditor, out didReachEndofPage);
+					didReachEndofPage = await ClickText(app, $"Entry{i}", isEditor);
 
 				// Scroll to the top of the page
 				var actions = new TouchAction(App.Driver);
@@ -53,12 +53,14 @@ namespace Microsoft.Maui.AppiumTests
 			}
 		}
 
-		static async Task ClickText(IApp app, string marked, bool isEditor, out bool didReachEndofPage)
+		// will return a bool signalling if the view is visible
+		static async Task<bool> ClickText(IApp app, string marked, bool isEditor)
 		{
 			app.Click(marked);
-			didReachEndofPage = await CheckIfViewAboveKeyboard(app, marked, isEditor);
+			var didReachEndofPage = await CheckIfViewAboveKeyboard(app, marked, isEditor);
 			if (didReachEndofPage)
 				HideKeyboard(app, (app as AppiumApp)?.Driver, isEditor);
+			return didReachEndofPage;
 		}
 
 		// will return a bool showing if the view is visible

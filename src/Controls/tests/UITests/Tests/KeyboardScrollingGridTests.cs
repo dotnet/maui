@@ -25,10 +25,10 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public void GridStarRowScrollingTest()
+		public async Task GridStarRowScrollingTest()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
-			KeyboardScrolling.GridStarRowScrollingTest(App);
+			await KeyboardScrolling.GridStarRowScrollingTest(App);
 		}
 	}
 }

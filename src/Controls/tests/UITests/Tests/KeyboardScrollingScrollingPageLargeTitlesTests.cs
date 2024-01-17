@@ -25,24 +25,24 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public void EntriesScrollingPageTest()
+		public async Task EntriesScrollingPageTest()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
-			KeyboardScrolling.EntriesScrollingTest(App, KeyboardScrollingGallery);
+			await KeyboardScrolling.EntriesScrollingTest(App, KeyboardScrollingGallery);
 		}
 
 		[Test]
-		public void EditorsScrollingPageTest()
+		public async Task EditorsScrollingPageTest()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
-			KeyboardScrolling.EditorsScrollingTest(App, KeyboardScrollingGallery);
+			await KeyboardScrolling.EditorsScrollingTest(App, KeyboardScrollingGallery);
 		}
 
 		[Test]
-		public void EntryNextEditorTest()
+		public async Task EntryNextEditorTest()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
-			KeyboardScrolling.EntryNextEditorScrollingTest(App, KeyboardScrollingGallery);
+			await KeyboardScrolling.EntryNextEditorScrollingTest(App, KeyboardScrollingGallery);
 		}
 	}
 }
