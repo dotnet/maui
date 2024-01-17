@@ -87,17 +87,34 @@ namespace Microsoft.Maui.AppiumTests
 				// let's just use the default height added for the accessory view
 				var defaultSizeAccessoryView = 44;
 				keyboardPosition.Y -= defaultSizeAccessoryView;
-
 			}
+
 			if (rect.CenterY() > keyboardPosition.Y) {
-				testApp!.Screenshot("TJTest.png");
+				testApp!.Screenshot("TJTest1.png");
+				TryAddAttachment("TJTest1.png", "TJTest.png");
 				await Task.Delay(100);
 				testApp!.Screenshot("TJTest2.png");
+				TryAddAttachment("TJTest2.png", "TJTest2.png");
 			}
 
+
+			await Task.Delay(100);
 			Assert.Less(rect.CenterY(), keyboardPosition.Y);
 
 			return true;
+		}
+
+		static void TryAddAttachment (string filePath, string description)
+		{
+			try
+			{
+				TestContext.AddTestAttachment(filePath, description);
+			}
+			catch (FileNotFoundException e) when (e.Message == "Test attachment file path could not be found.")
+			{
+				// Add the file path to better troubleshoot when these errors occur
+				throw new FileNotFoundException($"Test attachment file path could not be found: '{filePath}' {description}", e);
+			}
 		}
 
 		internal static void HideKeyboard(IApp app, AppiumDriver? driver, bool isEditor)
