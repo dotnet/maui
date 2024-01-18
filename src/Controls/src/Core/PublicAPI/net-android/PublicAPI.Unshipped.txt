@@ -64,7 +64,6 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> v
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
 override Microsoft.Maui.Controls.Button.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
-override Microsoft.Maui.Controls.Button.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetItemViewType(int position) -> int
 override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.OnDetachedFromWindow() -> void

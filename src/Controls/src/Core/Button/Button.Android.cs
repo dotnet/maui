@@ -26,11 +26,5 @@ namespace Microsoft.Maui.Controls
 
 			return base.ArrangeOverride(bounds);
 		}
-
-		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		{
-			//Handler?.UpdateValue(nameof(ContentLayout));
-			return base.OnMeasure(widthConstraint, heightConstraint);
-		}
 	}
 }
