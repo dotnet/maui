@@ -5,6 +5,7 @@ using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
 using NLayoutGroup = Tizen.NUI.LayoutGroup;
 using NLinearLayout = Tizen.NUI.LinearLayout;
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
 
 namespace Microsoft.Maui.Platform
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Platform
 
 		MauiToolbar? _toolbar;
 
-		IReadOnlyList<IView> NavigationStack { get; set; } = new List<IView>();
+		List<IView> NavigationStack { get; set; } = new List<IView>();
 
 		protected IMauiContext? MauiContext { get; set; }
 
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.Platform
 
 			if (initialNavigation)
 			{
-				await InitializeStack(newPageStack, e.Animated);
+				await InitializeStack((IReadOnlyList<IView>)newPageStack, e.Animated);
 				NavigationStack = newPageStack;
 				NavigationFinished(NavigationStack);
 				return;
@@ -108,7 +109,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		protected virtual async Task InitializeStack(List<IView> newStack, bool animated)
+		protected virtual async Task InitializeStack(IReadOnlyList<IView> newStack, bool animated)
 		{
 			var navigationStack = newStack;
 			if (navigationStack.Count == 0)
@@ -214,3 +215,4 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 }
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
