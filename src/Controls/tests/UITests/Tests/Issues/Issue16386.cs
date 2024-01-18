@@ -16,7 +16,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void HittingEnterKeySendsDone()
 		{
-			App.Click("HardwareEnterKeyEntry");
 			this.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac,
@@ -24,6 +23,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				TestDevice.Windows,
 			});
 
+			App.Click("HardwareEnterKeyEntry");
 			App.SendKeys(66);
 			App.WaitForElement("Success");
 		}
