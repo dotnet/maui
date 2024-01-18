@@ -15,6 +15,7 @@ using Xunit;
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -561,7 +562,7 @@ namespace Microsoft.Maui.DeviceTests
 			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
 
 			// Wait for the layout to propagate to the platform
-			await AssertionExtensions.Wait(
+			await AssertEventually(
 				() =>
 				{
 					var size = frameworkElement.GetBoundingBox().Size;

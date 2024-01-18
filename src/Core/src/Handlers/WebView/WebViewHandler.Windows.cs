@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Handlers
 			return PlatformView.CoreWebView2.CookieManager.GetCookiesAsync(url).AsTask();
 		}
 
-		Uri? CreateUriForCookies(string url)
+		static Uri? CreateUriForCookies(string url)
 		{
 			if (url is null)
 				return null;
