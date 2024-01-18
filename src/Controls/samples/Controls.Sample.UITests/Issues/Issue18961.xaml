@@ -13,7 +13,8 @@
         </ResourceDictionary>
     </ContentPage.Resources>
     <ScrollView
-        x:Name="TestScrollView">
+        x:Name="TestScrollView"
+        AutomationId="TestScrollView">
         <StackLayout
             Padding="12">
             <Label 

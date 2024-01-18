@@ -6,6 +6,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 {
 	public class Issue18961 : _IssuesUITest
 	{
+		const string LastEntry = "TestEntry20";
+
 		public Issue18961(TestDevice device) : base(device) { }
 
 		public override string Issue => "Modal Page margin correct after Keyboard opens";
@@ -28,8 +30,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			await Task.Delay(1000);
 
 			// 3. Focus latest Entry
-			App.EnterText("TestEntry20", "test");
-			App.Click("TestEntry20");
+			App.WaitForElement(LastEntry);
+			App.EnterText(LastEntry, "test");
+			App.Click(LastEntry);
 			await Task.Delay(1000);
 
 			// 4. The keyboard has opened and the Entry have been translated above the keyboard.
@@ -39,7 +42,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.DismissKeyboard();	
 			await Task.Delay(1000);
 
-			// 6. Make sure that everything has returned to the initial size once the keyboard has closed.
+			// 6. Verify the latest Entry text.
+			var text = App.FindElement(LastEntry).GetText();
+			Assert.AreEqual(text, "test");
+
+			// 7. Make sure that everything has returned to the initial size once the keyboard has closed.
 			App.Screenshot("Make sure that everything has returned to the initial size once the keyboard has closed.");
 		}
 	}
