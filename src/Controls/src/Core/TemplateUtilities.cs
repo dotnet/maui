@@ -124,10 +124,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				self.InternalChildren.Add(content);
-				var controlTemplated = (IControlTemplated)bindable;
-				controlTemplated.OnControlTemplateChanged((ControlTemplate)oldValue, (ControlTemplate)newValue);
-				controlTemplated.TemplateRoot = content;
-				controlTemplated.OnApplyTemplate();
+				self.OnControlTemplateChanged((ControlTemplate)oldValue, (ControlTemplate)newValue);
+				self.TemplateRoot = content;
+				self.OnApplyTemplate();
 			}
 		}
 
