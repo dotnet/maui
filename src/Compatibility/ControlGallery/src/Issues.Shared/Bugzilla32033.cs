@@ -82,17 +82,19 @@ Clicking that link should navigate to a page with the heading 'Xamarin Forms' an
 				VerticalOptions = LayoutOptions.Fill,
 				Source = new HtmlWebViewSource
 				{
-					Html = @"<html>
-<head>
-<link rel=""stylesheet"" href=""default.css"">
-</head>
-<body>
-<h1>Xamarin.Forms</h1>
-<p>The CSS and image are loaded from local files!</p>
-<img src='WebImages/XamarinLogo.png'/>
-<p><a href=""local.html"">next page</a></p>
-</body>
-</html>"
+					Html = """
+						<html>
+						<head>
+							<link rel="stylesheet" href="default.css">
+						</head>
+						<body>
+							<h1>Xamarin.Forms</h1>
+							<p>The CSS and image are loaded from local files!</p>
+							<img src='WebImages/XamarinLogo.png'/>
+							<p><a href="local.html">next page</a></p>
+						</body>
+						</html>
+						"""
 				}
 			};
 
@@ -123,14 +125,16 @@ Clicking that link should navigate to a page with the heading 'Xamarin Forms' an
 				VerticalOptions = LayoutOptions.Fill,
 				Source = new HtmlWebViewSource
 				{
-					Html = @"<html>
-<body>
-<h1>Xamarin.Forms</h1>
-<p>The CSS and image are loaded from local files!</p>
-<img src='WebImages/XamarinLogo.png'/>
-<p><a href=""local.html"">next page</a></p>
-</body>
-</html>"
+					Html = """
+						<html>
+						<body>
+							<h1>Xamarin.Forms</h1>
+							<p>The CSS and image are loaded from local files!</p>
+							<img src='WebImages/XamarinLogo.png'/>
+							<p><a href="local.html">next page</a></p>
+						</body>
+						</html>
+						"""
 				}
 			};
 

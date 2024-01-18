@@ -31,17 +31,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void BindingCanNotBeReused()
 		{
-			string xaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						 x:Class=""Microsoft.Maui.Controls.ControlGallery.Issue1545"">
-						<ListView x:Name=""List"" ItemsSource=""{Binding}"">
-							<ListView.ItemTemplate>
-								<DataTemplate>
-									<TextCell Text=""{Binding}"" />
-								</DataTemplate>
-							</ListView.ItemTemplate>
-						</ListView>
-				</ContentPage>";
+			string xaml = """
+				<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+							 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+							 x:Class="Microsoft.Maui.Controls.ControlGallery.Issue1545">
+					<ListView x:Name="List" ItemsSource="{Binding}">
+						<ListView.ItemTemplate>
+							<DataTemplate>
+								<TextCell Text="{Binding}" />
+							</DataTemplate>
+						</ListView.ItemTemplate>
+					</ListView>
+				</ContentPage>
+				""";
 
 			ContentPage page = new ContentPage().LoadFromXaml(xaml);
 
@@ -60,29 +62,31 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ElementsCanNotBeReused()
 		{
-			string xaml = @"<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-						 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						 xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
-						 xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
-						 x:Class=""Microsoft.Maui.Controls.ControlGallery.Issue1545"">
-							<ContentPage.Resources>
+			string xaml = """
+				<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+							 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+							 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"
+							 xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
+							 x:Class="Microsoft.Maui.Controls.ControlGallery.Issue1545">
+						<ContentPage.Resources>
 							<ResourceDictionary>
-							<Color x:Key=""color"">#ff00aa</Color>
+								<Color x:Key="color">#ff00aa</Color>
 							</ResourceDictionary>
-							</ContentPage.Resources>
+						</ContentPage.Resources>
 
-						<ListView x:Name=""List"" ItemsSource=""{Binding}"">
+						<ListView x:Name="List" ItemsSource="{Binding}">
 							<ListView.ItemTemplate>
 								<DataTemplate>
 									<ViewCell>
 									<cmp:StackLayout>
-										<Label Text=""{Binding}"" BackgroundColor=""{StaticResource color}""/>
+										<Label Text="{Binding}" BackgroundColor="{StaticResource color}"/>
 									</cmp:StackLayout>
 									</ViewCell>
 								</DataTemplate>
 							</ListView.ItemTemplate>
 						</ListView>
-				</ContentPage>";
+				</ContentPage>
+				""";
 
 			ContentPage page = new ContentPage().LoadFromXaml(xaml);
 
@@ -108,24 +112,26 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ElementsFromCollectionsAreNotReused()
 		{
-			var xaml = @"<ListView 
-						xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
-						ItemsSource=""{Binding}"">
-							<ListView.ItemTemplate>
-								<DataTemplate>
-									<local:ViewCellWithCollection>
-										<local:ViewCellWithCollection.Children>
-											<local:ViewList>
-												<Label />
-												<Label />
-											</local:ViewList>
-										</local:ViewCellWithCollection.Children>
-									</local:ViewCellWithCollection>
-								</DataTemplate>
-							</ListView.ItemTemplate>
-						</ListView>";
+			var xaml = """
+				<ListView 
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"
+				ItemsSource="{Binding}">
+					<ListView.ItemTemplate>
+						<DataTemplate>
+							<local:ViewCellWithCollection>
+								<local:ViewCellWithCollection.Children>
+									<local:ViewList>
+										<Label />
+										<Label />
+									</local:ViewList>
+								</local:ViewCellWithCollection.Children>
+							</local:ViewCellWithCollection>
+						</DataTemplate>
+					</ListView.ItemTemplate>
+				</ListView>
+				""";
 
 			var listview = new ListView();
 			var items = new[] { "Foo", "Bar", "Baz" };
@@ -143,25 +149,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ResourcesDeclaredInDataTemplatesAreNotShared()
 		{
-			var xaml = @"<ListView 
-						xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-						xmlns:sys=""clr-namespace:System;assembly=mscorlib""
-						ItemsSource=""{Binding}"">
-							<ListView.ItemTemplate>
-								<DataTemplate>
-									<ViewCell>
-										<Label Text=""{Binding}"">
-											<Label.Resources>
-												<ResourceDictionary>
-													<sys:Object x:Key=""object""/>
-												</ResourceDictionary>
-											</Label.Resources>
-										</Label>
-									</ViewCell>
-								</DataTemplate>
-							</ListView.ItemTemplate>
-						</ListView>";
+			var xaml = """
+				<ListView 
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				xmlns:sys="clr-namespace:System;assembly=mscorlib"
+				ItemsSource="{Binding}">
+					<ListView.ItemTemplate>
+						<DataTemplate>
+							<ViewCell>
+								<Label Text="{Binding}">
+									<Label.Resources>
+										<ResourceDictionary>
+											<sys:Object x:Key="object"/>
+										</ResourceDictionary>
+									</Label.Resources>
+								</Label>
+							</ViewCell>
+						</DataTemplate>
+					</ListView.ItemTemplate>
+				</ListView>
+				""";
 
 			var listview = new ListView();
 			var items = new[] { "Foo", "Bar", "Baz" };

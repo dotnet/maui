@@ -94,13 +94,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestRootName()
 		{
-			var xaml = @"
+			var xaml = """
 				<View
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"" 
-				x:Name=""customView"" 
-				/>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.CustomView" 
+				x:Name="customView" />
+				""";
 
 			var view = new CustomView();
 			view.LoadFromXaml(xaml);
@@ -111,14 +111,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestFindByXName()
 		{
-			var xaml = @"
+			var xaml = """
 				<StackLayout 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 					<StackLayout.Children>
-						<Label x:Name=""label0"" Text=""Foo""/>
+						<Label x:Name="label0" Text="Foo"/>
 					</StackLayout.Children>
-				</StackLayout>";
+				</StackLayout>
+				""";
 
 			var stacklayout = new StackLayout();
 			stacklayout.LoadFromXaml(xaml);
@@ -131,12 +132,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestUnknownPropertyShouldThrow()
 		{
-			var xaml = @"
+			var xaml = """
 				<Label 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				Text=""Foo""
-				UnknownProperty=""Bar""
-			    />";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				Text="Foo"
+				UnknownProperty="Bar" />
+				""";
 
 			var label = new Label();
 			Assert.Throws(new XamlParseExceptionConstraint(5, 5), () => label.LoadFromXaml(xaml));
@@ -145,11 +146,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestSetValueToBindableProperty()
 		{
-			var xaml = @"
-			<Label 
-			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-			Text=""Foo""
-			/>";
+			var xaml = """
+				<Label 
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				Text="Foo" />
+				""";
 
 			var label = new Label();
 
@@ -161,11 +162,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestSetBindingToBindableProperty()
 		{
-			var xaml = @"
-			<Label 
-			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-			Text=""{Binding Path=labeltext}""
-			/>";
+			var xaml = """
+				<Label 
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				Text="{Binding Path=labeltext}" />
+				""";
 
 			var label = new Label();
 			label.LoadFromXaml(xaml);
@@ -179,14 +180,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestSetBindingToNonBindablePropertyShouldThrow()
 		{
-			var xaml = @"
+			var xaml = """
 				<View 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"" 
-				Name=""customView"" 
-				NotBindable=""{Binding text}""
-				/>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.CustomView" 
+				Name="customView" 
+				NotBindable="{Binding text}" />
+				""";
 
 			var view = new CustomView();
 			Assert.Throws(new XamlParseExceptionConstraint(6, 5), () => view.LoadFromXaml(xaml));
@@ -195,16 +196,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestBindingPath()
 		{
-			var xaml = @"
+			var xaml = """
 				<cmp:StackLayout 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 					<cmp:StackLayout.Children>
-						<Label x:Name=""label0"" Text=""{Binding text}""/>
-						<Label x:Name=""label1"" Text=""{Binding Path=text}""/>
+						<Label x:Name="label0" Text="{Binding text}"/>
+						<Label x:Name="label1" Text="{Binding Path=text}"/>
 					</cmp:StackLayout.Children>
-				</cmp:StackLayout>";
+				</cmp:StackLayout>
+				""";
 
 			var stacklayout = new Compatibility.StackLayout();
 			stacklayout.LoadFromXaml(xaml);
@@ -229,26 +231,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestBindingModeAndConverter()
 		{
-			var xaml = @"
+			var xaml = """
 				<ContentPage 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests">
 					<ContentPage.Resources>
 						<ResourceDictionary>
-							<local:ReverseConverter x:Key=""reverseConverter""/>
+							<local:ReverseConverter x:Key="reverseConverter"/>
 						</ResourceDictionary>
 					</ContentPage.Resources>
 					<ContentPage.Content>
-						<cmp:StackLayout Orientation=""Vertical"">
+						<cmp:StackLayout Orientation="Vertical">
 							<cmp:StackLayout.Children>
-								<Label x:Name=""label0"" Text=""{Binding Text, Converter={StaticResource reverseConverter}}""/>
-								<Label x:Name=""label1"" Text=""{Binding Text, Mode=TwoWay}""/>
+								<Label x:Name="label0" Text="{Binding Text, Converter={StaticResource reverseConverter}}"/>
+								<Label x:Name="label1" Text="{Binding Text, Mode=TwoWay}"/>
 							</cmp:StackLayout.Children>
 						</cmp:StackLayout>
 					</ContentPage.Content>
-				</ContentPage>";
+				</ContentPage>
+				""";
 
 			var contentPage = new ContentPage();
 			contentPage.LoadFromXaml(xaml);
@@ -264,17 +267,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestNonEmptyCollectionMembers()
 		{
-			var xaml = @"
+			var xaml = """
 				<StackLayout 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 					<StackLayout.Children>
-						<Grid x:Name=""grid0"">
+						<Grid x:Name="grid0">
 						</Grid>
-						<Grid x:Name=""grid1"">
+						<Grid x:Name="grid1">
 						</Grid>
 					</StackLayout.Children>
-				</StackLayout>";
+				</StackLayout>
+				""";
 
 			var stacklayout = new StackLayout();
 			stacklayout.LoadFromXaml(xaml);
@@ -287,14 +291,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestUnknownType()
 		{
-			var xaml = @"
+			var xaml = """
 				<StackLayout 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 					<StackLayout.Children>
 						<CustomView />
 					</StackLayout.Children>
-				</StackLayout>";
+				</StackLayout>
+				""";
 
 			var stacklayout = new StackLayout();
 			Assert.Throws(new XamlParseExceptionConstraint(6, 8), () => stacklayout.LoadFromXaml(xaml));
@@ -303,17 +308,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestResources()
 		{
-			var xaml = @"
+			var xaml = """
 				<Label 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests">
 					<Label.Resources>
 						<ResourceDictionary>
-							<local:ReverseConverter x:Key=""reverseConverter""/>
+							<local:ReverseConverter x:Key="reverseConverter"/>
 						</ResourceDictionary>
 					</Label.Resources>
-				</Label>";
+				</Label>
+				""";
 
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.NotNull(label.Resources);
@@ -324,17 +330,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestResourceDoesRequireKey()
 		{
-			var xaml = @"
+			var xaml = """
 				<Label 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests">
 					<Label.Resources>
 						<ResourceDictionary>
 							<local:ReverseConverter />
 						</ResourceDictionary>
 					</Label.Resources>
-				</Label>";
+				</Label>
+				""";
+
 			var label = new Label();
 			Assert.Throws(new XamlParseExceptionConstraint(8, 9), () => label.LoadFromXaml(xaml));
 		}
@@ -342,19 +350,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void UseResourcesOutsideOfBinding()
 		{
-			var xaml = @"
+			var xaml = """
 				<ContentView
-				  xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				  xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
-				  <ContentView.Resources>
-                    <ResourceDictionary>
-                      <Label Text=""Foo"" x:Key=""bar""/>
-                    </ResourceDictionary>
-				  </ContentView.Resources>
-				<ContentView.Content>
-                  <ContentView Content=""{StaticResource bar}""/>
-				</ContentView.Content>
-                </ContentView>";
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+					<ContentView.Resources>
+						<ResourceDictionary>
+							<Label Text="Foo" x:Key="bar"/>
+						</ResourceDictionary>
+					</ContentView.Resources>
+					<ContentView.Content>
+						<ContentView Content="{StaticResource bar}"/>
+					</ContentView.Content>
+				</ContentView>
+				""";
 
 			var contentView = new ContentView().LoadFromXaml(xaml);
 			Assert.AreEqual("Foo", (((ContentView)(contentView.Content)).Content as Label).Text);
@@ -397,20 +406,22 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			Application.Current = null;
 			Application.Current = new MyApp();
-			var xaml = @"
+			var xaml = """
 				<ContentView
-				  xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				  xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
-				  <ContentView.Resources>
-                    <ResourceDictionary>
-                      <x:String x:Key=""bar"">BAZ</x:String>
-                    </ResourceDictionary>
-				  </ContentView.Resources>
-				  <StackLayout>
-				    <Label x:Name=""label0"" Text=""{StaticResource foo}""/>
-				    <Label x:Name=""label1"" Text=""{StaticResource bar}""/>
-				  </StackLayout>
-                </ContentView>";
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+					<ContentView.Resources>
+					<ResourceDictionary>
+						<x:String x:Key="bar">BAZ</x:String>
+					</ResourceDictionary>
+					</ContentView.Resources>
+					<StackLayout>
+					<Label x:Name="label0" Text="{StaticResource foo}"/>
+					<Label x:Name="label1" Text="{StaticResource bar}"/>
+					</StackLayout>
+				</ContentView>
+				""";
+
 			var layout = new ContentView().LoadFromXaml(xaml);
 			var label0 = layout.FindByName<Label>("label0");
 			var label1 = layout.FindByName<Label>("label1");
@@ -425,12 +436,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestEvent()
 		{
-			var xaml = @"
+			var xaml = """
 				<Button 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustView"" Clicked=""onButtonClicked"" />
-				</Button>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.CustView" Clicked="onButtonClicked" />
+				</Button>
+				""";
+
 			var view = new CustView();
 			view.LoadFromXaml(xaml);
 			Assert.False(view.fired);
@@ -441,12 +454,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestFailingEvent()
 		{
-			var xaml = @"
+			var xaml = """
 				<View 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustView"" Clicked=""missingMethod"" />
-				</View>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.CustView" Clicked="missingMethod" />
+				</View>
+				""";
+
 			var view = new CustView();
 			Assert.Throws(new XamlParseExceptionConstraint(5, 63), () => view.LoadFromXaml(xaml));
 		}
@@ -454,12 +469,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestConnectingEventOnMethodWithWrongSignature()
 		{
-			var xaml = @"
+			var xaml = """
 				<View 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustView"" Clicked=""wrongSignature"" />
-				</View>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.CustView" Clicked="wrongSignature" />
+				</View>
+				""";
+
 			var view = new CustView();
 
 			Assert.Throws(new XamlParseExceptionConstraint(5, 63), () => view.LoadFromXaml(xaml));
@@ -479,28 +496,32 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestEventWithCustomEventArgs()
 		{
-			var xaml = @"
-			<Entry
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustEntry"" TextChanged=""onValueChanged"" />
-			</Entry>";
+			var xaml = """
+				<Entry
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.CustEntry" TextChanged="onValueChanged" />
+				</Entry>
+				""";
+
 			new CustEntry().LoadFromXaml(xaml);
 		}
 
 		[Test]
 		public void TestEmptyTemplate()
 		{
-			var xaml = @"
-			<ContentPage
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
-				<ContentPage.Resources>
-					<ResourceDictionary>
-						<DataTemplate x:Key=""datatemplate""/>
-					</ResourceDictionary>
-				</ContentPage.Resources>
-			</ContentPage>";
+			var xaml = """
+				<ContentPage
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+					<ContentPage.Resources>
+						<ResourceDictionary>
+							<DataTemplate x:Key="datatemplate"/>
+						</ResourceDictionary>
+					</ContentPage.Resources>
+				</ContentPage>
+				""";
+
 			var page = new ContentPage();
 			page.LoadFromXaml(xaml);
 			var template = page.Resources["datatemplate"] as Maui.Controls.DataTemplate;
@@ -511,11 +532,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestBoolValue()
 		{
-			var xaml = @"
+			var xaml = """
 				<Image 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				IsOpaque=""true""/>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				IsOpaque="true"/>
+				""";
 
 			var image = new Image();
 			Assert.AreEqual(Image.IsOpaqueProperty.DefaultValue, image.IsOpaque);
@@ -526,13 +548,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestAttachedBP()
 		{
-			var xaml = @"
+			var xaml = """
 				<View 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				Grid.Column=""1"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				Grid.Column="1">
 					<Grid.Row>2</Grid.Row>
-				</View>";
+				</View>
+				""";
+
 			var view = new View().LoadFromXaml(xaml);
 			Assert.AreEqual(1, Grid.GetColumn(view));
 			Assert.AreEqual(2, Grid.GetRow(view));
@@ -542,12 +566,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void TestAttachedBPWithDifferentNS()
 		{
 			//If this looks very similar to Vernacular, well... it's on purpose :)
-			var xaml = @"
+			var xaml = """
 				<Label
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" 
-				local:Catalog.Message=""foobar""/>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" 
+				local:Catalog.Message="foobar"/>
+				""";
+
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual("raboof", label.Text);
 		}
@@ -555,12 +581,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestBindOnAttachedBP()
 		{
-			var xaml = @"
+			var xaml = """
 				<Label
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" 
-				local:Catalog.Message=""{Binding .}""/>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" 
+				local:Catalog.Message="{Binding .}"/>
+				""";
+
 			var label = new Label().LoadFromXaml(xaml);
 			label.BindingContext = "foobar";
 			Assert.AreEqual("raboof", label.Text);
@@ -569,13 +597,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestContentProperties()
 		{
-			var xaml = @"
+			var xaml = """
 				<local:CustomView
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
-					<Label x:Name=""contentview""/>
-				</local:CustomView>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" >
+					<Label x:Name="contentview"/>
+				</local:CustomView>
+				""";
 			CustomView customView = null;
 			Assert.DoesNotThrow(() => customView = new CustomView().LoadFromXaml(xaml));
 			Assert.NotNull(customView.Content);
@@ -585,11 +614,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestCollectionContentProperties()
 		{
-			var xaml = @"
-				<StackLayout xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"">
-					<Label Text=""Foo""/>
-					<Label Text=""Bar""/>
-				</StackLayout>";
+			var xaml = """
+				<StackLayout xmlns="http://schemas.microsoft.com/dotnet/2021/maui">
+					<Label Text="Foo"/>
+					<Label Text="Bar"/>
+				</StackLayout>
+				""";
+
 			var layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(2, layout.Children.Count);
 			Assert.AreEqual("Foo", ((Label)(layout.Children[0])).Text);
@@ -599,10 +630,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestCollectionContentPropertiesWithSingleElement()
 		{
-			var xaml = @"
-				<StackLayout xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"">
-					<Label Text=""Foo""/>
-				</StackLayout>";
+			var xaml = """
+				<StackLayout xmlns="http://schemas.microsoft.com/dotnet/2021/maui">
+					<Label Text="Foo"/>
+				</StackLayout>
+				""";
+
 			var layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(1, layout.Children.Count);
 			Assert.AreEqual("Foo", ((Label)(layout.Children[0])).Text);
@@ -611,13 +644,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestPropertiesWithContentProperties()
 		{
-			var xaml = @"
+			var xaml = """
 				<ContentPage
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 				<Grid.Row>1</Grid.Row>
-				<Label Text=""foo""></Label>
-				</ContentPage>";
+				<Label Text="foo"></Label>
+				</ContentPage>
+				""";
+
 			var contentPage = new ContentPage().LoadFromXaml(xaml);
 			Assert.AreEqual(1, Grid.GetRow(contentPage));
 			Assert.NotNull(contentPage.Content);
@@ -643,18 +678,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void CreateNewChildrenCollection()
 		{
-			var xaml = @"
+			var xaml = """
 				<local:ViewWithChildrenContent
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" >
 					<local:ViewWithChildrenContent.Children>
 						<local:ViewList>
-							<Label x:Name=""child0""/>
-							<Label x:Name=""child1""/>
+							<Label x:Name="child0"/>
+							<Label x:Name="child1"/>
 						</local:ViewList>
 					</local:ViewWithChildrenContent.Children>
-				</local:ViewWithChildrenContent>";
+				</local:ViewWithChildrenContent>
+				""";
+
 			ViewWithChildrenContent layout = null;
 			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
 			Assert.IsNotNull(layout);
@@ -666,14 +703,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void AddChildrenToCollectionContentProperty()
 		{
-			var xaml = @"
+			var xaml = """
 				<local:ViewWithChildrenContent
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
-					<Label x:Name=""child0""/>
-					<Label x:Name=""child1""/>
-				</local:ViewWithChildrenContent>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" >
+					<Label x:Name="child0"/>
+					<Label x:Name="child1"/>
+				</local:ViewWithChildrenContent>
+				""";
+
 			ViewWithChildrenContent layout = null;
 			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
 			Assert.IsNotNull(layout);
@@ -685,16 +724,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void AddChildrenToExistingCollection()
 		{
-			var xaml = @"
+			var xaml = """
 				<local:ViewWithChildrenContent
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" >
 					<local:ViewWithChildrenContent.Children>
-						<Label x:Name=""child0""/>
-						<Label x:Name=""child1""/>
+						<Label x:Name="child0"/>
+						<Label x:Name="child1"/>
 					</local:ViewWithChildrenContent.Children>
-				</local:ViewWithChildrenContent>";
+				</local:ViewWithChildrenContent>
+				""";
+
 			ViewWithChildrenContent layout = null;
 			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
 			Assert.IsNotNull(layout);
@@ -707,13 +748,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void AddSingleChildToCollectionContentProperty()
 		{
-			var xaml = @"
+			var xaml = """
 				<local:ViewWithChildrenContent
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
-					<Label x:Name=""child0""/>
-				</local:ViewWithChildrenContent>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" >
+					<Label x:Name="child0"/>
+				</local:ViewWithChildrenContent>
+				""";
+
 			ViewWithChildrenContent layout = null;
 			Assert.DoesNotThrow(() => layout = new ViewWithChildrenContent().LoadFromXaml(xaml));
 			Assert.IsNotNull(layout);
@@ -724,18 +767,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void FindResourceByName()
 		{
-			var xaml = @"
+			var xaml = """
 				<ContentPage
-				    xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" 
-				    x:Class=""Resources"">
-				    <ContentPage.Resources>
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+					x:Class="Resources">
+					<ContentPage.Resources>
 						<ResourceDictionary>
-						    <Button x:Key=""buttonKey"" x:Name=""buttonName""/>
+							<Button x:Key="buttonKey" x:Name="buttonName"/>
 						</ResourceDictionary>
-				    </ContentPage.Resources>
-				    <Label x:Name=""label""/>
-				</ContentPage>";
+					</ContentPage.Resources>
+					<Label x:Name="label"/>
+				</ContentPage>
+				""";
 
 			var layout = new ContentPage().LoadFromXaml(xaml);
 			Assert.True(layout.Resources.ContainsKey("buttonKey"));
@@ -747,13 +791,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ParseEnum()
 		{
-			var xaml = @"
+			var xaml = """
 				<local:CustomView
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" 
-				MockFlags=""Bar""
-				/>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" 
+				MockFlags="Bar"
+				/>
+				""";
+
 			var view = new CustomView().LoadFromXaml(xaml);
 			Assert.AreEqual(MockFlags.Bar, view.MockFlags);
 
@@ -762,13 +808,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ParseFlags()
 		{
-			var xaml = @"
+			var xaml = """
 				<local:CustomView
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" 
-				MockFlags=""Baz,Bar""
-				/>";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" 
+				MockFlags="Baz,Bar"
+				/>
+				""";
+
 			var view = new CustomView().LoadFromXaml(xaml);
 			Assert.AreEqual(MockFlags.Bar | MockFlags.Baz, view.MockFlags);
 		}
@@ -776,14 +824,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void StyleWithoutTargetTypeThrows()
 		{
-			var xaml = @"
-				<Label xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"">
+			var xaml = """
+				<Label xmlns="http://schemas.microsoft.com/dotnet/2021/maui">
 					<Label.Style>
 						<Style>
-							<Setter Property=""Text"" Value=""Foo"" />
+							<Setter Property="Text" Value="Foo" />
 						</Style>
 					</Label.Style>
-				</Label>";
+				</Label>
+				""";
+
 			var label = new Label();
 			Assert.Throws(new XamlParseExceptionConstraint(4, 8), () => label.LoadFromXaml(xaml));
 		}

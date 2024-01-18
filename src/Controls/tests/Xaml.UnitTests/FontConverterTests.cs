@@ -11,10 +11,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase("Bold, Italic", Controls.FontAttributes.Bold | Controls.FontAttributes.Italic)]
 		public void FontAttributes(string attributeString, FontAttributes result)
 		{
-			var xaml = @"
-			<Label 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" FontAttributes=""" + result + @""" />";
+			var xaml = $"""
+				<Label 
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" FontAttributes="{result}" />
+				""";
 
 			var label = new Label().LoadFromXaml(xaml);
 

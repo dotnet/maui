@@ -29,21 +29,23 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			const string MicrosoftMauiControlsFormsDefaultNamespace = "http://schemas.microsoft.com/dotnet/2021/maui";
 			const string MicrosoftMauiControlsFormsXNamespace = "http://schemas.microsoft.com/winfx/2006/xaml";
 
-			public static readonly string MainPage = $@"
+			public static readonly string MainPage = $"""
 				<ContentPage
-					xmlns=""{MicrosoftMauiControlsFormsDefaultNamespace}""
-					xmlns:x=""{MicrosoftMauiControlsFormsXNamespace}""
-					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.MainPage"">
-					<Label x:Name=""label0""/>
-				</ContentPage>";
+					xmlns="{MicrosoftMauiControlsFormsDefaultNamespace}"
+					xmlns:x="{MicrosoftMauiControlsFormsXNamespace}"
+					x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.MainPage">
+					<Label x:Name="label0"/>
+				</ContentPage>
+				""";
 
-			public static readonly string CustomView = $@"
+			public static readonly string CustomView = $"""
 				<ContentView
-					xmlns=""{MicrosoftMauiControlsFormsDefaultNamespace}""
-					xmlns:x=""{MicrosoftMauiControlsFormsXNamespace}""
-					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"">
-					<Label x:Name=""label0""/>
-				</ContentView>";
+					xmlns="{MicrosoftMauiControlsFormsDefaultNamespace}"
+					xmlns:x="{MicrosoftMauiControlsFormsXNamespace}"
+					x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.CustomView">
+					<Label x:Name="label0"/>
+				</ContentView>
+				""";
 		}
 
 		class Css

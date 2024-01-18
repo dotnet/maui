@@ -19,14 +19,16 @@ namespace GraphicsTester.Scenarios
 
 			canvas.SaveState();
 
-			var value = @"This is *italic* and __underline__ and **bold** and __*underline italic*__ and __**underline bold**__ and ***bold italic*** and __***underline bold italic***__.
-This is ~~strike through~~.
-This is ~sub~script and this is ^super^script.
-This is <span style=""color:blue"">blue text</span> and <span style=""background:yellow"">highlighted text</span>
+			var value = """
+				This is *italic* and __underline__ and **bold** and __*underline italic*__ and __**underline bold**__ and ***bold italic*** and __***underline bold italic***__.
+				This is ~~strike through~~.
+				This is ~sub~script and this is ^super^script.
+				This is <span style="color:blue">blue text</span> and <span style="background:yellow">highlighted text</span>
 
-This is a list:
-* line 1
-* line 2";
+				This is a list:
+				* line 1
+				* line 2
+				""";
 
 			var attributedText = MarkdownAttributedTextReader.Read(value);
 			canvas.Translate(0, 10);
