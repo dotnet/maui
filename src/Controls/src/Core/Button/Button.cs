@@ -477,11 +477,6 @@ namespace Microsoft.Maui.Controls
 				Handler?.UpdateValue(nameof(IButtonStroke.StrokeThickness));
 			else if (propertyName == ImageSourceProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IImage.Source));
-
-#if ANDROID
-			if (propertyName == WindowProperty.PropertyName && Window is null)
-				Disconnect();
-#endif
 		}
 
 		void IButton.Clicked()

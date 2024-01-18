@@ -1,11 +1,8 @@
 ﻿#nullable disable
 using System;
-using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Handlers;
-using static Android.Webkit.WebSettings;
 using static Microsoft.Maui.Controls.Button;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 

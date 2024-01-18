@@ -1,41 +1,12 @@
 ﻿#nullable disable
 using Google.Android.Material.Button;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Button
 	{
-		MaterialButton _materialButton;
-
-		private protected override void OnHandlerChangedCore()
-		{
-			base.OnHandlerChangedCore();
-
-			if (Handler != null)
-				Connect();
-			else
-				Disconnect();
-		}
-
-		void Connect()
-		{
-			if (Handler is ButtonHandler buttonHandler && buttonHandler.PlatformView is MaterialButton materialButton)
-			{
-				_materialButton = materialButton;
-				_materialButton.LayoutChange += OnButtonLayoutChange;
-			}
-		}
-
-		void Disconnect()
-		{
-			if (_materialButton != null)
-			{
-				_materialButton.LayoutChange -= OnButtonLayoutChange;
-				_materialButton = null;
-			}
-		}
-
 		public static void MapText(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateText(button);
@@ -49,9 +20,17 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView?.UpdateLineBreakMode(button);
 		}
 
-		void OnButtonLayoutChange(object sender, Android.Views.View.LayoutChangeEventArgs e)
+		protected override Size ArrangeOverride(Rect bounds)
 		{
 			Handler?.UpdateValue(nameof(ContentLayout));
+
+			return base.ArrangeOverride(bounds);
+		}
+
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
+		{
+			//Handler?.UpdateValue(nameof(ContentLayout));
+			return base.OnMeasure(widthConstraint, heightConstraint);
 		}
 	}
 }
