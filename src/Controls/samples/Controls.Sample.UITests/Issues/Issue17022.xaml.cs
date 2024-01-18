@@ -17,40 +17,184 @@ public partial class Issue17022 : ContentPage
 		InitializeComponent();
 	}
 
-	async void NewNavigationPageButtonPressed(System.Object sender, System.EventArgs e)
-	{
-		var mainPage = CreateMainPage();
+	readonly string _topOfScreenText = "Green boxview should be behind navbar and touching very top of screen.";
+	readonly string _notTopOfScreenText = "Green boxview should NOT be behind navbar and NOT touching very top of screen.";
 
+	async void NewNavigationPagePressed(System.Object sender, System.EventArgs e)
+	{
+		var mainPage = CreateMainPage(true, _notTopOfScreenText);
+		var navPage = new NavigationPage(mainPage);
+		await Navigation.PushModalAsync(navPage);
+	}
+
+	async void NewNavigationPageTransparentPressed(System.Object sender, System.EventArgs e)
+	{
+		var mainPage = CreateMainPage(true, _notTopOfScreenText);
 		var navPage = new NavigationPage(mainPage)
 		{
 			BarBackgroundColor = Colors.Transparent,
 		};
-		navPage.On<iOS>().SetHideNavigationBarSeparator(true);
-		navPage.On<iOS>().EnableTranslucentNavigationBar();
-
 		await Navigation.PushModalAsync(navPage);
 	}
 
-	async void NewFlyoutPageButtonPressed(System.Object sender, System.EventArgs e)
+	async void NewNavigationPageTranslucentPressed(System.Object sender, System.EventArgs e)
 	{
-		var detail = new NavigationPage(CreateMainPage());
+		var mainPage = CreateMainPage(true, _notTopOfScreenText);
+		var navPage = new NavigationPage(mainPage);
+		navPage.On<iOS>().EnableTranslucentNavigationBar();
+		await Navigation.PushModalAsync(navPage);
+	}
 
+	async void NewNavigationPageTransparentTranslucentPressed(System.Object sender, System.EventArgs e)
+	{
+		var mainPage = CreateMainPage(true, _notTopOfScreenText);
+		var navPage = new NavigationPage(mainPage)
+		{
+			BarBackgroundColor = Colors.Transparent,
+		};
+		navPage.On<iOS>().EnableTranslucentNavigationBar();
+		await Navigation.PushModalAsync(navPage);
+	}
+
+	async void NewNavigationPageGridPressed(System.Object sender, System.EventArgs e)
+	{
+		var mainPage = CreateMainPage(false, _notTopOfScreenText);
+		var navPage = new NavigationPage(mainPage);
+		await Navigation.PushModalAsync(navPage);
+	}
+
+	async void NewNavigationPageGridTransparentPressed(System.Object sender, System.EventArgs e)
+	{
+		var mainPage = CreateMainPage(false, _notTopOfScreenText);
+		var navPage = new NavigationPage(mainPage)
+		{
+			BarBackgroundColor = Colors.Transparent,
+		};
+		await Navigation.PushModalAsync(navPage);
+	}
+
+	async void NewNavigationPageGridTranslucentPressed(System.Object sender, System.EventArgs e)
+	{
+		var mainPage = CreateMainPage(false, _notTopOfScreenText);
+		var navPage = new NavigationPage(mainPage);
+		navPage.On<iOS>().EnableTranslucentNavigationBar();
+		await Navigation.PushModalAsync(navPage);
+	}
+
+	async void NewNavigationPageGridTransparentTranslucentPressed(System.Object sender, System.EventArgs e)
+	{
+		var mainPage = CreateMainPage(false, _topOfScreenText);
+		var navPage = new NavigationPage(mainPage)
+		{
+			BarBackgroundColor = Colors.Transparent,
+		};
+		navPage.On<iOS>().EnableTranslucentNavigationBar();
+		await Navigation.PushModalAsync(navPage);
+	}
+
+	async void NewFlyoutPagePressed(System.Object sender, System.EventArgs e)
+	{
+		var detail = new NavigationPage(CreateMainPage(true, _notTopOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
 			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
-
 		detail.BarBackgroundColor = Colors.Transparent;
 		detail.On<iOS>().SetHideNavigationBarSeparator(true);
 		detail.On<iOS>().EnableTranslucentNavigationBar();
-
 		await Navigation.PushModalAsync(flyoutPage);
 	}
 
-	ContentPage CreateMainPage ()
+	async void NewFlyoutPageTransparentPressed(System.Object sender, System.EventArgs e)
 	{
-		var mainPage = new ContentPage();
+		var detail = new NavigationPage(CreateMainPage(true, _notTopOfScreenText));
+		var flyoutPage = new FlyoutPage()
+		{
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
+			Detail = detail
+		};
+		detail.BarBackgroundColor = Colors.Transparent;
+		await Navigation.PushModalAsync(flyoutPage);
+	}
+
+	async void NewFlyoutPageTranslucentPressed(System.Object sender, System.EventArgs e)
+	{
+		var detail = new NavigationPage(CreateMainPage(true, _notTopOfScreenText));
+		var flyoutPage = new FlyoutPage()
+		{
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
+			Detail = detail
+		};
+		detail.On<iOS>().EnableTranslucentNavigationBar();
+		await Navigation.PushModalAsync(flyoutPage);
+	}
+
+	async void NewFlyoutPageTransparentTranslucentPressed(System.Object sender, System.EventArgs e)
+	{
+		var detail = new NavigationPage(CreateMainPage(true, _notTopOfScreenText));
+		var flyoutPage = new FlyoutPage()
+		{
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
+			Detail = detail
+		};
+		detail.BarBackgroundColor = Colors.Transparent;
+		detail.On<iOS>().EnableTranslucentNavigationBar();
+		await Navigation.PushModalAsync(flyoutPage);
+	}
+
+	async void NewFlyoutPageGridPressed(System.Object sender, System.EventArgs e)
+	{
+		var detail = new NavigationPage(CreateMainPage(false, _notTopOfScreenText));
+		var flyoutPage = new FlyoutPage()
+		{
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
+			Detail = detail
+		};
+		await Navigation.PushModalAsync(flyoutPage);
+	}
+
+	async void NewFlyoutPageGridTransparentPressed(System.Object sender, System.EventArgs e)
+	{
+		var detail = new NavigationPage(CreateMainPage(false, _notTopOfScreenText));
+		var flyoutPage = new FlyoutPage()
+		{
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
+			Detail = detail
+		};
+		detail.BarBackgroundColor = Colors.Transparent;
+		await Navigation.PushModalAsync(flyoutPage);
+	}
+
+	async void NewFlyoutPageGridTranslucentPressed(System.Object sender, System.EventArgs e)
+	{
+		var detail = new NavigationPage(CreateMainPage(false, _notTopOfScreenText));
+		var flyoutPage = new FlyoutPage()
+		{
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
+			Detail = detail
+		};
+		detail.On<iOS>().EnableTranslucentNavigationBar();
+		await Navigation.PushModalAsync(flyoutPage);
+	}
+	async void NewFlyoutPageGridTransparentTranslucentPressed(System.Object sender, System.EventArgs e)
+	{
+		var detail = new NavigationPage(CreateMainPage(false, _topOfScreenText));
+		var flyoutPage = new FlyoutPage()
+		{
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
+			Detail = detail
+		};
+		detail.BarBackgroundColor = Colors.Transparent;
+		detail.On<iOS>().EnableTranslucentNavigationBar();
+		await Navigation.PushModalAsync(flyoutPage);
+	}
+
+	ContentPage CreateMainPage (bool useSafeArea, string expectedText)
+	{
+		var mainPage = new ContentPage(){
+			AutomationId="PopupMainPage"
+		};
 		var grid = new Grid
 		{
 			RowDefinitions =
@@ -65,12 +209,12 @@ public partial class Issue17022 : ContentPage
 		button.Clicked += PopModalButtonClicked;
 
 		grid.Add (new BoxView { BackgroundColor = Colors.Green, AutomationId="TopBoxView" }, 0, 0 );
-		grid.Add (new Label { Text = "Green boxview should be behind navbar and touching very top of screen." }, 0, 1 );
+		grid.Add (new Label { Text = expectedText }, 0, 1 );
 		grid.Add (button, 0, 2 );
 		grid.IgnoreSafeArea = true;
 
 		mainPage.Content = grid;
-		mainPage.On<iOS>().SetUseSafeArea(false);
+		mainPage.On<iOS>().SetUseSafeArea(useSafeArea);
 		return mainPage;
 	}
 
