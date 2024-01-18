@@ -786,7 +786,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		internal class UnevenListViewDataSource : ListViewDataSource
+		internal sealed class UnevenListViewDataSource : ListViewDataSource
 		{
 			IPlatformViewHandler _prototype;
 			bool _disposed;
@@ -1500,7 +1500,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 	}
 
-	internal class FormsUITableViewController : UITableViewController
+	internal sealed class FormsUITableViewController : UITableViewController
 	{
 		ListView _list;
 		UIRefreshControl _refresh;
