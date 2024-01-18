@@ -257,9 +257,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
-
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 
 		[Fact("Ensures the border renders the expected size - Issue 15339")]

@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			c?.DisconnectHandler();
 		}
 
-		internal class ViewCellContainer : ViewGroup, INativeElementView
+		internal sealed class ViewCellContainer : ViewGroup, INativeElementView
 		{
 			readonly View _parent;
 			readonly BindableProperty _rowHeight;
@@ -147,20 +147,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateWatchForLongPress();
 			}
 
-			protected bool ParentHasUnevenRows
-			{
-				get { return (bool)_parent.GetValue(_unevenRows); }
-			}
+			private bool ParentHasUnevenRows => (bool)_parent.GetValue(_unevenRows);
 
-			protected int ParentRowHeight
-			{
-				get { return (int)_parent.GetValue(_rowHeight); }
-			}
+			private int ParentRowHeight => (int)_parent.GetValue(_rowHeight);
 
-			public Element Element
-			{
-				get { return _viewCell; }
-			}
+			public Element Element => _viewCell;
 
 			public override bool OnInterceptTouchEvent(MotionEvent ev)
 			{
@@ -370,7 +361,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ListViewRenderer?.LongClickOn(this);
 			}
 
-			internal class TapGestureListener : Java.Lang.Object, GestureDetector.IOnGestureListener
+			internal sealed class TapGestureListener : Java.Lang.Object, GestureDetector.IOnGestureListener
 			{
 				readonly Action _onClick;
 
@@ -415,7 +406,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			internal class LongPressGestureListener : Java.Lang.Object, GestureDetector.IOnGestureListener
+			internal sealed class LongPressGestureListener : Java.Lang.Object, GestureDetector.IOnGestureListener
 			{
 				readonly Action _onLongClick;
 

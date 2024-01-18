@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellItemRenderer : UITabBarController, IShellItemRenderer, IAppearanceObserver, IUINavigationControllerDelegate, IDisconnectable
 	{
+		readonly static UITableViewCell[] EmptyUITableViewCellArray = Array.Empty<UITableViewCell>();
+
 		#region IShellItemRenderer
 
 		public ShellItem ShellItem
@@ -346,7 +348,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (MoreNavigationController.TopViewController.View is UITableView uITableView)
 					return uITableView.VisibleCells;
 
-				return new UITableViewCell[0];
+				return EmptyUITableViewCellArray;
 			}
 		}
 

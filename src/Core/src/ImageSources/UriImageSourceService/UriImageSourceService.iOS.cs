@@ -70,6 +70,7 @@ namespace Microsoft.Maui
 			}
 		}
 
+#pragma warning disable CA1822 // Mark members as static; Disabling because these methods are public and changing them to static is potentially a breaking change
 		public void CacheImage(NSData imageData, string path)
 		{
 			var directory = Path.GetDirectoryName(path);
@@ -101,6 +102,6 @@ namespace Microsoft.Maui
 
 			return imageData;
 		}
+#pragma warning restore CA1822 // Mark members as static
 	}
-
 }
