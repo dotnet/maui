@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void NavigateTo(NavigationRequest args)
 		{
-			IReadOnlyList<IView> newPageStack = new List<IView>(args.NavigationStack);
+			var newPageStack = new List<IView>(args.NavigationStack);
 			var previousNavigationStack = NavigationStack;
 			var previousNavigationStackCount = previousNavigationStack.Count;
 			bool initialNavigation = NavigationStack.Count == 0;

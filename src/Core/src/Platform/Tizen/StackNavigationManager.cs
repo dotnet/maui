@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Platform
 
 		public virtual async void RequestNavigation(NavigationRequest e)
 		{
-			IReadOnlyList<IView> newPageStack = new List<IView>(e.NavigationStack);
+			var newPageStack = new List<IView>(e.NavigationStack);
 			var previousNavigationStack = NavigationStack;
 			var previousNavigationStackCount = previousNavigationStack.Count;
 			bool initialNavigation = previousNavigationStackCount == 0;
