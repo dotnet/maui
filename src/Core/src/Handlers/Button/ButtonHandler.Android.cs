@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler?.PlatformView.Background is BorderDrawable borderDrawable)
 					borderDrawable.OnTouchChange(e);
 
-				return Handler?.OnTouch(Handler?.VirtualView, v, e) ?? false;
+				return ButtonHandler.OnTouch(Handler?.VirtualView, v, e);
 			}
 		}
 
