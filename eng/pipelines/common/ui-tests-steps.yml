@@ -38,13 +38,48 @@ steps:
       height: '1080'
     displayName: "Set screen resolution"
 
-  - task: NodeTool@0
+  - task: UseNode@1
     inputs:
-      versionSpec: "20.3.1"
+      version: "20.3.1"
     displayName: "Install node"
+    
+  - bash: |
+      echo "##[group]Running ls -al $(npm root -g)"
+      ls -al $(npm root -g)
+      echo "##[endgroup]"
+
+      echo "##[group]Running ls -al $(npm root -g)/appium"
+      ls -al $(npm root -g)/appium
+      echo "##[endgroup]"
+
+      echo "##[group]Running ls -al $(npm root -g)/.appium-????????"
+      ls -al $(npm root -g)/.appium-????????
+      echo "##[endgroup]"
+
+      echo "##[group]Running ls -al $(npm root -g)/appium-doctor"
+      ls -al $(npm root -g)/appium-doctor
+      echo "##[endgroup]"
+
+      echo "##[group]Running ls -al $(npm root -g)/.appium-doctor-????????"
+      ls -al $(npm root -g)/.appium-doctor-????????
+      echo "##[endgroup]"
+
+      echo "##[group]Running ps aux"
+      ps aux
+      echo "##[endgroup]"
+    displayName: "Debugging output"
+    continueOnError: true
+    condition: startsWith(variables['Agent.Name'], 'XAMBOT')
+
+  # Clean up any leftover cached folders of appium and appium-doctor node modules
+  - bash: |
+      rm -rf $(npm root -g)/.appium-????????
+      rm -rf $(npm root -g)/.appium-doctor-????????
+    displayName: "Delete temp .appium-???????? and .appium-doctor-???????? folders"
+    continueOnError: true
 
   - pwsh: ./eng/scripts/appium-install.ps1
-    displayName: "Install Appium"
+    displayName: "Install Appium (Drivers)"
     continueOnError: false
     retryCountOnTaskFailure: 1
 

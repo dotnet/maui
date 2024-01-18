@@ -71,15 +71,7 @@ namespace Microsoft.Maui.Controls
 		internal Toolbar? Toolbar
 		{
 			get => _toolbar;
-			set
-			{
-				if (_toolbar == value)
-					return;
-
-				_toolbar?.Handler?.DisconnectHandler();
-				_toolbar = value;
-				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
-			}
+			set => ToolbarElement.SetValue(ref _toolbar, value, Handler);
 		}
 
 		public event EventHandler? SizeChanged;

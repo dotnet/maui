@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static Size PhysicalScreenSize => DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
 
-		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
+		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = Array.Empty<string>());
 
 		public static IMauiContext MauiContext { get; internal set; }
 

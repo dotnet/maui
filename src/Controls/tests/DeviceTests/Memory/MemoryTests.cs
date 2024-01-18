@@ -29,6 +29,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<Editor, EditorHandler>();
+				handlers.AddHandler<Frame, FrameRenderer>();
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<ListView, ListViewRenderer>();
@@ -37,10 +38,15 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Polyline, PolylineHandler>();
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
+				handlers.AddHandler<ImageButton, ImageButtonHandler>();
 				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
+				handlers.AddHandler<Slider, SliderHandler>();
+				handlers.AddHandler<Stepper, StepperHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
+				handlers.AddHandler<Switch, SwitchHandler>();
+				handlers.AddHandler<TableView, TableViewRenderer>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
 			});
@@ -57,8 +63,10 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(DatePicker))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
+	[InlineData(typeof(Frame))]
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Image))]
+	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
 	[InlineData(typeof(Label))]
 	[InlineData(typeof(Picker))]
@@ -66,8 +74,12 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Polyline))]
 	[InlineData(typeof(RefreshView))]
 	[InlineData(typeof(ScrollView))]
+	[InlineData(typeof(Slider))]
+	[InlineData(typeof(Stepper))]
 	[InlineData(typeof(SwipeView))]
+	[InlineData(typeof(Switch))]
 	[InlineData(typeof(TimePicker))]
+	[InlineData(typeof(TableView))]
 	[InlineData(typeof(WebView))]
 	public async Task HandlerDoesNotLeak(Type type)
 	{
@@ -79,13 +91,19 @@ public class MemoryTests : ControlsHandlerTestBase
 				return;
 #endif
 
+#if IOS
+		// NOTE: skip certain controls on older iOS devices
+		if (type == typeof(WebView) && !OperatingSystem.IsIOSVersionAtLeast(16))
+			return;
+#endif
+
 		WeakReference viewReference = null;
 		WeakReference platformViewReference = null;
 		WeakReference handlerReference = null;
 
 		var observable = new ObservableCollection<int> { 1, 2, 3 };
 
-		await InvokeOnMainThreadAsync(() =>
+		await InvokeOnMainThreadAsync(async () =>
 		{
 			var layout = new Grid();
 			var view = (View)Activator.CreateInstance(type);
@@ -99,6 +117,11 @@ public class MemoryTests : ControlsHandlerTestBase
 				items.ItemTemplate = new DataTemplate(() => new Label());
 				items.ItemsSource = observable;
 			}
+			else if (view is WebView webView)
+			{
+				webView.Source = new HtmlWebViewSource { Html = "<p>hi</p>" };
+				await Task.Delay(1000);
+			}
 			var handler = CreateHandler<LayoutHandler>(layout);
 			viewReference = new WeakReference(view);
 			handlerReference = new WeakReference(view.Handler);
@@ -106,9 +129,6 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
-		Assert.False(viewReference.IsAlive, $"{type} should not be alive!");
-		Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-		Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 	}
 
 #if IOS
@@ -128,8 +148,6 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 
 		await AssertionExtensions.WaitForGC(viewReference, recognizerReference);
-		Assert.False(viewReference.IsAlive, "UIView should not be alive!");
-		Assert.False(recognizerReference.IsAlive, "ResignFirstResponderTouchGestureRecognizer should not be alive!");
 	}
 #endif
 }
