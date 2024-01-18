@@ -13,10 +13,12 @@ namespace Microsoft.Maui.Hosting
 
 		readonly ConcurrentDictionary<Type, Type> _imageSourceCache = new ConcurrentDictionary<Type, Type>();
 		readonly ConcurrentDictionary<Type, Type> _serviceCache = new ConcurrentDictionary<Type, Type>();
+		readonly IImageSourceServiceCollection _collection;
 
 		public ImageSourceServiceProvider(IImageSourceServiceCollection collection, IServiceProvider hostServiceProvider)
 			: base(collection)
 		{
+			_collection = collection;
 			HostServiceProvider = hostServiceProvider;
 		}
 
@@ -25,37 +27,10 @@ namespace Microsoft.Maui.Hosting
 		public IImageSourceService? GetImageSourceService(Type imageSource) =>
 			(IImageSourceService?)GetService(GetImageSourceServiceType(imageSource));
 
-		public Type GetImageSourceServiceType(Type imageSource) =>
-			_serviceCache.GetOrAdd(imageSource, type =>
-			{
-				var genericConcreteType = ImageSourceServiceType.MakeGenericType(type);
+		public Type GetImageSourceServiceType(Type imageSource) => _serviceCache.GetOrAdd(imageSource, type =>
+			_collection.FindImageSourceToImageSourceServiceTypeMapping(type).ImageSourceServiceType);
 
-				if (genericConcreteType != null && GetServiceDescriptor(genericConcreteType) != null)
-					return genericConcreteType;
-
-				return ImageSourceServiceType.MakeGenericType(GetImageSourceType(type));
-			});
-
-		public Type GetImageSourceType(Type imageSource) =>
-			_imageSourceCache.GetOrAdd(imageSource, CreateImageSourceTypeCacheEntry);
-
-		Type CreateImageSourceTypeCacheEntry(Type type)
-		{
-			if (type.IsInterface)
-			{
-				if (type.GetInterface(ImageSourceInterface) != null)
-					return type;
-			}
-			else
-			{
-				foreach (var directInterface in type.GetInterfaces())
-				{
-					if (directInterface.GetInterface(ImageSourceInterface) != null)
-						return directInterface;
-				}
-			}
-
-			throw new InvalidOperationException($"Unable to find the image source type because none of the interfaces on {type.Name} were derived from {nameof(IImageSource)}.");
-		}
+		public Type GetImageSourceType(Type imageSource) => _imageSourceCache.GetOrAdd(imageSource, type =>
+			_collection.FindImageSourceToImageSourceServiceTypeMapping(type).ImageSourceType);
 	}
 }

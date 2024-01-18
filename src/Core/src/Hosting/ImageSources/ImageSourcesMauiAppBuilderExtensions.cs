@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Hosting;
@@ -51,6 +53,8 @@ namespace Microsoft.Maui.Hosting
 
 		class ImageSourceServiceBuilder : MauiServiceCollection, IImageSourceServiceCollection
 		{
+			private Dictionary<Type, Type> _typeMappings { get; } = new();
+
 			public ImageSourceServiceBuilder(IEnumerable<ImageSourceRegistration> registrationActions)
 			{
 				if (registrationActions != null)
@@ -60,6 +64,30 @@ namespace Microsoft.Maui.Hosting
 						effectRegistration.AddRegistration(this);
 					}
 				}
+			}
+
+			public (Type ImageSourceType, Type ImageSourceServiceType) FindImageSourceToImageSourceServiceTypeMapping(Type type)
+			{
+				foreach (var mapping in _typeMappings)
+				{
+					var imageSourceType = mapping.Key;
+					var imageSourceServiceType = mapping.Value;
+
+					if (imageSourceType.IsAssignableFrom(type) || type.IsAssignableFrom(imageSourceType))
+					{
+						return (imageSourceType, imageSourceServiceType);
+					}
+				}
+
+				throw new InvalidOperationException($"No image source service found for {type.FullName}");
+			}
+
+			public void AddImageSourceToImageSourceServiceTypeMapping(Type imageSourceType, Type imageSourceServiceType)
+			{
+				Debug.Assert(typeof(IImageSource).IsAssignableFrom(imageSourceType));
+				Debug.Assert(typeof(IImageSourceService).IsAssignableFrom(imageSourceServiceType));
+
+				_typeMappings[imageSourceType] = imageSourceServiceType;
 			}
 		}
 	}
