@@ -9,8 +9,8 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Xunit;
-using WSetter = Microsoft.UI.Xaml.Setter;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using WSetter = Microsoft.UI.Xaml.Setter;
 
 namespace Microsoft.Maui.DeviceTests
 {

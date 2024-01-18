@@ -483,6 +483,8 @@ namespace Microsoft.Maui.ApplicationModel
 						permissions.Add((Manifest.Permission.ReceiveWapPush, true));
 					if (IsDeclaredInManifest(Manifest.Permission.ReceiveMms))
 						permissions.Add((Manifest.Permission.ReceiveMms, true));
+					if (IsDeclaredInManifest(Manifest.Permission.ReceiveSms))
+						permissions.Add((Manifest.Permission.ReceiveSms, true));
 
 					return permissions.ToArray();
 				}
