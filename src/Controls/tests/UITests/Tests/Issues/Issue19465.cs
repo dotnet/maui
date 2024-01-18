@@ -27,6 +27,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// 3. Navigate back.
 			App.WaitForElement("ThirdButton");
 			App.DoubleClick("ThirdButton");
+			App.Back();
 		}
 	}
 }
