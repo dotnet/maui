@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		protected virtual async Task InitializeStack(IReadOnlyList<IView> newStack, bool animated)
+		protected virtual async Task InitializeStack(List<IView> newStack, bool animated)
 		{
 			var navigationStack = newStack;
 			if (navigationStack.Count == 0)
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void SyncBackStackToNavigationStack(IReadOnlyList<IView> newStack)
+		void SyncBackStackToNavigationStack(List<IView> newStack)
 		{
 			if (newStack.Count > NavigationStack.Count)
 			{
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		async Task PushToSync(IReadOnlyList<IView> newStack, bool animated)
+		async Task PushToSync(List<IView> newStack, bool animated)
 		{
 			int start = NavigationStack.Count;
 			for (int i = start; i < newStack.Count; i++)
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		async Task PopToSync(IReadOnlyList<IView> newStack, bool animated)
+		async Task PopToSync(List<IView> newStack, bool animated)
 		{
 			int start = newStack.Count;
 			for (int i = start; i < NavigationStack.Count; i++)
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void NavigationFinished(IReadOnlyList<IView> stack)
+		void NavigationFinished(List<IView> stack)
 		{
 			NavigationView?.NavigationFinished(stack);
 		}
