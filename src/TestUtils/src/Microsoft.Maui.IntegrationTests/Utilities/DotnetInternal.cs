@@ -30,6 +30,11 @@ namespace Microsoft.Maui.IntegrationTests
 				}
 			}
 
+			if(framework == "net8.0")
+			{
+				buildArgs += $" -p:ForceNet8Current=false";
+			}
+
 			if (string.IsNullOrEmpty(binlogPath))
 			{
 				var binlogPrefix = string.Empty;
