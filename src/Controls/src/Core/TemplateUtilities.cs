@@ -93,12 +93,9 @@ namespace Microsoft.Maui.Controls
 					for (var i = 0; i < children.Count; i++)
 					{
 						Element child = children[i];
-						var controlTemplated = child as IControlTemplated;
-
-						var presenter = child as ContentPresenter;
-						if (presenter != null)
+						if (child is ContentPresenter presenter)
 							presenter.Clear();
-						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+						else if (child is not IControlTemplated controlTemplated || controlTemplated.ControlTemplate == null)
 							queue.Enqueue(child);
 					}
 				}
