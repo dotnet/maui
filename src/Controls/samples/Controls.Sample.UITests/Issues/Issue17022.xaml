@@ -3,12 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              AutomationId="NavBarTranslucentPage"
              x:Class="Maui.Controls.Sample.Issues.Issue17022"
-             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
-            ios:Page.UseSafeArea="False"
-            ios:NavigationPage.IsNavigationBarTranslucent="True"
-            ios:NavigationPage.HideNavigationBarSeparator="True">
-    <Grid IgnoreSafeArea="True" RowDefinitions="*,*">
-        <BoxView Background="Green" Grid.Row="0" AutomationId="TopBoxView"/>
-        <Label Margin="20" Text="Green boxview should be behind navbar and touching very top of screen" Grid.Row="1" />
-    </Grid>
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls">
+    <VerticalStackLayout>
+        <Button FontSize="12" Text="Push NavigationPage" AutomationId="NewNavigationPageButton" Clicked="NewNavigationPagePressed"/>
+        <Button FontSize="12" Text="Push NavigationPage (transparent)" AutomationId="NewNavigationPageTransparentButton" Clicked="NewNavigationPageTransparentPressed"/>
+        <Button FontSize="12" Text="Push NavigationPage (translucent)" AutomationId="NewNavigationPageTranslucentButton" Clicked="NewNavigationPageTranslucentPressed"/>
+        <Button FontSize="12" Text="Push NavigationPage (transparent and translucent)" AutomationId="NewNavigationPageTransparentTranslucentButton" Clicked="NewNavigationPageTransparentTranslucentPressed"/>
+        <Button FontSize="12" Text="Push NavigationPage (grid SA)" AutomationId="NewNavigationPageGridButton" Clicked="NewNavigationPageGridPressed"/>
+        <Button FontSize="12" Text="Push NavigationPage (transparent and grid SA)" AutomationId="NewNavigationPageGridTransparentButton" Clicked="NewNavigationPageGridTransparentPressed"/>
+        <Button FontSize="12" Text="Push NavigationPage (translucent and grid SA)" AutomationId="NewNavigationPageGridTranslucentButton" Clicked="NewNavigationPageGridTranslucentPressed"/>
+        <Button FontSize="12" Text="Push NavigationPage (transparent, translucent, and grid SA)" AutomationId="NewNavigationPageGridTransparentTranslucentButton" Clicked="NewNavigationPageGridTransparentTranslucentPressed"/>
+
+        <Button FontSize="12" Text="Push FlyoutPage" AutomationId="NewFlyoutPageButton" Clicked="NewFlyoutPagePressed"/>
+        <Button FontSize="12" Text="Push FlyoutPage (transparent)" AutomationId="NewFlyoutPageTransparentButton" Clicked="NewFlyoutPageTransparentPressed"/>
+        <Button FontSize="12" Text="Push FlyoutPage (translucent)" AutomationId="NewFlyoutPageTranslucentButton" Clicked="NewFlyoutPageTranslucentPressed"/>
+        <Button FontSize="12" Text="Push FlyoutPage (transparent and translucent)" AutomationId="NewFlyoutPageTransparentTranslucentButton" Clicked="NewFlyoutPageTransparentTranslucentPressed"/>
+        <Button FontSize="12" Text="Push FlyoutPage (grid SA)" AutomationId="NewFlyoutPageGridButton" Clicked="NewFlyoutPageGridPressed"/>
+        <Button FontSize="12" Text="Push FlyoutPage (transparent and grid SA)" AutomationId="NewFlyoutPageGridTransparentButton" Clicked="NewFlyoutPageGridTransparentPressed"/>
+        <Button FontSize="12" Text="Push FlyoutPage (translucent and grid SA)" AutomationId="NewFlyoutPageGridTranslucentButton" Clicked="NewFlyoutPageGridTranslucentPressed"/>
+        <Button FontSize="12" Text="Push FlyoutPage (transparent, translucent, and grid SA)" AutomationId="NewFlyoutPageGridTransparentTranslucentButton" Clicked="NewFlyoutPageGridTransparentTranslucentPressed"/>
+    </VerticalStackLayout>
 </ContentPage>
