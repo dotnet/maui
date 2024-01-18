@@ -5,8 +5,8 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
-using AColor = Android.Graphics.Color;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
