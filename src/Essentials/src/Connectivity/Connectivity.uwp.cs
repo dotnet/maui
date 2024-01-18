@@ -8,12 +8,12 @@ namespace Microsoft.Maui.Networking
 	partial class ConnectivityImplementation : IConnectivity
 	{
 		void StartListeners() =>
-			NetworkChange.NetworkAvailabilityChanged += NetworkStatusChanged;
+			NetworkInformation.NetworkStatusChanged += NetworkStatusChanged;
 
 		void StopListeners() =>
-			NetworkChange.NetworkAvailabilityChanged -= NetworkStatusChanged;
+			NetworkInformation.NetworkStatusChanged -= NetworkStatusChanged;
 
-		void NetworkStatusChanged(object sender, EventArgs e) =>
+		void NetworkStatusChanged(object sender) =>
 			OnConnectivityChanged();
 
 		public NetworkAccess NetworkAccess
