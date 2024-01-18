@@ -50,6 +50,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellItem']/Docs/*" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
+	[ValueConverter(typeof(ShellItemValueConverter))]
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeElement
 	{
 		#region PropertyKeys
@@ -342,5 +343,23 @@ namespace Microsoft.Maui.Controls
 			if (this.IsVisibleItem && CurrentItem != null)
 				((IShellController)Parent)?.AppearanceChanged(CurrentItem, false);
 		}
+	}
+
+#nullable enable
+
+	internal sealed class ShellItemValueConverter : IValueConverter
+	{
+		public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+			=> null;
+
+		public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+			=> value switch
+			{
+				MenuItem menuItem => (ShellItem)menuItem,
+				ShellContent shellContent => (ShellItem)shellContent,
+				ShellSection shellSection => (ShellItem)shellSection,
+				TemplatedPage templatedPage => (ShellItem)templatedPage,
+				_ => null,
+			};
 	}
 }

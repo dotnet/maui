@@ -1,9 +1,11 @@
 #nullable disable
+using System;
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
-	public class OnIdiom<T>
+	[ValueConverter(typeof(WrappedValueValueConverter))]
+	public class OnIdiom<T> : IWrappedValue
 	{
 		T _phone;
 		T _tablet;
@@ -87,5 +89,8 @@ namespace Microsoft.Maui.Controls
 			else
 				return onIdiom._isPhoneSet ? onIdiom.Phone : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
 		}
+
+		object IWrappedValue.Value => (T)this;
+		Type IWrappedValue.Type => typeof(T);
 	}
 }

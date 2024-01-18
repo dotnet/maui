@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Devices;
@@ -6,7 +7,8 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty("Platforms")]
-	public class OnPlatform<T>
+	[ValueConverter(typeof(WrappedValueValueConverter))]
+	public class OnPlatform<T> : IWrappedValue
 	{
 		public OnPlatform()
 		{
@@ -54,6 +56,9 @@ namespace Microsoft.Maui.Controls
 
 			return onPlatform.hasDefault ? onPlatform.@default : default(T);
 		}
+
+		object IWrappedValue.Value => (T)this;
+		Type IWrappedValue.Type => typeof(T);
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="Type[@FullName='Microsoft.Maui.Controls.On']/Docs/*" />

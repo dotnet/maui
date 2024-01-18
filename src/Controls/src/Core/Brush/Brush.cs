@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 using Microsoft.Maui.Graphics;
 using GraphicsGradientStop = Microsoft.Maui.Graphics.PaintGradientStop;
 
@@ -9,6 +10,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	/// <remarks>Derived classes describe different ways of painting an area.</remarks>
 	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
+	[ValueConverter(typeof(BrushValueConverter))]
 	public abstract partial class Brush : Element
 	{
 		public static implicit operator Brush(Paint paint)
@@ -537,6 +539,26 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush yellowGreen;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.YellowGreen"/>.</summary>
 		public static SolidColorBrush YellowGreen => yellowGreen ??= new(Colors.YellowGreen);
+	}
 
+#nullable enable
+	internal sealed class BrushValueConverter : IValueConverter
+	{
+		public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+			=> value switch
+			{
+				Brush brush when targetType == typeof(Brush) => brush,
+				Brush brush when targetType == typeof(Paint) => (Paint)brush,
+				_ => null,
+			};
+
+		public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+			=> value switch
+			{
+				Brush brush => brush,
+				Color color => (Brush)color,
+				Paint paint => (Paint)paint,
+				_ => null,
+			};
 	}
 }

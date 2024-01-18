@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Controls
 {
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplatedPage']/Docs/*" />
+	[ValueConverter(typeof(TemplatedPageValueConverter))]
 	public class TemplatedPage : Page, IControlTemplated
 	{
 		/// <summary>Bindable property for <see cref="ControlTemplate"/>.</summary>
@@ -68,5 +69,21 @@ namespace Microsoft.Maui.Controls
 		}
 
 		protected object GetTemplateChild(string name) => TemplateUtilities.GetTemplateChild(this, name);
+	}
+
+#nullable enable
+	internal sealed class TemplatedPageValueConverter : IValueConverter
+	{
+		public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+			=> value switch
+			{
+				TemplatedPage templatedPage when targetType == typeof(ShellContent) => (ShellContent)templatedPage,
+				TemplatedPage templatedPage when targetType == typeof(ShellItem) => (ShellItem)templatedPage,
+				TemplatedPage templatedPage when targetType == typeof(ShellSection) => (ShellSection)templatedPage,
+				_ => null,
+			};
+
+		public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+			=> null;
 	}
 }

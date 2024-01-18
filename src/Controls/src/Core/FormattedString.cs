@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="Type[@FullName='Microsoft.Maui.Controls.FormattedString']/Docs/*" />
 	[ContentProperty("Spans")]
+	[ValueConverter(typeof(FormattedStringValueConverter))]
 	public class FormattedString : Element
 	{
 		readonly SpanCollection _spans = new SpanCollection();
@@ -87,5 +88,18 @@ namespace Microsoft.Maui.Controls
 				base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removed));
 			}
 		}
+	}
+
+	internal sealed class FormattedStringValueConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			=> null;
+
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			=> value switch
+			{
+				string formattedString => (FormattedString)formattedString,
+				_ => null,
+			};
 	}
 }

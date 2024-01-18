@@ -16,6 +16,7 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	[Obsolete]
+	[ValueConverter(typeof(PlatformValueConverter))]
 	public class Platform : BindableObject, IPlatformLayout, INavigation
 	{
 		readonly Context _context;
@@ -859,5 +860,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 		}
+	}
+
+	internal sealed class PlatformValueConverter : IValueConverter
+	{
+		public object? Convert(object? value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			=> value switch
+			{
+				Platform platform when targetType == typeof(ViewGroup) => (ViewGroup)platform,
+				_ => null,
+			};
+
+		public object? ConvertBack(object? value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			=> null;
 	}
 }

@@ -1,10 +1,12 @@
 #nullable disable
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.FileImageSource']/Docs/*" />
 	[System.ComponentModel.TypeConverter(typeof(FileImageSourceConverter))]
+	[ValueConverter(typeof(FileImageSourceValueConverter))]
 	public sealed partial class FileImageSource : ImageSource
 	{
 		/// <summary>Bindable property for <see cref="File"/>.</summary>
@@ -48,5 +50,23 @@ namespace Microsoft.Maui.Controls
 				OnSourceChanged();
 			base.OnPropertyChanged(propertyName);
 		}
+	}
+
+#nullable enable
+	internal sealed class FileImageSourceValueConverter : IValueConverter
+	{
+		public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+			=> value switch
+			{
+				FileImageSource fileImageSource when targetType == typeof(string) => (string)fileImageSource,
+				_ => null,
+			};
+
+		public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+			=> value switch
+			{
+				string file => (FileImageSource)file,
+				_ => null,
+			};
 	}
 }

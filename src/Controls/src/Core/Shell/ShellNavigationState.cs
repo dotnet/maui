@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellNavigationState']/Docs/*" />
 	[DebuggerDisplay("Location = {Location}")]
+	[ValueConverter(typeof(ShellNavigationStateValueConverter))]
 	public class ShellNavigationState
 	{
 		Uri _fullLocation;
@@ -97,5 +98,20 @@ namespace Microsoft.Maui.Controls
 			toKeep.Insert(0, "");
 			return new Uri(string.Join(Routing.PathSeparator, toKeep), UriKind.Relative);
 		}
+	}
+
+#nullable enable
+	internal sealed class ShellNavigationStateValueConverter : IValueConverter
+	{
+		public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+			=> null;
+
+		public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+			=> value switch
+			{
+				Uri uri => (ShellNavigationState)uri,
+				string str => (ShellNavigationState)str,
+				_ => null,
+			};
 	}
 }

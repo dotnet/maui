@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageSource']/Docs/*" />
 	[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
+	[ValueConverter(typeof(ImageSourceValueConverter))]
 	public abstract partial class ImageSource : Element
 	{
 		readonly object _synchandle = new object();
@@ -153,5 +154,19 @@ namespace Microsoft.Maui.Controls
 			add { _weakEventManager.AddEventHandler(value); }
 			remove { _weakEventManager.RemoveEventHandler(value); }
 		}
+	}
+
+	internal sealed class ImageSourceValueConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			=> null;
+
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			=> value switch
+			{
+				string source => (ImageSource)source,
+				Uri uri => (ImageSource)uri,
+				_ => null,
+			};
 	}
 }

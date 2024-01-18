@@ -42,21 +42,17 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (propertyType is null || propertyType.IsAssignableFrom(valueType))
 				return value;
 
-			MethodInfo implicit_op;
-
-			//OnPlatform might need double cast
-			if (valueType.IsGenericType && valueType.Name == "OnPlatform`1")
+			//OnPlatform needs to unrwap the value first
+			if (value is IWrappedValue wrapped)
 			{
-				var onPlatType = valueType.GetGenericArguments()[0];
-				implicit_op = valueType.GetImplicitConversionOperator(fromType: valueType, toType: onPlatType);
-				value = implicit_op.Invoke(value, new[] { value });
+				value = wrapped.Value;
 				valueType = value.GetType();
 			}
 
-			implicit_op = valueType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType)
-							?? propertyType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType);
-			if (implicit_op != null)
-				return implicit_op.Invoke(value, new[] { value });
+			if (value.TryConvertValue(toType: propertyType, out var convertedValue))
+			{
+				return convertedValue;
+			}
 
 			return value;
 		}
