@@ -1407,6 +1407,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotEqual(-42, bindable.GetValue(prop));
 		}
 
+		[ValueConverter(typeof(CastFromStringValueConverter))]
 		class CastFromString
 		{
 			public string Result { get; private set; }
@@ -1416,6 +1417,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				o.Result = source;
 				return o;
 			}
+		}
+
+		class CastFromStringValueConverter : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+				=> null;
+
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+				=> value switch
+				{
+					string str => (CastFromString)str,
+					_ => null,
+				};
 		}
 
 		[Fact]
@@ -1430,6 +1444,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("foo", ((CastFromString)bindable.GetValue(prop)).Result);
 		}
 
+		[ValueConverter(typeof(CastToStringValueConverter))]
 		class CastToString
 		{
 			string Result { get; set; }
@@ -1448,6 +1463,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				throw new InvalidOperationException();
 			}
+		}
+
+		class CastToStringValueConverter : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+				=> value switch
+				{
+					CastToString castToString when targetType == typeof(string) => (string)castToString,
+					_ => null,
+				};
+
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+				=> null;
 		}
 
 		[Fact]
