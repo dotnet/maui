@@ -9,13 +9,14 @@ namespace Microsoft.Maui.Graphics
 			if (max.CompareTo(min) < 0)
 				return max;
 
-			if (value.CompareTo(min) < 0)
-				return min;
+            int compare = value.CompareTo(min);
+            if (compare < 0)
+                return min;
 
-			if (value.CompareTo(max) > 0)
-				return max;
+            if (compare == 0 || value.CompareTo(max) <= 0)
+                return value;
 
-			return value;
+			return max;
 		}
 	}
 }
