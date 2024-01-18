@@ -11,7 +11,7 @@ Many dotnet repositories use a publishing workflow that will push build artifact
 to a central location known as the "Build Asset Registry".  This data includes
 a "channel" association, which is used to determine when an update for a particular
 product or tool is available.  Local updates and automatic update "subscriptions"
-compare the version files in the repository against the versions avalable in the
+compare the version files in the repository against the versions available in the
 channel that you are interested in.  The `darc` tool is used facilitate these updates.
 
 To work with `darc` locally, see the [setting up your darc client docs][1].

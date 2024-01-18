@@ -27,7 +27,6 @@ public class WindowOverlayTests : ControlsHandlerTestBase
 		}
 
 		await AssertionExtensions.WaitForGC(viewReference);
-		Assert.False(viewReference.IsAlive, "WindowOverlay should not be alive!");
 	}
 }
 

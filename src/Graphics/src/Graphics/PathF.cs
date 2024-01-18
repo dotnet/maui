@@ -666,7 +666,7 @@ namespace Microsoft.Maui.Graphics
 					{
 						if (segment == segmentIndex)
 						{
-							return new PointF[] { };
+							return Array.Empty<PointF>();
 						}
 					}
 				}

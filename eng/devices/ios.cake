@@ -34,7 +34,9 @@ string DEVICE_OS = "";
 
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
-string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iossimulator-x64" : "ios-arm64";
+string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? 
+	$"iossimulator-{System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString().ToLower()}"
+  : $"ios-arm64";
 string CONFIGURATION = Argument("configuration", "Debug");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string TEST_FRAMEWORK = "net472";
@@ -44,7 +46,7 @@ Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
 
-string DOTNET_TOOL_PATH = "dotnet";
+string DOTNET_TOOL_PATH = "/usr/local/share/dotnet/dotnet";
 
 var localDotnetiOS = GetBuildVariable("workloads", "local") == "local";
 if (localDotnetiOS)
@@ -63,6 +65,9 @@ Setup(context =>
 
 	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
 	
+	Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
+	Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+
 	// only grab attached iOS devices if we are trying to test on device
 	if (TEST_DEVICE.Contains("device")) 
 	{ 
@@ -93,7 +98,16 @@ void Cleanup()
 		Information("No simulators found to delete.");
 		return;
 	}
-	var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
+	var simulatorName = "XHarness";
+	if(iosVersion.Contains("17"))
+		simulatorName = "iPhone 15";	
+	Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersion);
+	var xharness = sims.Where(s => s.Name.Contains(simulatorName))?.ToArray();
+	if(xharness == null || xharness.Length == 0)
+	{
+		Information("No XHarness simulators found to delete.");
+		return;
+	}
 	foreach (var sim in xharness) {
 		Information("Deleting XHarness simulator {0} ({1})...", sim.Name, sim.UDID);
 		StartProcess("xcrun", "simctl shutdown " + sim.UDID);
@@ -143,6 +157,35 @@ Task("Build")
 		});
 });
 
+Task("uitest-build")
+	.Does(() =>
+{
+	var name = System.IO.Path.GetFileNameWithoutExtension(DEFAULT_APP_PROJECT);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
+
+	Information("app" +DEFAULT_APP_PROJECT);
+	DotNetBuild(DEFAULT_APP_PROJECT, new DotNetBuildSettings {
+		Configuration = CONFIGURATION,
+		Framework = TARGET_FRAMEWORK,
+		ToolPath = DOTNET_PATH,
+		ArgumentCustomization = args =>
+		{ 	
+			args
+			.Append("/p:BuildIpa=true")
+			.Append("/bl:" + binlog)
+			.Append("/tl");
+			
+			// if we building for a device
+			if(TEST_DEVICE.ToLower().Contains("device"))
+			{
+				args.Append("/p:RuntimeIdentifier=ios-arm64");
+			}
+
+			return args;
+		}
+	});
+});
+
 Task("Test")
 	.IsDependentOn("Build")
 	.Does(() =>
@@ -156,8 +199,8 @@ Task("Test")
 			TEST_APP = apps.First().FullPath;
 		}
 		else {
-			Error("Error: Couldn't find .app file");
-			throw new Exception("Error: Couldn't find .app file");
+			Error($"Error: Couldn't find *.app file in {binDir}");
+			throw new Exception($"Error: Couldn't find *.app file in {binDir}");
 		}
 	}
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
@@ -190,12 +233,25 @@ Task("Test")
 	var settings = new DotNetToolSettings {
 		ToolPath = DOTNET_TOOL_PATH,
 		DiagnosticOutput = true,
-		ArgumentCustomization = args => args.Append("run xharness apple test " +
-		$"--app=\"{TEST_APP}\" " +
-		$"--targets=\"{TEST_DEVICE}\" " +
-		$"--output-directory=\"{TEST_RESULTS}\" " +
-		xcode_args +
-		$"--verbosity=\"Debug\" ")
+		ArgumentCustomization = args => 
+		{
+			args.Append("run xharness apple test " +
+				$"--app=\"{TEST_APP}\" " +
+				$"--targets=\"{TEST_DEVICE}\" " +
+				$"--output-directory=\"{TEST_RESULTS}\" " +
+				xcode_args +
+				$"--verbosity=\"Debug\" ");
+			
+			if (TEST_DEVICE.Contains("device"))
+			{
+				if(string.IsNullOrEmpty(DEVICE_UDID))
+				{
+					throw new Exception("No device was found to install the app on. See the Setup method for more details.");
+				}
+				args.Append($"--device=\"{DEVICE_UDID}\" ");
+			}
+			return args;	
+		}
 	};
 
 	bool testsFailed = true;
@@ -230,6 +286,7 @@ Task("Test")
 });
 
 Task("uitest")
+	.IsDependentOn("uitest-build")
 	.Does(() =>
 {
 	SetupAppPackageNameAndResult();
@@ -267,6 +324,23 @@ Task("cg-uitest")
 
 	InstallIpa(TEST_APP, "com.microsoft.mauicompatibilitygallery", TEST_DEVICE, $"{TEST_RESULTS}/ios", iosVersion);
 
+	// For non-CI builds we assume that this is configured correctly on your machine
+	if (IsCIBuild())
+	{
+		// Install IDB (and prerequisites)
+		StartProcess("brew", "tap facebook/fb");
+		StartProcess("brew", "install idb-companion");
+		StartProcess("pip3", "install --user fb-idb");
+
+		// Create a temporary script file to hold the inline Bash script
+		var makeSymLinkScript = "./temp_script.sh";
+		// Below is an attempt to somewhat dynamically determine the path to idb and make a symlink to /usr/local/bin this is needed in order for Xamarin.UITest to find it
+		System.IO.File.AppendAllLines(makeSymLinkScript, new[] { "sudo ln -s $(find /Users/$(whoami)/Library/Python/?.*/bin -name idb | head -1) /usr/local/bin" });
+
+		StartProcess("bash", makeSymLinkScript);
+		System.IO.File.Delete(makeSymLinkScript);
+	}
+
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("iOS_APP", $"{TEST_APP}");
 
@@ -290,7 +364,8 @@ Task("cg-uitest")
 	var nunitSettings = new NUnit3Settings { 
 		Configuration = CONFIGURATION,
 		OutputFile = $"{TEST_RESULTS}/ios/run_uitests_output.log",
-		Work = $"{TEST_RESULTS}/ios"
+		Work = $"{TEST_RESULTS}/ios",
+		TraceLevel = NUnitInternalTraceLevel.Verbose
 	};
 
 	Information("Outputfile {0}", nunitSettings.OutputFile);
@@ -353,10 +428,9 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 	try {
 		DotNetTool("tool", settings);
 	} finally {
-
 		string iosVersionToRun = version;
 		string deviceToRun = "";	
-
+		
 		if (testDevice.Contains("device"))
 		{	
 			if(!string.IsNullOrEmpty(DEVICE_UDID))
@@ -367,9 +441,9 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 			{
 				throw new Exception("No device was found to run tests on.");
 			}
-
+			
 			iosVersionToRun = DEVICE_VERSION;
-
+			
 			Information("The device to run tests: {0} {1}", DEVICE_NAME, iosVersionToRun);
 		}
 		else
@@ -382,10 +456,12 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 			var simXH = sims.Where(s => s.Name.Contains(simulatorName)).FirstOrDefault();
 			if(simXH == null)
 				throw new Exception("No simulator was found to run tests on.");
+
 			deviceToRun = simXH.UDID;
 			DEVICE_NAME = simXH.Name;
 			Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
 		}
+
 		Information("The platform version to run tests: {0}", iosVersionToRun);
 		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
 		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
@@ -397,7 +473,7 @@ void GetSimulators(string version)
 {
 	DotNetTool("tool", new DotNetToolSettings {
 			ToolPath = DOTNET_TOOL_PATH,
-			DiagnosticOutput = true,	
+			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
 				$"\"{version}\" " +
 				$"--verbosity=\"Debug\" ")
@@ -410,7 +486,7 @@ void GetDevices(string version)
 	var deviceName = "";
 	var deviceVersion = "";
 	var deviceOS = "";
-
+	
 	var list = new List<string>();
 	bool isDevice = false;
 	// print the apple state of the machine
@@ -437,35 +513,45 @@ void GetDevices(string version)
 						};
 				}
 	});
+	Information("List count: {0}", list.Count);	
 	//this removes the extra lines from output
+	if(list.Count == 0)
+	{
+		throw new Exception($"No devices found");
+		return;
+	}
 	list.Remove(list.Last());
 	list.Remove(list.Last());
 	foreach (var item in list)
 	{
-		Information("Device: {0}", item.Trim());
-		var parts = item.Trim().Split(" ",StringSplitOptions.RemoveEmptyEntries);
-		if(item.Contains("iPhone"))
+		var stringToTest = $"Device: {item.Trim()}";
+		Information(stringToTest);
+		var regex = new System.Text.RegularExpressions.Regex(@"Device:\s+((?:[^\s]+(?:\s+[^\s]+)*)?)\s+([0-9A-Fa-f-]+)\s+([\d.]+)\s+(iPhone|iPad)\s+iOS");
+		var match = regex.Match(stringToTest);
+		if(match.Success)
 		{
-			deviceOS = "iPhone";
+			deviceName = match.Groups[1].Value;
+			deviceUdid = match.Groups[2].Value;
+			deviceVersion = match.Groups[3].Value;
+			deviceOS = match.Groups[4].Value;
+			Information("DeviceName:{0} udid:{1} version:{2} os:{3}", deviceName, deviceUdid, deviceVersion, deviceOS);
+			if(version.Contains(deviceVersion.Split(".")[0]))
+			{
+				Information("We want this device: {0} {1} because it matches {2}", deviceName, deviceVersion, version);
+				DEVICE_UDID = deviceUdid;
+				DEVICE_VERSION = deviceVersion;
+				DEVICE_NAME = deviceName;
+				DEVICE_OS = deviceOS;
+				break;
+			}
 		}
-		if(item.Contains("iPad iOS"))
-		{
-			deviceOS = "iPad iOS";
+        else
+        {
+            Information("No match found for {0}", stringToTest);
 		}
-
-		deviceName = parts[0].Trim();
-		deviceUdid = parts[1].Trim();
-		deviceVersion = parts[2].Trim();
-		Information("DeviceName:{0} udid:{1} version:{2} os:{3}", deviceName, deviceUdid, deviceVersion, deviceOS);
-
-		if(version.Contains(deviceVersion.Split(".")[0]))
-		{
-			Information("We want this device: {0} {1} because it matches {2}", deviceName, deviceVersion, version);
-			DEVICE_UDID = deviceUdid;
-			DEVICE_VERSION = deviceVersion;
-			DEVICE_NAME = deviceName;
-			DEVICE_OS = deviceOS;
-			break;
-		}
+	}
+	if(string.IsNullOrEmpty(DEVICE_UDID))
+	{
+		throw new Exception($"No devices found for version {version}");
 	}
 }

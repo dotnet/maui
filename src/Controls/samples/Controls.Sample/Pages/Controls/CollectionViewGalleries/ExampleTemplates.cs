@@ -278,7 +278,6 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				{
 					BackgroundColor = Colors.Bisque,
 					RowDefinitions = new RowDefinitionCollection { new RowDefinition { Height = GridLength.Auto } },
-					WidthRequest = 100,
 					HeightRequest = 140
 				};
 

@@ -1,4 +1,5 @@
-﻿using Android.Graphics.Drawables;
+﻿using System.Threading.Tasks;
+using Android.Graphics.Drawables;
 using Android.Widget;
 using Google.Android.Material.ImageView;
 using Google.Android.Material.Shape;
@@ -41,13 +42,12 @@ namespace Microsoft.Maui.Platform
 				.Build();
 		}
 
-		public static void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
+		public static async void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
 			platformButton.SetContentPadding(imageButton);
-			platformButton.Post(() =>
-			{
-				platformButton.SetContentPadding(imageButton);
-			});
+
+			// see: https://github.com/material-components/material-components-android/issues/2063
+			await Task.Yield();
 			platformButton.SetContentPadding(imageButton);
 		}
 
