@@ -19,7 +19,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WFlyoutBase = Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase;
 using WMenuFlyout = Microsoft.UI.Xaml.Controls.MenuFlyout;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
-
+using WSize = Windows.Foundation.Size;
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class CellControl : ContentControl
@@ -347,35 +347,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (lv != null)
 			{
-				Cell oldCell = Cell;
 				bool isGroupHeader = IsGroupHeader;
 				object bindingContext = newContext;
 
 				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
-
-				bool sameTemplate = false;
-				if (template is DataTemplateSelector dataTemplateSelector)
-				{
-					template = dataTemplateSelector.SelectTemplate(bindingContext, lv);
-
-					// 🚀 If there exists an old cell, get its data template and check
-					// whether the new- and old template matches. In that case, we can recycle it
-					if (oldCell?.BindingContext != null)
-					{
-						DataTemplate oldTemplate = dataTemplateSelector.SelectTemplate(oldCell?.BindingContext, lv);
-						sameTemplate = oldTemplate == template;
-					}
-				}
-
-				// Reuse cell
-				var canReuseCell = Cell != null && sameTemplate;
-
-				// 🚀 If we can reuse the cell, just reuse it...
-				if (canReuseCell)
-				{
-					cell = Cell;
-				}
-				else if (template != null)
+				if (template != null)
 				{
 					// Reuse the templated items from the parent ListView
 					var templatedItems = lv.TemplatedItems;
@@ -387,7 +363,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 					{
 						var groupAndIndex = templatedItems.GetGroupAndIndexOfItem(bindingContext);
-
+					
 						if (lv.IsGroupingEnabled)
 						{
 							templatedItems = templatedItems.GetGroup(groupAndIndex.Item1);
@@ -492,6 +468,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateContent(Cell newCell)
 		{
 			Microsoft.UI.Xaml.DataTemplate dt = GetTemplate(newCell);
+
+			if (CellContent != null)
+			{
+				if (Content is ContentControl contentControl)
+				{
+					var panel = ((UI.Xaml.Controls.ContentPresenter)contentControl.Content).Content as Panel;
+					panel.Children.Clear();
+				}
+			}
+
 			if (dt != _currentTemplate || Content == null)
 			{
 				_currentTemplate = dt;
