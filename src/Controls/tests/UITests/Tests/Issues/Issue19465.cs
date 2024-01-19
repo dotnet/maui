@@ -15,6 +15,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue19465Test()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
+
 			// 1. Navigate to a second page.
 			App.WaitForElement("FirstButton");
 			App.Click("FirstButton");
