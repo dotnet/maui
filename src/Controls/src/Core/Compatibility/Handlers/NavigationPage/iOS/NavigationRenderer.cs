@@ -1187,6 +1187,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 				}
 			}
+
 			public override void ViewDidLayoutSubviews()
 			{
 				base.ViewDidLayoutSubviews();
