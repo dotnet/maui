@@ -21,6 +21,7 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -1173,31 +1174,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					!n._navigating
 					)
 				{
-					// if the NavigationBar is translucent, we do not want add an offset to the Frame
-					if (n.NavigationBar.Translucent)
-						return;
+					var parentVC = View.FindResponder<ParentingViewController>();
+					var vc = (parentVC?.Child?.Handler as IPlatformViewHandler)?.ViewController;
 
-					nfloat offset = 0;
+					var AdditionalSafeAreaInsets = vc.AdditionalSafeAreaInsets;
+					var offset = n._secondaryToolbar.Frame.Height;
 
-					if (n._hasNavigationBar)
-						offset = n.NavigationBar.Frame.Bottom;
-
-					if (!n._secondaryToolbar.Hidden)
+					if (!n._secondaryToolbar.Hidden && AdditionalSafeAreaInsets.Top != offset)
 					{
-						offset += n._secondaryToolbar.Bounds.Height;
-					}
-
-					if (View.Frame.Y != offset)
-					{
-						var newY = offset - View.Frame.Y;
-						var newHeight = View.Frame.Height - newY;
-
-						View.Frame =
-							new RectangleF(0, offset, View.Bounds.Width, newHeight);
+						AdditionalSafeAreaInsets.Top = offset;
+						vc.AdditionalSafeAreaInsets = AdditionalSafeAreaInsets;
 					}
 				}
 			}
-
 			public override void ViewDidLayoutSubviews()
 			{
 				base.ViewDidLayoutSubviews();
