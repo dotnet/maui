@@ -53,6 +53,24 @@ namespace Microsoft.Maui.Controls.Xaml
 		public string NamespaceUri { get; }
 		public string Name { get; }
 		public IList<XmlType> TypeArguments { get; }
+
+		public override bool Equals(object obj)
+		{
+			if (obj is not XmlType other)
+			{
+				return false;
+			}
+
+			return
+				NamespaceUri == other.NamespaceUri &&
+				Name == other.Name &&
+				(TypeArguments == null && other.TypeArguments == null || TypeArguments.SequenceEqual(other.TypeArguments));
+		}
+
+		public override int GetHashCode()
+		{
+			return NamespaceUri.GetHashCode() ^ Name.GetHashCode();
+		}
 	}
 
 	abstract class BaseNode : IXmlLineInfo, INode
