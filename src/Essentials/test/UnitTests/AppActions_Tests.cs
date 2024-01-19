@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Xunit;
 
@@ -7,12 +8,12 @@ namespace Tests
 	public class AppActions_Tests
 	{
 		[Fact]
-		public void AppActions_SetActions() =>
-			Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => AppActions.SetAsync(new List<AppAction>()));
+		public async Task AppActions_SetActions() =>
+			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => AppActions.SetAsync(new List<AppAction>()));
 
 		[Fact]
-		public void AppActions_GetActions() =>
-			Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => AppActions.GetAsync());
+		public async Task AppActions_GetActions() =>
+			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => AppActions.GetAsync());
 
 		[Fact]
 		public void AppActions_IsSupported() =>

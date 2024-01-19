@@ -836,7 +836,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var window = new TestWindow(new ContentPage());
 			var contentPage1 = new ContentPage();
 			var navigationPage = new TestNavigationPage(true, contentPage1);
-			Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopModalAsync());
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopModalAsync());
 		}
 
 		[Fact]
