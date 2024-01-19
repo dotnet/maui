@@ -898,7 +898,6 @@
 ~Microsoft.Maui.Controls.IPinchGestureController.SendPinch(Microsoft.Maui.Controls.Element sender, double scale, Microsoft.Maui.Graphics.Point currentScalePoint) -> void
 ~Microsoft.Maui.Controls.IPinchGestureController.SendPinchCanceled(Microsoft.Maui.Controls.Element sender) -> void
 ~Microsoft.Maui.Controls.IPinchGestureController.SendPinchEnded(Microsoft.Maui.Controls.Element sender) -> void
-~Microsoft.Maui.Controls.IPinchGestureController.SendPinchStarted(Microsoft.Maui.Controls.Element sender, Microsoft.Maui.Graphics.Point intialScalePoint) -> void
 ~Microsoft.Maui.Controls.IPlatformElementConfiguration<TPlatform, TElement>
 ~Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(System.Collections.Generic.IDictionary<string, object> query) -> void
 ~Microsoft.Maui.Controls.IScrollViewController.GetScrollPositionForElement(Microsoft.Maui.Controls.VisualElement item, Microsoft.Maui.Controls.ScrollToPosition position) -> Microsoft.Maui.Graphics.Point
@@ -7727,9 +7726,7 @@ static Microsoft.Maui.Controls.Internals.Profile.Stop() -> void
 static Microsoft.Maui.Controls.Internals.Registrar.RegisterStylesheets(Microsoft.Maui.Controls.InitializationFlags flags) -> void
 static Microsoft.Maui.Controls.LayoutDirectionExtensions.ToFlowDirection(this Microsoft.Maui.ApplicationModel.LayoutDirection layoutDirection) -> Microsoft.Maui.FlowDirection
 static Microsoft.Maui.Controls.Platform.Extensions.ToPlatformModalPresentationStyle(this Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style) -> UIKit.UIModalPresentationStyle
-static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = 0, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!
 static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.Label! label) -> Foundation.NSAttributedString?
-static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.Span! span, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = 0, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!
 static Microsoft.Maui.Controls.Shapes.Matrix.Identity.get -> Microsoft.Maui.Controls.Shapes.Matrix
 static Microsoft.Maui.Controls.Shapes.Matrix.Multiply(Microsoft.Maui.Controls.Shapes.Matrix trans1, Microsoft.Maui.Controls.Shapes.Matrix trans2) -> Microsoft.Maui.Controls.Shapes.Matrix
 static Microsoft.Maui.Controls.Shapes.Matrix.operator *(Microsoft.Maui.Controls.Shapes.Matrix trans1, Microsoft.Maui.Controls.Shapes.Matrix trans2) -> Microsoft.Maui.Controls.Shapes.Matrix

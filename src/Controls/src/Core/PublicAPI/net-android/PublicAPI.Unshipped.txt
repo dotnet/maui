@@ -66,6 +66,7 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetItemViewType(int position) -> int
 override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.OnDetachedFromWindow() -> void
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToSpannableString(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, Android.Content.Context? context = null, double defaultCharacterSpacing = 0, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default, Microsoft.Maui.TextDecorations defaultTextDecorations = Microsoft.Maui.TextDecorations.None) -> Android.Text.SpannableString!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -126,6 +127,7 @@ override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
 ~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
+~Microsoft.Maui.Controls.IPinchGestureController.SendPinchStarted(Microsoft.Maui.Controls.Element sender, Microsoft.Maui.Graphics.Point initialScalePoint) -> void
 ~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.DisconnectHandler(AndroidX.RecyclerView.Widget.RecyclerView platformView) -> void

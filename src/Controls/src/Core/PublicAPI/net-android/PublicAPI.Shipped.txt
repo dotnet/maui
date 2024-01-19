@@ -916,7 +916,6 @@
 ~Microsoft.Maui.Controls.IPinchGestureController.SendPinch(Microsoft.Maui.Controls.Element sender, double scale, Microsoft.Maui.Graphics.Point currentScalePoint) -> void
 ~Microsoft.Maui.Controls.IPinchGestureController.SendPinchCanceled(Microsoft.Maui.Controls.Element sender) -> void
 ~Microsoft.Maui.Controls.IPinchGestureController.SendPinchEnded(Microsoft.Maui.Controls.Element sender) -> void
-~Microsoft.Maui.Controls.IPinchGestureController.SendPinchStarted(Microsoft.Maui.Controls.Element sender, Microsoft.Maui.Graphics.Point intialScalePoint) -> void
 ~Microsoft.Maui.Controls.IPlatformElementConfiguration<TPlatform, TElement>
 ~Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(System.Collections.Generic.IDictionary<string, object> query) -> void
 ~Microsoft.Maui.Controls.IScrollViewController.GetScrollPositionForElement(Microsoft.Maui.Controls.VisualElement item, Microsoft.Maui.Controls.ScrollToPosition position) -> Microsoft.Maui.Graphics.Point
@@ -7656,7 +7655,6 @@ static Microsoft.Maui.Controls.Platform.FontExtensions.ToTypeface(this Microsoft
 static Microsoft.Maui.Controls.Platform.FontExtensions.ToTypeface(this Microsoft.Maui.Font self, Microsoft.Maui.IFontManager! fontManager) -> Android.Graphics.Typeface!
 static Microsoft.Maui.Controls.Platform.FontExtensions.ToTypeface<TFontElement>(this TFontElement! self) -> Android.Graphics.Typeface!
 static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.RecalculateSpanPositions(this Android.Widget.TextView! textView, Microsoft.Maui.Controls.Label! element, Android.Text.SpannableString! spannableString, Microsoft.Maui.SizeRequest finalSize) -> void
-static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToSpannableString(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, Android.Text.TextPaint? textPaint = null, Android.Content.Context? context = null, double defaultLineHeight = 0, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Android.Text.SpannableString!
 static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToSpannableString(this Microsoft.Maui.Controls.Label! label) -> Android.Text.SpannableString!
 static Microsoft.Maui.Controls.Platform.SemanticExtensions.UpdateSemanticNodeInfo(this Microsoft.Maui.Controls.View! virtualView, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
 static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.Controls.RadioButton! radioButton) -> void

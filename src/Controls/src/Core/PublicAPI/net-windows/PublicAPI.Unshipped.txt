@@ -66,6 +66,8 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToRunAndColorsTuples(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> System.Collections.Generic.IEnumerable<System.Tuple<Microsoft.UI.Xaml.Documents.Run!, Microsoft.Maui.Graphics.Color!, Microsoft.Maui.Graphics.Color!>!>!
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.UpdateInlines(this Microsoft.UI.Xaml.Controls.TextBlock! textBlock, Microsoft.Maui.IFontManager! fontManager, Microsoft.Maui.Controls.FormattedString! formattedString, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> void
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -131,6 +133,7 @@ override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
 ~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
+~Microsoft.Maui.Controls.IPinchGestureController.SendPinchStarted(Microsoft.Maui.Controls.Element sender, Microsoft.Maui.Graphics.Point initialScalePoint) -> void
 ~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.ConnectHandler(Microsoft.UI.Xaml.Controls.ListViewBase platformView) -> void
@@ -206,7 +209,6 @@ Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> Microsoft.UI.Xaml
 ~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.get -> bool
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.CursorPosition.get -> int
@@ -219,7 +221,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.CursorPosition.get -> int
@@ -232,7 +233,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.CursorPosition.get -> int

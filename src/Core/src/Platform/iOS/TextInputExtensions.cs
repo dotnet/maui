@@ -3,10 +3,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	// TODO: NET8 issoto - Revisit this, marking this class as `internal` to avoid breaking public API changes
-	internal static class TextInputExtensions
+	public static class TextInputExtensions
 	{
-		internal static int GetCursorPosition(this IUITextInput platformView, int cursorOffset = 0)
+		public static int GetCursorPosition(this IUITextInput platformView, int cursorOffset = 0)
 		{
 			var zeroPosition = platformView.GetPosition(platformView.BeginningOfDocument, 0);
 			var currentCursorPosition = platformView.SelectedTextRange?.Start ?? zeroPosition;
