@@ -1171,19 +1171,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_navigation.TryGetTarget(out n) &&
 					ChildViewControllers.Length > 0 &&
 					!n._disposed &&
-					!n._navigating
+					!n._navigating &&
+					!n._secondaryToolbar.Hidden
 					)
-				{
+				{					
 					var parentVC = View.FindResponder<ParentingViewController>();
 					var vc = (parentVC?.Child?.Handler as IPlatformViewHandler)?.ViewController;
 
-					var AdditionalSafeAreaInsets = vc.AdditionalSafeAreaInsets;
+					if (vc is null)
+						return;
+
+					var newAdditionalSafeArea = vc.AdditionalSafeAreaInsets;
 					var offset = n._secondaryToolbar.Frame.Height;
 
-					if (!n._secondaryToolbar.Hidden && AdditionalSafeAreaInsets.Top != offset)
+					if (newAdditionalSafeArea.Top != offset)
 					{
-						AdditionalSafeAreaInsets.Top = offset;
-						vc.AdditionalSafeAreaInsets = AdditionalSafeAreaInsets;
+						newAdditionalSafeArea.Top = offset;
+						vc.AdditionalSafeAreaInsets = newAdditionalSafeArea;
 					}
 				}
 			}
