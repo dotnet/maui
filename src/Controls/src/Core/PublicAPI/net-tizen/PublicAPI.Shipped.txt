@@ -805,7 +805,6 @@
 ~Microsoft.Maui.Controls.IPinchGestureController.SendPinch(Microsoft.Maui.Controls.Element sender, double scale, Microsoft.Maui.Graphics.Point currentScalePoint) -> void
 ~Microsoft.Maui.Controls.IPinchGestureController.SendPinchCanceled(Microsoft.Maui.Controls.Element sender) -> void
 ~Microsoft.Maui.Controls.IPinchGestureController.SendPinchEnded(Microsoft.Maui.Controls.Element sender) -> void
-~Microsoft.Maui.Controls.IPinchGestureController.SendPinchStarted(Microsoft.Maui.Controls.Element sender, Microsoft.Maui.Graphics.Point intialScalePoint) -> void
 ~Microsoft.Maui.Controls.IPlatformElementConfiguration<TPlatform, TElement>
 ~Microsoft.Maui.Controls.IQueryAttributable.ApplyQueryAttributes(System.Collections.Generic.IDictionary<string, object> query) -> void
 ~Microsoft.Maui.Controls.IScrollViewController.GetScrollPositionForElement(Microsoft.Maui.Controls.VisualElement item, Microsoft.Maui.Controls.ScrollToPosition position) -> Microsoft.Maui.Graphics.Point
