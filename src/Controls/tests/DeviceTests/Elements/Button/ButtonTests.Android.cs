@@ -33,10 +33,12 @@ namespace Microsoft.Maui.DeviceTests
 
 					var platformButtonSize = GetPlatformButtonSize(handler);
 					Assert.True(platformButtonSize.Height > 0);
+							
+					var targetSize = handler.VirtualView.Measure(double.PositiveInfinity, double.PositiveInfinity);
+					handler.VirtualView.Arrange(new Rect(Point.Zero, targetSize));
 
 					var platformButtonIconSize = GetPlatformButtonIconSize(handler);
 					Assert.True(platformButtonIconSize.Height > 0);
-
 					Assert.True(platformButtonSize.Height > platformButtonIconSize.Height);
 					Assert.True(platformButtonSize.Width > platformButtonIconSize.Width);
 				});
