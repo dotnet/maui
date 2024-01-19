@@ -1174,9 +1174,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					!n._navigating &&
 					!n._secondaryToolbar.Hidden
 					)
-				{					
-					var parentVC = View.FindResponder<ParentingViewController>();
-					var vc = (parentVC?.Child?.Handler as IPlatformViewHandler)?.ViewController;
+				{	
+					var vc = ChildViewControllers[^1];
 
 					if (vc is null)
 						return;
