@@ -413,6 +413,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				oldCell.PropertyChanged -= _propertyChangedHandler;
 				oldCell.SendDisappearing();
+				oldCell.Cleanup();
 			}
 
 			if (newCell != null)
@@ -468,16 +469,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateContent(Cell newCell)
 		{
 			Microsoft.UI.Xaml.DataTemplate dt = GetTemplate(newCell);
-
-			if (CellContent != null)
-			{
-				if (Content is ContentControl contentControl)
-				{
-					var panel = ((UI.Xaml.Controls.ContentPresenter)contentControl.Content).Content as Panel;
-					panel.Children.Clear();
-				}
-			}
-
 			if (dt != _currentTemplate || Content == null)
 			{
 				_currentTemplate = dt;
