@@ -29,6 +29,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public static readonly DependencyProperty IsGroupHeaderProperty = DependencyProperty.Register("IsGroupHeader", typeof(bool), typeof(CellControl), null);
 
 		internal static readonly BindableProperty MeasuredEstimateProperty = BindableProperty.Create("MeasuredEstimate", typeof(double), typeof(ListView), -1d);
+		
+		private static readonly IconConverter IconConverter = new();
+
 		readonly Lazy<ListView> _listView;
 		readonly PropertyChangedEventHandler _propertyChangedHandler;
 		WBrush _defaultOnColor;
@@ -462,7 +465,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var flyoutItem = new UI.Xaml.Controls.MenuFlyoutItem();
 				flyoutItem.SetBinding(UI.Xaml.Controls.MenuFlyoutItem.TextProperty, "Text");
-				flyoutItem.SetBinding(UI.Xaml.Controls.MenuFlyoutItem.IconProperty, "IconImageSource", new IconConverter());
+				flyoutItem.SetBinding(UI.Xaml.Controls.MenuFlyoutItem.IconProperty, "IconImageSource", IconConverter);
 				flyoutItem.Command = new MenuItemCommand(item);
 				flyoutItem.DataContext = item;
 

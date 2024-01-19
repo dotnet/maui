@@ -9,6 +9,8 @@ using Microsoft.Maui.Controls.Compatibility.Platform.WPF.Extensions;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 {
+	private static readonly IconConverter IconConverter = new();
+
 	public class VisualPageRenderer<TElement, TNativeElement> : ViewRenderer<TElement, TNativeElement>
 		where TElement : Page
 		where TNativeElement : FormsPage
@@ -97,7 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 
 				var iconBinding = new System.Windows.Data.Binding(nameof(item.IconImageSource))
 				{
-					Converter = new IconConveter()
+					Converter = IconConverter
 				};
 
 				appBar.SetBinding(FormsAppBarButton.IconProperty, iconBinding);

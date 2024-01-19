@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Controls.XamlC;
 
 class StrokeShapeTypeConverter : ICompiledTypeConverter
 {
+	private static readonly PointTypeConverter PointTypeConverter = new();
+	private static readonly PointCollectionConverter PointCollectionConverter = new();
+	private static readonly Converters.CornerRadiusTypeConverter CornerRadiusTypeConverter = new();
+
 	public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 	{
 		var module = context.Body.Method.Module;
@@ -37,8 +41,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 					yield break;
 				}
 
-				var pointCollectionConverter = new PointCollectionConverter();
-				var points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+				var points = PointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
 
 				if (points == null || points.Count == 0)
 				{
@@ -108,8 +111,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 					yield break;
 				}
 
-				var pointCollectionConverter = new PointCollectionConverter();
-				var points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+				var points = PointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
 
 				if (points == null || points.Count == 0)
 				{
@@ -136,8 +138,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 					yield break;
 				}
 
-				var pointCollectionConverter = new PointCollectionConverter();
-				var points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+				var points = PointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
 
 				if (points == null || points.Count == 0)
 				{
@@ -173,8 +174,7 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "RoundRectangle"), parameterTypes: null));
 				yield return Instruction.Create(OpCodes.Dup);
 
-				var cornerRadiusTypeConverter = new Converters.CornerRadiusTypeConverter();
-				var cornerRadius = (CornerRadius)cornerRadiusTypeConverter.ConvertFromString(parts[1]);
+				var cornerRadius = (CornerRadius)CornerRadiusTypeConverter.ConvertFromString(parts[1]);
 
 				yield return Instruction.Create(OpCodes.Ldc_R8, cornerRadius.TopLeft);
 				yield return Instruction.Create(OpCodes.Ldc_R8, cornerRadius.TopRight);
@@ -200,13 +200,12 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 		yield return Instruction.Create(OpCodes.Ldc_I4, points.Count);
 		yield return Instruction.Create(OpCodes.Newarr, pointType);
 
-		var pointTypeConverter = new PointTypeConverter();
 		for (int i = 0; i < points.Count; i++)
 		{
 			yield return Instruction.Create(OpCodes.Dup);
 			yield return Instruction.Create(OpCodes.Ldc_I4, i);
 
-			foreach (var instruction in pointTypeConverter.CreatePoint(context, module, points[i]))
+			foreach (var instruction in PointTypeConverter.CreatePoint(context, module, points[i]))
 			{
 				yield return instruction;
 			}

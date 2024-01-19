@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PointCollectionConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PointCollectionConverter']/Docs/*" />
 	public class PointCollectionConverter : TypeConverter
 	{
+		private static readonly PointTypeConverter _pointTypeConverter = new();
+
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
@@ -58,8 +60,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (value is not PointCollection pc)
 				throw new NotSupportedException();
 
-			var converter = new PointTypeConverter();
-			return string.Join(", ", pc.Select(p => converter.ConvertToInvariantString(p)));
+			return string.Join(", ", pc.Select(p => _pointTypeConverter.ConvertToInvariantString(p)));
 		}
 	}
 }

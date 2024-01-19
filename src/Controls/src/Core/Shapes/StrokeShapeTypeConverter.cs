@@ -21,6 +21,10 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		internal static readonly char[] Delimiter = { ' ' };
 
+		private static readonly PathGeometryConverter PathGeometryConverter = new();
+		private static readonly PointCollectionConverter PointCollectionConverter = new();
+		private static readonly CornerRadiusTypeConverter CornerRadiusTypeConverter = new();
+
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			   => sourceType == typeof(string);
 
@@ -43,8 +47,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (parts.Length != 2)
 						return new Line();
 
-					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
-					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+					PointCollection points = PointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
 
 					if (points == null || points.Count == 0)
 						return new Line();
@@ -65,8 +68,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (parts.Length != 2)
 						return new Path();
 
-					PathGeometryConverter pathGeometryConverter = new PathGeometryConverter();
-					Geometry pathGeometry = pathGeometryConverter.ConvertFromInvariantString(parts[1]) as Geometry;
+					Geometry pathGeometry = PathGeometryConverter.ConvertFromInvariantString(parts[1]) as Geometry;
 
 					if (pathGeometry == null)
 						return new Path();
@@ -80,8 +82,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (parts.Length != 2)
 						return new Polygon();
 
-					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
-					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+					PointCollection points = PointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
 
 					if (points == null || points.Count == 0)
 						return new Polygon();
@@ -95,8 +96,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (parts.Length != 2)
 						return new Polyline();
 
-					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
-					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+					PointCollection points = PointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
 
 					if (points == null || points.Count == 0)
 						return new Polyline();
@@ -117,8 +117,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 					if (parts.Length > 1)
 					{
-						CornerRadiusTypeConverter cornerRadiusTypeConverter = new CornerRadiusTypeConverter();
-						cornerRadius = (CornerRadius)cornerRadiusTypeConverter.ConvertFromString(parts[1]);
+						cornerRadius = (CornerRadius)CornerRadiusTypeConverter.ConvertFromString(parts[1]);
 					}
 
 					return new RoundRectangle { CornerRadius = cornerRadius };

@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.ColumnDefinitionCollectionTypeConverter")]
 	public class ColumnDefinitionCollectionTypeConverter : TypeConverter
 	{
+		private static readonly GridLengthTypeConverter GridLengthConverter = new();
+
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
@@ -24,10 +26,9 @@ namespace Microsoft.Maui.Controls
 			if (strValue != null)
 			{
 				var lengths = strValue.Split(',');
-				var converter = new GridLengthTypeConverter();
 				var definitions = new ColumnDefinition[lengths.Length];
 				for (var i = 0; i < lengths.Length; i++)
-					definitions[i] = new ColumnDefinition { Width = (GridLength)converter.ConvertFromInvariantString(lengths[i]) };
+					definitions[i] = new ColumnDefinition { Width = (GridLength)GridLengthConverter.ConvertFromInvariantString(lengths[i]) };
 				return new ColumnDefinitionCollection(definitions);
 			}
 
@@ -39,8 +40,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (value is not ColumnDefinitionCollection cdc)
 				throw new NotSupportedException();
-			var converter = new GridLengthTypeConverter();
-			return string.Join(", ", cdc.Select(cd => converter.ConvertToInvariantString(cd.Width)));
+			return string.Join(", ", cdc.Select(cd => GridLengthConverter.ConvertToInvariantString(cd.Width)));
 		}
 	}
 }
