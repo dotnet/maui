@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -63,6 +64,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 		}
 	}
 }
