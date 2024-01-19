@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		});
 
 		[Fact]
-		public Task TestInvokeOnMainThreadWithAsyncFuncError() => DispatcherTest.Run(async () =>
+		public async Task TestInvokeOnMainThreadWithAsyncFuncError() => DispatcherTest.Run(async () =>
 		{
 			bool calledFromMainThread = false;
 			MockPlatformServices(
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(invoked, "Action invoked early.");
 
 			async Task MethodThatThrows() => await task;
-			Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
+			await Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
 		});
 
 		[Fact]
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		});
 
 		[Fact]
-		public Task TestInvokeOnMainThreadWithAsyncActionError() => DispatcherTest.Run(async () =>
+		public async Task TestInvokeOnMainThreadWithAsyncActionError() => DispatcherTest.Run(async () =>
 		{
 			bool calledFromMainThread = false;
 			MockPlatformServices(
@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(invoked, "Action invoked early.");
 
 			async Task MethodThatThrows() => await task;
-			Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
+			await Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
 		});
 
 		private void MockPlatformServices(Action onInvokeOnMainThread, Action<Action> invokeOnMainThread = null)
