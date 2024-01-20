@@ -143,8 +143,6 @@ namespace Microsoft.Maui.Controls
 						{
 							if (gestureRecognizer is IElementDefinition item)
 							{
-								if (!_gestureRecognizers.Contains(gestureRecognizer))
-									AddItem(item);
 								item.Parent = this;
 							}
 						}
