@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls
 							}
 						}
 
-						foreach (IGestureRecognizer gestureRecognizer in GestureController.CompositeGestureRecognizers.ToArray())
+						foreach (IGestureRecognizer gestureRecognizer in GestureController.CompositeGestureRecognizers.ToHashSet())
 						{
 							if (gestureRecognizer is IElementDefinition item)
 							{
