@@ -147,7 +147,9 @@ namespace Microsoft.Maui.Controls
 							}
 						}
 
-						foreach (IGestureRecognizer gestureRecognizer in GestureController.CompositeGestureRecognizers.ToHashSet())
+						var compositeGestureRecognizers = GestureController.CompositeGestureRecognizers.ToHashSet();
+
+						foreach (IGestureRecognizer gestureRecognizer in compositeGestureRecognizers)
 						{
 							if (gestureRecognizer is IElementDefinition item)
 							{
@@ -155,9 +157,14 @@ namespace Microsoft.Maui.Controls
 									continue;
 
 								if (_gestureRecognizers.Contains(gestureRecognizer))
+								{
 									item.Parent = this;
+								}
 								else
-									RemoveItem(item);
+								{
+									item.Parent = null;
+									GestureController.CompositeGestureRecognizers.Remove(gestureRecognizer);
+								}
 							}
 						}
 
