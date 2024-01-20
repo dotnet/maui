@@ -1,10 +1,10 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -96,46 +96,36 @@ namespace Microsoft.Maui.Controls
 			_gestureManager = new GestureManager(this);
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
 			{
-				void AddItems(IEnumerable<IElementDefinition> elements)
+				void AddItems(IList newItems)
 				{
-					foreach (IElementDefinition item in elements)
+					foreach (IElementDefinition item in newItems)
 					{
-						AddItem(item);
+						ValidateGesture(item as IGestureRecognizer);
+						item.Parent = this;
+						GestureController.CompositeGestureRecognizers.Add(item as IGestureRecognizer);
 					}
 				}
 
-				void AddItem(IElementDefinition item)
+				void RemoveItems(IList oldItems)
 				{
-					ValidateGesture(item as IGestureRecognizer);
-					item.Parent = this;
-					GestureController.CompositeGestureRecognizers.Add(item as IGestureRecognizer);
-				}
-
-				void RemoveItems(IEnumerable<IElementDefinition> elements)
-				{
-					foreach (IElementDefinition item in elements)
+					foreach (IElementDefinition item in oldItems)
 					{
-						RemoveItem(item);
+						item.Parent = null;
+						GestureController.CompositeGestureRecognizers.Remove(item as IGestureRecognizer);
 					}
-				}
-
-				void RemoveItem(IElementDefinition item)
-				{
-					item.Parent = null;
-					GestureController.CompositeGestureRecognizers.Remove(item as IGestureRecognizer);
 				}
 
 				switch (args.Action)
 				{
 					case NotifyCollectionChangedAction.Add:
-						AddItems(args.NewItems.OfType<IElementDefinition>());
+						AddItems(args.NewItems);
 						break;
 					case NotifyCollectionChangedAction.Remove:
-						RemoveItems(args.OldItems.OfType<IElementDefinition>());
+						RemoveItems(args.OldItems);
 						break;
 					case NotifyCollectionChangedAction.Replace:
-						AddItems(args.NewItems.OfType<IElementDefinition>());
-						RemoveItems(args.OldItems.OfType<IElementDefinition>());
+						AddItems(args.NewItems);
+						RemoveItems(args.OldItems);
 						break;
 					case NotifyCollectionChangedAction.Reset:
 
