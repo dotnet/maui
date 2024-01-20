@@ -17,8 +17,7 @@ namespace Microsoft.Maui.Controls
 			element = await GetRealParentAsync(element);
 			while (!Application.IsApplicationOrNull(element))
 			{
-				var controlTemplated = element as IControlTemplated;
-				if (controlTemplated?.ControlTemplate != null)
+				if (element is IControlTemplated controlTemplated && controlTemplated.ControlTemplate != null)
 				{
 					if (skipCount == 0)
 						return element;
@@ -95,7 +94,7 @@ namespace Microsoft.Maui.Controls
 						Element child = children[i];
 						if (child is ContentPresenter presenter)
 							presenter.Clear();
-						else if (child is not IControlTemplated controlTemplated || controlTemplated.ControlTemplate == null)
+						else if (child is not IControlTemplated templatedChild || templatedChild.ControlTemplate == null)
 							queue.Enqueue(child);
 					}
 				}
@@ -114,8 +113,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				var content = template.CreateContent() as View;
-				if (content == null)
+				if (template.CreateContent() is not View content)
 				{
 					throw new NotSupportedException("ControlTemplate must return a type derived from View.");
 				}
