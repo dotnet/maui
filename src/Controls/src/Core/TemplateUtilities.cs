@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
@@ -14,9 +13,11 @@ namespace Microsoft.Maui.Controls
 				return null;
 
 			var skipCount = 0;
-			element = await GetRealParentAsync(element);
+
 			while (!Application.IsApplicationOrNull(element))
 			{
+				element = await GetRealParentAsync(element);
+
 				if (element is IControlTemplated controlTemplated && controlTemplated.ControlTemplate != null)
 				{
 					if (skipCount == 0)
@@ -25,7 +26,6 @@ namespace Microsoft.Maui.Controls
 				}
 				if (element is ContentPresenter)
 					skipCount++;
-				element = await GetRealParentAsync(element);
 			}
 
 			return null;
