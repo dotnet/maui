@@ -55,7 +55,6 @@ namespace Microsoft.Maui.Controls
 		public static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var self = (IControlTemplated)bindable;
-			var newElement = (Element)newValue;
 			if (self.ControlTemplate == null)
 			{
 				while (self.InternalChildren.Count > 0)
@@ -64,13 +63,13 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (newValue != null)
-					self.InternalChildren.Add(newElement);
+					self.InternalChildren.Add((Element)newValue);
 			}
 			else
 			{
-				if (newElement != null)
+				if (newValue != null)
 				{
-					BindableObject.SetInheritedBindingContext(newElement, bindable.BindingContext);
+					BindableObject.SetInheritedBindingContext((BindableObject)newValue, bindable.BindingContext);
 				}
 			}
 		}
