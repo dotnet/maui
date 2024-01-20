@@ -57,10 +57,7 @@ namespace Microsoft.Maui.Controls
 			var self = (IControlTemplated)bindable;
 			if (self.ControlTemplate == null)
 			{
-				while (self.InternalChildren.Count > 0)
-				{
-					self.InternalChildren.RemoveAt(self.InternalChildren.Count - 1);
-				}
+				RemoveAllChildren(self);
 
 				if (newValue != null)
 					self.InternalChildren.Add((Element)newValue);
@@ -100,10 +97,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// Now remove all remnants of any other children just to be sure
-			while (self.InternalChildren.Count > 0)
-			{
-				self.InternalChildren.RemoveAt(self.InternalChildren.Count - 1);
-			}
+			RemoveAllChildren(self);
 
 			ControlTemplate template = self.ControlTemplate;
 			if (template == null)
@@ -133,6 +127,14 @@ namespace Microsoft.Maui.Controls
 		{
 			if (removedChild == controlTemplated.TemplateRoot)
 				controlTemplated.TemplateRoot = null;
+		}
+
+		private static void RemoveAllChildren(IControlTemplated self)
+		{
+			while (self.InternalChildren.Count > 0)
+			{
+				self.InternalChildren.RemoveAt(self.InternalChildren.Count - 1);
+			}
 		}
 	}
 }
