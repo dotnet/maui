@@ -100,19 +100,29 @@ namespace Microsoft.Maui.Controls
 				{
 					foreach (IElementDefinition item in elements)
 					{
-						ValidateGesture(item as IGestureRecognizer);
-						item.Parent = this;
-						GestureController.CompositeGestureRecognizers.Add(item as IGestureRecognizer);
+						AddItem(item);
 					}
+				}
+
+				void AddItem(IElementDefinition item)
+				{
+					ValidateGesture(item as IGestureRecognizer);
+					item.Parent = this;
+					GestureController.CompositeGestureRecognizers.Add(item as IGestureRecognizer);
 				}
 
 				void RemoveItems(IEnumerable<IElementDefinition> elements)
 				{
 					foreach (IElementDefinition item in elements)
 					{
-						item.Parent = null;
-						GestureController.CompositeGestureRecognizers.Remove(item as IGestureRecognizer);
+						RemoveItem(item);
 					}
+				}
+
+				void RemoveItem(IElementDefinition item)
+				{
+					item.Parent = null;
+					GestureController.CompositeGestureRecognizers.Remove(item as IGestureRecognizer);
 				}
 
 				switch (args.Action)
@@ -129,29 +139,29 @@ namespace Microsoft.Maui.Controls
 						break;
 					case NotifyCollectionChangedAction.Reset:
 
-						List<IElementDefinition> remove = new List<IElementDefinition>();
-						List<IElementDefinition> add = new List<IElementDefinition>();
-
-						foreach (IElementDefinition item in _gestureRecognizers.OfType<IElementDefinition>())
+						foreach (IGestureRecognizer gestureRecognizer in _gestureRecognizers)
 						{
-							if (!_gestureRecognizers.Contains((IGestureRecognizer)item))
-								add.Add(item);
-							item.Parent = this;
-						}
-
-						foreach (IElementDefinition item in GestureController.CompositeGestureRecognizers.OfType<IElementDefinition>())
-						{
-							if (item == _recognizerForPointerOverState)
-								continue;
-
-							if (_gestureRecognizers.Contains((IGestureRecognizer)item))
+							if (gestureRecognizer is IElementDefinition item)
+							{
+								if (!_gestureRecognizers.Contains(gestureRecognizer))
+									AddItem(item);
 								item.Parent = this;
-							else
-								remove.Add(item);
+							}
 						}
 
-						AddItems(add);
-						RemoveItems(remove);
+						foreach (IGestureRecognizer gestureRecognizer in GestureController.CompositeGestureRecognizers.ToArray())
+						{
+							if (gestureRecognizer is IElementDefinition item)
+							{
+								if (item == _recognizerForPointerOverState)
+									continue;
+
+								if (_gestureRecognizers.Contains(gestureRecognizer))
+									item.Parent = this;
+								else
+									RemoveItem(item);
+							}
+						}
 
 						break;
 				}
