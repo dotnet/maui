@@ -100,9 +100,10 @@ namespace Microsoft.Maui.Controls
 				{
 					foreach (IElementDefinition item in newItems)
 					{
-						ValidateGesture(item as IGestureRecognizer);
+						var gestureRecognizer = item as IGestureRecognizer;
+						ValidateGesture(gestureRecognizer);
 						item.Parent = this;
-						GestureController.CompositeGestureRecognizers.Add(item as IGestureRecognizer);
+						GestureController.CompositeGestureRecognizers.Add(gestureRecognizer);
 					}
 				}
 
