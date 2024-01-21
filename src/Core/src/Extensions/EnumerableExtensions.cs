@@ -21,29 +21,6 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// 
-		/// </summary>
-		/// <typeparam name="TSource"></typeparam>
-		/// <typeparam name="TKey"></typeparam>
-		/// <param name="enumeration"></param>
-		/// <param name="func"></param>
-		/// <returns></returns>
-		public static IDictionary<TKey, List<TSource>> GroupToDictionary<TSource, TKey>(this IEnumerable<TSource> enumeration, Func<TSource, TKey> func)
-			where TKey : notnull
-		{
-			var result = new Dictionary<TKey, List<TSource>>();
-			foreach (TSource item in enumeration)
-			{
-				var group = func(item);
-				if (!result.ContainsKey(group))
-					result.Add(group, new List<TSource> { item });
-				else
-					result[group].Add(item);
-			}
-			return result;
-		}
-
-		/// <summary>
 		/// Find the index of a specific item within the collection.
 		/// </summary>
 		/// <typeparam name="T">The type of object contained in this collection.</typeparam>
@@ -66,29 +43,6 @@ namespace Microsoft.Maui
 			foreach (T element in enumerable)
 			{
 				if (Equals(element, item))
-					return i;
-
-				i++;
-			}
-
-			return -1;
-		}
-
-		/// <summary>
-		/// Find the index for the first occurrence of an item within the collection as matched through the specified predicate.
-		/// </summary>
-		/// <typeparam name="T">The type of object contained in this collection.</typeparam>
-		/// <param name="enumerable">The collection in which to look for the item.</param>
-		/// <param name="predicate">The predicate used to evaluate each item and see if it matches.
-		/// The item currently evaluated of type <typeparamref name="T"/> is provided as an input parameter.
-		/// The resulting value should be a <see cref="bool"/> which is <see langword="true"/> if this is the item to match, otherwise <see langword="false"/>.</param>
-		/// <returns>The index of the first item to match through <paramref name="predicate"/> in the collection or -1 when no match is not found.</returns>
-		public static int IndexOf<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
-		{
-			var i = 0;
-			foreach (T element in enumerable)
-			{
-				if (predicate(element))
 					return i;
 
 				i++;
