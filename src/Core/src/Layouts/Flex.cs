@@ -667,7 +667,7 @@ namespace Microsoft.Maui.Layouts.Flex
 		static void layout_align(Justify align, float flex_dim, int children_count, ref float pos_p, ref float spacing_p)
 		{
 			if (flex_dim < 0)
-				throw new ArgumentException();
+				throw new ArgumentException($"{nameof(flex_dim)} must not be negative", nameof(flex_dim));
 			pos_p = 0;
 			spacing_p = 0;
 
@@ -700,14 +700,14 @@ namespace Microsoft.Maui.Layouts.Flex
 					}
 					return;
 				default:
-					throw new ArgumentException();
+					throw new ArgumentException($"{nameof(Justify)} option not handled", nameof(align));
 			}
 		}
 
 		static void layout_align(AlignContent align, float flex_dim, uint children_count, ref float pos_p, ref float spacing_p)
 		{
 			if (flex_dim < 0)
-				throw new ArgumentException();
+				throw new ArgumentException($"{nameof(flex_dim)} must not be negative", nameof(flex_dim));
 			pos_p = 0;
 			spacing_p = 0;
 
@@ -743,14 +743,14 @@ namespace Microsoft.Maui.Layouts.Flex
 					spacing_p = flex_dim / children_count;
 					return;
 				default:
-					throw new ArgumentException();
+					throw new ArgumentException($"{nameof(AlignContent)} option not handled", nameof(align));
 			}
 		}
 
 		static void layout_items(Item item, int child_begin, int child_end, int children_count, ref flex_layout layout)
 		{
 			if (children_count > (child_end - child_begin))
-				throw new ArgumentException();
+				throw new ArgumentException($"The {children_count} must not be smaller than the requested range between {child_begin} and {child_end}", nameof(children_count));
 			if (children_count <= 0)
 				return;
 			if (layout.flex_dim > 0 && layout.extra_flex_dim > 0)
@@ -975,7 +975,7 @@ namespace Microsoft.Maui.Layouts.Flex
 					|| item.PaddingRight < 0
 					|| item.PaddingTop < 0
 					|| item.PaddingBottom < 0)
-					throw new ArgumentException();
+					throw new ArgumentException($"The padding on {nameof(item)} must not be negative", nameof(item));
 
 				width = Math.Max(0, width - item.PaddingLeft + item.PaddingRight);
 				height = Math.Max(0, height - item.PaddingTop + item.PaddingBottom);
