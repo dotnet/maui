@@ -20,11 +20,29 @@ namespace Microsoft.Maui.Converters
 
 			if (strValue != null)
 			{
-				strValue = strValue.Trim();
+
+#if NET8_0_OR_GREATER
+				char separator;
+				string[] thickness;
 
 				if (strValue.ContainsChar(','))
+				{
+					separator = ',';
+					thickness = strValue.Split(separator, StringSplitOptions.TrimEntries);
+				}
+				else
+				{
+					separator = ' ';
+					thickness = strValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+				}
+#else
+				strValue = strValue.Trim();
+				var separator = strValue.ContainsChar(',') ? ',' : ' ';
+				var thickness = strValue.Split(separator);
+#endif
+
+				if (separator == ',')
 				{ //Xaml
-					var thickness = strValue.Split(',');
 					switch (thickness.Length)
 					{
 						case 2:
@@ -41,9 +59,8 @@ namespace Microsoft.Maui.Converters
 							break;
 					}
 				}
-				else if (strValue.ContainsChar(' '))
+				else if (separator == ' ')
 				{ //CSS
-					var thickness = strValue.Split(' ');
 					switch (thickness.Length)
 					{
 						case 2:
