@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls
 							}
 						}
 
-						var compositeGestureRecognizers = GestureController.CompositeGestureRecognizers.ToHashSet();
+						HashSet<IGestureRecognizer> compositeGestureRecognizers = new(GestureController.CompositeGestureRecognizers);
 
 						foreach (IGestureRecognizer gestureRecognizer in compositeGestureRecognizers)
 						{
