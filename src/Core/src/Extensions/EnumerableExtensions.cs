@@ -116,6 +116,12 @@ namespace Microsoft.Maui
 		/// <returns>The index of the first item to match through <paramref name="predicate"/> in the collection or -1 when no match is not found.</returns>
 		public static int IndexOf<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
 		{
+			if (enumerable == null)
+				throw new ArgumentNullException(nameof(enumerable));
+
+            if (enumerable is IList<T> list)
+                return list.IndexOf(predicate);
+
 			var i = 0;
 			foreach (T element in enumerable)
 			{
