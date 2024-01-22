@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (pinfoRetriever == null || pinfoRetriever() is not ParameterInfo pInfo)
 					return null;
 
-				var convertertype = pInfo.CustomAttributes.GetTypeConverterType();
+				var convertertype = pInfo.GetCustomAttribute<TypeConverterAttribute>()?.GetConverterType();
 				if (convertertype == null)
 					return null;
 				return (TypeConverter)Activator.CreateInstance(convertertype);
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					if (!s_converterCache.TryGetValue(memberInfo, out converter))
 					{
-						if (memberInfo.CustomAttributes.GetTypeConverterType() is Type converterType)
+						if (memberInfo.GetCustomAttribute<TypeConverterAttribute>()?.GetConverterType() is Type converterType)
 						{
 							converter = (TypeConverter)Activator.CreateInstance(converterType);
 						}
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				if (!s_converterCache.TryGetValue(toType, out converter))
 				{
-					if (toType.CustomAttributes.GetTypeConverterType() is Type converterType)
+					if (toType.GetCustomAttribute<TypeConverterAttribute>()?.GetConverterType() is Type converterType)
 					{
 						converter = (TypeConverter)Activator.CreateInstance(converterType);
 					}
@@ -101,20 +101,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			return ConvertTo(value, toType, getConverter, serviceProvider, out exception);
 		}
 
-		static Type GetTypeConverterType(this IEnumerable<CustomAttributeData> attributes)
-		{
-			foreach (var converterAttribute in attributes)
-			{
-				if (converterAttribute.AttributeType != typeof(System.ComponentModel.TypeConverterAttribute))
-					continue;
-				var ctor = converterAttribute.ConstructorArguments[0];
-				if (ctor.ArgumentType == typeof(string))
-					return Type.GetType((string)ctor.Value);
-				if (ctor.ArgumentType == typeof(Type))
-					return (Type)ctor.Value;
-			}
-			return null;
-		}
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+		static Type GetConverterType(this TypeConverterAttribute attribute)
+			=> Type.GetType(attribute.ConverterTypeName);
 
 		//Don't change the name or the signature of this, it's used by XamlC
 		public static object ConvertTo(
