@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Networking
 				}
 				else
 				{
-					// Windows 10 workaround for 
+					// Windows 10 workaround for https://github.com/microsoft/WindowsAppSDK/issues/2965
 					var networkList = ConnectivityNativeHelper.GetNetworkListManager();
 					var enumNetworks = networkList.GetNetworks(ConnectivityNativeHelper.NLM_ENUM_NETWORK.NLM_ENUM_NETWORK_CONNECTED);
 					var connectivity = ConnectivityNativeHelper.NLM_CONNECTIVITY.NLM_CONNECTIVITY_DISCONNECTED;
