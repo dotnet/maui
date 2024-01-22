@@ -4,7 +4,7 @@
     x:Class="Maui.Controls.Sample.SandboxShell"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Name="shell">
-    <TabBar Shell.TabBarForegroundColor="Green"
+    <FlyoutItem Shell.TabBarForegroundColor="Green"
         Shell.TabBarUnselectedColor="Red">
         <Tab Title="MainPage1" Icon="groceries.png">
             <ShellContent Icon="groceries.png"
@@ -18,5 +18,5 @@
             ContentTemplate="{DataTemplate local:MainPage}"
             Route="MainPage2" />
         </Tab>
-    </TabBar>
+    </FlyoutItem>
 </Shell>
