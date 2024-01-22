@@ -24,7 +24,11 @@ namespace Microsoft.Maui.Controls
 			return ParseStringToGridLength(strValue);
 		}
 
+#if NETSTANDARD2_1_OR_GREATER
 		internal static GridLength ParseStringToGridLength(ReadOnlySpan<char> value)
+#else
+		internal static GridLength ParseStringToGridLength(string value)
+#endif
 		{
 			value = value.Trim();
 
@@ -33,12 +37,24 @@ namespace Microsoft.Maui.Controls
 				if (value.Length == 4 && value.Equals("auto", StringComparison.OrdinalIgnoreCase))
 					return GridLength.Auto;
 
-				if (value[^1] == '*')
+#if NETSTANDARD2_1_OR_GREATER
+				var lastChar = value[^1];
+#else
+    			var lastChar = value[value.Length - 1];
+#endif
+
+				if (lastChar == '*')
 				{
 					if (value.Length == 1)
 						return GridLength.Star;
 
-					if (double.TryParse(value[..^1], NumberStyles.Number, CultureInfo.InvariantCulture, out var starLength))
+#if NETSTANDARD2_1_OR_GREATER
+					var prefix = value[..^1];
+#else
+					var prefix = value.Substring(0, value.Length - 1);
+#endif
+
+					if (double.TryParse(prefix, NumberStyles.Number, CultureInfo.InvariantCulture, out var starLength))
 						return new GridLength(starLength, GridUnitType.Star);
 				}
 
