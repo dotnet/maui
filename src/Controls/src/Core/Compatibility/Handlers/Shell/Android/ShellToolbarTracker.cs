@@ -405,7 +405,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (TintColor != null)
 				tintColor = TintColor;
 
-			if (image != null)
+			if (image != null && _flyoutBehavior == FlyoutBehavior.Flyout)
 			{
 				FlyoutIconDrawerDrawable fid = toolbar.NavigationIcon as FlyoutIconDrawerDrawable;
 				Drawable customIcon;
@@ -443,7 +443,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			if (!string.IsNullOrWhiteSpace(text) && icon == null)
+			if (!string.IsNullOrWhiteSpace(text) && icon == null && _flyoutBehavior == FlyoutBehavior.Flyout )
 			{
 				_flyoutIconDrawerDrawable ??= new FlyoutIconDrawerDrawable(MauiContext.Context, tintColor, null, text);
 				icon = _flyoutIconDrawerDrawable;
