@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Hosting
 		}
 
 		private static TypePair SelectBestMatch(List<TypePair> matches, Type type)
-		{	
+		{
 			if (matches.Count == 0)
 			{
 				throw new InvalidOperationException($"Unable to find any configured {nameof(IImageSource)} corresponding to {type.Name}.");
@@ -60,8 +60,8 @@ namespace Microsoft.Maui.Hosting
 			var bestImageSourceServiceMatch = matches[0].ImageSourceService;
 
 			for (int i = 1; i < matches.Count; i++)
-            {
-                var (imageSource, imageSourceService) = matches[i];
+			{
+				var (imageSource, imageSourceService) = matches[i];
 
 				if (!bestImageSourceMatch.IsAssignableFrom(imageSource) && !imageSource.IsAssignableFrom(bestImageSourceMatch))
 				{
