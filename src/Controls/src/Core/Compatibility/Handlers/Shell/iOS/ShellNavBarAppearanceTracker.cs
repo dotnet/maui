@@ -116,6 +116,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
 			navBar.Translucent = appearance.BackgroundColor?.Alpha < 1.0f;
+
+			navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
 		}
 
 		void UpdateNavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
