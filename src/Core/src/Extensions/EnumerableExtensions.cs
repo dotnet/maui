@@ -20,6 +20,17 @@ namespace Microsoft.Maui
 			}
 		}
 
+		/// <summary>
+		/// Groups elements from an IEnumerable based on a specified key selector function and returns a dictionary
+		/// where keys are the computed keys and values are lists of elements with the same key.
+		/// Used by XAML Hot Reload.
+		/// </summary>
+		/// <typeparam name="TSource">The type of elements in the input enumeration.</typeparam>
+		/// <typeparam name="TKey">The type of keys produced by the key selector function.</typeparam>
+		/// <param name="enumeration">The input IEnumerable of elements to be grouped.</param>
+		/// <param name="func">A function that extracts a key from an element of the input enumeration.</param>
+		/// <returns>A dictionary with keys as computed by the key selector function and values as lists of elements
+		/// that share the same key.</returns>
 		[Obsolete("Legacy API used in previous versions of XAML Hot Reload. Do not use.")]
 		public static IDictionary<TKey, List<TSource>> GroupToDictionary<TSource, TKey>(this IEnumerable<TSource> enumeration, Func<TSource, TKey> func)
 			where TKey : notnull
