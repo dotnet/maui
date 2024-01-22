@@ -21,6 +21,12 @@
 		byte[] Screenshot();
 	}
 
+	public interface ILogsSupportedApp : IApp
+	{
+		IEnumerable<string> GetLogTypes();
+		IEnumerable<string> GetLogEntries(string logType);
+	}
+
 	public static class AppExtensions
 	{
 		public static void Click(this IApp app, float x, float y)
@@ -50,5 +56,14 @@
 
 		public static byte[] Screenshot(this IApp app) =>
 			app.As<IScreenshotSupportedApp>().Screenshot();
+	}
+
+	public static class LogsSupportedAppExtensions
+	{
+		public static IEnumerable<string> GetLogTypes(this IApp app) =>
+			app.As<ILogsSupportedApp>().GetLogTypes();
+
+		public static IEnumerable<string> GetLogEntries(this IApp app, string logType) =>
+			app.As<ILogsSupportedApp>().GetLogEntries(logType);
 	}
 }

@@ -80,9 +80,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				Configuration = config
 			});
 
-			// Legacy Developer Extras setting.
-			config.Preferences.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("developerExtrasEnabled"));
-
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
 			config.UserContentController.AddUserScript(new WKUserScript(
 				new NSString(BlazorInitScript), WKUserScriptInjectionTime.AtDocumentEnd, true));
@@ -96,10 +93,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
-			if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 3))
+			if (DeveloperTools.Enabled)
 			{
-				// Enable Developer Extras for Catalyst/iOS builds for 16.4+
-				webview.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("inspectable"));
+				// Legacy Developer Extras setting.
+				config.Preferences.SetValueForKey(NSObject.FromObject(true), new NSString("developerExtrasEnabled"));
+
+				if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 6))
+				{
+					// Enable Developer Extras for iOS builds for 16.4+ and Mac Catalyst builds for 16.6 (macOS 13.5)+
+					webview.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
+				}
 			}
 
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
