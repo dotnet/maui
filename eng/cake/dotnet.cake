@@ -68,9 +68,6 @@ Task("dotnet-local-workloads")
         if (!localDotnet) 
             return;
         
-        //Workaround: https://github.com/dotnet/linker/issues/3012
-        SetEnvironmentVariable("DOTNET_gcServer", "0");
-
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
@@ -549,8 +546,6 @@ void SetDotNetEnvironmentVariables()
 {
     var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
     
-    //Workaround: https://github.com/dotnet/linker/issues/3012
-    SetEnvironmentVariable("DOTNET_gcServer", "0");
     SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);

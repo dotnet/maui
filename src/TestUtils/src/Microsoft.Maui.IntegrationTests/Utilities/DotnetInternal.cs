@@ -30,11 +30,6 @@ namespace Microsoft.Maui.IntegrationTests
 				}
 			}
 
-			if(framework == "net8.0")
-			{
-				buildArgs += $" -p:ForceNet8Current=false";
-			}
-
 			if (string.IsNullOrEmpty(binlogPath))
 			{
 				var binlogPrefix = string.Empty;
@@ -112,9 +107,6 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
-			//Workaround: https://github.com/dotnet/linker/issues/3012
-			pinfo.EnvironmentVariables["DOTNET_gcServer"] = "0";
-
 			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;
 
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);
