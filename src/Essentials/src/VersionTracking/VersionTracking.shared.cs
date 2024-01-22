@@ -326,7 +326,7 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		string[] ReadHistory(string key)
-			=> preferences.Get<string?>(key, null, sharedName)?.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+			=> preferences.Get<string?>(key, null, sharedName)?.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 
 		void WriteHistory(string key, IEnumerable<string> history)
 			=> preferences.Set(key, string.Join("|", history), sharedName);

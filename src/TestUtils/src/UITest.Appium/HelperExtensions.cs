@@ -1,11 +1,7 @@
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Xml.Linq;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.Appium.Interfaces;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -78,6 +74,29 @@ namespace UITest.Appium
 			var response = app.CommandExecutor.Execute("isKeyboardShown", ImmutableDictionary<string, object>.Empty);
 			var responseValue = response?.Value ?? false;
 			return (bool)responseValue;
+		}
+
+		/// <summary>
+		/// (Android Only) Sends a device key event with meta state.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="keyCode"> Code for the key pressed on the Android device</param>
+		/// <param name="metastate">metastate for the key press</param>
+		/// <exception cref="InvalidOperationException"></exception>
+		public static void SendKeys(this IApp app, int keyCode, int metastate = 0)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"SendKeys is only supported on AppiumApp");
+			}
+
+			if (aaa.Driver is ISendsKeyEvents ske)
+			{
+				ske.PressKeyCode(keyCode, metastate);
+				return;
+			}
+			
+			throw new InvalidOperationException($"SendKeys is not supported on {aaa.Driver}");
 		}
 
 		public static void ClearText(this IApp app, string element)

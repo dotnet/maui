@@ -83,18 +83,6 @@
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>3f4da9ced34942d83054e647f3b1d9d7dde281e8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="8.0.0-prerelease.23525.2">
-      <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>abaa77ecc150bc450f4865df3ae31c3f5b9c1490</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="8.0.0-prerelease.23525.2">
-      <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>abaa77ecc150bc450f4865df3ae31c3f5b9c1490</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="8.0.0-prerelease.23525.2">
-      <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>abaa77ecc150bc450f4865df3ae31c3f5b9c1490</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration" Version="8.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>59edaad404d1b8e47080015ae8d0787f94c970df</Sha>
@@ -138,6 +126,18 @@
     <Dependency Name="Microsoft.Extensions.Primitives" Version="8.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>59edaad404d1b8e47080015ae8d0787f94c970df</Sha>
+    </Dependency>  
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="8.0.0-prerelease.23525.2">
+      <Uri>https://github.com/dotnet/xharness</Uri>
+      <Sha>abaa77ecc150bc450f4865df3ae31c3f5b9c1490</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="8.0.0-prerelease.23525.2">
+      <Uri>https://github.com/dotnet/xharness</Uri>
+      <Sha>abaa77ecc150bc450f4865df3ae31c3f5b9c1490</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="8.0.0-prerelease.23525.2">
+      <Uri>https://github.com/dotnet/xharness</Uri>
+      <Sha>abaa77ecc150bc450f4865df3ae31c3f5b9c1490s</Sha>
     </Dependency>
   </ProductDependencies>
 </Dependencies>
