@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Hosting
 		public Type GetImageSourceServiceType(Type imageSource) =>
 			_serviceCache.GetOrAdd(imageSource, _collection.FindImageSourceServiceType);
 
-		// TODO: this public method isn't used anywhere in the MAUI codebase anymore. Make it obsolete?
 		public Type GetImageSourceType(Type imageSource) =>
 			_imageSourceCache.GetOrAdd(imageSource, _collection.FindImageSourceType);
 	}
