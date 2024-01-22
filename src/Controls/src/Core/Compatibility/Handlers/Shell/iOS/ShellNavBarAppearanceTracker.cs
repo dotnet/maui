@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIStringAttributes _defaultTitleAttributes;
 		float _shadowOpacity = float.MinValue;
 		CGColor _shadowColor;
-		UIImage _defaultNavBarShadowImage;
 
 		public void UpdateLayout(UINavigationController controller)
 		{
@@ -65,9 +64,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var navigationBar = controller.NavigationBar;
 
-			if (_defaultNavBarShadowImage is null)
-				_defaultNavBarShadowImage = navigationBar.ShadowImage;
-
 			if (_shadowOpacity == float.MinValue)
 			{
 				// Don't do anything if user hasn't changed the shadow to true
@@ -82,7 +78,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				navigationBar.Layer.ShadowColor = UIColor.Black.CGColor;
 				navigationBar.Layer.ShadowOpacity = 1.0f;
-				navigationBar.ShadowImage = _defaultNavBarShadowImage;
 			}
 			else
 			{
@@ -121,7 +116,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToPlatform() };
 
 			// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
-			navBar.Translucent = appearance.BackgroundColor.Alpha < 1.0f ? true : false;
+			navBar.Translucent = appearance.BackgroundColor?.Alpha < 1.0f;
 		}
 
 		void UpdateNavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
@@ -145,13 +140,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
-			if (appearance.BackgroundColor.Alpha < 1.0f)
-			{
-				// save the shadow image
-				_defaultNavBarShadowImage = navBar.ShadowImage;
-				navBar.SetTransparentNavigationBar();
-				navBar.Translucent = true;
-			}
+			navBar.Translucent = appearance.BackgroundColor?.Alpha < 1.0f;
 		}
 	}
 }
