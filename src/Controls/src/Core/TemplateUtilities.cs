@@ -77,24 +77,10 @@ namespace Microsoft.Maui.Controls
 
 			// First make sure any old ContentPresenters are no longer bound up. This MUST be
 			// done before we attempt to make the new template.
-			if (oldValue != null)
-			{
-				var queue = new Queue<Element>(16);
-				queue.Enqueue((Element)self);
-
-				while (queue.Count > 0)
-				{
-					IReadOnlyList<Element> children = queue.Dequeue().LogicalChildrenInternal;
-					for (var i = 0; i < children.Count; i++)
-					{
-						Element child = children[i];
-						if (child is ContentPresenter presenter)
-							presenter.Clear();
-						else if (child is not IControlTemplated templatedChild || templatedChild.ControlTemplate == null)
-							queue.Enqueue(child);
-					}
-				}
-			}
+            if (oldValue != null)
+            {
+                ClearContentPresenters((Element)self);
+            }
 
 			// Now remove all remnants of any other children just to be sure
 			RemoveAllChildren(self);
@@ -117,6 +103,19 @@ namespace Microsoft.Maui.Controls
 				self.OnApplyTemplate();
 			}
 		}
+
+		private static void ClearContentPresenters(Element element)
+        {
+            IReadOnlyList<Element> children = element.LogicalChildrenInternal;
+            for (var i = 0; i < children.Count; i++)
+            {
+                Element child = children[i];
+                if (child is ContentPresenter presenter)
+                    presenter.Clear();
+                else if (child is not IControlTemplated templatedChild || templatedChild.ControlTemplate == null)
+                    ClearContentPresenters(child);
+            }
+        }
 
 		public static object GetTemplateChild(this IControlTemplated controlTemplated, string name)
 		{
