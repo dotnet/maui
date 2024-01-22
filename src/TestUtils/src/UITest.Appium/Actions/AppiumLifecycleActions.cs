@@ -8,6 +8,7 @@ namespace UITest.Appium
 		const string BackgroundAppCommand = "backgroundApp";
 		const string ResetAppCommand = "resetApp";
 		const string CloseAppCommand = "closeApp";
+		const string BackCommand = "back";
 
 		protected readonly AppiumApp _app;
 
@@ -17,6 +18,7 @@ namespace UITest.Appium
 			BackgroundAppCommand,
 			ResetAppCommand,
 			CloseAppCommand,
+			BackCommand
 		};
 
 		public AppiumLifecycleActions(AppiumApp app)
@@ -37,6 +39,7 @@ namespace UITest.Appium
 				BackgroundAppCommand => BackgroundApp(parameters),
 				ResetAppCommand => ResetApp(parameters),
 				CloseAppCommand => CloseApp(parameters),
+				BackCommand => Back(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -77,6 +80,17 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			_app.Driver.CloseApp();
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		CommandResponse Back(IDictionary<string, object> parameters)
+		{
+			if (_app?.Driver is null)
+				return CommandResponse.FailedEmptyResponse;
+
+			// Navigate backwards in the history, if possible.
+			_app.Driver.Navigate().Back();
 
 			return CommandResponse.SuccessEmptyResponse;
 		}

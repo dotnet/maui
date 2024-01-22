@@ -128,7 +128,7 @@ namespace Microsoft.Maui.DeviceTests
 				handler = page.GetCurrentPage()?.Handler;
 
 			if (handler is null)
-				return new UIViewController[0];
+				return Array.Empty<UIViewController>();
 
 			var navControllerResponder = (handler.PlatformView as UIView).FindResponder<UINavigationController>();
 
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (contentResponder?.NavigationController is not null)
 				return contentResponder.NavigationController.ChildViewControllers;
 
-			return new UIViewController[0];
+			return Array.Empty<UIViewController>();
 		}
 
 		UIViewController GetVisibleViewController(IElementHandler handler)

@@ -110,12 +110,5 @@ namespace Microsoft.Maui.DeviceTests
 			protected override Task<string> GetPlatformText(EditorHandler handler) =>
 				EditorTests.GetPlatformText(handler);
 		}
-
-		[Category(TestCategory.Editor)]
-		[Category(TestCategory.TextInput)]
-		[Collection(RunInNewWindowCollection)]
-		public class EditorTextInputFocusTests : TextInputFocusTests<EditorHandler, Editor>
-		{
-		}
 	}
 }

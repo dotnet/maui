@@ -13,6 +13,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override global::Android.Views.View GetCellCore(Cell item, global::Android.Views.View convertView, ViewGroup parent, Context context)
 		{
+			if (item?.Parent is TableView && item.Handler?.PlatformView is EntryCellView entryCellView)
+			{
+				// TableView doesn't use convertView
+				_view = entryCellView;
+				return _view;
+			}
+
 			if ((_view = convertView as EntryCellView) == null)
 				_view = new EntryCellView(context, item);
 			else

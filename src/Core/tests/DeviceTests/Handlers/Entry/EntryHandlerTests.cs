@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -192,7 +193,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(entry, async (entryHandler) =>
 			{
-				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => entryHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyInitValue(entry, () => entry.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
@@ -210,7 +211,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(entry, async (entryHandler) =>
 			{
-				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => entryHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyInitValue(entry, () => entry.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isEnabled);
@@ -230,7 +231,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(entry, async (entryHandler) =>
 			{
-				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => entryHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyUpdatesValue(
@@ -255,7 +256,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(entry, async (entryHandler) =>
 			{
-				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => entryHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyUpdatesValue(
@@ -284,7 +285,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(entry, async (entryHandler) =>
 			{
-				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => entryHandler.PlatformView.IsLoaded());
 			});
 
 			var nativeTextPrediction = await GetValueAsync(entry, GetNativeIsTextPredictionEnabled);

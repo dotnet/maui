@@ -320,10 +320,17 @@ namespace Microsoft.Maui.Platform
 			editText.SetSelection(previousCursorPosition);
 		}
 
-		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction? currentInputImeFlag)
+		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction currentInputImeFlag)
 		{
 			var actionId = e.ActionId;
 			var evt = e.Event;
+
+			// On API 34 it looks like they fixed the issue where the actionId is ImeAction.ImeNull when using a keyboard
+			// so I'm just setting the actionId here to whatever the user has 
+			if (actionId == ImeAction.ImeNull && evt?.KeyCode == Keycode.Enter)
+			{
+				actionId = currentInputImeFlag;
+			}
 
 			return
 				actionId == ImeAction.Done ||
@@ -349,32 +356,77 @@ namespace Microsoft.Maui.Platform
 				return false;
 
 			var rBounds = getClearButtonDrawable?.Invoke()?.Bounds;
-			var buttonWidth = rBounds?.Width();
 
-			if (buttonWidth <= 0)
+			if (rBounds is null)
+			{
+				// The button doesn't exist, or we can't retrieve it. 
 				return false;
+			}
 
-			var x = motionEvent.GetX();
-			var y = motionEvent.GetY();
+			var buttonRect = GetClearButtonLocation(rBounds, platformView);
 
-			var flowDirection = platformView.LayoutDirection;
-
-			if ((flowDirection != LayoutDirection.Ltr
-				|| x < platformView.Right - buttonWidth
-				|| x > platformView.Right - platformView.PaddingRight
-				|| y < platformView.PaddingTop
-				|| y > platformView.Height - platformView.PaddingBottom) &&
-				(flowDirection != LayoutDirection.Rtl
-				|| x < platformView.Left + platformView.PaddingLeft
-				|| x > platformView.Left + buttonWidth
-				|| y < platformView.PaddingTop
-				|| y > platformView.Height - platformView.PaddingBottom))
+			if (!RectContainsMotionEvent(buttonRect, motionEvent))
 			{
 				return false;
 			}
 
 			platformView.Text = null;
 			return true;
+		}
+
+		// Android.Graphics.Rect has a Containts(x,y) method, but it only takes `int` and the coordinates from
+		// the motion event are `float`. The we use GetX() and GetY() so our coordinates are relative to the
+		// bounds of the EditText.
+		static bool RectContainsMotionEvent(Android.Graphics.Rect rect, MotionEvent motionEvent)
+		{
+			var x = motionEvent.GetX();
+
+			if (x < rect.Left || x > rect.Right)
+			{
+				return false;
+			}
+
+			var y = motionEvent.GetY();
+
+			if (y < rect.Top || y > rect.Bottom)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		// Gets the location of the "Clear" button relative to the bounds of the EditText
+		static Android.Graphics.Rect GetClearButtonLocation(Android.Graphics.Rect buttonRect, EditText platformView)
+		{
+			// Determine the top and bottom edges of the button
+			// This assumes the button is vertically centered within the padded area of the EditText
+
+			var buttonHeight = buttonRect.Height();
+			var editAreaTop = platformView.Top + platformView.PaddingTop;
+			var editAreaHeight = (platformView.Bottom - platformView.PaddingBottom) - (editAreaTop);
+			var editAreaVerticalCenter = editAreaTop + (editAreaHeight / 2);
+
+			var topEdge = editAreaVerticalCenter - (buttonHeight / 2);
+			var bottomEdge = topEdge + buttonHeight;
+
+			// The horizontal location of the button depends on the layout direction
+			var flowDirection = platformView.LayoutDirection;
+
+			if (flowDirection == LayoutDirection.Ltr)
+			{
+				var rightEdge = platformView.Width - platformView.PaddingRight;
+				var leftEdge = rightEdge - buttonRect.Width();
+
+				return new Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
+			}
+			else
+			{
+				var leftEdge = platformView.PaddingLeft;
+				var rightEdge = leftEdge + buttonRect.Width();
+
+				return new Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
+			}
 		}
 	}
 }

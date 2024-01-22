@@ -23,7 +23,11 @@ namespace Microsoft.Maui
 
 		public MauiContext(IServiceProvider services)
 		{
-			_services = new WrappedServiceProvider(services ?? throw new ArgumentNullException(nameof(services)));
+			_ = services ?? throw new ArgumentNullException(nameof(services));
+			_services = services is IKeyedServiceProvider
+				? new KeyedWrappedServiceProvider(services)
+				: new WrappedServiceProvider(services);
+
 			_handlers = new Lazy<IMauiHandlersFactory>(() => _services.GetRequiredService<IMauiHandlersFactory>());
 #if ANDROID
 			_context = new Lazy<Android.Content.Context?>(() => _services.GetService<Android.Content.Context>());
@@ -71,6 +75,28 @@ namespace Microsoft.Maui
 			public void AddSpecific(Type type, Func<object, object?> getter, object state)
 			{
 				_scopeStatic[type] = (state, getter);
+			}
+		}
+
+		class KeyedWrappedServiceProvider : WrappedServiceProvider, IKeyedServiceProvider
+		{
+			public KeyedWrappedServiceProvider(IServiceProvider serviceProvider)
+				: base(serviceProvider)
+			{
+			}
+
+			public object? GetKeyedService(Type serviceType, object? serviceKey)
+			{
+				if (Inner is IKeyedServiceProvider provider)
+					return provider.GetKeyedService(serviceType, serviceKey);
+
+				// we know this won't work, but we need to call it to throw the right exception
+				return Inner.GetRequiredKeyedService(serviceType, serviceKey);
+			}
+
+			public object GetRequiredKeyedService(Type serviceType, object? serviceKey)
+			{
+				return Inner.GetRequiredKeyedService(serviceType, serviceKey);
 			}
 		}
 	}
