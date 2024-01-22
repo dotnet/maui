@@ -63,7 +63,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public virtual void SetHasShadow(UINavigationController controller, bool hasShadow)
 		{
 			var navigationBar = controller.NavigationBar;
-
 			if (_shadowOpacity == float.MinValue)
 			{
 				// Don't do anything if user hasn't changed the shadow to true

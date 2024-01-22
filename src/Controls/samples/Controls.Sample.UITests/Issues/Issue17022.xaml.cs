@@ -3,6 +3,8 @@ using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
+using FlyoutPage = Microsoft.Maui.Controls.FlyoutPage;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -10,9 +12,6 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 17022, "UINavigationBar is Translucent", PlatformAffected.iOS)]
 public partial class Issue17022 : ContentPage
 {
-	Color _initialBarBackgroundColor;
-	bool _initialTranslucent;
-
 	public Issue17022()
 	{
 		InitializeComponent();
