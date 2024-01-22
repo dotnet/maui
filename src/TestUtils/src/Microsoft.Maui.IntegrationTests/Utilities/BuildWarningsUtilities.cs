@@ -399,48 +399,6 @@ namespace Microsoft.Maui.IntegrationTests
 			},
 			new WarningsPerFile
 			{
-				File = "src/Core/src/Hosting/ImageSources/ImageSourceServiceProvider.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2070",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Hosting.ImageSourceServiceProvider.CreateImageSourceTypeCacheEntry(Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.Interfaces' in call to 'System.Type.GetInterface(String)'. The parameter 'type' of method 'Microsoft.Maui.Hosting.ImageSourceServiceProvider.CreateImageSourceTypeCacheEntry(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Hosting.ImageSourceServiceProvider.CreateImageSourceTypeCacheEntry(Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.Interfaces' in call to 'System.Type.GetInterfaces()'. The parameter 'type' of method 'Microsoft.Maui.Hosting.ImageSourceServiceProvider.CreateImageSourceTypeCacheEntry(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2065",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Hosting.ImageSourceServiceProvider.CreateImageSourceTypeCacheEntry(Type): Value passed to implicit 'this' parameter of method 'System.Type.GetInterface(String)' can not be statically determined and may not meet 'DynamicallyAccessedMembersAttribute' requirements.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2055",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Hosting.ImageSourceServiceProvider.<GetImageSourceServiceType>b__9_0(Type): Call to 'System.Type.MakeGenericType(Type[])' can not be statically analyzed. It's not possible to guarantee the availability of requirements of the generic type.",
-							"Microsoft.Maui.Hosting.ImageSourceServiceProvider.<GetImageSourceServiceType>b__9_0(Type): Call to 'System.Type.MakeGenericType(Type[])' can not be statically analyzed. It's not possible to guarantee the availability of requirements of the generic type.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL3050",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Hosting.ImageSourceServiceProvider.<GetImageSourceServiceType>b__9_0(Type): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
-							"Microsoft.Maui.Hosting.ImageSourceServiceProvider.<GetImageSourceServiceType>b__9_0(Type): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
 				File = "src/Core/src/Platform/ReflectionExtensions.cs",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
