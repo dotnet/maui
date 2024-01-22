@@ -450,7 +450,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			result.Height += StrokeThickness;
 			result.Width += StrokeThickness;
 
-			DesiredSize = result;
 			return result;
 		}
 

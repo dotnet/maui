@@ -154,6 +154,11 @@ namespace Microsoft.Maui.Controls
 
 		class AbsoluteLayoutInfo
 		{
+			public AbsoluteLayoutInfo()
+			{
+				LayoutBounds = new Rect(0, 0, AutoSize, AutoSize);
+			}
+
 			public AbsoluteLayoutFlags LayoutFlags { get; set; }
 			public Rect LayoutBounds { get; set; }
 		}

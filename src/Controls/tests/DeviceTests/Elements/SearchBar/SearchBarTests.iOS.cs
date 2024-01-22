@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using UIKit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -13,6 +14,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformControl(handler).Text);
 		}
+
+		static Task<Graphics.Color> GetPlatformCancelButtonColor(SearchBarHandler handler) => InvokeOnMainThreadAsync(() =>
+		{
+			if (handler.PlatformView.TraitCollection.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+				return GetPlatformControl(handler).FindDescendantView<UIButton>().TintColor.ToColor();
+
+			return GetPlatformControl(handler).FindDescendantView<UIButton>().TitleColor(UIControlState.Normal).ToColor();
+		});
 
 		static int GetPlatformSelectionLength(SearchBarHandler searchBarHandler)
 		{
