@@ -54,8 +54,6 @@ namespace Microsoft.Maui.Hosting
 
 		class ImageSourceServiceBuilder : MauiServiceCollection, IImageSourceServiceCollection
 		{
-			private Dictionary<Type, Type> _typeMappings { get; } = new();
-
 			public ImageSourceServiceBuilder(IEnumerable<ImageSourceRegistration> registrationActions)
 			{
 				if (registrationActions != null)
@@ -65,60 +63,6 @@ namespace Microsoft.Maui.Hosting
 						effectRegistration.AddRegistration(this);
 					}
 				}
-			}
-
-			public (Type ImageSourceType, Type ImageSourceServiceType) FindImageSourceToImageSourceServiceTypeMapping(Type type)
-			{
-				List<(Type ImageSourceType, Type ImageSourceServiceType)> matches = new();
-
-				foreach (var mapping in _typeMappings)
-				{
-					var imageSourceType = mapping.Key;
-					if (imageSourceType.IsAssignableFrom(type) || type.IsAssignableFrom(imageSourceType))
-					{
-						var imageSourceServiceType = mapping.Value;
-						matches.Add((imageSourceType, imageSourceServiceType));
-					}
-				}
-
-				if (matches.Count == 0)
-				{
-					throw new InvalidOperationException($"Unable to find any configured {nameof(IImageSource)} corresponding to {type.Name}.");
-				}
-				
-				return SelectTheMostSpecificMatch(matches);
-			}
-
-
-			public void AddImageSourceToImageSourceServiceTypeMapping(Type imageSourceType, Type imageSourceServiceType)
-			{
-				Debug.Assert(typeof(IImageSource).IsAssignableFrom(imageSourceType));
-				Debug.Assert(typeof(IImageSourceService).IsAssignableFrom(imageSourceServiceType));
-
-				_typeMappings[imageSourceType] = imageSourceServiceType;
-			}
-
-			private static (Type ImageSourceType, Type ImageSourceServiceType) SelectTheMostSpecificMatch(List<(Type ImageSourceType, Type ImageSourceServiceType)> matches)
-			{
-				var bestImageSourceTypeMatch = matches[0].ImageSourceType;
-				var bestImageSourceServiceTypeMatch = matches[0].ImageSourceServiceType;
-
-				foreach (var (imageSourceType, imageSourceServiceType) in matches.Skip(1))
-				{
-					if (imageSourceType.IsAssignableFrom(bestImageSourceTypeMatch)
-						|| bestImageSourceTypeMatch.IsInterface && imageSourceType.IsClass)
-					{
-						bestImageSourceTypeMatch = imageSourceType;
-						bestImageSourceServiceTypeMatch = imageSourceServiceType;
-					}
-
-					// TODO we could still improve this to detect truly ambiguous cases, like:
-					// - FileImageSourceA (implements IFileImageSource) -> X
-					// - FileImageSourceB (implements IFileImageSource) -> Y
-					// -> find closest match to `IFileImageSource`
-				}
-
-				return (bestImageSourceTypeMatch, bestImageSourceServiceTypeMatch);
 			}
 		}
 	}
