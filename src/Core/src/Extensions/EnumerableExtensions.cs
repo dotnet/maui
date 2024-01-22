@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Microsoft.Maui
@@ -64,6 +65,36 @@ namespace Microsoft.Maui
 
 			var i = 0;
 			foreach (T element in enumerable)
+			{
+				if (Equals(element, item))
+					return i;
+
+				i++;
+			}
+
+			return -1;
+		}
+
+		/// <summary>
+		/// Find the index of a specific item within the collection.
+		/// </summary>
+		/// <param name="enumerable">The collection in which to look for <paramref name="item"/>.</param>
+		/// <param name="item">The object to be located in this collection.</param>
+		/// <returns>The index of <paramref name="item"/> in the collection or -1 when the item is not found.</returns>
+		/// <exception cref="ArgumentNullException">Throws when <paramref name="enumerable"/> is <see langword="null"/>.</exception>
+		public static int IndexOf(this IEnumerable enumerable, object item)
+		{
+			if (enumerable == null)
+				throw new ArgumentNullException(nameof(enumerable));
+
+            if (enumerable is IList list)
+                return list.IndexOf(item);
+
+            if (enumerable is Array array)
+                return Array.IndexOf(array, item);
+
+			var i = 0;
+			foreach (object element in enumerable)
 			{
 				if (Equals(element, item))
 					return i;
