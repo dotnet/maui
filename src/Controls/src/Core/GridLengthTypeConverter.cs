@@ -22,28 +22,49 @@ namespace Microsoft.Maui.Controls
 			if (strValue == null)
 				return null;
 
-			strValue = strValue.Trim();
-			if (string.Compare(strValue, "auto", StringComparison.OrdinalIgnoreCase) == 0)
-				return GridLength.Auto;
-			if (string.Compare(strValue, "*", StringComparison.OrdinalIgnoreCase) == 0)
-				return new GridLength(1, GridUnitType.Star);
-			if (strValue.EndsWith("*", StringComparison.Ordinal) && double.TryParse(strValue.Substring(0, strValue.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out var length))
-				return new GridLength(length, GridUnitType.Star);
-			if (double.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out length))
-				return new GridLength(length);
+			return ParseStringToGridLength(strValue);
+		}
 
-			throw new FormatException();
+		internal static GridLength ParseStringToGridLength(ReadOnlySpan<char> value)
+		{
+			value = value.Trim();
+
+			if (value.Length != 0)
+			{
+				if (value.Length == 4 && value.Equals("auto", StringComparison.OrdinalIgnoreCase))
+					return GridLength.Auto;
+
+				if (value[^1] == '*')
+				{
+					if (value.Length == 1)
+						return GridLength.Star;
+
+					if (double.TryParse(value[..^1], NumberStyles.Number, CultureInfo.InvariantCulture, out var starLength))
+						return new GridLength(starLength, GridUnitType.Star);
+				}
+
+				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var absoluteLength))
+					return new GridLength(absoluteLength);
+			}
+
+			throw new FormatException($"Invalid GridLength format: {value.ToString()}");
 		}
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not GridLength length)
 				throw new NotSupportedException();
+
+			return ConvertToString(length);
+		}
+
+		internal static string ConvertToString(GridLength length)
+		{
 			if (length.IsAuto)
 				return "auto";
 			if (length.IsStar)
 				return $"{length.Value.ToString(CultureInfo.InvariantCulture)}*";
-			return $"{length.Value.ToString(CultureInfo.InvariantCulture)}";
+			return length.Value.ToString(CultureInfo.InvariantCulture);
 		}
 	}
 }
