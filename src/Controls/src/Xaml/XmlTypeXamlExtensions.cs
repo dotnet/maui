@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) { AssemblyName = asmstring });
 			}
 
-			var lookupNames = new List<string>();
+			var lookupNames = new List<string>(capacity: 2);
 			lookupNames.Add(elementName);
 			if (elementName != "DataTemplate" && !elementName.EndsWith("Extension", StringComparison.Ordinal))
 				lookupNames.Add(elementName + "Extension");
