@@ -1,5 +1,6 @@
 #nullable enable
 Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
+Microsoft.Maui.Controls.GraphicsView.Invalidate(Microsoft.Maui.Graphics.RectF rect) -> void
 Microsoft.Maui.Controls.PlatformDragEventArgs
 Microsoft.Maui.Controls.PlatformDragEventArgs.DropInteraction.get -> UIKit.UIDropInteraction!
 Microsoft.Maui.Controls.PlatformDragEventArgs.DropSession.get -> UIKit.IUIDropSession!

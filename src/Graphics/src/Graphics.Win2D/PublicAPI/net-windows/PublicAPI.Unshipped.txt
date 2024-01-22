@@ -46,6 +46,7 @@ Microsoft.Maui.Graphics.Win2D.W2DCanvasStateService.W2DCanvasStateService() -> v
 Microsoft.Maui.Graphics.Win2D.W2DExtensions
 Microsoft.Maui.Graphics.Win2D.W2DGraphicsView
 Microsoft.Maui.Graphics.Win2D.W2DGraphicsView.Invalidate() -> void
+Microsoft.Maui.Graphics.Win2D.W2DGraphicsView.Invalidate(Microsoft.Maui.Graphics.RectF rect) -> void
 Microsoft.Maui.Graphics.Win2D.W2DGraphicsView.W2DGraphicsView() -> void
 Microsoft.Maui.Graphics.Win2D.W2DImageLoadingService
 Microsoft.Maui.Graphics.Win2D.W2DImageLoadingService.W2DImageLoadingService() -> void

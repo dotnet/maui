@@ -41,6 +41,7 @@ Microsoft.Maui.Platform.MauiPanel.CrossPlatformLayout.get -> Microsoft.Maui.ICro
 Microsoft.Maui.Platform.MauiPanel.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.MauiPanel.MauiPanel() -> void
 Microsoft.Maui.Platform.MauiWebView.MauiWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
+Microsoft.Maui.Platform.PlatformTouchGraphicsView.Invalidate(Microsoft.Maui.Graphics.RectF rect) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.SoftInputExtensions
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentPanel! platformView) -> void

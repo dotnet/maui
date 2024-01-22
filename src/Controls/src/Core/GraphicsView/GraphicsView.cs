@@ -29,6 +29,11 @@ namespace Microsoft.Maui.Controls
 			Handler?.Invoke(nameof(IGraphicsView.Invalidate));
 		}
 
+		public void Invalidate(RectF rect)
+		{
+			Handler?.Invoke(nameof(IGraphicsView.Invalidate), rect);
+		}
+
 		void IGraphicsView.CancelInteraction() => CancelInteraction?.Invoke(this, EventArgs.Empty);
 
 		void IGraphicsView.DragInteraction(PointF[] points) => DragInteraction?.Invoke(this, new TouchEventArgs(points, true));

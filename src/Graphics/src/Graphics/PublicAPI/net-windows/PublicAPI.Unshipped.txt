@@ -465,6 +465,7 @@ Microsoft.Maui.Graphics.PictureExtensions
 Microsoft.Maui.Graphics.PicturePattern
 Microsoft.Maui.Graphics.PictureReaderExtensions
 Microsoft.Maui.Graphics.PictureWriterExtensions
+Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Invalidate(Microsoft.Maui.Graphics.RectF rect) -> void
 Microsoft.Maui.Graphics.Platform.PlatformImage
 Microsoft.Maui.Graphics.Platform.PlatformImage.Dispose() -> void
 Microsoft.Maui.Graphics.Platform.PlatformImage.Height.get -> float

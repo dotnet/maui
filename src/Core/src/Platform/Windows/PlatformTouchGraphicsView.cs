@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public void Invalidate() => _platformGraphicsView.Invalidate();
+		public void Invalidate(RectF rect) => _platformGraphicsView.Invalidate(rect);
 
 		PointF[] GetViewPoints(PointerRoutedEventArgs e)
 		{

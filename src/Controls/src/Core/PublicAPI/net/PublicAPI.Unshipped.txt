@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Controls.GraphicsView.Invalidate(Microsoft.Maui.Graphics.RectF rect) -> void
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
 Microsoft.Maui.Controls.PlatformDragEventArgs

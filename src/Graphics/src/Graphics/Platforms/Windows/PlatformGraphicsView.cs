@@ -57,6 +57,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			_canvasControl?.Invalidate();
 		}
 
+		public void Invalidate(RectF rect)
+		{
+			_canvasControl?.Invalidate();
+		}
+
 		private void UserControl_Loaded(object sender, RoutedEventArgs e)
 		{
 			_canvasControl = new CanvasControl();

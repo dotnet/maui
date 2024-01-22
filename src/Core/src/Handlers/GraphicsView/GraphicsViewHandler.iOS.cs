@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Platform;
-using UIKit;
+﻿using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -23,7 +22,17 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapInvalidate(IGraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
 		{
-			handler.PlatformView?.InvalidateDrawable();
+			if (arg is RectF rect)
+			{
+				float x = rect.X;
+				float y = rect.Y;
+				float width = rect.Width;
+				float height = rect.Height;
+
+				handler.PlatformView?.InvalidateDrawable(x, y, width, height);
+			}
+			else
+				handler.PlatformView?.InvalidateDrawable();
 		}
 	}
 }

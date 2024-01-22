@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Controls.GraphicsView.Invalidate(Microsoft.Maui.Graphics.RectF rect) -> void
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> Android.Views.View!
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.MotionEvent.get -> Android.Views.MotionEvent!

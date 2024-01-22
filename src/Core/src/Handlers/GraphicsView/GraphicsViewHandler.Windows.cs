@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Graphics.Platform;
-using Microsoft.Maui.Graphics.Win2D;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
@@ -38,7 +37,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapInvalidate(IGraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
 		{
-			handler.PlatformView?.Invalidate();
+			if (arg is RectF rect)
+				handler.PlatformView?.Invalidate(rect);
+			else
+				handler.PlatformView?.Invalidate();
 		}
 
 		void OnLoaded(object sender, RoutedEventArgs e)
