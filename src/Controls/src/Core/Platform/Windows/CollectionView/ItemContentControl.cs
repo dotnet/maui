@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			if (_handler?.ContainerView is null || _currentTemplate != formsTemplate)
+			if (Content is null || _currentTemplate != formsTemplate)
 			{
 				// If the content has never been realized (i.e., this is a new instance), 
 				// or if we need to switch DataTemplates (because this instance is being recycled)
