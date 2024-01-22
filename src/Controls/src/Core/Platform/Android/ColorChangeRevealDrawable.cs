@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Platform
 			float centerY = (float)_center.Y;
 
 			float width = bounds.Width();
-			float distanceFromCenter = (float)Math.Abs(width / 2 - _center.X);
+			float distanceFromCenter = MathF.Abs(width / 2 - _center.X);
 			float radius = (width / 2 + distanceFromCenter) * 1.1f;
 
 			var paint = new Paint

@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				lines[i].Dispose();
 			}
 
-			return new RectF(0f, minY, width, Math.Max(0, maxY - minY));
+			return new RectF(0f, minY, width, MathF.Max(0, maxY - minY));
 		}
 	}
 }

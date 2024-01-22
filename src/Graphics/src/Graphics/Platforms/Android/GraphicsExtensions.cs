@@ -48,12 +48,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static RectF AsRectangleF(this global::Android.Graphics.RectF target)
 		{
-			return new RectF(target.Left, target.Top, Math.Abs(target.Width()), Math.Abs(target.Height()));
+			return new RectF(target.Left, target.Top, MathF.Abs(target.Width()), MathF.Abs(target.Height()));
 		}
 
 		public static Rect AsRectangle(this global::Android.Graphics.RectF target)
 		{
-			return new Rect(target.Left, target.Top, Math.Abs(target.Width()), Math.Abs(target.Height()));
+			return new Rect(target.Left, target.Top, MathF.Abs(target.Width()), MathF.Abs(target.Height()));
 		}
 
 		public static global::Android.Graphics.RectF AsRectF(this global::Android.Graphics.Rect target)

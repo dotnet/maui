@@ -25,16 +25,16 @@ namespace Microsoft.Maui.Graphics
 
 			// Convert angle from degrees to radians
 			angle = GeometryUtil.DegreesToRadians(angle);
-			float cosAngle = (float)Math.Cos(angle);
-			float sinAngle = (float)Math.Sin(angle);
+			float cosAngle = MathF.Cos(angle);
+			float sinAngle = MathF.Sin(angle);
 
 			//Compute (x1, y1)
 			float x1 = cosAngle * dx2 + sinAngle * dy2;
 			float y1 = -sinAngle * dx2 + cosAngle * dy2;
 
 			// Ensure radii are large enough
-			rx = Math.Abs(rx);
-			ry = Math.Abs(ry);
+			rx = MathF.Abs(rx);
+			ry = MathF.Abs(ry);
 			float prx = rx * rx;
 			float pry = ry * ry;
 			float px1 = x1 * x1;
@@ -44,8 +44,8 @@ namespace Microsoft.Maui.Graphics
 			float radiiCheck = px1 / prx + py1 / pry;
 			if (radiiCheck > 1)
 			{
-				rx = (float)Math.Sqrt(radiiCheck) * rx;
-				ry = (float)Math.Sqrt(radiiCheck) * ry;
+				rx = MathF.Sqrt(radiiCheck) * rx;
+				ry = MathF.Sqrt(radiiCheck) * ry;
 				prx = rx * rx;
 				pry = ry * ry;
 			}
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Graphics
 			float sign = largeArcFlag == sweepFlag ? -1 : 1;
 			float sq = (prx * pry - prx * py1 - pry * px1) / (prx * py1 + pry * px1);
 			sq = sq < 0 ? 0 : sq;
-			float coef = sign * (float)Math.Sqrt(sq);
+			float coef = sign * MathF.Sqrt(sq);
 			float cx1 = coef * (rx * y1 / ry);
 			float cy1 = coef * -(ry * x1 / rx);
 
@@ -71,18 +71,18 @@ namespace Microsoft.Maui.Graphics
 			float vy = (-y1 - cy1) / ry;
 
 			//Compute the angle start
-			float n = (float)Math.Sqrt(ux * ux + uy * uy);
+			float n = MathF.Sqrt(ux * ux + uy * uy);
 			float p = ux;
 
 			sign = uy < 0 ? -1.0f : 1.0f;
 
-			float angleStart = GeometryUtil.RadiansToDegrees(sign * (float)Math.Acos(p / n));
+			float angleStart = GeometryUtil.RadiansToDegrees(sign * MathF.Acos(p / n));
 
 			// Compute the angle extent
-			n = (float)Math.Sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy));
+			n = MathF.Sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy));
 			p = ux * vx + uy * vy;
 			sign = ux * vy - uy * vx < 0 ? -1.0f : 1.0f;
-			float angleExtent = GeometryUtil.RadiansToDegrees(sign * (float)Math.Acos(p / n));
+			float angleExtent = GeometryUtil.RadiansToDegrees(sign * MathF.Acos(p / n));
 
 			if (!sweepFlag && angleExtent > 0)
 			{
@@ -106,14 +106,14 @@ namespace Microsoft.Maui.Graphics
 		public static void DrawArc(this PathF aPath, float x, float y, float startAngle, float arc, float radius, float yRadius, float xAxisRotation)
 		{
 			// Circumvent drawing more than is needed
-			if (Math.Abs(arc) > 360)
+			if (MathF.Abs(arc) > 360)
 			{
 				arc = 360;
 			}
 
 			// Draw in a maximum of 45 degree segments. First we calculate how many
 			// segments are needed for our arc.
-			float segs = (float)Math.Ceiling(Math.Abs(arc) / 45);
+			float segs = MathF.Ceiling(MathF.Abs(arc) / 45);
 
 			// Now calculate the sweep of each segment
 			float segAngle = arc / segs;
@@ -125,25 +125,25 @@ namespace Microsoft.Maui.Graphics
 			if (segs > 0)
 			{
 				float beta = GeometryUtil.DegreesToRadians(xAxisRotation);
-				float sinbeta = (float)Math.Sin(beta);
-				float cosbeta = (float)Math.Cos(beta);
+				float sinbeta = MathF.Sin(beta);
+				float cosbeta = MathF.Cos(beta);
 
 				// Loop for drawing arc segments
 				for (int i = 0; i < segs; i++)
 				{
 					angle += theta;
 
-					float sinangle = (float)Math.Sin(angle - theta / 2);
-					float cosangle = (float)Math.Cos(angle - theta / 2);
+					float sinangle = MathF.Sin(angle - theta / 2);
+					float cosangle = MathF.Cos(angle - theta / 2);
 
-					float div = (float)Math.Cos(theta / 2);
+					float div = MathF.Cos(theta / 2);
 					float cx = x + (radius * cosangle * cosbeta - yRadius * sinangle * sinbeta) / div;
 					//Why divide by Math.cos(theta/2)? - FIX THIS
 					float cy = y + (radius * cosangle * sinbeta + yRadius * sinangle * cosbeta) / div;
 					//Why divide by Math.cos(theta/2)? - FIX THIS
 
-					sinangle = (float)Math.Sin(angle);
-					cosangle = (float)Math.Cos(angle);
+					sinangle = MathF.Sin(angle);
+					cosangle = MathF.Cos(angle);
 
 					float x1 = x + (radius * cosangle * cosbeta - yRadius * sinangle * sinbeta);
 					float y1 = y + (radius * cosangle * sinbeta + yRadius * sinangle * cosbeta);
