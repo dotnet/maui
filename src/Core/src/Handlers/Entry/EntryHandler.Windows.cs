@@ -123,10 +123,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				PlatformView?.TryMoveFocus(FocusNavigationDirection.Next);
 			}
-			else
-			{
-				// TODO: Hide the soft keyboard; this matches the behavior of .NET MAUI on Android/iOS
-			}
 
 			VirtualView?.Completed();
 		}
