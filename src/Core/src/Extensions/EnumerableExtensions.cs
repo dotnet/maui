@@ -20,14 +20,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <typeparam name="TSource"></typeparam>
-		/// <typeparam name="TKey"></typeparam>
-		/// <param name="enumeration"></param>
-		/// <param name="func"></param>
-		/// <returns></returns>
+		[Obsolete("Legacy API used in previous versions of XAML Hot Reload. Do not use.")]
 		public static IDictionary<TKey, List<TSource>> GroupToDictionary<TSource, TKey>(this IEnumerable<TSource> enumeration, Func<TSource, TKey> func)
 			where TKey : notnull
 		{
@@ -76,6 +69,7 @@ namespace Microsoft.Maui
 
 		/// <summary>
 		/// Find the index for the first occurrence of an item within the collection as matched through the specified predicate.
+		/// Used by XAML Hot Reload.
 		/// </summary>
 		/// <typeparam name="T">The type of object contained in this collection.</typeparam>
 		/// <param name="enumerable">The collection in which to look for the item.</param>
@@ -83,6 +77,7 @@ namespace Microsoft.Maui
 		/// The item currently evaluated of type <typeparamref name="T"/> is provided as an input parameter.
 		/// The resulting value should be a <see cref="bool"/> which is <see langword="true"/> if this is the item to match, otherwise <see langword="false"/>.</param>
 		/// <returns>The index of the first item to match through <paramref name="predicate"/> in the collection or -1 when no match is not found.</returns>
+		[Obsolete("Use IndexOf<T>(IEnumerable<T>, T item) instead.")]
 		public static int IndexOf<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
 		{
 			var i = 0;
