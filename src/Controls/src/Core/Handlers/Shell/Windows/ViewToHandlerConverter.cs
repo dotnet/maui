@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Platform
 			public WrapperControl(View view)
 			{
 				_view = view;
-				//_view.MeasureInvalidated += OnMeasureInvalidated;
+				_view.MeasureInvalidated += OnMeasureInvalidated;
 
 				FrameworkElement = view.ToPlatform(view.FindMauiContext()!);
 
