@@ -347,11 +347,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (lv != null)
 			{
+				Cell oldCell = Cell;
 				bool isGroupHeader = IsGroupHeader;
 				object bindingContext = newContext;
-
 				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
-				if (template != null)
+
+				bool sameTemplate = false;
+				if (template is DataTemplateSelector dataTemplateSelector)
+				{
+					template = dataTemplateSelector.SelectTemplate(bindingContext, lv);
+					// 🚀 If there exists an old cell, get its data template and check
+					// whether the new- and old template matches. In that case, we can recycle it
+					if (oldCell?.BindingContext != null)
+					{
+						DataTemplate oldTemplate = dataTemplateSelector.SelectTemplate(oldCell?.BindingContext, lv);
+						sameTemplate = oldTemplate == template;
+					}
+				}
+
+				if (Cell != null && sameTemplate)
+				{
+					cell = Cell;
+				}
+				else if (template != null)
 				{
 					// Reuse the templated items from the parent ListView
 					var templatedItems = lv.TemplatedItems;
@@ -363,7 +381,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 					{
 						var groupAndIndex = templatedItems.GetGroupAndIndexOfItem(bindingContext);
-					
+
 						if (lv.IsGroupingEnabled)
 						{
 							templatedItems = templatedItems.GetGroup(groupAndIndex.Item1);
