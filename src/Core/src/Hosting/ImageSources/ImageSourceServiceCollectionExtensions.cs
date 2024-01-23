@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Hosting
 		/// <typeparam name="TImageSourceService">The service type to register</typeparam>
 		/// <param name="services">The service collection</param>
 		/// <returns>The service collection</returns>
-		public static IImageSourceServiceCollection AddService<TImageSource, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImageSourceService>(this IImageSourceServiceCollection services)
+		public static IImageSourceServiceCollection AddService<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] TImageSource, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImageSourceService>(this IImageSourceServiceCollection services)
 			where TImageSource : IImageSource
 			where TImageSourceService : class, IImageSourceService<TImageSource>
 		{
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Hosting
 		/// <param name="services">The service collection</param>
 		/// <param name="implementationFactory">A factory method to create the service</param>
 		/// <returns>The service collection</returns>
-		public static IImageSourceServiceCollection AddService<TImageSource>(this IImageSourceServiceCollection services, Func<IServiceProvider, IImageSourceService<TImageSource>> implementationFactory)
+		public static IImageSourceServiceCollection AddService<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] TImageSource>(this IImageSourceServiceCollection services, Func<IServiceProvider, IImageSourceService<TImageSource>> implementationFactory)
 			where TImageSource : IImageSource
 		{
 			services.GetImageSourceTypeMapping().Add<TImageSource>();
