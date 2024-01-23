@@ -720,18 +720,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				if(barBackgroundColor?.Alpha < 1f)
+				if(barBackgroundColor?.Alpha == 0f)
 				{
 					NavigationBar.SetTransparentNavigationBar();
 				}
 
-				// Set navigation bar background color
-				NavigationBar.BarTintColor = barBackgroundColor == null
-					? UINavigationBar.Appearance.BarTintColor
-					: barBackgroundColor.ToPlatform();
+				else
+				{
+					// Set navigation bar background color
+					NavigationBar.BarTintColor = barBackgroundColor == null
+						? UINavigationBar.Appearance.BarTintColor
+						: barBackgroundColor.ToPlatform();
 
-				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
-				NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+					NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+				}
 			}
 		}
 

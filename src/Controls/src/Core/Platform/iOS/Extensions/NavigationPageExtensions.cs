@@ -29,7 +29,6 @@ namespace Microsoft.Maui.Controls.Platform
 			navigationBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
 			navigationBar.ShadowImage = new UIImage();
 			navigationBar.BackgroundColor = UIColor.Clear;
-			navigationBar.TintColor = UIColor.Clear;
 			navigationBar.BarTintColor = UIColor.Clear;
 		}
 	}

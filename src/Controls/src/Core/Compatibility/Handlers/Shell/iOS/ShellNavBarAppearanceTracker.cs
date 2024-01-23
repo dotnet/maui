@@ -43,8 +43,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_defaultTitleAttributes = navBar.TitleTextAttributes;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
-				UpdateiOS15NavigationBarAppearance(controller, appearance);
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+				UpdateiOS13NavigationBarAppearance(controller, appearance);
 			else
 				UpdateNavigationBarAppearance(controller, appearance);
 		}
@@ -87,9 +87,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#endregion
 
-		[SupportedOSPlatform("ios15.0")]
-		[SupportedOSPlatform("tvos15.0")]
-		void UpdateiOS15NavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
+		void UpdateiOS13NavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
 		{
 			var navBar = controller.NavigationBar;
 
@@ -99,11 +99,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (appearance.BackgroundColor?.Alpha < 1.0f)
 			{
 				navigationBarAppearance.ConfigureWithTransparentBackground();
-				navBar.Translucent = appearance.BackgroundColor?.Alpha < 1.0f;
+				navBar.Translucent = true;
 			}
 			else
 			{
 				navigationBarAppearance.ConfigureWithOpaqueBackground();
+				navBar.Translucent = false;
 			}
 
 			// Set ForegroundColor
@@ -134,6 +135,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var titleColor = appearance.TitleColor;
 
 			var navBar = controller.NavigationBar;
+
+			if (appearance.BackgroundColor?.Alpha == 0f)
+				navBar.SetTransparentNavigationBar();
 
 			if (background != null)
 				navBar.BarTintColor = background.ToPlatform();
