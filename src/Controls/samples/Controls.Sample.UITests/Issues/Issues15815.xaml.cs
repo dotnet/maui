@@ -27,6 +27,7 @@ namespace Maui.Controls.Sample.Issues
 			public Color Color { get; set; }
 			public int Width { get; set; }
 			public int Index { get; set; }
+			public string Name => $"Item {Index}";
 		}
 	}
 }
