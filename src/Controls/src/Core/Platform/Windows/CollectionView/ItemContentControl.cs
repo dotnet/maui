@@ -186,7 +186,6 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				// We are reusing this ItemContentControl and we can reuse the Element
-				_visualElement = _handler.VirtualView as VisualElement;
 				_visualElement.BindingContext = dataContext;
 			}
 
