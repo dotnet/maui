@@ -384,8 +384,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 						if (lv.IsGroupingEnabled)
 						{
+							// Group was removed, bail
+							if (groupAndIndex.Item1 == -1)
+								return;
+
 							templatedItems = templatedItems.GetGroup(groupAndIndex.Item1);
 						}
+
+						// Item was removed, bail
+						if (groupAndIndex.Item2 == -1)
+							return;
+
 						cell = templatedItems[groupAndIndex.Item2];
 					}
 				}
