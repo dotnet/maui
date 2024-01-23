@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -69,7 +70,17 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public override int GetHashCode()
 		{
-			return NamespaceUri.GetHashCode() ^ Name.GetHashCode();
+			unchecked
+			{
+#if NETSTANDARD2_0
+				int hashCode = NamespaceUri.GetHashCode();
+				hashCode = (hashCode * 397) ^ Name.GetHashCode();
+#else
+				int hashCode = NamespaceUri.GetHashCode(StringComparison.Ordinal);
+				hashCode = (hashCode * 397) ^ Name.GetHashCode(StringComparison.Ordinal);
+#endif
+				return hashCode;
+			}
 		}
 	}
 
