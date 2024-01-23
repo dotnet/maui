@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-using TypePair = (System.Type ImageSource, System.Type ImageSourceService);
-
 namespace Microsoft.Maui.Hosting
 {
 	internal sealed class ImageSourceToImageSourceServiceTypeMapping
@@ -15,32 +13,33 @@ namespace Microsoft.Maui.Hosting
 		internal static ImageSourceToImageSourceServiceTypeMapping GetInstance(IImageSourceServiceCollection collection) =>
 			s_instances.GetOrAdd(collection, static _ => new ImageSourceToImageSourceServiceTypeMapping());
 
-		private ConcurrentDictionary<Type, Type> _interfaceMapping { get; } = new();
-		private ConcurrentDictionary<Type, Type> _directServiceMapping { get; } = new();
-		private ConcurrentDictionary<Type, Type> _fallbackServiceMapping { get; } = new();
+		private readonly object _lock = new();
+		private Dictionary<Type, Type> _interfaceMapping = new();
+		private Dictionary<Type, Type> _directServiceMapping = new();
+		private Dictionary<Type, Type> _fallbackServiceMapping = new();
 
 		public void Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] TImageSource>() where TImageSource : IImageSource
 		{
-			// override any previous mapping (possibly a default mapping)
-			_directServiceMapping[typeof(TImageSource)] = typeof(IImageSourceService<TImageSource>);
-
 			var imageSourceInterfaceType = GetImageSourceInterface(typeof(TImageSource));
-			_interfaceMapping[typeof(TImageSource)] = imageSourceInterfaceType;
+			var fallbackImageSourceServiceType = MakeGenericImageSourceServiceType(imageSourceInterfaceType);
 
-			// add a fallback value for the interface to mimic the behavior of the old implementation
-			AddFallbackMapping();
+			lock (_lock)
+			{
+				_directServiceMapping[typeof(TImageSource)] = typeof(IImageSourceService<TImageSource>);
+				_interfaceMapping[typeof(TImageSource)] = imageSourceInterfaceType;
+				_fallbackServiceMapping[imageSourceInterfaceType] = fallbackImageSourceServiceType;
+			}
 
 			[UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode",
 				Justification = "The type which is used as a generic parameter is not a value type.")]
-			void AddFallbackMapping()
+			Type MakeGenericImageSourceServiceType(Type imageSourceInterfaceType)
 			{
 				if (imageSourceInterfaceType.IsValueType)
 				{
 					throw new InvalidOperationException($"Unable to register {typeof(TImageSource)} as an {typeof(IImageSource)} because it is a value type.");
 				}
 
-				var imageSourceServiceType = typeof(IImageSourceService<>).MakeGenericType(imageSourceInterfaceType);
-				_fallbackServiceMapping[imageSourceInterfaceType] = imageSourceServiceType;
+				return typeof(IImageSourceService<>).MakeGenericType(imageSourceInterfaceType);
 			}
 		}
 
