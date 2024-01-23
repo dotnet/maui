@@ -54,6 +54,12 @@ Task("dotnet")
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration),
         });
+
+        DotNetTool("tool",  new DotNetToolSettings {
+		    ToolPath = dotnetPath,
+		    DiagnosticOutput = true,	
+		    ArgumentCustomization = args => args.Append("restore")
+	    });
     });
 
 Task("dotnet-local-workloads")
@@ -62,9 +68,6 @@ Task("dotnet-local-workloads")
         if (!localDotnet) 
             return;
         
-        //Workaround: https://github.com/dotnet/linker/issues/3012
-        SetEnvironmentVariable("DOTNET_gcServer", "0");
-
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
@@ -81,6 +84,12 @@ Task("dotnet-local-workloads")
                 .WithTarget("Install"),
             ToolPath = dotnetPath,
         });
+
+        DotNetTool("tool",  new DotNetToolSettings {
+		    ToolPath = dotnetPath,
+		    DiagnosticOutput = true,	
+		    ArgumentCustomization = args => args.Append("restore")
+	    });
     });
 
 Task("dotnet-buildtasks")
@@ -537,8 +546,6 @@ void SetDotNetEnvironmentVariables()
 {
     var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
     
-    //Workaround: https://github.com/dotnet/linker/issues/3012
-    SetEnvironmentVariable("DOTNET_gcServer", "0");
     SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
