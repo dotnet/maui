@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Hosting
 			// add a fallback value for the interface to mimic the behavior of the old implementation
 			AddFallbackMapping();
 
-			[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+			[UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode",
 				Justification = "The type which is used as a generic parameter is not a value type.")]
 			void AddFallbackMapping()
 			{
