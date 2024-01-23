@@ -677,32 +677,42 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateBarBackground()
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
+			var barBackgroundBrush = NavPage.BarBackground;
 
-			if (barBackgroundColor == Colors.Transparent)
+			// if the brush has a solid color, treat it as a Color so we can compute the alpha value
+			if (NavPage.BarBackground is SolidColorBrush scb)
 			{
-				ApplyTransparentBarBackground();
-				return;
+				barBackgroundColor = scb.Color;
+				barBackgroundBrush = null;
 			}
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
-
-				navigationBarAppearance.ConfigureWithOpaqueBackground();
-
-				if (barBackgroundColor == null)
+				if (barBackgroundColor is null)
 				{
+					navigationBarAppearance.ConfigureWithOpaqueBackground();
 					navigationBarAppearance.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
 
 					var parentingViewController = GetParentingViewController();
 					parentingViewController?.SetupDefaultNavigationBarAppearance();
 				}
 				else
-					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
+				{
+					if(barBackgroundColor?.Alpha < 1f)
+						navigationBarAppearance.ConfigureWithTransparentBackground();
+					else
+						navigationBarAppearance.ConfigureWithOpaqueBackground();
 
-				var barBackgroundBrush = NavPage.BarBackground;
-				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
-				navigationBarAppearance.BackgroundImage = backgroundImage;
+					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
+				}
+
+				if (barBackgroundBrush is not null)
+				{
+					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+
+					navigationBarAppearance.BackgroundImage = backgroundImage;
+				}
 
 				NavigationBar.CompactAppearance = navigationBarAppearance;
 				NavigationBar.StandardAppearance = navigationBarAppearance;
@@ -710,29 +720,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
+				if(barBackgroundColor?.Alpha < 1f)
+				{
+					NavigationBar.SetTransparentNavigationBar();
+				}
+
 				// Set navigation bar background color
 				NavigationBar.BarTintColor = barBackgroundColor == null
 					? UINavigationBar.Appearance.BarTintColor
 					: barBackgroundColor.ToPlatform();
 
-				var barBackgroundBrush = NavPage.BarBackground;
 				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
 				NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
 			}
-		}
-
-		void ApplyTransparentBarBackground()
-		{
-			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
-			{
-				var navBar = new UINavigationBarAppearance();
-				navBar.ConfigureWithTransparentBackground();
-				NavigationBar.CompactAppearance = NavigationBar.StandardAppearance = NavigationBar.ScrollEdgeAppearance = navBar;
-			}
-			else
-			{
-				NavigationBar.SetTransparentNavigationBar();
-			}		
 		}
 
 		void UpdateBarTextColor()
