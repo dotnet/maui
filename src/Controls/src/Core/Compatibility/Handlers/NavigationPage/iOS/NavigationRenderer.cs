@@ -724,7 +724,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					NavigationBar.SetTransparentNavigationBar();
 				}
-
 				else
 				{
 					// Set navigation bar background color

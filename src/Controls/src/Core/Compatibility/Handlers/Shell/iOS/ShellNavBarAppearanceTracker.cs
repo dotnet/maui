@@ -140,7 +140,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				navBar.SetTransparentNavigationBar();
 			}
-
 			else
 			{
 				if (background != null)
