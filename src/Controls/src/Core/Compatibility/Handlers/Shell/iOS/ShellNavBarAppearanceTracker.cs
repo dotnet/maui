@@ -137,12 +137,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var navBar = controller.NavigationBar;
 
 			if (appearance.BackgroundColor?.Alpha == 0f)
+			{
 				navBar.SetTransparentNavigationBar();
+			}
 
-			if (background != null)
+			else
+			{
+				if (background != null)
 				navBar.BarTintColor = background.ToPlatform();
-			if (foreground != null)
-				navBar.TintColor = foreground.ToPlatform();
+				if (foreground != null)
+					navBar.TintColor = foreground.ToPlatform();
+			}
+
 			if (titleColor != null)
 			{
 				navBar.TitleTextAttributes = new UIStringAttributes
