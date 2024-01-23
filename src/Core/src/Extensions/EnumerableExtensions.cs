@@ -36,13 +36,13 @@ namespace Microsoft.Maui
 			foreach (TSource item in enumeration)
 			{
 				var group = func(item);
-				if (!result.ContainsKey(group))
+				if (!result.TryGetValue(group, out List<TSource>? value))
 				{
 					result.Add(group, new List<TSource> { item });
 				}
 				else
 				{
-					result[group].Add(item);
+					value.Add(item);
 				}
 			}
 			return result;
