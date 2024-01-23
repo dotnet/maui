@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<mct:Popup
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue20092Popup"
+    xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+    <Grid>
+        <Label
+            Padding="5"
+            HorizontalOptions="Fill"
+            LineBreakMode="WordWrap"
+            VerticalOptions="Fill">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span 
+                        FontSize="14" 
+                        Text="* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+                    <Span 
+                        FontSize="14" 
+                        Text="&#10;" />
+                    <Span 
+                        FontSize="14" 
+                        Text="* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+                    <Span 
+                        FontSize="14" 
+                        Text="&#10;" />
+                    <Span 
+                        FontSize="14" 
+                        Text="* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+    </Grid>
+</mct:Popup>

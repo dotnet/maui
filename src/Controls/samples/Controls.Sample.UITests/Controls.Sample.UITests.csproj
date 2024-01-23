@@ -39,6 +39,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Maui" Version="7.0.1" />
+    <PackageReference Include="CommunityToolkit.Maui.Core" Version="7.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
     <MauiImage Include="Resources\Images\dotnet_bot.svg" Link="Resources\Images\small_dotnet_bot.svg" Color="#FFFFFF" BaseSize="64,64" />
