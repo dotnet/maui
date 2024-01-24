@@ -37,6 +37,7 @@ namespace Microsoft.Maui.AppiumTests
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
+
 			try
 			{
 				this.Back();

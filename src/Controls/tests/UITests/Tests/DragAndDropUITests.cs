@@ -1,5 +1,4 @@
 ﻿using Maui.Controls.Sample;
-using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,6 +22,7 @@ namespace Microsoft.Maui.AppiumTests
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
+
 			this.Back();
 		}
 
