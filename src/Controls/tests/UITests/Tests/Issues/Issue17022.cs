@@ -20,7 +20,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
         [TestCase("NewNavigationPageTransparentTranslucentButton", false)]
         [TestCase("NewNavigationPageGridButton", false)]
         [TestCase("NewNavigationPageGridTransparentButton", false)]
-        // [TestCase("NewNavigationPageGridTranslucentButton", false)] // this test thinks the boxview is at the top of the screen, but it's not. Test this case manually for now.
+        [TestCase("NewNavigationPageGridTranslucentButton", false, true)] // this test thinks the boxview is at the top of the screen, but it's not. Test this case manually for now.
         [TestCase("NewNavigationPageGridTransparentTranslucentButton", true)]
         [TestCase("NewFlyoutPageButton", false)]
         [TestCase("NewFlyoutPageTransparentButton", false)]
@@ -28,9 +28,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
         [TestCase("NewFlyoutPageTransparentTranslucentButton", false)]
         [TestCase("NewFlyoutPageGridButton", false)]
         [TestCase("NewFlyoutPageGridTransparentButton", false)]
-        // [TestCase("NewFlyoutPageGridTranslucentButton", false)] // this test thinks the boxview is at the top of the screen, but it's not. Test this case manually for now.
+        [TestCase("NewFlyoutPageGridTranslucentButton", false, true)] // this test thinks the boxview is at the top of the screen, but it's not. Test this case manually for now.
         [TestCase("NewFlyoutPageGridTransparentTranslucentButton", true)]
-		public void Issue17022Test(string testButtonID, bool isTopOfScreen)
+        [TestCase("SemiTransparentNavigationPageBackgroundColor", true, true)]
+        [TestCase("SemiTransparentNavigationPageBrush", true, true)]
+        [TestCase("SemiTransparentFlyoutPageBackgroundColor", true, true)]
+        [TestCase("SemiTransparentFlyoutPageBrush", true, true)]
+
+		public void Issue17022Test(string testButtonID, bool isTopOfScreen, bool requiresScreenshot = false)
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, "This test is only for iOS");
 
@@ -38,10 +43,19 @@ namespace Microsoft.Maui.AppiumTests.Issues
             var boxView = App.WaitForElement("TopBoxView");
             Assert.NotNull(boxView);
 			var rect = boxView.GetRect();
-			if (isTopOfScreen)
-                Assert.AreEqual(rect.Y, 0);
-			else
-				Assert.AreNotEqual(rect.Y, 0);
+
+            if (requiresScreenshot)
+            {
+                VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + testButtonID);
+            }
+            else
+            {
+                if (isTopOfScreen)
+                    Assert.AreEqual(rect.Y, 0);
+                else
+                    Assert.AreNotEqual(rect.Y, 0);
+            }
+
             App.WaitForElement("PopPageButton").Click();
 		}
 	}
