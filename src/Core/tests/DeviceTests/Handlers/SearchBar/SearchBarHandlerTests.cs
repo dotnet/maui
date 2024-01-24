@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SearchBar)]
 	public partial class SearchBarHandlerTests : CoreHandlerTestBase<SearchBarHandler, SearchBarStub>
 	{
-		[Theory(DisplayName = "Background Initializes Correctly"]
+		[Theory(DisplayName = "Background Initializes Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
 		[InlineData(0xFF0000FF)]
@@ -257,11 +257,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, platformText);
 		}
 
-		[Fact(DisplayName = "CancelButtonColor Initialize Correctly"
-#if WINDOWS
-		, Skip = "Fails on Windows"
-#endif
-		)]
+		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
 			var searchBar = new SearchBarStub()
