@@ -1173,8 +1173,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_navigation.TryGetTarget(out n) &&
 					ChildViewControllers.Length > 0 &&
 					!n._disposed &&
-					!n._navigating &&
-					!n._secondaryToolbar.Hidden
+					!n._navigating
 					)
 				{	
 					var vc = ChildViewControllers[^1];
@@ -1183,7 +1182,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						return;
 
 					var newAdditionalSafeArea = vc.AdditionalSafeAreaInsets;
-					var offset = n._secondaryToolbar.Frame.Height;
+					var offset = n._secondaryToolbar.Hidden ? 0 : n._secondaryToolbar.Frame.Height;
 
 					if (newAdditionalSafeArea.Top != offset)
 					{
