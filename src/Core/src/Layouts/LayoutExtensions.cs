@@ -45,6 +45,11 @@ namespace Microsoft.Maui.Layouts
 			{
 				consumedWidth = Math.Min(bounds.Width, view.MaximumWidth);
 			}
+			else if (!IsExplicitSet(view.Width))
+			{
+				consumedWidth = Math.Min(bounds.Width, view.DesiredSize.Width);
+			}
+
 
 			// And the actual frame width needs to subtract the margins
 			var frameWidth = Math.Max(0, consumedWidth - margin.HorizontalThickness);
@@ -83,6 +88,11 @@ namespace Microsoft.Maui.Layouts
 				// If the width is not set, we use the minimum between the MaxWidth or the bound's width
 				desiredWidth = IsExplicitSet(view.Width) ? desiredWidth : Math.Min(bounds.Width, view.MaximumWidth);
 			}
+			else if (!IsExplicitSet(view.Width))
+			{
+				desiredWidth = Math.Min(bounds.Width, view.DesiredSize.Width);
+			}
+
 
 			return AlignHorizontal(bounds.X, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
 		}
