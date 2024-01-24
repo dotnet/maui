@@ -209,6 +209,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 			//initializeComponent
 			sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
+			sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(\"Trimming\", \"IL2026\", Justification = \"Source-generated code will be replaced by XamlC in Release builds.\")]");
 
 			// add MemberNotNull attributes
 			if (namedFields != null)
