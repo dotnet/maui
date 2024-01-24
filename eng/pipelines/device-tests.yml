@@ -45,7 +45,7 @@ pr:
 variables:
   - template: /eng/pipelines/common/variables.yml
   - name: AgentPoolAccessToken
-    value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
+    value: $(botdeploy--azdo--token)
 
 parameters:
   - name: provisionatorChannel
@@ -74,6 +74,7 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
+        - Agent.OSVersion -equals 13.5
 
   - name: catalystPool
     type: object
@@ -105,16 +106,14 @@ stages:
       windowsPool: ${{ parameters.windowsPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
-        androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
-        # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ '16.4', '15.5', '14.5', '13.7']
+        androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
+        iosVersions: [ 'simulator-16.4','simulator-15.5' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
         androidApiLevels: [ 30, 23 ]
-        # androidApiLevels: [ 30, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ '16.4' ]
+        iosVersions: [ 'simulator-16.4' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
@@ -145,14 +144,12 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
         - name: controls
           desc: Controls
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsExclude: [27, 25] # Ignore for now API25 since the runs's are not stable
           windowsPackageId: 'com.microsoft.maui.controls.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
-          # Skip this one for Mac Catalyst for now, it's crashing
-          catalyst: #$(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
-          # Skip this one for Windows for now, it's crashing
-          windows: #$(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+          catalyst: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+          windows: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
         - name: blazorwebview
           desc: BlazorWebView
           androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome

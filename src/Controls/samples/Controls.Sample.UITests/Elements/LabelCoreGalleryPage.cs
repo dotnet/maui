@@ -13,9 +13,9 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 		element.Text = "I am a label's text.";
 	}
 
-	protected override void Build(StackLayout stackLayout)
+	protected override void Build()
 	{
-		base.Build(stackLayout);
+		base.Build();
 
 		// demonstrates that formatted text appears correctly
 		{
@@ -269,6 +269,16 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 				TextType = TextType.Html
 			};
 			var htmlLabelContainer = new ViewContainer<Label>(Test.Label.HtmlTextType, label);
+			Add(htmlLabelContainer);
+		}
+
+		{
+			var label = new Label
+			{
+				Text = "<h1>Broken Html!<h1>",
+				TextType = TextType.Html
+			};
+			var htmlLabelContainer = new ViewContainer<Label>(Test.Label.BrokenHtmlTextType, label);
 			Add(htmlLabelContainer);
 		}
 

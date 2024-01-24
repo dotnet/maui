@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample.Pages
 	public class PageSearchHandler : SearchHandler
 	{
 		public IList<Data> Pages { get; set; }
-		public Type SelectedItemNavigationTarget { get; set; }
+		public Type? SelectedItemNavigationTarget { get; set; }
 
 		public PageSearchHandler()
 		{
@@ -63,7 +63,7 @@ namespace Maui.Controls.Sample.Pages
 
 			var thing = (Data)item;
 
-			var result = Shell.Current.Handler.MauiContext.Services.GetService(thing.Type) ??
+			var result = Shell.Current.Handler!.MauiContext!.Services.GetService(thing.Type) ??
 				Activator.CreateInstance(thing.Type);
 
 			await Shell.Current.Navigation.PushAsync(result as Page);

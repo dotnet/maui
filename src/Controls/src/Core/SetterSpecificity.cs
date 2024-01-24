@@ -4,7 +4,7 @@ using System;
 namespace Microsoft.Maui.Controls
 {
 	//NOTE: IDEA: review this: merge FROM into a single int (vsm, manual, dynamicR, binding), and CSS into another
-	internal readonly struct SetterSpecificity : IComparable<SetterSpecificity>
+	internal readonly struct SetterSpecificity : IComparable<SetterSpecificity>, IEquatable<SetterSpecificity>
 	{
 		public static readonly SetterSpecificity DefaultValue = new(-1, 0, 0, 0, -1, 0, 0, 0);
 		public static readonly SetterSpecificity VisualStateSetter = new SetterSpecificity(1, 0, 0, 0, 0, 0, 0, 0);
@@ -66,8 +66,12 @@ namespace Microsoft.Maui.Controls
 
 		public int CompareTo(SetterSpecificity other)
 		{
-			//VSM setters somehow supersedes Styles
-			if (Vsm != other.Vsm)
+			//VSM setters win over Manual value, except for implicit style VSMs
+			if (Vsm != other.Vsm && (
+				   Style != 0 && Style < StyleRD && other.Manual <= 0
+				|| other.Style != 0 && other.Style < StyleRD && Manual <= 0
+				|| Style >= StyleRD || other.Style >= StyleRD
+				|| Style <= 0 && other.Style <= 0))
 				return Vsm.CompareTo(other.Vsm);
 
 			//everything coming from Style has lower priority than something that does not
@@ -91,9 +95,9 @@ namespace Microsoft.Maui.Controls
 			return Type.CompareTo(other.Type);
 		}
 
-		public override bool Equals(object obj) => Equals((SetterSpecificity)obj);
+		public override bool Equals(object obj) => obj is SetterSpecificity s && Equals(s);
 
-		bool Equals(SetterSpecificity other) => CompareTo(other) == 0;
+		public bool Equals(SetterSpecificity other) => CompareTo(other) == 0;
 
 		public override int GetHashCode() => (Vsm, Manual, DynamicResource, Binding, Style, Id, Class, Type).GetHashCode();
 

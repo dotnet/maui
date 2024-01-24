@@ -19,7 +19,8 @@ namespace Microsoft.Maui.LifecycleEvents
 					.OnPlatformWindowCreated((window) =>
 					{
 						window.GetWindow()?.Created();
-						KeyboardAutoManagerScroll.Connect();
+						if (!KeyboardAutoManagerScroll.ShouldDisconnectLifecycle)
+							KeyboardAutoManagerScroll.Connect();
 					})
 					.WillTerminate(app =>
 					{

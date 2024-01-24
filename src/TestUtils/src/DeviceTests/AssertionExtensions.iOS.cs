@@ -9,6 +9,7 @@ using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -16,14 +17,12 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		public static async Task WaitForKeyboardToShow(this UIView view, int timeout = 1000)
 		{
-			var result = await Wait(() => KeyboardAutoManagerScroll.IsKeyboardShowing, timeout);
-			Assert.True(result);
+			await AssertEventually(() => KeyboardAutoManagerScroll.IsKeyboardShowing, timeout: timeout, message: $"Timed out waiting for {view} to show keyboard");
 		}
 
 		public static async Task WaitForKeyboardToHide(this UIView view, int timeout = 1000)
 		{
-			var result = await Wait(() => !KeyboardAutoManagerScroll.IsKeyboardShowing, timeout);
-			Assert.True(result);
+			await AssertEventually(() => !KeyboardAutoManagerScroll.IsKeyboardShowing, timeout: timeout, message: $"Timed out waiting for {view} to hide keyboard");
 		}
 
 		public static Task SendValueToKeyboard(this UIView view, char value, int timeout = 1000)
@@ -38,22 +37,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task WaitForFocused(this UIView view, int timeout = 1000)
 		{
-			if (!view.IsFocused())
-			{
-				await Wait(() => view.IsFocused(), timeout);
-			}
-
-			Assert.True(view.IsFocused());
+			await AssertEventually(view.IsFocused, timeout: timeout, message: $"Timed out waiting for {view} to become focused");
 		}
 
 		public static async Task WaitForUnFocused(this UIView view, int timeout = 1000)
 		{
-			if (view.IsFocused())
-			{
-				await Wait(() => view.IsFocused(), timeout);
-			}
-
-			Assert.False(view.IsFocused());
+			await AssertEventually(() => !view.IsFocused(), timeout: timeout, message: $"Timed out waiting for {view} to become unfocused");
 		}
 
 		static bool IsFocused(this UIView view) => view.Focused || view.IsFirstResponder;
@@ -89,6 +78,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static string ToBase64String(this UIImage bitmap)
 		{
 			var data = bitmap.AsPNG();
+
+			ArgumentNullException.ThrowIfNull(data);
+
 			return data.GetBase64EncodedString(NSDataBase64EncodingOptions.None);
 		}
 
@@ -195,7 +187,17 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Superview is WrapperView wrapper)
 				view = wrapper;
 
+
 			var imageRect = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
+
+			if (view.Frame.Width == 0 && view.Frame.Height == 0)
+			{
+				UIGraphicsImageRenderer renderer = new UIGraphicsImageRenderer(imageRect.Size);
+				return Task.FromResult(renderer.CreateImage(c =>
+				{
+					view.Layer.RenderInContext(c.CGContext);
+				}));
+			}
 
 			UIGraphics.BeginImageContext(imageRect.Size);
 
@@ -690,12 +692,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static bool HasBackButton(this UINavigationBar uINavigationBar)
 		{
-			var item = uINavigationBar.FindDescendantView<UIView>(result =>
-			{
-				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
-			});
+			var currentNavItem = uINavigationBar.Items.LastOrDefault();
 
-			return item is not null;
+			return
+				uINavigationBar.BackItem is not null &&
+				currentNavItem is not null &&
+				currentNavItem.LeftBarButtonItem is null &&
+				!currentNavItem.HidesBackButton;
 		}
 
 		public static UIView GetBackButton(this UINavigationBar uINavigationBar)

@@ -46,7 +46,8 @@ namespace Microsoft.Maui.Controls
 
 			var visualElement = (VisualElement)bindable;
 
-			((VisualStateGroupList)newValue).VisualElement = visualElement;
+			if (newValue != null)
+				((VisualStateGroupList)newValue).VisualElement = visualElement;
 
 			visualElement.ChangeVisualState();
 
@@ -71,7 +72,7 @@ namespace Microsoft.Maui.Controls
 
 			var groups = (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
-			var vsgSpecificity = context.Values.Keys.Last();
+			var vsgSpecificity = context.Values.GetSpecificityAndValue().Key;
 			if (vsgSpecificity == SetterSpecificity.DefaultValue)
 				vsgSpecificity = new SetterSpecificity();
 			groups.Specificity = vsgSpecificity;
@@ -484,6 +485,9 @@ namespace Microsoft.Maui.Controls
 				clone.States.Add(state.Clone());
 			}
 
+			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+
 			return clone;
 		}
 
@@ -595,6 +599,9 @@ namespace Microsoft.Maui.Controls
 				clone.StateTriggers.Add(stateTrigger);
 			}
 
+			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+
 			return clone;
 		}
 
@@ -651,15 +658,18 @@ namespace Microsoft.Maui.Controls
 	{
 		internal static IList<VisualStateGroup> Clone(this IList<VisualStateGroup> groups)
 		{
-			var actual = new VisualStateGroupList();
+			var clone = new VisualStateGroupList();
 
 			foreach (var group in groups)
 			{
-				group.VisualElement = actual.VisualElement;
-				actual.Add(group.Clone());
+				group.VisualElement = clone.VisualElement;
+				clone.Add(group.Clone());
 			}
 
-			return actual;
+			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(groups) is SourceInfo info)
+				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+
+			return clone;
 		}
 
 		internal static bool HasVisualState(this VisualElement element, string name)

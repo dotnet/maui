@@ -4,6 +4,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -183,7 +184,11 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
-		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[Theory(DisplayName = "MaxLength Initializes Correctly"
+#if WINDOWS
+			, Skip = "Might be same/related as: https://github.com/dotnet/maui/issues/7939"
+#endif
+		)]
 		[InlineData(2)]
 		[InlineData(5)]
 		[InlineData(8)]
@@ -249,7 +254,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(editor, async (editorHandler) =>
 			{
-				await AssertionExtensions.Wait(() => editorHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => editorHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyInitValue(editor, () => editor.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
@@ -267,7 +272,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(editor, async (editorHandler) =>
 			{
-				await AssertionExtensions.Wait(() => editorHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => editorHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyInitValue(editor, () => editor.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isEnabled);
@@ -287,7 +292,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(editor, async (editorHandler) =>
 			{
-				await AssertionExtensions.Wait(() => editorHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => editorHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyUpdatesValue(
@@ -312,7 +317,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(editor, async (editorHandler) =>
 			{
-				await AssertionExtensions.Wait(() => editorHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => editorHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyUpdatesValue(
@@ -341,7 +346,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(editor, async (editorHandler) =>
 			{
-				await AssertionExtensions.Wait(() => editorHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => editorHandler.PlatformView.IsLoaded());
 			});
 
 			var nativeTextPrediction = await GetValueAsync(editor, GetNativeIsTextPredictionEnabled);

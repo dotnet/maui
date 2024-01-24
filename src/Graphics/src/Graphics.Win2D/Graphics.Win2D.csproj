@@ -1,12 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(WindowsMauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(WindowsMauiPlatforms);$(WindowsMauiPreviousPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</AssemblyName>
     <IsTrimmable>false</IsTrimmable>
     <NoWarn>$(NoWarn);RS0026;RS0041</NoWarn>
     <DefineConstants>$(DefineConstants);MAUI_GRAPHICS_WIN2D</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</PackageId>
+    <PackageTags>$(DefaultPackageTags);graphics;drawing;win2d</PackageTags>
+    <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains additional graphics and drawing APIs for using the Win2D graphics engine with .NET MAUI Graphics. This package is no longer needed and all APIs are now also in the Microsoft.Maui.Graphics package.</Description>
   </PropertyGroup>
 
   <ItemGroup>

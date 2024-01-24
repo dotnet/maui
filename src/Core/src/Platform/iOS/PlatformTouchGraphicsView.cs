@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly UIHoverGestureRecognizerProxy _proxy;
 		WeakReference<IGraphicsView>? _graphicsView;
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIHoverGestureRecognizer? _hoverGesture;
 		RectF _rect;
-		bool _pressedContained = false;
+		bool _pressedContained;
 
 		public PlatformTouchGraphicsView()
 		{

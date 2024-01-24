@@ -1842,19 +1842,7 @@ Microsoft.Maui.RectangleAdorner.VisualView.get -> Microsoft.Maui.IView!
 Microsoft.Maui.RectangleGridAdorner
 Microsoft.Maui.RectangleGridAdorner.RectangleGridAdorner(Microsoft.Maui.IView! view, float density = 1, Microsoft.Maui.Graphics.Point? offset = null, Microsoft.Maui.Graphics.Color? fillColor = null, Microsoft.Maui.Graphics.Color? strokeColor = null) -> void
 Microsoft.Maui.Resource
-Microsoft.Maui.Resource.Animation
-Microsoft.Maui.Resource.Animation.Animation() -> void
-Microsoft.Maui.Resource.Attribute
-Microsoft.Maui.Resource.Attribute.Attribute() -> void
-Microsoft.Maui.Resource.Drawable
-Microsoft.Maui.Resource.Drawable.Drawable() -> void
-Microsoft.Maui.Resource.Id
-Microsoft.Maui.Resource.Id.Id() -> void
-Microsoft.Maui.Resource.Layout
-Microsoft.Maui.Resource.Layout.Layout() -> void
 Microsoft.Maui.Resource.Resource() -> void
-Microsoft.Maui.Resource.Style
-Microsoft.Maui.Resource.Style.Style() -> void
 Microsoft.Maui.RetrievePlatformValueRequest<T>
 Microsoft.Maui.RetrievePlatformValueRequest<T>.Result.get -> T
 Microsoft.Maui.RetrievePlatformValueRequest<T>.RetrievePlatformValueRequest() -> void
@@ -3057,30 +3045,6 @@ static Microsoft.Maui.Primitives.Dimension.ResolveMinimum(double value) -> doubl
 static Microsoft.Maui.PropertyMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<TVirtualView, TViewHandler>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
 static Microsoft.Maui.PropertyMapperExtensions.ModifyMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<TVirtualView, TViewHandler>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>?>! method) -> void
 static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<TVirtualView, TViewHandler>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
-static Microsoft.Maui.Resource.Animation.nav_default_enter_anim -> int
-static Microsoft.Maui.Resource.Animation.nav_default_exit_anim -> int
-static Microsoft.Maui.Resource.Animation.nav_default_pop_enter_anim -> int
-static Microsoft.Maui.Resource.Animation.nav_default_pop_exit_anim -> int
-static Microsoft.Maui.Resource.Attribute.actionBarSize -> int
-static Microsoft.Maui.Resource.Attribute.colorSwitchThumbNormal -> int
-static Microsoft.Maui.Resource.Attribute.maui_splash -> int
-static Microsoft.Maui.Resource.Attribute.scrollViewStyle -> int
-static Microsoft.Maui.Resource.Drawable.abc_ic_clear_material -> int
-static Microsoft.Maui.Resource.Id.nav_host -> int
-static Microsoft.Maui.Resource.Id.nav_host_fragment_container -> int
-static Microsoft.Maui.Resource.Id.navigation_layout -> int
-static Microsoft.Maui.Resource.Id.navigationlayout_appbar -> int
-static Microsoft.Maui.Resource.Id.navigationlayout_bottomtabs -> int
-static Microsoft.Maui.Resource.Id.navigationlayout_content -> int
-static Microsoft.Maui.Resource.Id.navigationlayout_toptabs -> int
-static Microsoft.Maui.Resource.Id.search_button -> int
-static Microsoft.Maui.Resource.Id.search_close_btn -> int
-static Microsoft.Maui.Resource.Layout.drawer_layout -> int
-static Microsoft.Maui.Resource.Layout.fragment_backstack -> int
-static Microsoft.Maui.Resource.Layout.navigationlayout -> int
-static Microsoft.Maui.Resource.Style.Maui_MainTheme_NoActionBar -> int
-static Microsoft.Maui.Resource.Style.scrollViewTheme -> int
-static Microsoft.Maui.Resource.Style.ThemeOverlay_AppCompat_Light -> int
 static Microsoft.Maui.SemanticExtensions.SetSemanticFocus(this Microsoft.Maui.IView! element) -> void
 static Microsoft.Maui.SizeRequest.implicit operator Microsoft.Maui.Graphics.Size(Microsoft.Maui.SizeRequest size) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.SizeRequest.implicit operator Microsoft.Maui.SizeRequest(Microsoft.Maui.Graphics.Size size) -> Microsoft.Maui.SizeRequest

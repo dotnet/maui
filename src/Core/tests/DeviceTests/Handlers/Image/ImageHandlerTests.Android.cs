@@ -21,12 +21,12 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<CountedImageHandler>(image);
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
 				image.Source = new FileImageSourceStub("blue.png");
 				handler.UpdateValue(nameof(IImage.Source));
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
 			});
 		}

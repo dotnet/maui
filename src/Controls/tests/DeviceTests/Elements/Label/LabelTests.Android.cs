@@ -16,30 +16,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelTests
 	{
-		[Fact]
-		public async Task FormattedStringSpanTextHasCorrectColorWhenChanges()
-		{
-			var expected = Colors.Red;
-
-			var formattedLabel = new Label
-			{
-				WidthRequest = 200,
-				HeightRequest = 50,
-				FormattedText = new FormattedString
-				{
-					Spans =
-					{
-						new Span { Text = "short" },
-						new Span { Text = " long second string"}
-					}
-				},
-			};
-
-			formattedLabel.TextColor = expected;
-
-			await ValidateHasColor<LabelHandler>(formattedLabel, expected);
-		}
-
 		[Fact(DisplayName = "Html Text Initializes Correctly")]
 		public async Task HtmlTextInitializesCorrectly()
 		{
@@ -88,6 +64,28 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(platformLabel.Gravity.HasFlag(GravityFlags.Top), "Label should not have the Top flag.");
 			Assert.False(platformLabel.Gravity.HasFlag(GravityFlags.Bottom), "Label should not have the Bottom flag.");
 			Assert.True(platformLabel.Gravity.HasFlag(GravityFlags.CenterVertical), "Label should only have the CenterVertical flag.");
+		}
+
+		// https://github.com/dotnet/maui/issues/18059
+		[Fact(DisplayName = "Using TailTruncation LineBreakMode with 2 MaxLines")]
+		public async Task UsingTailTruncationWith2MaxLines()
+		{
+			var label = new Label()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				LineBreakMode = LineBreakMode.TailTruncation,
+				MaxLines = 2
+			};
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+
+			var platformLabel = GetPlatformLabel(handler);
+
+			await InvokeOnMainThreadAsync((System.Action)(() =>
+			{
+				Assert.Equal(2, GetPlatformMaxLines(handler));
+				Assert.Equal(LineBreakMode.TailTruncation.ToPlatform(), GetPlatformLineBreakMode(handler));
+			}));
 		}
 
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>

@@ -41,6 +41,7 @@
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
+    <MauiImage Include="Resources\Images\dotnet_bot.svg" Link="Resources\Images\small_dotnet_bot.svg" Color="#FFFFFF" BaseSize="64,64" />
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="168,208" />
   </ItemGroup>

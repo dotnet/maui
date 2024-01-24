@@ -87,6 +87,21 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			c = await SecureStorage.GetAsync(key);
 			Assert.Equal(data, c);
 		}
+
+		[Fact]
+		public void Set_Get_Wait_MultipleTimes()
+		{
+			for (int i = 0; i < 100; i++)
+			{
+				var set = SecureStorage.SetAsync(i.ToString(), i.ToString());
+				set.Wait();
+
+				var get = SecureStorage.GetAsync(i.ToString());
+				get.Wait();
+
+				Assert.Equal(i.ToString(), get.Result);
+			}
+		}
 #endif
 
 		[Fact
@@ -167,6 +182,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if MACCATALYST
 			(Skip = "Need to configure entitlements.")
 #endif
+
+#if WINDOWS
+			(Skip = "IOException on unpackaged: The process cannot access the file...")
+#endif
 		]
 		public async Task Set_Get_Async_MultipleTimes()
 		{
@@ -184,6 +203,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact
 #if MACCATALYST
 			(Skip = "Need to configure entitlements.")
+#endif
+
+#if WINDOWS
+			(Skip = "IOException on unpackaged: The process cannot access the file...")
 #endif
 		]
 		public async Task Set_Get_Remove_Async_MultipleTimes()

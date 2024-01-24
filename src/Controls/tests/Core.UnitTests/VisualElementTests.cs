@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Data.Common;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Primitives;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
@@ -90,7 +92,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ContainerChangedFiresWhenMapContainerIsCalled()
 		{
-			var handlerStub = new HandlerStub((PropertyMapper)VisualElement.ControlsVisualElementMapper);
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper);
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+
+			VisualElement.RemapForControls(mapper, commandMapper);
+			var handlerStub = new HandlerStub(mapper);
 			var button = new Button();
 			button.Handler = handlerStub;
 
@@ -100,7 +106,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-		[Theory]
+		[Theory, Category(TestCategory.Memory)]
 		[InlineData(typeof(ImmutableBrush), false)]
 		[InlineData(typeof(SolidColorBrush), false)]
 		[InlineData(typeof(LinearGradientBrush), true)]
@@ -111,13 +117,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				(Brush)Activator.CreateInstance(type) :
 				(Brush)Activator.CreateInstance(type, Colors.CornflowerBlue);
 
-			var reference = new WeakReference(new VisualElement { Background = brush });
+			WeakReference CreateReference()
+			{
+				return new WeakReference(new VisualElement { Background = brush });
+			}
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			var reference = CreateReference();
+
+			await TestHelpers.Collect();
 
 			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
+
+			GC.KeepAlive(brush);
 		}
 
 		[Fact]

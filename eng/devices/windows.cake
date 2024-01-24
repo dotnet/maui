@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 const string defaultVersion = "10.0.19041";
-const string dotnetVersion = "net7.0";
+const string dotnetVersion = "net8.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_PROJECT);
@@ -17,6 +17,7 @@ var PACKAGEID = Argument("packageid", EnvironmentVariable("WINDOWS_TEST_PACKAGE_
 
 // optional
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
+var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-windows{defaultVersion}");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
@@ -35,6 +36,7 @@ string DOTNET_PLATFORM = $"win10-x64";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string certificateThumbprint = "";
 bool isPackagedTestRun = TEST_DEVICE.ToLower().Equals("packaged");
+bool isControlsProjectTestRun = PROJECT.FullPath.EndsWith("Controls.DeviceTests.csproj");
 
 // Certificate Common Name to use/generate (eg: CN=DotNetMauiTests)
 var certCN = Argument("commonname", "DotNetMAUITests");
@@ -138,12 +140,14 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	SetDotNetEnvironmentVariables(DOTNET_PATH);
+	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
 
-	var dd = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("DOTNET_PATH: {0}", dd);
+	DOTNET_ROOT = localDotnetRoot.ToString();
 
-	var toolPath = $"{dd}/dotnet.exe";
+	SetDotNetEnvironmentVariables(DOTNET_ROOT);
+
+	var toolPath = $"{localDotnetRoot}/dotnet.exe";
 
 	Information("toolPath: {0}", toolPath);
 
@@ -173,11 +177,13 @@ Task("Build")
 		s.MSBuildSettings.Properties.Add("PackageCertificateThumbprint", new List<string> { certificateThumbprint });
 		s.MSBuildSettings.Properties.Add("AppxPackageSigningEnabled", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
+		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "PACKAGED" });
 	}
 	else
 	{
 		// Apply correct build properties for unpackaged builds
 		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
+		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "UNPACKAGED" });
 	}
 
 	// Set correct launchSettings.json setting for packaged/unpackaged
@@ -204,12 +210,21 @@ Task("Test")
 
 	Information("Cleaned directories");
 
-	var testResultsFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
+	var testResultsPath = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
+	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
+	var testsToRunFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\devicetestcategories.txt";
+
 	Information($"Test Results File: {testResultsFile}");
+	Information($"Tests To Run File: {testsToRunFile}");
 
 	if (FileExists(testResultsFile))
 	{
 		DeleteFile(testResultsFile);
+	}
+
+	if (FileExists(testsToRunFile))
+	{
+		DeleteFile(testsToRunFile);
 	}
 
 	if (isPackagedTestRun)
@@ -235,24 +250,66 @@ Task("Test")
 		// Install the DeviceTests app
 		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
 
-		var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -Args \"" + testResultsFile + "\"";
+		if (isControlsProjectTestRun)
+		{
+			// Start the app once, this will trigger the discovery of the test categories
+			var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
+			StartProcess("powershell", startArgsInitial);
 
-		Information(startArgs);
+			Information($"Waiting 10 seconds for process to finish...");
+			System.Threading.Thread.Sleep(10000);
 
-		// Start the DeviceTests app for packaged
-		StartProcess("powershell", startArgs);
+			var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
+
+			for (int i = 0; i <= testCategoriesToRun; i++)
+			{
+				var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
+
+				Information(startArgs);
+
+				// Start the DeviceTests app for packaged
+				StartProcess("powershell", startArgs);
+
+				Information($"Waiting 10 seconds for the next...");
+				System.Threading.Thread.Sleep(10000);
+			}
+		}
+		else
+		{
+			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\"";
+
+			Information(startArgs);
+
+			// Start the DeviceTests app for packaged
+			StartProcess("powershell", startArgs);
+		}
 	}
 	else
 	{
 		// Unpackaged process blocks the thread, so we can wait shorter for the results
 		waitForResultTimeoutInSeconds = 30;
 
-		// Start the DeviceTests app for unpackaged
-		StartProcess(TEST_APP, testResultsFile);
+		if (isControlsProjectTestRun)
+		{
+			// Start the app once, this will trigger the discovery of the test categories
+			StartProcess(TEST_APP, testResultsFile + " -1");
+
+			var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
+
+			for (int i = 0; i <= testCategoriesToRun; i++)
+			{
+				// Start the DeviceTests app for unpackaged
+				StartProcess(TEST_APP, testResultsFile + " " + i);
+			}
+		}
+		else
+		{
+			StartProcess(TEST_APP, testResultsFile);
+		}
 	}
 
 	var waited = 0;
-	while (!FileExists(testResultsFile)) {
+	while (System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length == 0) {
 		System.Threading.Thread.Sleep(1000);
 		waited++;
 
@@ -261,12 +318,63 @@ Task("Test")
 			break;
 	}
 
-	if(!FileExists(testResultsFile))
+	// If we're running the Controls project, double-check if we have all test result files
+	// and if the categories we expected to run match the test result files
+	if (isControlsProjectTestRun)
 	{
-		throw new Exception($"Test results file not found after {waited} seconds, process might have crashed or not completed yet.");
+		var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);
+		var expectedCategoriesRanCount = expectedCategories.Length;
+		var actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
+
+		while (actualResultFileCount < expectedCategoriesRanCount) {
+			actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
+			System.Threading.Thread.Sleep(1000);
+			waited++;
+
+			Information($"Waiting {waited} additional second(s) for tests to finish...");
+			if (waited >= 30)
+				break;
+		}
+			
+		if (FileExists(testsToRunFile))
+		{
+			DeleteFile(testsToRunFile);
+		}
+
+		// While the count should match exactly, if we get more files somehow we'll allow it
+		// If it's less, throw an exception to fail the pipeline.
+		if (actualResultFileCount < expectedCategoriesRanCount)
+		{
+			// Grab the category name from the file name
+			// Ex: "TestResults-com_microsoft_maui_controls_devicetests_Frame.xml" -> "Frame"
+			var actualFiles = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml");
+			var actualCategories = actualFiles.Select(x => x.Substring(0, x.Length - 4)   // Remove ".xml"
+					 										.Split('_').Last()).ToList();
+
+			foreach (var category in expectedCategories)
+			{
+				if (!actualCategories.Contains(category))
+				{
+					Error($"Error: missing test file result for {category}");
+				}
+			}
+
+			throw new Exception($"Expected test result files: {expectedCategoriesRanCount}, actual files: {actualResultFileCount}, some process(es) might have crashed.");
+		}
 	}
 
-	Information($"Tests Finished");
+	if(System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length == 0)
+	{
+		throw new Exception($"Test result file(s) not found after {waited} seconds, process might have crashed or not completed yet.");
+	}
+
+	foreach(var file in System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml"))
+	{
+		var failed = XmlPeek(file, "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
+		if (!string.IsNullOrEmpty(failed)) {
+			throw new Exception($"At least {failed} test(s) failed.");
+		}
+	}
 });
 
 
@@ -332,18 +440,23 @@ Task("uitest")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	var dd = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("DOTNET_PATH: {0}", dd);
+	Information("old dotnet root: {0}", DOTNET_ROOT);
+	Information("old dotnet path: {0}", DOTNET_PATH);
 
-	var toolPath = $"{dd}/dotnet.exe";
+	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
 
-	Information("toolPath: {0}", toolPath);
+	DOTNET_ROOT = localDotnetRoot.ToString();
 
-	SetDotNetEnvironmentVariables(dd.FullPath);
+	var localToolPath = $"{localDotnetRoot}/dotnet.exe";
+
+	Information("new dotnet toolPath: {0}", localToolPath);
+
+	SetDotNetEnvironmentVariables(DOTNET_ROOT);
 
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
-			ToolPath = toolPath,
+			ToolPath = localToolPath,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)
@@ -355,7 +468,7 @@ Task("uitest")
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, toolPath, noBuild: true);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, localToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");
 });
 
 RunTarget(TARGET);

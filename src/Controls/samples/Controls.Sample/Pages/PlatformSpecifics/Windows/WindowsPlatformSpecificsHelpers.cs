@@ -55,7 +55,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			var enumType = typeof(ToolbarPlacement);
 
-			return CreateChanger(enumType, Enum.GetName(enumType, page.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetToolbarPlacement()), picker =>
+			return CreateChanger(enumType, Enum.GetName(enumType, page.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetToolbarPlacement())!, picker =>
 			{
 				page.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetToolbarPlacement((ToolbarPlacement)Enum.Parse(enumType, picker.Items[picker.SelectedIndex]));
 			}, "Select Toolbar Placement");

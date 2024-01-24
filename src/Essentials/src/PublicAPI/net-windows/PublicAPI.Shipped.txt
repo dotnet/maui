@@ -394,6 +394,8 @@ Microsoft.Maui.ApplicationModel.Permissions.Photos
 Microsoft.Maui.ApplicationModel.Permissions.Photos.Photos() -> void
 Microsoft.Maui.ApplicationModel.Permissions.PhotosAddOnly
 Microsoft.Maui.ApplicationModel.Permissions.PhotosAddOnly.PhotosAddOnly() -> void
+Microsoft.Maui.ApplicationModel.Permissions.PostNotifications
+Microsoft.Maui.ApplicationModel.Permissions.PostNotifications.PostNotifications() -> void
 Microsoft.Maui.ApplicationModel.Permissions.Reminders
 Microsoft.Maui.ApplicationModel.Permissions.Reminders.Reminders() -> void
 Microsoft.Maui.ApplicationModel.Permissions.Sensors

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static IWindow GetWindow(this CoreApplication application)
 		{
-			foreach (var window in MauiApplication.Current.Application.Windows)
+			foreach (var window in IPlatformApplication.Current?.Application?.Windows ?? Array.Empty<IWindow>())
 			{
 				if (window?.Handler?.PlatformView is Window win && win == GetDefaultWindow())
 					return window;
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 			if (platformWindow == null)
 				return null;
 
-			foreach (var window in MauiApplication.Current.Application.Windows)
+			foreach (var window in IPlatformApplication.Current?.Application?.Windows ?? Array.Empty<IWindow>())
 			{
 				if (window?.Handler?.PlatformView is Window win && win == platformWindow)
 					return window;
@@ -81,11 +81,11 @@ namespace Microsoft.Maui.Platform
 			{
 				foreach (var pair in state)
 				{
-					userInfo.AddItem(pair.Key, pair.Value);
+					userInfo?.AddItem(pair.Key, pair.Value);
 				}
 			}
 
-			return userInfo;
+			return userInfo!;
 		}
 
 		public static Window GetDefaultWindow()

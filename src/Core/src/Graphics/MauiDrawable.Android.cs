@@ -413,7 +413,7 @@ namespace Microsoft.Maui.Graphics
 						float x = strokeThickness / 2;
 						float y = strokeThickness / 2;
 
-						var bounds = new Graphics.Rect(x, y, w, h);
+						var bounds = new Rect(x, y, w, h);
 						var clipPath = _shape?.ToPlatform(bounds, strokeThickness, _density);
 
 						if (clipPath == null)
@@ -522,10 +522,13 @@ namespace Microsoft.Maui.Graphics
 					platformPaint.Color = _backgroundColor.Value;
 #pragma warning restore CA1416
 				}
+				else if (_background != null)
+				{
+					SetPaint(platformPaint, _background);
+				}
 				else
 				{
-					if (_background != null)
-						SetPaint(platformPaint, _background);
+					platformPaint.Color = AColor.Transparent;
 				}
 			}
 		}
@@ -595,7 +598,7 @@ namespace Microsoft.Maui.Graphics
 			platformPaint.SetShader(radialGradient);
 		}
 
-		GradientData GetGradientPaintData(GradientPaint gradientPaint)
+		static GradientData GetGradientPaintData(GradientPaint gradientPaint)
 		{
 			var orderStops = gradientPaint.GradientStops;
 

@@ -8,8 +8,8 @@
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>Windows\</WindowsRoot>
     <TizenRoot>Tizen\</TizenRoot>
-    <IsPackable>true</IsPackable>
     <IsTrimmable Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsTrimmable>
+    <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <DefineConstants>$(DefineConstants);COMPATIBILITY</DefineConstants>
@@ -18,6 +18,14 @@
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>True</IsPackable>
+    <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
+    <PackageTags>$(DefaultPackageTags);compatibility;xamarin.forms;migration</PackageTags>
+    <Description>Compatibility APIs and objects for .NET Multi-platform App UI (.NET MAUI) apps. This package contains a collection of APIs and views that allow for easier migration from Xamarin.Forms.</Description>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />

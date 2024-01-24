@@ -1,25 +1,25 @@
-﻿using TestUtils.Appium.UITests;
-using Xamarin.UITest.Queries;
+﻿using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
 	internal sealed class StateViewContainerRemote : BaseViewContainerRemote
 	{
-		public StateViewContainerRemote(IUITestContext? testContext, Enum formsType, string? platformViewType)
-			: base(testContext, formsType, platformViewType)
+		public StateViewContainerRemote(IUIClientContext? testContext, Enum formsType)
+			: base(testContext, formsType)
 		{
 		}
 
 		public void TapStateButton()
 		{
 			App.Screenshot("Before state change");
-			App.Tap(q => q.Raw(StateButtonQuery));
+			App.Click(StateButtonQuery);
 			App.Screenshot("After state change");
 		}
 
-		public AppResult GetStateLabel()
+		public IUIElement GetStateLabel()
 		{
-			return App.Query(q => q.Raw(StateLabelQuery)).First();
+			return App.FindElement(StateLabelQuery);
 		}
 	}
 }

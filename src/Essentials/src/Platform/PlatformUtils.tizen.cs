@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // Type or member is obsolete
 using System.Threading.Tasks;
 using Tizen.Applications;
 using Tizen.Maps;
