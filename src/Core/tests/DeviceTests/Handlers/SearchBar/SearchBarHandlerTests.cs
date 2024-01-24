@@ -267,7 +267,17 @@ namespace Microsoft.Maui.DeviceTests
 				CancelButtonColor = Colors.Yellow,
 			};
 
+#if WINDOWS
+			// The cancel button won't exist in the SearchBar until the SearchBar is loaded (and OnApplyTemplate is called)
+			// so we need to attach the SearchBar to the running app before we can check the color
+
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
+			{
+				await ValidatePropertyInitValue(searchBar, () => searchBar.CancelButtonColor, GetNativeCancelButtonColor, Colors.Yellow);
+			});
+#else
 			await ValidateHasColor(searchBar, Colors.Yellow);
+#endif
 		}
 
 		[Fact(DisplayName = "Null Cancel Button Color Doesn't Crash")]
