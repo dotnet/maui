@@ -13,11 +13,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void NoScrollbarsTest()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac, TestDevice.Windows, TestDevice.Android
-			});
-
 			App.WaitForElement("WaitForStubControl");
 
 			// We verify the reference snapshot where the ScrollView should
