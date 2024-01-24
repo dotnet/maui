@@ -16,12 +16,9 @@ namespace Microsoft.Maui
 	{
 		private const bool IsXamlRuntimeParsingSupportedByDefault = true;
 
-		internal static bool IsXamlRuntimeParsingSupported =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported", out bool isEnabled)
+		internal static bool IsXamlRuntimeParsingSupported
+			=> AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported", out bool isEnabled)
 				? isEnabled
 				: IsXamlRuntimeParsingSupportedByDefault;
-
-		internal static bool IsDebuggerSupported =>
-			AppContext.TryGetSwitch("System.Diagnostics.Debugger.IsSupported", out bool isSupported) && isSupported;
 	}
 }

@@ -55,36 +55,20 @@ namespace Microsoft.Maui.Controls
 			{
 				if (RuntimeFeature.IsXamlRuntimeParsingSupported)
 				{
-					_mergedInstance = LoadResourceDictionary();
+					_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateFromResource<ResourceDictionary>(resourcePath, assembly, lineInfo);
 				}
 				else
 				{
-					// The general guidance for feature switches is to behave the same way in Debug and Release builds.
-					// We cannot avoid this codepath in Debug, but we can assume that XamlC will compile the
-					// ResourceDictionary and generate the XamlResourceIdAttribute to associate the generated type
-					// with this resource path. There is also no need to produce any trimming warnings.
-					// In Release, there is no fallback when XAML loading is disabled.
-					if (RuntimeFeature.IsDebuggerSupported)
-					{
-						_mergedInstance = _LoadResourceDictionary();
-					}
-					else
-					{
-						throw new InvalidOperationException(
-							$"The resource '{resourcePath}' has not been compiled using XamlC and parsing XAML resources at runtime is disabled. "
-							+ "Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting "
-							+ "the MauiXamlRuntimeParsingSupport MSBuild property to true.");
-					}
+					// This codepath is only ever hit when XamlC is explicitly disabled for a given resource dictionary.
+					// The developer had to add [XamlCompilation(XamlCompilationOptions.Skip)] or <?xaml-comp compile="false" ?> to their code.
+					// XamlC will produce a warning in this case (MAUIG0070 or XC0010).
+					throw new InvalidOperationException(
+						$"The resource '{resourcePath}' has not been compiled using XamlC and parsing XAML resources at runtime is disabled. "
+						+ "Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting "
+						+ "the MauiXamlRuntimeParsingSupport MSBuild property to true.");
 				}
 			}
 			OnValuesChanged(_mergedInstance.ToArray());
-
-			[RequiresUnreferencedCode(TrimmerConstants.XamlLoadingTrimmerWarning)]
-			ResourceDictionary LoadResourceDictionary()
-				=> _LoadResourceDictionary();
-
-			ResourceDictionary _LoadResourceDictionary()
-				=> DependencyService.Get<IResourcesLoader>().CreateFromResource<ResourceDictionary>(resourcePath, assembly, lineInfo);
 		}
 
 		ObservableCollection<ResourceDictionary> _mergedDictionaries;

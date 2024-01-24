@@ -3,8 +3,6 @@
     <type fullname="Microsoft.Maui.RuntimeFeature">
       <method signature="System.Boolean get_IsXamlRuntimeParsingSupported()" body="stub" feature="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported" value="false" featurevalue="false" />
       <method signature="System.Boolean get_IsXamlRuntimeParsingSupported()" body="stub" feature="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported" value="true" featurevalue="true" />
-      <method signature="System.Boolean get_IsDebuggerSupported()" body="stub" feature="System.Diagnostics.Debugger.IsSupported" value="true" featurevalue="true" />
-      <method signature="System.Boolean get_IsDebuggerSupported()" body="stub" feature="System.Diagnostics.Debugger.IsSupported" value="false" featurevalue="false" />
     </type>
   </assembly>
 </linker>
