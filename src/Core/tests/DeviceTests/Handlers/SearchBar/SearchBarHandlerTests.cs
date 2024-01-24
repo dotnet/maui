@@ -1,7 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
@@ -10,11 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SearchBar)]
 	public partial class SearchBarHandlerTests : CoreHandlerTestBase<SearchBarHandler, SearchBarStub>
 	{
-		[Theory(DisplayName = "Background Initializes Correctly"
-#if IOS || MACCATALYST
-			, Skip = "This test is currently invalid on iOS https://github.com/dotnet/maui/issues/13693"
-#endif
-			)]
+		[Theory(DisplayName = "Background Initializes Correctly"]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
 		[InlineData(0xFF0000FF)]
@@ -28,8 +22,16 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Background",
 			};
 
+#if IOS || MACCATALYST
+			await ValidatePropertyInitValue(searchBar, () => 
+				(searchBar.Background as SolidPaint).Color, 
+				GetNativeBackgroundColor, 
+				(searchBar.Background as SolidPaint).Color);
+#else
 			await ValidateHasColor(searchBar, expected);
+#endif
 		}
+
 
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
