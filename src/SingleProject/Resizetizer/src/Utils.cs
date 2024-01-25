@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Resizetizer
 	internal class Utils
 	{
 		static readonly Regex rxResourceFilenameValidation
-			= new Regex(@"^[a-z]+[a-z0-9_]{0,}[^_]$", RegexOptions.Singleline | RegexOptions.Compiled);
+			= new Regex(@"^[a-z]([a-z0-9_]*[a-z0-9])?$", RegexOptions.Singleline | RegexOptions.Compiled);
 
 		public static bool IsValidResourceFilename(string filename)
 			=> rxResourceFilenameValidation.IsMatch(Path.GetFileNameWithoutExtension(filename));
