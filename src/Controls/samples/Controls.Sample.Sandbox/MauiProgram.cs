@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui;
+﻿using CommunityToolkit.Maui;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
@@ -11,7 +12,8 @@ namespace Maui.Controls.Sample
 			MauiApp
 				.CreateBuilder()
 				.UseMauiMaps()
-				.UseMauiApp<App>()
+				.UseMauiCommunityToolkit()
+				.UseMauiApp<LabelTextWrapTest.App>()
 				.Build();
 	}
 

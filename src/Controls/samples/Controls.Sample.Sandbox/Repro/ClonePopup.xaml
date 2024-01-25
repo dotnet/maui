@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mct:Popup
+    x:Class="LabelTextWrapTest.ClonePopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+
+
+    <mct:Popup.Content>
+
+        <Grid
+            x:Name="ContentGrid"
+            Padding="5"
+          
+            HorizontalOptions="Fill"
+            RowDefinitions="Auto,Auto,Auto"
+            VerticalOptions="Fill">
+
+            <Label
+                Grid.Row="0"
+                FontAttributes="Bold"
+                FontSize="18"
+                HorizontalTextAlignment="Center"
+                Text="Text Entry"
+                
+                VerticalTextAlignment="Center" />
+            <Entry
+               
+                Grid.Row="1"
+                FontSize="16"
+               
+                Visual="Material" />
+            <!--<Grid
+                Grid.Row="2"
+                ColumnDefinitions="*, *"
+                ColumnSpacing="5"
+                HorizontalOptions="Fill">
+                <Button
+                    BackgroundColor="DarkGray"
+                    Clicked="CancelButton_Clicked"
+                    FontSize="16"
+                    Text="Cancel"
+                    TextColor="White"
+                    VerticalOptions="Fill" />
+                <Button
+                    x:Name="OK"
+                    Grid.Column="1"
+                    BackgroundColor="Green"
+                    
+                    FontSize="16"
+                    Text="Ok"
+                    TextColor="White"
+                    VerticalOptions="Fill" />
+
+            </Grid>-->
+
+
+            <Label
+                x:Name="HelpText"
+                Grid.Row="2"
+                Padding="5"
+                HorizontalOptions="Fill"
+                LineBreakMode="WordWrap"
+                VerticalOptions="Fill">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span FontSize="14" Text="* creates a new entry from default template. creates a new entry from default template." />
+                        <Span FontSize="14" Text="&#10;" />
+                        <Span FontSize="14" Text="* creates a new entry from default template. creates a new entry from default template." />
+                        <Span FontSize="14" Text="&#10;" />
+                        <Span FontSize="14" Text="* creates a new entry from default template. creates a new entry from default template." />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+
+
+
+        </Grid>
+
+    </mct:Popup.Content>
+</mct:Popup>
