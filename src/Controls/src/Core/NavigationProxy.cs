@@ -212,8 +212,7 @@ namespace Microsoft.Maui.Controls.Internals
 			INavigation currentInner = Inner;
 			if (currentInner is null)
 			{
-				_pushStack.Value.Add(page);
-				return Task.FromResult(page);
+				throw new InvalidOperationException("Page must be wrapped into a navigation page to perform navigation");
 			}
 			return currentInner.PushAsync(page, animated);
 		}
