@@ -32,11 +32,12 @@ namespace Microsoft.Maui.Hosting
 		}
 
 		public Type GetImageSourceServiceType(Type imageSource) =>
-			_serviceCache.GetOrAdd(imageSource, (type) =>
+			_serviceCache.GetOrAdd(imageSource, type =>
 			{
 				var genericConcreteType = ImageSourceServiceType.MakeGenericType(type);
+
 				if (genericConcreteType != null && GetServiceDescriptor(genericConcreteType) != null)
-					return genericConcreteType!;
+					return genericConcreteType;
 
 				return ImageSourceServiceType.MakeGenericType(GetImageSourceType(type));
 			});
