@@ -32,35 +32,28 @@ namespace Microsoft.Maui.Hosting
 		{
 			Debug.Assert(typeof(IImageSource).IsAssignableFrom(type));
 
-			List<(Type, Type)> matches = new();
-
-			foreach (var mapping in _typeMapping)
-			{
-				if (mapping.ImageSource == type)
-				{
-					return mapping.ImageSourceService;
-				}
-
-				if (mapping.ImageSource.IsAssignableFrom(type))
-				{
-					matches.Add(mapping);
-				}
-			}
-
-			return SelectBestMatch(matches);
-		}
-
-		private static Type? SelectBestMatch(List<(Type, Type)> matches)
-		{
 			Type? bestImageSource = null;
 			Type? bestImageSourceService = null;
 
-			foreach (var (imageSource, imageSourceService) in matches)
+			foreach (var (imageSource, imageSourceService) in _typeMapping)
 			{
-				if (bestImageSource is null || bestImageSource.IsAssignableFrom(imageSource))
+				if (imageSource == type)
 				{
-					bestImageSource = imageSource;
-					bestImageSourceService = imageSourceService;
+					return imageSourceService;
+				}
+
+				if (imageSource.IsAssignableFrom(type))
+				{
+					if (bestImageSource is null)
+					{
+						bestImageSource = imageSource;
+						bestImageSourceService = imageSourceService;
+					}
+					else if (bestImageSource.IsAssignableFrom(imageSource))
+					{
+						bestImageSource = imageSource;
+						bestImageSourceService = imageSourceService;
+					}
 				}
 			}
 
