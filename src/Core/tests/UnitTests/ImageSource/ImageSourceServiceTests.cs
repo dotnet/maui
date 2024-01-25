@@ -22,20 +22,20 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			{
 				if (registerInterfaces)
 				{
-					services.AddService<IStreamImageSource, StreamImageSourceService>();
-					services.AddService<IFileImageSource, FileImageSourceService>();
+					services.AddService<IFirstImageSource, FirstImageSourceService>();
+					services.AddService<ISecondImageSource, SecondImageSourceService>();
 				}
 
 				if (registerClasses)
 				{
-					services.AddService<StreamImageSourceStub, StreamImageSourceService>();
-					services.AddService<FileImageSourceStub, FileImageSourceService>();
+					services.AddService<FirstImageSource, FirstImageSourceService>();
+					services.AddService<SecondImageSource, SecondImageSourceService>();
 				}
 			});
 
-			var service = provider.GetRequiredImageSourceService(new FileImageSourceStub());
+			var service = provider.GetRequiredImageSourceService(new FirstImageSource());
 
-			Assert.IsType<FileImageSourceService>(service);
+			Assert.IsType<FirstImageSourceService>(service);
 		}
 
 		[Theory]
@@ -85,9 +85,9 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		{
 			var provider = CreateImageSourceServiceProvider(services => {});
 
-			var imageSource = provider.GetImageSourceType(typeof(StreamImageSourceStub));
+			var imageSource = provider.GetImageSourceType(typeof(FirstImageSource));
 
-			Assert.Equal(typeof(IStreamImageSource), imageSource);
+			Assert.Equal(typeof(IFirstImageSource), imageSource);
 		}
 
 		[Fact]
@@ -95,9 +95,9 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		{
 			var provider = CreateImageSourceServiceProvider(services => {});
 
-			var service = provider.GetImageSourceServiceType(typeof(IStreamImageSource));
+			var service = provider.GetImageSourceServiceType(typeof(IFirstImageSource));
 
-			Assert.Equal(typeof(IImageSourceService<IStreamImageSource>), service);
+			Assert.Equal(typeof(IImageSourceService<IFirstImageSource>), service);
 		}
 
 		[Fact]
@@ -105,12 +105,12 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		{
 			var provider = CreateImageSourceServiceProvider(services =>
 			{
-				services.AddService<StreamImageSourceStub, StreamImageSourceService>();
+				services.AddService<FirstImageSource, FirstImageSourceService>();
 			});
 
-			var service = provider.GetImageSourceType(typeof(StreamImageSourceStub));
+			var service = provider.GetImageSourceType(typeof(FirstImageSource));
 
-			Assert.Equal(typeof(IStreamImageSource), service);
+			Assert.Equal(typeof(IFirstImageSource), service);
 		}
 
 		[Fact]
@@ -118,12 +118,12 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		{
 			var provider = CreateImageSourceServiceProvider(services =>
 			{
-				services.AddService<StreamImageSourceStub, StreamImageSourceService>();
+				services.AddService<FirstImageSource, FirstImageSourceService>();
 			});
 
-			var service = provider.GetImageSourceServiceType(typeof(StreamImageSourceStub));
+			var service = provider.GetImageSourceServiceType(typeof(FirstImageSource));
 
-			Assert.Equal(typeof(IImageSourceService<StreamImageSourceStub>), service);
+			Assert.Equal(typeof(IImageSourceService<FirstImageSource>), service);
 		}
 
 		private IImageSourceServiceProvider CreateImageSourceServiceProvider(Action<IImageSourceServiceCollection> configure)
@@ -141,6 +141,8 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		private interface ISecondImageSource : IImageSource { }
 		private class FirstImageSource : IFirstImageSource { public bool IsEmpty => throw new NotImplementedException(); }
 		private class SecondImageSource : ISecondImageSource { public bool IsEmpty => throw new NotImplementedException(); }
+		private class FirstImageSourceService : IImageSourceService<IFirstImageSource> { }
+		private class SecondImageSourceService : IImageSourceService<ISecondImageSource> { }
 		private class CombinedImageSourceService : IImageSourceService<IFirstImageSource>, IImageSourceService<ISecondImageSource> { }
 	}
 }
