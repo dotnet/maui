@@ -63,6 +63,16 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
+        public void DontMatchMoreDerivedTypes()
+        {  
+			var mapping = new ImageSourceToImageSourceServiceTypeMapping();
+			mapping.Add<MyLargeCustomImageSource, IImageSourceService<MyLargeCustomImageSource>>();
+			mapping.Add<MySmallCustomImageSource, IImageSourceService<MySmallCustomImageSource>>();
+
+			Assert.Throws<InvalidOperationException>(() => mapping.FindImageSourceServiceType(typeof(MyCustomImageSource)));
+        }
+
+		[Fact]
 		public void InCaseOfAmbiguousMatchSelectsTheFirstRegisteredService()
 		{
 			Test<IFileImageSource, IStreamImageSource, MyFileAndStreamImageSource>();
