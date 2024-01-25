@@ -43,19 +43,19 @@
   <ItemGroup Condition=" '$(DisableMauiImplicitPackageReferences)' != 'true' and '$(UseMauiNuGets)' != 'true' ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" PrivateAssets="all" Condition=" '$(UseMauiAssets)' == 'true' " />
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" Condition=" '$(UseMauiEssentials)' == 'true' ">
-      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' and '$(IsAppExtension)' != 'true'">all</PrivateAssets>
     </_MauiImplicitPackageReference>
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Core" Version="$(MauiVersion)" Condition=" '$(UseMauiCore)' == 'true' ">
-      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true'  and '$(IsAppExtension)' != 'true'">all</PrivateAssets>
     </_MauiImplicitPackageReference>
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" Condition=" '$(UseMaui)' == 'true' ">
-      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true'  and '$(IsAppExtension)' != 'true'">all</PrivateAssets>
     </_MauiImplicitPackageReference>
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" IsMauiImplicitOptionalPackageReference="true" Condition=" '$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'true' ">
-      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true'  and '$(IsAppExtension)' != 'true'">all</PrivateAssets>
     </_MauiImplicitPackageReference>
     <_MauiImplicitPackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
-      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true'  and '$(IsAppExtension)' != 'true'">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
   <!-- Install the nuget packages if we are allowed to -->

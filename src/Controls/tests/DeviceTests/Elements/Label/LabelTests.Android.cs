@@ -66,6 +66,28 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(platformLabel.Gravity.HasFlag(GravityFlags.CenterVertical), "Label should only have the CenterVertical flag.");
 		}
 
+		// https://github.com/dotnet/maui/issues/18059
+		[Fact(DisplayName = "Using TailTruncation LineBreakMode with 2 MaxLines")]
+		public async Task UsingTailTruncationWith2MaxLines()
+		{
+			var label = new Label()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				LineBreakMode = LineBreakMode.TailTruncation,
+				MaxLines = 2
+			};
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+
+			var platformLabel = GetPlatformLabel(handler);
+
+			await InvokeOnMainThreadAsync((System.Action)(() =>
+			{
+				Assert.Equal(2, GetPlatformMaxLines(handler));
+				Assert.Equal(LineBreakMode.TailTruncation.ToPlatform(), GetPlatformLineBreakMode(handler));
+			}));
+		}
+
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
