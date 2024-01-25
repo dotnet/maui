@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return cell;
 		}
 
-		internal class ViewTableCell : UITableViewCell, INativeElementView
+		internal sealed class ViewTableCell : UITableViewCell, INativeElementView
 		{
 			IMauiContext MauiContext => _viewCell.FindMauiContext();
 			WeakReference<IPlatformViewHandler> _rendererRef;

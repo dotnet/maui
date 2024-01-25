@@ -13,6 +13,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
+			if (item?.Parent is TableView && item.Handler?.PlatformView is TextCellView textCellView)
+			{
+				// TableView doesn't use convertView
+				View = textCellView;
+				return View;
+			}
+
 			if ((View = convertView as TextCellView) == null)
 				View = new TextCellView(context, item);
 
@@ -87,10 +94,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				View.SetDefaultMainTextColor(null);
 
 			View.SetMainTextColor(cell.TextColor);
+
+			PlatformInterop.RequestLayoutIfNeeded(View);
 		}
 
 		// ensure we don't get other people's BaseCellView's
-		internal class TextCellView : BaseCellView
+		internal sealed class TextCellView : BaseCellView
 		{
 			public TextCellView(Context context, Cell cell) : base(context, cell)
 			{

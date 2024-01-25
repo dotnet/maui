@@ -20,6 +20,11 @@ namespace Microsoft.Maui.Platform
 
 		public MauiSwipeRefreshLayout(Context context) : base(context)
 		{
+			// This works around a bug in SwipeRefreshLayout
+			// https://github.com/dotnet/maui/pull/17647#discussion_r1433358418
+			// https://issuetracker.google.com/issues/110463864
+			// It looks like this issue is fixed on the main branch of Android but it hasn't made its way into the packages yet
+			SetProgressViewOffset(true, ProgressViewStartOffset, ProgressViewEndOffset - Math.Abs(ProgressViewStartOffset));
 		}
 
 		public void UpdateContent(IView? content, IMauiContext? mauiContext)
@@ -82,7 +87,7 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
-		bool CanScrollUpViewByType(AView? view)
+		static bool CanScrollUpViewByType(AView? view)
 		{
 			if (view is AbsListView absListView)
 			{
