@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Hosting.Internal;
 
 namespace Microsoft.Maui.Hosting
@@ -32,8 +31,8 @@ namespace Microsoft.Maui.Hosting
 			return (IImageSourceService?)GetService(imageSourceService);
 		}
 
-		public Type GetImageSourceServiceType(Type imageSource)
-			=> _serviceCache.GetOrAdd(imageSource, (type) =>
+		public Type GetImageSourceServiceType(Type imageSource) =>
+			_serviceCache.GetOrAdd(imageSource, (type) =>
 			{
 				var genericConcreteType = ImageSourceServiceType.MakeGenericType(type);
 				if (genericConcreteType != null && GetServiceDescriptor(genericConcreteType) != null)
@@ -42,8 +41,8 @@ namespace Microsoft.Maui.Hosting
 				return ImageSourceServiceType.MakeGenericType(GetImageSourceType(type));
 			});
 
-		public Type GetImageSourceType(Type imageSource)
-			=> _imageSourceCache.GetOrAdd(imageSource, CreateImageSourceTypeCacheEntry);
+		public Type GetImageSourceType(Type imageSource) =>
+			_imageSourceCache.GetOrAdd(imageSource, CreateImageSourceTypeCacheEntry);
 
 		Type CreateImageSourceTypeCacheEntry(Type type)
 		{
