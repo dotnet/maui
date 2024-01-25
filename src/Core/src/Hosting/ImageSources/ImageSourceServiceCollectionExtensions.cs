@@ -13,11 +13,11 @@ namespace Microsoft.Maui.Hosting
 		/// <typeparam name="TImageSourceService">The service type to register</typeparam>
 		/// <param name="services">The service collection</param>
 		/// <returns>The service collection</returns>
-		public static IImageSourceServiceCollection AddService<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] TImageSource, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImageSourceService>(this IImageSourceServiceCollection services)
+		public static IImageSourceServiceCollection AddService<TImageSource, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImageSourceService>(this IImageSourceServiceCollection services)
 			where TImageSource : IImageSource
 			where TImageSourceService : class, IImageSourceService<TImageSource>
 		{
-			services.GetImageSourceTypeMapping().Add<TImageSource>();
+			services.AddImageSourceMapping<TImageSource, IImageSourceService<TImageSource>>();
 #pragma warning disable RS0030 // Do not use banned APIs, the current method is also banned
 			services.AddSingleton<IImageSourceService<TImageSource>, TImageSourceService>();
 #pragma warning restore RS0030 // Do not use banned APIs
@@ -32,22 +32,20 @@ namespace Microsoft.Maui.Hosting
 		/// <param name="services">The service collection</param>
 		/// <param name="implementationFactory">A factory method to create the service</param>
 		/// <returns>The service collection</returns>
-		public static IImageSourceServiceCollection AddService<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] TImageSource>(this IImageSourceServiceCollection services, Func<IServiceProvider, IImageSourceService<TImageSource>> implementationFactory)
+		public static IImageSourceServiceCollection AddService<TImageSource>(this IImageSourceServiceCollection services, Func<IServiceProvider, IImageSourceService<TImageSource>> implementationFactory)
 			where TImageSource : IImageSource
 		{
-			services.GetImageSourceTypeMapping().Add<TImageSource>();
+			services.AddImageSourceMapping<TImageSource, IImageSourceService<TImageSource>>();
 			services.AddSingleton(provider => implementationFactory(((IImageSourceServiceProvider)provider).HostServiceProvider));
 
 			return services;
 		}
 
-		internal static Type FindImageSourceServiceType(this IImageSourceServiceCollection services, Type imageSourceType)
-			=> services.GetImageSourceTypeMapping().FindImageSourceServiceType(imageSourceType);
-
-		internal static Type FindImageSourceType(this IImageSourceServiceCollection services, Type imageSourceType)
-			=> services.GetImageSourceTypeMapping().FindImageSourceType(imageSourceType);
-
-		private static ImageSourceToImageSourceServiceTypeMapping GetImageSourceTypeMapping(this IImageSourceServiceCollection services)
-			=> ImageSourceToImageSourceServiceTypeMapping.GetInstance(services);
+		private static void AddImageSourceMapping<TImageSource, TImageSourceService>(this IImageSourceServiceCollection services)
+			where TImageSource : IImageSource
+			where TImageSourceService : class, IImageSourceService<TImageSource>
+		{
+			ImageSourceToImageSourceServiceTypeMapping.GetInstance(services).Add<TImageSource, TImageSourceService>();
+		}
 	}
 }

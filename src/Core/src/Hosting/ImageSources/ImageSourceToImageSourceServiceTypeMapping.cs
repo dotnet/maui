@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -14,97 +13,58 @@ namespace Microsoft.Maui.Hosting
 			s_instances.GetOrAdd(collection, static _ => new ImageSourceToImageSourceServiceTypeMapping());
 
 		private readonly object _lock = new();
-		private Dictionary<Type, Type> _interfaceMapping = new();
-		private Dictionary<Type, Type> _directServiceMapping = new();
-		private Dictionary<Type, Type> _fallbackServiceMapping = new();
+		private readonly List<(Type ImageSource, Type ImageSourceService)> _typeMapping = new(8); // MAUI registers 8 image source services at startup
 
-		public void Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] TImageSource>() where TImageSource : IImageSource
+		public void Add<TImageSource, TImageSourceService>()
+			where TImageSource : IImageSource
+			where TImageSourceService : class, IImageSourceService<TImageSource>
 		{
-			var imageSourceInterfaceType = GetImageSourceInterface(typeof(TImageSource));
-			var fallbackImageSourceServiceType = MakeGenericImageSourceServiceType(imageSourceInterfaceType);
-
 			lock (_lock)
 			{
-				_directServiceMapping[typeof(TImageSource)] = typeof(IImageSourceService<TImageSource>);
-				_interfaceMapping[typeof(TImageSource)] = imageSourceInterfaceType;
-				_fallbackServiceMapping[imageSourceInterfaceType] = fallbackImageSourceServiceType;
+				_typeMapping.Add((typeof(TImageSource), typeof(TImageSourceService)));
 			}
-
-			[UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode",
-				Justification = "The type which is used as a generic parameter is not a value type.")]
-			Type MakeGenericImageSourceServiceType(Type imageSourceInterfaceType)
-			{
-				if (imageSourceInterfaceType.IsValueType)
-				{
-					throw new InvalidOperationException($"Unable to register {typeof(TImageSource)} as an {typeof(IImageSource)} because it is a value type.");
-				}
-
-				return typeof(IImageSourceService<>).MakeGenericType(imageSourceInterfaceType);
-			}
-		}
-
-		public Type FindImageSourceType(Type imageSourceType)
-		{
-			Debug.Assert(typeof(IImageSource).IsAssignableFrom(imageSourceType));
-
-			return TryFindImageSourceInterface(imageSourceType)
-				?? throw new InvalidOperationException($"Unable to find any configured {nameof(IImageSource)} corresponding to {imageSourceType.Name}.");
 		}
 
 		public Type FindImageSourceServiceType(Type type)
+			=> TryFindImageSourceServiceType(type) ?? throw new InvalidOperationException($"Unable to find any configured {nameof(IImageSourceService)} corresponding to {type}.");
+
+		public Type? TryFindImageSourceServiceType(Type type)
 		{
 			Debug.Assert(typeof(IImageSource).IsAssignableFrom(type));
 
-			if (_directServiceMapping.TryGetValue(type, out var imageSourceService))
-			{
-				return imageSourceService;
-			}
+			List<(Type, Type)> matches = new();
 
-			if (TryFindImageSourceInterface(type) is Type imageSourceInterfaceType
-				&& _fallbackServiceMapping.TryGetValue(imageSourceInterfaceType, out var imageSourceServiceType)
-				&& imageSourceServiceType is not null)
+			foreach (var mapping in _typeMapping)
 			{
-				return imageSourceServiceType;
-			}
-
-			throw new InvalidOperationException($"Unable to find any configured {typeof(IImageSourceService)} corresponding to {type.Name}.");
-		}
-
-		private Type? TryFindImageSourceInterface(Type imageSourceType)
-		{
-			if (_interfaceMapping.TryGetValue(imageSourceType, out var imageSourceInterfaceType))
-			{
-				return imageSourceInterfaceType;
-			}
-
-			foreach (var iface in _interfaceMapping.Values)
-			{
-				if (iface.IsAssignableFrom(imageSourceType))
+				if (mapping.ImageSource == type)
 				{
-					return iface;
+					return mapping.ImageSourceService;
+				}
+
+				if (mapping.ImageSource.IsAssignableFrom(type))
+				{
+					matches.Add(mapping);
 				}
 			}
 
-			return null;
+			return SelectBestMatch(matches);
 		}
 
-		private static Type GetImageSourceInterface([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type)
+		private static Type? SelectBestMatch(List<(Type, Type)> matches)
 		{
-			if (type.IsInterface)
+			Type? bestImageSource = null;
+			Type? bestImageSourceService = null;
+
+			foreach (var (imageSource, imageSourceService) in matches)
 			{
-				if (typeof(IImageSource).IsAssignableFrom(type))
-					return type;
-			}
-			else
-			{
-				foreach (var directInterface in type.GetInterfaces())
+				if (bestImageSource is null || bestImageSource.IsAssignableFrom(imageSource))
 				{
-					if (directInterface != typeof(IImageSource) && typeof(IImageSource).IsAssignableFrom(directInterface))
-						return directInterface;
+					bestImageSource = imageSource;
+					bestImageSourceService = imageSourceService;
 				}
 			}
 
-			throw new InvalidOperationException($"Unable to find the image source type because none of the interfaces on {type.Name} were derived from {nameof(IImageSource)}.");
+			return bestImageSourceService;
 		}
 	}
 }
