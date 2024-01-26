@@ -10,12 +10,12 @@ public class Issue15815 : _IssuesUITest
 		: base(device)
 	{ }
 
-	public override string Issue => "MeasureAllItems not working in Horizontal CollectionView";
+	public override string Issue => "Horizontal CollectionView does not show the last element under some condition";
 
 	[Test]
 	public void LastItemIsVisilbe()
 	{
-		var lastItem = App.WaitForElement("Item 2");
-		Assert.IsNotNull(lastItem);
+		var lastItem = App.WaitForElement("id-2");
+		Assert.AreEqual("Item 2", lastItem.GetText());
 	}
 }
