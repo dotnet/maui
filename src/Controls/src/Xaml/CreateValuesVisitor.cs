@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			object value = null;
 
-			var type = XamlParser.GetElementType(node.XmlType, node, Context.RootElement?.GetType().Assembly,
+			var type = XamlParser.GetElementType(node.XmlType, node, Context.RootElement?.GetType().Assembly, true,
 				out XamlParseException xpe);
 			if (xpe != null)
 			{
