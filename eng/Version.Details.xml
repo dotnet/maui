@@ -1,8 +1,8 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="9.0.100-preview.1.24075.13">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="9.0.100-preview.1.24076.8">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>55c025e462fd856b8eb9a31892849141612ba780</Sha>
+      <Sha>f7f056d632df5b7bba74b8f6908e15af0d2eb4c6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.1.24074.8">
       <Uri>https://github.com/dotnet/runtime</Uri>
