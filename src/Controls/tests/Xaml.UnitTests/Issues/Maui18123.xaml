@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
-             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui18123">
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui18123"
+             x:DataType="local:Maui18123VM">
     <ContentPage.Resources>
         <local:Maui18123MultiValueConverter x:Key="MultiValueConverter"/>
     </ContentPage.Resources>
@@ -44,10 +45,10 @@
                 </MultiBinding>
             </Button.CommandParameter>
             <Button.Triggers>
-                <DataTrigger TargetType="Button" Binding="{Binding Mode}" Value="Edit">
+                <DataTrigger TargetType="Button" Binding="{Binding Mode}" Value="Edit" x:DataType="local:Maui18123VM">
                     <Setter Property="Text" Value="SUBMIT" />
                 </DataTrigger>
-                <DataTrigger TargetType="Button" Binding="{Binding Mode}" Value="Create">
+                <DataTrigger TargetType="Button" Binding="{Binding Mode}" Value="Create" x:DataType="local:Maui18123VM">
                     <Setter Property="Text" Value="SUBMIT" />
                     <Setter Property="CommandParameter" Value="Edit"/>
                 </DataTrigger>
