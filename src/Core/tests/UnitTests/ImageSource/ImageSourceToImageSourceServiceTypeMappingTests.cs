@@ -73,25 +73,31 @@ namespace Microsoft.Maui.UnitTests.ImageSource
         }
 
 		[Fact]
-		public void InCaseOfAmbiguousMatchSelectsTheFirstRegisteredService()
+		public void ThrowsInCaseOfAmbiguousMatch()
 		{
-			Test<IFileImageSource, IStreamImageSource, MyFileAndStreamImageSource>();
-			Test<IStreamImageSource, IFileImageSource, MyFileAndStreamImageSource>();
+			var mapping = new ImageSourceToImageSourceServiceTypeMapping();
+			mapping.Add<IFirstImageSource, IImageSourceService<IFirstImageSource>>();
+			mapping.Add<ISecondImageSource, IImageSourceService<ISecondImageSource>>();
 
-			void Test<TImageSource1, TImageSource2, TImageSource3>()
-				where TImageSource1 : IImageSource
-				where TImageSource2 : IImageSource
-				where TImageSource3 : class, TImageSource1, TImageSource2
-			{
-				var mapping = new ImageSourceToImageSourceServiceTypeMapping();
-				mapping.Add<TImageSource1, IImageSourceService<TImageSource1>>();
-				mapping.Add<TImageSource2, IImageSourceService<TImageSource2>>();
-
-				var imageSourceServiceType = mapping.FindImageSourceServiceType(typeof(TImageSource3));
-
-				Assert.Equal(typeof(IImageSourceService<TImageSource1>), imageSourceServiceType);
-			}
+			Assert.Throws<InvalidOperationException>(() => mapping.FindImageSourceServiceType(typeof(FirstAndSecondImageSource)));
 		}
+
+		[Fact]
+		public void ReturnExactImageSourceMatch()
+		{
+			var mapping = new ImageSourceToImageSourceServiceTypeMapping();
+			mapping.Add<IFirstImageSource, IImageSourceService<IFirstImageSource>>();
+			mapping.Add<ISecondImageSource, IImageSourceService<ISecondImageSource>>();
+			mapping.Add<FirstAndSecondImageSource, IImageSourceService<FirstAndSecondImageSource>>();
+
+			var imageSourceServiceType = mapping.FindImageSourceServiceType(typeof(FirstAndSecondImageSource));
+
+			Assert.Equal(typeof(IImageSourceService<FirstAndSecondImageSource>), imageSourceServiceType);
+		}
+
+		private interface IFirstImageSource : IImageSource { }
+		private interface ISecondImageSource : IImageSource { }
+		private class FirstAndSecondImageSource : IFirstImageSource, ISecondImageSource { public bool IsEmpty => throw new NotImplementedException(); }
 
 		interface IMyCustomImageSource : IFileImageSource { }
 		private abstract class MyCustomImageSource : IMyCustomImageSource
