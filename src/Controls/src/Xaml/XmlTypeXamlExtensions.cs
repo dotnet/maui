@@ -61,9 +61,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			var lookupNames = new List<string>(capacity: 2);
-			lookupNames.Add(elementName);
 			if (elementName != "DataTemplate" && !elementName.EndsWith("Extension", StringComparison.Ordinal))
 				lookupNames.Add(elementName + "Extension");
+			lookupNames.Add(elementName);
 
 			for (var i = 0; i < lookupNames.Count; i++)
 			{
