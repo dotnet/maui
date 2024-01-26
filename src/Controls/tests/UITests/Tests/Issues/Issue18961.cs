@@ -27,7 +27,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// 2. Scroll to the end.
 			App.Click("ScrollButton");
-			await Task.Delay(1000);
+			await Task.Delay(1000); // Wait for the scroll animation to finish.
+			App.ScrollDown("TestScrollView"); // Ensure that we are at the end of the scroll.
 
 			// 3. Focus latest Entry
 			App.WaitForElement(LastEntry);

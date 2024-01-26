@@ -92,8 +92,8 @@ namespace UITest.Appium
 
 			new TouchAction(driver)
 				.Press(startX, startY)
-				.Wait(swipeSpeed)
 				.MoveTo(endX, endY)
+				.Wait(swipeSpeed)
 				.Release()
 				.Perform();
 		}
@@ -111,8 +111,8 @@ namespace UITest.Appium
 
 			new TouchAction(driver)
 				.Press(startX, startY)
-				.Wait(swipeSpeed)
 				.MoveTo(endX, endY)
+				.Wait(swipeSpeed)
 				.Release()
 				.Perform();
 		}
