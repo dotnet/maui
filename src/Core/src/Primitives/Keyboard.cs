@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 		static Keyboard? s_telephone;
 
 		static Keyboard? s_chat;
-#if ANDROID
+#if ANDROID || WINDOWS
 		static Keyboard? s_date;
 
 		static Keyboard? s_time;
@@ -59,7 +59,7 @@ namespace Microsoft.Maui
 
 		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Url']/Docs/*" />
 		public static Keyboard Url => s_url ??= new UrlKeyboard();
-# if __ANDROID__
+# if __ANDROID__ || WINDOWS
 		public static Keyboard Date => s_date ??= new DateKeyboard();
 
 		public static Keyboard Password => s_password ??= new PasswordKeyboard();
