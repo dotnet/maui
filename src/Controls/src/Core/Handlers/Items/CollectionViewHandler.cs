@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
 			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
 			[StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
+			[StructuredItemsView.HeaderProperty.PropertyName] = MapHeaderTemplate,
+			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
