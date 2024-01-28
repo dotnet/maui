@@ -64,6 +64,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			pickerView?.Select(Math.Max(selectedIndex, 0), 0, true);
+
+			picker.InvalidateMeasure();
 		}
 	}
 }
