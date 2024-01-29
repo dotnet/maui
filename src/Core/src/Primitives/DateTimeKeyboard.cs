@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Maui.Primitives;
+namespace Microsoft.Maui;
 sealed class DateKeyboard : Keyboard
 {
 }
