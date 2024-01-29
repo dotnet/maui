@@ -27,7 +27,7 @@
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdkPackageVersion>17.2.8018</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>14.2.8018</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>17.2.8018</MicrosoftiOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>17.2.8021</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>17.2.8018</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.130</SamsungTizenSdkPackageVersion>
