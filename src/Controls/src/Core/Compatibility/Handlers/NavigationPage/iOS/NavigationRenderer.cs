@@ -21,7 +21,6 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -677,42 +676,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateBarBackground()
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
-			var barBackgroundBrush = NavPage.BarBackground;
-
-			// if the brush has a solid color, treat it as a Color so we can compute the alpha value
-			if (NavPage.BarBackground is SolidColorBrush scb)
-			{
-				barBackgroundColor = scb.Color;
-				barBackgroundBrush = null;
-			}
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
-				if (barBackgroundColor is null)
+
+				navigationBarAppearance.ConfigureWithOpaqueBackground();
+
+				if (barBackgroundColor == null)
 				{
-					navigationBarAppearance.ConfigureWithOpaqueBackground();
 					navigationBarAppearance.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
 
 					var parentingViewController = GetParentingViewController();
 					parentingViewController?.SetupDefaultNavigationBarAppearance();
 				}
 				else
-				{
-					if(barBackgroundColor?.Alpha < 1f)
-						navigationBarAppearance.ConfigureWithTransparentBackground();
-					else
-						navigationBarAppearance.ConfigureWithOpaqueBackground();
-
 					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
-				}
 
-				if (barBackgroundBrush is not null)
-				{
-					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
-
-					navigationBarAppearance.BackgroundImage = backgroundImage;
-				}
+				var barBackgroundBrush = NavPage.BarBackground;
+				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+				navigationBarAppearance.BackgroundImage = backgroundImage;
 
 				NavigationBar.CompactAppearance = navigationBarAppearance;
 				NavigationBar.StandardAppearance = navigationBarAppearance;
@@ -720,20 +703,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				if(barBackgroundColor?.Alpha == 0f)
-				{
-					NavigationBar.SetTransparentNavigationBar();
-				}
-				else
-				{
-					// Set navigation bar background color
-					NavigationBar.BarTintColor = barBackgroundColor == null
-						? UINavigationBar.Appearance.BarTintColor
-						: barBackgroundColor.ToPlatform();
+				// Set navigation bar background color
+				NavigationBar.BarTintColor = barBackgroundColor == null
+					? UINavigationBar.Appearance.BarTintColor
+					: barBackgroundColor.ToPlatform();
 
-					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
-					NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
-				}
+				var barBackgroundBrush = NavPage.BarBackground;
+				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+				NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
 			}
 		}
 
@@ -1175,19 +1152,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					!n._disposed &&
 					!n._navigating
 					)
-				{	
-					var vc = ChildViewControllers[^1];
+				{
+					nfloat offset = 0;
 
-					if (vc is null)
-						return;
+					if (n._hasNavigationBar)
+						offset = n.NavigationBar.Frame.Bottom;
 
-					var newAdditionalSafeArea = vc.AdditionalSafeAreaInsets;
-					var offset = n._secondaryToolbar.Hidden ? 0 : n._secondaryToolbar.Frame.Height;
-
-					if (newAdditionalSafeArea.Top != offset)
+					if (!n._secondaryToolbar.Hidden)
 					{
-						newAdditionalSafeArea.Top = offset;
-						vc.AdditionalSafeAreaInsets = newAdditionalSafeArea;
+						offset += n._secondaryToolbar.Bounds.Height;
+					}
+
+					if (View.Frame.Y != offset)
+					{
+						var newY = offset - View.Frame.Y;
+						var newHeight = View.Frame.Height - newY;
+
+						View.Frame =
+							new RectangleF(0, offset, View.Bounds.Width, newHeight);
 					}
 				}
 			}

@@ -13,8 +13,6 @@ using PlatformImageType = System.Int32;
 #elif IOS || MACCATALYST
 using UIKit;
 using PlatformImageType = UIKit.UIImage;
-#elif WINDOWS
-using PlatformImageType = Microsoft.UI.Xaml.Controls.Image;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
@@ -34,14 +32,11 @@ namespace Microsoft.Maui.DeviceTests
 #elif IOS || MACCATALYST
 		const string ImageEventAppResourceMemberName = "Image";
 		const string ImageEventCustomMemberName = "Image";
-#elif WINDOWS
-		const string ImageEventAppResourceMemberName = "Source";
-		const string ImageEventCustomMemberName = "Source";
 #endif
 
 		[Theory(
-#if IOS || MACCATALYST || WINDOWS
-			Skip = "Test failing on iOS and WINDOWS"
+#if IOS || MACCATALYST
+			Skip = "Test failing on iOS"
 #endif
 			)]
 		[InlineData("#FF0000")]
@@ -60,28 +55,28 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler(image);
 				var platformView = GetPlatformImageView(handler);
 
-				await AttachAndRun(platformView, async () =>
+				await platformView.AttachAndRun(async () =>
 				{
 					// the first one works
 					image.Source = new FileImageSourceStub(firstPath);
 					handler.UpdateValue(nameof(IImage.Source));
 					await image.WaitUntilLoaded();
 
-					await platformView.AssertContainsColor(Colors.Blue, MauiContext);
+					await platformView.AssertContainsColor(Colors.Blue.ToPlatform(), MauiContext);
 
 					// the second one does not
 					image.Source = new FileImageSourceStub(secondPath);
 					handler.UpdateValue(nameof(IImage.Source));
 					await image.WaitUntilLoaded();
 
-					await platformView.AssertContainsColor(expectedColor, MauiContext);
+					await platformView.AssertContainsColor(expectedColor.ToPlatform(), MauiContext);
 				});
 			});
 		}
 
 		[Theory(
-#if ANDROID || WINDOWS
-			Skip = "Test failing on ANDROID and WINDOWS"
+#if _ANDROID__
+			Skip = "Test failing on ANDROID"
 #endif
 			)]
 		[InlineData("red.png", "#FF0000")]
@@ -116,14 +111,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if __ANDROID_23__ || __IOS__
-			Skip = "Animated GIFs are not yet supported."
+#if __IOS__ || __ANDROID__
+			Skip = "Animated GIFs are not yet supported on iOS. Test failing on ANDROID"
 #endif
 		)]
 		[InlineData("animated_heart.gif", true)]
-#if !WINDOWS
 		[InlineData("animated_heart.gif", false)]
-#endif
 		public async virtual Task AnimatedSourceInitializesCorrectly(string filename, bool isAnimating)
 		{
 			var image = new TStub
@@ -138,7 +131,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.WaitUntilLoaded();
 
-				await AttachAndRun(GetPlatformImageView(handler), () =>
+				await GetPlatformImageView(handler).AttachAndRun(() =>
 				{
 					Assert.Equal(isAnimating, GetNativeIsAnimationPlaying(handler));
 				});
@@ -203,11 +196,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(exception);
 		}
 
-		[Fact(
-#if WINDOWS
-			Skip = "Hanging on Windows."
-#endif
-			)]
+		[Fact]
 		public async Task ImageLoadSequenceIsCorrect()
 		{
 			await ImageLoadSequenceIsCorrectImplementation();
@@ -270,15 +259,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(
-#if WINDOWS
-			Skip = "Hanging on Windows."
-#endif
-			)]
+		[Fact]
 		public async Task InterruptingLoadCancelsAndStartsOver()
 		{
 			await InterruptingLoadCancelsAndStartsOverImplementation();
 		}
+
 		async Task<List<(string Member, object Value)>> InterruptingLoadCancelsAndStartsOverImplementation()
 		{
 			var image = new TStub
@@ -339,11 +325,7 @@ namespace Microsoft.Maui.DeviceTests
 			return events;
 		}
 
-		[Theory(
-#if WINDOWS
-			Skip = "To be implemented on Windows."
-#endif
-			)]
+		[Theory]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]
@@ -371,11 +353,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(
-#if WINDOWS
-			Skip = "To be implemented on Windows."
-#endif
-			)]
+		[Fact]
 		public async Task InitializingSourceOnlyUpdatesImageOnce()
 		{
 			var image = new TStub
@@ -404,11 +382,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(
-#if WINDOWS
-			Skip = "To be implemented on Windows."
-#endif
-			)]
+		[Fact]
 		public async Task UpdatingSourceOnlyUpdatesImageOnce()
 		{
 			var image = new TStub
@@ -446,11 +420,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(
-#if WINDOWS
-			Skip = "Hanging on Windows."
-#endif
-			)]
+		[Fact]
 		public async Task ImageLoadSequenceIsCorrectWithChecks()
 		{
 			var events = await ImageLoadSequenceIsCorrectImplementation();
@@ -467,11 +437,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
-		[Fact(
-#if WINDOWS
-			Skip = "Hanging on Windows."
-#endif
-		)]
+		[Fact]
 		public async Task InterruptingLoadCancelsAndStartsOverWithChecks()
 		{
 			var events = await InterruptingLoadCancelsAndStartsOverImplementation();
@@ -509,11 +475,7 @@ namespace Microsoft.Maui.DeviceTests
 			MauiProgram.DefaultContext.Resources.GetDrawableId(MauiProgram.DefaultContext.PackageName, image);
 #endif
 
-		[Fact(
-#if WINDOWS
-			Skip = "To be implemented on Windows."
-#endif
-			)]
+		[Fact]
 		public async Task UpdatingSourceToNullClearsImage()
 		{
 			var image = new TStub
@@ -541,11 +503,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(
-#if WINDOWS
-			Skip = "To be implemented on Windows."
-#endif
-			)]
+		[Fact]
 		public async Task UpdatingSourceToNonexistentSourceClearsImage()
 		{
 			var image = new TStub
@@ -562,7 +520,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				image.Source = new FileImageSourceStub("fail.png");
 				handler.UpdateValue(nameof(IImage.Source));
-				await AttachAndRun(handler.PlatformView, () => { });
+				await handler.PlatformView.AttachAndRun(() => { });
 
 				await image.WaitUntilLoaded(5000);
 				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
