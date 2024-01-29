@@ -102,6 +102,7 @@ $sdkMaps = @{
 }
 
 # Read the existing file
+[xml]$oldDoc = Get-Content $xmlFileName
 [xml]$xmlDoc = Get-Content $xmlFileName
 
 foreach ($sdkMap in $sdkMaps.GetEnumerator()) {
@@ -121,3 +122,6 @@ Write-Output("New MacCatalyst version: " + $xmlDoc.Project.PropertyGroup.Microso
 Write-Output("New Mac version: " + $xmlDoc.Project.PropertyGroup.MicrosoftmacOSSdkPackageVersion)
 
 $xmlDoc.Save($xmlFileName)
+
+# print the diff between the xml files
+$original = Compare-Object $oldDoc $xmlDoc | Where-Object{ $_.SideIndicator -eq "=>" } | ForEach-Object{ $_.InputObject }
