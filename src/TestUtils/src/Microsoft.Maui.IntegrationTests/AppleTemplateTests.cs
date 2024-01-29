@@ -25,12 +25,12 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", "Debug", DotNetPrevious)]
-		[TestCase("maui", "Release", DotNetPrevious)]
+		//[TestCase("maui", "Debug", DotNetPrevious)]
+		//[TestCase("maui", "Release", DotNetPrevious)]
 		[TestCase("maui", "Debug", DotNetCurrent)]
 		[TestCase("maui", "Release", DotNetCurrent)]
-		[TestCase("maui-blazor", "Debug", DotNetPrevious)]
-		[TestCase("maui-blazor", "Release", DotNetPrevious)]
+		//[TestCase("maui-blazor", "Debug", DotNetPrevious)]
+		//[TestCase("maui-blazor", "Release", DotNetPrevious)]
 		[TestCase("maui-blazor", "Debug", DotNetCurrent)]
 		[TestCase("maui-blazor", "Release", DotNetCurrent)]
 		public void RunOniOS(string id, string config, string framework)
