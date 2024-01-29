@@ -16,10 +16,10 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
-    <PackageReference Include="Xamarin.UITest" Version="4.3.3" />
+    <PackageReference Include="Xamarin.UITest" Version="4.3.4" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
 
