@@ -23,13 +23,5 @@ namespace Microsoft.Maui.Controls.Platform
 
 			platformView.NavigationBar.Translucent = navigationPage.OnThisPlatform().IsNavigationBarTranslucent();
 		}
-
-		internal static void SetTransparentNavigationBar (this UINavigationBar navigationBar)
-		{
-			navigationBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
-			navigationBar.ShadowImage = new UIImage();
-			navigationBar.BackgroundColor = UIColor.Clear;
-			navigationBar.BarTintColor = UIColor.Clear;
-		}
 	}
 }

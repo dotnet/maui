@@ -11,9 +11,7 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp() =>
 			MauiApp
 				.CreateBuilder()
-#if IOS || ANDROID
 				.UseMauiMaps()
-#endif
 				.UseMauiApp<App>()
 				.Build();
 	}

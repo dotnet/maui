@@ -56,14 +56,7 @@ namespace Microsoft.Maui.Controls.XamlC
 					}
 				}
 				else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri && (node.Parent as ElementNode)?.XmlType.Name == nameof(Trigger))
-				{
-					var targetTypeNode = (node.Parent as ElementNode).Properties[new XmlName("", "TargetType")];
-					if (targetTypeNode is ValueNode valueNode)
-						typeName = valueNode.Value as string;
-					else if (targetTypeNode is ElementNode elementNode && elementNode.XmlType.Name == "TypeExtension")
-						typeName = (elementNode.Properties[new XmlName("", "TypeName")] as ValueNode).Value as string;
-					
-				}
+					typeName = ((node.Parent as ElementNode).Properties[new XmlName("", "TargetType")] as ValueNode).Value as string;
 				propertyName = parts[0];
 			}
 			else if (parts.Length == 2)

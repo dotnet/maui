@@ -48,13 +48,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapSourceAsync(IImageHandler handler, IImage image)
-		{
-			return handler
-				.SourceLoader
-				.UpdateImageSourceAsync()
-				.ContinueWith((action) => handler.UpdateValue(nameof(IImage.IsAnimationPlaying)));
-		}
+		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
+			handler.SourceLoader.UpdateImageSourceAsync();
 
 		public override void PlatformArrange(Graphics.Rect frame)
 		{
