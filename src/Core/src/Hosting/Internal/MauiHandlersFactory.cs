@@ -7,23 +7,9 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
-		public MauiHandlersFactory(IEnumerable<HandlerMauiAppBuilderExtensions.HandlerRegistration> registrationActions) :
-			base(CreateHandlerCollection(registrationActions))
+		public MauiHandlersFactory(IMauiHandlersCollection collection)
+			: base(collection)
 		{
-		}
-
-		static MauiHandlersCollection CreateHandlerCollection(IEnumerable<HandlerMauiAppBuilderExtensions.HandlerRegistration> registrationActions)
-		{
-			var collection = new MauiHandlersCollection();
-			if (registrationActions != null)
-			{
-				foreach (var registrationAction in registrationActions)
-				{
-					registrationAction.AddRegistration(collection);
-				}
-			}
-			HotReload.MauiHotReloadHelper.RegisterHandlers(collection);
-			return collection;
 		}
 
 		public IElementHandler? GetHandler(Type type)
