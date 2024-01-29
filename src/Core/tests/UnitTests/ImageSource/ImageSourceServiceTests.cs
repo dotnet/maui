@@ -81,6 +81,21 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
+		public void ResolvesToConcreteTypeOverInterface2()
+		{
+			var provider = CreateImageSourceServiceProvider(services =>
+			{
+				services.AddService<IStreamImageSource, StreamImageSourceService>();
+				services.AddService<MultipleInterfacesImageSourceStub, UriImageSourceService>();
+			});
+
+			var service = provider.GetRequiredImageSourceService(new DerivedMultipleInterfacesImageSourceStub());
+			Assert.IsType<UriImageSourceService>(service);
+		}
+
+		class DerivedMultipleInterfacesImageSourceStub : MultipleInterfacesImageSourceStub {}
+
+		[Fact]
 		public void GetsImageSourceTypeEvenWhenNoServiceWasRegistered()
 		{
 			var provider = CreateImageSourceServiceProvider(services => {});
@@ -126,6 +141,52 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			Assert.Equal(typeof(IImageSourceService<FirstImageSource>), service);
 		}
 
+		[Fact]
+		public void TestCommunityToolkitGravatar()
+		{
+			var provider = CreateImageSourceServiceProvider(services =>
+			{
+				services.AddService<IStreamImageSource, StreamImageSourceService>();
+				services.AddService<StreamImageSourceStub>(_ => new StreamImageSourceService());
+			});
+
+			var service = provider.GetImageSourceService(typeof(GravatarImageSourceStub));
+
+			Assert.IsType<StreamImageSourceService>(service);
+		}
+
+		[Fact]
+        public void ResolvesImageSourceServiceWhenNonPrimaryInterfaceServiceIsRegistered()
+        {
+            var parentBImageSourceService = new ChildImageSourceService();
+
+            var provider = CreateImageSourceServiceProvider(svcs =>
+            {
+                svcs.AddService<IParentBImageSource>(_ => parentBImageSourceService);
+            });
+
+            var service = provider.GetRequiredImageSourceService(new ChildImageSource());
+
+            Assert.Same(parentBImageSourceService, service);
+        }
+
+        [Fact]
+        public void ThrowsWhenMatchingServicesRelatedThroughInheritance()
+        {
+            var provider = CreateImageSourceServiceProvider(svcs =>
+            {
+                svcs.AddService<IParentAImageSource, ChildImageSourceService>();
+                svcs.AddService<IParentBImageSource, ChildImageSourceService>();
+            });
+
+            Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new ChildImageSource()));
+        }
+
+        private class ChildImageSource : IParentAImageSource, IParentBImageSource { public bool IsEmpty => throw new NotImplementedException(); }
+        private class ChildImageSourceService : IImageSourceService<IParentAImageSource>, IImageSourceService<IParentBImageSource> { }
+        private interface IParentAImageSource : IImageSource { }
+        private interface IParentBImageSource : IImageSource { }
+
 		private IImageSourceServiceProvider CreateImageSourceServiceProvider(Action<IImageSourceServiceCollection> configure)
 		{
 			var mauiApp = MauiApp.CreateBuilder()
@@ -144,5 +205,7 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		private class FirstImageSourceService : IImageSourceService<IFirstImageSource> { }
 		private class SecondImageSourceService : IImageSourceService<ISecondImageSource> { }
 		private class CombinedImageSourceService : IImageSourceService<IFirstImageSource>, IImageSourceService<ISecondImageSource> { }
+		
+		private class GravatarImageSourceStub : StreamImageSourceStub {}
 	}
 }

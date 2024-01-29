@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Hosting
 		internal static ImageSourceToImageSourceServiceTypeMapping GetInstance(IImageSourceServiceCollection collection) =>
 			s_instances.GetOrAdd(collection, static _ => new ImageSourceToImageSourceServiceTypeMapping());
 
-		private readonly Dictionary<Type, Type> _typeMapping = new(8); // MAUI registers 8 image source services at startup
+		private readonly Dictionary<Type, Type> _typeMapping = new();
 
 		public void Add<TImageSource, TImageSourceService>()
 			where TImageSource : IImageSource
@@ -37,12 +37,7 @@ namespace Microsoft.Maui.Hosting
 			{
 				if (imageSource.IsAssignableFrom(type))
 				{
-					if (bestImageSource is null)
-					{
-						bestImageSource = imageSource;
-						bestImageSourceService = imageSourceService;
-					}
-					else if (bestImageSource.IsAssignableFrom(imageSource))
+					if (bestImageSource is null || bestImageSource.IsAssignableFrom(imageSource))
 					{
 						bestImageSource = imageSource;
 						bestImageSourceService = imageSourceService;

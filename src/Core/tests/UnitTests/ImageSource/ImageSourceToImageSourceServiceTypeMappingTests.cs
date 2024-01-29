@@ -83,6 +83,17 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
+		public void Mitch_ThrowsInCaseOfAmbiguousMatch()
+		{
+			var mapping = new ImageSourceToImageSourceServiceTypeMapping();
+			mapping.Add<IA, IImageSourceService<IA>>();
+			mapping.Add<IZ, IImageSourceService<IZ>>();
+			mapping.Add<IY, IImageSourceService<IY>>();
+
+			Assert.Throws<InvalidOperationException>(() => mapping.FindImageSourceServiceType(typeof(What)));
+		}
+
+		[Fact]
 		public void ReturnExactImageSourceMatch()
 		{
 			var mapping = new ImageSourceToImageSourceServiceTypeMapping();
@@ -94,6 +105,13 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 
 			Assert.Equal(typeof(IImageSourceService<FirstAndSecondImageSource>), imageSourceServiceType);
 		}
+
+		interface IA : IImageSource {}
+		interface IB : IA {}
+		interface IZ : IImageSource {}
+		interface IY : IZ {}
+
+		class What : IB, IY { public bool IsEmpty => throw new NotImplementedException(); }
 
 		private interface IFirstImageSource : IImageSource { }
 		private interface ISecondImageSource : IImageSource { }
