@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Controls.Xaml
 	// Consult XET if updating!
 	internal interface IProvideParentValues : IProvideValueTarget
 	{
-		
 		IEnumerable<object> ParentObjects { get; }
 	}
 }
