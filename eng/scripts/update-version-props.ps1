@@ -50,47 +50,73 @@ param
     [string] $macVersion
 )
 
+function Set-SDKVersions {
+    param(
+        [ValidateNotNullOrEmpty()]
+        [xml]
+        $XmlDoc,
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Node,
+
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Version
+    )
+
+}
+
 #Update git config
 Write-Output git config –global core.autocrlf false
+
+function Set-SDKVersion {
+    param(
+        [ValidateNotNullOrEmpty()]
+        [xml]
+        $XmlDoc,
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $NodePath,
+
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Version
+    )
+    $node = $XmlDoc.SelectNodes($NodePath)[0]
+
+    if (-not $node) {
+        Write-Error "Could not find node for $NodePath"
+        return $false
+    }
+    $node."#text" = $Version
+    return $true
+}
+
+$sdkMaps = @{
+    "MicrosoftAndroidSdkWindowsPackageVersion" = $androidVersion;
+    "MicrosoftiOSSdkPackageVersion" = $iOSVersion;
+    "MicrosofttvOSSdkPackageVersion" = $tvOSVersion;
+    "MicrosoftMacCatalystSdkPackageVersion" = $macCatalystVersion;
+    "MicrosoftmacOSSdkPackageVersion" = $macVersion;
+}
 
 # Read the existing file
 [xml]$xmlDoc = Get-Content $xmlFileName
 
-if ($androidVersion)
-{
-    $androidVersionNode = $xmlDoc.SelectNodes("//Project//PropertyGroup//MicrosoftAndroidSdkWindowsPackageVersion")[0]
-    $androidVersionNode."#text" = $androidVersion
+foreach ($sdkMap in $sdkMaps.GetEnumerator()) {
+    $node = $xmlDoc.SelectNodes("//Project//PropertyGroup//$($sdkMap.Key)")[0]
+    if (-not $node) {
+        Write-Error "Could not find node for $($sdkMap.Key)"
+        exit 1
+    } else {
+        $node."#text" = $sdkMap.Value
+    }
 }
 
-if ($iOSVersion)
-{
-    $iosVersionNode = $xmlDoc.SelectNodes("//Project//PropertyGroup//MicrosoftiOSSdkPackageVersion")[0]
-    $iosVersionNode."#text" = $iOSVersion
-}
-
-if ($tvOSVersion)
-{
-    $tvOSVersionNode = $xmlDoc.SelectNodes("//Project//PropertyGroup//MicrosofttvOSSdkPackageVersion")[0]
-    $tvOSVersionNode."#text" = $tvOSVersion
-}
-
-if ($macCatalystVersion)
-{
-    $macCatalystVersionNode = $xmlDoc.SelectNodes("//Project//PropertyGroup//MicrosoftMacCatalystSdkPackageVersion")[0]
-    $macCatalystVersionNode."#text" = $macCatalystVersion
-}
-
-if ($macVersion)
-{
-    $macVersionNode = $xmlDoc.SelectNodes("//Project//PropertyGroup//MicrosoftmacOSSdkPackageVersion")[0]
-    $macVersionNode."#text" = $macVersion
-}
-
-
-Write-Output("Android version: " + $xmlDoc.Project.PropertyGroup.MicrosoftAndroidSdkWindowsPackageVersion)
-Write-Output("iOS version: " + $xmlDoc.Project.PropertyGroup.MicrosoftiOSSdkPackageVersion)
-Write-Output("tvOS version: " + $xmlDoc.Project.PropertyGroup.MicrosofttvOSSdkPackageVersion)
-Write-Output("MacCatalyst version: " + $xmlDoc.Project.PropertyGroup.MicrosoftMacCatalystSdkPackageVersion)
-Write-Output("Mac version: " + $xmlDoc.Project.PropertyGroup.MicrosoftmacOSSdkPackageVersion)
+Write-Output("New Android version: " + $xmlDoc.Project.PropertyGroup.MicrosoftAndroidSdkWindowsPackageVersion)
+Write-Output("New iOS version: " + $xmlDoc.Project.PropertyGroup.MicrosoftiOSSdkPackageVersion)
+Write-Output("New tvOS version: " + $xmlDoc.Project.PropertyGroup.MicrosofttvOSSdkPackageVersion)
+Write-Output("New MacCatalyst version: " + $xmlDoc.Project.PropertyGroup.MicrosoftMacCatalystSdkPackageVersion)
+Write-Output("New Mac version: " + $xmlDoc.Project.PropertyGroup.MicrosoftmacOSSdkPackageVersion)
 
 $xmlDoc.Save($xmlFileName)
