@@ -67,7 +67,8 @@ function Set-SDKVersions {
 }
 
 #Update git config
-Write-Output git config –global core.autocrlf false
+$gitConfig = git config –global core.autocrlf false
+Write-Output $gitConfig
 
 function Set-SDKVersion {
     param(
