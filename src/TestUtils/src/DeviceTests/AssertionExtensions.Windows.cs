@@ -147,6 +147,13 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action, IMauiContext mauiContext) =>
 			view.AttachAndRun(window => action(), mauiContext);
 
+		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action, IMauiContext mauiContext) =>
+			view.AttachAndRun(async window =>
+			{
+				await action();
+				return true;
+			}, mauiContext);
+
 		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, T> action, IMauiContext mauiContext) =>
 			view.AttachAndRun((window) =>
 			{
