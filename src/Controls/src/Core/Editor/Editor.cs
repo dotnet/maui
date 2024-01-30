@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -139,12 +140,12 @@ namespace Microsoft.Maui.Controls
 				if (TheSame(_previousHeightConstraint, heightConstraint) &&
 					TheSame(_previousWidthConstraint, widthConstraint))
 				{
-					return new Size(Width, Height);
+					return new Size(Width + Margin.HorizontalThickness, Height + Margin.VerticalThickness);
 				}
 				else if (TheSame(_previousHeightConstraint, _previousBounds.Height) &&
 					TheSame(_previousWidthConstraint, _previousBounds.Width))
 				{
-					return new Size(Width, Height);
+					return new Size(Width + Margin.HorizontalThickness, Height + Margin.VerticalThickness);
 				}
 			}
 
