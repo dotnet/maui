@@ -291,7 +291,8 @@ namespace Microsoft.Maui.Controls
 		/// Invoked when <see cref="this[int]"/> is called and notifies the handler associated to this layout.
 		/// </summary>
 		/// <param name="index">The index at which the child view was updated.</param>
-		/// <param name="view">The child view which was updated.</param>
+		/// <param name="view">The new child view which was added at <paramref name="index"/>.</param>
+		/// <param name="oldView">The previous child view which was at <paramref name="index"/>.</param>
 		protected virtual void OnUpdate(int index, IView view, IView oldView)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Update), index, view);
