@@ -166,7 +166,7 @@ namespace Recipes.ViewModels
                 RecipeUrl = item.RecipeUrl;
                 RecipeRating = item.RecipeRating;
                 RecipeReview = item.RecipeReview;
-				RecipeList = item.RecipeBody?.Split("\n") ?? new string[0];
+				RecipeList = item.RecipeBody?.Split("\n") ?? [];
 				source = item.Ingredients;
                 IngredientCheckList = new ObservableCollection<Ingredient>(source);
 
