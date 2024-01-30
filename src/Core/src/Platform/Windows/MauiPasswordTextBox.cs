@@ -75,23 +75,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			var isPassword = false;
-
-			foreach (var scope in mauiTxtBox.InputScope?.Names ?? [])
-			{
-				if (scope.NameValue == InputScopeNameValue.Password)
-				{
-					isPassword = true;
-					break;
-				}
-
-				if (isPassword)
-				{
-					isPassword = false;
-				}
-			}
-
-			mauiTxtBox.IsPassword = isPassword;
+			mauiTxtBox.IsPassword = mauiTxtBox.InputScope?.Names?.Any(x => x.NameValue == InputScopeNameValue.Password) ?? false;
 		}
 
 		public bool IsPassword
