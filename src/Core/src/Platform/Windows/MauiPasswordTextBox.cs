@@ -70,14 +70,14 @@ namespace Microsoft.Maui.Platform
 
 		static void OnInputScopePropertyChanged(DependencyObject sender, DependencyProperty dp)
 		{
-			if (sender is not MauiPasswordTextBox mauiTxtBox)
+			if (sender is not MauiPasswordTextBox mauiTxtBox || mauiTxtBox.IsPassword)
 			{
 				return;
 			}
 
 			var isPassword = false;
 
-			foreach (var scope in mauiTxtBox.InputScope.Names)
+			foreach (var scope in mauiTxtBox.InputScope?.Names ?? [])
 			{
 				if (scope.NameValue == InputScopeNameValue.Password)
 				{
