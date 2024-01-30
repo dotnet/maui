@@ -147,6 +147,10 @@ namespace Microsoft.Maui.Controls
 			base.InvalidateMeasureOverride();
 		}
 
+		/// <summary>
+		/// Adds a child view to the end of this layout.
+		/// </summary>
+		/// <param name="child">The child view to add.</param>
 		public void Add(IView child)
 		{
 			if (child == null)
@@ -165,6 +169,9 @@ namespace Microsoft.Maui.Controls
 			OnAdd(index, child);
 		}
 
+		/// <summary>
+		/// Clears all child views from this layout.
+		/// </summary>
 		public void Clear()
 		{
 			for (int i = _children.Count - 1; i >= 0; i--)
@@ -179,21 +186,41 @@ namespace Microsoft.Maui.Controls
 			OnClear();
 		}
 
+		/// <summary>
+		/// Determines if the specified child view is contained in this layout.
+		/// </summary>
+		/// <param name="item">The child view for which to determine if it is contained in this layout.</param>
+		/// <returns><see langword="true"/> if <paramref name="item"/> exists in this layout, otherwise <see langword="false"/>.</returns>
 		public bool Contains(IView item)
 		{
 			return _children.Contains(item);
 		}
 
+		/// <summary>
+		/// Copies the child views to the specified array.
+		/// </summary>
+		/// <param name="array">The target array to copy the child views to.</param>
+		/// <param name="arrayIndex">The index at which the copying needs to start.</param>
 		public void CopyTo(IView[] array, int arrayIndex)
 		{
 			_children.CopyTo(array, arrayIndex);
 		}
 
+		/// <summary>
+		/// Gets the index of a specified child view.
+		/// </summary>
+		/// <param name="item">The child view of which to determine the index.</param>
+		/// <returns>The index of the specified view, if the view was not found this will return <c>-1</c>.</returns>
 		public int IndexOf(IView item)
 		{
 			return _children.IndexOf(item);
 		}
 
+		/// <summary>
+		/// Inserts a child view at the specified index.
+		/// </summary>
+		/// <param name="index">The index at which to specify the child view.</param>
+		/// <param name="child">The child view to insert.</param>
 		public void Insert(int index, IView child)
 		{
 			if (child == null)
@@ -211,6 +238,11 @@ namespace Microsoft.Maui.Controls
 			OnInsert(index, child);
 		}
 
+		/// <summary>
+		/// Removes a child view.
+		/// </summary>
+		/// <param name="child">The child view to remove.</param>
+		/// <returns><see langword="true"/> if the view was removed successfully, otherwise <see langword="false"/>.</returns>
 		public bool Remove(IView child)
 		{
 			if (child == null)
@@ -230,6 +262,10 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <summary>
+		/// Removes a child view at the specified index.
+		/// </summary>
+		/// <param name="index">The index at which to remove the child view.</param>
 		public void RemoveAt(int index)
 		{
 			if (index >= Count)
