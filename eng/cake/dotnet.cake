@@ -238,6 +238,7 @@ Task("dotnet-test")
                 catch
                 {
                     success = false;
+                    Error($"Test project failed: {project}");
                 }
             }
         }
@@ -745,7 +746,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 $"console;verbosity=normal"
             }, 
            	ResultsDirectory = GetTestResultsDirectory(),
-            //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
+            Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
                 args.Append($"-bl:{binlog}");
@@ -766,7 +767,11 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
         settings.ToolPath = pathDotnet;
     }
 
-    DotNetTest(csproj, settings);
+    try {
+        DotNetTest(csproj, settings);
+    } finally {
+        Information("Test Run complete: {0}", results);
+    }
 }
 
 DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)
