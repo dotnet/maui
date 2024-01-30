@@ -294,6 +294,9 @@ namespace Microsoft.Maui.Controls
 		WeakNotifyPropertyChangedProxy _shadowProxy = null;
 		PropertyChangedEventHandler _shadowChanged;
 
+		/// <summary>
+		/// Frees all resources associated with the handle.
+		/// </summary>
 		~VisualElement()
 		{
 			_clipProxy?.Unsubscribe();
@@ -1222,6 +1225,9 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected virtual void InvalidateMeasure() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
+		/// <summary>
+		/// Invoked when the binding context of this element has changed.
+		/// </summary>
 		protected override void OnBindingContextChanged()
 		{
 			PropagateBindingContextToStateTriggers();
@@ -1231,6 +1237,10 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 		}
 
+		/// <summary>
+		/// Invoked when a child object is added to this element.
+		/// </summary>
+		/// <param name="child">The child object that is added to this element.</param>
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
@@ -1238,15 +1248,24 @@ namespace Microsoft.Maui.Controls
 			var view = child as View;
 
 			if (view != null)
+			{
 				ComputeConstraintForView(view);
+			}
 		}
 
+		/// <summary>
+		/// Invoked when a child object is removed from this element.
+		/// </summary>
+		/// <param name="child">The child element that is removed from this element.</param>
+		/// <param name="oldLogicalIndex">The logical index <paramref name="child"/> previously had within this element.</param>
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
 
 			if (child is View view)
+			{
 				view.ComputedConstraint = LayoutConstraint.None;
+			}
 		}
 
 		/// <summary>
@@ -1310,6 +1329,10 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
 
+		/// <summary>
+		/// Occurs when a focus change is requested.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[Obsolete("This is now handled through VisualElement.MapFocus, this event handler will be removed in the future.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
