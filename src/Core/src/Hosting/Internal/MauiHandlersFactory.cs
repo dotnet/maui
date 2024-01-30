@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -7,13 +8,18 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
+		readonly ConcurrentDictionary<Type, Type> _serviceCache = new ConcurrentDictionary<Type, Type>();
+
+		readonly RegisteredHandlerServiceTypeSet _registeredHandlerServiceTypeSet;
+
 		public MauiHandlersFactory(IMauiHandlersCollection collection)
 			: base(collection)
 		{
+			_registeredHandlerServiceTypeSet = RegisteredHandlerServiceTypeSet.GetInstance(collection);
 		}
 
 		public IElementHandler? GetHandler(Type type)
-			=> GetService(type) as IElementHandler;
+			=> GetService(GetVirtualViewHandlerServiceType(type)) as IElementHandler;
 
 		public IElementHandler? GetHandler<T>() where T : IElement
 			=> GetHandler(typeof(T));
@@ -21,23 +27,16 @@ namespace Microsoft.Maui.Hosting.Internal
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
 		{
-			if (!TryGetServiceDescriptors(ref iview, out var single, out var enumerable))
+			var serviceDescriptor = GetServiceDescriptor(GetVirtualViewHandlerServiceType(iview));
+			if (serviceDescriptor == null)
 				return default;
 
-			if (single != null)
-				return single.ImplementationType;
-
-			if (enumerable != null)
-			{
-				foreach (var descriptor in enumerable)
-				{
-					return descriptor.ImplementationType;
-				}
-			}
-
-			return default;
+			return serviceDescriptor.ImplementationType;
 		}
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
+
+		private Type GetVirtualViewHandlerServiceType(Type type)
+			=> _serviceCache.GetOrAdd(type, _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType);
 	}
 }
