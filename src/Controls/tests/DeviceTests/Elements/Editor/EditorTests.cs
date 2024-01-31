@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (_) =>
+			await AttachAndRun<LayoutHandler>(layout, async (_) =>
 			{
 				var frame = editor.Frame;
 
@@ -60,11 +60,119 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(initialHeight, editor.Height);
 			});
 		}
+		
+		[Fact]
+		public async Task EditorMeasureUpdatesWhenChangingHeight()
+		{
+			SetupBuilder();
+			var control = new Editor();
+			control.HeightRequest = 50;
+			control.WidthRequest = 50;
 
-		static async Task WaitForUIUpdate(Graphics.Rect frame, Editor collectionView, int timeout = 1000, int interval = 100)
+			IView layout = new VerticalStackLayout()
+			{
+				Children =
+				{
+					control
+				}
+			};
+
+			await AttachAndRun<LayoutHandler>(layout, async (_) =>
+			{
+				var frame = control.Frame;
+
+				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(100, 100)));
+				await Task.Yield();
+				control.HeightRequest = 60;
+				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(100, 100)));
+				await Task.Yield();
+
+				var frame2 = control.Frame;
+				var desiredSize = control.DesiredSize;
+				var height = control.Height;
+				var width = control.Width;
+
+				Assert.Equal(60, frame2.Bottom, 0.5d);
+				Assert.Equal(60, desiredSize.Height, 0.5d);
+			});
+		}
+		
+		[Fact]
+		public async Task EditorMeasureUpdatesWhenChangingWidth()
+		{
+			SetupBuilder();
+			var control = new Editor();
+			control.HeightRequest = 50;
+			control.WidthRequest = 50;
+
+			IView layout = new VerticalStackLayout()
+			{
+				Children =
+				{
+					control
+				}
+			};
+
+			await AttachAndRun<LayoutHandler>(layout, async (_) =>
+			{
+				var frame = control.Frame;
+
+				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(100, 100)));
+				await Task.Yield();
+				control.WidthRequest = 60;
+				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(100, 100)));
+				await Task.Yield();
+
+				var frame2 = control.Frame;
+				var desiredSize = control.DesiredSize;
+				var height = control.Height;
+				var width = control.Width;
+
+				Assert.Equal(60, frame2.Right, 0.5d);
+				Assert.Equal(60, desiredSize.Width, 0.5d);
+			});
+		}
+
+		[Fact]
+		public async Task EditorMeasureUpdatesWhenChangingMargin()
+		{
+			SetupBuilder();
+			var control = new Editor();
+			control.HeightRequest = 50;
+			control.WidthRequest = 50;
+
+			IView layout = new VerticalStackLayout()
+			{
+				Children =
+				{
+					control
+				}
+			};
+
+			await AttachAndRun<LayoutHandler>(layout, async (_) =>
+			{
+				var frame = control.Frame;
+
+				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(100, 100)));
+				await Task.Yield();
+				control.Margin = new Thickness(5,5,5,5);
+				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(100, 100)));
+				await Task.Yield();
+
+				var frame2 = control.Frame;
+				var desiredSize = control.DesiredSize;
+				var height = control.Height;
+				var width = control.Width;
+
+				Assert.Equal(55, frame2.Right, 0.5d);
+				Assert.Equal(60, desiredSize.Width, 0.5d);
+			});
+		}
+
+		static async Task WaitForUIUpdate(Graphics.Rect frame, Editor editor, int timeout = 1000, int interval = 100)
 		{
 			// Wait for layout to happen
-			while (collectionView.Frame == frame && timeout >= 0)
+			while (editor.Frame == frame && timeout >= 0)
 			{
 				await Task.Delay(interval);
 				timeout -= interval;

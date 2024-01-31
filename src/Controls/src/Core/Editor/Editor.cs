@@ -87,6 +87,10 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler Completed;
 		double _previousWidthConstraint;
 		double _previousHeightConstraint;
+		double _previousWidthRequest;
+		double _previousHeightRequest;
+		Thickness _previousMargin;
+
 		Rect _previousBounds;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
@@ -125,6 +129,12 @@ namespace Microsoft.Maui.Controls
 			(this as IEditorController).SendCompleted();
 		}
 
+		Size IView.Measure(double widthConstraint, double heightConstraint)
+		{
+			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
+			return DesiredSize;
+		}
+		
 		protected override Size ArrangeOverride(Rect bounds)
 		{
 			_previousBounds = bounds;
@@ -135,22 +145,38 @@ namespace Microsoft.Maui.Controls
 		{
 			if (AutoSize == EditorAutoSizeOption.Disabled &&
 				Width > 0 &&
-				Height > 0)
+				Height > 0 &&
+				// If the user has changed the Margin/Width/Height then we need to re-measure
+				_previousMargin == Margin &&
+				_previousWidthRequest == WidthRequest &&
+				_previousHeightRequest == HeightRequest)
 			{
 				if (TheSame(_previousHeightConstraint, heightConstraint) &&
 					TheSame(_previousWidthConstraint, widthConstraint))
 				{
-					return new Size(Width + Margin.HorizontalThickness, Height + Margin.VerticalThickness);
+					// If the constraints are the same as the last time we measured, then we can return the last desired size
+					var desiredSize = new Size(Width + Margin.HorizontalThickness, Height + Margin.VerticalThickness);
+					
+					if (desiredSize == DesiredSize)
+						return desiredSize;
 				}
 				else if (TheSame(_previousHeightConstraint, _previousBounds.Height) &&
 					TheSame(_previousWidthConstraint, _previousBounds.Width))
 				{
-					return new Size(Width + Margin.HorizontalThickness, Height + Margin.VerticalThickness);
+					// If the constraints are the same as the last time we measured, then we can return the last desired size
+					var desiredSize =  new Size(Width + Margin.HorizontalThickness, Height + Margin.VerticalThickness);
+
+					if (desiredSize == DesiredSize)
+						return desiredSize;
 				}
 			}
 
+			_previousWidthRequest = WidthRequest;
+			_previousHeightRequest = HeightRequest;
+			_previousMargin = Margin;
 			_previousWidthConstraint = widthConstraint;
 			_previousHeightConstraint = heightConstraint;
+			
 			return base.MeasureOverride(widthConstraint, heightConstraint);
 
 			bool TheSame(double width, double otherWidth)
