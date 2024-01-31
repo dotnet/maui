@@ -195,6 +195,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add("PublishAot=true");
 			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
 
 			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
@@ -216,6 +217,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add("PublishAot=true");
 			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
 			extendedBuildProps.Add("TrimmerSingleWarn=false");
 
 			string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
