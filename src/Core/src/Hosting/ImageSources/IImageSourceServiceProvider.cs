@@ -10,8 +10,10 @@ namespace Microsoft.Maui
 
 		IImageSourceService? GetImageSourceService(Type imageSource);
 
+		[Obsolete("Use GetImageSourceService instead.")]
 		Type GetImageSourceServiceType(Type imageSource);
 
+		[Obsolete("Use GetImageSourceService instead.")]
 		Type GetImageSourceType(Type imageSource);
 	}
 }

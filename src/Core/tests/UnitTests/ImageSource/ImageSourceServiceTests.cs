@@ -95,6 +95,7 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 
 		class DerivedMultipleInterfacesImageSourceStub : MultipleInterfacesImageSourceStub {}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		[Fact]
 		public void GetsImageSourceTypeEvenWhenNoServiceWasRegistered()
 		{
@@ -140,6 +141,7 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 
 			Assert.Equal(typeof(IImageSourceService<FirstImageSource>), service);
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		[Fact]
 		public void ResolvesCustomDerivedImageSourceOverBuiltInInterface()
