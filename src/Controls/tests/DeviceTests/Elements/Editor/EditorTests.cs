@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -177,8 +178,12 @@ namespace Microsoft.Maui.DeviceTests
 				(control) =>
 				{
 					control.WidthRequest = Primitives.Dimension.Unset;
+					control.Text = String.Join(",", Enumerable.Range(0, 100).Select(x => "a").ToArray());
 				},
-				(control) => control.MaximumWidthRequest = 10,
+				(control) =>
+				{
+					control.MaximumWidthRequest = 10;
+				},
 				(control) =>
 				{
 					var frame = control.Frame;
