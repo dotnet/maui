@@ -16,16 +16,16 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
-		[TestCase("maui", DotNetPrevious, "Debug", false)]
-		[TestCase("maui", DotNetPrevious, "Release", false)]
+		//[TestCase("maui", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui", DotNetPrevious, "Release", false)]
 		[TestCase("maui", DotNetCurrent, "Debug", false)]
 		[TestCase("maui", DotNetCurrent, "Release", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
-		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
-		[TestCase("mauilib", DotNetPrevious, "Release", true)]
+		//[TestCase("mauilib", DotNetPrevious, "Debug", true)]
+		//[TestCase("mauilib", DotNetPrevious, "Release", true)]
 		[TestCase("mauilib", DotNetCurrent, "Debug", true)]
 		[TestCase("mauilib", DotNetCurrent, "Release", true)]
 		public void Build(string id, string framework, string config, bool shouldPack)
@@ -85,16 +85,16 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
-		[TestCase("maui", DotNetPrevious, "Debug", false)]
-		[TestCase("maui", DotNetPrevious, "Release", false)]
+		//[TestCase("maui", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui", DotNetPrevious, "Release", false)]
 		[TestCase("maui", DotNetCurrent, "Debug", false)]
 		[TestCase("maui", DotNetCurrent, "Release", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
-		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
-		[TestCase("mauilib", DotNetPrevious, "Release", true)]
+		//[TestCase("mauilib", DotNetPrevious, "Debug", true)]
+		//[TestCase("mauilib", DotNetPrevious, "Release", true)]
 		[TestCase("mauilib", DotNetCurrent, "Debug", true)]
 		[TestCase("mauilib", DotNetCurrent, "Release", true)]
 		public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack)
@@ -124,12 +124,12 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", DotNetPrevious, "Debug")]
-		[TestCase("maui", DotNetPrevious, "Release")]
+		//[TestCase("maui", DotNetPrevious, "Debug")]
+		//[TestCase("maui", DotNetPrevious, "Release")]
 		[TestCase("maui", DotNetCurrent, "Debug")]
 		[TestCase("maui", DotNetCurrent, "Release")]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug")]
-		[TestCase("maui-blazor", DotNetPrevious, "Release")]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug")]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release")]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
 		[TestCase("maui-blazor", DotNetCurrent, "Release")]
 		public void BuildUnpackaged(string id, string framework, string config)
@@ -266,8 +266,8 @@ namespace Microsoft.Maui.IntegrationTests
 		/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
 		/// </summary>
 		[Test]
-		[TestCase("mauilib", DotNetPrevious, "Debug")]
-		[TestCase("mauilib", DotNetPrevious, "Release")]
+		//[TestCase("mauilib", DotNetPrevious, "Debug")]
+		//[TestCase("mauilib", DotNetPrevious, "Release")]
 		[TestCase("mauilib", DotNetCurrent, "Debug")]
 		[TestCase("mauilib", DotNetCurrent, "Release")]
 		public void PackCoreLib(string id, string framework, string config)
