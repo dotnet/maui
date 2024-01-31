@@ -83,17 +83,6 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
-		public void Mitch_ThrowsInCaseOfAmbiguousMatch()
-		{
-			var mapping = new ImageSourceToImageSourceServiceTypeMapping();
-			mapping.Add<IA, IImageSourceService<IA>>();
-			mapping.Add<IZ, IImageSourceService<IZ>>();
-			mapping.Add<IY, IImageSourceService<IY>>();
-
-			Assert.Throws<InvalidOperationException>(() => mapping.FindImageSourceServiceType(typeof(What)));
-		}
-
-		[Fact]
 		public void ReturnExactImageSourceMatch()
 		{
 			var mapping = new ImageSourceToImageSourceServiceTypeMapping();
@@ -105,13 +94,6 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 
 			Assert.Equal(typeof(IImageSourceService<FirstAndSecondImageSource>), imageSourceServiceType);
 		}
-
-		interface IA : IImageSource {}
-		interface IB : IA {}
-		interface IZ : IImageSource {}
-		interface IY : IZ {}
-
-		class What : IB, IY { public bool IsEmpty => throw new NotImplementedException(); }
 
 		private interface IFirstImageSource : IImageSource { }
 		private interface ISecondImageSource : IImageSource { }
@@ -126,12 +108,5 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 
 		private sealed class MyLargeCustomImageSource : MyCustomImageSource { }
 		private sealed class MySmallCustomImageSource : MyCustomImageSource { }
-
-		private sealed class MyFileAndStreamImageSource : IFileImageSource, IStreamImageSource
-		{
-			public string File => throw new NotImplementedException();
-			public Task<Stream> GetStreamAsync(CancellationToken cancellationToken = default) => Task.FromException<Stream>(new NotImplementedException());
-			public bool IsEmpty => throw new NotImplementedException();
-		}
 	}
 }

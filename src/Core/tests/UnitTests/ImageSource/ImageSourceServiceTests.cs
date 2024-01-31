@@ -142,17 +142,20 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
-		public void TestCommunityToolkitGravatar()
+		public void ResolvesCustomDerivedImageSourceOverBuiltInInterface()
 		{
+			var defaultInstance = new StreamImageSourceService();
+			var customInstance = new StreamImageSourceService();
+			
 			var provider = CreateImageSourceServiceProvider(services =>
 			{
-				services.AddService<IStreamImageSource, StreamImageSourceService>();
-				services.AddService<StreamImageSourceStub>(_ => new StreamImageSourceService());
+				services.AddService<IStreamImageSource>(_ => defaultInstance);
+				services.AddService<StreamImageSourceStub>(_ => customInstance);
 			});
 
-			var service = provider.GetImageSourceService(typeof(GravatarImageSourceStub));
+			var service = provider.GetImageSourceService(typeof(CustomStreamImageSourceStub));
 
-			Assert.IsType<StreamImageSourceService>(service);
+			Assert.Same(customInstance, service);
 		}
 
 		[Fact]
@@ -182,6 +185,17 @@ namespace Microsoft.Maui.UnitTests.ImageSource
             Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new ChildImageSource()));
         }
 
+        [Fact]
+        public void ImageSourceServiceRegistrationViaAddSingletonDirectlyIsNotSupported()
+        {
+            var provider = CreateImageSourceServiceProvider(svcs =>
+            {
+                svcs.AddSingleton<IImageSourceService<IParentAImageSource>, ChildImageSourceService>();
+            });
+
+            Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new ChildImageSource()));
+        }
+
         private class ChildImageSource : IParentAImageSource, IParentBImageSource { public bool IsEmpty => throw new NotImplementedException(); }
         private class ChildImageSourceService : IImageSourceService<IParentAImageSource>, IImageSourceService<IParentBImageSource> { }
         private interface IParentAImageSource : IImageSource { }
@@ -206,6 +220,6 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		private class SecondImageSourceService : IImageSourceService<ISecondImageSource> { }
 		private class CombinedImageSourceService : IImageSourceService<IFirstImageSource>, IImageSourceService<ISecondImageSource> { }
 		
-		private class GravatarImageSourceStub : StreamImageSourceStub {}
+		private class CustomStreamImageSourceStub : StreamImageSourceStub {}
 	}
 }
