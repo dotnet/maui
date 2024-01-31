@@ -127,12 +127,6 @@ namespace Microsoft.Maui.Controls
 		{
 			(this as IEditorController).SendCompleted();
 		}
-
-		Size IView.Measure(double widthConstraint, double heightConstraint)
-		{
-			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
-			return DesiredSize;
-		}
 		
 		protected override Size ArrangeOverride(Rect bounds)
 		{
