@@ -159,7 +159,7 @@ namespace Microsoft.Maui.AppiumTests
 			int cropFromTop = _testDevice switch
 			{
 				TestDevice.Android => 60,
-				TestDevice.iOS => 90,
+				TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 				TestDevice.Windows => 32,
 				_ => 0,
 			};
