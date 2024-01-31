@@ -86,20 +86,62 @@ namespace Microsoft.Maui.AppiumTests
 
 		public void VerifyScreenshot(string? name = null)
 		{
-			if (_testDevice == TestDevice.Mac)
-			{
-				// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
-				// is of the entire screen, not just the app. Later when xharness relay support is in place to
-				// send a message to the MAUI app to get the screenshot, we can use that to just screenshot
-				// the app.
-				Assert.Ignore("MacCatalyst isn't supported yet for visual tests");
-			}
+			string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
 
-			if (_testDevice == TestDevice.iOS && GetTestConfig().GetProperty<string>("DeviceName") == "iPhone 15")
+			/*
+			Determine the environmentName, used as the directory name for visual testing snaphots. Here are the rules/conventions:
+			- Names are lower case, no spaces.
+			- By default, the name matches the platform (android, ios, windows, or mac).
+			- Each platform has a default device (or set of devices) - if the snapshot matches the default no suffix is needed (e.g. just ios).
+			- If tests are run on secondary devices that produce different snapshots, the device name is used as suffix (e.g. ios-iphonex).
+			- If tests are run on secondary devices with multiple OS versions that produce different snapshots, both device name and os version are
+			  used as a suffix (e.g. ios-iphonex-16_4). We don't have any cases of this today but may eventually. The device name comes first here,
+			  before os version, because most visual testing differences come from different sceen size (a device thing), not OS version differences,
+			  but both can happen.
+			*/
+			string environmentName = "";
+			switch (_testDevice)
 			{
-				// For now, ignore visual tests on iPhone 15 devices, only running visual tests with iPhone X.
-				// Later, when we have a way to screenshot just the control being tested that should remove this dependency.
-				Assert.Ignore("iPhone15 isn't currently used for visual tests, just iPhone X");
+				case TestDevice.Android:
+					if (deviceName == "Nexus 5X")
+					{
+						environmentName = "android";
+					}
+					else
+					{
+						Assert.Fail("Android visual tests should be run on an Nexus 5X (API 30) emulator image. Follow the steps on the MAUI UI testing wiki.");
+					}
+					break;
+
+				case TestDevice.iOS:
+					if (deviceName == "iPhone 15")
+					{
+						environmentName = "ios";
+					}
+					else if (deviceName == "iPhone X")
+					{
+						environmentName = "ios-iphonex";
+					}
+					else
+					{
+						Assert.Fail("iOS visual tests should be run on iPhone 15 (iOS 17.2) or iPhone X (iOS 16.4) simulator images. Follow the steps on the MAUI UI testing wiki.");
+					}
+					break;
+
+				case TestDevice.Windows:
+					environmentName = "windows";
+					break;
+
+				case TestDevice.Mac:
+					// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
+					// is of the entire screen, not just the app. Later when xharness relay support is in place to
+					// send a message to the MAUI app to get the screenshot, we can use that to just screenshot
+					// the app.
+					Assert.Ignore("MacCatalyst isn't supported yet for visual tests");
+					break;
+
+				default:
+					throw new NotImplementedException($"Unknown device type {_testDevice}");
 			}
 
 			name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
@@ -137,16 +179,7 @@ namespace Microsoft.Maui.AppiumTests
 				actualImage = imageEditor.GetUpdatedImage();
 			}
 
-			string platform = _testDevice switch
-			{
-				TestDevice.Android => "android",
-				TestDevice.iOS => "ios",
-				TestDevice.Mac => "mac",
-				TestDevice.Windows => "windows",
-				_ => throw new NotImplementedException($"Unknown device type {_testDevice}"),
-			};
-
-			_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: platform, testContext: _visualTestContext);
+			_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
 		}
 	}
 }
