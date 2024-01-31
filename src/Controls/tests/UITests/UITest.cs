@@ -87,6 +87,8 @@ namespace Microsoft.Maui.AppiumTests
 		public void VerifyScreenshot(string? name = null)
 		{
 			string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
+			// Remove the XHarness suffix if present
+			deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
 
 			/*
 			Determine the environmentName, used as the directory name for visual testing snaphots. Here are the rules/conventions:
@@ -114,11 +116,11 @@ namespace Microsoft.Maui.AppiumTests
 					break;
 
 				case TestDevice.iOS:
-					if (deviceName == "iPhone 15")
+					if (deviceName == "iPhone 15 (iOS 17.2)")
 					{
 						environmentName = "ios";
 					}
-					else if (deviceName == "iPhone X")
+					else if (deviceName == "iPhone X (iOS 16.4)")
 					{
 						environmentName = "ios-iphonex";
 					}
