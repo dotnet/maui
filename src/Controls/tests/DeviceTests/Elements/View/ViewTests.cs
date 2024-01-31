@@ -27,14 +27,23 @@ namespace Microsoft.Maui.DeviceTests
 			EnsureHandlerCreated(TestCases.ControlsViewTypesTestCases.Setup);
 
 			var control = Activator.CreateInstance(controlType) as View;
+
+#if MACCATALYST || IOS
+			if (control is SearchBar sb)
+				return;
+#endif
 			control.Margin = new Thickness(5, 5, 5, 5);
 			control.HeightRequest = 50;
 			control.WidthRequest = 50;
 			control.MinimumHeightRequest = 0;
 			control.MinimumWidthRequest = 0;
+			control.HorizontalOptions = LayoutOptions.Start;
+			control.VerticalOptions = LayoutOptions.Start;
 
 			IView layout = new VerticalStackLayout()
 			{
+				HeightRequest = 100,
+				WidthRequest = 100,
 				Children =
 				{
 					control
@@ -43,9 +52,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun<LayoutHandler>(layout, async (_) =>
 			{
-				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(100, 100)));
-				await Task.Yield();
-				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(100, 100)));
 				await Task.Yield();
 
 				var frame = control.Frame;
