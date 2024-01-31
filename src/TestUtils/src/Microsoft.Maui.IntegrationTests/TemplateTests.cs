@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using Microsoft.Maui.IntegrationTests.Apple;
 
 namespace Microsoft.Maui.IntegrationTests
@@ -44,6 +45,41 @@ namespace Microsoft.Maui.IntegrationTests
 
 			string target = shouldPack ? "Pack" : "";
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		// with spaces
+		[TestCase("maui", "Project Space", "projectspace")]
+		[TestCase("maui-blazor", "Project Space", "projectspace")]
+		[TestCase("mauilib", "Project Space", "projectspace")]
+  		// with invalid characters
+		[TestCase("maui", "Project@Symbol", "projectsymbol")]
+		[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
+		[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
+		public void BuildsWithSpecialCharacters(string id, string projectName, string expectedId)
+		{
+			var projectDir = Path.Combine(TestDirectory, projectName);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			EnableTizen(projectFile);
+
+			// libraries do not have application IDs
+			if (id != "mauilib")
+			{
+				var doc = XDocument.Load(projectFile);
+				var appId = doc.Root!
+					.Elements("PropertyGroup")
+					.Elements("ApplicationId")
+					.Single()
+					.Value;
+				Assert.AreEqual($"com.companyname.{expectedId}", appId);
+			}
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
@@ -110,6 +146,36 @@ namespace Microsoft.Maui.IntegrationTests
 				"<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		[TestCase("maui", true, true)]
+		[TestCase("maui", true, false)]
+		[TestCase("maui", false, true)]
+		public void BuildWindowsAppSDKSelfContained(string id, bool wasdkself, bool netself)
+		{
+			if (TestEnvironment.IsMacOS)
+				Assert.Ignore("This test is designed for testing a windows build.");
+
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			FileUtilities.ReplaceInFile(projectFile,
+				"<UseMaui>true</UseMaui>",
+				$"""
+				<UseMaui>true</UseMaui>
+				<WindowsAppSDKSelfContained>{wasdkself}</WindowsAppSDKSelfContained>
+				<SelfContained>{netself}</SelfContained>
+				""");
+
+			var extendedBuildProps = BuildProps;
+			extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
