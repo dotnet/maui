@@ -89,7 +89,6 @@ namespace Microsoft.Maui.Controls
 		double _previousHeightConstraint;
 		double _previousWidthRequest;
 		double _previousHeightRequest;
-		Thickness _previousMargin;
 
 		Rect _previousBounds;
 
@@ -147,25 +146,26 @@ namespace Microsoft.Maui.Controls
 				Width > 0 &&
 				Height > 0 &&
 				// If the user has changed the Margin/Width/Height then we need to re-measure
-				_previousMargin == Margin &&
 				_previousWidthRequest == WidthRequest &&
 				_previousHeightRequest == HeightRequest)
 			{
 				if (TheSame(_previousHeightConstraint, heightConstraint) &&
 					TheSame(_previousWidthConstraint, widthConstraint))
 				{
-					// If the constraints are the same as the last time we measured, then we can return the last desired size
 					var desiredSize = new Size(Width + Margin.HorizontalThickness, Height + Margin.VerticalThickness);
 					
+					// If these values are different it means we've called measure multiple times with this same measure pass
+					// so we need to return the new desired size until the measure pass is over
 					if (desiredSize == DesiredSize)
 						return desiredSize;
 				}
 				else if (TheSame(_previousHeightConstraint, _previousBounds.Height) &&
 					TheSame(_previousWidthConstraint, _previousBounds.Width))
 				{
-					// If the constraints are the same as the last time we measured, then we can return the last desired size
 					var desiredSize =  new Size(Width + Margin.HorizontalThickness, Height + Margin.VerticalThickness);
 
+					// If these values are different it means we've called measure multiple times with this same measure pass
+					// so we need to return the new desired size until the measure pass is over
 					if (desiredSize == DesiredSize)
 						return desiredSize;
 				}
@@ -173,7 +173,6 @@ namespace Microsoft.Maui.Controls
 
 			_previousWidthRequest = WidthRequest;
 			_previousHeightRequest = HeightRequest;
-			_previousMargin = Margin;
 			_previousWidthConstraint = widthConstraint;
 			_previousHeightConstraint = heightConstraint;
 			
