@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Hosting
 
 			return FindImageSourceServiceMapping(type, _concreteTypeMapping)
 				?? FindImageSourceServiceMapping(type, _interfaceTypeMapping)
-				?? throw new InvalidOperationException($"Unable to find a {nameof(IImageSourceService)} corresponding to {type}. Please register a service for {type}.");
+				?? throw new InvalidOperationException($"Unable to find a {nameof(IImageSourceService)} corresponding to {type}. Please register a service for {type} using `ImageSourceServiceCollectionExtensions.AddService`");
 		}
 
 		private static Type? FindImageSourceServiceMapping(Type type, Dictionary<Type, Type> mapping)
