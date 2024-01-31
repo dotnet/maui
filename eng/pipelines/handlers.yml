@@ -273,6 +273,11 @@ stages:
                 testRunner: VSTest
                 testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
                 testRunTitle: ${{ BuildPlatform.name }} sample build tests
+            - task: PublishBuildArtifacts@1
+              condition: always()
+              displayName: publish artifacts
+              inputs:
+                ArtifactName: build_net_${{ BuildPlatform.name }}_samples
 
   - stage: templates_net
     displayName: Test Templates
