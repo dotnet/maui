@@ -116,9 +116,15 @@ namespace Microsoft.Maui.DeviceTests
 			// so the optimization code causes the attached view to not remeasure when it actually should. 
 			// So we add a UIView in the middle to force our attached view to not optimize itself and actually
 			// remeasure when requested
-			var uiView = new UIView();
-			uiView.AddSubview(view);
-			currentView.AddSubview(uiView);
+			var attachedView = view;
+
+			if (currentView is MauiView)
+			{
+				attachedView = new UIView();
+				attachedView.AddSubview(view);				
+			}
+
+			currentView.AddSubview(attachedView);
 
 			// Give the UI time to refresh
 			await Task.Delay(100);
@@ -132,6 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 			finally
 			{
 				view.RemoveFromSuperview();
+				attachedView.RemoveFromSuperview();
 
 				// Give the UI time to refresh
 				await Task.Delay(100);
