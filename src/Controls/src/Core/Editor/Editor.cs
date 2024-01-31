@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Controls
 {
@@ -89,6 +90,7 @@ namespace Microsoft.Maui.Controls
 		double _previousHeightConstraint;
 		double _previousWidthRequest;
 		double _previousHeightRequest;
+		Thickness _previousMargin;
 
 		Rect _previousBounds;
 
@@ -136,40 +138,49 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (AutoSize == EditorAutoSizeOption.Disabled &&
-				Width > 0 &&
-				Height > 0 &&
-				// If the user has changed the Margin/Width/Height then we need to re-measure
-				_previousWidthRequest == WidthRequest &&
-				_previousHeightRequest == HeightRequest)
+			if (AutoSize == EditorAutoSizeOption.TextChanges)
 			{
-				if (TheSame(_previousHeightConstraint, heightConstraint) &&
-					TheSame(_previousWidthConstraint, widthConstraint))
-				{
-					var desiredSize = new Size(Width + Margin.HorizontalThickness, Height + Margin.VerticalThickness);
-					
-					// If these values are different it means we've called measure multiple times with this same measure pass
-					// so we need to return the new desired size until the measure pass is over
-					if (desiredSize == DesiredSize)
-						return desiredSize;
-				}
-				else if (TheSame(_previousHeightConstraint, _previousBounds.Height) &&
-					TheSame(_previousWidthConstraint, _previousBounds.Width))
-				{
-					var desiredSize =  new Size(Width + Margin.HorizontalThickness, Height + Margin.VerticalThickness);
+				return base.MeasureOverride(widthConstraint, heightConstraint);
+			}
 
-					// If these values are different it means we've called measure multiple times with this same measure pass
-					// so we need to return the new desired size until the measure pass is over
-					if (desiredSize == DesiredSize)
-						return desiredSize;
+			IView view = this;
+			if (Width > 0 &&
+				Height > 0 &&
+				// If the user hasn't changed any of the WxH constraints then we don't want to remeasure
+				// We want the Editor to remain the same size
+				_previousWidthRequest == WidthRequest &&
+				_previousHeightRequest == HeightRequest &&
+				_previousMargin == Margin &&
+				// If the user has explicitly set the width and height we don't need to special case around AutoSize
+				// The explicitly set values will already stop any resizing from happening
+				(!IsExplicitSet(view.Width) || !IsExplicitSet(view.Height))
+				)
+			{
+				// check if the min/max constraints have changed and are no longer valid
+				if (IsExplicitSet(view.MinimumWidth) && Width < view.MinimumWidth ||
+					IsExplicitSet(view.MaximumWidth) && Width > view.MaximumWidth ||
+					IsExplicitSet(view.MinimumHeight) && Height < view.MinimumHeight ||
+					IsExplicitSet(view.MaximumHeight) && Height > view.MaximumHeight)
+				{
+					_previousWidthConstraint = -1;
+					_previousHeightConstraint = -1;
+				}
+				else if ((TheSame(_previousHeightConstraint, heightConstraint) &&
+					TheSame(_previousWidthConstraint, widthConstraint)) ||
+					(TheSame(_previousHeightConstraint, _previousBounds.Height) &&
+					TheSame(_previousWidthConstraint, _previousBounds.Width)))
+				{
+					// Just return previously established desired size
+					return DesiredSize;
 				}
 			}
 
 			_previousWidthRequest = WidthRequest;
 			_previousHeightRequest = HeightRequest;
+			_previousMargin = Margin;
 			_previousWidthConstraint = widthConstraint;
 			_previousHeightConstraint = heightConstraint;
-			
+
 			return base.MeasureOverride(widthConstraint, heightConstraint);
 
 			bool TheSame(double width, double otherWidth)

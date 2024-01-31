@@ -30,6 +30,8 @@ namespace Microsoft.Maui.DeviceTests
 			control.Margin = new Thickness(5, 5, 5, 5);
 			control.HeightRequest = 50;
 			control.WidthRequest = 50;
+			control.MinimumHeightRequest = 0;
+			control.MinimumWidthRequest = 0;
 
 			IView layout = new VerticalStackLayout()
 			{
