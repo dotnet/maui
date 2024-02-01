@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Bz19253">
+	    <Border
+            BackgroundColor="red"
+            Stroke="Green"
+            x:Name="border">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="{Binding Source={RelativeSource AncestorType={x:Type Border}}, Path=BackgroundColor}" Offset="0.0"/>
+                    <GradientStop Color="{Binding Source={RelativeSource AncestorType={x:Type Border}}, Path=Stroke.Color}" Offset="1.0"/>
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+</ContentPage>
