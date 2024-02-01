@@ -26,9 +26,9 @@ namespace Microsoft.Maui.Controls
 
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
-			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
+			for (var i = 0; i < InternalChildren.Count; i++)
 			{
-				Element element = LogicalChildrenInternal[i];
+				Element element = InternalChildren[i];
 				var child = element as View;
 				if (child != null)
 					LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));

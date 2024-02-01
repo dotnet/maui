@@ -307,5 +307,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(layout1.Children.Contains(child));
 		}
+
+		[Fact]
+		public void BackingStoreOrderingStaysConsistentWithLayout()
+		{
+			var view = new NaiveLayout();
+
+			var child1 = new View();
+			var child2 = new View();
+			var child3 = new View();
+			var child4 = new View();
+			var child5 = new View();
+
+			view.Children.Add(child1);
+			view.Children.Add(child2);
+			view.Children.Add(child3);
+			// Add a logical child that's not part of the layout
+			view.AddLogicalChild(new SwipeItems());
+			view.Children.Add(child4);
+			view.Children.Add(child5);
+
+			Assert.Equal(5, view.Children.Count);
+			Assert.Equal(5, (view as IElementController).LogicalChildren.Count);
+
+			// Verify that logical children not part of the layout stay at the end of the visual children
+			var firstfive = (view as IVisualTreeElement).GetVisualChildren().Take(5).ToList();
+
+			Assert.Equal(firstfive, view.Children);
+		}
+
+		[Fact]
+		public void BackingStoreReordersWithLayoutLogicalChildren()
+		{
+			var view = new NaiveLayout();
+
+			var child1 = new View();
+			var child2 = new View();
+			var child3 = new View();
+
+			view.Children.Add(child1);
+			view.Children.Add(child2);
+			view.Children.Add(child3);
+
+			view.RaiseChild(child2);
+
+			var children = (view as IVisualTreeElement).GetVisualChildren();
+
+			Assert.Equal(children, view.Children);
+		}
 	}
 }
