@@ -69,6 +69,7 @@ namespace Microsoft.Maui.Storage
 		{
 			using var editor = PreferencesImplementation.GetSharedPreferences(Alias).Edit();
 			editor?.Clear()?.Apply();
+      		_prefs = null;
 		}
 
 		ISharedPreferences _prefs;
