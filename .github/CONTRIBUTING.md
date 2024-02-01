@@ -45,7 +45,7 @@ See [our profiling wiki](https://aka.ms/profile-maui) for instructions on how to
 
 2. **Benchmark your change**: If you're making a performance-related change, please include benchmarks in your pull request. This will help us understand the impact of your change, and will help us avoid performance regressions in the future.
 
-Provide before & after numbers using BenchmarkDotNet where possible. See ourexisting [BenchmarkDotNet project](../src/Core/tests/Benchmarks/) for examples.
+Provide before & after numbers using BenchmarkDotNet where possible. See our existing [BenchmarkDotNet project](../src/Core/tests/Benchmarks/) for examples.
 
 If a BenchmarkDotNet test case is not possible, share before & after profiling information from Visual Studio, `dotnet-trace`, etc. Keep in mind that sampling profilers can be inaccurate, so someone from the .NET MAUI team may need to reproduce your results before merging your change.
 
