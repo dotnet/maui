@@ -87,16 +87,20 @@ stages:
                       APIVERSION: ${{ replace(version, 'device-', '') }}
                       POOLNAME: ${{ parameters.iosDevicePool.name }}
                       POOLDEMANDS: '15'
+                      CUSTOMPOOL: 
+                        name: ${{ parameters.iosDevicePool.name }}
+                        demands: 
+                        - HasiOS -equals ${{ replace(version, 'device-', '') }}
                     ${{ else }}:
                       DEVICE: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
                       APIVERSION: ${{ replace(version, 'simulator-', '') }}
                       POOLNAME:  ${{ parameters.iosPool.name }}
                       POOLIMAGE:  ${{ parameters.iosPool.vmImage }}
                       POOLDEMANDS: ${{ parameters.iosPool.demands }}
-      pool:
-        name: $(POOLNAME)
-        demands:
-        - HasiOS -equals $(POOLDEMANDS)
+                      CUSTOMPOOL: 
+                        name: ${{ parameters.iosPool.name }}
+
+      pool: $(CUSTOMPOOL)
       
       steps:
         - template: device-tests-steps.yml
