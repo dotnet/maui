@@ -543,9 +543,9 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 
 }
 
-void SetDotNetEnvironmentVariables()
+void SetDotNetEnvironmentVariables(string dotnetDir = null)
 {
-    var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./bin/dotnet/")).ToString();
     
     SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
@@ -553,6 +553,7 @@ void SetDotNetEnvironmentVariables()
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
     SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
+    SetEnvironmentVariable("ForceNet8Current", "true");
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
     // Get "full" .binlog in Project System Tools
