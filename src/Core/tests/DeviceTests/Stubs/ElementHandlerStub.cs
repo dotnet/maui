@@ -12,5 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected override object CreatePlatformElement() => new Object();
+
+		public override void SetVirtualView(IElement view) => base.SetVirtualView(view);
 	}
 }
