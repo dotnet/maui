@@ -116,14 +116,19 @@ namespace Microsoft.Maui.DeviceTests
 			// so the optimization code causes the attached view to not remeasure when it actually should. 
 			// So we add a UIView in the middle to force our attached view to not optimize itself and actually
 			// remeasure when requested
-			var attachedView = view;
-
-			if (currentView is MauiView)
+			// This middle view is also helpful so we can make sure the attached view isn't inside the safe area
+			// which can have some unexpected results
+			var safeAreaInsets = currentView.SafeAreaInsets;
+			var attachedView = new UIView()
 			{
-				attachedView = new UIView();
-				attachedView.AddSubview(view);				
-			}
+				Frame = new CGRect(
+					safeAreaInsets.Right,
+					safeAreaInsets.Top,
+					currentView.Frame.Width - safeAreaInsets.Right,
+					currentView.Frame.Height - safeAreaInsets.Top)
+			};
 
+			attachedView.AddSubview(view);	
 			currentView.AddSubview(attachedView);
 
 			// Give the UI time to refresh
