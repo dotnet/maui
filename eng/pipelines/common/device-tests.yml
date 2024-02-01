@@ -86,7 +86,7 @@ stages:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
                       POOLNAME: ${{ parameters.iosDevicePool.name }}
-                      POOLDEMANDS: 'HasiOS -equals ${{ replace(version, 'device-', '') }}'
+                      POOLDEMANDS: ios-${{ replace(version, 'device-', '') }}
                      
                     ${{ else }}:
                       DEVICE: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
