@@ -250,5 +250,31 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		class ChildViewStub : ViewStub, IParentAViewStub, IParentBViewStub {}
 		interface IParentAViewStub : IViewStub { }
 		interface IParentBViewStub : IViewStub { }
+
+		[Fact]
+		public void HostBuilderResolvesHandlerTypeForServiceRegisteredWithType()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub, ViewHandlerStub>())
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Type handlerType = mauiHandlersFactory.GetHandlerType(typeof(ViewStub));
+			Assert.Same(typeof(ViewHandlerStub), handlerType);
+		}
+
+		[Fact]
+		public void HostBuilderCannotResolveHandlerTypeForServiceRegisteredWithFactory()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub>(_ => new ViewHandlerStub()))
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Type handlerType = mauiHandlersFactory.GetHandlerType(typeof(ViewStub));
+			Assert.Null(handlerType);
+		}
 	}
 }
