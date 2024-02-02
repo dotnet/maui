@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
@@ -27,11 +28,9 @@ namespace Microsoft.Maui.Hosting.Internal
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
 		{
-			var serviceDescriptor = GetServiceDescriptor(GetVirtualViewHandlerServiceType(iview));
-			if (serviceDescriptor == null)
-				return default;
+			InternalCollection.TryGetService(GetVirtualViewHandlerServiceType(iview), out ServiceDescriptor? serviceDescriptor);
 
-			return serviceDescriptor.ImplementationType;
+			return serviceDescriptor?.ImplementationType;
 		}
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
