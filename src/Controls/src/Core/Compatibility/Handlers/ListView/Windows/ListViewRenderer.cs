@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -114,6 +115,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					};
 
 					List.SelectionChanged += OnControlSelectionChanged;
+					List.ContainerContentChanging += List_ContainerContentChanging;
 					SetNativeControl(List);
 				}
 
@@ -340,6 +342,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 
 					List.SelectionChanged -= OnControlSelectionChanged;
+					List.ContainerContentChanging -= List_ContainerContentChanging;
+
 					if (_collectionViewSource != null)
 						_collectionViewSource.Source = null;
 
@@ -820,6 +824,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			_itemWasClicked = false;
+		}
+
+		void List_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+		{
+			// Virtualization is unloading the container, signal that to our CellControl wrapper
+			if (args.InRecycleQueue)
+			{
+				if (args.ItemContainer.ContentTemplateRoot is CellControl cellControl)
+				{
+					cellControl.Recycle();
+				}
+			}
 		}
 
 		FrameworkElement FindElement(object cell)

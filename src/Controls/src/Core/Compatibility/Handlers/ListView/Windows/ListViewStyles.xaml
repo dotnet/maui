@@ -22,7 +22,7 @@
     <platform:KeyboardConverter x:Key="KeyboardConverter" />
 
     <DataTemplate x:Key="View">
-        <ContentPresenter Content="{Binding Converter={StaticResource ViewToRenderer}}" />
+        <ContentPresenter Content="{Binding Converter={StaticResource ViewToRenderer}}" HorizontalContentAlignment="Stretch" />
     </DataTemplate>
     
     <DataTemplate x:Key="ListViewGroupTemplate">
@@ -53,7 +53,7 @@
     </GroupStyle>
 
     <DataTemplate x:Key="ViewCell">
-        <ContentControl DataContext="{Binding Cell}">
+        <ContentControl DataContext="{Binding Cell}" HorizontalContentAlignment="Stretch">
             <ContentPresenter Height="{Binding RenderHeight, Converter={StaticResource HeightConverter}}" Content="{Binding View, Converter={StaticResource ViewToRenderer}}" />
         </ContentControl>
     </DataTemplate>

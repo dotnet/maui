@@ -24,6 +24,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return null;
 
+			if (view is ICrossPlatformLayout)
+				return view.ToPlatform(view.FindMauiContext()!);
+
 			return new WrapperControl(view);
 		}
 
@@ -54,10 +57,6 @@ namespace Microsoft.Maui.Controls.Platform
 				_view.MeasureInvalidated += OnMeasureInvalidated;
 
 				FrameworkElement = view.ToPlatform(view.FindMauiContext()!);
-
-				// Just in case this view is already parented to a wrapper that's been cycled out
-				if (FrameworkElement.Parent is WrapperControl wrapperControl)
-					wrapperControl.Children.Remove(FrameworkElement);
 
 				Children.Add(FrameworkElement);
 
