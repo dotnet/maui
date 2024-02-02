@@ -141,6 +141,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			AView nativeCellContent = CellFactory.GetCell(item, convertView, parent, Context, _view);
 
+			// If we're not using recycling then we can't return the same instance of the view with each call to GetView
+			// Android expects this to always return a new view 
+			if (convertView is null && nativeCellContent.Parent is ViewGroup vg)
+			{
+				vg.RemoveAllViews();
+			}
+
 			// The cell content we get back might already be in a ConditionalFocusLayout; if it is, 
 			// we'll just use that. If not, we'll need to create one and add the content to it
 
