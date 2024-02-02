@@ -223,5 +223,25 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				Assert.Null(fetched);
 			});
 		}
+
+		[Theory
+#if MACCATALYST
+    			(Skip = "Need to configure entitlements.")
+#endif
+		]
+		[InlineData("test.txt", "data")]
+		public async Task Set_RemoveAll_Set_Get(string key, string data)
+		{
+			await SecureStorage.SetAsync(key, data);
+
+			// Remove all
+			SecureStorage.RemoveAll();
+
+			//Set again 
+			await SecureStorage.SetAsync(key, data);
+			var c = await SecureStorage.GetAsync(key);
+
+			Assert.Equal(data, c);
+		}
 	}
 }
