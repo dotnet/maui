@@ -74,7 +74,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Cell.Parent = null;
 		}
 
-
 		public Cell Cell
 		{
 			get { return (Cell)GetValue(CellProperty); }
@@ -124,7 +123,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				// This needs to return a size with a non-zero height; 
 				// otherwise, it kills virtualization.
-				return new global::Windows.Foundation.Size(0, Cell.DefaultCellHeight);
+				return new global::Windows.Foundation.Size(availableSize.Width, Cell.DefaultCellHeight);
 			}
 
 			// Children still need measure called on them
@@ -161,6 +160,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		Microsoft.UI.Xaml.DataTemplate GetTemplate(Cell cell)
 		{
 			return (UI.Xaml.DataTemplate)cell.ToHandler(cell.FindMauiContext()).PlatformView;
+		}
+
+		internal void Recycle()
+		{
+			if (Cell == null)
+				return;
+
+			Cell.SendDisappearing();
+			Cell.PropertyChanged -= _propertyChangedHandler;
+			Cell.Cleanup();
 		}
 
 		void OnCellPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -352,24 +361,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				object bindingContext = newContext;
 				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
 
-				bool sameTemplate = false;
-				if (template is DataTemplateSelector dataTemplateSelector)
-				{
-					template = dataTemplateSelector.SelectTemplate(bindingContext, lv);
-					// 🚀 If there exists an old cell, get its data template and check
-					// whether the new- and old template matches. In that case, we can recycle it
-					if (oldCell?.BindingContext != null)
-					{
-						DataTemplate oldTemplate = dataTemplateSelector.SelectTemplate(oldCell?.BindingContext, lv);
-						sameTemplate = oldTemplate == template;
-					}
-				}
-
-				if (Cell != null && sameTemplate)
-				{
-					cell = Cell;
-				}
-				else if (template != null)
+				if (template != null)
 				{
 					// Reuse the templated items from the parent ListView
 					var templatedItems = lv.TemplatedItems;
