@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Hosting
 				services.CreateLogger<Dispatcher>()?.LogWarning("Replaced an existing DispatcherProvider with one from the service provider.");
 			}
 
-			return Dispatcher.GetForCurrentThread()!;
+			return Dispatcher.GetForCurrentThread() ?? services.GetRequiredService<ApplicationDispatcher>().Dispatcher;
 		}
 
 		class ApplicationDispatcherInitializer : IMauiInitializeService
