@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Linq.Expressions;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,6 +14,14 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException("self");
 
 			self.SetBinding(targetProperty, new Binding(path));
+		}
+
+		internal static void SetBinding<TSource, TProperty>(this DataTemplate self, BindableProperty targetProperty, Expression<Func<TSource, TProperty>> getter, Action<TSource, TProperty> setter = null)
+		{
+			if (self == null)
+				throw new ArgumentNullException("self");
+
+			self.SetBinding(targetProperty, TypedBindingFactory.Create<TSource, TProperty>(getter, setter));
 		}
 	}
 }

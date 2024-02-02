@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -57,6 +58,30 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(targetProperty));
 
 			var binding = new Binding(path, mode, converter, stringFormat: stringFormat);
+			self.SetBinding(targetProperty, binding);
+		}
+
+		internal static void SetBinding<TSource, TProperty>(
+			this BindableObject self,
+			BindableProperty targetProperty,
+			Expression<Func<TSource, TProperty>> getter,
+			Action<TSource, TProperty> setter = null,
+			BindingMode mode = BindingMode.Default,
+			IValueConverter converter = null,
+			object converterParameter = null,
+			string stringFormat = null,
+			object source = null,
+			string updateSourceEventName = null,
+			object fallbackValue = null,
+			object targetNullValue = null)
+		{
+			if (self == null)
+				throw new ArgumentNullException(nameof(self));
+			if (targetProperty == null)
+				throw new ArgumentNullException(nameof(targetProperty));
+
+			var binding = TypedBindingFactory.Create<TSource, TProperty>(
+				getter, setter, mode, converter, converterParameter, stringFormat, source, updateSourceEventName, targetNullValue, fallbackValue);
 			self.SetBinding(targetProperty, binding);
 		}
 
