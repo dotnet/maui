@@ -98,7 +98,7 @@ stages:
 
       pool:
         name: $(POOLNAME)
-        demands: ['$(POOLDEMANDS)']
+        demands: ['HasiOS -gtVersion $(APIVERSION)']
       
       steps:
         - template: device-tests-steps.yml
