@@ -97,11 +97,8 @@ stages:
                       
       pool:
         name: $(POOLNAME)
-        demands: 
-          - ${{ if eq(variables['APIVERSION'], '15') }}:
-            - ios-15
+        demands: [$(POOLDEMANDS)]
 
-      
       steps:
         - template: device-tests-steps.yml
           parameters:
