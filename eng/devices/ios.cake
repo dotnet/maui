@@ -130,6 +130,8 @@ Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
 {
+	SetDotNetEnvironmentVariables();
+	
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
 	

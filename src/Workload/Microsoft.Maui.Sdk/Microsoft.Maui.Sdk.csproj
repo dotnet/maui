@@ -22,10 +22,10 @@
   <ItemGroup>
     <_ValuesToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
     <_ValuesToReplace Include="TFM" PropertyName="_MauiDotNetTfm" />
-    <!-- <_ValuesToReplace Include="PREVIOUS_TFM" PropertyName="_MauiPreviousDotNetTfm" /> -->
+    <_ValuesToReplace Include="PREVIOUS_TFM" PropertyName="_MauiPreviousDotNetTfm" />
     <_ValuesToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />
-    <!-- <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION" PropertyName="_MauiPreviousDotNetVersion" />
-    <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" /> -->
+    <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION" PropertyName="_MauiPreviousDotNetVersion" />
+    <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
     <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
     <_ValuesToReplace Include="MicrosoftWindowsAppSDKPackageVersion" PropertyName="MicrosoftWindowsAppSDKPackageVersion" />
     <_ValuesToReplace Include="TizenUIExtensionsVersion" PropertyName="TizenUIExtensionsVersion" />

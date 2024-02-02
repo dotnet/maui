@@ -28,9 +28,11 @@
       "description": ".NET MAUI SDK Core Packages",
       "packs": [
           "Microsoft.Maui.Sdk.net@MAUI_DOTNET_VERSION_MAJOR@",
+          "Microsoft.Maui.Sdk.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@",
           "Microsoft.Maui.Graphics",
           "Microsoft.Maui.Resizetizer",
           "Microsoft.Maui.Templates.net@MAUI_DOTNET_VERSION_MAJOR@",
+          "Microsoft.Maui.Templates.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@",
           "Microsoft.Maui.Core",
           "Microsoft.Maui.Controls",
           "Microsoft.Maui.Controls.Build.Tasks",
@@ -140,9 +142,20 @@
         "any": "Microsoft.Maui.Sdk"
       }
     },
+    "Microsoft.Maui.Sdk.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@": {
+      "kind": "sdk",
+      "version": "@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@",
+      "alias-to": {
+        "any": "Microsoft.Maui.Sdk"
+      }
+    },
     "Microsoft.Maui.Templates.net@MAUI_DOTNET_VERSION_MAJOR@": {
       "kind": "template",
       "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Templates.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@": {
+      "kind": "template",
+      "version": "@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
     }
   }
 }
