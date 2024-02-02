@@ -411,7 +411,7 @@ namespace Microsoft.Maui.Controls
 		protected override Cell CreateDefault(object item)
 		{
 			TextCell textCell = new TextCell();
-			textCell.SetBinding(TextCell.TextProperty, ".", converter: _toStringValueConverter);
+			textCell.SetBinding(TextCell.TextProperty, static (object cell) => cell, mode: BindingMode.OneWay, converter: _toStringValueConverter);
 			return textCell;
 		}
 

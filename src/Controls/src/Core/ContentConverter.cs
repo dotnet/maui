@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Globalization;
+using System.Linq.Expressions;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -66,19 +67,19 @@ namespace Microsoft.Maui.Controls
 
 		static void BindTextProperties(BindableObject content)
 		{
-			BindProperty(content, TextElement.TextColorProperty, typeof(ITextElement));
-			BindProperty(content, TextElement.CharacterSpacingProperty, typeof(ITextElement));
-			BindProperty(content, TextElement.TextTransformProperty, typeof(ITextElement));
+			BindProperty(content, TextElement.TextColorProperty, static (ITextElement te) => te.TextColor);
+			BindProperty(content, TextElement.CharacterSpacingProperty, static (ITextElement te) => te.CharacterSpacing);
+			BindProperty(content, TextElement.TextTransformProperty, static (ITextElement te) => te.TextTransform);
 		}
 
 		static void BindFontProperties(BindableObject content)
 		{
-			BindProperty(content, FontElement.FontAttributesProperty, typeof(IFontElement));
-			BindProperty(content, FontElement.FontSizeProperty, typeof(IFontElement));
-			BindProperty(content, FontElement.FontFamilyProperty, typeof(IFontElement));
+			BindProperty(content, FontElement.FontAttributesProperty, static (IFontElement fe) => fe.FontAttributes);
+			BindProperty(content, FontElement.FontSizeProperty, static (IFontElement fe) => fe.FontSize);
+			BindProperty(content, FontElement.FontFamilyProperty, static (IFontElement fe) => fe.FontFamily);
 		}
 
-		static void BindProperty(BindableObject content, BindableProperty property, Type type)
+		static void BindProperty<TSource, TProperty>(BindableObject content, BindableProperty property, Expression<Func<TSource, TProperty>> expression)
 		{
 			if (content.IsSet(property) || content.GetIsBound(property))
 			{
@@ -86,9 +87,8 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			content.SetBinding(property,
-					new Binding(property.PropertyName,
-					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, type)));
+			content.SetBinding<TSource, TProperty>(
+				property, expression, source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(TSource)));
 		}
 
 		static bool HasTemplateAncestor(ContentPresenter presenter, Type type)

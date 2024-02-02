@@ -208,17 +208,8 @@ namespace Microsoft.Maui.Controls
 			if (indicatorView == null)
 				return;
 
-			indicatorView.SetBinding(IndicatorView.PositionProperty, new Binding
-			{
-				Path = nameof(CarouselView.Position),
-				Source = carouselView
-			});
-
-			indicatorView.SetBinding(IndicatorView.ItemsSourceProperty, new Binding
-			{
-				Path = nameof(ItemsView.ItemsSource),
-				Source = carouselView
-			});
+			indicatorView.SetBinding(IndicatorView.PositionProperty, static (CarouselView carousel) => carousel.Position, source: carouselView);
+			indicatorView.SetBinding(IndicatorView.ItemsSourceProperty, static (CarouselView carousel) => carousel.ItemsSource, source: carouselView);
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsScrolling']/Docs/*" />

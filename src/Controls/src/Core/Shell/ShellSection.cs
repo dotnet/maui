@@ -291,9 +291,9 @@ namespace Microsoft.Maui.Controls
 
 			shellSection.Items.Add(shellContent);
 
-			shellSection.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: shellContent));
-			shellSection.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellContent));
-			shellSection.SetBinding(FlyoutIconProperty, new Binding(nameof(FlyoutIcon), BindingMode.OneWay, source: shellContent));
+			shellSection.SetBinding(TitleProperty, static (BaseShellItem item) => item.Title, mode: BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(IconProperty, static (BaseShellItem item) => item.Icon, mode: BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(FlyoutIconProperty, static (BaseShellItem item) => item.FlyoutIcon, mode: BindingMode.OneWay, source: shellContent);
 
 			return shellSection;
 		}

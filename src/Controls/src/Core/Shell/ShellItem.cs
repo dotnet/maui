@@ -222,10 +222,10 @@ namespace Microsoft.Maui.Controls
 			result.Route = Routing.GenerateImplicitRoute(shellSection.Route);
 
 			result.Items.Add(shellSection);
-			result.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: shellSection));
-			result.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellSection));
-			result.SetBinding(FlyoutDisplayOptionsProperty, new Binding(nameof(FlyoutDisplayOptions), BindingMode.OneTime, source: shellSection));
-			result.SetBinding(FlyoutIconProperty, new Binding(nameof(FlyoutIcon), BindingMode.OneWay, source: shellSection));
+			result.SetBinding(TitleProperty, static (ShellSection section) => section.Title, mode: BindingMode.OneWay, source: shellSection);
+			result.SetBinding(IconProperty, static (ShellSection section) => section.Icon, mode: BindingMode.OneWay, source: shellSection);
+			result.SetBinding(FlyoutDisplayOptionsProperty, static (ShellSection section) => section.FlyoutDisplayOptions, mode: BindingMode.OneTime, source: shellSection);
+			result.SetBinding(FlyoutIconProperty, static (ShellSection section) => section.FlyoutIcon, mode: BindingMode.OneWay, source: shellSection);
 
 			return result;
 		}

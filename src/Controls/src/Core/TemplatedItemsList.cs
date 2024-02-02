@@ -755,7 +755,7 @@ namespace Microsoft.Maui.Controls.Internals
 				// time for right now.
 				groupProxy.HeaderContent = _itemsView.CreateDefault(ListProxy.ProxiedEnumerable);
 				groupProxy.HeaderContent.BindingContext = groupProxy;
-				groupProxy.HeaderContent.SetBinding(TextCell.TextProperty, "Name");
+				groupProxy.HeaderContent.SetBinding(TextCell.TextProperty, static (TemplatedItemsList<TView, TItem> list) => list.Name);
 			}
 
 			SetIndex(groupProxy.HeaderContent, index);

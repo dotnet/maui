@@ -16,8 +16,12 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ContentPresenter()
 		{
-			SetBinding(ContentProperty, new Binding(ContentProperty.PropertyName, source: RelativeBindingSource.TemplatedParent,
-				converterParameter: this, converter: new ContentConverter()));
+			this.SetBinding(ContentProperty,
+				static (IContentView contentView) => contentView.Content,
+				mode: BindingMode.OneWay,
+				source: RelativeBindingSource.TemplatedParent,
+				converter: new ContentConverter(),
+				converterParameter: this);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='Content']/Docs/*" />

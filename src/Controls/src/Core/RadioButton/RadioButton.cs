@@ -444,15 +444,6 @@ namespace Microsoft.Maui.Controls
 			SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
 		}
 
-		static void BindToTemplatedParent(BindableObject bindableObject, params BindableProperty[] properties)
-		{
-			foreach (var property in properties)
-			{
-				bindableObject.SetBinding(property, new Binding(property.PropertyName,
-					source: RelativeBindingSource.TemplatedParent));
-			}
-		}
-
 		static View BuildDefaultTemplate()
 		{
 			Border border = new Border()
@@ -460,21 +451,20 @@ namespace Microsoft.Maui.Controls
 				Padding = 6
 			};
 
-			BindToTemplatedParent(border, BackgroundColorProperty, HorizontalOptionsProperty,
-				MarginProperty, OpacityProperty, RotationProperty, ScaleProperty, ScaleXProperty, ScaleYProperty,
-				TranslationYProperty, TranslationXProperty, VerticalOptionsProperty);
-
-			border.SetBinding(Border.StrokeProperty,
-				new Binding(BorderColorProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
-
-			border.SetBinding(Border.StrokeShapeProperty,
-				new Binding(CornerRadiusProperty.PropertyName, converter: new CornerRadiusToShape(),
-							source: RelativeBindingSource.TemplatedParent));
-
-			border.SetBinding(Border.StrokeThicknessProperty,
-				new Binding(BorderWidthProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			border.SetBinding(Border.BackgroundColorProperty, static (RadioButton rb) => rb.BackgroundColor, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.HorizontalOptionsProperty, static (RadioButton rb) => rb.HorizontalOptions, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.MarginProperty, static (RadioButton rb) => rb.Margin, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.OpacityProperty, static (RadioButton rb) => rb.Opacity, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.RotationProperty, static (RadioButton rb) => rb.Rotation, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.ScaleProperty, static (RadioButton rb) => rb.Scale, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.ScaleXProperty, static (RadioButton rb) => rb.ScaleX, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.ScaleYProperty, static (RadioButton rb) => rb.ScaleY, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.TranslationYProperty, static (RadioButton rb) => rb.TranslationY, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.TranslationXProperty, static (RadioButton rb) => rb.TranslationX, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.VerticalOptionsProperty, static (RadioButton rb) => rb.VerticalOptions, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.StrokeProperty, static (RadioButton rb) => rb.BorderColor, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.StrokeShapeProperty, static (RadioButton rb) => rb.CornerRadius, converter: new CornerRadiusToShape(), source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent);
 
 			var grid = new Grid
 			{
@@ -573,9 +563,8 @@ namespace Microsoft.Maui.Controls
 					out checkMarkFillVisualStateDark);
 			}
 
-			contentPresenter.SetBinding(MarginProperty, new Binding("Padding", source: RelativeBindingSource.TemplatedParent));
-			contentPresenter.SetBinding(BackgroundColorProperty, new Binding(BackgroundColorProperty.PropertyName,
-				source: RelativeBindingSource.TemplatedParent));
+			contentPresenter.SetBinding(MarginProperty, static (RadioButton radio) => radio.Padding, source: RelativeBindingSource.TemplatedParent);
+			contentPresenter.SetBinding(BackgroundColorProperty, static (RadioButton radio) => radio.BackgroundColor, source: RelativeBindingSource.TemplatedParent);
 
 			grid.Add(normalEllipse);
 			grid.Add(checkMark);
