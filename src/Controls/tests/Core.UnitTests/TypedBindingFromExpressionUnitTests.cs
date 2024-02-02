@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -16,10 +17,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
 
-	public class TypedBindingUnitTests : BindingBaseUnitTests
+	public class TypedBindingFromExpressionUnitTests : BindingBaseUnitTests
 	{
 
-		public TypedBindingUnitTests()
+		public TypedBindingFromExpressionUnitTests()
 		{
 
 			ApplicationExtensions.CreateAndSetMockApplication();
@@ -35,26 +36,60 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			base.Dispose(disposing);
 		}
 
-
-
 		protected override BindingBase CreateBinding(BindingMode mode = BindingMode.Default, string stringFormat = null)
 		{
-			return new TypedBinding<MockViewModel, string>(
-				getter: mvm => (mvm.Text, true),
-				setter: (mvm, s) => mvm.Text = s,
-				handlers: new[] {
-					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Text")
-				})
-			{
-				Mode = mode,
-				StringFormat = stringFormat
-			};
+			return TypedBindingFactory.Create(static (MockViewModel mvm) => mvm.Text, mode: mode, stringFormat: stringFormat);
 		}
 
-		[Fact]
-		public void InvalidCtor()
+		[Theory, Category("[Binding] Expressions")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void AllowsExpressionWithCast(bool useCStyleCasts)
 		{
-			Assert.Throws<ArgumentNullException>(() => new TypedBinding<MockViewModel, string>((Func<MockViewModel, (string, bool)>)null, (mvm, s) => mvm.Text = s, null));
+			var viewmodel = new ObjectValueViewModel
+			{
+				Value = new ObjectValueViewModel
+				{
+					Value = new object(),
+				}
+			};
+
+			var property = BindableProperty.Create("Foo", typeof(object), typeof(MockBindable), null, BindingMode.TwoWay);
+			var binding = useCStyleCasts
+				? TypedBindingFactory.Create(static (ObjectValueViewModel vm) => ((ObjectValueViewModel)vm.Value).Value) 
+				: TypedBindingFactory.Create(static (ObjectValueViewModel vm) => (vm.Value as ObjectValueViewModel).Value);
+
+			var bindable = new MockBindable();
+			bindable.BindingContext = viewmodel;
+			bindable.SetBinding(property, binding);
+
+			Assert.Same(((ObjectValueViewModel)viewmodel.Value).Value, bindable.GetValue(property));
+
+			var newValue = new ObjectValueViewModel { Value = new object() };
+			bindable.SetValue(property, newValue);
+
+			Assert.Same(newValue, (viewmodel.Value as ObjectValueViewModel).Value);
+		}
+
+		private record ObjectValueViewModel : INotifyPropertyChanged
+		{
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			private object _value;
+			public object Value
+			{
+				get => _value;
+				set
+				{
+					_value = value;
+					OnPropertyChanged();
+				}
+			}
+
+			protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+			{
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			}
 		}
 
 		[Theory, Category("[Binding] Set Value")]
@@ -84,14 +119,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), null, propertyDefault);
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Model.Model.Text, true),
-				(cmvm, s) => cmvm.Model.Model.Text = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Text")
-				})
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Model.Model.Text, mode: bindingMode);
 
 			var bindable = new MockBindable();
 			if (setContextFirst)
@@ -135,14 +163,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), value, propertyDefault);
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Model.Model.Text, true),
-				(cmvm, s) => cmvm.Model.Model.Text = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Text")
-				})
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Model.Model.Text, mode: bindingMode);
 
 			var bindable = new MockBindable();
 			if (setContextFirst)
@@ -189,14 +210,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Model.Model.Text, true),
-				(cmvm, s) => cmvm.Model.Model.Text = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Text")
-				})
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Model.Model.Text, mode: bindingMode);
 
 			var bindable = new MockBindable();
 			if (setContextFirst)
@@ -244,14 +258,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Model.Model.Text, true),
-				(cmvm, s) => cmvm.Model.Model.Text = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Text")
-				})
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Model.Model.Text, mode: bindingMode);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -291,14 +298,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Model.Model.Text, true),
-				(cmvm, s) => cmvm.Model.Model.Text = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Text")
-				})
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Model.Model.Text, mode: bindingMode);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -345,14 +345,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Model.Model.Text, true),
-				(cmvm, s) => cmvm.Model.Model.Text = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Text")
-				})
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Model.Model.Text, mode: bindingMode);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -401,14 +394,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Model.Model[1], true),
-				(cmvm, s) => cmvm.Model.Model[1] = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Indexer[1]")
-				})
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Model.Model[1], static (cmvm, value) => cmvm.Model.Model[1] = value, bindingMode);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -447,14 +433,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Model.Model[1], true),
-				(cmvm, s) => cmvm.Model.Model[1] = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Indexer[1]")
-				})
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Model.Model[1], static (cmvm, value) => cmvm.Model.Model[1] = value, bindingMode);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -499,14 +478,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Model.Model[1], true),
-				(cmvm, s) => cmvm.Model.Model[1] = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Indexer[1]")
-				})
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Model.Model[1], static (cmvm, value) => cmvm.Model.Model[1] = value, bindingMode);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -549,11 +521,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Array[1], true),
-				(cmvm, s) => cmvm.Array[1] = s,
-				null)
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Array[1], mode: bindingMode);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = viewmodel;
@@ -584,10 +552,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<string, string>(
-				cmvm => (cmvm, true),
-				(cmvm, s) => cmvm = s, null)
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (string cmvm) => cmvm, mode: bindingMode);
 			const string value = "foo";
 
 			var bindable = new MockBindable();
@@ -622,9 +587,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<string, string>(
-				cmvm => (cmvm, true), (cmvm, s) => cmvm = s, null)
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (string cmvm) => cmvm, mode: bindingMode);
 
 			var bindable = new MockBindable();
 			bindable.SetBinding(property, binding);
@@ -660,9 +623,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
-			var binding = new TypedBinding<string, string>(
-				cmvm => (cmvm, true), (cmvm, s) => cmvm = s, null)
-			{ Mode = bindingMode };
+			var binding = TypedBindingFactory.Create(static (string cmvm) => cmvm, mode: bindingMode);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = "value";
@@ -693,15 +654,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SourceAndTargetAreWeakComplexPath(BindingMode mode)
 		{
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value");
-
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-				cmvm => (cmvm.Model.Model[1], true),
-				(cmvm, s) => cmvm.Model.Model[1] = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model.Model, "Indexer[1]")
-				})
-			{ Mode = mode };
+			var binding = TypedBindingFactory.Create(static (ComplexMockViewModel cmvm) => cmvm.Model.Model[1], static (cmvm, value) => cmvm.Model.Model[1] = value, mode);
 
 			WeakReference weakViewModel = null, weakBindable = null;
 
@@ -769,13 +722,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var vm = new MockViewModel("1");
 			var property = BindableProperty.Create("TargetInt", typeof(int), typeof(MockBindable), 0);
-			var binding = new TypedBinding<MockViewModel, string>(
-				getter: mvm => (mvm.Text, true),
-				setter: (mvm, s) => mvm.Text = s,
-				handlers: new[] {
-					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Text")
-				})
-			{ Converter = converter };
+			var binding = TypedBindingFactory.Create(static (MockViewModel mvm) => mvm.Text, converter: converter);
 
 			var bindable = new MockBindable();
 			bindable.SetBinding(property, binding);
@@ -794,13 +741,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var vm = new MockViewModel();
 			var property = BindableProperty.Create("TargetInt", typeof(int), typeof(MockBindable), 1, BindingMode.OneWayToSource);
-			var binding = new TypedBinding<MockViewModel, string>(
-				getter: mvm => (mvm.Text, true),
-				setter: (mvm, s) => mvm.Text = s,
-				handlers: new[] {
-					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Text")
-				})
-			{ Converter = converter };
+			var binding = TypedBindingFactory.Create(static (MockViewModel mvm) => mvm.Text, converter: converter);
 
 			var bindable = new MockBindable();
 			bindable.SetBinding(property, binding);
@@ -832,13 +773,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var vm = new MockViewModel();
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "Bar", BindingMode.OneWayToSource);
-			var binding = new TypedBinding<MockViewModel, string>(
-				getter: mvm => (mvm.Text, true),
-				setter: (mvm, s) => mvm.Text = s,
-				handlers: new[] {
-					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Text")
-				})
-			{ Converter = converter, ConverterParameter = "Foo" };
+			var binding = TypedBindingFactory.Create(static (MockViewModel mvm) => mvm.Text, converter: converter, converterParameter: "Foo");
 
 			var bindable = new MockBindable();
 			bindable.SetBinding(property, binding);
@@ -872,15 +807,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var converter = new TestConverterCulture();
 			var vm = new MockViewModel();
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "Bar", BindingMode.OneWayToSource);
-			var binding = new TypedBinding<MockViewModel, string>(
-				getter: mvm => (mvm.Text, true),
-				setter: (mvm, s) => mvm.Text = s,
-				handlers: new[] {
-					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Text")
-				})
-			{ Converter = converter };
 			var bindable = new MockBindable();
-			bindable.SetBinding(property, binding);
+			bindable.SetBinding(property, static (MockViewModel mvm) => mvm.Text, converter: converter);
 			bindable.BindingContext = vm;
 
 			Assert.Equal(culture, vm.Text);
@@ -893,9 +821,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var converter = new TestConverter<int, string>();
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "0");
-			var binding = new TypedBinding<int, int>(
-				mvm => (mvm, true), (mvm, s) => mvm = s, null)
-			{ Converter = converter };
+			var binding = TypedBindingFactory.Create(static (int mvm) => mvm, converter: converter);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = 1;
@@ -976,14 +902,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var mpvm = new MultiplePropertyViewModel();
 
 			var bindable = new MultiplePropertyBindable();
-			var progressBinding = new TypedBinding<MultiplePropertyViewModel, float>(vm => (vm.Progress, true), null, new[] {
-				new Tuple<Func<MultiplePropertyViewModel, object>, string> (vm=>vm, "Progress"),
-			})
-			{ Mode = BindingMode.OneWay };
-			var doneBinding = new TypedBinding<MultiplePropertyViewModel, int>(vm => (vm.Done, true), (vm, d) => vm.Done = d, new[] {
-				new Tuple<Func<MultiplePropertyViewModel, object>, string> (vm=>vm, "Done"),
-			})
-			{ Mode = BindingMode.OneWayToSource };
+			var progressBinding = TypedBindingFactory.Create(static (MultiplePropertyViewModel vm) => vm.Progress, mode: BindingMode.OneWay);
+			var doneBinding = TypedBindingFactory.Create(static (MultiplePropertyViewModel vm) => vm.Done, mode: BindingMode.OneWayToSource);
 
 			bindable.SetBinding(MultiplePropertyBindable.ValueProperty, progressBinding);
 			bindable.SetBinding(MultiplePropertyBindable.DoneProperty, doneBinding);
@@ -1012,12 +932,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "foo bar");
 
 			var bindable = new MockBindable();
-			var binding = new TypedBinding<ComplexMockViewModel, string>(cvm => (cvm.Model.Text, true), (cvm, t) => cvm.Model.Text = t, new[] {
-				new Tuple<Func<ComplexMockViewModel, object>, string>(cvm=>cvm, "Model"),
-				new Tuple<Func<ComplexMockViewModel, object>, string>(cvm=>cvm.Model, "Text")
-			})
-			{ Mode = BindingMode.OneWay };
-			bindable.SetBinding(property, binding);
+			bindable.SetBinding(property, static (ComplexMockViewModel cvm) => cvm.Model.Text, mode: BindingMode.OneWay);
 			bindable.BindingContext = vm;
 
 			vm.Model = null;
@@ -1040,13 +955,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "foo bar");
-			var binding = new TypedBinding<ComplexMockViewModel, string>(cvm => (cvm.Model.Text, true), (cvm, t) => cvm.Model.Text = t, new[] {
-				new Tuple<Func<ComplexMockViewModel, object>, string>(cvm=>cvm, "Model"),
-				new Tuple<Func<ComplexMockViewModel, object>, string>(cvm=>cvm.Model, "Text")
-			})
-			{ Mode = BindingMode.OneWay };
+			
 			var bindable = new MockBindable();
-			bindable.SetBinding(property, binding);
+			bindable.SetBinding(property, static (ComplexMockViewModel cvm) => cvm.Model.Text, mode: BindingMode.OneWay);
 			bindable.BindingContext = vm;
 
 			Assert.Equal(bindable.GetValue(property), vm.Model.Text);
@@ -1071,13 +982,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "foo bar");
-			var binding = new TypedBinding<ComplexMockViewModel, string>(cvm => (cvm.Model.Text, true), (cvm, t) => cvm.Model.Text = t, new[] {
-				new Tuple<Func<ComplexMockViewModel, object>, string>(cvm=>cvm, "Model"),
-				new Tuple<Func<ComplexMockViewModel, object>, string>(cvm=>cvm.Model, "Text")
-			})
-			{ Mode = BindingMode.OneWay, FallbackValue = "fallback" };
 			var bindable = new MockBindable();
-			bindable.SetBinding(property, binding);
+			bindable.SetBinding(property, static (ComplexMockViewModel cvm) => cvm.Model.Text, mode: BindingMode.OneWay, fallbackValue: "fallback");
 			bindable.BindingContext = vm;
 
 			Assert.Equal(bindable.GetValue(property), vm.Model.Text);
@@ -1094,9 +1000,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestTargetNullValue()
 		{
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), default(string));
-			var binding = new TypedBinding<MockViewModel, string>(vm => (vm.Text, true), null, null) { TargetNullValue = "target null" };
 			var bindable = new MockBindable();
-			bindable.SetBinding(property, binding);
+			bindable.SetBinding(property, static (MockViewModel vm) => vm.Text, targetNullValue: "target null");
 			bindable.BindingContext = new MockViewModel("initial");
 			Assert.Equal("initial", bindable.GetValue(property));
 
@@ -1111,8 +1016,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var vm = new ComplexMockViewModel();
 
 			var bindable = new MockBindable();
-			var binding = new TypedBinding<ComplexMockViewModel, int>(cmvm => (cmvm.QueryCount, true), null, null) { Mode = BindingMode.OneWay };
-			bindable.SetBinding(MultiplePropertyBindable.DoneProperty, binding);
+			bindable.SetBinding(MultiplePropertyBindable.DoneProperty, static (ComplexMockViewModel cmvm) => cmvm.QueryCount, mode: BindingMode.OneWay);
 			bindable.BindingContext = vm;
 
 			Assert.Equal(1, vm.count);
@@ -1132,10 +1036,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var vm = new ComplexMockViewModel();
 
 			var bindable = new MockBindable();
-			var qcbinding = new TypedBinding<ComplexMockViewModel, int>(cmvm => (cmvm.QueryCount, true), null, null) { Mode = BindingMode.OneWay };
-			var textBinding = new TypedBinding<ComplexMockViewModel, string>(cmvm => (cmvm.Text, true), null, null) { Mode = BindingMode.OneWay };
-			bindable.SetBinding(MultiplePropertyBindable.DoneProperty, qcbinding);
-			bindable.SetBinding(MockBindable.TextProperty, textBinding);
+			bindable.SetBinding(MultiplePropertyBindable.DoneProperty, static (ComplexMockViewModel cmvm) => cmvm.QueryCount, mode: BindingMode.OneWay);
+			bindable.SetBinding(MockBindable.TextProperty, static (ComplexMockViewModel cmvm) => cmvm.Text, mode: BindingMode.OneWay);
 			bindable.BindingContext = vm;
 
 			Assert.Equal(1, vm.count);
@@ -1162,10 +1064,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = vm;
-			var binding = new TypedBinding<MockViewModel, string>(mvm => (mvm.Text, true), (mvm, s) => mvm.Text = s, new[] {
-				new Tuple<Func<MockViewModel, object>, string>(mvm=>mvm, "Text")
-			});
-			bindable.SetBinding(MockBindable.TextProperty, binding);
+			bindable.SetBinding(MockBindable.TextProperty, static (MockViewModel mvm) => mvm.Text);
 
 			Assert.Equal(vm.Text, bindable.GetValue(MockBindable.TextProperty));
 
@@ -1178,14 +1077,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ChainedPartNull()
 		{
 			var bindable = new MockBindable { BindingContext = new ComplexMockViewModel() };
-			var binding = new TypedBinding<ComplexMockViewModel, string>(
-			  cmvm => (cmvm.Model.Text, true),
-			  (cmvm, s) => cmvm.Model.Text = s, new[] {
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm, "Model"),
-					new Tuple<Func<ComplexMockViewModel, object>, string>(cmvm=>cmvm.Model, "Text"),
-				});
-
-			bindable.SetBinding(MockBindable.TextProperty, binding);
+			bindable.SetBinding(MockBindable.TextProperty, static (ComplexMockViewModel cmvm) => cmvm.Model.Text);
 			Assert.True(MockApplication.MockLogger.Messages.Count == 0, "An error was logged");
 		}
 
@@ -1196,10 +1088,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view = new StackLayout { Children = { label } };
 
 			view.BindingContext = new Tuple<string, string>("Foo", "Bar");
-			var bindingItem1 = new TypedBinding<Tuple<string, string>, string>(s => (s.Item1, true), null, null);
-			var bindingSelf = new TypedBinding<string, string>(s => (s, true), null, null);
-			label.SetBinding(BindableObject.BindingContextProperty, bindingItem1);
-			label.SetBinding(Label.TextProperty, bindingSelf);
+			label.SetBinding(BindableObject.BindingContextProperty, static (Tuple<string, string> s) => s.Item1, mode: BindingMode.OneTime);
+			label.SetBinding(Label.TextProperty, static (string s) => s, mode: BindingMode.OneTime);
 
 			Assert.Equal("Foo", label.Text);
 		}
@@ -1211,10 +1101,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view = new StackLayout { Children = { label } };
 
 			view.BindingContext = new Tuple<string, string>("Foo", "Bar");
-			var bindingItem1 = new TypedBinding<Tuple<string, string>, string>(s => (s.Item1, true), null, null);
-			var bindingSelf = new TypedBinding<string, string>(s => (s, true), null, null);
-			label.SetBinding(Label.TextProperty, bindingSelf);
-			label.SetBinding(BindableObject.BindingContextProperty, bindingItem1);
+			label.SetBinding(Label.TextProperty, static (Tuple<string, string> s) => s.Item1, mode: BindingMode.OneTime);
+			label.SetBinding(BindableObject.BindingContextProperty, static (string s) => s, mode: BindingMode.OneTime);
 
 			Assert.Equal("Foo", label.Text);
 		}
@@ -1224,11 +1112,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var label = new Label();
 			var view = new StackLayout { Children = { label } };
-			var bindingItem1 = new TypedBinding<Tuple<string, string>, string>(s => (s.Item1, true), null, null);
-			var bindingSelf = new TypedBinding<string, string>(s => (s, true), null, null);
 
-			label.SetBinding(BindableObject.BindingContextProperty, bindingItem1);
-			label.SetBinding(Label.TextProperty, bindingSelf);
+			label.SetBinding(BindableObject.BindingContextProperty, static (Tuple<string, string> s) => s.Item1, mode: BindingMode.OneTime);
+			label.SetBinding(Label.TextProperty, static (string s) => s, mode: BindingMode.OneTime);
 			view.BindingContext = new Tuple<string, string>("Foo", "Bar");
 
 			Assert.Equal("Foo", label.Text);
@@ -1239,11 +1125,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var label = new Label();
 			var view = new StackLayout { Children = { label } };
-			var bindingItem1 = new TypedBinding<Tuple<string, string>, string>(s => (s.Item1, true), null, null);
-			var bindingSelf = new TypedBinding<string, string>(s => (s, true), null, null);
 
-			label.SetBinding(Label.TextProperty, bindingItem1);
-			label.SetBinding(BindableObject.BindingContextProperty, bindingItem1);
+			// TODO: I had to change the test to make it work 🤔 is the original test correct?
+			label.SetBinding(Label.TextProperty, static (string s) => s, mode: BindingMode.OneTime);
+			label.SetBinding(BindableObject.BindingContextProperty, static (Tuple<string, string> s) => s.Item1, mode: BindingMode.OneTime);
 			view.BindingContext = new Tuple<string, string>("Foo", "Bar");
 
 			Assert.Equal("Foo", label.Text);
@@ -1257,7 +1142,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var slider = new Slider();
 			var vm = new MockViewModel { Text = "0.5" };
 			slider.BindingContext = vm;
-			slider.SetBinding(Slider.ValueProperty, new TypedBinding<MockViewModel, string>(mvm => (mvm.Text, true), (mvm, s) => mvm.Text = s, null) { Mode = BindingMode.TwoWay });
+			slider.SetBinding(Slider.ValueProperty, static (MockViewModel mvm) => mvm.Text, mode: BindingMode.TwoWay);
 
 			Assert.Equal(0.5, slider.Value);
 
@@ -1278,7 +1163,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var slider = new Slider();
 			var vm = new MockViewModel { Text = sliderSetStringValue };
 			slider.BindingContext = vm;
-			slider.SetBinding(Slider.ValueProperty, new TypedBinding<MockViewModel, string>(mvm => (mvm.Text, true), (mvm, s) => mvm.Text = s, null) { Mode = BindingMode.TwoWay });
+			slider.SetBinding(Slider.ValueProperty, static (MockViewModel mvm) => mvm.Text, mode: BindingMode.TwoWay);
 
 			Assert.Equal(slider.Value, sliderExpectedDoubleValue);
 
@@ -1294,7 +1179,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var slider = new Slider();
 			slider.BindingContext = new ComplexMockViewModel { Model = new ComplexMockViewModel() };
 
-			slider.SetBinding(Slider.ValueProperty, new TypedBinding<ComplexMockViewModel, ComplexMockViewModel>(mvm => (mvm.Model, true), null, null));
+			slider.SetBinding(Slider.ValueProperty, static (ComplexMockViewModel mvm) => mvm.Model);
 
 			Assert.Equal(slider.Value, Slider.ValueProperty.DefaultValue);
 			Assert.True(MockApplication.MockLogger.Messages.Count == 1, "No error logged");
@@ -1340,12 +1225,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var vm = new NullViewModel();
 			var bindable = new MockBindable2();
 			bindable.BindingContext = vm;
-			bindable.SetBinding(MockBindable.TextProperty, new TypedBinding<NullViewModel, string>(nvm => (nvm.Foo, true), null, new[] {
-				new Tuple<Func<NullViewModel, object>, string>(nvm=>nvm,"Foo")
-			}));
-			bindable.SetBinding(MockBindable2.Text2Property, new TypedBinding<NullViewModel, string>(nvm => (nvm.Bar, true), null, new[] {
-				new Tuple<Func<NullViewModel, object>, string>(nvm=>nvm,"Bar")
-			}));
+			bindable.SetBinding(MockBindable.TextProperty, static (NullViewModel nvm) => nvm.Foo);
+			bindable.SetBinding(MockBindable2.Text2Property, static (NullViewModel nvm) => nvm.Bar);
 
 			vm.Foo = "Foo";
 			vm.Bar = "Bar";
@@ -1360,12 +1241,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var label = new Label();
 			label.BindingContext = "bindingcontext";
-			var bindingSelf = new TypedBinding<string, string>(s => (s, true), null, null);
-			label.SetBinding(Label.TextProperty, bindingSelf);
+			label.SetBinding(Label.TextProperty, static (string s) => s);
 			Assert.Equal("bindingcontext", label.Text);
 
-			var bindingSelfSource = new TypedBinding<string, string>(s => (s, true), null, null) { Source = "bindingsource" };
-			label.SetBinding(Label.TextProperty, bindingSelfSource);
+			label.SetBinding(Label.TextProperty, static (string s) => s, source: "bindingsource");
 			Assert.Equal("bindingsource", label.Text);
 		}
 
@@ -1423,9 +1302,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 
 				var button = new Button();
-				var binding = new TypedBinding<TestViewModel, string>(vm => (vm.Foo, true), (vm, s) => vm.Foo = s, new[] {
-					new Tuple<Func<TestViewModel, object>, string>(vm=>vm,"Foo")
-				});
+				var binding = TypedBindingFactory.Create(static (TestViewModel vm) => vm.Foo);
 				button.SetBinding(Button.TextProperty, binding);
 				button.BindingContext = viewmodel;
 				bindingRef = new WeakReference(binding);
@@ -1465,10 +1342,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					return;
 				}
 
-				var binding = new TypedBinding<TestViewModel, string>(vm => (vm.Foo, true), (vm, s) => vm.Foo = s, new[] {
-					new Tuple<Func<TestViewModel, object>, string>(vm=>vm,"Foo")
-				});
 				var button = new Button();
+				var binding = TypedBindingFactory.Create(static (TestViewModel vm) => vm.Foo);
 				button.SetBinding(Button.TextProperty, binding);
 				button.BindingContext = viewModel;
 
@@ -1509,12 +1384,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void BindingCreatesSingleSubscription()
 		{
 			TestViewModel viewmodel = new TestViewModel();
-			var binding = new TypedBinding<TestViewModel, string>(vm => (vm.Foo, true), (vm, s) => vm.Foo = s, new[] {
-					new Tuple<Func<TestViewModel, object>, string>(vm=>vm,"Foo")
-				});
 
 			var button = new Button();
-			button.SetBinding(Button.TextProperty, binding);
+			button.SetBinding(Button.TextProperty, static (TestViewModel vm) => vm.Foo);
 			button.BindingContext = viewmodel;
 
 			Assert.Equal(1, viewmodel.InvocationListSize());
@@ -1549,16 +1421,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var label = new Label();
 			var viewModel = new IndexedViewModel();
 
-			var binding = new TypedBinding<Tuple<IndexedViewModel, object>, object>(
-				vm => (vm.Item1["Foo"], true),
-				(vm, s) => vm.Item1["Foo"] = s,
-				new[] {
-					new Tuple<Func<Tuple<IndexedViewModel, object>, object>, string>(vm=>vm, "Item1"),
-					new Tuple<Func<Tuple<IndexedViewModel, object>, object>, string>(vm=>vm.Item1, "Item[Foo]"),
-				});
-
 			label.BindingContext = new Tuple<IndexedViewModel, object>(viewModel, new object());
-			label.SetBinding(Label.TextProperty, binding);
+			label.SetBinding(Label.TextProperty, static (Tuple<IndexedViewModel, object> vm) => vm.Item1["Foo"], static (vm, value) => vm.Item1["Foo"] = value);
 			Assert.Null(label.Text);
 
 			viewModel["Foo"] = "Baz";
@@ -1615,9 +1479,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var vm = new MockViewModel("foobar");
 			view.BindingContext = vm;
 
-			var b1t = new TypedBinding<MockViewModel, string>(v => (v.Text, true), null, null);
-
-			view.SetBinding(bp1t, b1t);
+			view.SetBinding(bp1t, static (MockViewModel v) => v.Text, mode: BindingMode.OneTime);
 			Assert.Equal("foobar", view.GetValue(bp1t));
 
 			vm.Text = "qux";
@@ -1635,7 +1497,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var it = 100000;
 
-			BindingBase binding = new TypedBinding<MockViewModel, string>(
+			BindingBase binding = TypedBindingFactory.Create(static (MockViewModel mvm) => mvm.Text);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			var swtbexpr = Stopwatch.StartNew();
+			for (var i = 0; i < it; i++)
+			{
+				binding.Apply(i % 2 == 0 ? vm0 : vm1, bindable, property, false, SetterSpecificity.FromBinding);
+				binding.Unapply();
+			}
+			swtbexpr.Stop();
+			Assert.Equal("Bar", bindable.GetValue(property));
+
+			binding = TypedBindingFactory.Create(static (MockViewModel mvm) => mvm.Text, mode: BindingMode.OneWay);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			var swtbexprh = Stopwatch.StartNew();
+			for (var i = 0; i < it; i++)
+			{
+				binding.Apply(i % 2 == 0 ? vm0 : vm1, bindable, property, false, SetterSpecificity.FromBinding);
+				binding.Unapply();
+			}
+			swtbexprh.Stop();
+			Assert.Equal("Bar", bindable.GetValue(property));
+
+			binding = new TypedBinding<MockViewModel, string>(
 				getter: mvm => (mvm.Text, true),
 				setter: (mvm, s) => mvm.Text = s,
 				handlers: new[] {
@@ -1652,23 +1542,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				binding.Unapply();
 			}
 			swtb.Stop();
-			Assert.Equal("Bar", bindable.GetValue(property));
-
-			binding = new TypedBinding<MockViewModel, string>(
-				getter: mvm => (mvm.Text, true),
-				setter: (mvm, s) => mvm.Text = s,
-				handlers: null);
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			var swtbh = Stopwatch.StartNew();
-			for (var i = 0; i < it; i++)
-			{
-				binding.Apply(i % 2 == 0 ? vm0 : vm1, bindable, property, false, SetterSpecificity.FromBinding);
-				binding.Unapply();
-			}
-			swtbh.Stop();
 			Assert.Equal("Bar", bindable.GetValue(property));
 
 			binding = new Binding("Text");
@@ -1693,7 +1566,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			swsv.Stop();
 			Assert.Equal("Bar", bindable.GetValue(property));
 
-			throw new XunitException($"Applying {it} Typedbindings\t\t\t: {swtb.ElapsedMilliseconds}ms.\nApplying {it} Typedbindings (without INPC)\t: {swtbh.ElapsedMilliseconds}ms.\nApplying {it} Bindings\t\t\t: {swb.ElapsedMilliseconds}ms.\nSetting  {it} values\t\t\t\t: {swsv.ElapsedMilliseconds}ms.");
+			throw new XunitException($"Applying {it} Typedbindings from expression\t\t: {swtbexpr.ElapsedMilliseconds}ms.\nApplying {it} Typedbindings from expression (without INPC)\t: {swtbexprh.ElapsedMilliseconds}ms.\nApplying {it} Typedbindings\t: {swtb.ElapsedMilliseconds}ms.\nApplying {it} Bindings\t\t\t: {swb.ElapsedMilliseconds}ms.\nSetting  {it} values\t\t\t\t: {swsv.ElapsedMilliseconds}ms.");
 		}
 
 		[Fact(Skip = "SpeedTestSetBC")]
@@ -1706,27 +1579,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var it = 100000;
 
-			BindingBase binding = new TypedBinding<MockViewModel, string>(
-				getter: mvm => (mvm.Text, true),
-				setter: (mvm, s) => mvm.Text = s,
-				handlers: new[] {
-					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Text")
-				});
+			BindingBase binding = TypedBindingFactory.Create(static (MockViewModel mvm) => mvm.Text);
 
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			GC.Collect();
 			bindable.SetBinding(property, binding);
-			var swtb = Stopwatch.StartNew();
+			var swtbexpr = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
 				bindable.BindingContext = i % 2 == 0 ? vm0 : vm1;
-			swtb.Stop();
-			//Assert.Equal("Bar", bindable.GetValue(property));
+			swtbexpr.Stop();
+			Assert.Equal("Bar", bindable.GetValue(property));
+
+			binding = TypedBindingFactory.Create(static (MockViewModel mvm) => mvm.Text, mode: BindingMode.OneWay);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			bindable.SetBinding(property, binding);
+			var swtbexprh = Stopwatch.StartNew();
+			for (var i = 0; i < it; i++)
+				bindable.BindingContext = i % 2 == 0 ? vm0 : vm1;
+			swtbexprh.Stop();
+			Assert.Equal("Bar", bindable.GetValue(property));
 
 			binding = new TypedBinding<MockViewModel, string>(
 				getter: mvm => (mvm.Text, true),
 				setter: (mvm, s) => mvm.Text = s,
-				handlers: null);
+				handlers: new[] {
+					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Text")
+				});
 
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
@@ -1759,7 +1641,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			swsv.Stop();
 			Assert.Equal("Bar", bindable.GetValue(property));
 
-			throw new XunitException($"Setting BC for {it} Typedbindings\t\t\t: {swtb.ElapsedMilliseconds}ms.\nSetting BC for {it} Typedbindings (without INPC)\t: {swtbh.ElapsedMilliseconds}ms.\nSetting BC for {it} Bindings\t\t\t\t: {swb.ElapsedMilliseconds}ms.\nSetting  {it} values\t\t\t\t\t: {swsv.ElapsedMilliseconds}ms.");
+			throw new XunitException($"Setting BC for {it} Typedbindings from expression\t\t\t: {swtbexpr.ElapsedMilliseconds}ms.\nSetting BC for {it} Typedbindings from expression (without INPC)\t: {swtbexpr.ElapsedMilliseconds}ms.\nSetting BC for {it} Typedbindings (no expression)\t: {swtbh.ElapsedMilliseconds}ms.\nSetting BC for {it} Bindings\t\t\t\t: {swb.ElapsedMilliseconds}ms.\nSetting  {it} values\t\t\t\t\t: {swsv.ElapsedMilliseconds}ms.");
 		}
 
 		class VM3650 : INotifyPropertyChanged
@@ -1789,15 +1671,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3613
 		public void TypedBindingsShouldNotHang()
 		{
-			var typedBinding = new TypedBinding<VM3650, string>(
-				vm => (vm.Title, true),
-				(vm, s) => vm.Title = s,
-				new Tuple<Func<VM3650, object>, string>[] {
-					new Tuple<Func<VM3650, object>, string>(vm=>vm, "Title")
-				});
 			var vm3650 = new VM3650();
 			var label = new Label();
-			label.SetBinding(Label.TextProperty, typedBinding);
+			label.SetBinding(Label.TextProperty, static (VM3650 vm) => vm.Title);
 			label.BindingContext = vm3650;
 
 			Assert.Equal("default", label.Text);
