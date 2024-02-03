@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue19159">
+       <TabBar>
+           <Tab>
+             <ShellContent
+                 Title="Page 1"
+                 ContentTemplate="{x:DataTemplate local:Issue19159ContentPage}">
+             </ShellContent>
+             <ShellContent
+                 Title="Page 2"
+                 ContentTemplate="{x:DataTemplate local:Issue19159ContentPage}"/>
+            </Tab>
+        </TabBar>
+</Shell>
