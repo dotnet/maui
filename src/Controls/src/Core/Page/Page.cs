@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement, IShellContentInsetObserver
 	{
 		/// <summary>
 		/// The identifier used by the internal messaging system to set <see cref="IsBusy"/>.
@@ -72,6 +72,8 @@ namespace Microsoft.Maui.Controls
 		private protected bool HasAppeared => _hasAppeared;
 
 		View _titleView;
+
+		ShellSection _shellSection;
 
 		List<Action> _pendingActions = new List<Action>();
 
@@ -486,6 +488,20 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!Application.IsApplicationOrWindowOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem))
 				throw new InvalidOperationException("Parent of a Page must also be a Page");
+
+			var parent = Parent;
+			while (!Application.IsApplicationOrWindowOrNull(parent))
+			{
+				if (parent is ShellSection shellSection)
+				{
+					_shellSection = shellSection;
+					((IShellSectionController)shellSection).AddContentInsetObserver(this);
+					break;
+				}
+
+				parent = parent.Parent;
+			}
+
 			base.OnParentSet();
 		}
 
@@ -643,6 +659,12 @@ namespace Microsoft.Maui.Controls
 
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendDisappearing();
+
+			if (_shellSection != null)
+			{
+				((IShellSectionController)_shellSection).RemoveContentInsetObserver(this);
+				_shellSection = null;
+			}
 
 			OnDisappearing();
 			Disappearing?.Invoke(this, EventArgs.Empty);
@@ -853,5 +875,13 @@ namespace Microsoft.Maui.Controls
 		/// <returns>The <see cref="Window"/> instance that parents the page.</returns>
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
+
+		/// <summary>
+		/// Adds inset to the page if the page is a part of a shell
+		/// </summary>
+		void IShellContentInsetObserver.OnInsetChanged(Thickness inset, double tabThickness)
+		{
+			Padding = new Thickness(inset.Left, inset.Top + tabThickness, inset.Right, inset.Bottom);
+		}
 	}
 }
