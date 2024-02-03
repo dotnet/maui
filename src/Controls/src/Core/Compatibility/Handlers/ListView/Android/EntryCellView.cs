@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public EntryCellView(Context context, Cell cell) : base(context)
 		{
+			System.Diagnostics.Debug.Write($"EntryCellView Created: {this.GetHashCode()}");
 			_cell = cell;
 			SetMinimumWidth((int)context.ToPixels(50));
 			SetMinimumHeight((int)context.ToPixels(85));
@@ -51,6 +52,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			layoutParams = new LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent) { Width = 0, Weight = 1, Gravity = GravityFlags.FillHorizontal | GravityFlags.Center };
 			using (layoutParams)
 				AddView(EditText, layoutParams);
+		}
+
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+			System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnAttachedToWindow EntryCellView:");
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			base.OnDetachedFromWindow();
+			System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnDetachedFromWindow EntryCellView:");
 		}
 
 		public Action EditingCompleted { get; set; }

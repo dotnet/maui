@@ -11,6 +11,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		EntryCellView _view;
 
+		public EntryCellRenderer()
+		{
+			System.Diagnostics.Debug.Write($"EntryCellRenderer Created: {this.GetHashCode()}");
+		}
+
 		protected override global::Android.Views.View GetCellCore(Cell item, global::Android.Views.View convertView, ViewGroup parent, Context context)
 		{
 			/*if (item?.Parent is TableView && item.Handler?.PlatformView is EntryCellView entryCellView)
@@ -43,6 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_view.TextChanged = OnTextChanged;
 			_view.EditingCompleted = OnEditingCompleted;
 
+			System.Diagnostics.Debug.Write($"EntryCellRenderer View: {_view.GetHashCode()}");
 			return _view;
 		}
 

@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get
 			{
 				// The GetView implementation literally only returns ConditionalFocusLayout. There is only one type.
-				return Count;
+				return 1;
 			}
 		}
 
