@@ -13,6 +13,35 @@ namespace Maui.Controls.Sample
 		public MainPage()
 		{
 			InitializeComponent();
+			Content = 
+			/*new TableView
+					{
+						Root = new TableRoot
+						{
+							new TableSection
+							{
+								//new SwitchCell { Text = "switch cell", On = true },
+								new EntryCell { Text = "entry cell" }
+							}
+						}
+					};*/
+			new TableView
+			{
+				Root = new TableRoot {
+					new TableSection {
+						/*new ViewCell {
+							View = new StackLayout {
+								Children = {
+									new Label {
+										Text = "Custom Slider View:"
+									},
+								}
+							}
+						},*/
+						new EntryCell { Text = "entry cell" }
+					}
+				}
+			};
 		}
 	}
 }

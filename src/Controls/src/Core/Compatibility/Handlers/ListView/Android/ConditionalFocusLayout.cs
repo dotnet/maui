@@ -17,6 +17,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			SetOnTouchListener(this);
 		}
 
+		int i=0;
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+			System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnAttachedToWindow ConditionalFocusLayout: {GetChildAt(0)}");
+			i++;
+
+			if (i == 2)
+			{
+				System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnAttachedToWindow Called Twice");
+			}
+			
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			i--;
+			base.OnDetachedFromWindow();
+			System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnDetachedFromWindow ConditionalFocusLayout: {GetChildAt(0)}");
+		}
+
 		public bool OnTouch(global::Android.Views.View v, MotionEvent e)
 		{
 			bool allowFocus = v is EditText;

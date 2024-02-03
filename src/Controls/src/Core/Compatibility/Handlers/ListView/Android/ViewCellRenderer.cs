@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var cell = (ViewCell)item;
 
 			var container = convertView as ViewCellContainer;
-			if (container != null)
+			if (container is not null)
 			{
 				container.Update(cell);
 				Performance.Stop(reference, "GetCellCore");

@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get
 			{
 				// The GetView implementation literally only returns ConditionalFocusLayout. There is only one type.
-				return 1;
+				return Count;
 			}
 		}
 
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// may not be safe for reuse. Our one-to-one VirtualView<->(Renderer/Handler) design is not currently compatible with the
 			// ListView's recycling scheme, so we need to turn that off.
 
-			return IAdapter.IgnoreItemViewType;
+			return position;
 		}
 
 		public override bool AreAllItemsEnabled()
@@ -132,6 +132,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override AView GetView(int position, AView convertView, ViewGroup parent)
 		{
+			//convertView = null;
 			Cell item = GetCellForPosition(position, out var isHeader, out var nextIsHeader);
 
 			if (item == null)
@@ -139,13 +140,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return new AView(Context);
 			}
 
+			if (convertView is ConditionalFocusLayout cfl && cfl.ChildCount > 0)
+			{
+				convertView = cfl.GetChildAt(0);
+			}
+
 			AView nativeCellContent = CellFactory.GetCell(item, convertView, parent, Context, _view);
+			System.Diagnostics.Debug.WriteLine($"Convert View: {convertView}");
 
 			// If we're not using recycling then we can't return the same instance of the view with each call to GetView
 			// Android expects this to always return a new view 
 			if (convertView is null && nativeCellContent.Parent is ViewGroup vg)
 			{
-				vg.RemoveAllViews();
+				if(!vg.IsAttachedToWindow)
+				{
+					vg.RemoveAllViews();
+					System.Diagnostics.Debug.WriteLine($"{vg.GetHashCode()} RemoveAllViews ConditionalFocusLayout: {vg}");
+				}
 			}
 
 			// The cell content we get back might already be in a ConditionalFocusLayout; if it is, 
@@ -154,6 +165,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (nativeCellContent.Parent is not ConditionalFocusLayout layout)
 			{
 				layout = new ConditionalFocusLayout(Context) { Orientation = Orientation.Vertical };
+				System.Diagnostics.Debug.WriteLine($"{layout.GetHashCode()} CreateNew ConditionalFocusLayout: {layout}");
 				layout.AddView(nativeCellContent);
 			}
 

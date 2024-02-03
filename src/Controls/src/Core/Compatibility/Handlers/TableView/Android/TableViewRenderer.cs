@@ -86,6 +86,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+		}
+
+		protected override void OnLayout(bool changed, int l, int t, int r, int b)
+		{
+			base.OnLayout(changed, l, t, r, b);
+		}
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (double.IsInfinity(heightConstraint))

@@ -1,4 +1,5 @@
 ﻿using System;
+using Maui.Controls.Sample.Issues;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
@@ -35,7 +36,7 @@ namespace Maui.Controls.Sample
 
 		public Page CreateDefaultMainPage()
 		{
-			return new CoreNavigationPage();
+			return new NavigationPage(new Issue5555());
 		}
 
 		protected override void OnAppLinkRequestReceived(Uri uri)

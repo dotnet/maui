@@ -13,6 +13,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context, View view)
 		{
 			CellRenderer renderer = CellRenderer.GetRenderer(item);
+
+			/*if (convertView is null && renderer is IElementHandler handler)
+			{
+				handler.DisconnectHandler();
+				renderer = null;
+			}*/
+
 			if (renderer == null)
 			{
 				var mauiContext = view.FindMauiContext() ?? item.FindMauiContext();
