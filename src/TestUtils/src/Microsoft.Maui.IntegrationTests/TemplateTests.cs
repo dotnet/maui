@@ -49,6 +49,38 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		[TestCase("maui-multiproject", DotNetCurrent, "Debug")]
+		[TestCase("maui-multiproject", DotNetCurrent, "Release")]
+		public void BuildMultiProjectProject(string id, string framework, string config)
+		{
+			var projectDir = TestDirectory;
+			var name = Path.GetFileName(projectDir);
+			var solutionFile = Path.Combine(projectDir, $"{name}.sln");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			Assert.IsTrue(DotnetInternal.New("sln", projectDir),
+				$"Unable to create solution. Check test output for errors.");
+
+			Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} add {projectDir}/{name}.Droid/{name}.Droid.csproj"),
+				$"Unable to add Android project to solution. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} add {projectDir}/{name}.iOS/{name}.iOS.csproj"),
+				$"Unable to add iOS project to solution. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} add {projectDir}/{name}.Mac/{name}.Mac.csproj"),
+				$"Unable to add Mac Catalyst project to solution. Check test output for errors.");
+
+			if (TestEnvironment.IsWindows)
+			{
+				Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} add {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
+					$"Unable to add WinUI project to solution. Check test output for errors.");
+			}
+
+			Assert.IsTrue(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Solution {name} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		// with spaces
 		[TestCase("maui", "Project Space", "projectspace")]
 		[TestCase("maui-blazor", "Project Space", "projectspace")]
