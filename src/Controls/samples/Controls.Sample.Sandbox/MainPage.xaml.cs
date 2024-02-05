@@ -13,6 +13,25 @@ namespace Maui.Controls.Sample
 		public MainPage()
 		{
 			InitializeComponent();
+			var cat = new TableView
+			{
+				Root = new TableRoot {
+
+					new TableSection("hi there") {
+						new ViewCell {
+							View = new StackLayout {
+								Children = {
+									new Label {
+										Text = "Custom Slider View:"
+									},
+								}
+							}
+						},
+						//new EntryCell { Text = "entry cell" }
+					}
+				}
+			};
+
 			Content = 
 			/*new TableView
 					{
@@ -25,23 +44,11 @@ namespace Maui.Controls.Sample
 							}
 						}
 					};*/
-			new TableView
-			{
-				Root = new TableRoot {
-					new TableSection {
-						/*new ViewCell {
-							View = new StackLayout {
-								Children = {
-									new Label {
-										Text = "Custom Slider View:"
-									},
-								}
-							}
-						},*/
-						new EntryCell { Text = "entry cell" }
-					}
-				}
-			};
+			/*new VerticalStackLayout(){
+				cat
+			}*/
+			cat
+			;
 		}
 	}
 }

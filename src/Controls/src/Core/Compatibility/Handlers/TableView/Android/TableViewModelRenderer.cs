@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return _cellCache;
 			}
 		}
+
 		bool[] _isHeaderCache;
 		bool[] IsHeaderCache
 		{
@@ -117,7 +118,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// may not be safe for reuse. Our one-to-one VirtualView<->(Renderer/Handler) design is not currently compatible with the
 			// ListView's recycling scheme, so we need to turn that off.
 
-			return position;
+			return IAdapter.IgnoreItemViewType;
 		}
 
 		public override bool AreAllItemsEnabled()
@@ -148,11 +149,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			AView nativeCellContent = CellFactory.GetCell(item, convertView, parent, Context, _view);
 			System.Diagnostics.Debug.WriteLine($"Convert View: {convertView}");
 
+			// TODO DEBUG MORE
 			// If we're not using recycling then we can't return the same instance of the view with each call to GetView
 			// Android expects this to always return a new view 
 			if (convertView is null && nativeCellContent.Parent is ViewGroup vg)
 			{
-				if(!vg.IsAttachedToWindow)
+				//if(!vg.IsAttachedToWindow)
 				{
 					vg.RemoveAllViews();
 					System.Diagnostics.Debug.WriteLine($"{vg.GetHashCode()} RemoveAllViews ConditionalFocusLayout: {vg}");

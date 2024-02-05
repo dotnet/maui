@@ -42,6 +42,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return new AListView(Context);
 		}
 
+		class Test : AListView
+		{
+			public Test(Context context) : base(context)
+			{
+			}
+
+			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+			{
+				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+			}
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<TableView> e)
 		{
 			base.OnElementChanged(e);
@@ -86,12 +98,36 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
+			// If you do an AtMost (or Unspecified) height measure of ListView, Android will basically create
+			// a scrap copy of all the ListView cells to calculate the height.
+			// https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/widget/ListView.java;l=1314-1322?q=ListView
+			// This causes issues, because if a TextCell already has a view that's attached to the visual tree then android
+			// will call "GetView" without a convert view and then it just uses that views a scrap view for measuring.
+			// Our problem, is that we don't have a way of knowing if a view we are returning from getView will be the one we
+			// should track against our TextCellHandler or not. 
+			// This all worked fine in XF because in XF we didn't really block against just creating as many renderers against a single
+			// VirtualView as you wanted. This led to a whole different set of hard to track issues.
+			// Fundamentally the ListView control on Android is an old control and the TableView should really be converted to
+			// a BindableLayout or just generating xplat views against a VerticalStackLayout.
+			//
+			// We handle the Unspecified path inside "GetDesiredSize" by calculating the height of the cells ourselves and requesting an exact measure.\\
+			// Because another quirk of ListView is that if you give it an unspecified measure it'll just size itself to the first row
+			// https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/widget/ListView.java;l=1289-1304?q=ListView
+			//
+			// There is a path here where we could make our structures play friendly with the ListView and then just let ListView do its scrapview thing
+			// But, for how we use TableView, converting to an Exactly measure seems good enough for us.	
+			if (heightMeasureSpec.GetMode() == MeasureSpecMode.AtMost)
+			{
+				var size = MeasureSpec.GetSize(heightMeasureSpec);
+				heightMeasureSpec = MeasureSpec.MakeMeasureSpec(size, MeasureSpecMode.Exactly);
+			}
+
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
@@ -106,7 +142,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					heightConstraint = (int)(_adapter.Count * Element.RowHeight);
 				}
-				else if (_adapter != null)
+				else if (_adapter is not null)
 				{
 					double totalHeight = 0;
 					int adapterCount = _adapter.Count;
@@ -119,7 +155,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							continue;
 						}
 
-						AView listItem = _adapter.GetView(i, null, Control);
+						var platformView = cell.Handler?.PlatformView as AView;
+						var convertView = (platformView?.Parent as AView) ?? platformView;
+
+						AView listItem = _adapter.GetView(i, convertView, Control);
 						int widthSpec;
 
 						if (double.IsInfinity(widthConstraint))

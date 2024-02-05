@@ -54,16 +54,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				AddView(EditText, layoutParams);
 		}
 
+		
+		int i=0;
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
-			System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnAttachedToWindow EntryCellView:");
+			System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnAttachedToWindow EntryCellView: {GetChildAt(0)}");
+			i++;
+
+			if (i == 2)
+			{
+				System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnAttachedToWindow EntryCellView Called Twice");
+			}
 		}
 
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
-			System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnDetachedFromWindow EntryCellView:");
+			System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnDetachedFromWindow EntryCellView");
+			i--;
 		}
 
 		public Action EditingCompleted { get; set; }

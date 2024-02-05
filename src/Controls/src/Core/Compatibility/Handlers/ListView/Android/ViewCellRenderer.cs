@@ -68,6 +68,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		internal sealed class ViewCellContainer : ViewGroup, INativeElementView
 		{
+			int i=0;
+			protected override void OnAttachedToWindow()
+			{
+				base.OnAttachedToWindow();
+				System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnAttachedToWindow ViewCellContainer: {GetChildAt(0)}");
+				i++;
+
+				if (i == 2)
+				{
+					System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnAttachedToWindow ViewCellContainer Called Twice");
+				}
+				
+			}
+
+			protected override void OnDetachedFromWindow()
+			{
+				base.OnDetachedFromWindow();
+				System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnDetachedFromWindow EntryCellView");
+				i--;
+			}
+
 			readonly View _parent;
 			readonly BindableProperty _rowHeight;
 			readonly BindableProperty _unevenRows;

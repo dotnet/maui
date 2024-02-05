@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (i == 2)
 			{
-				System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnAttachedToWindow Called Twice");
+				System.Diagnostics.Debug.WriteLine($"{this.GetHashCode()} OnAttachedToWindow ConditionalFocusLayout Called Twice");
 			}
 			
 		}
