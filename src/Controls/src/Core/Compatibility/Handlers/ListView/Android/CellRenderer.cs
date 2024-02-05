@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Cell = item;
 			Cell.PropertyChanged -= PropertyChangedHandler;
 
-			if (convertView != null)
+			if (convertView is not null)
 			{
 				Object tag = convertView.Tag;
 				CellRenderer renderer = (tag as RendererHolder)?.Renderer;
