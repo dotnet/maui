@@ -66,5 +66,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			return Combinations(new List<bool>() { true, false });
 		}
+
+		public static IEnumerable<object[]> ThreeBooleans()
+		{
+			yield return new object[] { true, true, true };
+			yield return new object[] { false, true, true };
+			yield return new object[] { true, false, true };
+			yield return new object[] { true, true, false };
+			yield return new object[] { false, false, true };
+			yield return new object[] { true, false, false };
+			yield return new object[] { false, true, false };
+			yield return new object[] { false, false, false };
+		}
 	}
 }
