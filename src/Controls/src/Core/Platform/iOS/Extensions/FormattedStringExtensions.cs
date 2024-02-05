@@ -4,6 +4,8 @@ using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using System;
+
 #if !MACOS
 using ObjCRuntime;
 using UIKit;
@@ -201,7 +203,16 @@ namespace Microsoft.Maui.Controls.Platform
 					yaxis += (float)lineHeight;
 				}
 
-				((ISpatialElement)span).Region = Region.FromLines(lineHeights.ToArray(), finalSize.Width, startRect.X, endRect.X, startRect.Top).Inflate(10);
+				// if the span is multiline, we need to calculate the bounds for each line individually
+				if (lineHeights.Count > 1) 
+				{
+					var spanRectangles = GetMultilinedBounds(new NSRange(location, length), layoutManager, textContainer, startRect, endRect, lineHeights);
+					((ISpatialElement)span).Region = Region.FromRectangles(spanRectangles).Inflate(5);
+				}
+				else
+				{
+					((ISpatialElement)span).Region = Region.FromLines(lineHeights.ToArray(), finalSize.Width, startRect.X, endRect.X, startRect.Top).Inflate(5);
+				}
 
 				// Update current location
 				currentLocation += length;
@@ -213,6 +224,46 @@ namespace Microsoft.Maui.Controls.Platform
 			layoutManager.GetCharacterRange(characterRange, out NSRange glyphRange);
 
 			return layoutManager.GetBoundingRect(glyphRange, textContainer);
+		}
+
+		static Rect[] GetMultilinedBounds(NSRange characterRange, NSLayoutManager layoutManager, NSTextContainer textContainer, CGRect startRect, CGRect endRect, List<double> lineHeights)
+		{
+			var glyphRange = layoutManager.GetCharacterRange(characterRange);
+			var multilineRects = new List<CGRect>();
+
+			layoutManager.EnumerateLineFragments(glyphRange, (CGRect rect, CGRect usedRect, NSTextContainer textContainer, NSRange lineGlyphRange, out bool stop) =>
+			{
+				multilineRects.Add(usedRect);
+				stop = false;
+			});
+
+			return CreateSpanRects (startRect, endRect, lineHeights, multilineRects);
+		}
+
+		static Rect[] CreateSpanRects (CGRect startRect, CGRect endRect, List<double> lineHeights, List<CGRect> multilineRects)
+		{
+			List<Rect> spanRectangles = new List<Rect>();
+			var curHeight = (double)startRect.Top;
+
+			for (int j = 0; j < multilineRects.Count; j++){
+				var rect = multilineRects[j];
+
+				// top line
+				if (j == 0)
+					spanRectangles.Add(new Rect(startRect.X, startRect.Top, rect.Width - startRect.Left, lineHeights[j]));
+
+				// middle lines
+				else if (j < multilineRects.Count - 1)
+					spanRectangles.Add(new Rect(0, curHeight, rect.Width, lineHeights[j]));
+
+				// bottom line
+				else
+					spanRectangles.Add(new Rect(0, curHeight, endRect.X, lineHeights[j]));
+
+				curHeight += lineHeights[j];
+			}
+
+			return spanRectangles.ToArray();
 		}
 
 		static double FindDefaultLineHeight(this UILabel control, int start, int length)

@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls
 			var endLine = lineHeights.Length - 1;
 			var lineHeightTotal = startY;
 
+			// Rect(double x, double y, double width, double height)
 			for (var i = 0; i <= endLine; i++)
 				if (endLine != 0) // MultiLine
 				{
@@ -105,14 +106,12 @@ namespace Microsoft.Maui.Controls
 			{
 				var region = Regions[i];
 
-				if (i == 0) // this is the first line
-					region.Top -= top;
+				region.Top -= top;
 
 				region.Left -= left;
 				region.Width += right + left;
 
-				if (i == Regions.Count - 1) // This is the last line
-					region.Height += bottom + top;
+				region.Height += bottom + top;
 
 				rectangles[i] = region;
 			}
