@@ -61,6 +61,71 @@ namespace Microsoft.Maui.Controls
 			self.SetBinding(targetProperty, binding);
 		}
 
+		/// <summary>
+		/// This extension method uses Expression instead of string path to create bindings. Using SetBinding with expressions is trimming friendly.
+		/// </summary>
+		/// <remarks>
+		///   <para>The following example illustrates the setting of a binding using the extension method.</para>
+		///   <example>
+		///     <code lang="csharp lang-csharp"><![CDATA[
+		///      public class PersonViewModel
+		///      {
+		///          public string Name { get; set; }
+		///          public Address? Address { get; set; }
+		///          // ...
+		///      }
+		///      
+		///      var vm = new PersonViewModel { Name = "John Doe" };
+		///      
+		///      var label = new Label();
+		///      label.SetBinding(Label.TextProperty, static (PersonViewModel vm) => vm.Name);
+		///      label.BindingContext = vm;
+		///      
+		///      vm.Name = "Jane Doe";
+		///      Debug.WriteLine(label.Text); // prints "Jane Doe"
+		///  ]]></code>
+		///   </example>
+		///   <para>Not all expressions can be used to define a binding. The expression must be a simple property access expression. The following are examples of valid and invalid expressions:</para>
+		///   <example>
+		///     <code lang="csharp lang-csharp"><![CDATA[
+		///      // Valid: Property access
+		///      static (PersonViewModel vm) => vm.Name;
+		///      static (PersonViewModel vm) => vm.Address!.Street;
+		///      
+		///      // Valid: Array and indexer access
+		///      static (PersonViewModel vm) => vm.PhoneNumbers[0];
+		///      static (PersonViewModel vm) => vm.Config["Font"];
+		///      
+		///      // Valid: Casts
+		///      static (Label label) => (label.BindingContext as PersonViewModel).Name;
+		///      static (Label label) => ((PersonViewModel)label.BindingContext).Name;
+		///      
+		///      // Invalid: Method calls
+		///      static (PersonViewModel vm) => vm.GetAddress();
+		///      static (PersonViewModel vm) => vm.Address!.ToString();
+		///      
+		///      // Invalid: Complex expressions
+		///      static (PersonViewModel vm) => vm.Address!.Street + " " + vm.Address!.City;
+		///      static (PersonViewModel vm) => $"Name: {vm.Name}";
+		///  ]]></code>
+		///   </example>
+		///   <para>Note: When the expression ends with an indexer, it is necessary to explicitly set the setter method or the binding mode needs to be set to <c>OneWay</c> or <c>OneTime</c>.</para>
+		///   <para>Note: For improved performance, consider setting mode to <c>OneTime</c>, <c>OneWay</c>, or <c>OneWayToSource</c> whenever applicable.</para>
+		/// </remarks>
+		/// <typeparam name="TSource">The source type.</typeparam>
+		/// <typeparam name="TProperty">The property type.</typeparam>
+		/// <param name="self">The <see cref="T:Microsoft.Maui.Controls.BindableObject" />.</param>
+		/// <param name="targetProperty">The <see cref="T:Microsoft.Maui.Controls.BindableProperty" /> on which to set a binding.</param>
+		/// <param name="getter">An expression used to retrieve the source property.</param>
+		/// <param name="setter">An optional setter method to update the value of the source property.</param>
+		/// <param name="mode">The binding mode. This property is optional. Default is <see cref="F:Microsoft.Maui.Controls.BindingMode.Default" />.</param>
+		/// <param name="converter">The converter. This parameter is optional. Default is <see langword="null" />.</param>
+		/// <param name="converterParameter">An user-defined parameter to pass to the converter. This parameter is optional. Default is <see langword="null" />.</param>
+		/// <param name="stringFormat">A String format. This parameter is optional. Default is <see langword="null" />.</param>
+		/// <param name="source">An object used as the source for this binding. This parameter is optional. Default is <see langword="null" />.</param>
+		/// <param name="fallbackValue">The value to use instead of the default value for the property, if no specified value exists.</param>
+		/// <param name="targetNullValue">The value to supply for a bound property when the target of the binding is <see langword="null" />.</param>
+		/// <exception cref="ArgumentNullException"></exception>
 		internal static void SetBinding<TSource, TProperty>(
 			this BindableObject self,
 			BindableProperty targetProperty,
@@ -71,7 +136,6 @@ namespace Microsoft.Maui.Controls
 			object converterParameter = null,
 			string stringFormat = null,
 			object source = null,
-			string updateSourceEventName = null,
 			object fallbackValue = null,
 			object targetNullValue = null)
 		{
@@ -81,7 +145,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(targetProperty));
 
 			var binding = TypedBindingFactory.Create<TSource, TProperty>(
-				getter, setter, mode, converter, converterParameter, stringFormat, source, updateSourceEventName, targetNullValue, fallbackValue);
+				getter, setter, mode, converter, converterParameter, stringFormat, source, targetNullValue, fallbackValue);
 			self.SetBinding(targetProperty, binding);
 		}
 

@@ -21,9 +21,9 @@ namespace Microsoft.Maui.Controls
 			object? converterParameter = null,
 			string? stringFormat = null,
 			object? source = null,
-			string? updateSourceEventName = null,
 			object? targetNullValue = null,
-			object? fallbackValue = null)
+			object? fallbackValue = null,
+			string? updateSourceEventName = null)
 		{
 			if (getter is null)
 				throw new ArgumentNullException(nameof(getter));
