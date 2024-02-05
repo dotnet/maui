@@ -64,10 +64,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var builder = new StringBuilder();
 
-			var fontMetrics = new Paint()
+			var fontMetrics = context?.Resources?.DisplayMetrics != null ? new Paint()
 			{
-				TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, (float)defaultFontSize, context?.Resources?.DisplayMetrics)
-			}.GetFontMetrics();
+				TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, (float)defaultFontSize, context.Resources.DisplayMetrics)
+			}.GetFontMetrics()
+			: null;
 			
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
