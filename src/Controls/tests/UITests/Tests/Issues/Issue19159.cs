@@ -19,7 +19,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			_ = App.WaitForElement("page1");
 
 			// The content should not be overlaid by top bar
-			App.Screenshot();
+			VerifyScreenshot();
 		}
 	}
 }
