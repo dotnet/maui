@@ -11,10 +11,17 @@ namespace Maui.Controls.Sample.Issues
 		public static Label DestructorCount = new Label() { Text = "0" };
 		protected override void Init()
 		{
-			var result = new Label
+			var instructions = new Label
 			{
 				FontSize = 16,
 				Text = "Click 'Push page' twice"
+			};
+
+			var result = new Label
+			{
+				Text = "Success",
+				AutomationId = "SuccessLabel",
+				IsVisible = false
 			};
 
 			var list = new List<WeakReference>();
@@ -22,12 +29,13 @@ namespace Maui.Controls.Sample.Issues
 			var checkButton = new Button
 			{
 				Text = "Check Result",
-				IsEnabled = false,
+				AutomationId = "CheckResult",
+				IsVisible = false,
 				Command = new Command(async () =>
 				{
 					if (list.Count < 2)
 					{
-						result.Text = "Click 'Push page' again";
+						instructions.Text = "Click 'Push page' again";
 						return;
 					}
 
@@ -35,10 +43,13 @@ namespace Maui.Controls.Sample.Issues
 					{
 						await GarbageCollectionHelper.WaitForGC(2500, list.ToArray());
 						result.Text = "Success";
+						result.IsVisible = true;
+						instructions.Text = "";
 					}
 					catch (Exception)
 					{
-						result.Text = "Failed";
+						instructions.Text = "Failed";
+						result.IsVisible = false;
 						return;
 					}
 				})
@@ -48,10 +59,12 @@ namespace Maui.Controls.Sample.Issues
 			{
 				Children = {
 					DestructorCount,
+					instructions,
 					result,
 					new Button
 					{
 						Text = "Push page",
+						AutomationId = "PushPage",
 						Command = new Command(async() => {
 							if (list.Count >= 2)
 								list.Clear();
@@ -64,12 +77,12 @@ namespace Maui.Controls.Sample.Issues
 							list.Add(wref);
 							if (list.Count > 1)
 							{
-								checkButton.IsEnabled = true;
-								result.Text = "You can check result";
+								checkButton.IsVisible = true;
+								instructions.Text = "You can check result";
 							}
 							else
 							{
-								result.Text = "Again";
+								instructions.Text = "Again";
 							}
 						})
 					},

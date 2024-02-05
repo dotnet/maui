@@ -12,17 +12,24 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 
 		[Test]
-		public void Issue5555Test()
+		public void TableViewMemoryLeakWhenUsingSwitchCellOrEntryCell()
 		{
-			App.Click("Push page");
-			App.WaitForElement("Push page");
-			App.Click("Push page");
-			App.WaitForElement("Push page");
+			this.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Mac,
+				TestDevice.iOS,
+			});
 
-			App.WaitForElement("You can check result");
-			App.Click("Check Result");
+			App.WaitForElement("PushPage");
+			App.Click("PushPage");
+			App.WaitForElement("PushPage");
+			App.Click("PushPage");
+			App.WaitForElement("PushPage");
 
-			App.WaitForElement("Success");
+			App.WaitForElement("CheckResult");
+			App.Click("CheckResult");
+
+			App.WaitForElement("SuccessLabel");
 		}
 	}
 }
