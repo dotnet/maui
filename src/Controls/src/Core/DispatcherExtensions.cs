@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 			if (bindableObject is Application app &&
 				app.FindMauiContext() is IMauiContext appMauiContext)
 			{
-				if (appMauiContext.Services.GetService<ApplicationDispatcher>()?.Dispatcher is IDispatcher appDispatcherServiceDispatcher)
+				if (appMauiContext.Services.GetOptionalApplicationDispatcher() is IDispatcher appDispatcherServiceDispatcher)
 					return appDispatcherServiceDispatcher;
 
 				// If BO is of type Application then check for its Dispatcher
