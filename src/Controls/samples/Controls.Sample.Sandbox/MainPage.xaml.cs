@@ -27,7 +27,7 @@ namespace Maui.Controls.Sample
 								}
 							}
 						},
-						//new EntryCell { Text = "entry cell" }
+						new EntryCell { Text = "entry cell" }
 					}
 				}
 			};
