@@ -22,7 +22,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// The line height should be the same for each line
 			// of the paragraph, 1.5 and 2.5 respectively,
 			// as opposed to progressively growing
-			App.Screenshot();
+			VerifyScreenshot();
 		}
 	}
 }
