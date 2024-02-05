@@ -28,24 +28,49 @@ namespace Microsoft.Maui.Controls
 			if (getter is null)
 				throw new ArgumentNullException(nameof(getter));
 
-			Stack<Expression> expressionStack = Preprocess((getter as LambdaExpression)?.Body)
-				?? throw new ArgumentException("Unsupported expression", nameof(getter));
+			bool compileSetter = setter is null && mode != BindingMode.OneWay && mode != BindingMode.OneTime;
+			bool compileHandlers = mode != BindingMode.OneWayToSource && mode != BindingMode.OneTime;
 
-			Func<TSource, (TProperty, bool)> _getter = CreateGetter<TSource, TProperty>(expressionStack);
+			Func<object?, (TProperty, bool)>? getterAccumulator = null;
+			Action<object?, TProperty>? setterAccumulator = null;
+			List<Tuple<Func<object?, object?>, string?>>? handlersAccumulator = null;
 
-			if (mode != BindingMode.OneWay && mode != BindingMode.OneTime && setter is null)
+			Expression? expression = getter.Body;
+
+			while (expression is not null)
 			{
-				setter = CreateSetter<TSource, TProperty>(expressionStack)
-					?? throw new ArgumentException($"Cannot generate setter from getter expression '{getter}' for {mode} binding.", nameof(setter));
+				(Expression? nextExpression, Func<object?, object?> getNextPart) = Process<TProperty>(expression!);
+
+				getterAccumulator = getterAccumulator is null
+					? CreateInnermostGetter<TProperty>(getNextPart)
+					: Compose<TProperty>(getterAccumulator, getNextPart);
+
+				if (compileSetter)
+				{
+					setterAccumulator = setterAccumulator is null
+						? CreateInnermostSetter<TProperty>(expression)
+						: Compose<TProperty>(setterAccumulator, getNextPart);
+				}
+
+				if (compileHandlers)
+				{
+					handlersAccumulator ??= new();
+					handlersAccumulator.Add(new(getNextPart, GetPartName(expression)));
+				}
+
+				expression = nextExpression;
 			}
 
-			Tuple<Func<TSource, object?>, string>[]? handlers = null;
-			if (mode != BindingMode.OneTime)
+			if (getterAccumulator is null)
 			{
-				handlers = CreateHandlers<TSource, TProperty>(expressionStack);
+				throw new InvalidOperationException("Cannot compile expression.");
 			}
 
-			return new TypedBinding<TSource, TProperty>(_getter, setter, handlers)
+			Func<TSource, (TProperty, bool)> compiledGetter = (TSource source) => getterAccumulator(source);
+			Action<TSource, TProperty>? compiledSetter = compileSetter ? (source, value) => setterAccumulator?.Invoke(source, value) : null;
+			Tuple<Func<TSource, object?>, string>[]? compiledHandlers = compileHandlers ? CompileHandlers<TSource>(handlersAccumulator) : null;
+
+			return new TypedBinding<TSource, TProperty>(compiledGetter, setter ?? compiledSetter, compiledHandlers)
 			{
 				Mode = mode,
 				Converter = converter,
@@ -58,230 +83,170 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		private static Stack<Expression>? Preprocess(Expression? expression)
-		{
-			Stack<Expression>? stack = null;
-
-			while (expression is not null)
-			{
-				stack ??= new();
-				stack.Push(expression);
-
-				expression = expression switch
-				{
-					ParameterExpression => null,
-					UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.TypeAs, Operand: var next } => next,
-					MemberExpression { Member: not null, Expression: var next } => next,
-					MethodCallExpression {
-						Method: MethodInfo { IsSpecialName: true, Name: "get_Indexer" or "get_Item" },
-						Arguments: { Count: 1 },
-						Object: var next } => next,
-					BinaryExpression { Left: var next, Right: ConstantExpression { Value: int _ } } => next,
-					_ => throw new ArgumentException($"Unsupported expression ({expression?.GetType()})", nameof(expression)),
-				};
-			}
-
-			return stack;
-		}
-
-		private static Func<TSource, (TProperty, bool)> CreateGetter<TSource, TProperty>(Stack<Expression> expressionStack)
-		{
-			Func<TSource, (object?, bool)> getter = CreateNestedGetter<TSource, TProperty>(expressionStack.SkipLast(1));
-			Func<object, (object?, bool)> finalGetter = CreateGetter(expressionStack.Last());
-
-			return (TSource source) =>
-			{
-				var (maybeValue, success) = getter(source);
-				if (!success)
-				{
-					return (default!, false);
-				}
-
-				(maybeValue, _) = finalGetter(maybeValue!);
-				return maybeValue switch
-				{
-					TProperty value => (value, true),
-					null => (default!, true),
-					_ => (default!, false),
-				};
-			};
-		}
-
-		private static Action<TSource, TProperty>? CreateSetter<TSource, TProperty>(Stack<Expression> expressionStack)
-		{
-			Func<TSource, (object?, bool)> getter = CreateNestedGetter<TSource, TProperty>(expressionStack.SkipLast(1));
-			Action<object, TProperty>? setter = CreateSetter<TProperty>(expressionStack.Last());
-			if (setter is null)
-			{
-				return null;
-			}
-
-			return (TSource source, TProperty value) =>
-			{
-				var (nestedSource, success) = getter(source);
-				if (success && nestedSource is not null)
-				{
-					setter(nestedSource, value);
-				}
-			};
-		}
-
-
-		private static Func<TSource, (object?, bool)> CreateNestedGetter<TSource, TProperty>(IEnumerable<Expression> expressionStack)
-		{
-			Func<TSource, (object?, bool)> getter = static (source) => (source, true);
-			foreach (var expresisonPart in expressionStack)
-			{
-				var previousGetter = getter;
-				var partGetter = CreateGetter(expresisonPart);
-				getter = (source) => previousGetter(source) switch
-				{
-					(object value, true) => partGetter(value),
-					_ => (null, false),
-				};
-			}
-
-			return getter;
-		}
-
-		private static Func<object, (object?, bool)> CreateGetter(Expression expression)
+		private static ValueTuple<Expression?, Func<object?, object?>> Process<TProperty>(Expression expression)
 		{
 			return expression switch
 			{
-				ParameterExpression =>
-					static (target) => WrapResult(target),
-				MemberExpression { Member: PropertyInfo property } =>
-					(target) => WrapResult(property.GetValue(target)),
-				MemberExpression { Member: FieldInfo field } =>
-					(target) => WrapResult(field.GetValue(target)),
-				MethodCallExpression { Method: MethodInfo { IsSpecialName: true, Name: "get_Indexer" or "get_Item" } method, Arguments: { Count: 1 } arguments }
+				ParameterExpression => (null, Identity),
+				UnaryExpression {
+					NodeType: ExpressionType.Convert or ExpressionType.TypeAs,
+					Operand: var parent } =>
+						(parent, Identity),
+				MemberExpression {
+					Member: PropertyInfo { CanRead: true } property,
+					Expression: var parent } =>
+						(parent, property.GetValue),
+				MemberExpression {
+					Member: FieldInfo field,
+					Expression: var parent } =>
+						(parent, field.GetValue),
+				MethodCallExpression {
+					Object: var parent,
+					Method: MethodInfo { IsSpecialName: true, Name: "get_Indexer" or "get_Item" } method,
+					Arguments: { Count: 1 } arguments }
 					when arguments[0] is ConstantExpression { Value: object index } =>
-						CreateIndexerGetter(method, index),
-				UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.TypeAs } =>
-					static (target) => WrapResult(target),
-				BinaryExpression { Left: MemberExpression, Right: ConstantExpression { Value: int index } } =>
-					(target) => WrapResult((target as Array)?.GetValue(index)),
-				_ => throw new InvalidOperationException($"Cannot create getter for {expression} ({expression.GetType()})"),
+						(parent, CreateIndexerGetter(method, index)),
+				BinaryExpression {
+					Left: var parent,
+					Right: ConstantExpression { Value: int index } } =>
+						(parent, (target) => (target as Array)?.GetValue(index)),
+				_ => throw new InvalidOperationException($"Unsupported expression: {expression}"),
 			};
 
-			static (object?, bool) WrapResult(object? maybeValue)
-				=> maybeValue is object value ? (value, true) : (null, false);
+			static object? Identity(object? value) => value;
+		}
 
-			static Func<object, (object?, bool)> CreateIndexerGetter(MethodInfo indexer, object index)
-				=> (target) =>
+		private static Func<object?, object?> CreateIndexerGetter(MethodInfo indexer, object index)
+			=> (target) =>
+			{
+				try
 				{
-					try
+					return indexer.Invoke(target, [index]);
+				}
+				catch (TargetInvocationException ex) when (ex.InnerException is KeyNotFoundException)
+				{
+					return null;
+				}
+			};
+
+		private static Func<object?, (TProperty, bool)> CreateInnermostGetter<TProperty>(Func<object?, object?> getter)
+			=> (object? source) => getter(source) switch
+			{
+				TProperty value => (value, true),
+				null => (default!, IsNullValidValue(typeof(TProperty))),
+				_ => (default!, false),
+			};
+
+		private static bool IsNullValidValue(Type type)
+			=> !type.IsValueType || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+
+		private static Func<object?, (TProperty, bool)> Compose<TProperty>(Func<object?, (TProperty, bool)> previous, Func<object?, object?> next)
+			=> (object? source) => next(source) switch
+			{
+				object value => previous(value),
+				_ => (default!, false),
+			};
+
+		private static Action<object?, TProperty> Compose<TProperty>(Action<object?, TProperty>? previous, Func<object?, object?> next)
+			=> (object? source, TProperty value) => previous?.Invoke(next(source), value);
+
+		private static Action<object?, TProperty> CreateInnermostSetter<TProperty>(Expression expression)
+		{
+			Action<object, object?> setter = expression switch
+			{
+				ParameterExpression => CreateDirectSetter(),
+				UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.TypeAs } => CreateDirectSetter(),
+				MemberExpression { Member: PropertyInfo { CanWrite: false } property } =>
+					throw new InvalidOperationException($"Cannot create setter for read-only property {property}"),
+				MemberExpression { Member: PropertyInfo property } => property.SetValue,
+				MemberExpression { Member: FieldInfo { IsInitOnly: true } field } =>
+					throw new InvalidOperationException($"Cannot create setter for a read-only field {field}"),
+				MemberExpression { Member: FieldInfo field } => field.SetValue,
+				BinaryExpression { Right: ConstantExpression { Value: int index } } => CreateArraySetter(index),
+				_ => throw new InvalidOperationException($"Cannot create setter for {expression} ({expression.GetType()})"),
+			};
+
+			return (source, value) =>
+			{
+				if (source is not null)
+				{
+					setter(source, value);
+				}
+			};
+
+			static Action<object, object?> CreateDirectSetter()
+				=> (source, value) => source = value!;
+
+			static Action<object, object?> CreateArraySetter(int index)
+				=> (source, value) =>
+				{
+					if (source is not Array array)
 					{
-						return WrapResult(indexer.Invoke(target, [index]));
+						throw new InvalidOperationException($"Cannot set value because the target property is not an array.");
 					}
-					catch (TargetInvocationException ex) when (ex.InnerException is KeyNotFoundException)
-					{
-						return (null, false);
-					}
+
+					array.SetValue(value, index);
 				};
 		}
 
-		static Action<object, TProperty>? CreateSetter<TProperty>(Expression expression)
-			=> expression switch
+		private static Tuple<Func<TSource, object?>, string>[] CompileHandlers<TSource>(List<Tuple<Func<object?, object?>, string?>>? handlers)
+		{
+			if (handlers is null || handlers.Count == 0)
 			{
-				ParameterExpression => static (source, value) => source = value!,
-				UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.TypeAs } => static (source, value) => source = value!,
-				MemberExpression { Member: PropertyInfo property } => TryCreateSetPropertyValue<TProperty>(property),
-				MemberExpression { Member: FieldInfo field } => TryCreateSetFieldValue<TProperty>(field),
-				BinaryExpression { Left: MemberExpression, Right: ConstantExpression { Value: int index } } => CreateSetArrayValue<TProperty>(index),
+				return Array.Empty<Tuple<Func<TSource, object?>, string>>();
+			}
+
+			int handlersCount = 0;
+			for (int i = handlers.Count - 2; i >= 0; i--)
+			{
+				if (handlers[i].Item2 is not null)
+				{
+					handlersCount++;
+				}
+			}
+
+			var compiledHandlers = new Tuple<Func<TSource, object?>, string>[handlersCount];
+			var getter = (TSource source) => handlers[handlers.Count - 1].Item1(source);
+			int nextHandlerIndex = 0;
+
+			for (int i = handlers.Count - 2; i >= 0; i--)
+			{
+				if (handlers[i].Item2 is string name)
+				{
+					compiledHandlers[nextHandlerIndex++] = new(getter, name);
+				}
+
+				var previous = getter;
+				var next = handlers[i].Item1;
+				getter = (TSource source) => next(previous(source));
+			}
+
+			return compiledHandlers;
+		}
+
+		private static string? GetPartName(Expression expression)
+		{
+			return expression switch
+			{
+				MemberExpression { Member: PropertyInfo property } => property.Name,
+				MemberExpression { Member: FieldInfo field } => field.Name,
+				MethodCallExpression {
+					Method: MethodInfo { IsSpecialName: true, Name: "get_Indexer" or "get_Item" } method,
+					Arguments: { Count: 1 } arguments }
+					when arguments[0] is ConstantExpression { Value: object index } => 
+						GetIndexerName(method.DeclaringType, index),
+				BinaryExpression {
+					Left: MemberExpression { Member: { DeclaringType: Type declaringType } },
+					Right: ConstantExpression { Value: int index } } =>
+						GetIndexerName(declaringType, index),
 				_ => null,
 			};
 
-		static Action<object, TProperty>? TryCreateSetPropertyValue<TProperty>(PropertyInfo property)
-			=> property.CanWrite
-				? (source, value) => property.SetValue(source, value)
-				: null;
-
-		static Action<object, TProperty>? TryCreateSetFieldValue<TProperty>(FieldInfo field)
-			=> !field.IsInitOnly
-				? (source, value) => field.SetValue(source, value)
-				: null;
-
-		static Action<object, TProperty>? CreateSetArrayValue<TProperty>(int index)
-			=> (source, value) =>
-			{
-				if (source is not Array array)
-				{
-					throw new InvalidOperationException($"Cannot set value because the target property is not an array.");
-				}
-
-				array.SetValue(value, index);
-			};
-
-		private static Tuple<Func<TSource, object?>, string>[] CreateHandlers<TSource, TProperty>(Stack<Expression> expressionStack)
-		{
-			var handlers = new List<Tuple<Func<TSource, object?>, string>>(expressionStack.Count);
-
-			var firstStep = expressionStack.FirstOrDefault();
-			if (firstStep is not ParameterExpression)
-			{
-				throw new InvalidOperationException($"The getter expression is invalid.");
-			}
-
-			Func<TSource, object?> getHandler = static (source) => source;
-
-			foreach (var getterStep in expressionStack.Skip(1))
-			{
-				var (getNextPart, propertyName) = CreateHandler(getterStep, getHandler);
-
-				handlers.Add(new(getHandler, propertyName));
-				getHandler = getNextPart;
-			}
-
-			return handlers.ToArray();
-
-			static (Func<TSource, object?>, string) CreateHandler(Expression getterStep, Func<TSource, object?> getPreviousHandler)
-			{
-				return getterStep switch
-				{
-					MemberExpression { Member: PropertyInfo property } =>
-						((source) => property.GetValue(getPreviousHandler(source)), property.Name),
-					MemberExpression { Member: FieldInfo field } =>
-						((source) => field.GetValue(getPreviousHandler(source)), field.Name),
-					UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.TypeAs } =>
-						((source) => getPreviousHandler(source), string.Empty),
-					BinaryExpression { Left: MemberExpression { Member: { DeclaringType: Type declaringType } }, Right: ConstantExpression { Value: int index } } =>
-						((source) => (getPreviousHandler(source) as Array)?.GetValue(index), GetIndexerPropertyName(declaringType, index)),
-					MethodCallExpression { Method: MethodInfo { IsSpecialName: true, Name: "get_Indexer" or "get_Item" } method, Arguments: { Count: 1 } arguments }
-						when arguments[0] is ConstantExpression { Value: object argument } =>
-							(CreateIndexerHandler(method, argument, getPreviousHandler), GetIndexerPropertyName(method.DeclaringType, argument)),
-					_ => throw new InvalidOperationException($"Unsupported expression: {getterStep} ({getterStep.GetType()})"),
-				};
-			}
-
-			static Func<TSource, object?> CreateIndexerHandler(MethodInfo indexer, object index, Func<TSource, object?> getPreviousHandler)
-			{
-				return (source) =>
-				{
-					try
-					{
-						return indexer.Invoke(getPreviousHandler(source), [index]);
-					}
-					catch (TargetInvocationException ex) when (ex.InnerException is KeyNotFoundException)
-					{
-						return null;
-					}
-				};
-			}
-
-			static string GetIndexerPropertyName(Type? declaringType, object index)
+			static string GetIndexerName(Type? declaringType, object index)
 			{
 				var defaultMemberName = declaringType?.GetCustomAttribute<DefaultMemberAttribute>(inherit: true)?.MemberName ?? "Item";
 				return $"{defaultMemberName}[{index}]";
 			}
 		}
 	}
-
-#if NETSTANDARD2_0
-	internal static class StackExtensions
-	{
-		internal static IEnumerable<T> SkipLast<T>(this Stack<T> expressionStack, int count)
-			=> expressionStack.Take(expressionStack.Count - count);
-	}
-#endif
 }
