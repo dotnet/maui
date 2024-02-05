@@ -16,8 +16,11 @@ namespace Microsoft.Maui.Controls
 		internal new static void RemapForControls()
 		{
 			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(IRadioButton.Content), MapContent);
-
-#if ANDROID
+#if IOS
+			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(ITextStyle.TextColor), MapContent);
+			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(ITextStyle.CharacterSpacing), MapContent);
+			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(ITextStyle.Font), MapContent);
+#elif ANDROID
 			RadioButtonHandler.PlatformViewFactory = CreatePlatformView;
 #endif
 		}
