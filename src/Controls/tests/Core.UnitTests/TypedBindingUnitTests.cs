@@ -895,7 +895,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-#if !WINDOWS_PHONE
 		[Theory]
 		[InlineData(true, "en-US")]
 		[InlineData(true, "pt-PT")]
@@ -923,7 +922,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(culture, vm.Text);
 		}
-#endif
 
 		[Theory]
 		[InlineData(true)]
@@ -1152,7 +1150,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
-		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/4103
+		//https://github.com/xamarin/Xamarin.Forms/issues/4103
 		public void TestTargetNullValue(bool fromExpression)
 		{
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), default(string));
@@ -1381,7 +1379,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("0.9", vm.Text);
 		}
 
-#if !WINDOWS_PHONE
 		[Theory]
 		[InlineData(true, "en-US", "0.5", 0.5, 0.9, "0.9")]
 		[InlineData(true, "pt-PT", "0,5", 0.5, 0.9, "0,9")]
@@ -1409,7 +1406,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(vm.Text, sliderExpectedStringValue);
 		}
-#endif
 
 		[Theory]
 		[InlineData(true)]
@@ -1984,8 +1980,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
-		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3650
-		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3613
+		//https://github.com/xamarin/Xamarin.Forms/issues/3650
+		//https://github.com/xamarin/Xamarin.Forms/issues/3613
 		public void TypedBindingsShouldNotHang(bool fromExpression)
 		{
 			var typedBinding = fromExpression
