@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19081">
+    <StackLayout>
+        <RadioButton
+            AutomationId="radioButton"
+            TextColor="Red"
+            FontSize="30"
+            TextTransform="Uppercase"
+            FontAttributes="Bold"
+            Content="Label for Content" />
+
+        <RadioButton>
+            <RadioButton.Content>
+                <Label
+                    Text="Label for Content"
+                    TextColor="Red"
+                    FontSize="30"
+                    TextTransform="Uppercase"
+                    FontAttributes="Bold"/>
+            </RadioButton.Content>
+        </RadioButton>
+    </StackLayout>
+</ContentPage>
