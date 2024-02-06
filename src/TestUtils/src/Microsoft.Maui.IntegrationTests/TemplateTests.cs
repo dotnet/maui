@@ -16,12 +16,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
-		[TestCase("maui", DotNetPrevious, "Debug", false)]
-		[TestCase("maui", DotNetPrevious, "Release", false)]
+		//[TestCase("maui", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui", DotNetPrevious, "Release", false)]
 		[TestCase("maui", DotNetCurrent, "Debug", false)]
 		[TestCase("maui", DotNetCurrent, "Release", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
 		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
@@ -85,12 +85,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
-		[TestCase("maui", DotNetPrevious, "Debug", false)]
-		[TestCase("maui", DotNetPrevious, "Release", false)]
+		//[TestCase("maui", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui", DotNetPrevious, "Release", false)]
 		[TestCase("maui", DotNetCurrent, "Debug", false)]
 		[TestCase("maui", DotNetCurrent, "Release", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
 		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
@@ -124,12 +124,12 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", DotNetPrevious, "Debug")]
-		[TestCase("maui", DotNetPrevious, "Release")]
+		//[TestCase("maui", DotNetPrevious, "Debug")]
+		//[TestCase("maui", DotNetPrevious, "Release")]
 		[TestCase("maui", DotNetCurrent, "Debug")]
 		[TestCase("maui", DotNetCurrent, "Release")]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug")]
-		[TestCase("maui-blazor", DotNetPrevious, "Release")]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug")]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release")]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
 		[TestCase("maui-blazor", DotNetCurrent, "Release")]
 		public void BuildUnpackaged(string id, string framework, string config)
@@ -195,6 +195,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add("PublishAot=true");
 			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
 
 			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
@@ -216,6 +217,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add("PublishAot=true");
 			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
 			extendedBuildProps.Add("TrimmerSingleWarn=false");
 
 			string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";

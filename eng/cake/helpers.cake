@@ -92,18 +92,6 @@ public void PrintEnvironmentVariables()
     };
 }
 
-void SetDotNetEnvironmentVariables(string dotnetDir)
-{
-    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./bin/dotnet/")).ToString();
-
-    SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
-    SetEnvironmentVariable("DOTNET_ROOT", dotnet);
-    SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
-    SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
-    SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
-    SetEnvironmentVariable("PATH", dotnet, prepend: true);
-}
-
 void SetEnvironmentVariable(string name, string value, bool prepend = false)
 {
     var target = EnvironmentVariableTarget.Process;

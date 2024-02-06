@@ -68,6 +68,8 @@ Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
 {
+	SetDotNetEnvironmentVariables();
+	
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-catalyst.binlog";
 
@@ -111,16 +113,15 @@ Task("Test")
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 
 	if (!IsCIBuild())
+	{
 		CleanDirectories(TEST_RESULTS);
+	}
 	else
 	{
 		// Because we retry on CI we don't want to delete the previous failures
 		// We want to publish those files for reference
 		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
-
-		//SetDotNetEnvironmentVariables("/Users/runner/hostedtoolcache/dotnet");
 	}
-
 
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
