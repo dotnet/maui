@@ -4,6 +4,7 @@ abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! 
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
+Microsoft.Maui.Handlers.IButtonHandler.PlatformView.get -> Android.Widget.Button!
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader?
 Microsoft.Maui.IKeyboardAccelerator
 Microsoft.Maui.IKeyboardAccelerator.Key.get -> string?
@@ -58,6 +59,9 @@ Microsoft.Maui.PlatformWrapperView.PlatformWrapperView(nint javaReference, Andro
 Microsoft.Maui.SoftInputExtensions
 override Microsoft.Maui.FontSize.Equals(object? obj) -> bool
 override Microsoft.Maui.FontSize.GetHashCode() -> int
+override Microsoft.Maui.Handlers.ButtonHandler.ConnectHandler(Android.Widget.Button! platformView) -> void
+override Microsoft.Maui.Handlers.ButtonHandler.CreatePlatformView() -> Android.Widget.Button!
+override Microsoft.Maui.Handlers.ButtonHandler.DisconnectHandler(Android.Widget.Button! platformView) -> void
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Handlers.RadioButtonHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
@@ -99,6 +103,10 @@ static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexB
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateBackground(this Android.Widget.Button! platformView, Microsoft.Maui.IButton! button) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateCornerRadius(this Android.Widget.Button! platformView, Microsoft.Maui.IButton! button) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateStrokeColor(this Android.Widget.Button! platformView, Microsoft.Maui.IButton! button) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateStrokeThickness(this Android.Widget.Button! platformView, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateIsSpellCheckEnabled(this Android.Widget.EditText! editText, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateIsSpellCheckEnabled(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateIsSpellCheckEnabled(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar, Android.Widget.EditText? editText = null) -> void

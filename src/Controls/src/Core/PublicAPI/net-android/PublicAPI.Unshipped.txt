@@ -133,6 +133,9 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
+~static Microsoft.Maui.Controls.Platform.ButtonExtensions.UpdateContentLayout(this Android.Widget.Button platformButton, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Platform.ButtonExtensions.UpdateLineBreakMode(this Android.Widget.Button nativeControl, Microsoft.Maui.Controls.Button button) -> void
+~static Microsoft.Maui.Controls.Platform.ButtonExtensions.UpdateText(this Android.Widget.Button platformButton, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
 ~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty

@@ -465,7 +465,6 @@ Microsoft.Maui.Handlers.IBorderHandler.PlatformView.get -> Microsoft.Maui.Platfo
 Microsoft.Maui.Handlers.IBorderHandler.VirtualView.get -> Microsoft.Maui.IBorderView!
 Microsoft.Maui.Handlers.IButtonHandler
 Microsoft.Maui.Handlers.IButtonHandler.ImageSourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
-Microsoft.Maui.Handlers.IButtonHandler.PlatformView.get -> Google.Android.Material.Button.MaterialButton!
 Microsoft.Maui.Handlers.IButtonHandler.VirtualView.get -> Microsoft.Maui.IButton!
 Microsoft.Maui.Handlers.ICheckBoxHandler
 Microsoft.Maui.Handlers.ICheckBoxHandler.PlatformView.get -> AndroidX.AppCompat.Widget.AppCompatCheckBox!
@@ -1693,8 +1692,6 @@ Microsoft.Maui.Platform.MauiDatePicker.MauiDatePicker(nint javaReference, Androi
 Microsoft.Maui.Platform.MauiDatePicker.OnClick(Android.Views.View? v) -> void
 Microsoft.Maui.Platform.MauiDatePicker.ShowPicker.get -> System.Action?
 Microsoft.Maui.Platform.MauiDatePicker.ShowPicker.set -> void
-Microsoft.Maui.Platform.MauiMaterialButton
-Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiPageControl
 Microsoft.Maui.Platform.MauiPageControl.MauiPageControl(Android.Content.Context? context) -> void
 Microsoft.Maui.Platform.MauiPageControl.ResetIndicators() -> void
@@ -2097,9 +2094,6 @@ override Microsoft.Maui.Handlers.ApplicationHandler.CreatePlatformElement() -> A
 override Microsoft.Maui.Handlers.BorderHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentViewGroup!
 override Microsoft.Maui.Handlers.BorderHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentViewGroup! platformView) -> void
 override Microsoft.Maui.Handlers.BorderHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
-override Microsoft.Maui.Handlers.ButtonHandler.ConnectHandler(Google.Android.Material.Button.MaterialButton! platformView) -> void
-override Microsoft.Maui.Handlers.ButtonHandler.CreatePlatformView() -> Google.Android.Material.Button.MaterialButton!
-override Microsoft.Maui.Handlers.ButtonHandler.DisconnectHandler(Google.Android.Material.Button.MaterialButton! platformView) -> void
 override Microsoft.Maui.Handlers.ButtonHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Handlers.CheckBoxHandler.ConnectHandler(AndroidX.AppCompat.Widget.AppCompatCheckBox! platformView) -> void
 override Microsoft.Maui.Handlers.CheckBoxHandler.CreatePlatformView() -> AndroidX.AppCompat.Widget.AppCompatCheckBox!
@@ -2241,7 +2235,6 @@ override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.FilterFormatted(Java
 override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.GetAcceptedChars() -> char[]!
 override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.InputType.get -> Android.Text.InputTypes
 override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
-override Microsoft.Maui.Platform.MauiMaterialButton.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.MauiPicker.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiPicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
 override Microsoft.Maui.Platform.MauiPicker.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
@@ -2809,12 +2802,8 @@ static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this A
 static Microsoft.Maui.Platform.ApplicationExtensions.RequestNewWindow(this Android.App.Application! platformApplication, Microsoft.Maui.IApplication! application, Microsoft.Maui.Handlers.OpenWindowRequest? args) -> void
 static Microsoft.Maui.Platform.ApplicationExtensions.ToBundle(this Microsoft.Maui.IPersistedState? state) -> Android.OS.Bundle!
 static Microsoft.Maui.Platform.AspectExtensions.ToScaleType(this Microsoft.Maui.Aspect aspect) -> Android.Widget.ImageView.ScaleType!
-static Microsoft.Maui.Platform.ButtonExtensions.UpdateBackground(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button) -> void
-static Microsoft.Maui.Platform.ButtonExtensions.UpdateCornerRadius(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Platform.ButtonExtensions.UpdatePadding(this Android.Widget.Button! platformControl, Microsoft.Maui.IPadding! padding, Microsoft.Maui.Thickness? defaultPadding = null) -> void
 static Microsoft.Maui.Platform.ButtonExtensions.UpdatePadding(this Android.Widget.Button! platformControl, Microsoft.Maui.Thickness padding, Microsoft.Maui.Thickness? defaultPadding = null) -> void
-static Microsoft.Maui.Platform.ButtonExtensions.UpdateStrokeColor(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button) -> void
-static Microsoft.Maui.Platform.ButtonExtensions.UpdateStrokeThickness(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Platform.CheckBoxExtensions.UpdateBackground(this AndroidX.AppCompat.Widget.AppCompatCheckBox! platformCheckBox, Microsoft.Maui.ICheckBox! check) -> void
 static Microsoft.Maui.Platform.CheckBoxExtensions.UpdateForeground(this AndroidX.AppCompat.Widget.AppCompatCheckBox! platformCheckBox, Microsoft.Maui.ICheckBox! check) -> void
 static Microsoft.Maui.Platform.CheckBoxExtensions.UpdateIsChecked(this AndroidX.AppCompat.Widget.AppCompatCheckBox! platformCheckBox, Microsoft.Maui.ICheckBox! check) -> void

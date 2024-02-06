@@ -4,11 +4,12 @@ using Android.Graphics.Drawables;
 using Android.Views;
 using Google.Android.Material.Button;
 using Microsoft.Maui.Graphics;
+using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
+	public partial class ButtonHandler : ViewHandler<IButton, AButton>
 	{
 		// The padding value has to be done here because in the Material Components,
 		// there is a minimum size of the buttons: 88dp x 48dp
@@ -22,20 +23,17 @@ namespace Microsoft.Maui.Handlers
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
 
-		protected override MaterialButton CreatePlatformView()
+		protected override AButton CreatePlatformView()
 		{
-			MaterialButton platformButton = new MauiMaterialButton(Context)
+			AButton platformButton = new AButton(Context)
 			{
-				IconGravity = MaterialButton.IconGravityTextStart,
-				IconTintMode = Android.Graphics.PorterDuff.Mode.Add,
-				IconTint = TransparentColorStateList,
 				SoundEffectsEnabled = false
 			};
 
 			return platformButton;
 		}
 
-		protected override void ConnectHandler(MaterialButton platformView)
+		protected override void ConnectHandler(AButton platformView)
 		{
 			ClickListener.Handler = this;
 			platformView.SetOnClickListener(ClickListener);
@@ -49,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(MaterialButton platformView)
+		protected override void DisconnectHandler(AButton platformView)
 		{
 			ClickListener.Handler = null;
 			platformView.SetOnClickListener(null);

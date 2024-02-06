@@ -2,7 +2,7 @@ using System;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIButton;
 #elif MONOANDROID
-using PlatformView = Google.Android.Material.Button.MaterialButton;
+using PlatformView = Android.Widget.Button;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif TIZEN

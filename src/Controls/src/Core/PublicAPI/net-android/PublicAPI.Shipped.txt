@@ -2717,9 +2717,6 @@
 ~static Microsoft.Maui.Controls.Platform.BrushExtensions.UpdateBackground(this Android.Graphics.Paint paint, Microsoft.Maui.Controls.Brush brush, int height, int width) -> void
 ~static Microsoft.Maui.Controls.Platform.BrushExtensions.UpdateBackground(this Android.Views.View view, Microsoft.Maui.Controls.Brush brush) -> void
 ~static Microsoft.Maui.Controls.Platform.BrushExtensions.UseGradients(this Android.Graphics.Drawables.GradientDrawable gradientDrawable) -> bool
-~static Microsoft.Maui.Controls.Platform.ButtonExtensions.UpdateContentLayout(this Google.Android.Material.Button.MaterialButton materialButton, Microsoft.Maui.Controls.Button button) -> void
-~static Microsoft.Maui.Controls.Platform.ButtonExtensions.UpdateLineBreakMode(this AndroidX.AppCompat.Widget.AppCompatButton nativeControl, Microsoft.Maui.Controls.Button button) -> void
-~static Microsoft.Maui.Controls.Platform.ButtonExtensions.UpdateText(this Google.Android.Material.Button.MaterialButton platformButton, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Platform.EditTextExtensions.UpdateImeOptions(this Android.Widget.EditText editText, Microsoft.Maui.Controls.Entry entry) -> void
 ~static Microsoft.Maui.Controls.Platform.EditTextExtensions.UpdateText(this Android.Widget.EditText editText, Microsoft.Maui.Controls.InputView inputView) -> void
 ~static Microsoft.Maui.Controls.Platform.ElevationHelper.SetElevation(Android.Views.View view, float? elevation) -> void

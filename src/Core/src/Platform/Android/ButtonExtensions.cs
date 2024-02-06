@@ -1,56 +1,36 @@
-﻿using Android.Widget;
-using Google.Android.Material.Button;
+﻿using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Microsoft.Maui.Graphics;
+using AButton = Android.Widget.Button;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateBackground(this MaterialButton platformView, IButton button)
+		public static void UpdateBackground(this AButton platformView, IButton button)
 		{
 			platformView.UpdateBorderDrawable(button);
 		}
 
-		public static void UpdateStrokeColor(this MaterialButton platformView, IButton button)
+		public static void UpdateStrokeColor(this AButton platformView, IButton button)
 		{
-			if (platformView.Background is BorderDrawable)
-			{
-				platformView.UpdateBorderDrawable(button);
-				return;
-			}
-
-			if (button is IButtonStroke buttonStroke && buttonStroke.StrokeColor is Color stroke)
-				platformView.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToPlatform());
+			platformView.UpdateBorderDrawable(button);
 		}
 
-		public static void UpdateStrokeThickness(this MaterialButton platformView, IButton button)
+		public static void UpdateStrokeThickness(this AButton platformView, IButton button)
 		{
-			if (platformView.Background is BorderDrawable)
-			{
-				platformView.UpdateBorderDrawable(button);
-				return;
-			}
-
-			if (button is IButtonStroke buttonStroke && buttonStroke.StrokeThickness >= 0)
-				platformView.StrokeWidth = (int)platformView.Context.ToPixels(buttonStroke.StrokeThickness);
+			platformView.UpdateBorderDrawable(button);
 		}
 
-		public static void UpdateCornerRadius(this MaterialButton platformView, IButton button)
+		public static void UpdateCornerRadius(this AButton platformView, IButton button)
 		{
-			if (platformView.Background is BorderDrawable)
-			{
-				platformView.UpdateBorderDrawable(button);
-				return;
-			}
-
-			if (button is IButtonStroke buttonStroke && buttonStroke.CornerRadius >= 0)
-				platformView.CornerRadius = (int)platformView.Context.ToPixels(buttonStroke.CornerRadius);
+			platformView.UpdateBorderDrawable(button);
 		}
 
-		public static void UpdatePadding(this Button platformControl, IPadding padding, Thickness? defaultPadding = null) =>
+		public static void UpdatePadding(this AButton platformControl, IPadding padding, Thickness? defaultPadding = null) =>
 			UpdatePadding(platformControl, padding.Padding, defaultPadding);
 
-		public static void UpdatePadding(this Button platformControl, Thickness padding, Thickness? defaultPadding = null)
+		public static void UpdatePadding(this AButton platformControl, Thickness padding, Thickness? defaultPadding = null)
 		{
 			var context = platformControl.Context;
 			if (context == null)
@@ -67,8 +47,8 @@ namespace Microsoft.Maui.Platform
 				(int)padding.Right,
 				(int)padding.Bottom);
 		}
-
-		internal static void UpdateBorderDrawable(this MaterialButton platformView, IButton button)
+		
+		internal static void UpdateBorderDrawable(this AButton platformView, IButton button)
 		{
 			var background = button.Background;
 
@@ -84,9 +64,13 @@ namespace Microsoft.Maui.Platform
 				var mauiDrawable = new BorderDrawable(platformView.Context);
 
 				// Null out BackgroundTintList to avoid that the MaterialButton custom background doesn't get tinted.
-				platformView.BackgroundTintList = null;
+				//platformView.BackgroundTintList = null;
 
 				platformView.Background = mauiDrawable;
+
+				var rippleColor = Colors.Yellow.ToPlatform();
+				var rippleDrawable = new RippleDrawable(ColorStateList.ValueOf(rippleColor), mauiDrawable, null);
+				platformView.Background = rippleDrawable;
 
 				mauiDrawable.SetBackground(background);
 

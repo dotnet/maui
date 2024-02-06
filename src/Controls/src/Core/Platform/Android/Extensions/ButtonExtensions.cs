@@ -1,18 +1,16 @@
 #nullable disable
 using System;
-using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Handlers;
 using static Microsoft.Maui.Controls.Button;
-using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
+using AButton = Android.Widget.Button;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateText(this MaterialButton platformButton, Button button)
+		public static void UpdateText(this AButton platformButton, Button button)
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
 			platformButton.Text = text;
@@ -22,9 +20,11 @@ namespace Microsoft.Maui.Controls.Platform
 			platformButton.UpdateContentLayout(button);
 		}
 
-		public static void UpdateContentLayout(this MaterialButton materialButton, Button button)
+		public static void UpdateContentLayout(this AButton platformButton, Button button)
 		{
-			var context = materialButton.Context;
+			/*
+			var context = platformButton.Context;
+
 			if (context == null)
 				return;
 
@@ -76,6 +76,7 @@ namespace Microsoft.Maui.Controls.Platform
 				materialButton.IconPadding = 0;
 				materialButton.IconGravity = MaterialButton.IconGravityTextStart;
 			}
+			*/
 		}
 
 		public static void UpdateLineBreakMode(this AButton nativeControl, Button button)
