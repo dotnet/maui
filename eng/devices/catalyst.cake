@@ -91,6 +91,8 @@ Task("Test")
 	.IsDependentOn("Build")
 	.Does(() =>
 {
+	SetDotNetEnvironmentVariables();
+	
 	if (string.IsNullOrEmpty(TEST_APP)) {
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
@@ -167,6 +169,8 @@ Task("Test")
 Task("uitest")
 	.Does(() =>
 {
+	SetDotNetEnvironmentVariables();
+
 	if (string.IsNullOrEmpty(TEST_APP) ) {
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
