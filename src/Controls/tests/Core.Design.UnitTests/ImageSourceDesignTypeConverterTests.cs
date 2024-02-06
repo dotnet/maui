@@ -8,6 +8,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Theory]
 		[InlineData("http://consoto.com")]
 		[InlineData("file:///x:/logo.png")]
+		[InlineData("consoto.com")]
+		[InlineData("/app/logo.png")]
+		[InlineData("logo.png")]
 		public void ImageSourceDesignTypeConverter_Valid(string value)
 		{
 			ImageSourceDesignTypeConverter converter = new ImageSourceDesignTypeConverter();
@@ -20,8 +23,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Theory]
 		[InlineData(null)]
 		[InlineData("")]
-		[InlineData("consoto.com")]
-		[InlineData("/app/logo.png")]
+		[InlineData("a:b:c:d")]
 		public void ImageSourceDesignTypeConverter_Invalid(string value)
 		{
 			ImageSourceDesignTypeConverter converter = new ImageSourceDesignTypeConverter();
