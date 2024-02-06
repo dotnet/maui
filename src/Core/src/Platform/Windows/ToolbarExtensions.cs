@@ -4,7 +4,7 @@
 	{
 		public static void UpdateTitle(this MauiToolbar nativeToolbar, IToolbar toolbar)
 		{
-			MauiToolbar.Title = toolbar.Title;
+			nativeToolbar.Title = toolbar.Title;
 		}
 	}
 }
