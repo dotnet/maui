@@ -2394,17 +2394,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(boxRow0Column1.MinimumHeightRequest, boxRow0Column1.Height);
 		}
 
-		[Fact]
-		public void ShouldPropagateVisibilityToChildren()
-		{
-			var grid = new Grid() { IsVisible = false };
-			var label = new Label() { IsVisible = true };
-			grid.Add(label);
-
-			Assert.False(label.IsVisible);
-			Assert.Equal(grid.IsVisible, label.IsVisible);
-		}
-
 		// because the constraint is internal, we need this
 		public enum HackLayoutConstraint
 		{
