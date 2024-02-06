@@ -162,16 +162,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return (UI.Xaml.DataTemplate)cell.ToHandler(cell.FindMauiContext()).PlatformView;
 		}
 
-		internal void Recycle()
-		{
-			if (Cell == null)
-				return;
-
-			Cell.SendDisappearing();
-			Cell.PropertyChanged -= _propertyChangedHandler;
-			Cell.Cleanup();
-		}
-
 		void OnCellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "HasContextActions")
@@ -361,6 +351,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				object bindingContext = newContext;
 				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
 
+				if (template is DataTemplateSelector dataTemplateSelector)
+				{
+					template = dataTemplateSelector.SelectTemplate(bindingContext, lv);
+				}
+
 				if (template != null)
 				{
 					// Reuse the templated items from the parent ListView
@@ -387,7 +382,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						if (groupAndIndex.Item2 == -1)
 							return;
 
-						cell = templatedItems[groupAndIndex.Item2];
+						if (((templatedItems.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0) && oldCell != null)
+						{
+							// Recycle the existing cell
+							cell = templatedItems.UpdateContent(oldCell, groupAndIndex.Item2);
+						}
+						else
+						{
+							cell = templatedItems[groupAndIndex.Item2];
+						}
 					}
 				}
 				else
