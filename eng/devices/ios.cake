@@ -66,7 +66,6 @@ Setup(context =>
 	if (IsCIBuild())
 	{
 		StartProcess("bash", "../scripts/clean-bot.sh");
-		StartProcess("bash", "../scripts/clean-simulator-runtime.sh");
 	}
 
 	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
