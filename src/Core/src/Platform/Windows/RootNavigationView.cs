@@ -102,8 +102,8 @@ namespace Microsoft.Maui.Platform
 
 					if (Toolbar != null)
 					{
-						Toolbar.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 4, 0);
-						Toolbar.TextBlockBorderVerticalAlignment = VerticalAlignment.Center;
+						MauiToolbar.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 4, 0);
+						MauiToolbar.TextBlockBorderVerticalAlignment = VerticalAlignment.Center;
 					}
 				}
 				else if (PaneFooter == Toolbar || Header == null)
@@ -122,8 +122,8 @@ namespace Microsoft.Maui.Platform
 
 					if (Toolbar != null)
 					{
-						Toolbar.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 0, 0);
-						Toolbar.TextBlockBorderVerticalAlignment = VerticalAlignment.Top;
+						MauiToolbar.ContentGridMargin = new UI.Xaml.Thickness(0, 0, 0, 0);
+						MauiToolbar.TextBlockBorderVerticalAlignment = VerticalAlignment.Top;
 					}
 				}
 			}
