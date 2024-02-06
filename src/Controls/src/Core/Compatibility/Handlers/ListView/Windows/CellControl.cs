@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				// This needs to return a size with a non-zero height; 
 				// otherwise, it kills virtualization.
-				return new global::Windows.Foundation.Size(availableSize.Width, Cell.DefaultCellHeight);
+				return new global::Windows.Foundation.Size(0, Cell.DefaultCellHeight);
 			}
 
 			// Children still need measure called on them
