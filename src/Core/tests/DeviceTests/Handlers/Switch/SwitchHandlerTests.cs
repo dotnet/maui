@@ -50,10 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 				TrackColor = Colors.Red
 			};
 
-			await AttachAndRun(switchStub, async (handler) =>
-			{
-				await ValidateTrackColor(switchStub, Colors.Red);
-			});
+			await ValidateTrackColor(switchStub, Colors.Red);
 		}
 
 		[Fact(DisplayName = "Track Color Updates Correctly")]
@@ -63,14 +60,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				IsOn = true
 			};
-			await AttachAndRun(switchStub, async (handler) =>
-			{
-				await ValidateTrackColor(switchStub, Colors.Red, () => switchStub.TrackColor = Colors.Red);
-			});
+
+			await ValidateTrackColor(switchStub, Colors.Red, () => switchStub.TrackColor = Colors.Red);
 		}
 #endif
 
-		[Fact(DisplayName = "ThumbColor Initializes Correctly", Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/1275")]
+		[Fact(DisplayName = "ThumbColor Initializes Correctly")]
 		public async Task ThumbColorInitializesCorrectly()
 		{
 			var switchStub = new SwitchStub()
@@ -95,11 +90,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(switchStub);
 		}
 
-		[Fact(DisplayName = "Thumb Color Updates Correctly"
-#if WINDOWS
-			, Skip = "Failing on Windows"
-#endif
-			)]
+		[Fact(DisplayName = "Thumb Color Updates Correctly")]
 		public async Task ThumbColorUpdatesCorrectly()
 		{
 			var switchStub = new SwitchStub()

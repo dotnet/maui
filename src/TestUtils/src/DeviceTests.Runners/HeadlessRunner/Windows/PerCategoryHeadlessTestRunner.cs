@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.DotNet.XHarness.TestRunners.Xunit;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
-	public class ControlsHeadlessTestRunner : AndroidApplicationEntryPoint
+	public class PerCategoryHeadlessTestRunner : AndroidApplicationEntryPoint
 	{
 		const string CategoriesFileName = "devicetestcategories.txt";
 		readonly string _categoriesFilePath;
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 		readonly int _loopCount;
 		TestLogger _logger;
 
-		public ControlsHeadlessTestRunner(HeadlessRunnerOptions runnerOptions, TestOptions options)
+		public PerCategoryHeadlessTestRunner(HeadlessRunnerOptions runnerOptions, TestOptions options)
 		{
 			_runnerOptions = runnerOptions;
 			_options = options;
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override string TestsResultsFinalPath => _resultsPath!;
 
-		protected override int? MaxParallelThreads => System.Environment.ProcessorCount;
+		protected override int? MaxParallelThreads => Environment.ProcessorCount;
 
 		protected override IDevice Device { get; } = new TestDevice();
 
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				if (_loopCount == -1)
 				{
 					var categories = DiscoverTestsInAssemblies();
-					File.WriteAllLines(_categoriesFilePath, categories.ToArray());
+					File.WriteAllLines(_categoriesFilePath, categories);
 
 					TerminateWithSuccess();
 					return null;
@@ -121,9 +122,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			}
 		}
 
-		IEnumerable<string> DiscoverTestsInAssemblies()
+		ICollection<string> DiscoverTestsInAssemblies()
 		{
-			var result = new List<string>();
+			var result = new HashSet<string>();
 
 			try
 			{
@@ -142,7 +143,27 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 							framework.Find(false, sink, discoveryOptions);
 							sink.Finished.WaitOne();
 
-							result.AddRange(sink.TestCases.SelectMany(tc => tc.Traits["Category"]).Distinct());
+							var skipped = new HashSet<string>();
+
+							foreach (var test in sink.TestCases)
+							{
+								if (test.Traits.TryGetValue("Category", out var categories))
+								{
+									foreach (var category in categories)
+									{
+										result.Add(category);
+									}
+								}
+								else
+								{
+									skipped.Add($"{test.TestMethod.TestClass.Class.Name}");
+								}
+							}
+
+							if (skipped.Count > 0)
+							{
+								throw new Exception($"Some tests do not have a category: {string.Join(", ", skipped)}");
+							}
 						}
 					}
 					catch (Exception e)

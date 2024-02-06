@@ -231,6 +231,12 @@ namespace Microsoft.Maui.DeviceTests
 
 				try
 				{
+					// Some views (like the switch) are animating when the window is shown
+					// so we need to wait a few milliseconds for the animation to complete.
+					// If the animated views are still a bit flakey, we can increase this to
+					// about 250. If we start going above that then there is likely another
+					// issue.
+					await Task.Delay(100);
 					return await Run(() => action(window));
 				}
 				finally
@@ -343,7 +349,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			foreach (var c in colors)
 			{
-				if (c.IsEquivalent(expectedColor))
+				var precision = tolerance is null
+					? ColorComparison.ColorPrecision
+					: (int)(tolerance * 255);
+
+				if (c.IsEquivalent(expectedColor, precision))
 				{
 					return bitmap;
 				}

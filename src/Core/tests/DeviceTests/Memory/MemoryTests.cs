@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Handlers.Memory
 	/// which seems to make Android and WinUI happier. Low APIs on Android still have issues running via xHarness
 	/// which is why we only currently run these on API 30+
 	/// </summary>
+	[Category(TestCategory.Memory)]
 	[TestCaseOrderer("Microsoft.Maui.Handlers.Memory.MemoryTestOrdering", "Microsoft.Maui.Core.DeviceTests")]
 	public class MemoryTests : CoreHandlerTestBase, IClassFixture<MemoryTestFixture>
 	{

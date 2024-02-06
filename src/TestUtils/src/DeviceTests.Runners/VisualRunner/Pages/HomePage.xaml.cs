@@ -27,8 +27,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 			var cliArgs = Environment.GetCommandLineArgs();
 			if (cliArgs.Length > 1)
 			{
-				testResultsFile = HeadlessTestRunner.TestResultsFile = ControlsHeadlessTestRunner.TestResultsFile = cliArgs.Skip(1).FirstOrDefault();
-				ControlsHeadlessTestRunner.LoopCount = int.Parse(cliArgs.Skip(2).FirstOrDefault() ?? "-1");
+				testResultsFile = HeadlessTestRunner.TestResultsFile = PerCategoryHeadlessTestRunner.TestResultsFile = cliArgs.Skip(1).FirstOrDefault();
+				PerCategoryHeadlessTestRunner.LoopCount = int.Parse(cliArgs.Skip(2).FirstOrDefault() ?? "-1");
 			}
 #endif
 
@@ -36,22 +36,18 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 			{
 				hasRunHeadless = true;
 
-#if !WINDOWS
-				var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<HeadlessTestRunner>();
-
-				await headlessRunner.RunTestsAsync();
-#else
+#if WINDOWS
 				if (cliArgs.Length >= 3)
 				{
-					var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<ControlsHeadlessTestRunner>();
+					var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<PerCategoryHeadlessTestRunner>();
 					await headlessRunner.RunTestsAsync();
 				}
 				else
+#endif
 				{
 					var headlessRunner = Handler!.MauiContext!.Services.GetRequiredService<HeadlessTestRunner>();
 					await headlessRunner.RunTestsAsync();
 				}
-#endif
 
 				Process.GetCurrentProcess().Kill();
 			}

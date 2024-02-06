@@ -45,28 +45,11 @@ namespace Microsoft.Maui.DeviceTests
 					Assemblies = testAssemblies,
 				});
 
-#if WINDOWS
-			if (testAssemblies.Any(a => a.FullName.Contains("Controls.DeviceTests",
-				StringComparison.OrdinalIgnoreCase)))
-			{
-				appBuilder.UseControlsHeadlessRunner(new HeadlessRunnerOptions
-				{
-					RequiresUIContext = true,
-				});
-			}
-			else
-			{
-				appBuilder.UseHeadlessRunner(new HeadlessRunnerOptions
-				{
-					RequiresUIContext = true,
-				});
-			}
-#else
 			appBuilder.UseHeadlessRunner(new HeadlessRunnerOptions
 			{
 				RequiresUIContext = true,
 			});
-#endif
+
 			appBuilder.UseVisualRunner();
 
 			appBuilder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions

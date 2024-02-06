@@ -36,7 +36,6 @@ string DOTNET_PLATFORM = $"win10-x64";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string certificateThumbprint = "";
 bool isPackagedTestRun = TEST_DEVICE.ToLower().Equals("packaged");
-bool isControlsProjectTestRun = PROJECT.FullPath.EndsWith("Controls.DeviceTests.csproj");
 
 // Certificate Common Name to use/generate (eg: CN=DotNetMauiTests)
 var certCN = Argument("commonname", "DotNetMAUITests");
@@ -250,38 +249,26 @@ Task("Test")
 		// Install the DeviceTests app
 		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
 
-		if (isControlsProjectTestRun)
+		// Start the app once, this will trigger the discovery of the test categories
+		var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
+		StartProcess("powershell", startArgsInitial);
+
+		Information($"Waiting 10 seconds for process to finish...");
+		System.Threading.Thread.Sleep(10000);
+
+		var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
+
+		for (int i = 0; i <= testCategoriesToRun; i++)
 		{
-			// Start the app once, this will trigger the discovery of the test categories
-			var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
-			StartProcess("powershell", startArgsInitial);
-
-			Information($"Waiting 10 seconds for process to finish...");
-			System.Threading.Thread.Sleep(10000);
-
-			var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
-
-			for (int i = 0; i <= testCategoriesToRun; i++)
-			{
-				var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
-
-				Information(startArgs);
-
-				// Start the DeviceTests app for packaged
-				StartProcess("powershell", startArgs);
-
-				Information($"Waiting 10 seconds for the next...");
-				System.Threading.Thread.Sleep(10000);
-			}
-		}
-		else
-		{
-			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\"";
+			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
 
 			Information(startArgs);
 
 			// Start the DeviceTests app for packaged
 			StartProcess("powershell", startArgs);
+
+			Information($"Waiting 10 seconds for the next...");
+			System.Threading.Thread.Sleep(10000);
 		}
 	}
 	else
@@ -289,22 +276,15 @@ Task("Test")
 		// Unpackaged process blocks the thread, so we can wait shorter for the results
 		waitForResultTimeoutInSeconds = 30;
 
-		if (isControlsProjectTestRun)
-		{
-			// Start the app once, this will trigger the discovery of the test categories
-			StartProcess(TEST_APP, testResultsFile + " -1");
+		// Start the app once, this will trigger the discovery of the test categories
+		StartProcess(TEST_APP, testResultsFile + " -1");
 
-			var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
+		var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
 
-			for (int i = 0; i <= testCategoriesToRun; i++)
-			{
-				// Start the DeviceTests app for unpackaged
-				StartProcess(TEST_APP, testResultsFile + " " + i);
-			}
-		}
-		else
+		for (int i = 0; i <= testCategoriesToRun; i++)
 		{
-			StartProcess(TEST_APP, testResultsFile);
+			// Start the DeviceTests app for unpackaged
+			StartProcess(TEST_APP, testResultsFile + " " + i);
 		}
 	}
 
@@ -318,49 +298,45 @@ Task("Test")
 			break;
 	}
 
-	// If we're running the Controls project, double-check if we have all test result files
-	// and if the categories we expected to run match the test result files
-	if (isControlsProjectTestRun)
+	// Double-check if we have all test result files and if the categories we expected to run match the test result files
+	var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);
+	var expectedCategoriesRanCount = expectedCategories.Length;
+	var actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
+
+	while (actualResultFileCount < expectedCategoriesRanCount) {
+		actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
+		System.Threading.Thread.Sleep(1000);
+		waited++;
+
+		Information($"Waiting {waited} additional second(s) for tests to finish...");
+		if (waited >= 30)
+			break;
+	}
+		
+	if (FileExists(testsToRunFile))
 	{
-		var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);
-		var expectedCategoriesRanCount = expectedCategories.Length;
-		var actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
+		DeleteFile(testsToRunFile);
+	}
 
-		while (actualResultFileCount < expectedCategoriesRanCount) {
-			actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
-			System.Threading.Thread.Sleep(1000);
-			waited++;
+	// While the count should match exactly, if we get more files somehow we'll allow it
+	// If it's less, throw an exception to fail the pipeline.
+	if (actualResultFileCount < expectedCategoriesRanCount)
+	{
+		// Grab the category name from the file name
+		// Ex: "TestResults-com_microsoft_maui_controls_devicetests_Frame.xml" -> "Frame"
+		var actualFiles = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml");
+		var actualCategories = actualFiles.Select(x => x.Substring(0, x.Length - 4)   // Remove ".xml"
+														.Split('_').Last()).ToList();
 
-			Information($"Waiting {waited} additional second(s) for tests to finish...");
-			if (waited >= 30)
-				break;
-		}
-			
-		if (FileExists(testsToRunFile))
+		foreach (var category in expectedCategories)
 		{
-			DeleteFile(testsToRunFile);
-		}
-
-		// While the count should match exactly, if we get more files somehow we'll allow it
-		// If it's less, throw an exception to fail the pipeline.
-		if (actualResultFileCount < expectedCategoriesRanCount)
-		{
-			// Grab the category name from the file name
-			// Ex: "TestResults-com_microsoft_maui_controls_devicetests_Frame.xml" -> "Frame"
-			var actualFiles = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml");
-			var actualCategories = actualFiles.Select(x => x.Substring(0, x.Length - 4)   // Remove ".xml"
-					 										.Split('_').Last()).ToList();
-
-			foreach (var category in expectedCategories)
+			if (!actualCategories.Contains(category))
 			{
-				if (!actualCategories.Contains(category))
-				{
-					Error($"Error: missing test file result for {category}");
-				}
+				Error($"Error: missing test file result for {category}");
 			}
-
-			throw new Exception($"Expected test result files: {expectedCategoriesRanCount}, actual files: {actualResultFileCount}, some process(es) might have crashed.");
 		}
+
+		throw new Exception($"Expected test result files: {expectedCategoriesRanCount}, actual files: {actualResultFileCount}, some process(es) might have crashed.");
 	}
 
 	if(System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length == 0)

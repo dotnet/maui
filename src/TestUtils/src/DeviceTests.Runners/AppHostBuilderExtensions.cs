@@ -30,26 +30,17 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		{
 			appHostBuilder.Services.AddSingleton(options);
 
-#if __ANDROID__ || __IOS__ || MACCATALYST || WINDOWS
+#if __ANDROID__ || __IOS__ || MACCATALYST
 			appHostBuilder.Services.AddTransient(svc => new HeadlessTestRunner(
 					svc.GetRequiredService<HeadlessRunnerOptions>(),
 					svc.GetRequiredService<TestOptions>()));
-#endif
-
-			return appHostBuilder;
-		}
-
-#if WINDOWS
-		public static MauiAppBuilder UseControlsHeadlessRunner(this MauiAppBuilder appHostBuilder, HeadlessRunnerOptions options)
-		{
-			appHostBuilder.Services.AddSingleton(options);
-
-			appHostBuilder.Services.AddTransient(svc => new ControlsHeadlessTestRunner(
+#elif WINDOWS
+			appHostBuilder.Services.AddTransient(svc => new PerCategoryHeadlessTestRunner(
 					svc.GetRequiredService<HeadlessRunnerOptions>(),
 					svc.GetRequiredService<TestOptions>()));
+#endif
 
 			return appHostBuilder;
 		}
-#endif
 	}
 }
