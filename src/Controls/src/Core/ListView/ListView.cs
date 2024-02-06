@@ -119,7 +119,8 @@ namespace Microsoft.Maui.Controls
 			if (DeviceInfo.Platform == DevicePlatform.Unknown ||
 				DeviceInfo.Platform == DevicePlatform.Android ||
 				DeviceInfo.Platform == DevicePlatform.iOS ||
-				DeviceInfo.Platform == DevicePlatform.macOS)
+				DeviceInfo.Platform == DevicePlatform.macOS ||
+				DeviceInfo.Platform == DevicePlatform.WinUI)
 				CachingStrategy = cachingStrategy;
 		}
 

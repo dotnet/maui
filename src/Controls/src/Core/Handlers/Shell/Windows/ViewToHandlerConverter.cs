@@ -24,10 +24,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return null;
 
-			if (view is ICrossPlatformLayout)
-				return view.ToPlatform(view.FindMauiContext()!);
-
-			return new WrapperControl(view);
+			if (view is IPlatformViewHandler)
+				return new WrapperControl(view);
+			
+			return view.ToPlatform(view.FindMauiContext()!);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)

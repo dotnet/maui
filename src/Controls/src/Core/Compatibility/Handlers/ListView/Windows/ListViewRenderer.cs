@@ -115,7 +115,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					};
 
 					List.SelectionChanged += OnControlSelectionChanged;
-					List.ContainerContentChanging += List_ContainerContentChanging;
 					SetNativeControl(List);
 				}
 
@@ -342,7 +341,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 
 					List.SelectionChanged -= OnControlSelectionChanged;
-					List.ContainerContentChanging -= List_ContainerContentChanging;
 
 					if (_collectionViewSource != null)
 						_collectionViewSource.Source = null;
@@ -789,9 +787,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			List.SelectedIndex = index;
 		}
 
-		void OnListItemClicked(int index)
+		void OnListItemClicked(int index, Cell cell = null)
 		{
-			Element.NotifyRowTapped(index);
+			Element.NotifyRowTapped(index, cell);
 			_itemWasClicked = true;
 		}
 
@@ -802,7 +800,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				var selectedItemIndex = templatedItems.GetGlobalIndexOfItem(e.ClickedItem);
 
-				OnListItemClicked(selectedItemIndex);
+				var container = List.ContainerFromItem(e.ClickedItem) as ListViewItem;
+				if (container != null && container.ContentTemplateRoot is CellControl cell)
+				{
+					// Pass the cell ref to avoid a possible lookup + creation of a new cell control if 
+					// ListViewCachingStrategy == RecycleElement
+					OnListItemClicked(selectedItemIndex, cell.Cell);
+				}
+				else
+				{
+					OnListItemClicked(selectedItemIndex);
+				}
 			}
 		}
 
@@ -824,18 +832,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			_itemWasClicked = false;
-		}
-
-		void List_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
-		{
-			// Virtualization is unloading the container, signal that to our CellControl wrapper
-			if (args.InRecycleQueue)
-			{
-				if (args.ItemContainer.ContentTemplateRoot is CellControl cellControl)
-				{
-					cellControl.Recycle();
-				}
-			}
 		}
 
 		FrameworkElement FindElement(object cell)
