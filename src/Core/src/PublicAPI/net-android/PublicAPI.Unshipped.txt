@@ -84,6 +84,8 @@ static Microsoft.Maui.CommandMapperExtensions.ReplaceMapping<TVirtualView, TView
 static Microsoft.Maui.FontSize.operator !=(Microsoft.Maui.FontSize left, Microsoft.Maui.FontSize right) -> bool
 static Microsoft.Maui.FontSize.operator ==(Microsoft.Maui.FontSize left, Microsoft.Maui.FontSize right) -> bool
 static Microsoft.Maui.Graphics.PaintExtensions.ToDrawable(this Microsoft.Maui.Graphics.Paint? paint, Android.Content.Context? context) -> Android.Graphics.Drawables.Drawable?
+static Microsoft.Maui.Graphics.PaintExtensions.ToGradientDrawable(this Microsoft.Maui.Graphics.GradientPaint? paint, int height, int width) -> Android.Graphics.Drawables.GradientDrawable?
+static Microsoft.Maui.Graphics.PaintExtensions.ToGradientDrawable(this Microsoft.Maui.Graphics.Paint? paint, int height, int width) -> Android.Graphics.Drawables.GradientDrawable?
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void

@@ -1,11 +1,17 @@
-﻿using Android.Widget;
+﻿using Android.Content.Res;
+using Android.Graphics.Drawables;
+using Android.Graphics.Drawables.Shapes;
+using Android.Widget;
 using Google.Android.Material.Button;
+using Java.Util;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
+		const int BackgroundDrawableId = 999;
+
 		public static void UpdateBackground(this MaterialButton platformView, IButton button)
 		{
 			platformView.UpdateBorderDrawable(button);
@@ -13,10 +19,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateStrokeColor(this MaterialButton platformView, IButton button)
 		{
-			if (platformView.Background is BorderDrawable)
+			if (platformView.Background is RippleDrawable background)
 			{
-				platformView.UpdateBorderDrawable(button);
-				return;
+				var gradientDrawable = background.FindDrawableByLayerId(BackgroundDrawableId);
+
+				if (gradientDrawable is not null)
+				{
+					platformView.UpdateBorderDrawable(button);
+					return;
+				}
 			}
 
 			if (button is IButtonStroke buttonStroke && buttonStroke.StrokeColor is Color stroke)
@@ -25,10 +36,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateStrokeThickness(this MaterialButton platformView, IButton button)
 		{
-			if (platformView.Background is BorderDrawable)
+			if (platformView.Background is RippleDrawable background)
 			{
-				platformView.UpdateBorderDrawable(button);
-				return;
+				var gradientDrawable = background.FindDrawableByLayerId(BackgroundDrawableId);
+
+				if (gradientDrawable is not null)
+				{
+					platformView.UpdateBorderDrawable(button);
+					return;
+				}
 			}
 
 			if (button is IButtonStroke buttonStroke && buttonStroke.StrokeThickness >= 0)
@@ -37,10 +53,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCornerRadius(this MaterialButton platformView, IButton button)
 		{
-			if (platformView.Background is BorderDrawable)
+			if (platformView.Background is RippleDrawable background)
 			{
-				platformView.UpdateBorderDrawable(button);
-				return;
+				var gradientDrawable = background.FindDrawableByLayerId(BackgroundDrawableId);
+
+				if (gradientDrawable is not null)
+				{
+					platformView.UpdateBorderDrawable(button);
+					return;
+				}
 			}
 
 			if (button is IButtonStroke buttonStroke && buttonStroke.CornerRadius >= 0)
@@ -75,34 +96,45 @@ namespace Microsoft.Maui.Platform
 			if (!background.IsNullOrEmpty())
 			{
 				// Remove previous background gradient if any
-				if (platformView.Background is BorderDrawable previousBackground)
+				if (platformView.Background is RippleDrawable previousBackground)
 				{
 					platformView.Background = null;
 					previousBackground.Dispose();
 				}
 
-				var mauiDrawable = new BorderDrawable(platformView.Context);
-
 				// Null out BackgroundTintList to avoid that the MaterialButton custom background doesn't get tinted.
 				platformView.BackgroundTintList = null;
 
-				platformView.Background = mauiDrawable;
+				// Ripple selection color
+				var rippleColor = Colors.White.WithAlpha(0.5f).ToPlatform();
 
-				mauiDrawable.SetBackground(background);
+				var w = platformView.Width;
+				var h = platformView.Height;
 
-				if (button.StrokeColor != null)
-					mauiDrawable.SetBorderBrush(new SolidPaint { Color = button.StrokeColor });
+				// Button background gradient
+				GradientDrawable? gradientDrawable = background.ToGradientDrawable(w, h);
+				gradientDrawable?.SetShape(ShapeType.Rectangle);
+				gradientDrawable?.SetCornerRadius(button.CornerRadius);
 
-				if (button.StrokeThickness > 0)
-					mauiDrawable.SetBorderWidth(button.StrokeThickness);
+				// Ripple mask
+				const int defaultCornerRadius = 2; // Default value for Android material button.
+				float[] outerRadii = new float[8];
+				Arrays.Fill(outerRadii, button.CornerRadius > 0 ? button.CornerRadius : defaultCornerRadius);
+				RoundRectShape shape = new RoundRectShape(outerRadii, null, null);
+				Android.Graphics.Drawables.ShapeDrawable maskDrawable = new Android.Graphics.Drawables.ShapeDrawable(shape);
+
+				var rippleDrawable = new RippleDrawable(ColorStateList.ValueOf(rippleColor), gradientDrawable, maskDrawable);
+				rippleDrawable.SetId(0, BackgroundDrawableId);
+
+				platformView.Background = rippleDrawable;
+
+				if (button.StrokeColor != null && button.StrokeThickness > 0)
+					gradientDrawable?.SetStroke((int)button.StrokeThickness, ColorStateList.ValueOf(button.StrokeColor.ToPlatform()));
 
 				if (button.CornerRadius >= 0)
-					mauiDrawable.SetCornerRadius(button.CornerRadius);
+					gradientDrawable?.SetCornerRadius(button.CornerRadius);
 				else
-				{
-					const int defaultCornerRadius = 2; // Default value for Android material button.
-					mauiDrawable.SetCornerRadius(platformView.Context.ToPixels(defaultCornerRadius));
-				}
+					gradientDrawable?.SetCornerRadius(platformView.Context.ToPixels(defaultCornerRadius));
 			}
 		}
 	}

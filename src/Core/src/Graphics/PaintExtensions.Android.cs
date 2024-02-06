@@ -1,5 +1,8 @@
-﻿using Android.Content;
+﻿using System;
+using Android.Content;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
+using AOrientation = Android.Graphics.Drawables.GradientDrawable.Orientation;
 
 namespace Microsoft.Maui.Graphics
 {
@@ -23,6 +26,81 @@ namespace Microsoft.Maui.Graphics
 				return patternPaint.CreateDrawable(context);
 
 			return null;
+		}
+
+		public static GradientDrawable? ToGradientDrawable(this Paint? paint, int height, int width)
+		{
+			if (paint is SolidPaint solidPaint)
+			{
+				GradientDrawable gradientDrawable = new GradientDrawable();
+				gradientDrawable.SetColor(ColorStateList.ValueOf(solidPaint.Color.ToPlatform()));
+				return gradientDrawable;
+			}
+
+			if (paint is GradientPaint gradientPaint)
+				return gradientPaint.ToGradientDrawable(height, width);
+
+			return null;
+		}
+		
+		public static GradientDrawable? ToGradientDrawable(this GradientPaint? paint, int height, int width)
+		{
+			if (paint.IsNullOrEmpty())
+				return null;
+
+			GradientDrawable gradientDrawable = new GradientDrawable();
+
+			if (paint is LinearGradientPaint linearGradientPaint)
+			{
+				var p1 = linearGradientPaint.StartPoint;
+				var x1 = (float)p1.X;
+				var y1 = (float)p1.Y;
+
+				var p2 = linearGradientPaint.EndPoint;
+				var x2 = (float)p2.X;
+				var y2 = (float)p2.Y;
+
+				const double Rad2Deg = 180.0 / Math.PI;
+
+				float xDiff = x2 - x1;
+				float yDiff = y2 - y1;
+
+				double angle = Math.Atan2(yDiff, xDiff) * Rad2Deg;
+
+				if (angle < 0)
+					angle += 360;
+
+				var gradientBrushData = GetGradientPaintData(linearGradientPaint);
+				var colors = gradientBrushData.Colors;
+
+				if (colors.Length < 2)
+					return null;
+
+				gradientDrawable.SetGradientType(GradientType.LinearGradient);
+				gradientDrawable.SetColors(colors);
+				SetGradientOrientation(gradientDrawable, angle);
+			}
+
+			if (paint is RadialGradientPaint radialGradientPaint)
+			{
+				var center = radialGradientPaint.Center;
+				float centerX = (float)center.X;
+				float centerY = (float)center.Y;
+				float radius = (float)radialGradientPaint.Radius;
+
+				var gradientBrushData = GetGradientPaintData(radialGradientPaint);
+				var colors = gradientBrushData.Colors;
+
+				if (colors.Length < 2)
+					return null;
+
+				gradientDrawable.SetGradientType(GradientType.RadialGradient);
+				gradientDrawable.SetGradientCenter(centerX, centerY);
+				gradientDrawable.SetGradientRadius(Math.Max(height, width) * radius);
+				gradientDrawable.SetColors(colors);
+			}
+
+			return gradientDrawable;
 		}
 
 		public static Drawable? CreateDrawable(this SolidPaint solidPaint, Context? context)
@@ -118,6 +196,41 @@ namespace Microsoft.Maui.Graphics
 
 			var radialGradientShaderFactory = new RadialGradientShaderFactory(shader);
 			return radialGradientShaderFactory;
+		}
+
+		internal static void SetGradientOrientation(this GradientDrawable drawable, double angle)
+		{
+			AOrientation? orientation = AOrientation.LeftRight;
+
+			switch (angle)
+			{
+				case 0:
+					orientation = AOrientation.LeftRight;
+					break;
+				case 45:
+					orientation = AOrientation.TlBr;
+					break;
+				case 90:
+					orientation = AOrientation.TopBottom;
+					break;
+				case 135:
+					orientation = AOrientation.TrBl;
+					break;
+				case 180:
+					orientation = AOrientation.RightLeft;
+					break;
+				case 225:
+					orientation = AOrientation.BrTl;
+					break;
+				case 270:
+					orientation = AOrientation.BottomTop;
+					break;
+				case 315:
+					orientation = AOrientation.BlTr;
+					break;
+			}
+
+			drawable.SetOrientation(orientation);
 		}
 	}
 }
