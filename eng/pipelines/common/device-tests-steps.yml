@@ -13,6 +13,10 @@ parameters:
   rebootAgent: true
 
 steps:
+  - bash: ./eng/scripts/bash/clean-bot.sh
+    displayName: 'Clean bot'
+    continueOnError: true
+    timeoutInMinutes: 60
   - template: provision.yml
     parameters:
       ${{ if eq(parameters.platform, 'windows')}}:
