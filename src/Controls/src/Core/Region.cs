@@ -40,7 +40,6 @@ namespace Microsoft.Maui.Controls
 			var endLine = lineHeights.Length - 1;
 			var lineHeightTotal = startY;
 
-			// Rect(double x, double y, double width, double height)
 			for (var i = 0; i <= endLine; i++)
 				if (endLine != 0) // MultiLine
 				{
