@@ -137,17 +137,23 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 					var headerLabel = (VisualElement)FlyoutHeader;
 					var footerLabel = (VisualElement)FlyoutFooter;
 					headerLabel.BackgroundColor = Colors.LightBlue;
-					footerLabel.BackgroundColor = Colors.LightBlue;
+
+					if (footerLabel is not null)
+						footerLabel.BackgroundColor = Colors.LightBlue;
 
 					if (headerLabel.HeightRequest == 60)
 					{
 						headerLabel.HeightRequest = 200;
-						footerLabel.HeightRequest = 200;
+
+						if (footerLabel is not null)
+							footerLabel.HeightRequest = 200;
 					}
 					else
 					{
 						headerLabel.HeightRequest = 60;
-						footerLabel.HeightRequest = 60;
+						
+						if (footerLabel is not null)
+							footerLabel.HeightRequest = 60;
 					}
 				}),
 				AutomationId = "ResizeHeaderFooter"
@@ -167,8 +173,10 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 								Margin = 0,
 								Children =
 								{
-								new Label() { Text = "Header View" }
-								}
+									new Label() { Text = "Header View" }
+								},
+								BackgroundColor = Colors.Purple,
+								IgnoreSafeArea = true
 							};
 
 						FlyoutHeaderTemplate = null;
