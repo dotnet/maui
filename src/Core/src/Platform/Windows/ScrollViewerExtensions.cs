@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateContent(this ScrollViewer scrollViewer, IView? content, IMauiContext context)
 		{
-			scrollViewer.Content = content == null ? null : content.ToPlatform(context);
+			scrollViewer.Content = content?.ToPlatform(context);
 		}
 	}
 }

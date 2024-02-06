@@ -60,11 +60,11 @@ namespace Microsoft.Maui
 			if (enumerable == null)
 				throw new ArgumentNullException(nameof(enumerable));
 
-            if (enumerable is IList<T> list)
-                return list.IndexOf(item);
+			if (enumerable is IList<T> list)
+				return list.IndexOf(item);
 
-            if (enumerable is T[] array)
-                return Array.IndexOf(array, item);
+			if (enumerable is T[] array)
+				return Array.IndexOf(array, item);
 
 			var i = 0;
 			foreach (T element in enumerable)
