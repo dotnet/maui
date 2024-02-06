@@ -126,8 +126,6 @@ namespace Microsoft.Maui.Platform
 				var rippleDrawable = new RippleDrawable(ColorStateList.ValueOf(rippleColor), gradientDrawable, maskDrawable);
 				rippleDrawable.SetId(0, BackgroundDrawableId);
 
-				platformView.Background = rippleDrawable;
-
 				if (button.StrokeColor != null && button.StrokeThickness > 0)
 					gradientDrawable?.SetStroke((int)button.StrokeThickness, ColorStateList.ValueOf(button.StrokeColor.ToPlatform()));
 
@@ -135,6 +133,8 @@ namespace Microsoft.Maui.Platform
 					gradientDrawable?.SetCornerRadius(button.CornerRadius);
 				else
 					gradientDrawable?.SetCornerRadius(platformView.Context.ToPixels(defaultCornerRadius));
+
+				platformView.Background = rippleDrawable;
 			}
 		}
 	}
