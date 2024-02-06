@@ -63,6 +63,12 @@ Setup(context =>
 {
 	Cleanup();
 
+	if (IsCIBuild())
+	{
+		StartProcess("bash", "../scripts/clean-bot.sh");
+		StartProcess("bash", "../scripts/clean-simulator-runtime.sh");
+	}
+
 	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
 	
 	Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
