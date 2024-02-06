@@ -28,9 +28,9 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public async Task CarouselViewSetPosition()
 		{
-			if (Device != TestDevice.Android)
+			if (Device != TestDevice.Android || Device != TestDevice.iOS)
 			{
-				Assert.Ignore("For now, running this test only on Android.");
+				Assert.Ignore("For now, running this test only on Android and iOS.");
 			}
 			else
 			{
