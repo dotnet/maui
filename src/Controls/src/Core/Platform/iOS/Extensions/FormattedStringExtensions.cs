@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void RecalculateSpanPositions(this UILabel control, Label element)
 		{
-			if (element == null)
+			if (element is null)
 				return;
 
 			if (element.TextType == TextType.Html)
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var location = currentLocation;
 				var length = span.Text?.Length ?? 0;
 
-				if (length == 0)
+				if (length == 0 || span?.Text is null)
 					continue;
 
 				var startRect = GetCharacterBounds(new NSRange(location, 1), layoutManager, textContainer);
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// if the span is multiline, we need to calculate the bounds for each line individually
 				if (lineHeights.Count > 1) 
 				{
-					var spanRectangles = GetMultilinedBounds(new NSRange(location, length), layoutManager, textContainer, startRect, endRect, lineHeights);
+					var spanRectangles = GetMultilinedBounds(new NSRange(location, length), layoutManager, textContainer, startRect, endRect, lineHeights, span.Text.EndsWith('\n') ||  span.Text.EndsWith("\r\n"));
 					((ISpatialElement)span).Region = Region.FromRectangles(spanRectangles).Inflate(5);
 				}
 				else
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return layoutManager.GetBoundingRect(glyphRange, textContainer);
 		}
 
-		static Rect[] GetMultilinedBounds(NSRange characterRange, NSLayoutManager layoutManager, NSTextContainer textContainer, CGRect startRect, CGRect endRect, List<double> lineHeights)
+		static Rect[] GetMultilinedBounds(NSRange characterRange, NSLayoutManager layoutManager, NSTextContainer textContainer, CGRect startRect, CGRect endRect, List<double> lineHeights, bool endsWithNewLine)
 		{
 			var glyphRange = layoutManager.GetCharacterRange(characterRange);
 			var multilineRects = new List<CGRect>();
@@ -237,30 +237,40 @@ namespace Microsoft.Maui.Controls.Platform
 				stop = false;
 			});
 
-			return CreateSpanRects (startRect, endRect, lineHeights, multilineRects);
+			return CreateSpanRects (startRect, endRect, lineHeights, multilineRects, endsWithNewLine);
 		}
 
-		static Rect[] CreateSpanRects (CGRect startRect, CGRect endRect, List<double> lineHeights, List<CGRect> multilineRects)
+		static Rect[] CreateSpanRects (CGRect startRect, CGRect endRect, List<double> lineHeights, List<CGRect> multilineRects, bool endsWithNewLine)
 		{
 			List<Rect> spanRectangles = new List<Rect>();
 			var curHeight = (double)startRect.Top;
 
-			for (int j = 0; j < multilineRects.Count; j++){
-				var rect = multilineRects[j];
+			// go through each line and create a Rect for the text contained
+			for (int i = 0; i < multilineRects.Count; i++){
+				var rect = multilineRects[i];
 
 				// top line
-				if (j == 0)
-					spanRectangles.Add(new Rect(startRect.X, startRect.Top, rect.Width - startRect.Left, lineHeights[j]));
-
+				// The rect.Width measures from the start of the line even if the span does not start
+				// at the beginning of the line so we will take the difference for the width.
+				if (i == 0)
+				{
+					spanRectangles.Add(new Rect(startRect.X, startRect.Top, rect.Width - startRect.Left, lineHeights[i]));
+				}
 				// middle lines
-				else if (j < multilineRects.Count - 1)
-					spanRectangles.Add(new Rect(0, curHeight, rect.Width, lineHeights[j]));
-
+				else if (i < multilineRects.Count - 1)
+				{
+					spanRectangles.Add(new Rect(0, curHeight, rect.Width, lineHeights[i]));
+				}
 				// bottom line
+				// rect.Width is the width of the entire last line that is not a new line character - including if there is more text after the span we are processing.
+				// endRect.X will consider a new line character at the end of a span as a new line and will not give useful information about the end X position in that case.
+				// As such, we select which to use as the width based on if the span ends with a new line character.
 				else
-					spanRectangles.Add(new Rect(0, curHeight, endRect.X, lineHeights[j]));
+				{
+					spanRectangles.Add(new Rect(0, curHeight, endsWithNewLine ? rect.Width : endRect.X, lineHeights[i]));
+				}
 
-				curHeight += lineHeights[j];
+				curHeight += lineHeights[i];
 			}
 
 			return spanRectangles.ToArray();
