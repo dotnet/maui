@@ -1,5 +1,5 @@
 ﻿#define TRACE_ALLOCATION
-
+#define USE_ADJUSTSIZEREQUEST_
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Platform
 
 	public class LayoutView : Container, IGtkContainer
 	{
-
 		protected override bool OnDrawn(Cairo.Context cr)
 		{
 			var stc = this.StyleContext;
@@ -82,9 +81,9 @@ namespace Microsoft.Maui.Platform
 			var orientation = GetOrientation();
 
 			var focusChain = _children
-			   .Select(c => c.widget)
+				.Select(c => c.widget)
 				// .OrderBy(kvp => orientation == Orientation.Horizontal ? kvp.Value.Rect.X : kvp.Value.Rect.Y)
-			   .ToArray();
+				.ToArray();
 
 			FocusChain = focusChain;
 		}
@@ -174,7 +173,7 @@ namespace Microsoft.Maui.Platform
 			VirtualView.CrossPlatformArrange(allocation);
 		}
 
-		protected bool RestrictToMesuredAllocation { get; set; } = true;
+		protected bool RestrictToMeasuredAllocation { get; set; } = true;
 
 		protected bool RestrictToMeasuredArrange { get; set; } = false;
 
@@ -227,7 +226,7 @@ namespace Microsoft.Maui.Platform
 
 				LastAllocation = mAllocation;
 
-				if (RestrictToMesuredAllocation)
+				if (RestrictToMeasuredAllocation)
 				{
 					var mesuredAllocation = Measure(allocation.Width, allocation.Height);
 					mAllocation.Size = mesuredAllocation;
@@ -324,17 +323,69 @@ namespace Microsoft.Maui.Platform
 			return measured;
 		}
 
+#if !USE_ADJUSTSIZEREQUEST
+
+		// protected override SizeRequestMode OnGetRequestMode()
+		// {
+		// 	// dirty fix: unwrapped labels report fixed sizes, forcing parents to fixed mode
+		// 	//            -> report always width_for_height, since we don't support angles
+		// 	return Gtk.SizeRequestMode.WidthForHeight;
+		// }
+
+
+		protected override void OnGetPreferredHeight(out int minimum_height, out int natural_height)
+		{
+			base.OnGetPreferredHeight(out minimum_height, out natural_height);
+			// containers need initial width in height_for_width mode
+			// dirty fix: do not constrain width on first allocation 
+			var force_width = double.PositiveInfinity;
+			if (IsReallocating)
+				force_width = Allocation.Width;
+			var size = Measure(force_width, minimum_height > 0 ? minimum_height : double.PositiveInfinity);
+			if (size.Height < HeightRequest)
+				minimum_height = natural_height = HeightRequest;
+			else
+				minimum_height = natural_height = (int)size.Height;
+		}
+
+		protected override void OnGetPreferredWidth(out int minimum_width, out int natural_width)
+		{
+			base.OnGetPreferredWidth(out minimum_width, out natural_width);
+			// containers need initial height in width_for_height mode
+			// dirty fix: do not constrain height on first allocation
+			var force_height = double.PositiveInfinity;
+			if (IsReallocating)
+				force_height = Allocation.Height;
+			var size = Measure(minimum_width > 0 ? minimum_width : double.PositiveInfinity, force_height);
+			if (size.Width < WidthRequest)
+				minimum_width = natural_width = WidthRequest;
+			else
+				minimum_width = natural_width = (int)size.Width;
+		}
+
 		protected override void OnGetPreferredHeightForWidth(int width, out int minimum_height, out int natural_height)
 		{
 			base.OnGetPreferredHeightForWidth(width, out minimum_height, out natural_height);
-
+			var size = Measure(width, minimum_height > 0 ? minimum_height : double.PositiveInfinity);
+			if (size.Height < HeightRequest)
+				minimum_height = natural_height = HeightRequest;
+			else
+				minimum_height = natural_height = (int)size.Height;
 		}
 
 		protected override void OnGetPreferredWidthForHeight(int height, out int minimum_width, out int natural_width)
 		{
 			base.OnGetPreferredWidthForHeight(height, out minimum_width, out natural_width);
-
+			var size = Measure(minimum_width > 0 ? minimum_width : double.PositiveInfinity, height);
+			if (size.Width < WidthRequest)
+				minimum_width = natural_width = WidthRequest;
+			else
+				minimum_width = natural_width = (int)size.Width;
 		}
+
+#endif
+
+#if USE_ADJUSTSIZEREQUEST
 
 		// see: https://github.com/linuxmint/gtk/blob/158a2b0e1e8d582bc041acc7fe323922747d7787/gtk/gtksizerequest.c#L362
 
@@ -352,7 +403,6 @@ namespace Microsoft.Maui.Platform
 
 			double allocation = orientation == Orientation.Vertical ? AllocatedWidth : AllocatedHeight;
 
-			double constraint = Math.Max(allocation, naturalSize);
 			double hConstraint = IsReallocating ? AllocatedHeight : double.PositiveInfinity;
 			double wConstraint = IsReallocating ? AllocatedWidth : 0;
 
@@ -366,7 +416,9 @@ namespace Microsoft.Maui.Platform
 			if (orientation == Orientation.Horizontal)
 			{
 				// constraint = constraint == 0 && MeasuredSizeV is { } size ? size.Height : constraint;
-				var size = new Size(wConstraint, constraint);
+				if (minimumSize > 0)
+					wConstraint = minimumSize;
+				var size = new Size(wConstraint, hConstraint);
 				var measuredMinimum = Measure(size.Width, size.Height);
 				MeasuredSizeH = measuredMinimum;
 				minimumSize = (int)measuredMinimum.Width;
@@ -375,14 +427,17 @@ namespace Microsoft.Maui.Platform
 
 			if (orientation == Orientation.Vertical)
 			{
-				constraint = constraint == 0 && MeasuredSizeH is { } hsize ? hsize.Width : constraint;
-				var size = new Size(constraint, hConstraint);
+				// constraint = constraint == 0 && MeasuredSizeH is { } hsize ? hsize.Width : constraint;
+				if (minimumSize > 0)
+					hConstraint = minimumSize;
+				var size = new Size(wConstraint, hConstraint);
 				var measuredMinimum = Measure(size.Width, size.Height);
 				MeasuredSizeV = measuredMinimum;
 				minimumSize = (int)measuredMinimum.Height;
 				naturalSize = (int)minimumSize;
 			}
 		}
+#endif
 
 		public void Arrange(Rectangle rect)
 		{
@@ -430,7 +485,6 @@ namespace Microsoft.Maui.Platform
 		}
 
 		protected int ToSize(double it) => double.IsPositiveInfinity(it) ? 0 : (int)it;
-
 	}
 
 }

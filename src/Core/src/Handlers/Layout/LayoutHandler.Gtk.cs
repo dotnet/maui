@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.QueueAllocate();
 		}
 
-#if DEBUG
+#if DEBUG_
 		public override void PlatformArrange(Rect rect)
 		{
 			PlatformView?.Arrange(rect);

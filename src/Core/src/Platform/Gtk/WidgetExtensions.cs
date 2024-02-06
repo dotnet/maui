@@ -46,53 +46,64 @@ namespace Microsoft.Maui
 			var widthConstrained = !double.IsPositiveInfinity(widthConstraint);
 			var heightConstrained = !double.IsPositiveInfinity(heightConstraint);
 
-			if (nativeView.RequestMode == SizeRequestMode.HeightForWidth)
-			{
-				;
-			}
-
-			if (nativeView.RequestMode == SizeRequestMode.WidthForHeight)
-			{
-				;
-			}
-
-			if (nativeView.RequestMode == SizeRequestMode.ConstantSize)
-			{
-				;
-			}
-
-			if (!widthConstrained && !heightConstrained)
-			{
-				// https://docs.gtk.org/gtk3/method.Widget.get_preferred_size.html
-				nativeView.GetPreferredSize(out var minimumSize, out var req);
-
-				return new SizeRequest(req.ToSize(), minimumSize.ToSize());
-			}
-
 			int minimumHeight = 0;
 			int naturalHeight = 0;
 			int minimumWidth = 0;
 			int naturalWidth = 0;
 
-			if (widthConstrained)
+			if (nativeView.RequestMode == SizeRequestMode.WidthForHeight)
 			{
-				nativeView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
-
-				if (!heightConstrained)
+				if (widthConstrained)
 				{
-					nativeView.GetPreferredWidthForHeight(Math.Max(minimumHeight, naturalHeight), out minimumWidth, out naturalWidth);
+					nativeView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
+				}
+				else if (heightConstrained)
+				{
+					nativeView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
+				}
+				else if ((heightConstrained) && (widthConstrained))
+				{
+					minimumWidth = naturalWidth = (int)widthConstraint;
+					minimumHeight = naturalHeight = (int)heightConstraint;
+				}
+				else
+				{
+					nativeView.GetPreferredHeight(out minimumHeight, out naturalHeight);
+					nativeView.GetPreferredWidthForHeight(minimumHeight, out minimumWidth, out naturalWidth);
 				}
 			}
-
-			if (heightConstrained)
+			else if (nativeView.RequestMode == Gtk.SizeRequestMode.HeightForWidth)
 			{
-				nativeView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
-
-				if (!widthConstrained)
+				if (heightConstrained)
 				{
-					nativeView.GetPreferredHeightForWidth(Math.Max(minimumWidth, naturalWidth), out minimumHeight, out naturalHeight);
+					nativeView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
+				}
+				else if (widthConstrained)
+				{
+					nativeView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
+				}
+				else if ((heightConstrained) && (widthConstrained))
+				{
+					minimumWidth = naturalWidth = (int)widthConstraint;
+					minimumHeight = naturalHeight = (int)heightConstraint;
+				}
+				else
+				{
+					nativeView.GetPreferredWidth(out minimumWidth, out naturalWidth);
+					nativeView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
 				}
 			}
+			else
+			{
+				nativeView.GetPreferredWidth(out minimumWidth, out naturalWidth);
+				nativeView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
+			}
+
+			if (nativeView.WidthRequest > minimumWidth)
+				minimumWidth = nativeView.WidthRequest;
+			if (nativeView.HeightRequest > minimumHeight)
+				minimumHeight = nativeView.HeightRequest;
+
 
 			return new SizeRequest(new Size(naturalWidth, naturalHeight), new Size(minimumWidth, minimumHeight));
 		}
