@@ -17,7 +17,6 @@ steps:
     - bash: |
         zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
       displayName: Zip Simulator Logs
-      condition: eq(variables['Platform.Name'], 'Mac')
       continueOnError: true
     - bash: |
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
