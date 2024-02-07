@@ -66,9 +66,6 @@ namespace Microsoft.Maui.Controls.Internals
 		internal TypedBindingBase()
 		{
 		}
-
-		internal abstract void ApplyToResolvedSource(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget, SetterSpecificity specificity);
-		internal abstract void SubscribeToAncestryChanges(List<Element> chain, bool includeBindingContext, bool rootIsSource);
 	}
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -99,8 +96,6 @@ namespace Microsoft.Maui.Controls.Internals
 		readonly WeakReference<BindableObject> _weakTarget = new WeakReference<BindableObject>(null);
 		SetterSpecificity _specificity;
 		BindableProperty _targetProperty;
-		List<WeakReference<Element>> _ancestryChain;
-		bool _isBindingContextRelativeSource;
 
 		// Applies the binding to a previously set source and target.
 		internal override void Apply(bool fromTarget = false)
@@ -135,26 +130,19 @@ namespace Microsoft.Maui.Controls.Internals
 
 			base.Apply(source, bindObj, targetProperty, fromBindingContextChanged, specificity);
 
-			if (Source is RelativeBindingSource relativeSource)
-			{
-				ApplyRelativeSourceBinding(relativeSource, bindObj, targetProperty, specificity);
-			}
-			else
-			{
-				ApplyToResolvedSource(source, bindObj, targetProperty, false, specificity);
-			}
-		}
+#if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
+			BindableObject prevTarget;
+			if (_weakTarget.TryGetTarget(out prevTarget) && !ReferenceEquals(prevTarget, bindObj))
+				throw new InvalidOperationException("Binding instances cannot be reused");
 
-#pragma warning disable RECS0165 // Asynchronous methods should return a Task instead of void
-		async void ApplyRelativeSourceBinding(
-			RelativeBindingSource relativeSource, BindableObject targetObject, BindableProperty targetProperty, SetterSpecificity specificity)
-#pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
-		{
-			var relativeSourceTarget = RelativeSourceTargetOverride ?? targetObject as Element;
-			if (!(relativeSourceTarget is Element))
-				throw new InvalidOperationException();
+			object previousSource;
+			if (_weakSource.TryGetTarget(out previousSource) && !ReferenceEquals(previousSource, source))
+				throw new InvalidOperationException("Binding instances cannot be reused");
+#endif
+			_weakSource.SetTarget(source);
+			_weakTarget.SetTarget(bindObj);
 
-			await relativeSource.Apply(this, relativeSourceTarget, targetObject, targetProperty, specificity);
+			ApplyCore(source, bindObj, targetProperty, false, specificity);
 		}
 
 		internal override BindingBase Clone()
@@ -178,23 +166,6 @@ namespace Microsoft.Maui.Controls.Internals
 				Source = Source,
 				UpdateSourceEventName = UpdateSourceEventName,
 			};
-		}
-
-		internal override void ApplyToResolvedSource(object source, BindableObject target, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
-		{
-#if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
-			BindableObject prevTarget;
-			if (_weakTarget.TryGetTarget(out prevTarget) && !ReferenceEquals(prevTarget, target))
-				throw new InvalidOperationException("Binding instances cannot be reused");
-
-			object previousSource;
-			if (_weakSource.TryGetTarget(out previousSource) && !ReferenceEquals(previousSource, source))
-				throw new InvalidOperationException("Binding instances cannot be reused");
-#endif
-			_weakTarget.SetTarget(target);
-			_weakSource.SetTarget(source);
-
-			ApplyCore(source, target, targetProperty, fromBindingContextChanged, specificity);
 		}
 
 		internal override object GetSourceValue(object value, Type targetPropertyType)
@@ -280,121 +251,6 @@ namespace Microsoft.Maui.Controls.Internals
 					return;
 				}
 				_setter((TSource)sourceObject, (TProperty)value);
-			}
-		}
-
-		// SubscribeToAncestryChanges, ClearAncestryChangeSubscriptions, FindAncestryIndex, and
-		// OnElementParentSet are used with RelativeSource ancestor-type bindings, to detect when
-		// there has been an ancestry change requiring re-applying the binding, and to minimize
-		// re-applications especially during visual tree building.
-		internal override void SubscribeToAncestryChanges(List<Element> chain, bool includeBindingContext, bool rootIsSource)
-		{
-			ClearAncestryChangeSubscriptions();
-			if (chain == null)
-				return;
-			_isBindingContextRelativeSource = includeBindingContext;
-			_ancestryChain = new List<WeakReference<Element>>();
-			for (int i = 0; i < chain.Count; i++)
-			{
-				var elem = chain[i];
-				if (i != chain.Count - 1 || !rootIsSource)
-					// don't care about a successfully resolved source's parents
-					elem.ParentSet += OnElementParentSet;
-				if (_isBindingContextRelativeSource)
-					elem.BindingContextChanged += OnElementBindingContextChanged;
-				_ancestryChain.Add(new WeakReference<Element>(elem));
-			}
-		}
-
-		void ClearAncestryChangeSubscriptions(int beginningWith = 0)
-		{
-			if (_ancestryChain == null || _ancestryChain.Count == 0)
-				return;
-			int count = _ancestryChain.Count;
-			for (int i = beginningWith; i < count; i++)
-			{
-				Element elem;
-				var weakElement = _ancestryChain.Last();
-				if (weakElement.TryGetTarget(out elem))
-				{
-					elem.ParentSet -= OnElementParentSet;
-					if (_isBindingContextRelativeSource)
-						elem.BindingContextChanged -= OnElementBindingContextChanged;
-				}
-				_ancestryChain.RemoveAt(_ancestryChain.Count - 1);
-			}
-		}
-
-		// Returns -1 if the member is not in the chain or the
-		// chain is no longer valid.
-		int FindAncestryIndex(Element elem)
-		{
-			for (int i = 0; i < _ancestryChain.Count; i++)
-			{
-				WeakReference<Element> weak = _ancestryChain[i];
-				Element chainMember = null;
-				if (!weak.TryGetTarget(out chainMember))
-					return -1;
-				else if (object.Equals(elem, chainMember))
-					return i;
-			}
-			return -1;
-		}
-
-		void OnElementBindingContextChanged(object sender, EventArgs e)
-		{
-			if (!(sender is Element elem))
-				return;
-
-			BindableObject target = null;
-			if (_weakTarget?.TryGetTarget(out target) != true)
-				return;
-
-			object currentSource = null;
-			if (_weakSource?.TryGetTarget(out currentSource) == true)
-			{
-				// make sure that this isn't just a repeat notice
-				// from someone else in the chain about our already-resolved 
-				// binding source
-				if (object.ReferenceEquals(currentSource, elem.BindingContext))
-					return;
-			}
-
-			Unapply();
-			Apply(null, target, _targetProperty, false, SetterSpecificity.FromBinding);
-		}
-
-		void OnElementParentSet(object sender, EventArgs e)
-		{
-			if (!(sender is Element elem))
-				return;
-
-			BindableObject target = null;
-			if (_weakTarget?.TryGetTarget(out target) != true)
-				return;
-
-			if (elem.Parent == null)
-			{
-				// Remove anything further up in the chain
-				// than the element with the null parent
-				int index = FindAncestryIndex(elem);
-				if (index == -1)
-				{
-					Unapply();
-					return;
-				}
-				if (index + 1 < _ancestryChain.Count)
-					ClearAncestryChangeSubscriptions(index + 1);
-
-				// Force the binding expression to resolve to null
-				// for now, until someone in the chain gets a new
-				// non-null parent.
-				ApplyCore(null, target, _targetProperty, false, _specificity);
-			}
-			else
-			{
-				Unapply();
-				Apply(null, target, _targetProperty, false, _specificity);
 			}
 		}
 
