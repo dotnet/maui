@@ -1,5 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Android.Graphics.Drawables;
 using Android.Text;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
@@ -12,6 +12,39 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonHandlerTests
 	{
+		[Fact(DisplayName = "Button has Ripple Effect")]
+		public async Task ButtonRippleEffect()
+		{
+			var layout = new LayoutStub();
+
+			var button = new ButtonStub
+			{
+				Text = "Text",
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Orange),
+			};
+
+			layout.Add(button);
+
+			var clicked = false;
+
+			button.Clicked += delegate
+			{
+				clicked = true;
+			};
+
+			await PerformClick(button);
+
+			Assert.True(clicked);
+
+			await AttachAndRun(button, async (handler) =>
+			{
+				await Task.Delay(100);
+
+				var hasRipple = GetNativeHasRippleDrawable(handler);
+				Assert.True(hasRipple);
+			});
+		}
+
 		[Fact(DisplayName = "IsVisible updates Correctly")]
 		public async Task IsVisibleUpdatesCorrectly()
 		{
@@ -203,5 +236,17 @@ namespace Microsoft.Maui.DeviceTests
 
 		TextUtils.TruncateAt GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).Ellipsize;
+
+		bool GetNativeHasRippleDrawable(ButtonHandler buttonHandler)
+		{
+			var button = buttonHandler.PlatformView;
+
+			if (button is null)
+				return false;
+
+			var rippleDrawable = button.Background as RippleDrawable;
+
+			return rippleDrawable is not null;
+		}
 	}
 }
