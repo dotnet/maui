@@ -63,6 +63,9 @@
                     </LinearGradientBrush>
                 </Button.Background>
             </Button>
+            <Label 
+                FontSize="9"
+                Text="Corner Radius:"/>
             <Slider 
                 x:Name="CornerSlider"
                 Minimum="0"               
@@ -86,6 +89,9 @@
                     </LinearGradientBrush>
                 </Button.Background>
             </Button>
+            <Label 
+                FontSize="9"
+                Text="BorderWidth:"/>
             <Slider 
                 x:Name="BorderWidthSlider"
                 Minimum="0"               

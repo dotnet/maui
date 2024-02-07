@@ -117,22 +117,22 @@ namespace Microsoft.Maui.Platform
 				gradientDrawable?.SetCornerRadius(button.CornerRadius);
 
 				// Ripple mask
-				const int defaultCornerRadius = 2; // Default value for Android material button.
 				float[] outerRadii = new float[8];
-				Arrays.Fill(outerRadii, button.CornerRadius > 0 ? button.CornerRadius : defaultCornerRadius);
+				const int defaultCornerRadius = 2; // Default value for Android material button.
+				int cornerRadius = button.CornerRadius >= 0 ? button.CornerRadius : defaultCornerRadius;
+				Arrays.Fill(outerRadii, cornerRadius);
 				RoundRectShape shape = new RoundRectShape(outerRadii, null, null);
 				Android.Graphics.Drawables.ShapeDrawable maskDrawable = new Android.Graphics.Drawables.ShapeDrawable(shape);
 
 				var rippleDrawable = new RippleDrawable(ColorStateList.ValueOf(rippleColor), gradientDrawable, maskDrawable);
 				rippleDrawable.SetId(0, BackgroundDrawableId);
 
+				// Update the Stroke
 				if (button.StrokeColor != null && button.StrokeThickness > 0)
-					gradientDrawable?.SetStroke((int)button.StrokeThickness, ColorStateList.ValueOf(button.StrokeColor.ToPlatform()));
+					gradientDrawable?.SetStroke((int)platformView.Context.ToPixels(button.StrokeThickness), ColorStateList.ValueOf(button.StrokeColor.ToPlatform()));
 
-				if (button.CornerRadius >= 0)
-					gradientDrawable?.SetCornerRadius(button.CornerRadius);
-				else
-					gradientDrawable?.SetCornerRadius(platformView.Context.ToPixels(defaultCornerRadius));
+				// Update the CornerRadius
+				gradientDrawable?.SetCornerRadius(platformView.Context.ToPixels(cornerRadius));
 
 				platformView.Background = rippleDrawable;
 			}
