@@ -16,6 +16,7 @@ steps:
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
         $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
       displayName: 'Clean bot'
       continueOnError: true
