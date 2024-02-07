@@ -97,7 +97,6 @@ steps:
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-        mkdir -p $(System.DefaultWorkingDirectory)/artifacts
         zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
       displayName: Zip Simulator Logs
       condition: always()

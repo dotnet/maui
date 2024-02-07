@@ -54,8 +54,7 @@ steps:
     # retryCountOnTaskFailure: 2
 
   - bash: |
-      mkdir -p $(System.DefaultWorkingDirectory)/artifacts
-      zip -9r "$(System.DefaultWorkingDirectory)/artifacts/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+      zip -9r "$(LogDirectory)/artifacts/CoreSimulatorLog_$(new-guid).zip" "$HOME/Library/Logs/CoreSimulator/"
     displayName: Zip Simulator Logs
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
