@@ -97,6 +97,36 @@
                 Minimum="0"               
                 Maximum="12"
                 Value="4"/>
+            <Button
+                x:Name="DynamicBackground"
+                BorderColor="Red"
+                BorderWidth="4"
+                CornerRadius="12"
+                Text="BorderColor"
+                TextColor="White">
+                <Button.Background>
+                    <LinearGradientBrush
+                        StartPoint="0, 0"
+                        EndPoint="1, 0">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Color="GreenYellow" Offset="0" />
+                            <GradientStop Color="LawnGreen" Offset="0.25" />
+                            <GradientStop Color="Green" Offset="0.5" />
+                            <GradientStop Color="DarkGreen" Offset="0.75" />
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
+            <StackLayout
+                HorizontalOptions="Center"
+                Orientation="Horizontal">
+                <Button 
+                    Text="Add"
+                    Clicked="OnAddClicked" />
+                <Button 
+                    Text="Remove"
+                    Clicked="OnRemoveClicked" />
+            </StackLayout>
         </StackLayout>
     </ScrollView>
 </ContentPage>
