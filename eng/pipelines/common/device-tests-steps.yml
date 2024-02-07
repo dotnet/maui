@@ -100,6 +100,7 @@ steps:
         mkdir -p $(System.DefaultWorkingDirectory)/artifacts
         zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
       displayName: Zip Simulator Logs
+      condition: always()
       continueOnError: true
 
   - task: PublishTestResults@2
