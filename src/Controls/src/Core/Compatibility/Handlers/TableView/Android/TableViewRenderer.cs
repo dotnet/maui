@@ -4,6 +4,7 @@ using Android.Views;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
 
@@ -123,6 +124,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (Element.RowHeight > -1)
 				{
 					heightConstraint = (int)(_adapter.Count * Element.RowHeight);
+				}
+				else if (this is IViewHandler vh && vh.VirtualView is not null && Dimension.IsExplicitSet(vh.VirtualView.Height) && Context is not null)
+				{
+					heightConstraint = MeasureSpec.MakeMeasureSpec((int)Context.ToPixels(vh.VirtualView.Height), MeasureSpecMode.Exactly);
 				}
 				else if (_adapter is not null)
 				{
