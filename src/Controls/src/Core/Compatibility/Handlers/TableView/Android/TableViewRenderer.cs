@@ -137,8 +137,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							continue;
 						}
 
+						// We aren't using ToPlatform because we only want the platform view if it's been created
+						// Also the cells only implement `IElementHandler` so they don't have ContainerViews
 						var platformView = cell.Handler?.PlatformView as AView;
-						var convertView = (platformView?.Parent as AView) ?? platformView;
+
+						// If the view has a parent that means it's already been added to the `ConditionalFocusLayout`
+						// That's going to be the actual `convertView`
+						var convertView = platformView?.Parent as AView;
 
 						AView listItem = _adapter.GetView(i, convertView, Control);
 						int widthSpec;
