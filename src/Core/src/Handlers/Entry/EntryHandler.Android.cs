@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views;
@@ -10,15 +10,13 @@ using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers
 {
-	// TODO: NET8 issoto - Change the TPlatformView generic type to MauiAppCompatEditText
-	// This type adds support to the SelectionChanged event
-	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
+	public partial class EntryHandler : ViewHandler<IEntry, MauiAppCompatEditText>
 	{
 		Drawable? _clearButtonDrawable;
 		bool _clearButtonVisible;
 		bool _set;
 
-		protected override AppCompatEditText CreatePlatformView()
+		protected override MauiAppCompatEditText CreatePlatformView()
 		{
 			var nativeEntry = new MauiAppCompatEditText(Context);
 			return nativeEntry;
@@ -32,15 +30,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			if (!_set && PlatformView is MauiAppCompatEditText editText)
-				editText.SelectionChanged += OnSelectionChanged;
+			if (!_set && PlatformView is not null)
+				PlatformView.SelectionChanged += OnSelectionChanged;
 
 			_set = true;
 		}
 
-		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
-		protected override void ConnectHandler(AppCompatEditText platformView)
+		protected override void ConnectHandler(MauiAppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
@@ -49,8 +45,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditorAction += OnEditorAction;
 		}
 
-		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
-		protected override void DisconnectHandler(AppCompatEditText platformView)
+		protected override void DisconnectHandler(MauiAppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
 
@@ -59,10 +54,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
-
-			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			if (_set && platformView is MauiAppCompatEditText editText)
-				editText.SelectionChanged -= OnSelectionChanged;
+			platformView.SelectionChanged -= OnSelectionChanged;
 
 			_set = false;
 		}
@@ -139,7 +131,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry)
 		{
 			if (handler is EntryHandler platformHandler)
-				handler.PlatformView?.UpdateClearButtonVisibility(entry, platformHandler.GetClearButtonDrawable);
+				handler.PlatformView?.UpdateClearButtonVisibility(entry);
 		}
 
 		static void MapFocus(IEntryHandler handler, IEntry entry, object? args)
