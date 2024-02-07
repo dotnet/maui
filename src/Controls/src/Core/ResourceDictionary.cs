@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -47,9 +48,26 @@ namespace Microsoft.Maui.Controls
 			//this will return a type if the RD as an x:Class element, and codebehind
 			var type = XamlResourceIdAttribute.GetTypeForPath(assembly, resourcePath);
 			if (type != null)
+			{
 				_mergedInstance = s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type));
+			}
 			else
-				_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateFromResource<ResourceDictionary>(resourcePath, assembly, lineInfo);
+			{
+				if (RuntimeFeature.IsXamlRuntimeParsingSupported)
+				{
+					_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateFromResource<ResourceDictionary>(resourcePath, assembly, lineInfo);
+				}
+				else
+				{
+					// This codepath is only ever hit when XamlC is explicitly disabled for a given resource dictionary.
+					// The developer had to add [XamlCompilation(XamlCompilationOptions.Skip)] or <?xaml-comp compile="false" ?> to their code.
+					// XamlC will produce a warning in this case (MAUIG0070 or XC0010).
+					throw new InvalidOperationException(
+						$"The resource '{resourcePath}' has not been compiled using XamlC and parsing XAML resources at runtime is disabled. "
+						+ "Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting "
+						+ "the MauiXamlRuntimeParsingSupport MSBuild property to true.");
+				}
+			}
 			OnValuesChanged(_mergedInstance.ToArray());
 		}
 

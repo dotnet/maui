@@ -206,4 +206,16 @@
            Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Microsoft.Maui ($(MinTargetFrameworkVersionForMaui)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
   </Target>
 
+  <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink">
+    <PropertyGroup>
+      <MauiXamlRuntimeParsingSupport Condition="'$(MauiXamlRuntimeParsingSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiXamlRuntimeParsingSupport>
+    </PropertyGroup>
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported"
+                                      Condition="'$(MauiXamlRuntimeParsingSupport)' != ''"
+                                      Value="$(MauiXamlRuntimeParsingSupport)"
+                                      Trim="true" />
+    </ItemGroup>
+  </Target>
+
 </Project>

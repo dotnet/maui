@@ -26,24 +26,28 @@
 // THE SOFTWARE.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
 	public static class Extensions
 	{
+		[RequiresUnreferencedCode(TrimmerConstants.XamlLoadingTrimmerWarning)]
 		public static TXaml LoadFromXaml<TXaml>(this TXaml view, Type callingType)
 		{
 			XamlLoader.Load(view, callingType);
 			return view;
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlLoadingTrimmerWarning)]
 		public static TXaml LoadFromXaml<TXaml>(this TXaml view, string xaml)
 		{
 			XamlLoader.Load(view, xaml);
 			return view;
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlLoadingTrimmerWarning)]
 		internal static TXaml LoadFromXaml<TXaml>(this TXaml view, string xaml, Assembly rootAssembly)
 		{
 			XamlLoader.Load(view, xaml, rootAssembly);

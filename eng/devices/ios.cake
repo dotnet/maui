@@ -162,6 +162,8 @@ Task("Build")
 Task("uitest-build")
 	.Does(() =>
 {
+	SetDotNetEnvironmentVariables();
+
 	var name = System.IO.Path.GetFileNameWithoutExtension(DEFAULT_APP_PROJECT);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
 
@@ -192,6 +194,8 @@ Task("Test")
 	.IsDependentOn("Build")
 	.Does(() =>
 {
+	SetDotNetEnvironmentVariables();
+
 	if (string.IsNullOrEmpty(TEST_APP)) {
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");

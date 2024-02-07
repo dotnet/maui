@@ -1,0 +1,8 @@
+<linker>
+  <assembly fullname="Microsoft.Maui">
+    <type fullname="Microsoft.Maui.RuntimeFeature">
+      <method signature="System.Boolean get_IsXamlRuntimeParsingSupported()" body="stub" feature="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported" value="false" featurevalue="false" />
+      <method signature="System.Boolean get_IsXamlRuntimeParsingSupported()" body="stub" feature="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported" value="true" featurevalue="true" />
+    </type>
+  </assembly>
+</linker>
