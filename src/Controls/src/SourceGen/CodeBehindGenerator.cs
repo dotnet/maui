@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -44,20 +45,25 @@ namespace Microsoft.Maui.Controls.SourceGen
 			var xmlnsDefinitionsProvider = initContext.CompilationProvider
 				.Select(GetAssemblyAttributes);
 
+			var typeCacheProvider = initContext.CompilationProvider
+				.Select(GetTypeCache);
+
 			var sourceProvider = projectItemProvider
 				.Combine(xmlnsDefinitionsProvider)
+				.Combine(typeCacheProvider)
 				.Combine(initContext.CompilationProvider)
 				.Select(static (t, _) => (t.Left.Left, t.Left.Right, t.Right));
 
 			initContext.RegisterSourceOutput(sourceProvider, static (sourceProductionContext, provider) =>
 			{
-				var (projectItem, caches, compilation) = provider;
+				var ((projectItem, xmlnsCache), typeCache, compilation) = provider;
 				if (projectItem == null)
 					return;
+
 				switch (projectItem.Kind)
 				{
 					case "Xaml":
-						GenerateXamlCodeBehind(projectItem, compilation, sourceProductionContext, caches);
+						GenerateXamlCodeBehind(projectItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
 						break;
 					case "Css":
 						GenerateCssCodeBehind(projectItem, sourceProductionContext);
@@ -137,7 +143,12 @@ namespace Microsoft.Maui.Controls.SourceGen
 			return new AssemblyCaches(xmlnsDefinitions, internalsVisible);
 		}
 
-		static void GenerateXamlCodeBehind(ProjectItem projItem, Compilation compilation, SourceProductionContext context, AssemblyCaches caches)
+		static IDictionary<XmlType, string> GetTypeCache(Compilation compilation, CancellationToken cancellationToken)
+		{
+			return new Dictionary<XmlType, string>();
+		}
+
+		static void GenerateXamlCodeBehind(ProjectItem projItem, Compilation compilation, SourceProductionContext context, AssemblyCaches caches, IDictionary<XmlType, string> typeCache)
 		{
 			var text = projItem.AdditionalText.GetText(context.CancellationToken);
 			if (text == null)
@@ -149,7 +160,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 				return;
 			var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
 
-			if (!TryParseXaml(text, uid, compilation, caches, context.CancellationToken, projItem.TargetFramework, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
+			if (!TryParseXaml(text, uid, compilation, caches, typeCache, context.CancellationToken, projItem.TargetFramework, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
 			{
 				if (parseException != null)
 				{
@@ -237,7 +248,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 		}
 
-		static bool TryParseXaml(SourceText text, string uid, Compilation compilation, AssemblyCaches caches, CancellationToken cancellationToken, string? targetFramework, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields, out Exception? exception)
+		static bool TryParseXaml(SourceText text, string uid, Compilation compilation, AssemblyCaches caches, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, string? targetFramework, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields, out Exception? exception)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -320,9 +331,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 				return true;
 			}
 
-			namedFields = GetNamedFields(root, nsmgr, compilation, caches, cancellationToken);
+			namedFields = GetNamedFields(root, nsmgr, compilation, caches, typeCache, cancellationToken);
 			var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
-			baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), compilation, caches);
+			baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), compilation, caches, typeCache);
 
 			// x:ClassModifier attribute
 			var classModifier = GetAttributeValue(root, "ClassModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
@@ -345,7 +356,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			return true;
 		}
 
-		static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches caches, CancellationToken cancellationToken)
+		static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches caches, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken)
 		{
 			var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 			if (xPrefix == null)
@@ -371,13 +382,17 @@ namespace Microsoft.Maui.Controls.SourceGen
 				var accessModifier = fieldModifier?.ToLowerInvariant().Replace("notpublic", "internal") ?? "private"; //notpublic is WPF for internal
 				if (!new[] { "private", "public", "internal", "protected" }.Contains(accessModifier)) //quick validation
 					accessModifier = "private";
-				yield return (name ?? "", GetTypeName(xmlType, compilation, caches), accessModifier);
+				yield return (name ?? "", GetTypeName(xmlType, compilation, caches, typeCache), accessModifier);
 			}
 		}
 
-		static string GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches caches)
+		static string GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches caches, IDictionary<XmlType, string> typeCache)
 		{
-			string returnType;
+			if (typeCache.TryGetValue(xmlType, out string returnType))
+			{
+				return returnType;
+			}
+
 			var ns = GetClrNamespace(xmlType.NamespaceUri);
 			if (ns != null)
 				returnType = $"{ns}.{xmlType.Name}";
@@ -388,9 +403,11 @@ namespace Microsoft.Maui.Controls.SourceGen
 			}
 
 			if (xmlType.TypeArguments != null)
-				returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, caches)))}>";
+				returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, caches, typeCache)))}>";
 
-			return $"global::{returnType}";
+			returnType = $"global::{returnType}";
+			typeCache[xmlType] = returnType;
+			return returnType;
 		}
 
 		static string? GetClrNamespace(string namespaceuri)
