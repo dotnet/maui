@@ -15,6 +15,11 @@ parameters:
 steps:
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
+        zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+      displayName: Zip Simulator Logs
+      condition: eq(variables['Platform.Name'], 'Mac')
+      continueOnError: true
+    - bash: |
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
         $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
@@ -95,7 +100,7 @@ steps:
     retryCountOnTaskFailure: 2
 
   - bash: |
-      zip -9rj "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+      zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
     displayName: Zip Simulator Logs
     condition: eq(variables['Platform.Name'], 'Mac')
     continueOnError: true
