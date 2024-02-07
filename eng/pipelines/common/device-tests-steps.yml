@@ -93,6 +93,13 @@ steps:
     condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
     retryCountOnTaskFailure: 2
 
+  - bash: |
+      grep ${{ parameters.windowsPackageId }} ~/Library/Logs/CoreSimulator/ -R
+    displayName: Output Device Logs
+    workingDirectory: ${{ parameters.checkoutDirectory }}
+    condition: eq(variables['Platform.Name'], 'Mac')
+    continueOnError: true
+
   - task: PublishTestResults@2
     displayName: Publish the $(Agent.JobName) test results
     condition: always()
