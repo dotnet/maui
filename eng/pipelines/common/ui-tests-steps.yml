@@ -112,8 +112,8 @@ steps:
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-      zip -9r "$(LogDirectory)/CoreSimulatorLog_$(new-guid).zip" "$HOME/Library/Logs/CoreSimulator/"
-      displayName: Zip Simulator Logs
+        zip -9r "$(LogDirectory)/CoreSimulatorLog_$(new-guid).zip" "$HOME/Library/Logs/CoreSimulator/"
+        displayName: Zip Simulator Logs
       condition: always()
       continueOnError: true
 
