@@ -1,11 +1,5 @@
 #!/bin/bash -ex
 
-# Do some simple validation
-if [[ "$BUILD_REVISION" == "" ]] ; then
-	echo "This script should only be run on bots."
-	exit 1
-fi
-
 # Print disk status before cleaning
 df -h
 
