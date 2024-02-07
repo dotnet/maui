@@ -21,10 +21,12 @@ namespace Microsoft.Maui.UnitTests
 		internal class TestSource
 		{
 			public int Count = 0;
-			public TestEventSource EventSource { get; set; }
-			public TestSource()
+			public ITestEventSource EventSource { get; private set; }
+			public TestSource(Type sourceType)
 			{
-				EventSource = new TestEventSource();
+				var source = Activator.CreateInstance(sourceType) as ITestEventSource;
+				Assert.NotNull(source);
+				EventSource = source;
 				EventSource.TestEvent += EventSource_TestEvent;
 			}
 			public void Clean()
@@ -44,29 +46,31 @@ namespace Microsoft.Maui.UnitTests
 			}
 		}
 
-		internal class TestEventSource
+		internal interface ITestEventSource
 		{
-			readonly WeakEventManager _weakEventManager;
+			public void FireTestEvent();
 
-			public TestEventSource()
-			{
-				_weakEventManager = new WeakEventManager();
-			}
+			public event EventHandler<EventArgs> TestEvent;
+
+			public int EventHandlerCount { get; }
+		}
+
+		/// <summary>
+		/// Tests WeakEventManager
+		/// </summary>
+		internal class TestEventManagerSource : ITestEventSource
+		{
+			readonly WeakEventManager _weakEventManager = new();
 
 			public void FireTestEvent()
 			{
-				OnTestEvent();
+				_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(TestEvent));
 			}
 
-			internal event EventHandler TestEvent
+			public event EventHandler<EventArgs> TestEvent
 			{
 				add { _weakEventManager.AddEventHandler(value); }
 				remove { _weakEventManager.RemoveEventHandler(value); }
-			}
-
-			void OnTestEvent()
-			{
-				_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(TestEvent));
 			}
 
 			public int EventHandlerCount
@@ -83,14 +87,46 @@ namespace Microsoft.Maui.UnitTests
 			}
 		}
 
+		/// <summary>
+		/// Tests WeakEventHandler
+		/// </summary>
+		internal class TestEventHandlerSource : ITestEventSource
+		{
+			readonly WeakEventHandler<EventArgs> _weakEventManager = new();
+
+			public void FireTestEvent()
+			{
+				_weakEventManager.HandleEvent(this, EventArgs.Empty);
+			}
+
+			public event EventHandler<EventArgs> TestEvent
+			{
+				add { _weakEventManager.AddEventHandler(value); }
+				remove { _weakEventManager.RemoveEventHandler(value); }
+			}
+
+			public int EventHandlerCount
+			{
+				get
+				{
+					// Access private members:
+					// HashSet<Subscriptions> _subscriptions;
+					var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+					var subscriptions = _weakEventManager.GetType().GetField("_subscriptions", flags)?.GetValue(_weakEventManager) as IEnumerable;
+					Assert.NotNull(subscriptions);
+					return subscriptions.Cast<object>().Count();
+				}
+			}
+		}
+
 		internal class TestSubscriber
 		{
-			public void Subscribe(TestEventSource source)
+			public void Subscribe(ITestEventSource source)
 			{
 				source.TestEvent += SourceOnTestEvent;
 			}
 
-			public void Unsubscribe(TestEventSource source)
+			public void Unsubscribe(ITestEventSource source)
 			{
 				source.TestEvent -= SourceOnTestEvent;
 			}
@@ -130,11 +166,12 @@ namespace Microsoft.Maui.UnitTests
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		}
 
-		[Fact]
-		public void CanRemoveEventHandler()
+		[Theory]
+		[InlineData(typeof(TestEventHandlerSource))]
+		[InlineData(typeof(TestEventManagerSource))]
+		public void CanRemoveEventHandler(Type sourceType)
 		{
-			var source = new TestSource();
-			int beforeRun = source.Count;
+			var source = new TestSource(sourceType);
 			source.Fire();
 
 			Assert.True(source.Count == 1);
@@ -143,12 +180,15 @@ namespace Microsoft.Maui.UnitTests
 			Assert.True(source.Count == 1);
 		}
 
-		[Fact]
-		public void CanRemoveStaticEventHandler()
+		[Theory]
+		[InlineData(typeof(TestEventHandlerSource))]
+		[InlineData(typeof(TestEventManagerSource))]
+		public void CanRemoveStaticEventHandler(Type sourceType)
 		{
 			int beforeRun = s_count;
 
-			var source = new TestEventSource();
+			var source = Activator.CreateInstance(sourceType) as ITestEventSource;
+			Assert.NotNull(source);
 			source.TestEvent += Handler;
 			source.TestEvent -= Handler;
 
@@ -157,12 +197,15 @@ namespace Microsoft.Maui.UnitTests
 			Assert.True(s_count == beforeRun);
 		}
 
-		[Fact]
-		public void EventHandlerCalled()
+		[Theory]
+		[InlineData(typeof(TestEventHandlerSource))]
+		[InlineData(typeof(TestEventManagerSource))]
+		public void EventHandlerCalled(Type sourceType)
 		{
 			var called = false;
 
-			var source = new TestEventSource();
+			var source = Activator.CreateInstance(sourceType) as ITestEventSource;
+			Assert.NotNull(source);
 			source.TestEvent += (sender, args) => { called = true; };
 
 			source.FireTestEvent();
@@ -170,20 +213,26 @@ namespace Microsoft.Maui.UnitTests
 			Assert.True(called);
 		}
 
-		[Fact]
-		public void FiringEventWithoutHandlerShouldNotThrow()
+		[Theory]
+		[InlineData(typeof(TestEventHandlerSource))]
+		[InlineData(typeof(TestEventManagerSource))]
+		public void FiringEventWithoutHandlerShouldNotThrow(Type sourceType)
 		{
-			var source = new TestEventSource();
+			var source = Activator.CreateInstance(sourceType) as ITestEventSource;
+			Assert.NotNull(source);
 			source.FireTestEvent();
 		}
 
-		[Fact]
-		public void MultipleHandlersCalled()
+		[Theory]
+		[InlineData(typeof(TestEventHandlerSource))]
+		[InlineData(typeof(TestEventManagerSource))]
+		public void MultipleHandlersCalled(Type sourceType)
 		{
 			var called1 = false;
 			var called2 = false;
 
-			var source = new TestEventSource();
+			var source = Activator.CreateInstance(sourceType) as ITestEventSource;
+			Assert.NotNull(source);
 			source.TestEvent += (sender, args) => { called1 = true; };
 			source.TestEvent += (sender, args) => { called2 = true; };
 			source.FireTestEvent();
@@ -222,12 +271,15 @@ namespace Microsoft.Maui.UnitTests
 			wem.RemoveEventHandler((Action<object?, EventArgs>)Handler, "alsofake");
 		}
 
-		[Fact]
-		public void RemoveHandlerWithMultipleSubscriptionsRemovesOne()
+		[Theory]
+		[InlineData(typeof(TestEventHandlerSource))]
+		[InlineData(typeof(TestEventManagerSource))]
+		public void RemoveHandlerWithMultipleSubscriptionsRemovesOne(Type sourceType)
 		{
 			int beforeRun = s_count;
 
-			var source = new TestEventSource();
+			var source = Activator.CreateInstance(sourceType) as ITestEventSource;
+			Assert.NotNull(source);
 			source.TestEvent += Handler;
 			source.TestEvent += Handler;
 			source.TestEvent -= Handler;
@@ -237,12 +289,15 @@ namespace Microsoft.Maui.UnitTests
 			Assert.Equal(beforeRun + 1, s_count);
 		}
 
-		[Fact]
-		public void StaticHandlerShouldRun()
+		[Theory]
+		[InlineData(typeof(TestEventHandlerSource))]
+		[InlineData(typeof(TestEventManagerSource))]
+		public void StaticHandlerShouldRun(Type sourceType)
 		{
 			int beforeRun = s_count;
 
-			var source = new TestEventSource();
+			var source = Activator.CreateInstance(sourceType) as ITestEventSource;
+			Assert.NotNull(source);
 			source.TestEvent += Handler;
 
 			source.FireTestEvent();
@@ -250,11 +305,14 @@ namespace Microsoft.Maui.UnitTests
 			Assert.True(s_count > beforeRun);
 		}
 
-		[Fact]
-		public void VerifySubscriberCanBeCollected_FireEvent()
+		[Theory]
+		[InlineData(typeof(TestEventHandlerSource))]
+		[InlineData(typeof(TestEventManagerSource))]
+		public void VerifySubscriberCanBeCollected_FireEvent(Type sourceType)
 		{
 			WeakReference? wr = null;
-			var source = new TestEventSource();
+			var source = Activator.CreateInstance(sourceType) as ITestEventSource;
+			Assert.NotNull(source);
 			new Action(() =>
 			{
 				var ts = new TestSubscriber();
@@ -274,11 +332,14 @@ namespace Microsoft.Maui.UnitTests
 			Assert.Equal(0, source.EventHandlerCount);
 		}
 
-		[Fact]
-		public void VerifySubscriberCanBeCollected_Unsubscribe()
+		[Theory]
+		[InlineData(typeof(TestEventHandlerSource))]
+		[InlineData(typeof(TestEventManagerSource))]
+		public void VerifySubscriberCanBeCollected_Unsubscribe(Type sourceType)
 		{
 			WeakReference? wr = null;
-			var source = new TestEventSource();
+			var source = Activator.CreateInstance(sourceType) as ITestEventSource;
+			Assert.NotNull(source);
 			new Action(() =>
 			{
 				var ts = new TestSubscriber();

@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.Application']/Docs/*" />
 	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement, IApplication
 	{
-		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
 
 #pragma warning disable CS0612 // Type or member is obsolete
@@ -218,10 +217,12 @@ namespace Microsoft.Maui.Controls
 #endif
 		}
 
+		readonly WeakEventHandler<AppThemeChangedEventArgs> _requestedThemeChanged = new();
+
 		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
 		{
-			add => _weakEventManager.AddEventHandler(value);
-			remove => _weakEventManager.RemoveEventHandler(value);
+			add => _requestedThemeChanged.AddEventHandler(value);
+			remove => _requestedThemeChanged.RemoveEventHandler(value);
 		}
 
 		bool _themeChangedFiring;
@@ -243,7 +244,7 @@ namespace Microsoft.Maui.Controls
 				_themeChangedFiring = true;
 				_lastAppTheme = newTheme;
 
-				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
+				_requestedThemeChanged.HandleEvent(this, new AppThemeChangedEventArgs(newTheme));
 			}
 			finally
 			{
