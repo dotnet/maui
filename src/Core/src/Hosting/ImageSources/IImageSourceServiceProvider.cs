@@ -11,9 +11,9 @@ namespace Microsoft.Maui
 		IImageSourceService? GetImageSourceService(Type imageSource);
 
 		[Obsolete("Use GetImageSourceService instead.")]
-		Type GetImageSourceServiceType(Type imageSource);
+		Type GetImageSourceServiceType(Type imageSource) => throw new NotImplementedException();
 
 		[Obsolete("Use GetImageSourceService instead.")]
-		Type GetImageSourceType(Type imageSource);
+		Type GetImageSourceType(Type imageSource) => throw new NotImplementedException();
 	}
 }
