@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Platform
 	{
 		const int BackgroundDrawableId = 999;
 
-		public static void UpdateBackground(this MaterialButton platformView, IButton button)
+		public static void UpdateBackground(this MaterialButton platformView, IButton button, Drawable? defaultDrawable = null)
 		{
-			platformView.UpdateBorderDrawable(button);
+			platformView.UpdateBorderDrawable(button, defaultDrawable);
 		}
 
-		public static void UpdateStrokeColor(this MaterialButton platformView, IButton button)
+		public static void UpdateStrokeColor(this MaterialButton platformView, IButton button, Drawable? defaultDrawable = null)
 		{
 			if (platformView.Background is RippleDrawable background)
 			{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 
 				if (gradientDrawable is not null)
 				{
-					platformView.UpdateBorderDrawable(button);
+					platformView.UpdateBorderDrawable(button, defaultDrawable);
 					return;
 				}
 			}
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Platform
 				platformView.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToPlatform());
 		}
 
-		public static void UpdateStrokeThickness(this MaterialButton platformView, IButton button)
+		public static void UpdateStrokeThickness(this MaterialButton platformView, IButton button, Drawable? defaultDrawable = null)
 		{
 			if (platformView.Background is RippleDrawable background)
 			{
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Platform
 
 				if (gradientDrawable is not null)
 				{
-					platformView.UpdateBorderDrawable(button);
+					platformView.UpdateBorderDrawable(button, defaultDrawable);
 					return;
 				}
 			}
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Platform
 				platformView.StrokeWidth = (int)platformView.Context.ToPixels(buttonStroke.StrokeThickness);
 		}
 
-		public static void UpdateCornerRadius(this MaterialButton platformView, IButton button)
+		public static void UpdateCornerRadius(this MaterialButton platformView, IButton button, Drawable? defaultDrawable = null)
 		{
 			if (platformView.Background is RippleDrawable background)
 			{
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 				if (gradientDrawable is not null)
 				{
-					platformView.UpdateBorderDrawable(button);
+					platformView.UpdateBorderDrawable(button, defaultDrawable);
 					return;
 				}
 			}
@@ -89,32 +89,44 @@ namespace Microsoft.Maui.Platform
 				(int)padding.Bottom);
 		}
 
-		internal static void UpdateBorderDrawable(this MaterialButton platformView, IButton button)
+		internal static void UpdateBorderDrawable(this MaterialButton platformView, IButton button, Drawable? defaultDrawable = null)
 		{
 			var background = button.Background;
 
-			if (!background.IsNullOrEmpty())
+			if (background is GradientPaint)
 			{
 				// Remove previous background gradient if any
 				if (platformView.Background is RippleDrawable previousBackground)
 				{
-					platformView.Background = null;
-					previousBackground.Dispose();
+					var previousGradientDrawable = previousBackground.FindDrawableByLayerId(BackgroundDrawableId);
+					previousGradientDrawable?.Dispose();
 				}
 
 				// Null out BackgroundTintList to avoid that the MaterialButton custom background doesn't get tinted.
 				platformView.BackgroundTintList = null;
 
 				// Ripple selection color
-				var rippleColor = Colors.White.WithAlpha(0.5f).ToPlatform();
+				var rippleColor = platformView.RippleColor ?? ColorStateList.ValueOf(Colors.White.WithAlpha(0.5f).ToPlatform());
 
 				var w = platformView.Width;
 				var h = platformView.Height;
 
 				// Button background gradient
-				GradientDrawable? gradientDrawable = background.ToGradientDrawable(w, h);
-				gradientDrawable?.SetShape(ShapeType.Rectangle);
-				gradientDrawable?.SetCornerRadius(button.CornerRadius);
+				GradientDrawable? gradientDrawable = null;
+
+				if (background is GradientPaint)
+				{
+					gradientDrawable = background.ToGradientDrawable(w, h);
+					gradientDrawable?.SetShape(ShapeType.Rectangle);
+					gradientDrawable?.SetCornerRadius(button.CornerRadius);
+				}
+
+				if (background is SolidPaint solidPaint)
+				{
+					gradientDrawable = new GradientDrawable();
+					gradientDrawable?.SetShape(ShapeType.Rectangle);
+					gradientDrawable?.SetColor(ColorStateList.ValueOf(solidPaint.Color.ToPlatform()));
+				}
 
 				// Ripple mask
 				float[] outerRadii = new float[8];
@@ -124,7 +136,7 @@ namespace Microsoft.Maui.Platform
 				RoundRectShape shape = new RoundRectShape(outerRadii, null, null);
 				Android.Graphics.Drawables.ShapeDrawable maskDrawable = new Android.Graphics.Drawables.ShapeDrawable(shape);
 
-				var rippleDrawable = new RippleDrawable(ColorStateList.ValueOf(rippleColor), gradientDrawable, maskDrawable);
+				var rippleDrawable = new RippleDrawable(rippleColor, gradientDrawable, maskDrawable);
 				rippleDrawable.SetId(0, BackgroundDrawableId);
 
 				// Update the Stroke
@@ -135,6 +147,16 @@ namespace Microsoft.Maui.Platform
 				gradientDrawable?.SetCornerRadius(platformView.Context.ToPixels(cornerRadius));
 
 				platformView.Background = rippleDrawable;
+			}
+			else if (background is SolidPaint solidPaint)
+			{
+				platformView.BackgroundTintList = null;
+				platformView.SetBackgroundColor(solidPaint.Color.ToPlatform());
+			}
+			else
+			{
+				if (defaultDrawable is not null)
+					platformView.Background = defaultDrawable;
 			}
 		}
 	}
