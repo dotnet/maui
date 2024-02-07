@@ -56,7 +56,7 @@ steps:
   - bash: |
       zip -9rj "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
     displayName: Zip Simulator Logs
-    condition: eq(parameters.platform, 'ios')
+    condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
 
   - task: PublishTestResults@2
