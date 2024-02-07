@@ -113,6 +113,7 @@ steps:
   - bash: |
       grep maui ~/Library/Logs/CoreSimulator/ -R
     displayName: Output Device Logs
+    condition: always()
     continueOnError: true
 
   - task: PublishTestResults@2
