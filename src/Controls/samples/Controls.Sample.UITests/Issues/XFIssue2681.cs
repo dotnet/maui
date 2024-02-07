@@ -61,7 +61,11 @@ public class XFIssue2681 : TestContentPage
 						},
 						new Button(){
 							Text = "Go Back",
-							AutomationId = "GoBack"
+							AutomationId = "GoBack",
+							Command = new Command(async () =>
+							{
+								await Navigation.PopAsync();
+							})
 						}
 					}
 				}
