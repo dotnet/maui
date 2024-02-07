@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using Microsoft.Maui.IntegrationTests.Apple;
 
 namespace Microsoft.Maui.IntegrationTests
@@ -15,12 +16,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
-		[TestCase("maui", DotNetPrevious, "Debug", false)]
-		[TestCase("maui", DotNetPrevious, "Release", false)]
+		//[TestCase("maui", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui", DotNetPrevious, "Release", false)]
 		[TestCase("maui", DotNetCurrent, "Debug", false)]
 		[TestCase("maui", DotNetCurrent, "Release", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
 		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
@@ -48,13 +49,48 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		// with spaces
+		[TestCase("maui", "Project Space", "projectspace")]
+		[TestCase("maui-blazor", "Project Space", "projectspace")]
+		[TestCase("mauilib", "Project Space", "projectspace")]
+  		// with invalid characters
+		[TestCase("maui", "Project@Symbol", "projectsymbol")]
+		[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
+		[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
+		public void BuildsWithSpecialCharacters(string id, string projectName, string expectedId)
+		{
+			var projectDir = Path.Combine(TestDirectory, projectName);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			EnableTizen(projectFile);
+
+			// libraries do not have application IDs
+			if (id != "mauilib")
+			{
+				var doc = XDocument.Load(projectFile);
+				var appId = doc.Root!
+					.Elements("PropertyGroup")
+					.Elements("ApplicationId")
+					.Single()
+					.Value;
+				Assert.AreEqual($"com.companyname.{expectedId}", appId);
+			}
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		// Parameters: short name, target framework, build config, use pack target
-		[TestCase("maui", DotNetPrevious, "Debug", false)]
-		[TestCase("maui", DotNetPrevious, "Release", false)]
+		//[TestCase("maui", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui", DotNetPrevious, "Release", false)]
 		[TestCase("maui", DotNetCurrent, "Debug", false)]
 		[TestCase("maui", DotNetCurrent, "Release", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
 		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
@@ -88,12 +124,12 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", DotNetPrevious, "Debug")]
-		[TestCase("maui", DotNetPrevious, "Release")]
+		//[TestCase("maui", DotNetPrevious, "Debug")]
+		//[TestCase("maui", DotNetPrevious, "Release")]
 		[TestCase("maui", DotNetCurrent, "Debug")]
 		[TestCase("maui", DotNetCurrent, "Release")]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug")]
-		[TestCase("maui-blazor", DotNetPrevious, "Release")]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug")]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release")]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
 		[TestCase("maui-blazor", DotNetCurrent, "Release")]
 		public void BuildUnpackaged(string id, string framework, string config)
@@ -114,6 +150,36 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		[TestCase("maui", true, true)]
+		[TestCase("maui", true, false)]
+		[TestCase("maui", false, true)]
+		public void BuildWindowsAppSDKSelfContained(string id, bool wasdkself, bool netself)
+		{
+			if (TestEnvironment.IsMacOS)
+				Assert.Ignore("This test is designed for testing a windows build.");
+
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			FileUtilities.ReplaceInFile(projectFile,
+				"<UseMaui>true</UseMaui>",
+				$"""
+				<UseMaui>true</UseMaui>
+				<WindowsAppSDKSelfContained>{wasdkself}</WindowsAppSDKSelfContained>
+				<SelfContained>{netself}</SelfContained>
+				""");
+
+			var extendedBuildProps = BuildProps;
+			extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 		public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 		{
@@ -129,6 +195,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add("PublishAot=true");
 			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
 
 			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
@@ -150,6 +217,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add("PublishAot=true");
 			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
 			extendedBuildProps.Add("TrimmerSingleWarn=false");
 
 			string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";

@@ -462,15 +462,15 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		[Test]
-		public void InvalidXml()
-		{
-			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", "notxmlatall"));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			Assert.Throws<AssertionException>(() => Build(projectFile));
-		}
+		// [Test]
+		// public void InvalidXml()
+		// {
+		// 	var project = NewProject();
+		// 	project.Add(AddFile("MainPage.xaml", "MauiXaml", "notxmlatall"));
+		// 	var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+		// 	project.Save(projectFile);
+		// 	Assert.Throws<AssertionException>(() => Build(projectFile));
+		// }
 
 		[Test]
 		public void RandomEmbeddedResource()

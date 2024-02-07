@@ -238,6 +238,7 @@ Task("dotnet-test")
                 catch
                 {
                     success = false;
+                    Error($"Test project failed: {project}");
                 }
             }
         }
@@ -542,9 +543,9 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 
 }
 
-void SetDotNetEnvironmentVariables()
+void SetDotNetEnvironmentVariables(string dotnetDir = null)
 {
-    var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./bin/dotnet/")).ToString();
     
     SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
@@ -552,6 +553,7 @@ void SetDotNetEnvironmentVariables()
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
     SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
+    SetEnvironmentVariable("ForceNet8Current", "true");
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
     // Get "full" .binlog in Project System Tools
@@ -745,11 +747,10 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 $"console;verbosity=normal"
             }, 
            	ResultsDirectory = GetTestResultsDirectory(),
-            //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
+        //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
                 args.Append($"-bl:{binlog}");
-               // args.Append($"/tl");
                 if(argsExtra != null)
                 {
                     foreach(var prop in argsExtra)
@@ -766,7 +767,11 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
         settings.ToolPath = pathDotnet;
     }
 
-    DotNetTest(csproj, settings);
+    try {
+        DotNetTest(csproj, settings);
+    } finally {
+        Information("Test Run complete: {0}", results);
+    }
 }
 
 DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)
