@@ -116,7 +116,7 @@ parameters:
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(macosTestsVmPool)
-      vmImage: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmImage)
       testName: RunOniOS
       artifact: templates-run-ios
 
