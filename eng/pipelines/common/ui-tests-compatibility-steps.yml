@@ -15,9 +15,11 @@ parameters:
 steps:
   - bash: |
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
       $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
     displayName: 'Clean bot'
     continueOnError: true
+    condition: eq(parameters.platform, 'ios')
     timeoutInMinutes: 60
 
   - template: provision.yml
@@ -50,7 +52,13 @@ steps:
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic --where="${{ parameters.where }}"
     displayName: $(Agent.JobName)
     # retryCountOnTaskFailure: 2
-  
+
+  - bash: |
+      zip -9rj "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+    displayName: Zip Simulator Logs
+    condition: eq(parameters.platform, 'ios')
+    continueOnError: true
+
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results
     condition: always()

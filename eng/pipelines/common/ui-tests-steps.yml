@@ -111,8 +111,8 @@ steps:
     retryCountOnTaskFailure: 2
 
   - bash: |
-      grep maui ~/Library/Logs/CoreSimulator/ -R
-    displayName: Output Device Logs
+      zip -9rj "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+    displayName: Zip Simulator Logs
     condition: always()
     continueOnError: true
 
