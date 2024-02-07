@@ -110,11 +110,13 @@ steps:
     displayName: $(Agent.JobName)
     retryCountOnTaskFailure: 2
 
-  - bash: |
-      zip -9rj "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
-    displayName: Zip Simulator Logs
-    condition: always()
-    continueOnError: true
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        mkdir -p $(System.DefaultWorkingDirectory)/artifacts
+        zip -9r "$(System.DefaultWorkingDirectory)/artifacts/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+      displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
 
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results

@@ -15,10 +15,6 @@ parameters:
 steps:
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-        zip -9r "$(System.DefaultWorkingDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
-      displayName: Zip Simulator Logs
-      continueOnError: true
-    - bash: |
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
         $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
