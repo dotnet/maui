@@ -49,10 +49,8 @@ namespace Microsoft.Maui
 				if (uiFont != null)
 					return name;
 
-				if (error != null)
-					throw new NSErrorException(error);
-				else
-					throw new InvalidOperationException("Unable to load font from the stream.");
+				// we know error is not null, the NotNullWhen attr is missing in the iOS bindings, ref: https://github.com/xamarin/xamarin-macios/pull/20050
+				throw new NSErrorException(error!);
 			}
 			catch (Exception ex)
 			{
