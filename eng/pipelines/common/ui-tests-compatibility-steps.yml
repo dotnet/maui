@@ -14,6 +14,7 @@ parameters:
 
 steps:
   - bash: |
+      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
       $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
     displayName: 'Clean bot'
     continueOnError: true
