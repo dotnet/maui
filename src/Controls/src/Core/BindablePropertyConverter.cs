@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -23,6 +24,13 @@ namespace Microsoft.Maui.Controls
 
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
+			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
+			{
+				throw new NotSupportedException("XAML runtime parsing is not supported. " +
+					"Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting " +
+					"the MauiXamlRuntimeParsingSupport MSBuild property to true.");
+			}
+
 			if (string.IsNullOrWhiteSpace(value))
 				return null;
 			if (serviceProvider == null)
@@ -75,6 +83,13 @@ namespace Microsoft.Maui.Controls
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
+			{
+				throw new NotSupportedException("XAML runtime parsing is not supported. " +
+					"Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting "
+					+ "the MauiXamlRuntimeParsingSupport MSBuild property to true.");
+			}
+
 			var strValue = value?.ToString();
 
 			if (string.IsNullOrWhiteSpace(strValue))
@@ -90,10 +105,15 @@ namespace Microsoft.Maui.Controls
 				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning($"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
 				return null;
 			}
-			Type type = Type.GetType("Microsoft.Maui.Controls." + parts[0]);
+			Type type = GetControlType(parts[0]);
 			return ConvertFrom(type, parts[1], null);
+
+			[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+			static Type GetControlType(string typeName)
+				=> Type.GetType("Microsoft.Maui.Controls." + typeName);
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 		BindableProperty ConvertFrom(Type type, string propertyName, IXmlLineInfo lineinfo)
 		{
 			string name = propertyName + "Property";
