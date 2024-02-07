@@ -13,7 +13,7 @@ parameters:
   provisionPlatform: "windows"
 
 steps:
-  - bash: $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+  - bash: sudo $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
     displayName: 'Clean bot'
     continueOnError: true
     timeoutInMinutes: 60
