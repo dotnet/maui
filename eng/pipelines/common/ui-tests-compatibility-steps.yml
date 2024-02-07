@@ -19,7 +19,7 @@ steps:
       $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
     displayName: 'Clean bot'
     continueOnError: true
-    condition: eq(parameters.platform, 'ios')
+    condition: ${{ eq(parameters.platform, 'ios') }}
     timeoutInMinutes: 60
 
   - template: provision.yml
