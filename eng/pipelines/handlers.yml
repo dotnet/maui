@@ -131,8 +131,6 @@ parameters:
     default:
       - name: default
         tfm: default
-      # - name: net6
-      #   tfm: net6.0
       - name: net9
         tfm: net9.0
 
