@@ -51,8 +51,6 @@ namespace Microsoft.Maui.Platform
 				{
 					frameworkElement.RenderTransform = new CompositeTransform
 					{
-						CenterX = anchorX,
-						CenterY = anchorY,
 						Rotation = rotation,
 						ScaleX = scaleX,
 						ScaleY = scaleY,
