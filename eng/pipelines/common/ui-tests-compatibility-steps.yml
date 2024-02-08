@@ -48,8 +48,8 @@ steps:
   - bash: |
       rm -r $HOME/Library/Logs/CoreSimulator/*
       rm -r $HOME/Library/Logs/DiagnosticReports/*
-      zip -9r "$(LogDirectory)/artifacts/CoreSimulatorLog_$(new-guid).zip" "$HOME/Library/Logs/CoreSimulator/"
-      zip -9r "$(LogDirectory)/DiagnosticReports_$(new-guid).zip" "$HOME/Library/Logs/DiagnosticReports/"
+      zip -9r "$(LogDirectory)/artifacts/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+      zip -9r "$(LogDirectory)/DiagnosticReports.zip" "$HOME/Library/Logs/DiagnosticReports/"
     displayName: Zip Simulator Logs
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
