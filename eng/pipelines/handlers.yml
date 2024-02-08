@@ -115,8 +115,12 @@ parameters:
         - Agent.OSVersion -equals 13.5
       testName: RunOnAndroid
       artifact: templates-run-android
-    - name: $(macosTestsVmPool)
-      vmImage: $(macosTestsVmImage)
+    - name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+        - Agent.OSVersion -equals 13.5
       testName: RunOniOS
       artifact: templates-run-ios
 
