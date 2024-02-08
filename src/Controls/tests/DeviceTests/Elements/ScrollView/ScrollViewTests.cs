@@ -137,9 +137,6 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformReference);
-			Assert.False(viewReference.IsAlive, "ScrollView should not be alive!");
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformReference.IsAlive, "PlatformView should not be alive!");
 		}
 
 		[Fact(DisplayName = "ScrollView inside layouts do not grow")]

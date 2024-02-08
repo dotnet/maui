@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Controls
 		public static void MapDetectReadingOrderFromContent(LabelHandler handler, Label label) => MapDetectReadingOrderFromContent((ILabelHandler)handler, label);
 		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
 
-
 		public static void MapDetectReadingOrderFromContent(ILabelHandler handler, Label label) =>
 			Platform.TextBlockExtensions.UpdateDetectReadingOrderFromContent(handler.PlatformView, label);
 
@@ -16,7 +15,7 @@ namespace Microsoft.Maui.Controls
 			Platform.TextBlockExtensions.UpdateText(handler.PlatformView, label);
 
 		public static void MapLineBreakMode(ILabelHandler handler, Label label) =>
-			handler.PlatformView?.UpdateLineBreakMode(label.LineBreakMode);
+			handler.PlatformView?.UpdateLineBreakMode(label);
 
 		public static void MapMaxLines(ILabelHandler handler, Label label) =>
 			handler.PlatformView?.UpdateMaxLines(label);

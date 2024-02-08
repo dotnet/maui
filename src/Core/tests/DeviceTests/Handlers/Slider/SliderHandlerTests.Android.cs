@@ -10,6 +10,17 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SliderHandlerTests
 	{
+		[Fact(DisplayName = "Thumb Color Initializes Correctly")]
+		public async Task ThumbColorInitializesCorrectly()
+		{
+			var slider = new SliderStub()
+			{
+				ThumbColor = Colors.Purple
+			};
+
+			await ValidateNativeThumbColor(slider, Colors.Purple);
+		}
+
 		[Fact(DisplayName = "ThumbImageSource Initializes Correctly", Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/1275")]
 		public async Task ThumbImageSourceInitializesCorrectly()
 		{
