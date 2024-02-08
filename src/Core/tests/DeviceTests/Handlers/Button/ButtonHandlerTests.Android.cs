@@ -118,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var button = new ButtonStub
 			{
-				Background = new SolidPaintStub(Colors.Black),
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Orange),
 				ImageSource = new FileImageSourceStub("black.png"),
 				CornerRadius = viewRadius
 			};
@@ -170,17 +170,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var appCompatButton = GetNativeButton(buttonHandler);
 
-			if (appCompatButton.Background is BorderDrawable)
+			if (appCompatButton.Background is RippleDrawable rippleDrawable)
 			{
-				var background = (BorderDrawable)appCompatButton.Background;
+				const int BackgroundDrawableId = 999;
+				var background = rippleDrawable.FindDrawableByLayerId(BackgroundDrawableId) as GradientDrawable;
 
 				if (background != null)
 				{
-					// Cornerradius is applied in drawing the path, in PathF. But that takes a private value as input, here we check that that private value is correctly set
-					CornerRadius cr = (CornerRadius)typeof(BorderDrawable).GetField("_cornerRadius",
-						System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(background);
-
-					return (int)cr.TopRight;
+					return (int)MauiContext.Context.FromPixels(background.CornerRadius);
 				}
 			}
 
