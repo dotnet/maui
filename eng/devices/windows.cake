@@ -256,10 +256,12 @@ Task("Test")
 		Information($"Waiting 10 seconds for process to finish...");
 		System.Threading.Thread.Sleep(10000);
 
-		var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
+		var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile);
 
-		for (int i = 0; i <= testCategoriesToRun; i++)
+		for (int i = 0; i <= testCategoriesToRun.Length; i++)
 		{
+			Information("Running test {0} of {1}: {2}", i + 1, testCategoriesToRun.Length, testCategoriesToRun[i]);
+
 			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
 
 			Information(startArgs);
@@ -279,10 +281,12 @@ Task("Test")
 		// Start the app once, this will trigger the discovery of the test categories
 		StartProcess(TEST_APP, testResultsFile + " -1");
 
-		var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
+		var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile);
 
-		for (int i = 0; i <= testCategoriesToRun; i++)
+		for (int i = 0; i <= testCategoriesToRun.Length; i++)
 		{
+			Information("Running test {0} of {1}: {2}", i + 1, testCategoriesToRun.Length, testCategoriesToRun[i]);
+
 			// Start the DeviceTests app for unpackaged
 			StartProcess(TEST_APP, testResultsFile + " " + i);
 		}
@@ -344,12 +348,17 @@ Task("Test")
 		throw new Exception($"Test result file(s) not found after {waited} seconds, process might have crashed or not completed yet.");
 	}
 
+	var failedTestCount = 0;
 	foreach(var file in System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml"))
 	{
 		var failed = XmlPeek(file, "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
 		if (!string.IsNullOrEmpty(failed)) {
-			throw new Exception($"At least {failed} test(s) failed.");
+			failedTestCount++;
+			Error("Failed tests found in {0}", file);
 		}
+	}
+	if (failedTestCount > 0) {
+		throw new Exception($"At least {failedTestCount} test runs failed.");
 	}
 });
 

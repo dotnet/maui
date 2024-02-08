@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public void Can_Create_EmailMessage()
 		{
 			// Save a local cache data directory file
+			Directory.CreateDirectory(FileSystem.AppDataDirectory);
 			var file = Path.Combine(FileSystem.AppDataDirectory, "EmailTest.txt");
 			File.WriteAllText(file, "Attachment contents goes here...");
 
@@ -80,6 +81,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public Task Email_Attachments_are_Sent()
 		{
 			// Save a local cache data directory file
+			Directory.CreateDirectory(FileSystem.AppDataDirectory);
 			var file = Path.Combine(FileSystem.AppDataDirectory, "EmailTest.txt");
 			File.WriteAllText(file, "Attachment contents goes here...");
 
