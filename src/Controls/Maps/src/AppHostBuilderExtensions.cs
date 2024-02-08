@@ -63,7 +63,12 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<Pin, MapPinHandler>();
 			handlersCollection.AddHandler<MapElement, MapElementHandler>();
 #endif
+
+#if WINDOWS
+			throw new NotImplementedException(".NET MAUI Maps is currently not implemented for Windows. For more information, please see: https://aka.ms/maui-maps-no-windows");
+#else
 			return handlersCollection;
+#endif
 		}
 	}
 }

@@ -73,12 +73,8 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Ventura
-        - macOS.Architecture -equals x64
-        - Agent.OSVersion -equals 13.5
+      name: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmImage)
   
   - name: windowsPool
     type: object

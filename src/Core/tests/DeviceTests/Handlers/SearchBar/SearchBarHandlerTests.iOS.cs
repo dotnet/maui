@@ -140,6 +140,9 @@ namespace Microsoft.Maui.DeviceTests
 		static UISearchBar GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			(UISearchBar)searchBarHandler.PlatformView;
 
+		Color GetNativeBackgroundColor(SearchBarHandler searchBarHandler) =>
+			GetNativeSearchBar(searchBarHandler).BarTintColor.ToColor();
+
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Text;
 

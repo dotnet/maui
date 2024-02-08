@@ -3,13 +3,12 @@ using System.Linq;
 using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
-	public class PanGestureGalleryPage : BasePage
+	public class PanGesturePlaygroundGallery : BasePage
 	{
 		public class PanCompleteArgs : EventArgs
 		{
@@ -120,8 +119,10 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		public PanGestureGalleryPage()
+		public PanGesturePlaygroundGallery()
 		{
+			Title = "PanGesture Playground";
+
 			var box = new Image
 			{
 				BackgroundColor = Colors.Gray,

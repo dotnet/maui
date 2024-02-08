@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
 		[Fact]
-		public async Task DisconnectHandlerDoesntCrash()
+		public virtual async Task DisconnectHandlerDoesntCrash()
 		{
 			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
 			await InvokeOnMainThreadAsync(() =>

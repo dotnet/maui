@@ -45,6 +45,13 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
+
+			appBuilder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions
+			{
+				ValidateOnBuild = true,
+				ValidateScopes = true,
+			}));
+
 #if __ANDROID__ || __IOS__
 			appBuilder.UseMauiMaps();
 #endif

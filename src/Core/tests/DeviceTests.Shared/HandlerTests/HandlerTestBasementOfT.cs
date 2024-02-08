@@ -3,6 +3,17 @@ using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 using Xunit.Sdk;
+#if __IOS__ || MACCATALYST
+using PlatformView = UIKit.UIView;
+#elif __ANDROID__
+using PlatformView = Android.Views.View;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+#elif TIZEN
+using PlatformView = Tizen.NUI.BaseComponents.View;
+#elif (NETSTANDARD || !PLATFORM)
+using PlatformView = System.Object;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -44,6 +55,20 @@ namespace Microsoft.Maui.DeviceTests
 				return action.Invoke((THandler)handler);
 			}, MauiContext, async (view) => (IPlatformViewHandler)(await CreateHandlerAsync(view)));
 		}
+
+		public Task AttachAndRun(PlatformView view, Action action) =>
+#if WINDOWS
+			view.AttachAndRun(action, MauiContext);
+#else
+			view.AttachAndRun(action);
+#endif
+
+		public Task AttachAndRun(PlatformView view, Func<Task> action) =>
+#if WINDOWS
+			view.AttachAndRun(action, MauiContext);
+#else
+			view.AttachAndRun(action);
+#endif
 
 		protected Task<THandler> CreateHandlerAsync(IView view)
 		{
