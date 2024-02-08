@@ -4,7 +4,7 @@ is automatically handled by the following `MauiAsset` Build Action within your `
 
 	<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
-These files will be deployed with you package and will be accessible using Essentials:
+These files will be deployed with your package and will be accessible using Essentials:
 
 	async Task LoadMauiAsset()
 	{
