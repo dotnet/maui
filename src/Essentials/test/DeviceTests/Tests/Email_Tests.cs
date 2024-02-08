@@ -13,6 +13,26 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	public class Email_Tests
 	{
 		[Fact]
+		public void Can_Create_EmailMessage()
+		{
+			// Save a local cache data directory file
+			var file = Path.Combine(FileSystem.AppDataDirectory, "EmailTest.txt");
+			File.WriteAllText(file, "Attachment contents goes here...");
+
+			// Create the email message
+			var email = new EmailMessage
+			{
+				Subject = "Hello World!",
+				Body = "This is a greeting email.",
+				To = { "everyone@example.org" },
+				Attachments = { new EmailAttachment(file) }
+			};
+
+			Assert.Single(email.To);
+			Assert.Single(email.Attachments);
+		}
+
+		[Fact]
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public Task Compose_Shows_New_Window()
 		{

@@ -64,6 +64,10 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			var categoriesToRun = allCategories.Skip(_loopCount).Take(1).ToArray();
 
 			List<string> categoriesToSkip = new();
+			if (_options.SkipCategories?.Count > 0)
+			{
+				categoriesToSkip.AddRange(_options.SkipCategories);
+			}
 
 			foreach (var test in allCategories.Except(categoriesToRun))
 			{
