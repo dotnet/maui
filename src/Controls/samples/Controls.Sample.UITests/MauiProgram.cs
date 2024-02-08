@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample
 
 		public App()
 		{
-			SetMainPage(CreateDefaultMainPage());
+			SetMainPage(new NavigationPage(new Maui.Controls.Sample.Issues.Issue5555()));
 		}
 
 		public static bool PreloadTestCasesIssuesList { get; set; } = true;

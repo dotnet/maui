@@ -4,19 +4,19 @@ using Android.Widget;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	internal class ConditionalFocusLayout : LinearLayout, global::Android.Views.View.IOnTouchListener
+	internal class ConditionalFocusLayout : LinearLayout//, global::Android.Views.View.IOnTouchListener
 	{
-		public ConditionalFocusLayout(System.IntPtr p, global::Android.Runtime.JniHandleOwnership o) : base(p, o)
+		/*public ConditionalFocusLayout(System.IntPtr p, global::Android.Runtime.JniHandleOwnership o) : base(p, o)
 		{
 			// Added default constructor to prevent crash when accessing selected row in ListViewAdapter.Dispose
-		}
-
+		}*/
+*
 		public ConditionalFocusLayout(Context context) : base(context)
 		{
-			SetOnTouchListener(this);
+			//SetOnTouchListener(this);
 		}
 
-		public bool OnTouch(global::Android.Views.View v, MotionEvent e)
+		/*public bool OnTouch(global::Android.Views.View v, MotionEvent e)
 		{
 			bool allowFocus = v is EditText;
 			DescendantFocusability = allowFocus ? DescendantFocusability.AfterDescendants : DescendantFocusability.BlockDescendants;
@@ -51,6 +51,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var viewGroup = renderer?.View as ViewGroup;
 			return viewGroup?.GetChildAt(0) as EditText;
-		}
+		}*/
 	}
 }

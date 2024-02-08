@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class CellRenderer : ElementHandler<Cell, AView>, IRegisterable
 	{
-		static readonly PropertyChangedEventHandler PropertyChangedHandler = OnGlobalCellPropertyChanged;
+		//static readonly PropertyChangedEventHandler PropertyChangedHandler = OnGlobalCellPropertyChanged;
 
-		EventHandler _onForceUpdateSizeRequested;
+		//EventHandler _onForceUpdateSizeRequested;
 
 		public static PropertyMapper<Cell, CellRenderer> Mapper =
 				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Performance.Start(out string reference);
 
 			Cell = item;
-			Cell.PropertyChanged -= PropertyChangedHandler;
+			//Cell.PropertyChanged -= PropertyChangedHandler;
 
 			if (convertView != null)
 			{
@@ -73,13 +73,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			WireUpForceUpdateSizeRequested(item, view);
 
-			var holder = view.Tag as RendererHolder;
+			/*var holder = view.Tag as RendererHolder;
 			if (holder == null)
 				view.Tag = new RendererHolder(this);
 			else
-				holder.Renderer = this;
+				holder.Renderer = this;*/
 
-			Cell.PropertyChanged += PropertyChangedHandler;
+			//Cell.PropertyChanged += PropertyChangedHandler;
 			((ICellController)Cell).SendAppearing();
 
 			Performance.Stop(reference);
@@ -89,20 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			Performance.Start(out string reference, "GetCellCore");
-
-			LayoutInflater inflater = LayoutInflater.FromContext(context);
-			const int type = global::Android.Resource.Layout.SimpleListItem1;
-			AView view = inflater.Inflate(type, null);
-
-			var textView = view.FindViewById<TextView>(global::Android.Resource.Id.Text1);
-			textView.Text = item.ToString();
-			textView.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
-			view.SetBackgroundColor(global::Android.Graphics.Color.Black);
-
-			Performance.Stop(reference, "GetCellCore");
-
-			return view;
+			throw new NotImplementedException();
 		}
 
 		protected virtual void OnCellPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -111,7 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected void WireUpForceUpdateSizeRequested(Cell cell, AView platformCell)
 		{
-			ICellController cellController = cell;
+			/*ICellController cellController = cell;
 			cellController.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
 
 			_onForceUpdateSizeRequested = (sender, e) =>
@@ -125,7 +112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				platformCell.SetMinimumWidth(platformCell.MeasuredWidth);
 			};
 
-			cellController.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;
+			cellController.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;*/
 		}
 
 		internal static CellRenderer GetRenderer(Cell cell)
@@ -133,7 +120,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return (CellRenderer)cell.Handler;
 		}
 
-		static void OnGlobalCellPropertyChanged(object sender, PropertyChangedEventArgs e)
+		/*static void OnGlobalCellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var cell = (Cell)sender;
 			CellRenderer renderer = GetRenderer(cell);
@@ -144,7 +131,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			renderer.OnCellPropertyChanged(sender, e);
-		}
+		}*/
 
 		class RendererHolder : Object
 		{
