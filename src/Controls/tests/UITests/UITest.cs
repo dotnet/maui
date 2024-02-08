@@ -117,7 +117,7 @@ namespace Microsoft.Maui.AppiumTests
 					break;
 
 				case TestDevice.iOS:
-					if (deviceName == "iPhone 15 (iOS 17.2)")
+					if (deviceName == "iPhone Xs (iOS 17.2)")
 					{
 						environmentName = "ios";
 					}
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.AppiumTests
 					}
 					else
 					{
-						Assert.Fail($"iOS visual tests should be run on iPhone 15 (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+						Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
 					}
 					break;
 
