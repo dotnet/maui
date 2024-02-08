@@ -69,12 +69,8 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
-      demands:
-        - macOS.Name -equals Ventura
-        - macOS.Architecture -equals x64
-        - Agent.OSVersion -equals 13.5
+      name: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmImage)
 
   - name: catalystPool
     type: object
@@ -107,7 +103,7 @@ stages:
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
-        iosVersions: [ 'simulator-16.4','simulator-15.5','simulator-14.5' ]
+        iosVersions: [ 'simulator-16.4','simulator-15.5' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}

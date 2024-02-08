@@ -239,6 +239,8 @@ Task("Test")
 				$"--app=\"{TEST_APP}\" " +
 				$"--targets=\"{TEST_DEVICE}\" " +
 				$"--output-directory=\"{TEST_RESULTS}\" " +
+				$"--timeout=01:15:00 " +
+				$"--launch-timeout=00:06:00 " +
 				xcode_args +
 				$"--verbosity=\"Debug\" ");
 			
