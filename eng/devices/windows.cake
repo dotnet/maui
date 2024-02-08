@@ -258,9 +258,9 @@ Task("Test")
 
 		var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile);
 
-		for (int i = 0; i <= testCategoriesToRun.Length; i++)
+		for (int i = 0; i < testCategoriesToRun.Length; i++)
 		{
-			Information("Running test {0} of {1}: {2}", i + 1, testCategoriesToRun.Length, testCategoriesToRun[i]);
+			Information("Running test category {0} of {1}: {2}", i + 1, testCategoriesToRun.Length, testCategoriesToRun[i]);
 
 			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
 
@@ -283,9 +283,9 @@ Task("Test")
 
 		var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile);
 
-		for (int i = 0; i <= testCategoriesToRun.Length; i++)
+		for (int i = 0; i < testCategoriesToRun.Length; i++)
 		{
-			Information("Running test {0} of {1}: {2}", i + 1, testCategoriesToRun.Length, testCategoriesToRun[i]);
+			Information("Running test category {0} of {1}: {2}", i + 1, testCategoriesToRun.Length, testCategoriesToRun[i]);
 
 			// Start the DeviceTests app for unpackaged
 			StartProcess(TEST_APP, testResultsFile + " " + i);
@@ -358,7 +358,7 @@ Task("Test")
 		}
 	}
 	if (failedTestCount > 0) {
-		throw new Exception($"At least {failedTestCount} test runs failed.");
+		throw new Exception($"At least {failedTestCount} test category failed.");
 	}
 });
 
