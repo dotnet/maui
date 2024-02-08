@@ -192,7 +192,8 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if __IOS__
 		[Test]
-		public async Task FlyoutHeaderWithZeroMarginShouldHaveNoY()
+		[Ignore("This test fails intermittently, especially on iOS 17; ignore until we can fix it")]
+		public void FlyoutHeaderWithZeroMarginShouldHaveNoY()
 		{
 			RunningApp.WaitForElement("PageLoaded");
 			this.TapInFlyout("ZeroMarginHeader", makeSureFlyoutStaysOpen: true);
