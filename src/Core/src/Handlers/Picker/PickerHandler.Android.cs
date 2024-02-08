@@ -91,14 +91,7 @@ namespace Microsoft.Maui.Handlers
 			if (PlatformView == null)
 				return;
 
-			if (e.HasFocus)
-			{
-				if (PlatformView.Clickable)
-					PlatformView.CallOnClick();
-				else
-					OnClick(PlatformView, EventArgs.Empty);
-			}
-			else if (_dialog != null)
+			if (_dialog != null)
 			{
 				_dialog.Hide();
 				_dialog = null;

@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Platform
 		protected override void OnFocusChanged(bool gainFocus, [GeneratedEnum] FocusSearchDirection direction, ARect? previouslyFocusedRect)
 		{
 			base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
-			PickerManager.OnFocusChanged(gainFocus, this);
 		}
 
 		protected override void Dispose(bool disposing)

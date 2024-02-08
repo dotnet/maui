@@ -34,8 +34,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void OnFocusChanged(bool gainFocus, EditText sender)
 		{
-			if (gainFocus)
-				sender.CallOnClick();
+
 		}
 
 		static void OnKeyPress(object? sender, AView.KeyEventArgs e)
