@@ -102,7 +102,17 @@ steps:
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
     displayName: $(Agent.JobName)
     retryCountOnTaskFailure: 1
-  
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        rm -r $HOME/Library/Logs/CoreSimulator/*
+        rm -r $HOME/Library/Logs/DiagnosticReports/*
+        zip -9r "$(LogDirectory)/CoreSimulatorLog_$(new-guid).zip" "$HOME/Library/Logs/CoreSimulator/"
+        zip -9r "$(LogDirectory)/DiagnosticReports_$(new-guid).zip" "$HOME/Library/Logs/DiagnosticReports/"
+        displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
+
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results
     condition: always()

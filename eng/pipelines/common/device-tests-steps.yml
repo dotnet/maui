@@ -86,6 +86,17 @@ steps:
     condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
     retryCountOnTaskFailure: 1
 
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        rm -r $HOME/Library/Logs/CoreSimulator/*
+        rm -r $HOME/Library/Logs/DiagnosticReports/*
+        zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+        zip -9r "$(LogDirectory)/DiagnosticReports.zip" "$HOME/Library/Logs/DiagnosticReports/"
+      displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
+
   - task: PublishTestResults@2
     displayName: Publish the $(Agent.JobName) test results
     condition: always()
