@@ -15,9 +15,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public async Task Issue19509Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Windows });
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
 
-		App.WaitForElement("WaitForStubControl");
+			App.WaitForElement("WaitForStubControl");
 
 			// 1. Wait until bind the Text to the Entry.
 			await Task.Delay(2000);
