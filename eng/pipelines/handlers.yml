@@ -304,4 +304,4 @@ stages:
           enableCodeInspector: true
           apiScanEnabled: true
           apiScanSoftwareName: 'MAUI'
-          apiScanSoftwareVersionNum: $(Build.BuildNumber)
+          apiScanSoftwareVersionNum: 8.0
