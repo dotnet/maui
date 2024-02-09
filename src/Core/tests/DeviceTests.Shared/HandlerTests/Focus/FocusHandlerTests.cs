@@ -39,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var initialFocusTask = inputControl1.WaitForFocused();
 
-				await handler.PlatformView.AttachAndRun(async (contentViewHandler) =>
+				await handler.PlatformView.AttachAndRun(async () =>
 				{
 					var platform1 = inputControl1.ToPlatform();
 					var platform2 = inputControl2.ToPlatform();
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var initialFocusTask = inputControl1.WaitForFocused();
 
-				await handler.PlatformView.AttachAndRun(async (contentViewHandler) =>
+				await handler.PlatformView.AttachAndRun(async () =>
 				{
 					var platform1 = inputControl1.ToPlatform();
 					var platform2 = inputControl2.ToPlatform();
