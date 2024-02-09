@@ -37,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 
-				var initialFocusTask = inputControl1.WaitForFocused();
+				var initialFocusTask = inputControl1.WaitForFocused(3000);
 
 				await handler.PlatformView.AttachAndRun(async () =>
 				{
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 
-				var initialFocusTask = inputControl1.WaitForFocused();
+				var initialFocusTask = inputControl1.WaitForFocused(3000);
 
 				await handler.PlatformView.AttachAndRun(async () =>
 				{
