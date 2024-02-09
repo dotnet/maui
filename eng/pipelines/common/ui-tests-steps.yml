@@ -113,8 +113,9 @@ steps:
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-        zip -9r "$(LogDirectory)/CoreSimulatorLog_$(Date:yyyyMMddHHmmss).zip" "$HOME/Library/Logs/CoreSimulator/"
-        zip -9r "$(LogDirectory)/DiagnosticReports_$(Date:yyyyMMddHHmmss).zip" "$HOME/Library/Logs/DiagnosticReports/"
+        suffix=$(date +%Y%m%d%H%M%S)
+        zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
+        zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
         displayName: Zip Simulator Logs
       condition: always()
       continueOnError: true

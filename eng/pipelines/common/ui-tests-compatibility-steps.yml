@@ -53,8 +53,9 @@ steps:
     # retryCountOnTaskFailure: 2
 
   - bash: |
-      zip -9r "$(LogDirectory)/artifacts/CoreSimulatorLog_$(Date:yyyyMMddHHmmss).zip" "$HOME/Library/Logs/CoreSimulator/"
-      zip -9r "$(LogDirectory)/DiagnosticReports_$(Date:yyyyMMddHHmmss).zip" "$HOME/Library/Logs/DiagnosticReports/"
+      suffix=$(date +%Y%m%d%H%M%S)
+      zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
+      zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
     displayName: Zip Simulator Logs
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
