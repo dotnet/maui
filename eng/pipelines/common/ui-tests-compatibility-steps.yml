@@ -44,7 +44,7 @@ steps:
   - bash: |
       rm -r $HOME/Library/Logs/CoreSimulator/*
       rm -r $HOME/Library/Logs/DiagnosticReports/*
-    displayName: Zip Simulator Logs
+    displayName: Delete Old Simulator Logs
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
 
