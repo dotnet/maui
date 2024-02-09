@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 
 		partial void Init();
 
-#if WINDOWS || ANDROID || TIZEN
+#if WINDOWS || ANDROID || TIZEN || IOS || MACCATALYST // TODO: if this is everything, then we can start eventually removing stuff
 		const bool UseMauiHandler = true;
 #else
 		const bool UseMauiHandler = false;
@@ -769,7 +769,7 @@ namespace Microsoft.Maui.Controls
 					}).FireAndForget();
 			}
 
-			protected async override Task<Page> OnPopAsync(bool animated)
+			protected override async Task<Page> OnPopAsync(bool animated)
 			{
 				if (Owner.InternalChildren.Count == 1)
 				{

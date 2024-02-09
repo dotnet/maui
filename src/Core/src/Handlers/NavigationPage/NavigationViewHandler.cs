@@ -10,7 +10,6 @@ using PlatformView = Microsoft.Maui.Platform.StackNavigationManager;
 using PlatformView = System.Object;
 #endif
 
-
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler : INavigationViewHandler

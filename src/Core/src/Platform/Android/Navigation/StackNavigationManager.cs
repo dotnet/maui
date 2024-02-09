@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Platform
 			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
 			navController.IterateBackStack(d => fragmentNavDestinations.Add(d));
 
-			// Current BackStack has less entries then incoming new page stack
+			// Current BackStack has fewer entries than the incoming new page stack
 			// This will add Back Stack Entries until the back stack and the new stack 
 			// match up
 			if (fragmentNavDestinations.Count < newPageStack.Count)

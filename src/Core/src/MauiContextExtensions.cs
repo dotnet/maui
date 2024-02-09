@@ -64,6 +64,9 @@ namespace Microsoft.Maui
 #if WINDOWS
 			scopedContext.AddSpecific(new NavigationRootManager(platformWindow));
 #endif
+#if IOS || MACCATALYST
+			scopedContext.AddSpecific(new NavigationManager(scopedContext));
+#endif
 
 			// Initialize any window-scoped services, for example the window dispatchers and animation tickers
 			scopedContext.InitializeScopedServices();
