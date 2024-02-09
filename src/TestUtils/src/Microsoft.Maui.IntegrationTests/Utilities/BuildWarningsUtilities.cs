@@ -125,37 +125,6 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			new WarningsPerFile
 			{
-				File = "src/Controls/src/Xaml/XamlParser.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2055",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.XamlParser.GetElementType(XmlType,IXmlLineInfo,Assembly,XamlParseException&): Call to 'System.Type.MakeGenericType(Type[])' can not be statically analyzed. It's not possible to guarantee the availability of requirements of the generic type.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL3050",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.XamlParser.GetElementType(XmlType,IXmlLineInfo,Assembly,XamlParseException&): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2057",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.XamlParser.<>c__DisplayClass11_0.<GetElementType>b__0(ValueTuple`3<String,String,String>): Unrecognized value passed to the parameter 'typeName' of method 'System.Type.GetType(String)'. It's not possible to guarantee the availability of the target type.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
 				File = "src/Controls/src/Core/Xaml/TypeConversionExtensions.cs",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
