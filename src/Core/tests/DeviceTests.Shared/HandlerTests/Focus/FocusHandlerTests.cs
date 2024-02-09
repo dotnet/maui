@@ -61,7 +61,11 @@ namespace Microsoft.Maui.DeviceTests
 					await inputControl2.WaitForFocused();
 					Assert.False(inputControl1.IsFocused);
 					Assert.True(inputControl2.IsFocused);
-				}, MauiContext);
+				}
+#if WINDOWS
+				, MauiContext
+#endif
+				);
 			});
 		}
 
@@ -119,7 +123,11 @@ namespace Microsoft.Maui.DeviceTests
 					await inputControl1.WaitForUnFocused();
 					Assert.False(inputControl1.IsFocused);
 					Assert.False(inputControl2.IsFocused);
-				}, MauiContext);
+				}
+#if WINDOWS
+				, MauiContext
+#endif
+				);
 			});
 		}
 	}
