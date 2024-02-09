@@ -3,7 +3,6 @@ using Microsoft.Maui.DeviceTests.Stubs;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category(TestCategory.SwipeView)]
 	public partial class SwipeViewHandlerTests : CoreHandlerTestBase<SwipeViewHandler, SwipeViewStub>
 	{
 		[Fact(DisplayName = "Clip Initializes ContainerView Correctly", Skip = "Failing")]
