@@ -958,6 +958,9 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				if (serviceType == typeof(IDispatcher))
 					return _dispatcher;
 
+				if (serviceType == typeof(ApplicationDispatcher))
+					return new ApplicationDispatcher(_dispatcher);
+
 				throw new NotImplementedException();
 			}
 
