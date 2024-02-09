@@ -495,6 +495,9 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 						}
 	};
 	
+	Information("The platform version to run tests:");
+	SetEnvironmentVariable("DEVICE_SKIN", DEVICE_SKIN);
+
 	if(!string.IsNullOrEmpty(DEVICE_UDID))
 	{
 		SetEnvironmentVariable("DEVICE_UDID", DEVICE_UDID);

@@ -19,13 +19,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var cell = (SwitchCell)Cell;
 
-			if (item?.Parent is TableView && item.Handler?.PlatformView is SwitchCellView switchCellView)
-			{
-				// TableView doesn't use convertView
-				_view = switchCellView;
-				return _view;
-			}
-
 			if ((_view = convertView as SwitchCellView) == null)
 				_view = new SwitchCellView(context, item);
 
