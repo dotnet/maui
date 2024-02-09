@@ -22,6 +22,13 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.CrossPlatformLayout = VirtualView;
 		}
 
+		protected override void DisconnectHandler(ContentView platformView)
+		{
+			platformView.CrossPlatformLayout = null;
+			platformView.RemoveFromSuperview();
+			base.DisconnectHandler(platformView);
+		}
+
 		static void UpdateContent(IRadioButtonHandler handler)
 		{
 			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");

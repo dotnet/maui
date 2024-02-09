@@ -29,7 +29,9 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<Editor, EditorHandler>();
+				handlers.AddHandler<Ellipse, ShapeViewHandler>();
 				handlers.AddHandler<Frame, FrameRenderer>();
+				handlers.AddHandler<Grid, LayoutHandler>();
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<ListView, ListViewRenderer>();
@@ -40,6 +42,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Image, ImageHandler>();
 				handlers.AddHandler<ImageButton, ImageButtonHandler>();
 				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
+				handlers.AddHandler<RadioButton, RadioButtonHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
 				handlers.AddHandler<Slider, SliderHandler>();
@@ -72,6 +75,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Picker))]
 	[InlineData(typeof(Polygon))]
 	[InlineData(typeof(Polyline))]
+	[InlineData(typeof(RadioButton))]
 	[InlineData(typeof(RefreshView))]
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(Slider))]
