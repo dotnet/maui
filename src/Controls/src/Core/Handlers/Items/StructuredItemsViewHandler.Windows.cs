@@ -122,10 +122,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 
 				case View view:
-					ListViewBase.HeaderTemplate = ViewTemplate;
 					_currentHeader = view;
 					Element.AddLogicalChild(_currentHeader);
-					ListViewBase.Header = view;
+					ListViewBase.Header = new ViewToHandlerConverter.WrapperControl(view);
 					break;
 
 				default:
@@ -171,10 +170,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 
 				case View view:
-					ListViewBase.FooterTemplate = ViewTemplate;
 					_currentFooter = view;
 					Element.AddLogicalChild(_currentFooter);
-					ListViewBase.Footer = view;
+					ListViewBase.Footer = new ViewToHandlerConverter.WrapperControl(view);
 					break;
 
 				default:
