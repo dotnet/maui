@@ -44,19 +44,28 @@ namespace Microsoft.Maui.AppiumTests.Issues
             Assert.NotNull(boxView);
 			var rect = boxView.GetRect();
 
-            if (requiresScreenshot)
-            {
-                VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + testButtonID);
-            }
-            else
-            {
-                if (isTopOfScreen)
-                    Assert.AreEqual(rect.Y, 0);
+            try { 
+                if (requiresScreenshot)
+                {
+                    VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + testButtonID);
+                }
                 else
-                    Assert.AreNotEqual(rect.Y, 0);
+                {
+                    if (isTopOfScreen)
+                        Assert.AreEqual(rect.Y, 0);
+                    else
+                        Assert.AreNotEqual(rect.Y, 0);
+                }
+            }
+            catch 
+            { 
+                Assert.Fail("Failed with exception");
+            }
+            finally
+            {
+                App.WaitForElement("PopPageButton").Click();
             }
 
-            App.WaitForElement("PopPageButton").Click();
 		}
 	}
 }
