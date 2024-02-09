@@ -99,14 +99,20 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
     displayName: 'Build the samples'
 
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        rm -r $HOME/Library/Logs/CoreSimulator/*
+        rm -r $HOME/Library/Logs/DiagnosticReports/*
+        displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
+
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
     displayName: $(Agent.JobName)
     retryCountOnTaskFailure: 1
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-        rm -r $HOME/Library/Logs/CoreSimulator/*
-        rm -r $HOME/Library/Logs/DiagnosticReports/*
         zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
         zip -9r "$(LogDirectory)/DiagnosticReports.zip" "$HOME/Library/Logs/DiagnosticReports/"
         displayName: Zip Simulator Logs
