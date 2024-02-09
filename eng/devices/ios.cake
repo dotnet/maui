@@ -1,15 +1,21 @@
-#addin nuget:?package=Cake.AppleSimulator&version=0.2.0
+// #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
 #load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
 #load "./devices-shared.cake"
 
+#addin nuget:?package=Cake.Json&version=7.0.1
+// #addin nuget:?package=Newtonsoft.Json&version=11.0.2
+
 #tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
 
-const string defaultVersion = "16.4";
+const string defaultVersion = "17.0";
+const string defaulthardware = "iPhone 15";
 const string dotnetVersion = "net8.0";
+
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? DEFAULT_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? $"ios-simulator-64_{defaultVersion}"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
+string TEST_HARDWARE = Argument("hardware", EnvironmentVariable("IOS_TEST_HARDWARE") ?? defaulthardware);
 
 // optional
 var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
@@ -61,67 +67,67 @@ else
 
 Setup(context =>
 {
-	Cleanup();
+	// Cleanup();
 
 	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
 	
 	Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
 	Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
 
-	// only grab attached iOS devices if we are trying to test on device
-	if (TEST_DEVICE.Contains("device")) 
-	{ 
-		GetDevices(iosVersion);
-	}
-	// only install simulator when an explicit version is specified
-	if (TEST_DEVICE.IndexOf("_") != -1) 
-	{
-		GetSimulators(TEST_DEVICE);
-	}
+	// // only grab attached iOS devices if we are trying to test on device
+	// if (TEST_DEVICE.Contains("device")) 
+	// { 
+	// 	GetDevices(iosVersion);
+	// }
+	// // only install simulator when an explicit version is specified
+	// if (TEST_DEVICE.IndexOf("_") != -1) 
+	// {
+	// 	GetSimulators(TEST_DEVICE);
+	// }
 });
 
 Teardown(context =>
 {
-	Cleanup();
+	// Cleanup();
 });
 
 void Cleanup()
 {
-	if (!DEVICE_CLEANUP)
-		return;
+	// if (!DEVICE_CLEANUP)
+	// 	return;
 
-	// delete the XHarness simulators first, if it exists
-	Information("Deleting XHarness simulator if exists...");
-	var sims = ListAppleSimulators();
-	if(sims.Count == 0)
-	{
-		Information("No simulators found to delete.");
-		return;
-	}
-	var simulatorName = "XHarness";
-	if(iosVersion.Contains("17"))
-		simulatorName = "iPhone Xs";	
-	Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersion);
-	var xharness = sims.Where(s => s.Name.Contains(simulatorName))?.ToArray();
-	if(xharness == null || xharness.Length == 0)
-	{
-		Information("No XHarness simulators found to delete.");
-		return;
-	}
-	foreach (var sim in xharness) {
-		Information("Deleting XHarness simulator {0} ({1})...", sim.Name, sim.UDID);
-		StartProcess("xcrun", "simctl shutdown " + sim.UDID);
-		var retries = 3;
-		while (retries > 0) {
-			var exitCode = StartProcess("xcrun", "simctl delete " + sim.UDID);
-			if (exitCode == 0) {
-				retries = 0;
-			} else {
-				retries--;
-				System.Threading.Thread.Sleep(1000);
-			}
-		}
-	}
+	// // delete the XHarness simulators first, if it exists
+	// Information("Deleting XHarness simulator if exists...");
+	// var sims = ListAppleSimulators();
+	// if(sims.Count == 0)
+	// {
+	// 	Information("No simulators found to delete.");
+	// 	return;
+	// }
+	// var simulatorName = "XHarness";
+	// if(iosVersion.Contains("17"))
+	// 	simulatorName = "iPhone Xs";	
+	// Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersion);
+	// var xharness = sims.Where(s => s.Name.Contains(simulatorName))?.ToArray();
+	// if(xharness == null || xharness.Length == 0)
+	// {
+	// 	Information("No XHarness simulators found to delete.");
+	// 	return;
+	// }
+	// foreach (var sim in xharness) {
+	// 	Information("Deleting XHarness simulator {0} ({1})...", sim.Name, sim.UDID);
+	// 	StartProcess("xcrun", "simctl shutdown " + sim.UDID);
+	// 	var retries = 3;
+	// 	while (retries > 0) {
+	// 		var exitCode = StartProcess("xcrun", "simctl delete " + sim.UDID);
+	// 		if (exitCode == 0) {
+	// 			retries = 0;
+	// 		} else {
+	// 			retries--;
+	// 			System.Threading.Thread.Sleep(1000);
+	// 		}
+	// 	}
+	// }
 }
 
 Task("Cleanup");
@@ -133,28 +139,28 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
 	
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
-			ToolPath = DOTNET_TOOL_PATH,
-			Configuration = CONFIGURATION,
-			Framework = TARGET_FRAMEWORK,
-			MSBuildSettings = new DotNetMSBuildSettings {
-				MaxCpuCount = 0
-			},	
-			ArgumentCustomization = args =>
-			{ 	
-				args
-				.Append("/p:BuildIpa=true")
-				.Append("/bl:" + binlog)
-				.Append("/tl");
-				
-				// if we building for a device
-				if(TEST_DEVICE.ToLower().Contains("device"))
-				{
-					args.Append("/p:RuntimeIdentifier=ios-arm64");
-				}
-				return args;
-			}
-		});
+	// DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+	// 	ToolPath = DOTNET_TOOL_PATH,
+	// 	Configuration = CONFIGURATION,
+	// 	Framework = TARGET_FRAMEWORK,
+	// 	MSBuildSettings = new DotNetMSBuildSettings {
+	// 		MaxCpuCount = 0
+	// 	},	
+	// 	ArgumentCustomization = args =>
+	// 	{ 	
+	// 		args
+	// 		.Append("/p:BuildIpa=true")
+	// 		.Append("/bl:" + binlog)
+	// 		.Append("/tl");
+			
+	// 		// if we building for a device
+	// 		if(TEST_DEVICE.ToLower().Contains("device"))
+	// 		{
+	// 			args.Append("/p:RuntimeIdentifier=ios-arm64");
+	// 		}
+	// 		return args;
+	// 	}
+	// });
 });
 
 Task("uitest-build")
@@ -208,84 +214,202 @@ Task("Test")
 	}
 
 	Information("Test Device: {0}", TEST_DEVICE);
+	Information("Test Hardware: {0}", TEST_HARDWARE);
 	Information("Test App: {0}", TEST_APP);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 
-	if (!IsCIBuild())
+	if (!IsCIBuild()) {
 		CleanDirectories(TEST_RESULTS);
-	else
-	{
+	} else {
 		// Because we retry on CI we don't want to delete the previous failures
 		// We want to publish those files for reference
 		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
 	}
 
-	var XCODE_PATH =  Argument("xcode_path", "");
+	FindBestTarget(TEST_DEVICE, TEST_HARDWARE, out var foundUdid, out var foundName);
+
+	// boot simulator
+
+	// uninstall app
+	// install app
+	// start app
+
+
+	// var XCODE_PATH =  Argument("xcode_path", "");
 		
-	string xcode_args = "";
-	if (!String.IsNullOrEmpty(XCODE_PATH))
-	{
-		xcode_args = $"--xcode=\"{XCODE_PATH}\" ";
-	}
+	// string xcode_args = "";
+	// if (!String.IsNullOrEmpty(XCODE_PATH))
+	// {
+	// 	xcode_args = $"--xcode=\"{XCODE_PATH}\" ";
+	// }
 
-	Information("XCODE PATH: {0}", XCODE_PATH);
+	// Information("XCODE PATH: {0}", XCODE_PATH);
 
-	var settings = new DotNetToolSettings {
-		ToolPath = DOTNET_TOOL_PATH,
-		DiagnosticOutput = true,
-		ArgumentCustomization = args => 
-		{
-			args.Append("run xharness apple test " +
-				$"--app=\"{TEST_APP}\" " +
-				$"--targets=\"{TEST_DEVICE}\" " +
-				$"--output-directory=\"{TEST_RESULTS}\" " +
-				$"--timeout=01:15:00 " +
-				$"--launch-timeout=00:06:00 " +
-				xcode_args +
-				$"--verbosity=\"Debug\" ");
+	// var settings = new DotNetToolSettings {
+	// 	ToolPath = DOTNET_TOOL_PATH,
+	// 	DiagnosticOutput = true,
+	// 	ArgumentCustomization = args => 
+	// 	{
+	// 		args.Append("run xharness apple test " +
+	// 			$"--app=\"{TEST_APP}\" " +
+	// 			$"--targets=\"{TEST_DEVICE}\" " +
+	// 			$"--output-directory=\"{TEST_RESULTS}\" " +
+	// 			$"--timeout=01:15:00 " +
+	// 			$"--launch-timeout=00:06:00 " +
+	// 			xcode_args +
+	// 			$"--verbosity=\"Debug\" ");
 			
-			if (TEST_DEVICE.Contains("device"))
-			{
-				if(string.IsNullOrEmpty(DEVICE_UDID))
-				{
-					throw new Exception("No device was found to install the app on. See the Setup method for more details.");
-				}
-				args.Append($"--device=\"{DEVICE_UDID}\" ");
-			}
-			return args;	
-		}
-	};
+	// 		if (TEST_DEVICE.Contains("device"))
+	// 		{
+	// 			if(string.IsNullOrEmpty(DEVICE_UDID))
+	// 			{
+	// 				throw new Exception("No device was found to install the app on. See the Setup method for more details.");
+	// 			}
+	// 			args.Append($"--device=\"{DEVICE_UDID}\" ");
+	// 		}
+	// 		return args;	
+	// 	}
+	// };
 
-	bool testsFailed = true;
-	try {
-		DotNetTool("tool", settings);
-		testsFailed = false;
-	} finally {
-		// ios test result files are weirdly named, so fix it up
-		var resultsFile = GetFiles($"{TEST_RESULTS}/xunit-test-*.xml").FirstOrDefault();
-		if (FileExists(resultsFile)) {
-			CopyFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"));
-		}
+	// bool testsFailed = true;
+	// try {
+	// 	DotNetTool("tool", settings);
+	// 	testsFailed = false;
+	// } finally {
+	// 	// ios test result files are weirdly named, so fix it up
+	// 	var resultsFile = GetFiles($"{TEST_RESULTS}/xunit-test-*.xml").FirstOrDefault();
+	// 	if (FileExists(resultsFile)) {
+	// 		CopyFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"));
+	// 	}
 
-		if (testsFailed && IsCIBuild())
-		{
-			var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
-			EnsureDirectoryExists(failurePath);
-			// The tasks will retry the tests and overwrite the failed results each retry
-			// we want to retain the failed results for diagnostic purposes
-			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
+	// 	if (testsFailed && IsCIBuild())
+	// 	{
+	// 		var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
+	// 		EnsureDirectoryExists(failurePath);
+	// 		// The tasks will retry the tests and overwrite the failed results each retry
+	// 		// we want to retain the failed results for diagnostic purposes
+	// 		CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
 			
-			// We don't want these to upload
-			MoveFile($"{failurePath}/TestResults.xml", $"{failurePath}/Results.xml");
-		}
-	}
+	// 		// We don't want these to upload
+	// 		MoveFile($"{failurePath}/TestResults.xml", $"{failurePath}/Results.xml");
+	// 	}
+	// }
 
-	// this _may_ not be needed, but just in case
-	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
-	if (!string.IsNullOrEmpty(failed)) {
-		throw new Exception($"At least {failed} test(s) failed.");
-	}
+	// // this _may_ not be needed, but just in case
+	// var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
+	// if (!string.IsNullOrEmpty(failed)) {
+	// 	throw new Exception($"At least {failed} test(s) failed.");
+	// }
 });
+
+void FindBestTarget(string matchDevice, string matchHardware, out string foundUdid, out string foundName)
+{
+	// break up the inputs
+	var os = "ios";
+	var type = "simulator";
+	var arch = "x86_64";
+	var osVersion = defaultVersion;
+	var hardware = matchHardware.ToLower();
+	{
+		var parts = matchDevice.ToLower().Split("-");
+		os = parts[0];
+		type = parts[1];
+		if (parts.Length > 2) {
+			parts = parts[2].Split("_");
+			arch = parts[0] == "64" ? "x86_64" : "x86";
+			if (parts.Length > 1) {
+				osVersion = $"{os} {parts[1]}";
+			}
+		}
+	}
+
+	// list all the targets
+	IEnumerable<string> targetDevicesFound;
+	var exitCodeWithArgument =
+		StartProcess(
+			"idb",
+			new ProcessSettings {
+				Arguments = "list-targets --json",
+				RedirectStandardOutput = true
+			},
+			out targetDevicesFound
+		);
+
+	// search for a match
+	foundUdid = "";
+	foundName = "";
+	var partial = false;
+	foreach (var targetDevice in targetDevicesFound)
+	{
+		var device = ParseJson(targetDevice);
+		var name = device.Value<string>("name");
+		var id = device.Value<string>("udid");
+
+		if (device.Value<string>("type") == type && 
+			device.Value<string>("os_version").ToLower() == osVersion &&
+			device.Value<string>("architecture") == arch)
+		{
+			if (name.ToLower() == hardware)
+			{
+				foundUdid = id;
+				foundName = name;
+				partial = false;
+
+				Information("Found an exact target {0} with name {1}.", foundUdid, foundName);
+
+				break;
+			}
+			else if (name.ToLower().StartsWith(hardware) && string.IsNullOrEmpty(foundUdid))
+			{
+				foundUdid = id;
+				foundName = name;
+				partial = true;
+
+				Information("Found a partial target {0} with name {1}.", foundUdid, foundName);
+			}
+			else
+			{
+				Information("Skipping target {0} with name {1}.", id, name);
+			}
+		}
+		else
+		{
+			Information("Skipping target {0} with name {1}.", id, name);
+		}
+	}
+
+	if (string.IsNullOrEmpty(foundUdid)) {
+		throw new Exception($"Unable to find any targets matching {matchDevice} and {matchHardware}.");
+	}
+}
+
+void BootTarget(string udid)
+{
+	IEnumerable<string> targetDevicesFound;
+	var exitCodeWithArgument =
+		StartProcess(
+			"idb",
+			new ProcessSettings {
+				Arguments = $"boot {udid} --json",
+				RedirectStandardOutput = true
+			},
+			out targetDevicesFound
+		);
+}
+
+void InstallApp(string udid, string app)
+{
+	IEnumerable<string> targetDevicesFound;
+	var exitCodeWithArgument =
+		StartProcess(
+			"idb",
+			new ProcessSettings {
+				Arguments = $"install {app} --udid {udid} --json",
+				RedirectStandardOutput = true
+			},
+			out targetDevicesFound
+		);
+}
 
 Task("uitest")
 	.IsDependentOn("uitest-build")
@@ -405,70 +529,70 @@ void SetupAppPackageNameAndResult()
 
 void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version)
 {
-	Information("Install with xharness: {0}",testApp);
-	var settings = new DotNetToolSettings {
-		ToolPath = DOTNET_TOOL_PATH,
-		DiagnosticOutput = true,	
-		ArgumentCustomization = args => { 
-			args.Append("run xharness apple install " +
-							$"--app=\"{testApp}\" " +
-							$"--targets=\"{testDevice}\" " +
-							$"--output-directory=\"{testResultsDirectory}\" " +
-							$"--verbosity=\"Debug\" ");
-			if (testDevice.Contains("device"))
-			{
-				if(string.IsNullOrEmpty(DEVICE_UDID))
-				{
-					throw new Exception("No device was found to install the app on. See the Setup method for more details.");
-				}
-				args.Append($"--device=\"{DEVICE_UDID}\" ");
-			}
-			return args;
-		}
-	};
+	// Information("Install with xharness: {0}",testApp);
+	// var settings = new DotNetToolSettings {
+	// 	ToolPath = DOTNET_TOOL_PATH,
+	// 	DiagnosticOutput = true,	
+	// 	ArgumentCustomization = args => { 
+	// 		args.Append("run xharness apple install " +
+	// 						$"--app=\"{testApp}\" " +
+	// 						$"--targets=\"{testDevice}\" " +
+	// 						$"--output-directory=\"{testResultsDirectory}\" " +
+	// 						$"--verbosity=\"Debug\" ");
+	// 		if (testDevice.Contains("device"))
+	// 		{
+	// 			if(string.IsNullOrEmpty(DEVICE_UDID))
+	// 			{
+	// 				throw new Exception("No device was found to install the app on. See the Setup method for more details.");
+	// 			}
+	// 			args.Append($"--device=\"{DEVICE_UDID}\" ");
+	// 		}
+	// 		return args;
+	// 	}
+	// };
 
-	try {
-		DotNetTool("tool", settings);
-	} finally {
-		string iosVersionToRun = version;
-		string deviceToRun = "";	
+	// try {
+	// 	DotNetTool("tool", settings);
+	// } finally {
+	// 	string iosVersionToRun = version;
+	// 	string deviceToRun = "";	
 		
-		if (testDevice.Contains("device"))
-		{	
-			if(!string.IsNullOrEmpty(DEVICE_UDID))
-			{
-				deviceToRun = DEVICE_UDID;
-			}
-			else
-			{
-				throw new Exception("No device was found to run tests on.");
-			}
+	// 	if (testDevice.Contains("device"))
+	// 	{	
+	// 		if(!string.IsNullOrEmpty(DEVICE_UDID))
+	// 		{
+	// 			deviceToRun = DEVICE_UDID;
+	// 		}
+	// 		else
+	// 		{
+	// 			throw new Exception("No device was found to run tests on.");
+	// 		}
 			
-			iosVersionToRun = DEVICE_VERSION;
+	// 		iosVersionToRun = DEVICE_VERSION;
 			
-			Information("The device to run tests: {0} {1}", DEVICE_NAME, iosVersionToRun);
-		}
-		else
-		{
-			var simulatorName = "XHarness";
-			if(iosVersionToRun.Contains("17"))
-				simulatorName = "iPhone Xs";	
-			Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersionToRun);
-			var sims = ListAppleSimulators();
-			var simXH = sims.Where(s => s.Name.Contains(simulatorName)).FirstOrDefault();
-			if(simXH == null)
-				throw new Exception("No simulator was found to run tests on.");
+	// 		Information("The device to run tests: {0} {1}", DEVICE_NAME, iosVersionToRun);
+	// 	}
+	// 	else
+	// 	{
+	// 		var simulatorName = "XHarness";
+	// 		if(iosVersionToRun.Contains("17"))
+	// 			simulatorName = "iPhone Xs";	
+	// 		Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersionToRun);
+	// 		var sims = ListAppleSimulators();
+	// 		var simXH = sims.Where(s => s.Name.Contains(simulatorName)).FirstOrDefault();
+	// 		if(simXH == null)
+	// 			throw new Exception("No simulator was found to run tests on.");
 
-			deviceToRun = simXH.UDID;
-			DEVICE_NAME = simXH.Name;
-			Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
-		}
+	// 		deviceToRun = simXH.UDID;
+	// 		DEVICE_NAME = simXH.Name;
+	// 		Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
+	// 	}
 
-		Information("The platform version to run tests: {0}", iosVersionToRun);
-		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
-		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
-		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
-	}
+	// 	Information("The platform version to run tests: {0}", iosVersionToRun);
+	// 	SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
+	// 	SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
+	// 	SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
+	// }
 }
 
 void GetSimulators(string version)
