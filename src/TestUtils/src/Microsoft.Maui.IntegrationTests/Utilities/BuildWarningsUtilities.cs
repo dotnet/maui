@@ -290,21 +290,6 @@ namespace Microsoft.Maui.IntegrationTests
 					},
 				}
 			},
-			new WarningsPerFile
-			{
-				File = "src/Core/src/Platform/ReflectionExtensions.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2070",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Platform.ReflectionExtensions.<>c.<GetFields>b__1_0(TypeInfo): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicFields', 'DynamicallyAccessedMemberTypes.NonPublicFields' in call to 'System.Reflection.TypeInfo.DeclaredFields.get'. The parameter 'i' of method 'Microsoft.Maui.Platform.ReflectionExtensions.<>c.<GetFields>b__1_0(TypeInfo)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
 		};
 
 		#region Utility methods for generating the list of expected warnings
