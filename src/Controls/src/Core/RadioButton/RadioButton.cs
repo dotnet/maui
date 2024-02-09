@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls
 		TapGestureRecognizer _tapGestureRecognizer;
 		View _templateRoot;
 
+		static WeakReference<ControlTemplate> _defaultTemplateWeakReference;
 		static ControlTemplate s_defaultTemplate;
 
 		readonly Lazy<PlatformConfigurationRegistry<RadioButton>> _platformConfigurationRegistry;
@@ -223,12 +224,19 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (s_defaultTemplate == null)
+				ControlTemplate defaultTemplate = null;
+
+				if (_defaultTemplateWeakReference is null || !_defaultTemplateWeakReference.TryGetTarget(out defaultTemplate))
 				{
 					s_defaultTemplate = new ControlTemplate(() => BuildDefaultTemplate());
+
+					if (_defaultTemplateWeakReference is null)
+						_defaultTemplateWeakReference = new WeakReference<ControlTemplate>(s_defaultTemplate);
+					else
+						_defaultTemplateWeakReference.SetTarget(s_defaultTemplate);
 				}
 
-				return s_defaultTemplate;
+				return defaultTemplate;
 			}
 		}
 
