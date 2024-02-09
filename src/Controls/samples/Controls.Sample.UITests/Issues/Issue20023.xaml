@@ -11,7 +11,8 @@
             Content="Dog" />
         <RadioButton 
             Content="Elephant" />
-        <RadioButton 
+        <RadioButton
+            AutomationId="WaitForStubControl"
             Content="Monkey"
             IsChecked="true" />
     </StackLayout>
