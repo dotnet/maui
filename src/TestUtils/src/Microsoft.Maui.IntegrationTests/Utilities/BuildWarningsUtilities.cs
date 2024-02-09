@@ -188,21 +188,6 @@ namespace Microsoft.Maui.IntegrationTests
 			},
 			new WarningsPerFile
 			{
-				File = "src/Controls/src/Core/BindablePropertyConverter.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2057",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.BindablePropertyConverter.ConvertFrom(ITypeDescriptorContext,CultureInfo,Object): Unrecognized value passed to the parameter 'typeName' of method 'System.Type.GetType(String)'. It's not possible to guarantee the availability of the target type.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
 				File = "src/Controls/src/Core/BindingExpression.cs",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
