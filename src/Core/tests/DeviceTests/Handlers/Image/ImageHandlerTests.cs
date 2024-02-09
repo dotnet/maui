@@ -134,7 +134,6 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(image);
 
-				await image.WaitUntilLoaded();
 				var decodedTask = image.WaitUntilDecoded();
 
 				await AttachAndRun(GetPlatformImageView(handler), async () =>

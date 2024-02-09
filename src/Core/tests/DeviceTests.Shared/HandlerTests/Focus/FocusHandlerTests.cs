@@ -33,34 +33,43 @@ namespace Microsoft.Maui.DeviceTests
 			layout.Width = 100;
 			layout.Height = 150;
 
-			await AttachAndRun<LayoutHandler>(layout, async (contentViewHandler) =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
-				var platform1 = inputControl1.ToPlatform();
-				var platform2 = inputControl2.ToPlatform();
+				var handler = CreateHandler<LayoutHandler>(layout);
 
-				// focus the first control
-				var result1 = inputControl1.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
-				Assert.True(result1);
+				var initialFocusTask = inputControl1.WaitForFocused();
 
-				// assert
-				await inputControl1.WaitForFocused();
-				Assert.True(inputControl1.IsFocused);
-				Assert.False(inputControl2.IsFocused);
+				await handler.PlatformView.AttachAndRun(async (contentViewHandler) =>
+				{
+					var platform1 = inputControl1.ToPlatform();
+					var platform2 = inputControl2.ToPlatform();
 
-				// focus the second control
-				var result2 = inputControl2.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
-				Assert.True(result2);
+					// focus the first control
+					var result1 = inputControl1.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+					Assert.True(result1);
 
-				// assert
-				await inputControl2.WaitForFocused();
-				Assert.False(inputControl1.IsFocused);
-				Assert.True(inputControl2.IsFocused);
+					// assert
+					await inputControl1.WaitForFocused();
+					Assert.True(inputControl1.IsFocused);
+					Assert.False(inputControl2.IsFocused);
+
+					// focus the second control
+					var result2 = inputControl2.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+					Assert.True(result2);
+
+					// assert
+					await inputControl2.WaitForFocused();
+					Assert.False(inputControl1.IsFocused);
+					Assert.True(inputControl2.IsFocused);
+				}, MauiContext);
 			});
 		}
 
-		// TODO: Android is not unfocusing
-#if IOS || MACCATALYST || WINDOWS
-		[Fact]
+		[Fact(
+#if ANDROID
+			Skip = "Android is not unfocusing"
+#endif
+			)]
 		public async Task UnfocusAndIsFocusedIsWorking()
 		{
 			EnsureHandlerCreated(builder =>
@@ -83,29 +92,35 @@ namespace Microsoft.Maui.DeviceTests
 			layout.Width = 100;
 			layout.Height = 150;
 
-			await AttachAndRun<LayoutHandler>(layout, async (contentViewHandler) =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
-				var platform1 = inputControl1.ToPlatform();
-				var platform2 = inputControl2.ToPlatform();
+				var handler = CreateHandler<LayoutHandler>(layout);
 
-				// focus the first control
-				var result1 = inputControl1.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
-				Assert.True(result1);
+				var initialFocusTask = inputControl1.WaitForFocused();
 
-				// assert
-				await inputControl1.WaitForFocused();
-				Assert.True(inputControl1.IsFocused);
-				Assert.False(inputControl2.IsFocused);
+				await handler.PlatformView.AttachAndRun(async (contentViewHandler) =>
+				{
+					var platform1 = inputControl1.ToPlatform();
+					var platform2 = inputControl2.ToPlatform();
 
-				// UNfocus the first control (revert the focus)
-				inputControl1.Handler.Invoke(nameof(IView.Unfocus));
+					// focus the first control
+					var result1 = inputControl1.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+					Assert.True(result1);
 
-				// assert
-				await inputControl1.WaitForUnFocused();
-				Assert.False(inputControl1.IsFocused);
-				Assert.False(inputControl2.IsFocused);
+					// assert
+					await initialFocusTask;
+					Assert.True(inputControl1.IsFocused);
+					Assert.False(inputControl2.IsFocused);
+
+					// UNfocus the first control (revert the focus)
+					inputControl1.Handler.Invoke(nameof(IView.Unfocus));
+
+					// assert
+					await inputControl1.WaitForUnFocused();
+					Assert.False(inputControl1.IsFocused);
+					Assert.False(inputControl2.IsFocused);
+				}, MauiContext);
 			});
 		}
-#endif
 	}
 }
