@@ -99,13 +99,11 @@ void Cleanup()
 		return;
 	}
 	var simulatorName = "XHarness";
-	if(iosVersion.Contains("17"))
-		simulatorName = "iPhone Xs";	
-	Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersion);
+	Information("Looking for simulator: {0} ios version {1}", simulatorName, iosVersion);
 	var xharness = sims.Where(s => s.Name.Contains(simulatorName))?.ToArray();
 	if(xharness == null || xharness.Length == 0)
 	{
-		Information("No XHarness simulators found to delete.");
+		Information("No simulators with {0} found to delete.", simulatorName);
 		return;
 	}
 	foreach (var sim in xharness) {
@@ -451,11 +449,9 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		else
 		{
 			var simulatorName = "XHarness";
-			if(iosVersionToRun.Contains("17"))
-				simulatorName = "iPhone Xs";	
 			Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersionToRun);
 			var sims = ListAppleSimulators();
-			var simXH = sims.Where(s => s.Name.Contains(simulatorName)).FirstOrDefault();
+			var simXH = sims.Where(s => s.Name.Contains(simulatorName) && s.Name.Contains(iosVersionToRun)).FirstOrDefault();
 			if(simXH == null)
 				throw new Exception("No simulator was found to run tests on.");
 
