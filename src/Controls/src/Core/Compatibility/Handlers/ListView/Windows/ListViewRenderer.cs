@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			AutoPackage = false;
 		}
 
-		internal class ListViewTransparent : WListView
+		internal sealed class ListViewTransparent : WListView
 		{
 			internal ListViewRenderer ListViewRenderer { get; }
 			public ListViewTransparent(ListViewRenderer listViewRenderer) : base()

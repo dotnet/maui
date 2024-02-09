@@ -207,6 +207,10 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 		}
 
+		public partial class PostNotifications : BasePlatformPermission
+		{
+		}
+
 		public partial class Reminders : BasePlatformPermission
 		{
 		}
