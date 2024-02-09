@@ -26,6 +26,24 @@ namespace Microsoft.Maui.Controls
 		void InitMappings()
 		{
 			var mappings = new Dictionary<string, IVisual>(StringComparer.OrdinalIgnoreCase);
+
+			if (RuntimeFeature.IsIVisualAssemblyScanningEnabled)
+			{
+				ScanAllAssemblies(mappings);
+			}
+			else
+			{
+				Register(typeof(VisualMarker.MaterialVisual), mappings);
+				Register(typeof(VisualMarker.DefaultVisual), mappings);
+				Register(typeof(VisualMarker.MatchParentVisual), mappings);
+			}
+
+			_visualTypeMappings = mappings;
+		}
+
+		[RequiresUnreferencedCode("The IVisual types might be removed by trimming and automatic registration via assembly scanning may not work as expected.")]
+		void ScanAllAssemblies(Dictionary<string, IVisual> mappings)
+		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
 			// Check for IVisual Types
@@ -45,8 +63,6 @@ namespace Microsoft.Maui.Controls
 			if (Internals.Registrar.ExtraAssemblies != null)
 				foreach (var assembly in Internals.Registrar.ExtraAssemblies)
 					RegisterFromAttributes(assembly, mappings);
-
-			_visualTypeMappings = mappings;
 		}
 
 		static void RegisterFromAttributes(Assembly assembly, Dictionary<string, IVisual> mappings)
@@ -137,6 +153,13 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_visualTypeMappings.TryGetValue(strValue, out IVisual returnValue))
 					return returnValue;
+
+				if (!RuntimeFeature.IsIVisualAssemblyScanningEnabled)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning(
+						"Unable to find visual {key}. Automatic discovery of IVisual types is disabled. You can enabled it by setting the $(MauiEnableIVisualAssemblyScanning)=true MSBuild property. " +
+						"Note: automatic registration of IVisual types through assembly scanning is not trimming-compatible and it can lead to slower app startup.", strValue);
+				}
 
 				return VisualMarker.Default;
 			}

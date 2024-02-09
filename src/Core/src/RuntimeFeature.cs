@@ -15,10 +15,16 @@ namespace Microsoft.Maui
 	internal static class RuntimeFeature
 	{
 		private const bool IsXamlRuntimeParsingSupportedByDefault = true;
+		private const bool IsIVisualAssemblyScanningEnabledByDefault = false;
 
 		internal static bool IsXamlRuntimeParsingSupported
 			=> AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported", out bool isEnabled)
 				? isEnabled
 				: IsXamlRuntimeParsingSupportedByDefault;
+
+		internal static bool IsIVisualAssemblyScanningEnabled =>
+			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled", out bool isEnabled)
+				? isEnabled
+				: IsIVisualAssemblyScanningEnabledByDefault;
 	}
 }

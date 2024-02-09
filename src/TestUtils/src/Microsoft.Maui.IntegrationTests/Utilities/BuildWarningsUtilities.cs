@@ -226,29 +226,6 @@ namespace Microsoft.Maui.IntegrationTests
 			},
 			new WarningsPerFile
 			{
-				File = "src/Controls/src/Core/Visuals/VisualTypeConverter.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2026",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.VisualTypeConverter.Register(Assembly,Dictionary`2<String,IVisual>): Using member 'System.Reflection.Assembly.GetExportedTypes()' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. Types might be removed.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2062",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.VisualTypeConverter.Register(Assembly,Dictionary`2<String,IVisual>): Value passed to parameter '' of method 'Microsoft.Maui.Controls.VisualTypeConverter.Register(Type,Dictionary`2<String,IVisual>)' can not be statically determined and may not meet 'DynamicallyAccessedMembersAttribute' requirements.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
 				File = "src/Core/src/Hosting/Internal/MauiFactory.cs",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
