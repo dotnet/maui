@@ -5,7 +5,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 	{
 		readonly string XCRunTool = "xcrun";
 
-		public string XHarnessID { get; set; } = "ios-simulator-64_16.4";
+		public string XHarnessID { get; set; } = "ios-simulator-64";
 
 		string _udid = "";
 		public string GetUDID()

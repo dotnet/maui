@@ -121,9 +121,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		)]
 		[InlineData("animated_heart.gif", true)]
-#if !WINDOWS
 		[InlineData("animated_heart.gif", false)]
-#endif
 		public async virtual Task AnimatedSourceInitializesCorrectly(string filename, bool isAnimating)
 		{
 			var image = new TStub
@@ -138,8 +136,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.WaitUntilLoaded();
 
-				await AttachAndRun(GetPlatformImageView(handler), () =>
+				await AttachAndRun(GetPlatformImageView(handler), async () =>
 				{
+					await image.WaitUntilDecoded();
+
 					Assert.Equal(isAnimating, GetNativeIsAnimationPlaying(handler));
 				});
 			});
