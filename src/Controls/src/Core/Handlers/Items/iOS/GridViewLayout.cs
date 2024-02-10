@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
-			if (propertyChanged.IsOneOf(GridItemsLayout.SpanProperty, GridItemsLayout.HorizontalItemSpacingProperty,
+			if (CollectionView != null && propertyChanged.IsOneOf(GridItemsLayout.SpanProperty, GridItemsLayout.HorizontalItemSpacingProperty,
 				GridItemsLayout.VerticalItemSpacingProperty))
 			{
 				// Update the constraints; ConstrainTo will pick up the new span
