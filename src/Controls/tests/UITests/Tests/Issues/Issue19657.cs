@@ -14,13 +14,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void CarouselItemLoadsInCorrectPosition()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
+				"The bug only happens on iOS; see https://github.com/dotnet/maui/issues/19657");
+
 			_ = App.WaitForElement("WaitHere");
 
 			var element = App.WaitForElement("First");
-
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
-					"The bug only happens on iOS; see https://github.com/dotnet/maui/issues/19657");
-
+		
 			VerifyScreenshot();
 		}
 	}
