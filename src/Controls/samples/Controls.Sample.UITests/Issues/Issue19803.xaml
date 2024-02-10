@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19803"
+             x:Name="Page"
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+    <Grid RowDefinitions="*, 48">
+        <CollectionView>
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Span="{Binding ColumnCount, Source={x:Reference Page}}" Orientation="Horizontal"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding }"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Item 1</x:String>
+                    <x:String>Item 2</x:String>
+                    <x:String>Item 3</x:String>
+                    <x:String>Item 4</x:String>
+                    <x:String>Item 5</x:String>
+                    <x:String>Item 6</x:String>
+                    <x:String>Item 7</x:String>
+                    <x:String>Item 8</x:String>
+                    <x:String>Item 9</x:String>
+                </x:Array>
+            </CollectionView.ItemsSource>
+        </CollectionView>
+        <Button AutomationId="button" Grid.Row="1" Clicked="UpdateColumnCount" Text="UpdateColumns"/>
+    </Grid>
+</ContentPage>
