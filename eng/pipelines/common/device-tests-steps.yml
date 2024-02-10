@@ -71,6 +71,14 @@ steps:
       Write-Host "##vso[task.setvariable variable=Platform.Name]${platformName}"
     displayName: 'Set Platform.Name'
 
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        rm -r $HOME/Library/Logs/CoreSimulator/*
+        rm -r $HOME/Library/Logs/DiagnosticReports/*
+      displayName: Delete Old Simulator Logs
+      condition: always()
+      continueOnError: true
+
   - pwsh: |
       ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
@@ -85,6 +93,15 @@ steps:
     workingDirectory: ${{ parameters.checkoutDirectory }}
     condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
     retryCountOnTaskFailure: 1
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        suffix=$(date +%Y%m%d%H%M%S)
+        zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
+        zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
+      displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
 
   - task: PublishTestResults@2
     displayName: Publish the $(Agent.JobName) test results
