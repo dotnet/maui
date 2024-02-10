@@ -95,14 +95,27 @@ namespace Microsoft.Maui.AppiumTests
 		internal static void HideKeyboard(IApp app, AppiumDriver? driver, bool isEditor)
 		{
 			if (isEditor)
-				CloseiOSEditorKeyboard(driver);
+				HitDoneKey(driver);
 			else
 				app.DismissKeyboard();
 		}
 
-		internal static System.Drawing.Point? FindiOSKeyboardLocation(AppiumDriver? driver)
+		internal static System.Drawing.Point? FindiOSKeyboardLocation(AppiumDriver? driver, bool isPicker = false)
 		{
-			if (driver?.IsKeyboardShown() == true)
+			if (isPicker && driver is not null)
+			{
+				try
+				{
+					var keyboard = driver.FindElement(MobileBy.ClassName("XCUIElementTypePickerWheel"));
+					return keyboard.Location;
+				}
+				catch (Exception)
+				{
+					return null;
+				}
+			}
+
+			else if (driver?.IsKeyboardShown() == true)
 			{
 				var keyboard = driver.FindElement(MobileBy.ClassName("UIAKeyboard"));
 				return keyboard.Location;
@@ -110,7 +123,7 @@ namespace Microsoft.Maui.AppiumTests
 			return null;
 		}
 
-		internal static void CloseiOSEditorKeyboard(AppiumDriver? driver)
+		internal static void HitDoneKey(AppiumDriver? driver)
 		{
 			var keyboardDoneButton = driver?.FindElement(MobileBy.Name("Done"));
 			keyboardDoneButton?.Click();

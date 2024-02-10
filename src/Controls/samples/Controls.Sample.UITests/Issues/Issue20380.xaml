@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue20380"
+             Title="Issue20380">
+    <Grid RowDefinitions="200,*,200">
+        <VerticalStackLayout Grid.Row="0" Spacing="10">
+
+        <DatePicker x:Name="datePickerVisible"  AutomationId="datePickerVisible" />
+            <Button Clicked="Button_Clicked_1" AutomationId="button1" Text="Open Visible DatePicker" />
+
+        <DatePicker IsVisible="False" AutomationId="datePickerHidden" x:Name="datePickerHidden" />
+            <Button Clicked="Button_Clicked_2" AutomationId="button2" Text="Open Hidden DatePicker" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="2" Spacing="10">
+            <TimePicker x:Name="timeVisible" AutomationId="timeVisible" />
+            <Button Clicked="Button_Clicked_4" AutomationId="button3" Text="Focus Visible TimePicker" />
+
+            <TimePicker IsVisible="False" AutomationId="timeHidden" x:Name="timeHidden" />
+            <Button Clicked="Button_Clicked_3" AutomationId="button4" Text="Focus Hidden TimePicker" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

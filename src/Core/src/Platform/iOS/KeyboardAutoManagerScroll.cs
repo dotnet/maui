@@ -116,6 +116,13 @@ public static class KeyboardAutoManagerScroll
 		{
 			View = notification.Object as UIView;
 
+			if (View?.Hidden == true)
+			{
+				View.ResignFirstResponder();
+				IsKeyboardAutoScrollHandling = false;
+				return;
+			}
+
 			if (View is null || View.FindResponder<UIAlertController>() is not null)
 			{
 				IsKeyboardAutoScrollHandling = false;
@@ -153,6 +160,12 @@ public static class KeyboardAutoManagerScroll
 
 	static async void WillKeyboardShow(NSNotification notification)
 	{
+		if (View?.Hidden == true)
+		{
+			View.ResignFirstResponder();
+			return;
+		}
+
 		var userInfo = notification.UserInfo;
 
 		if (userInfo is not null)
@@ -298,7 +311,9 @@ public static class KeyboardAutoManagerScroll
 	internal static void AdjustPosition()
 	{
 		if (ContainerView is null
-			|| (View is not UITextField && View is not UITextView))
+			|| (View is not UITextField && View is not UITextView)
+			|| View is MauiDatePicker
+			|| View is MauiTimePicker)
 		{
 			IsKeyboardAutoScrollHandling = false;
 			return;
