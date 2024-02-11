@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -556,7 +555,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var current = new BackButtonPage();
 			var navPage = new TestNavigationPage(useMaui, current);
-			navPage.PushAsync(new ContentPage());
+			await navPage.PushAsync(new ContentPage());
 
 			var emitted = false;
 			current.BackPressed += (sender, args) => emitted = true;
@@ -935,8 +934,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		protected override bool OnBackButtonPressed()
 		{
-			if (BackPressed != null)
+			if (BackPressed is not null)
+			{
 				BackPressed(this, EventArgs.Empty);
+			}
+
 			return Handle;
 		}
 	}

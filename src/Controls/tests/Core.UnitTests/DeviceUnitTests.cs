@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
 
@@ -147,7 +146,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
 		});
 
-		private void MockPlatformServices(Action onInvokeOnMainThread, Action<Action> invokeOnMainThread = null)
+		private static void MockPlatformServices(Action onInvokeOnMainThread, Action<Action> invokeOnMainThread = null)
 		{
 			DispatcherProviderStubOptions.InvokeOnMainThread =
 				action =>
