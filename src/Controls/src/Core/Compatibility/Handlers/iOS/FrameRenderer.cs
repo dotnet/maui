@@ -69,6 +69,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				SetupLayer();
 			else if (e.PropertyName == Controls.Frame.HasShadowProperty.PropertyName)
 				UpdateShadow();
+			else if (e.PropertyName == Microsoft.Maui.Controls.Frame.ContentProperty.PropertyName)
+				UpdateContent();
+		}
+
+		void UpdateContent()
+		{
+			_actualView.ClearSubviews();
+
+			var content = Element?.Content;
+
+			if (content == null || MauiContext == null)
+				return;
+
+			var platformView = content.ToPlatform(MauiContext);
+			_actualView.AddSubview(platformView);
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
