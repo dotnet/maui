@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -64,5 +65,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
 		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => 
+			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 	}
 }

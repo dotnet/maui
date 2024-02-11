@@ -175,6 +175,7 @@ Microsoft.Maui.Controls.IValueConverter.ConvertBack(object? value, System.Type! 
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.WillRotate(UIKit.UIInterfaceOrientation toInterfaceOrientation, double duration) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
 override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 ~Microsoft.Maui.Controls.Element.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 ~Microsoft.Maui.Controls.Element.InsertLogicalChild(int index, Microsoft.Maui.Controls.Element element) -> void
 ~Microsoft.Maui.Controls.Element.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> bool
