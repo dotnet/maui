@@ -41,10 +41,25 @@ steps:
   - pwsh: ./build.ps1 --target=${{ parameters.targetSample }} --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic
     displayName: 'Build the Legacy ControlGallery'
 
+  - bash: |
+      rm -r $HOME/Library/Logs/CoreSimulator/*
+      rm -r $HOME/Library/Logs/DiagnosticReports/*
+    displayName: Delete Old Simulator Logs
+    condition: ${{ eq(parameters.platform, 'ios') }}
+    continueOnError: true
+
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic --where="${{ parameters.where }}"
     displayName: $(Agent.JobName)
     # retryCountOnTaskFailure: 2
-  
+
+  - bash: |
+      suffix=$(date +%Y%m%d%H%M%S)
+      zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
+      zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
+    displayName: Zip Simulator Logs
+    condition: ${{ eq(parameters.platform, 'ios') }}
+    continueOnError: true
+
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results
     condition: always()
