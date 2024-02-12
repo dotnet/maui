@@ -505,7 +505,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateInputTransparent(this UIView platformView, IViewHandler handler, IView view)
 		{
-			if (view is IEntry textInput)
+			if (view is not IEditor && view is ITextInput textInput)
 			{
 				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
 				return;
