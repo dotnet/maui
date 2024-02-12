@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -36,39 +35,61 @@ namespace Microsoft.Maui.Controls.SourceGen
 		{
 #if DEBUG
 			//if (!System.Diagnostics.Debugger.IsAttached)
+			//{
 			//	System.Diagnostics.Debugger.Launch();
+			//}
 #endif
 			var projectItemProvider = initContext.AdditionalTextsProvider
 				.Combine(initContext.AnalyzerConfigOptionsProvider)
-				.Select(ComputeProjectItem);
+				.Select(ComputeProjectItem)
+				.WithTrackingName(TrackingNames.ProjectItemProvider);
 
-			var xmlnsDefinitionsProvider = initContext.CompilationProvider
-				.Select(GetAssemblyAttributes);
+			var xamlProjectItemProvider = projectItemProvider
+				.Where(static p => p?.Kind == "Xaml")
+				.Select(ComputeXamlProjectItem)
+				.WithTrackingName(TrackingNames.XamlProjectItemProvider);
 
-			var typeCacheProvider = initContext.CompilationProvider
-				.Select(GetTypeCache);
+			var cssProjectItemProvider = projectItemProvider
+				.Where(static p => p?.Kind == "Css")
+				.WithTrackingName(TrackingNames.CssProjectItemProvider);
 
-			var sourceProvider = projectItemProvider
+			// Only provide a new Compilation when the references change
+			var referenceCompilationProvider = initContext.CompilationProvider
+				.WithComparer(new CompilationReferencesComparer())
+				.WithTrackingName(TrackingNames.ReferenceCompilationProvider);
+
+			var xmlnsDefinitionsProvider = referenceCompilationProvider
+				.Select(GetAssemblyAttributes)
+				.WithTrackingName(TrackingNames.XmlnsDefinitionsProvider);
+
+			var referenceTypeCacheProvider = referenceCompilationProvider
+				.Select(GetTypeCache)
+				.WithTrackingName(TrackingNames.ReferenceTypeCacheProvider);
+
+			var xamlSourceProvider = xamlProjectItemProvider
 				.Combine(xmlnsDefinitionsProvider)
-				.Combine(typeCacheProvider)
-				.Combine(initContext.CompilationProvider)
-				.Select(static (t, _) => (t.Left.Left, t.Left.Right, t.Right));
+				.Combine(referenceTypeCacheProvider)
+				.Combine(referenceCompilationProvider)
+				.Select(static (t, _) => (t.Left.Left, t.Left.Right, t.Right))
+				.WithTrackingName(TrackingNames.XamlSourceProvider);
 
-			initContext.RegisterSourceOutput(sourceProvider, static (sourceProductionContext, provider) =>
+			// Register the XAML pipeline
+			initContext.RegisterSourceOutput(xamlSourceProvider, static (sourceProductionContext, provider) =>
 			{
-				var ((projectItem, xmlnsCache), typeCache, compilation) = provider;
-				if (projectItem == null)
-					return;
+				var ((xamlItem, xmlnsCache), typeCache, compilation) = provider;
 
-				switch (projectItem.Kind)
+				GenerateXamlCodeBehind(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
+			});
+
+			// Register the CSS pipeline
+			initContext.RegisterSourceOutput(cssProjectItemProvider, static (sourceProductionContext, cssItem) =>
+			{
+				if (cssItem == null)
 				{
-					case "Xaml":
-						GenerateXamlCodeBehind(projectItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
-						break;
-					case "Css":
-						GenerateCssCodeBehind(projectItem, sourceProductionContext);
-						break;
+					return;
 				}
+
+				GenerateCssCodeBehind(cssItem, sourceProductionContext);
 			});
 		}
 
@@ -84,14 +105,79 @@ namespace Microsoft.Maui.Controls.SourceGen
 		{
 			var (additionalText, optionsProvider) = tuple;
 			var fileOptions = optionsProvider.GetOptions(additionalText);
-			var globalOptions = optionsProvider.GlobalOptions;
 			if (!fileOptions.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
+			{
 				return null;
+			}
+
 			fileOptions.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
 			fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
 			fileOptions.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
 			fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
 			return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind, targetFramework: targetFramework);
+		}
+
+		static XamlProjectItem? ComputeXamlProjectItem(ProjectItem? projectItem, CancellationToken cancellationToken)
+		{
+			if (projectItem == null)
+			{
+				return null;
+			}
+
+			var text = projectItem.AdditionalText.GetText(cancellationToken);
+			if (text == null)
+			{
+				return null;
+			}
+
+			var xmlDoc = new XmlDocument();
+			try
+			{
+				xmlDoc.LoadXml(text.ToString());
+			}
+			catch (XmlException xe)
+			{
+				return new XamlProjectItem(projectItem, xe);
+			}
+
+#pragma warning disable CS0618 // Type or member is obsolete
+			if (xmlDoc.DocumentElement.NamespaceURI == XamlParser.FormsUri)
+			{
+				return new XamlProjectItem(projectItem, new Exception($"{XamlParser.FormsUri} is not a valid namespace. Use {XamlParser.MauiUri} instead"));
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			cancellationToken.ThrowIfCancellationRequested();
+
+			var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+
+			var root = xmlDoc.SelectSingleNode("/*", nsmgr);
+			if (root == null)
+			{
+				return null;
+			}
+
+			ApplyTransforms(root, projectItem.TargetFramework, nsmgr);
+
+			foreach (XmlAttribute attr in root.Attributes)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+
+				if (attr.Name == "xmlns")
+				{
+					nsmgr.AddNamespace("", attr.Value); //Add default xmlns
+				}
+
+				if (attr.Prefix != "xmlns")
+				{
+					continue;
+				}
+
+				nsmgr.AddNamespace(attr.LocalName, attr.Value);
+			}
+
+			return new XamlProjectItem(projectItem, root, nsmgr);
 		}
 
 		static AssemblyCaches GetAssemblyAttributes(Compilation compilation, CancellationToken cancellationToken)
@@ -104,7 +190,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 			INamedTypeSymbol? internalsVisibleToAttribute = compilation.GetTypeByMetadataName(typeof(InternalsVisibleToAttribute).FullName);
 
 			if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)
+			{
 				return AssemblyCaches.Empty;
+			}
 
 			var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 			var internalsVisible = new List<IAssemblySymbol>();
@@ -117,7 +205,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 				cancellationToken.ThrowIfCancellationRequested();
 
 				if (compilation.GetAssemblyOrModuleSymbol(reference) is not IAssemblySymbol symbol)
+				{
 					continue;
+				}
+
 				foreach (var attr in symbol.GetAttributes())
 				{
 					if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, xmlnsDefinitonAttribute))
@@ -125,9 +216,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 						// [assembly: XmlnsDefinition]
 						var xmlnsDef = new XmlnsDefinitionAttribute(attr.ConstructorArguments[0].Value as string, attr.ConstructorArguments[1].Value as string);
 						if (attr.NamedArguments.Length == 1 && attr.NamedArguments[0].Key == nameof(XmlnsDefinitionAttribute.AssemblyName))
+						{
 							xmlnsDef.AssemblyName = attr.NamedArguments[0].Value.Value as string;
+						}
 						else
+						{
 							xmlnsDef.AssemblyName = symbol.Name;
+						}
+
 						xmlnsDefinitions.Add(xmlnsDef);
 					}
 					else if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, internalsVisibleToAttribute))
@@ -148,34 +244,51 @@ namespace Microsoft.Maui.Controls.SourceGen
 			return new Dictionary<XmlType, string>();
 		}
 
-		static void GenerateXamlCodeBehind(ProjectItem projItem, Compilation compilation, SourceProductionContext context, AssemblyCaches caches, IDictionary<XmlType, string> typeCache)
+		static void GenerateXamlCodeBehind(XamlProjectItem? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
 		{
-			var text = projItem.AdditionalText.GetText(context.CancellationToken);
-			if (text == null)
+			if (xamlItem == null)
+			{
 				return;
+			}
+
+			var projItem = xamlItem.ProjectItem;
+			if (projItem == null)
+			{
+				return;
+			}
 
 			// Get a unique string for this xaml project item
 			var itemName = projItem.ManifestResourceName ?? projItem.RelativePath;
 			if (itemName == null)
-				return;
-			var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
-
-			if (!TryParseXaml(text, uid, compilation, caches, typeCache, context.CancellationToken, projItem.TargetFramework, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
 			{
-				if (parseException != null)
+				return;
+			}
+
+			if (xamlItem.Root == null)
+			{
+				if (xamlItem.Exception != null)
 				{
 					var location = projItem.RelativePath is not null ? Location.Create(projItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-					context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, parseException.Message));
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, xamlItem.Exception.Message));
 				}
 				return;
 			}
+
+			var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
+			if (!TryParseXaml(xamlItem, uid, compilation, xmlnsCache, typeCache, context.CancellationToken, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
+			{
+				return;
+			}
+
 			var sb = new StringBuilder();
 			sb.AppendLine(AutoGeneratedHeaderText);
 
 			var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 
 			if (projItem.ManifestResourceName != null && projItem.TargetPath != null)
+			{
 				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
+			}
 
 			if (XamlResourceIdOnly)
 			{
@@ -184,15 +297,22 @@ namespace Microsoft.Maui.Controls.SourceGen
 			}
 
 			if (rootType == null)
+			{
 				throw new Exception("Something went wrong");
+			}
 
 			sb.AppendLine($"namespace {rootClrNamespace}");
 			sb.AppendLine("{");
 			sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
 			if (addXamlCompilationAttribute)
+			{
 				sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]");
+			}
+
 			if (hideFromIntellisense)
+			{
 				sb.AppendLine($"\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+			}
 
 			sb.AppendLine($"\t{accessModifier} partial class {rootType} : {baseType}");
 			sb.AppendLine("\t{");
@@ -210,6 +330,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 			//create fields
 			if (namedFields != null)
+			{
 				foreach ((var fname, var ftype, var faccess) in namedFields)
 				{
 					sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
@@ -217,6 +338,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 					sb.AppendLine($"\t\t{faccess} {ftype} {EscapeIdentifier(fname)};");
 					sb.AppendLine();
 				}
+			}
 
 			//initializeComponent
 			sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
@@ -238,8 +360,12 @@ namespace Microsoft.Maui.Controls.SourceGen
 			sb.AppendLine("\t\t{");
 			sb.AppendLine($"\t\t\tglobal::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof({rootType}));");
 			if (namedFields != null)
+			{
 				foreach ((var fname, var ftype, var faccess) in namedFields)
+				{
 					sb.AppendLine($"\t\t\t{EscapeIdentifier(fname)} = global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<{ftype}>(this, \"{fname}\");");
+				}
+			}
 
 			sb.AppendLine("\t\t}");
 			sb.AppendLine("\t}");
@@ -248,10 +374,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 			context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 		}
 
-		static bool TryParseXaml(SourceText text, string uid, Compilation compilation, AssemblyCaches caches, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, string? targetFramework, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields, out Exception? exception)
+		static bool TryParseXaml(XamlProjectItem parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields)
 		{
-			cancellationToken.ThrowIfCancellationRequested();
-
 			accessModifier = null;
 			rootType = null;
 			rootClrNamespace = null;
@@ -261,62 +385,31 @@ namespace Microsoft.Maui.Controls.SourceGen
 			xamlResourceIdOnly = false;
 			namedFields = null;
 			baseType = null;
-			exception = null;
-
-			var xmlDoc = new XmlDocument();
-			try
-			{
-				xmlDoc.LoadXml(text.ToString());
-			}
-			catch (XmlException xe)
-			{
-				exception = xe;
-				return false;
-			}
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			if (xmlDoc.DocumentElement.NamespaceURI == XamlParser.FormsUri)
-			{
-				exception = new Exception($"{XamlParser.FormsUri} is not a valid namespace. Use {XamlParser.MauiUri} instead");
-				return false;
-			}
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			cancellationToken.ThrowIfCancellationRequested();
+
+			var root = parseResult.Root;
+			var nsmgr = parseResult.Nsmgr;
+
+			if (root == null || nsmgr == null)
+			{
+				return false;
+			}
 
 			// if the following xml processing instruction is present
 			//
 			// <?xaml-comp compile="true" ?>
 			//
 			// we will generate a xaml.g.cs file with the default ctor calling InitializeComponent, and a XamlCompilation attribute
-			var hasXamlCompilationProcessingInstruction = GetXamlCompilationProcessingInstruction(xmlDoc);
-
-			var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
-			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
-
-			var root = xmlDoc.SelectSingleNode("/*", nsmgr);
-			if (root == null)
-				return false;
-
-			ApplyTransforms(root, targetFramework, nsmgr);
-			cancellationToken.ThrowIfCancellationRequested();
-
-			foreach (XmlAttribute attr in root.Attributes)
-			{
-				if (attr.Name == "xmlns")
-					nsmgr.AddNamespace("", attr.Value); //Add default xmlns
-				if (attr.Prefix != "xmlns")
-					continue;
-				nsmgr.AddNamespace(attr.LocalName, attr.Value);
-			}
-
-			cancellationToken.ThrowIfCancellationRequested();
+			var hasXamlCompilationProcessingInstruction = GetXamlCompilationProcessingInstruction(root.OwnerDocument);
 
 			var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
 						 ?? root.Attributes["Class", XamlParser.X2009Uri];
 
 			if (rootClass != null)
-				XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootClrNamespace, out var rootAsm, out var targetPlatform);
+			{
+				XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootClrNamespace, out _, out _);
+			}
 			else if (hasXamlCompilationProcessingInstruction && root.NamespaceURI == XamlParser.MauiUri)
 			{
 				rootClrNamespace = "__XamlGeneratedCode__";
@@ -331,9 +424,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 				return true;
 			}
 
-			namedFields = GetNamedFields(root, nsmgr, compilation, caches, typeCache, cancellationToken);
+			namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken);
 			var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
-			baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), compilation, caches, typeCache);
+			baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), compilation, xmlnsCache, typeCache);
 
 			// x:ClassModifier attribute
 			var classModifier = GetAttributeValue(root, "ClassModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
@@ -347,20 +440,27 @@ namespace Microsoft.Maui.Controls.SourceGen
 		{
 			var instruction = xmlDoc.SelectSingleNode("processing-instruction('xaml-comp')") as XmlProcessingInstruction;
 			if (instruction == null)
+			{
 				return true;
+			}
 
 			var parts = instruction.Data.Split(' ', '=');
 			var indexOfCompile = Array.IndexOf(parts, "compile");
 			if (indexOfCompile != -1)
+			{
 				return !parts[indexOfCompile + 1].Trim('"', '\'').Equals("false", StringComparison.OrdinalIgnoreCase);
+			}
+
 			return true;
 		}
 
-		static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches caches, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken)
+		static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken)
 		{
 			var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 			if (xPrefix == null)
+			{
 				yield break;
+			}
 
 			XmlNodeList names =
 				root.SelectNodes(
@@ -381,12 +481,15 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 				var accessModifier = fieldModifier?.ToLowerInvariant().Replace("notpublic", "internal") ?? "private"; //notpublic is WPF for internal
 				if (!new[] { "private", "public", "internal", "protected" }.Contains(accessModifier)) //quick validation
+				{
 					accessModifier = "private";
-				yield return (name ?? "", GetTypeName(xmlType, compilation, caches, typeCache), accessModifier);
+				}
+
+				yield return (name ?? "", GetTypeName(xmlType, compilation, xmlnsCache, typeCache), accessModifier);
 			}
 		}
 
-		static string GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches caches, IDictionary<XmlType, string> typeCache)
+		static string GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
 		{
 			if (typeCache.TryGetValue(xmlType, out string returnType))
 			{
@@ -395,15 +498,19 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 			var ns = GetClrNamespace(xmlType.NamespaceUri);
 			if (ns != null)
+			{
 				returnType = $"{ns}.{xmlType.Name}";
+			}
 			else
 			{
 				// It's an external, non-built-in namespace URL.
-				returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, caches);
+				returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, xmlnsCache);
 			}
 
 			if (xmlType.TypeArguments != null)
-				returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, caches, typeCache)))}>";
+			{
+				returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsCache, typeCache)))}>";
+			}
 
 			returnType = $"global::{returnType}";
 			typeCache[xmlType] = returnType;
@@ -413,18 +520,24 @@ namespace Microsoft.Maui.Controls.SourceGen
 		static string? GetClrNamespace(string namespaceuri)
 		{
 			if (namespaceuri == XamlParser.X2009Uri)
+			{
 				return "System";
+			}
+
 			if (namespaceuri != XamlParser.X2006Uri &&
 				!namespaceuri.StartsWith("clr-namespace", StringComparison.InvariantCulture) &&
 				!namespaceuri.StartsWith("using:", StringComparison.InvariantCulture))
+			{
 				return null;
+			}
+
 			return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
 		}
 
-		static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches caches)
+		static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache)
 		{
 #nullable disable
-			string typeName = xmlType.GetTypeReference<string>(caches.XmlnsDefinitions, null,
+			string typeName = xmlType.GetTypeReference<string>(xmlnsCache.XmlnsDefinitions, null,
 				(typeInfo) =>
 				{
 					string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
@@ -432,16 +545,22 @@ namespace Microsoft.Maui.Controls.SourceGen
 					IList<INamedTypeSymbol> types = compilation.GetTypesByMetadataName(fullName);
 
 					if (types.Count == 0)
+					{
 						return null;
+					}
 
 					foreach (INamedTypeSymbol type in types)
 					{
 						// skip over types that are not in the correct assemblies
 						if (type.ContainingAssembly.Identity.Name != typeInfo.assemblyName)
+						{
 							continue;
+						}
 
-						if (!IsPublicOrVisibleInternal(type, caches.InternalsVisible))
+						if (!IsPublicOrVisibleInternal(type, xmlnsCache.InternalsVisible))
+						{
 							continue;
+						}
 
 						int i = fullName.IndexOf('`');
 						if (i > 0)
@@ -462,11 +581,15 @@ namespace Microsoft.Maui.Controls.SourceGen
 		{
 			// return types that are public
 			if (type.DeclaredAccessibility == Accessibility.Public)
+			{
 				return true;
+			}
 
 			// only return internal types if they are visible to us
 			if (type.DeclaredAccessibility == Accessibility.Internal && internalsVisible.Contains(type.ContainingAssembly, SymbolEqualityComparer.Default))
+			{
 				return true;
+			}
 
 			return false;
 		}
@@ -474,16 +597,28 @@ namespace Microsoft.Maui.Controls.SourceGen
 		static string? GetAttributeValue(XmlNode node, string localName, params string[] namespaceURIs)
 		{
 			if (node == null)
+			{
 				throw new ArgumentNullException(nameof(node));
+			}
+
 			if (localName == null)
+			{
 				throw new ArgumentNullException(nameof(localName));
+			}
+
 			if (namespaceURIs == null)
+			{
 				throw new ArgumentNullException(nameof(namespaceURIs));
+			}
+
 			foreach (var namespaceURI in namespaceURIs)
 			{
 				var attr = node.Attributes[localName, namespaceURI];
 				if (attr == null)
+				{
 					continue;
+				}
+
 				return attr.Value;
 			}
 			return null;
@@ -495,7 +630,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 			var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.{projItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 
 			if (projItem.ManifestResourceName != null && projItem.TargetPath != null)
+			{
 				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", null)]");
+			}
 
 			sourceProductionContext.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 		}
@@ -509,20 +646,36 @@ namespace Microsoft.Maui.Controls.SourceGen
 		{
 			//remove OnPlatform nodes if the platform doesn't match, so we don't generate field for x:Name of elements being removed
 			if (targetFramework == null)
+			{
 				return;
+			}
 
 			string? target = null;
 			targetFramework = targetFramework.Trim();
 			if (targetFramework.IndexOf("-android", StringComparison.OrdinalIgnoreCase) != -1)
+			{
 				target = "Android";
+			}
+
 			if (targetFramework.IndexOf("-ios", StringComparison.OrdinalIgnoreCase) != -1)
+			{
 				target = "iOS";
+			}
+
 			if (targetFramework.IndexOf("-macos", StringComparison.OrdinalIgnoreCase) != -1)
+			{
 				target = "macOS";
+			}
+
 			if (targetFramework.IndexOf("-maccatalyst", StringComparison.OrdinalIgnoreCase) != -1)
+			{
 				target = "MacCatalyst";
+			}
+
 			if (target == null)
+			{
 				return;
+			}
 
 			//no need to handle {OnPlatform} markup extension, as you can't x:Name there
 			var onPlatformNodes = node.SelectNodes("//__f__:OnPlatform", nsmgr);
@@ -538,7 +691,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 					foreach (var plat in plats)
 					{
 						if (string.IsNullOrWhiteSpace(plat))
+						{
 							continue;
+						}
+
 						if (plat.Trim() == target)
 						{
 							match = true;
@@ -546,7 +702,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 						}
 					}
 					if (!match)
+					{
 						onNode.ParentNode.RemoveChild(onNode);
+					}
 				}
 			}
 		}
@@ -571,6 +729,27 @@ namespace Microsoft.Maui.Controls.SourceGen
 			public string? TargetFramework { get; }
 		}
 
+		class XamlProjectItem
+		{
+			public XamlProjectItem(ProjectItem projectItem, XmlNode root, XmlNamespaceManager nsmgr)
+			{
+				ProjectItem = projectItem;
+				Root = root;
+				Nsmgr = nsmgr;
+			}
+
+			public XamlProjectItem(ProjectItem projectItem, Exception exception)
+			{
+				ProjectItem = projectItem;
+				Exception = exception;
+			}
+
+			public ProjectItem? ProjectItem { get; }
+			public XmlNode? Root { get; }
+			public XmlNamespaceManager? Nsmgr { get; }
+			public Exception? Exception { get; }
+		}
+
 		class AssemblyCaches
 		{
 			public static readonly AssemblyCaches Empty = new(Array.Empty<XmlnsDefinitionAttribute>(), Array.Empty<IAssemblySymbol>());
@@ -584,6 +763,29 @@ namespace Microsoft.Maui.Controls.SourceGen
 			public IReadOnlyList<XmlnsDefinitionAttribute> XmlnsDefinitions { get; }
 
 			public IReadOnlyList<IAssemblySymbol> InternalsVisible { get; }
+		}
+
+		class CompilationReferencesComparer : IEqualityComparer<Compilation>
+		{
+			public bool Equals(Compilation x, Compilation y)
+			{
+				if (x.AssemblyName != y.AssemblyName)
+				{
+					return false;
+				}
+
+				if (x.ExternalReferences.Length != y.ExternalReferences.Length)
+				{
+					return false;
+				}
+
+				return x.ExternalReferences.OfType<PortableExecutableReference>().SequenceEqual(y.ExternalReferences.OfType<PortableExecutableReference>());
+			}
+
+			public int GetHashCode(Compilation obj)
+			{
+				return obj.References.GetHashCode();
+			}
 		}
 	}
 }
