@@ -145,7 +145,7 @@ Task("dotnet-build")
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
         }
         else
         {
@@ -168,7 +168,7 @@ Task("dotnet-samples")
                 ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
             };
         }
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
+        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, maxCpuCount: 1, binlogPrefix: "sample-");
     });
 
 Task("dotnet-legacy-controlgallery")
