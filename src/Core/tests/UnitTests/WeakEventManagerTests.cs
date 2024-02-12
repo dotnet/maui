@@ -4,6 +4,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests
@@ -335,25 +336,49 @@ namespace Microsoft.Maui.UnitTests
 		[Theory]
 		[InlineData(typeof(TestEventHandlerSource))]
 		[InlineData(typeof(TestEventManagerSource))]
-		public void VerifySubscriberCanBeCollected_Unsubscribe(Type sourceType)
+		public async Task VerifySubscriberCanBeCollected_Unsubscribe(Type sourceType)
 		{
-			WeakReference? wr = null;
+			WeakReference wr;
 			var source = Activator.CreateInstance(sourceType) as ITestEventSource;
 			Assert.NotNull(source);
-			new Action(() =>
+
 			{
 				var ts = new TestSubscriber();
 				wr = new WeakReference(ts);
 				ts.Subscribe(source);
-			})();
+			}
 
+			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			new TestSubscriber().Unsubscribe(source);
+			Assert.False(wr.IsAlive);
 
-			Assert.NotNull(wr);
-			Assert.False(wr?.IsAlive);
+			new TestSubscriber().Unsubscribe(source);
 			Assert.Equal(0, source.EventHandlerCount);
+		}
+
+		[Theory]
+		[InlineData(typeof(TestEventHandlerSource))]
+		[InlineData(typeof(TestEventManagerSource))]
+		public async Task EventFiresAfterCollection(Type sourceType)
+		{
+			bool fired = false;
+
+			var source = Activator.CreateInstance(sourceType) as ITestEventSource;
+			Assert.NotNull(source);
+
+			// Use a scope so nothing holds onto handler
+			{
+				EventHandler<EventArgs> handler = (sender, args) => fired = true;
+				source.TestEvent += handler;
+			}
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			source.FireTestEvent();
+			Assert.True(fired);
 		}
 
 		[Fact]
