@@ -747,7 +747,10 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
             ArgumentCustomization = args => 
             { 
                 args.Append($"-bl:{binlog}");
-                args.Append($"-maxcpucount:{maxCpuCount}");
+                if(maxCpuCount > 0)
+                {
+                    args.Append($"-maxcpucount:{maxCpuCount}");
+                }
                 if(argsExtra != null)
                 {
                     foreach(var prop in argsExtra)
