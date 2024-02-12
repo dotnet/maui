@@ -205,7 +205,8 @@ Task("dotnet-integration-test")
             pathDotnet: dotnetPath,
             noBuild: true,
             resultsFileNameWithoutExtension: Argument("resultsfilename", ""),
-            filter: Argument("filter", ""));
+            filter: Argument("filter", ""),
+            maxCpuCount: 1);
     });
 
 Task("dotnet-test")
@@ -233,7 +234,7 @@ Task("dotnet-test")
             {
                 try
                 {
-                    RunTestWithLocalDotNet(project.FullPath);
+                    RunTestWithLocalDotNet(project.FullPath, configuration);
                 }
                 catch
                 {
@@ -709,20 +710,15 @@ void RunMSBuildWithDotNet(
     DotNetBuild(sln, dotnetBuildSettings);
 }
 
-void RunTestWithLocalDotNet(string csproj)
-{
-    if(localDotnet)
-        SetDotNetEnvironmentVariables();
-
-    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, argsExtra: null, noBuild: true, resultsFileNameWithoutExtension: null);
-}
-
-void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "")
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
 {
     string binlog;
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var logDirectory = GetLogDirectory();
+
+    if(localDotnet)
+        SetDotNetEnvironmentVariables();
 
     if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
     {
@@ -751,6 +747,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
             ArgumentCustomization = args => 
             { 
                 args.Append($"-bl:{binlog}");
+                args.Append($"-maxcpucount:{maxCpuCount}");
                 if(argsExtra != null)
                 {
                     foreach(var prop in argsExtra)
