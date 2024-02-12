@@ -77,6 +77,7 @@ Setup(context =>
 	if (TEST_DEVICE.IndexOf("_") != -1) 
 	{
 		GetSimulators(TEST_DEVICE);
+		ResetSimulators(TEST_DEVICE);
 	}
 });
 
@@ -475,6 +476,17 @@ void GetSimulators(string version)
 			ToolPath = DOTNET_TOOL_PATH,
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
+				$"\"{version}\" " +
+				$"--verbosity=\"Debug\" ")
+		});
+}
+
+void ResetSimulators(string version)
+{
+	DotNetTool("tool", new DotNetToolSettings {
+			ToolPath = DOTNET_TOOL_PATH,
+			DiagnosticOutput = true,
+			ArgumentCustomization = args => args.Append("run xharness apple simulators reset-simulator " +
 				$"\"{version}\" " +
 				$"--verbosity=\"Debug\" ")
 		});
