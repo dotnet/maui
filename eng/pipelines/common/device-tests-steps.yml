@@ -50,7 +50,7 @@ steps:
 
     - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
       displayName: 'Install .NET (Local Workloads)'
-      retryCountOnTaskFailure: 3
+      retryCountOnTaskFailure: 2
       workingDirectory: ${{ parameters.checkoutDirectory }}
       env:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
@@ -71,12 +71,20 @@ steps:
       Write-Host "##vso[task.setvariable variable=Platform.Name]${platformName}"
     displayName: 'Set Platform.Name'
 
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        rm -r $HOME/Library/Logs/CoreSimulator/*
+        rm -r $HOME/Library/Logs/DiagnosticReports/*
+      displayName: Delete Old Simulator Logs
+      condition: always()
+      continueOnError: true
+
   - pwsh: |
       ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
     workingDirectory: ${{ parameters.checkoutDirectory }}
     condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))
-    retryCountOnTaskFailure: 2
+    retryCountOnTaskFailure: 1
 
   - bash: |
       # Execute the powershell script from a bash shell on Mac to avoid interference between powershell processes that lead to this error: The STDIO streams did not close within 10 seconds of the exit event from process '/usr/local/bin/pwsh'. This may indicate a child process inherited the STDIO streams and has not yet exited.
@@ -84,7 +92,16 @@ steps:
     displayName: $(Agent.JobName)
     workingDirectory: ${{ parameters.checkoutDirectory }}
     condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
-    retryCountOnTaskFailure: 2
+    retryCountOnTaskFailure: 1
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        suffix=$(date +%Y%m%d%H%M%S)
+        zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
+        zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
+      displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
 
   - task: PublishTestResults@2
     displayName: Publish the $(Agent.JobName) test results

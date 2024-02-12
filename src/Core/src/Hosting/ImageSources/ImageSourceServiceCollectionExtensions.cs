@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Hosting
 			where TImageSource : IImageSource
 			where TImageSourceService : class, IImageSourceService<TImageSource>
 		{
+			services.AddImageSourceMapping<TImageSource, IImageSourceService<TImageSource>>();
 #pragma warning disable RS0030 // Do not use banned APIs, the current method is also banned
 			services.AddSingleton<IImageSourceService<TImageSource>, TImageSourceService>();
 #pragma warning restore RS0030 // Do not use banned APIs
@@ -34,9 +35,17 @@ namespace Microsoft.Maui.Hosting
 		public static IImageSourceServiceCollection AddService<TImageSource>(this IImageSourceServiceCollection services, Func<IServiceProvider, IImageSourceService<TImageSource>> implementationFactory)
 			where TImageSource : IImageSource
 		{
+			services.AddImageSourceMapping<TImageSource, IImageSourceService<TImageSource>>();
 			services.AddSingleton(provider => implementationFactory(((IImageSourceServiceProvider)provider).HostServiceProvider));
 
 			return services;
+		}
+
+		private static void AddImageSourceMapping<TImageSource, TImageSourceService>(this IImageSourceServiceCollection services)
+			where TImageSource : IImageSource
+			where TImageSourceService : class, IImageSourceService<TImageSource>
+		{
+			ImageSourceToImageSourceServiceTypeMapping.GetInstance(services).Add<TImageSource, TImageSourceService>();
 		}
 	}
 }

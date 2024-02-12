@@ -8,9 +8,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d40c654c274fe4f4afe66328f0599130f3eb2ea6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.2.159">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.2.161">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>f9a6c8ae1cf7945925416b693395c6f885c1decf</Sha>
+      <Sha>3212213e4e689dafb70421aef935c4139eefd21b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="17.2.9088-net9-p2">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -127,17 +127,17 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1d1bf92fcf43aa6981804dc53c5174445069c9e4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.24077.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.24105.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>f49b5c0db06528a9580686a5b63b0e5b4aba566b</Sha>
+      <Sha>18d9997c993b22deea92407e990bbd769701de6a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="9.0.0-prerelease.24077.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="9.0.0-prerelease.24105.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>f49b5c0db06528a9580686a5b63b0e5b4aba566b</Sha>
+      <Sha>18d9997c993b22deea92407e990bbd769701de6a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="9.0.0-prerelease.24077.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="9.0.0-prerelease.24105.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>f49b5c0db06528a9580686a5b63b0e5b4aba566b</Sha>
+      <Sha>18d9997c993b22deea92407e990bbd769701de6a</Sha>
     </Dependency>
   </ProductDependencies>
 </Dependencies>
