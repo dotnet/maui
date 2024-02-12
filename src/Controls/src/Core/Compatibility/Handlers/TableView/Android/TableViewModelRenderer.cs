@@ -5,7 +5,6 @@ using Android.Content;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
 
@@ -18,6 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		ITableViewController Controller => _view;
 		Cell _restoreFocus;
 		Cell[] _cellCache;
+
 		Cell[] CellCache
 		{
 			get
@@ -45,6 +45,33 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_nextIsHeaderCache == null)
 					FillCache();
 				return _nextIsHeaderCache;
+			}
+		}
+
+		// This resource shouldn't change during the application lifecycle, so we only need to grab it once 
+		// and we can use it for every TableView
+		static int? _dividerResourceId;
+
+		int DividerResourceId
+		{
+			get
+			{
+				if (_dividerResourceId is null)
+				{
+					using var value = new TypedValue();
+
+					_dividerResourceId = global::Android.Resource.Drawable.DividerHorizontalDark;
+					if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ListDivider, value, true))
+					{
+						_dividerResourceId = value.ResourceId;
+					}
+					else if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.Divider, value, true))
+					{
+						_dividerResourceId = value.ResourceId;
+					}
+				}
+
+				return _dividerResourceId.Value;
 			}
 		}
 
@@ -76,13 +103,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			get
 			{
-				// 1 for the headers + 1 for each non header cell
-				var viewTypeCount = 1;
-				foreach (var b in IsHeaderCache)
-					if (!b)
-						viewTypeCount++;
-				return viewTypeCount;
+				// The GetView implementation literally only returns ConditionalFocusLayout. There is only one type.
+				return 1;
 			}
+		}
+
+		public override int GetItemViewType(int position)
+		{
+			// Tell the adapter not to attempt to re-use recycled cells; because this currently only returns ConditionalFocusLayouts,
+			// there's no actual type count or item type information that allows us to accurately re-use cells. The CFLs we get from
+			// the convertView parameters may have entirely types of content, or they may have ViewCells with arbitrary content. And
+			// the cell content (the native views) is tied to the virtual Cells anyway, so the thing the adapter gives us to "reuse"
+			// may not be safe for reuse. Our one-to-one VirtualView<->(Renderer/Handler) design is not currently compatible with the
+			// ListView's recycling scheme, so we need to turn that off.
+
+			return IAdapter.IgnoreItemViewType;
 		}
 
 		public override bool AreAllItemsEnabled()
@@ -97,94 +132,94 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override AView GetView(int position, AView convertView, ViewGroup parent)
 		{
-			bool isHeader, nextIsHeader;
-			Cell item = GetCellForPosition(position, out isHeader, out nextIsHeader);
+			Cell item = GetCellForPosition(position, out var isHeader, out var nextIsHeader);
+
 			if (item == null)
-				return new AView(Context);
-
-			var makeBline = true;
-			var layout = convertView as ConditionalFocusLayout;
-			AView aview = CellFactory.GetCell(item, convertView, parent, Context, _view);
-
-			if (layout != null)
 			{
-				makeBline = false;
-				convertView = layout.GetChildAt(0);
+				return new AView(Context);
 			}
-			else
+
+			if (convertView is ConditionalFocusLayout cfl && cfl.ChildCount > 0)
+			{
+				convertView = cfl.GetChildAt(0);
+			}
+
+			AView nativeCellContent = CellFactory.GetCell(item, convertView, parent, Context, _view);
+
+			// The cell content we get back might already be in a ConditionalFocusLayout; if it is, 
+			// we'll just use that. If not, we'll need to create one and add the content to it
+
+			if (nativeCellContent.Parent is not ConditionalFocusLayout layout)
 			{
 				layout = new ConditionalFocusLayout(Context) { Orientation = Orientation.Vertical };
+				layout.AddView(nativeCellContent);
 			}
 
-			if (!makeBline)
-			{
-				if (convertView != aview)
-				{
-					if (layout.ChildCount == 2)
-					{
-						layout.RemoveViewAt(0);
-					}
-
-					aview.RemoveFromParent();
-					layout.AddView(aview, 0);
-				}
-			}
-			else
-			{
-				aview.RemoveFromParent();
-				layout.AddView(aview, 0);
-			}
-
-			AView bline;
-			if (makeBline)
-			{
-				bline = new AView(Context) { LayoutParameters = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, 1) };
-
-				layout.AddView(bline);
-			}
-			else
-				bline = layout.GetChildAt(1);
-
-			if (isHeader)
-			{
-				if (Application.AccentColor != null)
-					bline.SetBackgroundColor(Application.AccentColor.ToPlatform());
-			}
-			else if (nextIsHeader)
-				bline.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
-			else
-			{
-				using (var value = new TypedValue())
-				{
-					int id = global::Android.Resource.Drawable.DividerHorizontalDark;
-					if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ListDivider, value, true))
-						id = value.ResourceId;
-					else if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.Divider, value, true))
-						id = value.ResourceId;
-
-					bline.SetBackgroundResource(id);
-				}
-			}
+			UpdateDivider(isHeader, nextIsHeader, layout);
 
 			layout.ApplyTouchListenersToSpecialCells(item);
 
-			if (_restoreFocus == item)
-			{
-				if (!aview.HasFocus)
-					aview.RequestFocus();
-
-				_restoreFocus = null;
-			}
-			else if (aview.HasFocus)
-				aview.ClearFocus();
+			UpdateCellFocus(item, nativeCellContent);
 
 			return layout;
 		}
 
+		void UpdateDivider(bool forHeader, bool precedingHeader, ConditionalFocusLayout wrapper)
+		{
+			// Android's ListView provides built-in dividers, for some reason (perhaps our rules are too complex for the built-in
+			// capabilities?) we don't use those. Instead, we fake them with 1pt views at the bottom of CFLs.
+
+			var divider = wrapper.GetChildAt(1);
+			if (divider is null)
+			{
+				divider = new AView(Context) { LayoutParameters = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, 1) };
+				wrapper.AddView(divider);
+			}
+
+			if (forHeader)
+			{
+				if (Application.AccentColor != null)
+				{
+					divider.SetBackgroundColor(Application.AccentColor.ToPlatform());
+				}
+
+				return;
+			}
+
+			if (precedingHeader)
+			{
+				divider.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+				return;
+			}
+
+			divider.SetBackgroundResource(DividerResourceId);
+		}
+
+		void UpdateCellFocus(Cell cell, AView nativeCell)
+		{
+			// If this cell is the one that's supposed to have focus, then request focus for the native cell
+			if (_restoreFocus == cell)
+			{
+				if (!nativeCell.HasFocus)
+				{
+					nativeCell.RequestFocus();
+				}
+
+				_restoreFocus = null;
+
+				return;
+			}
+
+			// Otherwise, remove focus from the native cell
+			if (nativeCell.HasFocus)
+			{
+				nativeCell.ClearFocus();
+			}
+		}
+
 		public override bool IsEnabled(int position)
 		{
-			bool isHeader, nextIsHeader;
-			Cell item = GetCellForPosition(position, out isHeader, out nextIsHeader);
+			Cell item = GetCellForPosition(position, out var isHeader, out _);
 			return !isHeader && item.IsEnabled;
 		}
 

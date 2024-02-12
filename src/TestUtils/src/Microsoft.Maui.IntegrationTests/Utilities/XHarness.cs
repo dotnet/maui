@@ -68,11 +68,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static string RunForOutput(string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
 		{
-			var dotnetToolUserPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dotnet", "tools");
-			var xharnessToolPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dotnet", "tools"),
-				TestEnvironment.IsWindows ? "xharness.exe" : XHarnessTool);
-			var xharnessTool = File.Exists(xharnessToolPath) ? xharnessToolPath : XHarnessTool;
-			return ToolRunner.Run(xharnessTool, args, out exitCode, timeoutInSeconds: timeoutInSeconds);
+			return DotnetInternal.RunForOutput(XHarnessTool, args, out exitCode, timeoutInSeconds);
 		}
 
 	}

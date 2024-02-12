@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 					// code changes don't break the cache again, and the only observable outside consequence is that the scrolling
 					// for the CollectionView becomes "janky". We don't want to rely entirely on human perception of "jankiness" to 
 					// catch this problem. 
-					
+
 					// If the size comes back as EstimatedItemSize, we'll know that the actual value was not found in the cache.
 
 					if (_trackCacheMisses && itemSize == flowLayout.EstimatedItemSize)
@@ -96,7 +96,8 @@ namespace Microsoft.Maui.DeviceTests
 				HeightRequest = 654.66666
 			};
 
-			var template = new DataTemplate(() => {
+			var template = new DataTemplate(() =>
+			{
 				var content = new Label() { Text = "Howdy" };
 				content.SetBinding(VisualElement.HeightRequestProperty, new Binding(nameof(VisualElement.HeightRequest)));
 				return content;
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.DeviceTests
 				collectionView.ScrollTo(0);
 				await Task.Delay(1000);
 
-				if (handler.Controller is CacheTestItemsViewController controller 
+				if (handler.Controller is CacheTestItemsViewController controller
 					&& controller.DelegateFlowLayout is CacheMissCountingDelegate cacheMissCounter)
 				{
 					// Different screen sizes and timings mean this isn't 100% predictable. But we can work out some conditions

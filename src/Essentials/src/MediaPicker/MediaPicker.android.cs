@@ -66,46 +66,74 @@ namespace Microsoft.Maui.Media
 			if (!OperatingSystem.IsAndroidVersionAtLeast(33))
 				await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
 
-			var capturePhotoIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
+			var captureIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
 
-			if (!PlatformUtils.IsIntentSupported(capturePhotoIntent))
-				throw new FeatureNotSupportedException($"Either there was no camera on the device or '{capturePhotoIntent.Action}' was not added to the <queries> element in the app's manifest file. See more: https://developer.android.com/about/versions/11/privacy/package-visibility");
+			if (!PlatformUtils.IsIntentSupported(captureIntent))
+				throw new FeatureNotSupportedException($"Either there was no camera on the device or '{captureIntent.Action}' was not added to the <queries> element in the app's manifest file. See more: https://developer.android.com/about/versions/11/privacy/package-visibility");
 
-			capturePhotoIntent.AddFlags(ActivityFlags.GrantReadUriPermission);
-			capturePhotoIntent.AddFlags(ActivityFlags.GrantWriteUriPermission);
+			captureIntent.AddFlags(ActivityFlags.GrantReadUriPermission);
+			captureIntent.AddFlags(ActivityFlags.GrantWriteUriPermission);
 
 			try
 			{
 				var activity = ActivityStateManager.Default.GetCurrentActivity(true);
 
-				// Create the temporary file
-				var ext = photo
-					? FileExtensions.Jpg
-					: FileExtensions.Mp4;
-				var fileName = Guid.NewGuid().ToString("N") + ext;
-				var tmpFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
+				string captureResult = null;
 
-				string path = null;
-
-				void OnResult(Intent intent)
-				{
-					// The uri returned is only temporary and only lives as long as the Activity that requested it,
-					// so this means that it will always be cleaned up by the time we need it because we are using
-					// an intermediate activity.
-
-					path = FileSystemUtils.EnsurePhysicalPath(intent.Data);
-				}
-
-				// Start the capture process
-				await IntermediateActivity.StartAsync(capturePhotoIntent, PlatformUtils.requestCodeMediaCapture, onResult: OnResult);
-
+				if (photo)
+					captureResult = await CapturePhotoAsync(captureIntent);
+				else
+					captureResult = await CaptureVideoAsync(captureIntent);
+				
 				// Return the file that we just captured
-				return new FileResult(path);
+				return new FileResult(captureResult);
 			}
 			catch (OperationCanceledException)
 			{
 				return null;
 			}
+		}
+
+		async Task<string> CapturePhotoAsync(Intent captureIntent)
+		{
+			// Create the temporary file
+			var fileName = Guid.NewGuid().ToString("N") + FileExtensions.Jpg;
+			var tmpFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
+
+			// Set up the content:// uri
+			AndroidUri outputUri = null;
+
+			void OnCreate(Intent intent)
+			{
+				// Android requires that using a file provider to get a content:// uri for a file to be called
+				// from within the context of the actual activity which may share that uri with another intent
+				// it launches.
+				outputUri ??= FileProvider.GetUriForFile(tmpFile);
+
+				intent.PutExtra(MediaStore.ExtraOutput, outputUri);
+			}
+
+			await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, OnCreate);
+
+			return tmpFile.AbsolutePath;
+		}
+
+		async Task<string> CaptureVideoAsync(Intent captureIntent)
+		{
+			string path = null;
+
+			void OnResult(Intent intent)
+			{
+				// The uri returned is only temporary and only lives as long as the Activity that requested it,
+				// so this means that it will always be cleaned up by the time we need it because we are using
+				// an intermediate activity.
+				path = FileSystemUtils.EnsurePhysicalPath(intent.Data);
+			}
+
+			// Start the capture process
+			await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, onResult: OnResult);
+
+			return path;
 		}
 	}
 }

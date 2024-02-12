@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.UnitTests
 {
@@ -54,6 +55,19 @@ namespace Microsoft.Maui.UnitTests
 	class FooBarService : IFooBarService
 	{
 		public FooBarService(IFooService foo, IBarService bar)
+		{
+			Foo = foo;
+			Bar = bar;
+		}
+
+		public IFooService Foo { get; }
+
+		public IBarService Bar { get; }
+	}
+
+	class FooBarKeyedService : IFooBarService
+	{
+		public FooBarKeyedService([FromKeyedServices("foo")] IFooService foo, [FromKeyedServices("bar")] IBarService bar)
 		{
 			Foo = foo;
 			Bar = bar;
