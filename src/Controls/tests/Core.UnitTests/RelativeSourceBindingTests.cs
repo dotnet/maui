@@ -32,7 +32,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				StyleId = "label1"
 			};
-			label.SetBinding(Label.TextProperty, static (Label label) => label.StyleId, source: RelativeBindingSource.Self);
+			label.SetBinding(
+				Label.TextProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(StackLayout.StyleId),
+					static (Label label) => label.StyleId,
+					static (label, value) => label.StyleId = value,
+					source: RelativeBindingSource.Self));
 			Assert.Equal(label.Text, label.StyleId);
 
 			label.StyleId = "label2";
@@ -66,7 +72,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var label = new Label();
 			stack.Children.Add(label);
 
-			label.SetBinding(Label.TextProperty, static (StackLayout stack) => stack.StyleId, source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 1));
+			label.SetBinding(
+				Label.TextProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(StackLayout.StyleId),
+					static (StackLayout stack) => stack.StyleId,
+					static (stack, value) => stack.StyleId = value,
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 1)));
 			Assert.Equal("stack1", label.Text);
 
 			stack.StyleId = "stack2";
@@ -102,7 +114,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var template = new ControlTemplate(() =>
 			{
 				label = new Label();
-				label.SetBinding(Label.TextProperty, static (Frame frame) => frame.StyleId, source: RelativeBindingSource.TemplatedParent);
+				label.SetBinding(
+					Label.TextProperty,
+					TypedBinding.ForSingleNestingLevel(
+						nameof(StackLayout.StyleId),
+						static (Frame frame) => frame.StyleId,
+						static (frame, value) => frame.StyleId = value,
+						source: RelativeBindingSource.TemplatedParent));
 				return label;
 			});
 
@@ -392,18 +410,48 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			stack1.Children.Add(stack0);
 			stack0.Children.Add(grid);
 
-			label0.SetBinding(Label.TextProperty, static (PersonViewModel vm) => vm.Name, source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PersonViewModel), 1));
-			label0.SetBinding(Label.TextColorProperty, static (StackLayout stack) => stack.BackgroundColor, source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 1));
+			label0.SetBinding(Label.TextProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(PersonViewModel.Name),
+					static (PersonViewModel vm) => vm.Name,
+					static (vm, value) => vm.Name = value,
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PersonViewModel), 1)));
+			label0.SetBinding(Label.TextColorProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(StackLayout.BackgroundColor),
+					static (StackLayout stack) => stack.BackgroundColor,
+					static (stack, value) => stack.BackgroundColor = value,
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 1)));
 			Assert.Null(label0.Text);
 			Assert.Equal(Label.TextColorProperty.DefaultValue, label0.TextColor);
 
-			label1.SetBinding(Label.TextProperty, static (PersonViewModel vm) => vm.Name, source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PersonViewModel), 2));
-			label1.SetBinding(Label.TextColorProperty, static (StackLayout stack) => stack.BackgroundColor, source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 2));
+			label1.SetBinding(Label.TextProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(PersonViewModel.Name),
+					static (PersonViewModel vm) => vm.Name,
+					static (vm, value) => vm.Name = value,
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PersonViewModel), 2)));
+			label1.SetBinding(Label.TextColorProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(StackLayout.BackgroundColor),
+					static (StackLayout stack) => stack.BackgroundColor,
+					static (stack, value) => stack.BackgroundColor = value,
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 2)));
 			Assert.Null(label1.Text);
 			Assert.Equal(Label.TextColorProperty.DefaultValue, label1.TextColor);
 
-			label2.SetBinding(Label.TextProperty, static (PersonViewModel vm) => vm.Name, source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PersonViewModel), 3));
-			label2.SetBinding(Label.TextColorProperty, static (StackLayout vm) => vm.BackgroundColor, source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 3));
+			label2.SetBinding(Label.TextProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(PersonViewModel.Name),
+					static (PersonViewModel vm) => vm.Name,
+					static (vm, value) => vm.Name = value,
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PersonViewModel), 3)));
+			label2.SetBinding(Label.TextColorProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(StackLayout.BackgroundColor),
+					static (StackLayout vm) => vm.BackgroundColor,
+					static (vm, value) => vm.BackgroundColor = value,
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout), 3)));
 			Assert.Null(label2.Text);
 			Assert.Equal(Label.TextColorProperty.DefaultValue, label2.TextColor);
 
