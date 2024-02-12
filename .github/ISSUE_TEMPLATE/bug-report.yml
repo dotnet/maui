@@ -44,6 +44,7 @@ body:
       label: Version with bug
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
+        - 
         - 8.0.6
         - 8.0.3
         - 7.0.101
@@ -79,6 +80,7 @@ body:
       label: Last version that worked well
       description: If you answered yes, there a version on which this _did_ work, which one? If no or unknown, please select `Unknown/Other`.  Run `dotnet workload list` to find your version.
       options:
+        - 
         - Unknown/Other
         - 6.0
         - 7.0.49
