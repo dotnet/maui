@@ -242,25 +242,16 @@ namespace Microsoft.Maui.Handlers
 
 			static UIImage? ResizeImageSource(UIImage? sourceImage, nfloat maxWidth, nfloat maxHeight)
 			{
-				if (sourceImage is null)
+				if (sourceImage is null || sourceImage.CGImage is null)
 					return null;
 
 				var sourceSize = sourceImage.Size;
-				var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
-
+				float maxResizeFactor = (float)Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+				
 				if (maxResizeFactor > 1)
 					return sourceImage;
 
-				var width = maxResizeFactor * sourceSize.Width;
-				var height = maxResizeFactor * sourceSize.Height;
-				CGSize scaleSize = new CGSize(width, height);
-
-				UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
-				sourceImage.Draw(new CGRect(0, 0, scaleSize.Width, scaleSize.Height));
-				var resultImage = UIGraphics.GetImageFromCurrentImageContext();
-				UIGraphics.EndImageContext();
-
-				return resultImage;
+				return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
 			}
 		}
 	}
