@@ -483,11 +483,13 @@ void GetSimulators(string version)
 
 void ResetSimulators(string version)
 {
+	var logDirectory = GetLogDirectory();
 	DotNetTool("tool", new DotNetToolSettings {
 			ToolPath = DOTNET_TOOL_PATH,
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators reset-simulator " +
-				$"\"{version}\" " +
+				$"--output-directory=\"{logDirectory}\" " +
+				$"--target=\"{version}\" " +
 				$"--verbosity=\"Debug\" ")
 		});
 }
