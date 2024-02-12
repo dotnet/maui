@@ -38,7 +38,7 @@ string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ?
 	$"iossimulator-{System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString().ToLower()}"
   : $"ios-arm64";
 string CONFIGURATION = Argument("configuration", "Debug");
-bool DEVICE_CLEANUP = Argument("cleanup", true);
+bool DEVICE_CLEANUP = Argument("cleanup", !IsCIBuild());
 string TEST_FRAMEWORK = "net472";
 
 Information("Project File: {0}", PROJECT);
@@ -77,6 +77,7 @@ Setup(context =>
 	if (TEST_DEVICE.IndexOf("_") != -1) 
 	{
 		GetSimulators(TEST_DEVICE);
+		ResetSimulators(TEST_DEVICE);
 	}
 });
 
@@ -474,6 +475,19 @@ void GetSimulators(string version)
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
 				$"\"{version}\" " +
+				$"--verbosity=\"Debug\" ")
+		});
+}
+
+void ResetSimulators(string version)
+{
+	var logDirectory = GetLogDirectory();
+	DotNetTool("tool", new DotNetToolSettings {
+			ToolPath = DOTNET_TOOL_PATH,
+			DiagnosticOutput = true,
+			ArgumentCustomization = args => args.Append("run xharness apple simulators reset-simulator " +
+				$"--output-directory=\"{logDirectory}\" " +
+				$"--target=\"{version}\" " +
 				$"--verbosity=\"Debug\" ")
 		});
 }
