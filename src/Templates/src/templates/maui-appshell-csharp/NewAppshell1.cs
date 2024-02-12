@@ -1,16 +1,31 @@
 namespace MauiApp1;
 
-public class NewAppshell1 : Shell
+public class MyShell : Shell
 {
-	public NewAppshell1()
+	public MyShell()
 	{
-		var shell = new Shell()
+		this.Items.Add(new FlyoutItem
 		{
-			Children =
+			Title = "Dashboard",
+			Items =
 			{
-				new FlyoutItem{ Title = "Main" }
-				new FlyoutItem{ Title = "Other" }
+				new ShellContent
+				{
+					ContentTemplate = new DataTemplate(typeof(DashboardPage)),
+				}
 			}
-		}
+		});
+
+		this.Items.Add(new FlyoutItem
+		{
+			Title = "Add Vocab",
+			Items =
+			{
+				new ShellContent
+				{
+					ContentTemplate = new DataTemplate(typeof(AddVocabularyPage)),
+				}
+			}
+		});
 	}
 }
