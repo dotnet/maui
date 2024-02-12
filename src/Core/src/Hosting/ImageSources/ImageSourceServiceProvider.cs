@@ -14,16 +14,22 @@ namespace Microsoft.Maui.Hosting
 		readonly ConcurrentDictionary<Type, Type> _imageSourceCache = new ConcurrentDictionary<Type, Type>();
 		readonly ConcurrentDictionary<Type, Type> _serviceCache = new ConcurrentDictionary<Type, Type>();
 
+		readonly ImageSourceToImageSourceServiceTypeMapping _imageSourceMapping;
+
 		public ImageSourceServiceProvider(IImageSourceServiceCollection collection, IServiceProvider hostServiceProvider)
 			: base(collection)
 		{
+			_imageSourceMapping = ImageSourceToImageSourceServiceTypeMapping.GetInstance(collection);
 			HostServiceProvider = hostServiceProvider;
 		}
 
 		public IServiceProvider HostServiceProvider { get; }
 
-		public IImageSourceService? GetImageSourceService(Type imageSource) =>
-			(IImageSourceService?)GetService(GetImageSourceServiceType(imageSource));
+		public IImageSourceService? GetImageSourceService(Type imageSource)
+		{
+			var imageSourceService = _serviceCache.GetOrAdd(imageSource, _imageSourceMapping.FindImageSourceServiceType);
+			return (IImageSourceService?)GetService(imageSourceService);
+		}
 
 		public Type GetImageSourceServiceType(Type imageSource) =>
 			_serviceCache.GetOrAdd(imageSource, type =>
