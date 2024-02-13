@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18797"
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+    <VerticalStackLayout>
+        <DatePicker Focused="DatePicker_Focused" Unfocused="DatePicker_Unfocused" AutomationId="datePicker"/>
+        <Label x:Name="FocusedLabel" AutomationId="focusedLabel" Text="Focused: false"/>
+        <Label x:Name="UnfocusedLabel" AutomationId="unfocusedLabel" Text="Unfocused: false"/>
+    </VerticalStackLayout>
+</ContentPage>
