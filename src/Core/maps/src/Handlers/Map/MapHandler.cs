@@ -1,7 +1,9 @@
-﻿#if __IOS__ || MACCATALYST
+﻿#pragma warning disable IDE0011 // Add braces
+#pragma warning disable RS0016 // Add public types and members to the declared API
+#if __IOS__ || MACCATALYST
 using PlatformView = Microsoft.Maui.Maps.Platform.MauiMKMapView;
 #elif MONOANDROID
-using PlatformView = Android.Gms.Maps.MapView;
+using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN

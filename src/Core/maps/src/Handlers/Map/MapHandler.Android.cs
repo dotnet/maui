@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable IDE0011 // Add braces
+#pragma warning disable RS0016 // Add public types and members to the declared API
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,10 +22,15 @@ using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
 using Math = System.Math;
+using AView = Android.Views.View;
+using Android.Views;
+using AndroidX.Fragment.App;
+using Android.Runtime;
+using Android.Widget;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	public partial class MapHandler : ViewHandler<IMap, MapView>
+	public partial class MapHandler : ViewHandler<IMap, AView>
 	{
 		bool _init = true;
 
@@ -45,15 +52,15 @@ namespace Microsoft.Maui.Maps.Handlers
 			set { s_bundle = value; }
 		}
 
-		protected override void ConnectHandler(MapView platformView)
+		protected override void ConnectHandler(AView platformView)
 		{
 			base.ConnectHandler(platformView);
 			_mapReady = new MapCallbackHandler(this);
-			platformView.GetMapAsync(_mapReady);
+			//platformView.GetMapAsync(_mapReady);
 			platformView.LayoutChange += MapViewLayoutChange;
 		}
 
-		protected override void DisconnectHandler(MapView platformView)
+		protected override void DisconnectHandler(AView platformView)
 		{
 			base.DisconnectHandler(platformView);
 			platformView.LayoutChange -= MapViewLayoutChange;
@@ -69,12 +76,24 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapReady = null;
 		}
 
-		protected override MapView CreatePlatformView()
+		protected override AView CreatePlatformView()
 		{
-			MapView mapView = new MapView(Context);
-			mapView.OnCreate(s_bundle);
-			mapView.OnResume();
-			return mapView;
+			var view = new FragmentContainerView(Context);
+
+			view.Id = AView.GenerateViewId();
+
+			view.LayoutParameters = new ViewGroup.LayoutParams(
+				FrameLayout.LayoutParams.MatchParent,
+				FrameLayout.LayoutParams.MatchParent);
+
+			var fm = MauiContext!.Services.GetRequiredService<FragmentManager>();
+
+			fm
+				.BeginTransaction()
+				.Add(view.Id, new MauiMapFragment(VirtualView, MauiContext))
+				.Commit();
+
+			return view;
 		}
 
 		public static void MapMapType(IMapHandler handler, IMap map)
@@ -597,6 +616,31 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 
 			base.Dispose(disposing);
+		}
+	}
+
+	class MauiMapFragment : Fragment
+	{
+		public MauiMapFragment(IMap view, IMauiContext mauiContext)
+		{
+		}
+
+		public override AView? OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
+		{
+			var map= new MapView(Context);
+			map.OnCreate(savedInstanceState);
+			return map;
+		}
+
+		public override void OnCreate(Bundle? savedInstanceState)
+		{
+			base.OnCreate(savedInstanceState);
+		}
+
+		public override void OnResume()
+		{
+			base.OnResume();
+			((MapView)View!).OnResume();
 		}
 	}
 

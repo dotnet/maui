@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -17,7 +18,7 @@ namespace Maui.Controls.Sample
 
 		private async void Button_Clicked(object sender, EventArgs e)
 		{
-            await Navigation.PushModalAsync(new ContentPage()
+			await Navigation.PushModalAsync(new ContentPage()
 			{
 				Content = new Label()
 				{

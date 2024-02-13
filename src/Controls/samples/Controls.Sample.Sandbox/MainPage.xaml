@@ -5,7 +5,7 @@
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps">
 
-    <Grid>
+    <Grid x:Name="gridder">
         <maps:Map x:Name="mapper" />
 
         <Button Text="Open Popup"
