@@ -12,6 +12,10 @@
           "operator": "and",
           "operands": [
             {
+              "name": "isIssue",
+              "parameters": {}
+            },
+            {
               "name": "isAction",
               "parameters": {
                 "action": "created"
@@ -160,6 +164,10 @@
         "conditions": {
           "operator": "and",
           "operands": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
             {
               "name": "hasLabel",
               "parameters": {
@@ -2406,6 +2414,10 @@
         "conditions": {
           "operator": "and",
           "operands": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
             {
               "name": "hasLabel",
               "parameters": {
