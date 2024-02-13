@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return attrString;
 		}
 
-		public static void RecalculateSpanPositions(this UILabel control, Label element)
+		internal static void RecalculateSpanPositions(this UILabel control, Label element)
 		{
 			if (element is null)
 				return;
