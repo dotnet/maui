@@ -26,9 +26,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
 			{
-				throw new NotSupportedException("XAML runtime parsing is not supported. " +
-					"Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting " +
-					"the MauiXamlRuntimeParsingSupport MSBuild property to true.");
+				throw new InvalidOperationException(RuntimeFeature.XamlRuntimeParsingNotSupportedErrorMessage);
 			}
 
 			if (string.IsNullOrWhiteSpace(value))
@@ -85,9 +83,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
 			{
-				throw new NotSupportedException("XAML runtime parsing is not supported. " +
-					"Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting "
-					+ "the MauiXamlRuntimeParsingSupport MSBuild property to true.");
+				throw new InvalidOperationException(RuntimeFeature.XamlRuntimeParsingNotSupportedErrorMessage);
 			}
 
 			var strValue = value?.ToString();

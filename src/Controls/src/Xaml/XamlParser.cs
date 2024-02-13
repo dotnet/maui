@@ -362,9 +362,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
 			{
-				throw new NotSupportedException("XAML runtime parsing is not supported. " +
-					"Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting " +
-					"the MauiXamlRuntimeParsingSupport MSBuild property to true.");
+				throw new NotSupportedException(RuntimeFeature.XamlRuntimeParsingNotSupportedErrorMessage);
 			}
 
 			return GetElementTypeCore(xmlType, xmlInfo, currentAssembly, out exception);
