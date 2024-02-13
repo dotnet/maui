@@ -3,17 +3,16 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen
+namespace Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
+
+public class SourceGenTestsBase
 {
-	public class SourceGenTestsBase
+	public static void VerifyStepRunReasons(GeneratorRunResult result2, Dictionary<string, IncrementalStepRunReason> expectedReasons)
 	{
-		public static void VerifyStepRunReasons(GeneratorRunResult result2, Dictionary<string, IncrementalStepRunReason> expectedReasons)
+		foreach (var expected in expectedReasons)
 		{
-			foreach (var expected in expectedReasons)
-			{
-				var actualReason = result2.TrackedSteps[expected.Key].Single().Outputs.Single().Reason;
-				Assert.AreEqual(expected.Value, actualReason, message: expected.Key);
-			}
+			var actualReason = result2.TrackedSteps[expected.Key].Single().Outputs.Single().Reason;
+			Assert.AreEqual(expected.Value, actualReason, message: expected.Key);
 		}
 	}
 }

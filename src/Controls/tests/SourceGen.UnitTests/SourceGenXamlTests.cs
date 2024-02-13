@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Maui.Controls.SourceGen;
 using NUnit.Framework;
 
@@ -19,14 +18,15 @@ public class SourceGenXamlTests : SourceGenTestsBase
 	public void TestCodeBehindGenerator_BasicXaml()
 	{
 		var xaml =
-$@"<?xml version=""1.0"" encoding=""UTF-8""?>
+"""
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
-	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	x:Class=""Test.TestPage"">
-		<Button x:Name=""MyButton"" Text=""Hello MAUI!"" />
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+		<Button x:Name="MyButton" Text="Hello MAUI!" />
 </ContentPage>
-";
+""";
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
@@ -41,15 +41,16 @@ $@"<?xml version=""1.0"" encoding=""UTF-8""?>
 	public void TestCodeBehindGenerator_LocalXaml()
 	{
 		var xaml =
-$@"<?xml version=""1.0"" encoding=""UTF-8""?>
+"""
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
-	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	xmlns:local=""clr-namespace:Test""
-	x:Class=""Test.TestPage"">
-		<local:TestControl x:Name=""MyTestControl"" />
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Test"
+	x:Class="Test.TestPage">
+		<local:TestControl x:Name="MyTestControl" />
 </ContentPage>
-";
+""";
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
@@ -64,14 +65,15 @@ $@"<?xml version=""1.0"" encoding=""UTF-8""?>
 	public void TestCodeBehindGenerator_CompilationClone()
 	{
 		var xaml =
-$@"<?xml version=""1.0"" encoding=""UTF-8""?>
+"""
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
-	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	x:Class=""Test.TestPage"">
-		<Button x:Name=""MyButton"" Text=""Hello MAUI!"" />
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+		<Button x:Name="MyButton" Text="Hello MAUI!" />
 </ContentPage>
-";
+""";
 		var xamlFile = new AdditionalXamlFile("Test.xaml", xaml);
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var result = SourceGeneratorDriver.RunGeneratorWithChanges<CodeBehindGenerator>(compilation, ApplyChanges, xamlFile);
@@ -106,14 +108,15 @@ $@"<?xml version=""1.0"" encoding=""UTF-8""?>
 	public void TestCodeBehindGenerator_ReferenceAdded()
 	{
 		var xaml =
-$@"<?xml version=""1.0"" encoding=""UTF-8""?>
+"""
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
-	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	x:Class=""Test.TestPage"">
-		<Button x:Name=""MyButton"" Text=""Hello MAUI!"" />
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+		<Button x:Name="MyButton" Text="Hello MAUI!" />
 </ContentPage>
-";
+""";
 		var xamlFile = new AdditionalXamlFile("Test.xaml", xaml);
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var result = SourceGeneratorDriver.RunGeneratorWithChanges<CodeBehindGenerator>(compilation, ApplyChanges, xamlFile);
@@ -148,24 +151,26 @@ $@"<?xml version=""1.0"" encoding=""UTF-8""?>
 	public void TestCodeBehindGenerator_ModifiedXaml()
 	{
 		var xaml =
-$@"<?xml version=""1.0"" encoding=""UTF-8""?>
+"""
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
-	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	x:Class=""Test.TestPage"">
-		<Button x:Name=""MyButton"" Text=""Hello MAUI!"" />
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+		<Button x:Name="MyButton" Text="Hello MAUI!" />
 </ContentPage>
-";
+""";
 		var newXaml =
-$@"<?xml version=""1.0"" encoding=""UTF-8""?>
+"""
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage
-	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-	x:Class=""Test.TestPage"">
-		<Button x:Name=""MyButton"" Text=""Hello MAUI!"" />
-		<Button x:Name=""MyButton2"" Text=""Hello MAUI!"" />
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+		<Button x:Name="MyButton" Text="Hello MAUI!" />
+		<Button x:Name="MyButton2" Text="Hello MAUI!" />
 </ContentPage>
-";
+""";
 		var xamlFile = new AdditionalXamlFile("Test.xaml", xaml);
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var result = SourceGeneratorDriver.RunGeneratorWithChanges<CodeBehindGenerator>(compilation, ApplyChanges, xamlFile);

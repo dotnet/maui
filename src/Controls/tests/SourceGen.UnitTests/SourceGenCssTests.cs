@@ -18,12 +18,12 @@ public class SourceGenCssTests : SourceGenTestsBase
 	public void TestCodeBehindGenerator_BasicCss()
 	{
 		var css =
-$@"
-h1 {{color: purple;
+"""
+h1 {color: purple;
     background-color: lightcyan;
     font-weight: 800;
-}}
-";
+}
+""";
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var cssFile = new AdditionalCssFile("Test.css", css);
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, cssFile);
@@ -39,19 +39,19 @@ h1 {{color: purple;
 	public void TestCodeBehindGenerator_ModifiedCss()
 	{
 		var css =
-$@"
-h1 {{color: purple;
+"""
+h1 {color: purple;
     background-color: lightcyan;
     font-weight: 800;
-}}
-";
+}
+""";
 		var newCss =
-$@"
-h1 {{color: red;
+"""
+h1 {color: red;
     background-color: lightcyan;
     font-weight: 800;
-}}
-";
+}
+""";
 		var cssFile = new AdditionalCssFile("Test.css", css);
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		var result = SourceGeneratorDriver.RunGeneratorWithChanges<CodeBehindGenerator>(compilation, ApplyChanges, cssFile);
