@@ -1,4 +1,5 @@
 using System;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -54,6 +55,24 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateFont(this UIButton platformButton, ITextStyle textStyle, IFontManager fontManager)
 		{
 			platformButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
+		}
+
+		internal static void UpdateAttributedTitle(this UIButton platformButton, ITextStyle textStyle, IFontManager fontManager)
+		{
+			var uiFontAttribute = fontManager.GetFont(textStyle.Font, UIFont.ButtonFontSize);
+			var attributedString = new NSMutableAttributedString(new NSAttributedString(platformButton.CurrentTitle!));
+
+			// Update font family & size
+			attributedString.AddAttribute(UIStringAttributeKey.Font, uiFontAttribute, new NSRange(0, attributedString.Length));
+
+			//Update UpdateCharacterSpacing
+			attributedString = attributedString.WithCharacterSpacing(textStyle.CharacterSpacing);
+
+			//Update Text Color
+			if (textStyle.TextColor != null)
+				attributedString = attributedString?.WithTextColor(textStyle.TextColor);
+
+			platformButton.SetAttributedTitle(attributedString, UIControlState.Normal);
 		}
 
 		public static void UpdatePadding(this UIButton platformButton, IButton button, Thickness? defaultPadding = null) =>
