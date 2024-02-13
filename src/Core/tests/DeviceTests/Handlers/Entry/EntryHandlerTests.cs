@@ -720,7 +720,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
+		[Fact(Skip = "https://github.com/dotnet/maui/issues/20533")]
 		public async Task DoneClosesKeyboard()
 		{
 			EnsureHandlerCreated(builder =>
