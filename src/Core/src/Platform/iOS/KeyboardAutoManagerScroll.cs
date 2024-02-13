@@ -316,7 +316,7 @@ public static class KeyboardAutoManagerScroll
 		nfloat statusBarHeight;
 		nfloat navigationBarAreaHeight;
 
-		if (ContainerView.GetNavigationController() is UINavigationController navigationController)
+		if (ContainerView.FindResponder<UINavigationController>() is UINavigationController navigationController)
 		{
 			navigationBarAreaHeight = navigationController.NavigationBar.Frame.GetMaxY();
 		}
@@ -502,7 +502,7 @@ public static class KeyboardAutoManagerScroll
 
 					// if PrefersLargeTitles is true, we may need additional logic to
 					// handle the collapsable navbar
-					var navController = View?.GetNavigationController();
+					var navController = View?.FindResponder<UINavigationController>();
 					var prefersLargeTitles = navController?.NavigationBar.PrefersLargeTitles ?? false;
 
 					if (prefersLargeTitles)
