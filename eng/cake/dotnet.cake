@@ -234,7 +234,7 @@ Task("dotnet-test")
             {
                 try
                 {
-                    RunTestWithLocalDotNet(project.FullPath, configuration);
+                    RunTestWithLocalDotNet(project.FullPath, configuration, dotnetPath);
                 }
                 catch
                 {
