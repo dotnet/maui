@@ -185,13 +185,8 @@ Task("uitest-build")
 			.Append("/p:BuildIpa=true")
 			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 			.Append("/bl:" + binlog)
-			.Append("/tl");
-			
-			// if we building for a device
-			if(TEST_DEVICE.ToLower().Contains("device"))
-			{
-				args.Append("/p:RuntimeIdentifier=ios-arm64");
-			}
+			.Append("/tl")
+			.Append($"/p:RuntimeIdentifier={DOTNET_PLATFORM}");
 
 			return args;
 		}
