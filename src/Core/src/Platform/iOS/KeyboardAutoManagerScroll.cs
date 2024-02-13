@@ -530,9 +530,6 @@ public static class KeyboardAutoManagerScroll
 
 					if ((!superScrollView.ContentOffset.Equals(newContentOffset) || innerScrollValue != 0) && superScrollViewRect is not null)
 					{
-						// if we can scroll the superScrollView and still not be above keyboard, pass scrolling to the parent
-						// superScrollViewRect = superScrollView.ConvertRectToView(superScrollView.Bounds, window);
-
 						if (nextScrollView is null && superScrollViewRect.Value.Y < bottomBoundary)
 						{
 							UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
