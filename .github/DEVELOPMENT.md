@@ -59,9 +59,13 @@ Before opening the solution in Visual Studio / VS Code you **MUST** build the bu
 *NOTE*: IntelliSense takes a decent amount of time to fully process your solution. It will eventually work through all the necessary tasks. If you are having IntelliSense issues, usually unloading/reloading the `maui.core` and `maui.controls` projects will resolve. 
 
 ## What branch should I use?
-- main
 
-Always use main no matter what you are working on or where you are hoping your change will get applied. We make sure that main always works against the current stable releases of Visual Studio and the .NET MAUI SDK. Even if you are working on features that will only be released with a future version of .NET. `main` is the only relevant branch for current development.
+As a general rule:
+- [main](https://github.com/dotnet/maui/tree/main)
+
+Always use main when you are going to correct an issue or apply changes unless it involves breaking changes with changes in public APIs. With changes to public APIs you must use the branch of the next dotnet version.
+
+- [net9.0](https://github.com/dotnet/maui/tree/net9.0)
 
 ## Repository projects
 
@@ -116,8 +120,10 @@ These are tests used for exercising the UI through accessibility layers to simul
 
 ```
 ├──  Controls
+│    ├── samples
+│    │   ├── Controls.Sample.UITests
 │    ├── tests
-│    │   ├── UITests
+│    │   ├── Controls.AppiumTests
 ```
 
 ### Unit Test Projects
