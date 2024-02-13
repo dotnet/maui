@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="9.0.100-preview.2.24112.1">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="9.0.100-preview.2.24113.7">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>ab44b49a395ac6a524628cdd8c5d99614248c584</Sha>
+      <Sha>cc8e163e7d77e49e1c181917578ae1eae6e19923</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.2.24109.4" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.2.24112.33" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>a79c62ddc8089cf2879ed36eac9aa333b32bde5f</Sha>
+      <Sha>6299d3e88f85ff2d7218e9b1066db8548116a979</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.2.161">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.2.164">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>3212213e4e689dafb70421aef935c4139eefd21b</Sha>
+      <Sha>5472eec991cc075e4b0c09cd98a2331fb93aa0f3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="17.2.9204-net9-p2">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -31,9 +31,9 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.2.24105.1" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.2.24111.1" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>329f74da67c0620b98574dfa6e46e03a03f21955</Sha>
+      <Sha>4106737f31432e0408d3afd95bf242233daf48a6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
