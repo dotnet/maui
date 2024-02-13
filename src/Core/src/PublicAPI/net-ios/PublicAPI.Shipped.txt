@@ -2291,7 +2291,7 @@ static Microsoft.Maui.Handlers.ButtonHandler.ImageButtonMapper -> Microsoft.Maui
 static Microsoft.Maui.Handlers.ButtonHandler.MapCharacterSpacing(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.ITextStyle! button) -> void
 static Microsoft.Maui.Handlers.ButtonHandler.MapCornerRadius(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButtonStroke! buttonStroke) -> void
 static Microsoft.Maui.Handlers.ButtonHandler.MapFont(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.ITextStyle! button) -> void
-static Microsoft.Maui.Handlers.ButtonHandler.MapFormatting(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.ITextStyle! button) -> void
+static Microsoft.Maui.Handlers.ButtonHandler.MapFormatting(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IText! button) -> void
 static Microsoft.Maui.Handlers.ButtonHandler.MapImageSource(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IImage! image) -> void
 static Microsoft.Maui.Handlers.ButtonHandler.MapImageSourceAsync(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IImage! image) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Handlers.ButtonHandler.MapPadding(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButton! button) -> void
