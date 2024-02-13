@@ -83,49 +83,49 @@
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>3f4da9ced34942d83054e647f3b1d9d7dde281e8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="9.0.0-preview.2.24112.16">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="9.0.0-preview.2.24113.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4f099091aa1dbcc3db0043241f3a4e81ef5abfdd</Sha>
+      <Sha>7317bfebfe739bab0f6f60319fc8a28db8af4366</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.24112.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
