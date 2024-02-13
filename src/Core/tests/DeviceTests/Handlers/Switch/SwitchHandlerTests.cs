@@ -37,6 +37,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, fireCount);
 		}
 
+#if !WINDOWS
+// WINDOWS: https://github.com/dotnet/maui/issues/20535
 		[Theory(DisplayName = "Track Color Initializes Correctly")]
 		[InlineData(true)]
 		//[InlineData(false)] // Track color is not always visible when off
@@ -53,6 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 				await ValidateTrackColor(switchStub, Colors.Red);
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "Track Color Updates Correctly")]
 		public async Task TrackColorUpdatesCorrectly()
