@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Networking
 
 			conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
 
-			PlatformUtils.RegisterBroadcastReceiver(conectivityReceiver, filter, false);
+			PlatformUtils.RegisterBroadcastReceiver(conectivityReceiver, filter, true);
 		}
 
 		void StopListeners()

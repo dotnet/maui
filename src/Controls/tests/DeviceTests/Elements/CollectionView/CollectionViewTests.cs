@@ -397,5 +397,68 @@ namespace Microsoft.Maui.DeviceTests
 				timeout -= interval;
 			}
 		}
+
+		[Fact]
+		public async Task ClearingItemsSourceClearsBindingContext()
+		{
+			SetupBuilder();
+
+			IReadOnlyList<Element> logicalChildren = null;
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new DataTemplate(() => new Label() { HeightRequest = 30, WidthRequest = 200 }),
+				WidthRequest = 200,
+				HeightRequest = 200,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var data = new ObservableCollection<MyRecord>()
+				{
+					new MyRecord("Item 1"),
+					new MyRecord("Item 2"),
+					new MyRecord("Item 3"),
+				};
+				collectionView.ItemsSource = data;
+				await Task.Delay(100);
+
+				logicalChildren = collectionView.LogicalChildrenInternal;
+				Assert.NotNull(logicalChildren);
+				Assert.True(logicalChildren.Count == 3);
+
+				// Clear collection
+				var savedItems = data.ToArray();
+				data.Clear();
+
+				await Task.Delay(100);
+
+				// Check that all logical children have no binding context
+				foreach (var logicalChild in logicalChildren)
+				{
+					Assert.Null(logicalChild.BindingContext);
+				}
+
+				// Re-add the old children
+				foreach (var savedItem in savedItems)
+				{
+					data.Add(savedItem);
+				}
+
+				await Task.Delay(100);
+
+				// Check that the right number of logical children have binding context again
+				int boundChildren = 0;
+				foreach (var logicalChild in logicalChildren)
+				{
+					if (logicalChild.BindingContext is not null)
+					{
+						boundChildren++;
+					}
+				}
+				Assert.Equal(3, boundChildren);
+			});
+		}
+
+		record MyRecord(string Name);
 	}
 }

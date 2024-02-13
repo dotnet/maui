@@ -756,9 +756,7 @@ namespace Microsoft.Maui.Graphics
 			int charsWritten = value.ToLowerInvariant(loweredValue);
 			Debug.Assert(charsWritten == value.Length);
 
-			// this should use the C# feature https://github.com/dotnet/csharplang/issues/1881, when it is available
-			// for now, we need to allocate the lowered string
-			return loweredValue.ToString() switch
+			return loweredValue switch
 			{
 				"default" => default,
 				"aliceblue" => Colors.AliceBlue,
