@@ -580,7 +580,7 @@ public static class KeyboardAutoManagerScroll
 			// ContentInset logic
 			if (ScrolledView is not null)
 			{
-				var bottomInset = ScrolledView.Bounds.Height + ScrolledView.ContentOffset.Y - ScrolledView.ContentSize.Height;
+				var bottomInset = kbSize.Height;
 				var bottomScrollIndicatorInset = bottomInset - TextViewDistanceFromBottom;
 
 				bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
