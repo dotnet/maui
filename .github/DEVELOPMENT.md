@@ -152,6 +152,8 @@ These tests can be ran using the test explorer in VS, or from command line with 
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
 ```
 
+You can find detailed information about testing in the [Wiki](https://github.com/dotnet/maui/wiki/Testing).
+
 ### Additional Cake Commands
 
 #### Clean
