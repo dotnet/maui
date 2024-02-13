@@ -2,5 +2,17 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
-    xmlns:local="clr-namespace:Maui.Controls.Sample">
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
+    xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps">
+
+    <Grid>
+        <maps:Map x:Name="mapper" />
+
+        <Button Text="Open Popup"
+                HorizontalOptions="Center"
+                VerticalOptions="End"
+                Margin="50"
+                Clicked="Button_Clicked" />
+    </Grid>
+    
 </ContentPage>
