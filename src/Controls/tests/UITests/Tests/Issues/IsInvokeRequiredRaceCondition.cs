@@ -15,6 +15,9 @@ namespace Microsoft.Maui.AppiumTests.Issues;
 		[Test]
 		public void ApplicationDispatcherIsInvokeRequiredRaceConditionCausesCrash()
 		{
+#if NATIVE_AOT
+			Assert.Ignore("Times out when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553");
+#endif
 			App.WaitForElement("crashButton");
 			App.Click("crashButton");
 			App.WaitForElement("successLabel");

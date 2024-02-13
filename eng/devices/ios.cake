@@ -315,6 +315,7 @@ Task("uitest")
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=IOSUITEST")
+				.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 				.Append("/bl:" + binlog)
 				.Append("/tl")
 			

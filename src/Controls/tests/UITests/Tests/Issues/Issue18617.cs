@@ -15,6 +15,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void CommandCanExecuteDisableButton()
 		{
+#if NATIVE_AOT
+			Assert.Ignore("Crashes with System.NullReferenceException when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553");
+#endif
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Press the 'On' button.
