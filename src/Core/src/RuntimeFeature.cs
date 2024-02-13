@@ -16,15 +16,21 @@ namespace Microsoft.Maui
 	{
 		private const bool IsXamlRuntimeParsingSupportedByDefault = true;
 		private const bool IsIVisualAssemblyScanningEnabledByDefault = false;
+		private const bool IsShellSearchResultsRendererDefaultTemplateSupportedByDefault = true;
 
 		internal static bool IsXamlRuntimeParsingSupported
-			=> AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported", out bool isEnabled)
-				? isEnabled
+			=> AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported", out bool isSupported)
+				? isSupported
 				: IsXamlRuntimeParsingSupportedByDefault;
 
 		internal static bool IsIVisualAssemblyScanningEnabled =>
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled", out bool isEnabled)
 				? isEnabled
 				: IsIVisualAssemblyScanningEnabledByDefault;
+
+		internal static bool IsShellSearchResultsRendererDefaultTemplateSupported
+			=> AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDefaultTemplateSupported", out bool isSupported)
+				? isSupported
+				: IsShellSearchResultsRendererDefaultTemplateSupportedByDefault;
 	}
 }

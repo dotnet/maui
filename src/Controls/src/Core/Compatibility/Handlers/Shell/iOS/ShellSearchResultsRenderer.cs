@@ -88,7 +88,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var template = SearchHandler.ItemTemplate;
 
 			if (template == null)
+			{
+				if (!RuntimeFeature.IsShellSearchResultsRendererDefaultTemplateSupported)
+				{
+					throw new ArgumentNullException(nameof(SearchHandler.ItemTemplate), "ItemTemplate must be set on SearchHandler");
+				}
+
 				template = DefaultTemplate;
+			}
 
 			var cellId = ((IDataTemplateController)template.SelectDataTemplate(context, _context.Shell)).IdString;
 
