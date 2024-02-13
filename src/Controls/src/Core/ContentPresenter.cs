@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -16,8 +17,41 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ContentPresenter()
 		{
-			SetBinding(ContentProperty, new Binding(ContentProperty.PropertyName, source: RelativeBindingSource.TemplatedParent,
-				converterParameter: this, converter: new ContentConverter()));
+			SetBinding(
+				ContentProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(IContentView.Content),
+					static (IContentView view) => view.Content,
+					static (view, val) =>
+					{
+						if (view is RadioButton radioButton)
+						{
+							radioButton.Content = val;
+						}
+						else if (view is ContentPresenter cotnentPresenter)
+						{
+							cotnentPresenter.Content = val as View;
+						}
+						else if (view is ContentPage contentPage)
+						{
+							contentPage.Content = val as View;
+						}
+						else if (view is ContentView contentView)
+						{
+							contentView.Content = val as View;
+						}
+						else if (view is ScrollView scrollView)
+						{
+							scrollView.Content = val as View;
+						}
+						else if (view is Border border)
+						{
+							border.Content = val as View;
+						}
+					},
+					source: RelativeBindingSource.TemplatedParent,
+					converter: new ContentConverter(),
+					converterParameter: this));
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='Content']/Docs/*" />
