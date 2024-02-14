@@ -23,6 +23,11 @@ namespace Microsoft.Maui
 				? isSupported
 				: IsXamlRuntimeParsingSupportedByDefault;
 
+		internal const string XamlRuntimeParsingNotSupportedErrorMessage = "XAML runtime parsing is not supported. " +
+			"Ensure all XAML resources are compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting " +
+			"the MauiXamlRuntimeParsingSupport MSBuild property to true. Note: this feature is not trimming-safe and it might not " +
+			"behave as expected when the application is trimmed.";
+
 		internal static bool IsIVisualAssemblyScanningEnabled =>
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled", out bool isEnabled)
 				? isEnabled
