@@ -7,5 +7,5 @@ class TrimmerConstants
 
 	internal const string NativeBindingService = "This method properly handles missing properties, and there is not a way to preserve them from this method.";
 
-	internal const string XamlLoadingTrimmerWarning = "Loading XAML at runtime might require types that cannot be statically analyzed. Make sure all of the required types are preserved.";
+	internal const string XamlRuntimeParsingNotSupportedWarning = "Loading XAML at runtime might require types and members that cannot be statically analyzed. Make sure all of the required types and members are preserved.";
 }

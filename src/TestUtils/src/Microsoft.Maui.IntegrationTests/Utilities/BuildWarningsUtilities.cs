@@ -157,21 +157,6 @@ namespace Microsoft.Maui.IntegrationTests
 			},
 			new WarningsPerFile
 			{
-				File = "src/Controls/src/Core/BindablePropertyConverter.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2057",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.BindablePropertyConverter.ConvertFrom(ITypeDescriptorContext,CultureInfo,Object): Unrecognized value passed to the parameter 'typeName' of method 'System.Type.GetType(String)'. It's not possible to guarantee the availability of the target type.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
 				File = "src/Controls/src/Core/BindingExpression.cs",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
@@ -228,21 +213,6 @@ namespace Microsoft.Maui.IntegrationTests
 						Messages = new List<string>
 						{
 							"Microsoft.Maui.Hosting.Internal.MauiFactory.GetServiceBaseTypes(Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.Interfaces' in call to 'System.Type.GetInterfaces()'. The parameter '#0' of method 'Microsoft.Maui.Hosting.Internal.MauiFactory.GetServiceBaseTypes(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
-				File = "src/Core/src/Platform/ReflectionExtensions.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2070",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Platform.ReflectionExtensions.<>c.<GetFields>b__1_0(TypeInfo): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicFields', 'DynamicallyAccessedMemberTypes.NonPublicFields' in call to 'System.Reflection.TypeInfo.DeclaredFields.get'. The parameter 'i' of method 'Microsoft.Maui.Platform.ReflectionExtensions.<>c.<GetFields>b__1_0(TypeInfo)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
 						}
 					},
 				}
