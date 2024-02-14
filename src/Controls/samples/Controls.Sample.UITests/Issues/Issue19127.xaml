@@ -15,14 +15,14 @@
                     <DataTrigger TargetType="Frame" Binding="{Binding IsCameraEnabled}" Value="False">
                         <Setter Property="Content">
                             <Grid BackgroundColor="Gray">
-                                <Label Text="Camera is Disabled" TextColor="White" />
+                                <Label AutomationId="label1" Text="Camera is Disabled" TextColor="White" />
                             </Grid>
                         </Setter>
                     </DataTrigger>
                     <DataTrigger TargetType="Frame" Binding="{Binding IsCameraEnabled}" Value="True">
                         <Setter Property="Content">
                             <Grid BackgroundColor="HotPink">
-                                <Label AutomationId="label" Text="Camera is Enabled" TextColor="White" />
+                                <Label AutomationId="label2" Text="Camera is Enabled" TextColor="White" />
                             </Grid>
                         </Setter>
                     </DataTrigger>

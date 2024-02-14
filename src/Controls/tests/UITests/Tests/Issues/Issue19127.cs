@@ -6,7 +6,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 {
 	public class Issue19127 : _IssuesUITest
 	{
-		public override string Issue => "[iOS] Triggers are not working on Frame control";
+		public override string Issue => "Triggers are not working on Frame control";
 
 		public Issue19127(TestDevice device) : base(device)
 		{
@@ -15,15 +15,16 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void ContentOfFrameShouldChange()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
-
 			_ = App.WaitForElement("button");
+
+			var textBeforeClick = App.FindElement("label1").GetText();
 
 			App.Click("button");
 
-			var text = App.FindElement("label").GetText();
+			var textAfterClick = App.FindElement("label2").GetText();
 
-			Assert.AreEqual(text, "Camera is Enabled");
+			Assert.AreEqual(textBeforeClick, "Camera is Disabled");
+			Assert.AreEqual(textAfterClick, "Camera is Enabled");
 		}
 	}
 }

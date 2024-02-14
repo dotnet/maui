@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.Github, 19127, "[iOS] Triggers are not working on Frame control", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Github, 19127, "Triggers are not working on Frame control", PlatformAffected.iOS)]
 	public partial class Issue19127 : ContentPage
 	{
 		public Issue19127()
