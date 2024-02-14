@@ -8,7 +8,9 @@ using Android.Gms.Common.Apis;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android.OS;
+using Android.Widget;
 using AndroidX.AppCompat.App;
+using AndroidX.Fragment.App;
 using AndroidX.Lifecycle;
 using Java.Lang;
 using Java.Util.Logging;
@@ -26,7 +28,7 @@ using Math = System.Math;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	public partial class MapHandler : ViewHandler<IMap, MapView>
+	public partial class MapHandler : ViewHandler<IMap, FrameLayout>
 	{
 		bool _init = true;
 
@@ -39,7 +41,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		List<APolygon>? _polygons;
 		List<ACircle>? _circles;
 
-		ILifecycleObserver? _observer;
+		//ILifecycleObserver? _observer;
 
 		public GoogleMap? Map { get; private set; }
 
@@ -50,32 +52,21 @@ namespace Microsoft.Maui.Maps.Handlers
 			set { s_bundle = value; }
 		}
 
-		protected override void ConnectHandler(MapView platformView)
+		protected override void ConnectHandler(FrameLayout platformView)
 		{
 			base.ConnectHandler(platformView);
-
-			var activity = Context.GetActivity() as AppCompatActivity;
-			if (activity is not null)
-			{
-				_observer = new MapLifecycleObserver(platformView);
-				activity.Lifecycle.AddObserver(_observer);
-			}
-
-			_mapReady = new MapCallbackHandler(this);
-			platformView.GetMapAsync(_mapReady);
-			platformView.LayoutChange += MapViewLayoutChange;
 		}
 
-		protected override void DisconnectHandler(MapView platformView)
+		protected override void DisconnectHandler(FrameLayout platformView)
 		{
 			var activity = Context.GetActivity() as AppCompatActivity;
-			if (activity is not null && _observer is not null)
-			{
-				activity.Lifecycle.RemoveObserver(_observer);
-			}
+			//if (activity is not null && _observer is not null)
+			//{
+			//	activity.Lifecycle.RemoveObserver(_observer);
+			//}
 
 			base.DisconnectHandler(platformView);
-			platformView.LayoutChange -= MapViewLayoutChange;
+			//platformView.LayoutChange -= MapViewLayoutChange;
 
 			if (Map != null)
 			{
@@ -88,28 +79,98 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapReady = null;
 		}
 
-		protected override MapView CreatePlatformView()
+		class MauiMapFragment : Fragment
 		{
-			MapView mapView = new MapView(Context);
-			//mapView.OnCreate(s_bundle);
-			//mapView.OnResume();
-			return mapView;
-			// var view = new FrameLayout(Context);
-			// 
-			// view.Id = AView.GenerateViewId();
-			// 
-			// view.LayoutParameters = new ViewGroup.LayoutParams(
-			// 	FrameLayout.LayoutParams.MatchParent,
-			// 	FrameLayout.LayoutParams.MatchParent);
-			// 
-			// var fm = MauiContext!.Services.GetRequiredService<FragmentManager>();
-			// 
-			// fm
-			// 	.BeginTransaction()
-			// 	.Add(view.Id, new MauiMapFragment(VirtualView, MauiContext))
-			// 	.Commit();
-			// 
-			// return view;
+			public bool IsDestroyed { get; private set; }
+			public MapView DetailView { get; private set; }
+			public MapHandler Handler { get; }
+
+			public MauiMapFragment(MapView detailView, MapHandler handler)
+			{
+				DetailView = detailView;
+				Handler = handler;
+			}
+
+			public override void OnViewStateRestored(Bundle? savedInstanceState)
+			{
+				// Fragments have the potential to "undestroy" if you reuse them
+				IsDestroyed = false;
+				base.OnViewStateRestored(savedInstanceState);
+			}
+
+			public override global::Android.Views.View OnCreateView(Android.Views.LayoutInflater inflater, Android.Views.ViewGroup? container, Bundle? savedInstanceState)
+			{
+				// Fragments have the potential to "undestroy" if you reuse them
+				IsDestroyed = false;
+
+				Handler._mapReady = new MapCallbackHandler(Handler);
+				DetailView.GetMapAsync(Handler._mapReady);
+				DetailView.LayoutChange += Handler.MapViewLayoutChange;
+							
+
+				return DetailView;
+			}
+
+			public override void OnDestroy()
+			{
+				DetailView.OnDestroy();
+				base.OnDestroy();
+				IsDestroyed = true;
+			}
+
+			public override void OnCreate(Bundle? savedInstanceState)
+			{
+				DetailView.OnCreate(savedInstanceState);
+				base.OnCreate(savedInstanceState);
+			}
+
+			public override void OnStart()
+			{
+				DetailView.OnStart();
+				base.OnStart();
+			}
+
+			public override void OnResume()
+			{
+				DetailView.OnResume();
+				base.OnResume();
+			}
+
+			public override void OnPause()
+			{
+				DetailView.OnPause();
+				base.OnPause();
+			}
+
+			public override void OnStop()
+			{
+				DetailView.OnStop();
+				base.OnStop();
+			}
+		}
+
+		protected override FrameLayout CreatePlatformView()
+		{
+			//MapView mapView = new MapView(Context);
+			////mapView.OnCreate(s_bundle);
+			////mapView.OnResume();
+			//return mapView;
+			var view = new FrameLayout(Context);
+
+			view.Id = global::Android.Views.View.GenerateViewId();
+
+			view.LayoutParameters = new Android.Views.ViewGroup.LayoutParams(
+				FrameLayout.LayoutParams.MatchParent,
+				FrameLayout.LayoutParams.MatchParent);
+
+			var fm = MauiContext!.Services.GetRequiredService<FragmentManager>();
+
+			fm
+				.BeginTransaction()
+				.Add(view.Id, new MauiMapFragment(new MapView(Context), this))
+				.Commit();
+
+			return view;
 		}
 
 		public static void MapMapType(IMapHandler handler, IMap map)

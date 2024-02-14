@@ -2,7 +2,7 @@
 using PlatformView = Microsoft.Maui.Maps.Platform.MauiMKMapView;
 #elif MONOANDROID
 using Android.Gms.Maps;
-using PlatformView = Android.Gms.Maps.MapView;
+using PlatformView = Android.Widget.FrameLayout;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
