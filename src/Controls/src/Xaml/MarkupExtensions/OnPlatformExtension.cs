@@ -7,6 +7,11 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Default))]
+	[RequireService(
+		[typeof(IProvideValueTarget),
+		 typeof(IValueConverterProvider),
+		 typeof(IXmlLineInfoProvider),
+		 typeof(IConverterOptions)])]
 	public class OnPlatformExtension : IMarkupExtension
 	{
 		static object s_notset = new object();
@@ -65,7 +70,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (!TryGetValueForPlatform(out var value))
 			{
 				if (bp != null)
-					return bp.GetDefaultValue(valueProvider.TargetObject as BindableObject);
+				{
+					object targetObject = valueProvider.TargetObject;
+
+					if (targetObject is Setter)
+						return null;
+					else return bp.GetDefaultValue(targetObject as BindableObject);
+				}
 				if (propertyType.IsValueType)
 					return Activator.CreateInstance(propertyType);
 				return null;
