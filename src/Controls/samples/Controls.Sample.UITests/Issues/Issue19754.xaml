@@ -5,8 +5,6 @@
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
              Title="Issue 19754">
     <Grid
-        Padding="30,0"
-        VerticalOptions="Center"
         RowDefinitions="*, Auto">
         <Grid.GestureRecognizers>
             <TapGestureRecognizer 
