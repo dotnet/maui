@@ -137,11 +137,12 @@ body:
     attributes:
       label: Did you find any workaround?
       description: Did you find any workaround for this issue? This can unblock other people while waiting for this issue to be resolved or even give us a hint on how to fix this.
+  - type: 
   - type: textarea
     id: logs
     attributes:
       label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      description: Including a binary log or 'binlog' to your issue (see [Capturing Binary Logs](https://github.com/dotnet/maui/wiki/Capturing-Binary-Logs) for more info) is helpful in diagnosing your issue.  You can also paste any relevant log output below. This will be automatically formatted into code, so no need for backticks.
       render: shell
   - type: markdown
     attributes:
