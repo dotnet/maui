@@ -72,8 +72,10 @@ namespace Microsoft.Maui.IntegrationTests
 
 			if (TestEnvironment.IsWindows)
 			{
-				Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} add {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
-					$"Unable to add WinUI project to solution. Check test output for errors.");
+				// TODO: Enable the Windows build since it refuses to build on CI
+				//       https://github.com/dotnet/maui/issues/20598
+				// Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} add {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
+				// 	$"Unable to add WinUI project to solution. Check test output for errors.");
 			}
 
 			Assert.IsTrue(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
