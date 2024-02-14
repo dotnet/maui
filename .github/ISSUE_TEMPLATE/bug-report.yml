@@ -137,7 +137,6 @@ body:
     attributes:
       label: Did you find any workaround?
       description: Did you find any workaround for this issue? This can unblock other people while waiting for this issue to be resolved or even give us a hint on how to fix this.
-  - type: 
   - type: textarea
     id: logs
     attributes:
