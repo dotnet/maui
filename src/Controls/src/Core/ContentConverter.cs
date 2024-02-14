@@ -89,9 +89,8 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			content.SetBinding(property,
-				TypedBinding.ForSingleNestingLevel(property.PropertyName, getter, mode: BindingMode.OneWay,
-					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(TSource))));
+			content.SetBinding(property, TypedBinding.ForSingleNestingLevel(
+				property.PropertyName, getter, source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(TSource))));
 		}
 
 		static bool HasTemplateAncestor(ContentPresenter presenter, Type type)

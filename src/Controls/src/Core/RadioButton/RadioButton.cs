@@ -454,74 +454,37 @@ namespace Microsoft.Maui.Controls
 			void BindToTemplatedParent<TProperty>(
 				BindableProperty property,
 				Func<RadioButton, TProperty> getter,
-				Action<RadioButton, TProperty> setter,
 				string radioButtonPropertyName = null,
 				IValueConverter converter = null)
 			{
 				border.SetBinding(property, TypedBinding.ForSingleNestingLevel(radioButtonPropertyName ?? property.PropertyName,
-					getter, setter, source: RelativeBindingSource.TemplatedParent, converter: converter));
+					getter, source: RelativeBindingSource.TemplatedParent, converter: converter));
 			}
 
-			BindToTemplatedParent(
-				BackgroundColorProperty,
-				static (RadioButton rb) => rb.BackgroundColor,
-				static (rb, val) => rb.BackgroundColor = val);
-			BindToTemplatedParent(
-				HorizontalOptionsProperty,
-				static (RadioButton rb) => rb.HorizontalOptions,
-				static (rb, val) => rb.HorizontalOptions = val);
-			BindToTemplatedParent(
-				MarginProperty,
-				static (RadioButton rb) => rb.Margin,
-				static (rb, val) => rb.Margin = val);
-			BindToTemplatedParent(
-				OpacityProperty,
-				static (RadioButton rb) => rb.Opacity,
-				static (rb, val) => rb.Opacity = val);
-			BindToTemplatedParent(
-				RotationProperty,
-				static (RadioButton rb) => rb.Rotation,
-				static (rb, val) => rb.Rotation = val);
-			BindToTemplatedParent(
-				ScaleProperty,
-				static (RadioButton rb) => rb.Scale,
-				static (rb, val) => rb.Scale = val);
-			BindToTemplatedParent(
-				ScaleXProperty,
-				static (RadioButton rb) => rb.ScaleX,
-				static (rb, val) => rb.ScaleX = val);
-			BindToTemplatedParent(
-				ScaleYProperty,
-				static (RadioButton rb) => rb.ScaleY,
-				static (rb, val) => rb.ScaleY = val);
-			BindToTemplatedParent(
-				TranslationYProperty,
-				static (RadioButton rb) => rb.TranslationY,
-				static (rb, val) => rb.TranslationY = val);
-			BindToTemplatedParent(
-				TranslationXProperty,
-				static (RadioButton rb) => rb.TranslationX,
-				static (rb, val) => rb.TranslationX = val);
-			BindToTemplatedParent(
-				VerticalOptionsProperty,
-				static (RadioButton rb) => rb.VerticalOptions,
-				static (rb, val) => rb.VerticalOptions = val);
+			BindToTemplatedParent(BackgroundColorProperty, static (RadioButton rb) => rb.BackgroundColor);
+			BindToTemplatedParent(HorizontalOptionsProperty, static (RadioButton rb) => rb.HorizontalOptions);
+			BindToTemplatedParent(MarginProperty, static (RadioButton rb) => rb.Margin);
+			BindToTemplatedParent(OpacityProperty, static (RadioButton rb) => rb.Opacity);
+			BindToTemplatedParent(RotationProperty, static (RadioButton rb) => rb.Rotation);
+			BindToTemplatedParent(ScaleProperty, static (RadioButton rb) => rb.Scale);
+			BindToTemplatedParent(ScaleXProperty, static (RadioButton rb) => rb.ScaleX);
+			BindToTemplatedParent(ScaleYProperty, static (RadioButton rb) => rb.ScaleY);
+			BindToTemplatedParent(TranslationYProperty, static (RadioButton rb) => rb.TranslationY);
+			BindToTemplatedParent(TranslationXProperty, static (RadioButton rb) => rb.TranslationX);
+			BindToTemplatedParent(VerticalOptionsProperty, static (RadioButton rb) => rb.VerticalOptions);
 
 			BindToTemplatedParent(
 				Border.StrokeProperty,
 				static (RadioButton rb) => rb.BorderColor,
-				static (rb, val) => rb.BorderColor = val,
 				radioButtonPropertyName: nameof(RadioButton.BorderColor));
 			BindToTemplatedParent(
 				Border.StrokeShapeProperty,
 				static (RadioButton rb) => rb.CornerRadius,
-				static (rb, val) => rb.CornerRadius = val,
 				radioButtonPropertyName: nameof(RadioButton.CornerRadius),
 				converter: new CornerRadiusToShape());
 			BindToTemplatedParent(
 				Border.StrokeThicknessProperty,
 				static (RadioButton rb) => rb.BorderWidth,
-				static (rb, val) => rb.BorderWidth = val,
 				radioButtonPropertyName: nameof(RadioButton.BorderWidth));
 
 			var grid = new Grid

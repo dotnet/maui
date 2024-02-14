@@ -22,33 +22,6 @@ namespace Microsoft.Maui.Controls
 				TypedBinding.ForSingleNestingLevel(
 					nameof(IContentView.Content),
 					static (IContentView view) => view.Content,
-					static (view, val) =>
-					{
-						if (view is RadioButton radioButton)
-						{
-							radioButton.Content = val;
-						}
-						else if (view is ContentPresenter cotnentPresenter)
-						{
-							cotnentPresenter.Content = val as View;
-						}
-						else if (view is ContentPage contentPage)
-						{
-							contentPage.Content = val as View;
-						}
-						else if (view is ContentView contentView)
-						{
-							contentView.Content = val as View;
-						}
-						else if (view is ScrollView scrollView)
-						{
-							scrollView.Content = val as View;
-						}
-						else if (view is Border border)
-						{
-							border.Content = val as View;
-						}
-					},
 					source: RelativeBindingSource.TemplatedParent,
 					converter: new ContentConverter(),
 					converterParameter: this));
