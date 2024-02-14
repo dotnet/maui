@@ -108,6 +108,7 @@ jobs:
 
   - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="FullyQualifiedName=Microsoft.Maui.IntegrationTests.TemplateTests" --resultsfilename="integration-tests" --verbosity=diagnostic
     displayName: Run $(PLATFORM_NAME) templates build tests
+    workingDirectory: ${{ parameters.checkoutDirectory }}
 
   - task: PublishTestResults@2
     displayName: Publish the $(PLATFORM_NAME) templates build tests
