@@ -209,8 +209,13 @@ namespace UITest.Appium
 		{
 			if (parameters.TryGetValue("x", out var x) &&
 				parameters.TryGetValue("y", out var y))
-			{
-				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
+			{			
+				new TouchAction(_appiumApp.Driver)
+					.Press(Convert.ToSingle(x), Convert.ToSingle(y))
+					.Release()
+					.Perform();
+
+				return CommandResponse.SuccessEmptyResponse;
 			}
 
 			return CommandResponse.FailedEmptyResponse;
