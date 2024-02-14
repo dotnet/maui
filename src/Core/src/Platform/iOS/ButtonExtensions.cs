@@ -1,4 +1,5 @@
 using System;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -82,6 +83,26 @@ namespace Microsoft.Maui.Platform
 				(float)padding.Right);
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
+		}
+
+		public static void UpdateAttributedTitle(this UIButton platformButton, IButtonHandler handler, ITextStyle textStyle)
+		{
+			// Any text update requires that we update any attributed string formatting
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			var uiFontAttribute = fontManager.GetFont(textStyle.Font, UIFont.ButtonFontSize);
+			var attributedString = new NSMutableAttributedString(new NSAttributedString(platformButton.CurrentTitle!));
+
+			// Update font family & size
+			attributedString.AddAttribute(UIStringAttributeKey.Font, uiFontAttribute, new NSRange(0, attributedString.Length));
+
+			//Update UpdateCharacterSpacing
+			attributedString = attributedString.WithCharacterSpacing(textStyle.CharacterSpacing);
+
+			//Update Text Color
+			if (textStyle.TextColor != null)
+				attributedString = attributedString?.WithTextColor(textStyle.TextColor);
+
+			platformButton.SetAttributedTitle(attributedString, UIControlState.Normal);
 		}
 	}
 }

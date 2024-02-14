@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -91,7 +90,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateText(button);
 
 			// Any text update requires that we update any attributed string formatting
-			UpdateAttributedTitle(handler, button);
+			handler.PlatformView?.UpdateAttributedTitle(handler, button);
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
@@ -110,14 +109,14 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateTextColor(button);
 			}
 
-			UpdateAttributedTitle(handler, button!);
+			handler.PlatformView?.UpdateAttributedTitle(handler, button!);
 		}
 
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(button);
 
-			UpdateAttributedTitle(handler, button);
+			handler.PlatformView?.UpdateAttributedTitle(handler, button);
 		}
 
 		public static void MapPadding(IButtonHandler handler, IButton button)
@@ -131,12 +130,12 @@ namespace Microsoft.Maui.Handlers
 
 			handler.PlatformView?.UpdateFont(button, fontManager);
 
-			UpdateAttributedTitle(handler, button);
+			handler.PlatformView?.UpdateAttributedTitle(handler, button);
 		}
 
 		public static void MapFormatting(IButtonHandler handler, IText button)
 		{
-			UpdateAttributedTitle(handler, button);
+			handler.PlatformView?.UpdateAttributedTitle(handler, button);
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IImage image) =>
@@ -155,27 +154,6 @@ namespace Microsoft.Maui.Handlers
 				platformView.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
 				platformView.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
 			}
-		}
-
-		internal static void UpdateAttributedTitle(IButtonHandler handler, ITextStyle textStyle)
-		{
-			// Any text update requires that we update any attributed string formatting
-			var fontManager = handler.GetRequiredService<IFontManager>();
-			var platformButton = handler.PlatformView;
-			var uiFontAttribute = fontManager.GetFont(textStyle.Font, UIFont.ButtonFontSize);
-			var attributedString = new NSMutableAttributedString(new NSAttributedString(platformButton.CurrentTitle!));
-
-			// Update font family & size
-			attributedString.AddAttribute(UIStringAttributeKey.Font, uiFontAttribute, new NSRange(0, attributedString.Length));
-
-			//Update UpdateCharacterSpacing
-			attributedString = attributedString.WithCharacterSpacing(textStyle.CharacterSpacing);
-
-			//Update Text Color
-			if (textStyle.TextColor != null)
-				attributedString = attributedString?.WithTextColor(textStyle.TextColor);
-
-			platformButton.SetAttributedTitle(attributedString, UIControlState.Normal);
 		}
 
 		class ButtonEventProxy
