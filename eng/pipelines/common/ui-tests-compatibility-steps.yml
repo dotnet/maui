@@ -50,8 +50,8 @@ steps:
     displayName: 'Build the Legacy ControlGallery'
 
   - bash: |
-      if [ -d "$HOME/Library/Logs/CoreSimulator/" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
-      if [ -d "$HOME/Library/Logs/DiagnosticReports/" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
+      if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+      if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
     displayName: Delete Old Simulator Logs
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
