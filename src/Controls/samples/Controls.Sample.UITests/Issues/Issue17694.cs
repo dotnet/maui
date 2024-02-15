@@ -20,9 +20,9 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "Spin",
 				Text = "Spin",
 			};
-			button.Clicked += async (s, e) => 
+			button.Clicked += (s, e) => 
 			{
-				await circleView.RotateTo(180, 10).ConfigureAwait(true);
+				circleView.Rotation = 180;
 			};
 
 			var stack = new VerticalStackLayout

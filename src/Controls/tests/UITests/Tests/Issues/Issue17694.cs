@@ -13,7 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Circle view not rotating from center";
 
 		[Test]
-		public async Task Issue17694Test()
+		public void Issue17694Test()
 		{
 			this.IgnoreIfPlatforms(new[]
 			{
@@ -26,8 +26,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// 1. Click button
 			App.Click("Spin");
-
-			await Task.Delay(100);
 
 			VerifyScreenshot();
 		}
