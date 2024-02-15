@@ -105,6 +105,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				//testing invalid bindingcontext type
 				layout.BindingContext = new object();
 				Assert.AreEqual(null, layout.label0.Text);
+
+				//testing source
+				Assert.That(layout.label12.Text, Is.EqualTo("Text for label12"));
 			}
 		}
 	}
