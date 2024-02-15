@@ -39,14 +39,15 @@
 
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" Version="5.0.0-beta02" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
-    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.44-beta" />
-    <PackageReference Include="VisualTestUtils" Version="0.9.44-beta" />
+    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.46-beta" />
+    <PackageReference Include="VisualTestUtils" Version="0.9.46-beta" />
   </ItemGroup>
   <ItemGroup Condition="$(UseLocalVisualTestUtils) != ''">
     <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />

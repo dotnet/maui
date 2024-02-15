@@ -139,6 +139,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return new AView(Context);
 			}
 
+			if (convertView is ConditionalFocusLayout cfl && cfl.ChildCount > 0)
+			{
+				convertView = cfl.GetChildAt(0);
+			}
+
 			AView nativeCellContent = CellFactory.GetCell(item, convertView, parent, Context, _view);
 
 			// The cell content we get back might already be in a ConditionalFocusLayout; if it is, 
