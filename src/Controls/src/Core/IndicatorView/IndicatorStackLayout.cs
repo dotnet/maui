@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 			try
 			{
 				BatchBegin();
-				AddExtraIndicatorItems();
+				BindIndicatorItems();
 			}
 			finally
 			{
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
-				AddExtraIndicatorItems();
+				BindIndicatorItems();
 			}
 			finally
 			{
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls
 
 		Color GetColorOrDefault(Color? color, Color defaultColor) => color ?? defaultColor;
 
-		void AddExtraIndicatorItems()
+		void BindIndicatorItems()
 		{
 			var indicatorSize = _indicatorView.IndicatorSize > 0 ? _indicatorView.IndicatorSize : 10;
 			var indicatorTemplate = _indicatorView.IndicatorTemplate ??= new DataTemplate(() => new Border
