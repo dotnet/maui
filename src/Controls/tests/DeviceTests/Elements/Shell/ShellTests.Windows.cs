@@ -605,26 +605,16 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected async Task OpenFlyout(ShellHandler shellRenderer, TimeSpan? timeOut = null)
+		protected async Task OpenFlyout(ShellHandler shellRenderer)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-
 			var navView = (shellRenderer.PlatformView as ShellView);
-
 			if (navView.IsPaneOpen)
 				return;
 
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			navView.PaneOpened += OnPaneOpened;
 			navView.IsPaneOpen = true;
 
-			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
-
-			void OnPaneOpened(NavigationView sender, object args)
-			{
-				navView.PaneOpened -= OnPaneOpened;
-				taskCompletionSource.SetResult(true);
-			}
+			// Wait for the animation to finish
+			await IdleSynchronizer.GetForCurrentProcess().WaitAsync();
 		}
 
 		internal Graphics.Rect GetFrameRelativeToFlyout(ShellHandler handler, IView view)
