@@ -65,29 +65,35 @@ namespace Microsoft.Maui.Controls
 			var detected = false;
 			var threshold = Threshold;
 
+			var detectedDirection = (SwipeDirection)(0);
+
 			if (direction.IsLeft())
 			{
 				detected |= _totalX < -threshold;
+				detectedDirection |= SwipeDirection.Left;
 			}
 
 			if (direction.IsRight())
 			{
 				detected |= _totalX > threshold;
+				detectedDirection |= SwipeDirection.Right;
 			}
 
 			if (direction.IsDown())
 			{
 				detected |= _totalY > threshold;
+				detectedDirection |= SwipeDirection.Down;
 			}
 
 			if (direction.IsUp())
 			{
 				detected |= _totalY < -threshold;
+				detectedDirection |= SwipeDirection.Up;
 			}
 
 			if (detected)
 			{
-				SendSwiped(sender, direction);
+				SendSwiped(sender, detectedDirection);
 			}
 
 			return detected;
