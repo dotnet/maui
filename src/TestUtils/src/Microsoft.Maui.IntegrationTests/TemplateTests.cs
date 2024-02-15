@@ -49,16 +49,16 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui-multiproject", DotNetCurrent, "Debug")]
-		[TestCase("maui-multiproject", DotNetCurrent, "Release")]
-		public void BuildMultiProjectProject(string id, string framework, string config)
+		[TestCase("Debug")]
+		[TestCase("Release")]
+		public void BuildMultiProject(string config)
 		{
 			var projectDir = TestDirectory;
 			var name = Path.GetFileName(projectDir);
 			var solutionFile = Path.Combine(projectDir, $"{name}.sln");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
-				$"Unable to create template {id}. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.New("maui-multiproject", projectDir, DotNetCurrent),
+				$"Unable to create template maui-multiproject. Check test output for errors.");
 
 			Assert.IsTrue(DotnetInternal.New("sln", projectDir),
 				$"Unable to create solution. Check test output for errors.");
