@@ -196,7 +196,7 @@ namespace Microsoft.Maui.DeviceTests
 		private static EventWaitHandle OpenNamedEventHandle(uint processId, uint threadId, string eventNamePrefix)
 		{
 			EventWaitHandle? eventHandle = null;
-			string eventName = string.Format("{0}.{1}.{2}", eventNamePrefix, processId, threadId);
+			string eventName = $"{eventNamePrefix}.{processId}.{threadId}";
 
 			if (!EventWaitHandle.TryOpenExisting(eventName, out eventHandle))
 			{
