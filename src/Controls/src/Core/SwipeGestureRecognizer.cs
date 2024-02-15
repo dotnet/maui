@@ -69,26 +69,38 @@ namespace Microsoft.Maui.Controls
 
 			if (direction.IsLeft())
 			{
-				detected |= _totalX < -threshold;
-				detectedDirection |= SwipeDirection.Left;
+				if (_totalX < -threshold)
+				{
+					detected = true;
+					detectedDirection |= SwipeDirection.Left;
+				}
 			}
 
 			if (direction.IsRight())
 			{
-				detected |= _totalX > threshold;
-				detectedDirection |= SwipeDirection.Right;
+				if (_totalX > threshold)
+				{
+					detected = true;
+					detectedDirection |= SwipeDirection.Right;
+				}
 			}
 
 			if (direction.IsDown())
 			{
-				detected |= _totalY > threshold;
-				detectedDirection |= SwipeDirection.Down;
+				if (_totalY > threshold)
+				{
+					detected = true;
+					detectedDirection |= SwipeDirection.Down;
+				}
 			}
 
 			if (direction.IsUp())
 			{
-				detected |= _totalY < -threshold;
-				detectedDirection |= SwipeDirection.Up;
+				if (_totalY < -threshold)
+				{
+					detected = true;
+					detectedDirection |= SwipeDirection.Up;
+				}
 			}
 
 			if (detected)
