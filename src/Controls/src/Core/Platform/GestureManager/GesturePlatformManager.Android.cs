@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _disposed;
 		bool _inputTransparent;
 		bool _isEnabled;
+		DateTime _tapTime;
+
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
 		View? View => Element as View;
@@ -80,9 +82,36 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (!ViewHasPinchGestures() || !_scaleDetector.Value.IsInProgress)
+			{
 				eventConsumed = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e) || eventConsumed;
+				RequestDisallowInterceptTouchEvent(e, eventConsumed);
+			}
 
 			return eventConsumed;
+		}
+	
+		void RequestDisallowInterceptTouchEvent(MotionEvent e, bool handled)
+		{
+			var parent = Control?.Parent;
+
+			if (parent is null)
+				return;
+
+			switch (e.Action)
+			{
+				case MotionEventActions.Down:
+					_tapTime = DateTime.Now;
+					break;
+				case MotionEventActions.Move:
+					var diffTime = (DateTime.Now - _tapTime).TotalMilliseconds;
+					if (handled && diffTime >= ViewConfiguration.LongPressTimeout)
+						parent.RequestDisallowInterceptTouchEvent(true);
+					break;
+				case MotionEventActions.Cancel:
+				case MotionEventActions.Up:
+					parent.RequestDisallowInterceptTouchEvent(false);
+					break;
+			}
 		}
 
 		public void Dispose()
