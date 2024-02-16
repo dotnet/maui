@@ -31,6 +31,10 @@ namespace Microsoft.Maui.AppiumTests
 						throw;
 					}
 				}
+				finally
+				{
+					ResetApp();
+				}
 			}
 		}
 
@@ -51,14 +55,21 @@ namespace Microsoft.Maui.AppiumTests
 
 		public abstract string Issue { get; }
 
-		private void NavigateToIssue(string issue)
+		void NavigateToIssue(string issue)
 		{
 			App.NavigateToIssues();
+			
+			App.Click("ResetMainPage");
 
 			App.EnterText("SearchBarGo", issue);
 
 			App.WaitForElement("SearchButton");
 			App.Click("SearchButton");
+		}
+
+		void ResetApp()
+		{
+			App.ResetApp();
 		}
 	}
 }

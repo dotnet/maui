@@ -30,54 +30,11 @@ namespace Maui.Controls.Sample
 				return cell;
 			}
 
-			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
+			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type, bool reset = false)
 			{
 				Action navigationAction = null;
 
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
-				{
-					return async () =>
-					{
-						var page = ActivatePage(type);
-						TrackOnInsights(page);
-						await Navigation.PushAsync(page);
-					};
-				}
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushModalAsync)
-				{
-					return async () =>
-					{
-						var page = ActivatePage(type);
-						TrackOnInsights(page);
-						await Navigation.PushModalAsync(page);
-					};
-				}
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.Default)
-				{
-					return async () =>
-					{
-						var page = ActivatePage(type);
-						TrackOnInsights(page);
-						if (page is ContentPage /*|| page is CarouselPage*/)
-						{
-
-							await Navigation.PushAsync(page);
-
-						}
-						else if (page is Shell)
-						{
-							Application.Current.MainPage = page;
-						}
-						else
-						{
-							await Navigation.PushModalAsync(page);
-						}
-					};
-				}
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot)
+				if (reset)
 				{
 					return () =>
 					{
@@ -85,6 +42,61 @@ namespace Maui.Controls.Sample
 						TrackOnInsights(page);
 						Application.Current.MainPage = page;
 					};
+				}
+				else
+				{
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
+					{
+						return async () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+							await Navigation.PushAsync(page);
+						};
+					}
+
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.PushModalAsync)
+					{
+						return async () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+							await Navigation.PushModalAsync(page);
+						};
+					}
+
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.Default)
+					{
+						return async () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+							if (page is ContentPage /*|| page is CarouselPage*/)
+							{
+
+								await Navigation.PushAsync(page);
+
+							}
+							else if (page is Shell)
+							{
+								Application.Current.MainPage = page;
+							}
+							else
+							{
+								await Navigation.PushModalAsync(page);
+							}
+						};
+					}
+
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot)
+					{
+						return () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+							Application.Current.MainPage = page;
+						};
+					}
 				}
 
 				return navigationAction;
@@ -142,7 +154,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 
-			readonly List<IssueModel> _issues;
+			List<IssueModel> _issues;
 			TableSection _section;
 
 			void VerifyNoDuplicates()
@@ -166,7 +178,15 @@ namespace Maui.Controls.Sample
 
 				Intent = TableIntent.Settings;
 
+				UpdateIssues();
+			}
+
+			public void UpdateIssues(bool reset = false)
+			{
 				var assembly = typeof(TestCases).Assembly;
+
+				if (_issues is not null)
+					_issues.Clear();
 
 				_issues =
 					(from type in assembly.GetTypes()
@@ -179,7 +199,7 @@ namespace Maui.Controls.Sample
 						 IssueTestNumber = attribute.IssueTestNumber,
 						 Name = attribute.DisplayName,
 						 Description = attribute.Description,
-						 Action = ActivatePageAndNavigate(attribute, type)
+						 Action = ActivatePageAndNavigate(attribute, type, reset)
 					 }).ToList();
 
 				VerifyNoDuplicates();
@@ -312,6 +332,25 @@ namespace Maui.Controls.Sample
 				Content = rootLayout
 			};
 
+			var resetCheckBox = new CheckBox
+			{
+				AutomationId = "ResetMainPage",
+				VerticalOptions = LayoutOptions.Center,
+			};
+			resetCheckBox.CheckedChanged += (sender, args) => CheckBoxCheckedChanged(sender, args, testCaseScreen);
+			var resetLabel = new Label
+			{
+				Text = "Set MainPage",
+				VerticalOptions = LayoutOptions.Center,
+			};
+			var resetLayout = new HorizontalStackLayout
+			{
+				resetCheckBox,
+				resetLabel
+			};
+			resetLayout.HorizontalOptions = LayoutOptions.End;
+			resetLayout.Margin = new Microsoft.Maui.Thickness(12);
+
 			var searchBar = new SearchBar()
 			{
 				MinimumHeightRequest = 42, // Need this for Android N, see https://bugzilla.xamarin.com/show_bug.cgi?id=43975
@@ -351,6 +390,7 @@ namespace Maui.Controls.Sample
 				Command = new Command(() => testCasesRoot.Navigation.PopModalAsync())
 			};
 
+			rootLayout.Children.Add(resetLayout);
 			rootLayout.Children.Add(leaveTestCasesButton);
 			rootLayout.Children.Add(searchBar);
 			rootLayout.Children.Add(searchButton);
@@ -421,6 +461,11 @@ namespace Maui.Controls.Sample
 
 			cases.FilterIssues(filter);
 		}
-	}
 
+		static void CheckBoxCheckedChanged(object sender, CheckedChangedEventArgs checkedChangedEventArgs, TestCaseScreen cases)
+		{
+			bool reset = checkedChangedEventArgs.Value;
+			cases.UpdateIssues(reset);
+		}
+	}
 }
