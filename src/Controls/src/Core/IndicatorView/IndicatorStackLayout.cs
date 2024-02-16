@@ -20,8 +20,11 @@ namespace Microsoft.Maui.Controls
 
 			if (child is View view)
 			{
-				var tapGestureRecognizer = new TapGestureRecognizer();
-				tapGestureRecognizer.Tapped += (sender, _) => _indicatorView.Position = Children.IndexOf(sender as View);
+				var tapGestureRecognizer = new TapGestureRecognizer
+				{
+					Command = new Command(sender => _indicatorView.Position = Children.IndexOf(sender)),
+					CommandParameter = view
+				};
 				view.GestureRecognizers.Add(tapGestureRecognizer);
 			}
 		}
