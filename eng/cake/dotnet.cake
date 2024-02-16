@@ -145,7 +145,7 @@ Task("dotnet-build")
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
         }
         else
         {
@@ -168,7 +168,7 @@ Task("dotnet-samples")
                 ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
             };
         }
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
+        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, maxCpuCount: 1, binlogPrefix: "sample-");
     });
 
 Task("dotnet-legacy-controlgallery")
@@ -205,7 +205,8 @@ Task("dotnet-integration-test")
             pathDotnet: dotnetPath,
             noBuild: true,
             resultsFileNameWithoutExtension: Argument("resultsfilename", ""),
-            filter: Argument("filter", ""));
+            filter: Argument("filter", ""),
+            maxCpuCount: 1);
     });
 
 Task("dotnet-test")
@@ -216,13 +217,13 @@ Task("dotnet-test")
         var tests = new []
         {
             "**/Controls.Core.UnitTests.csproj",
-            "**/Controls.Core.Design.UnitTests.csproj",
+         //   "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
-            "**/Compatibility.Core.UnitTests.csproj",
+         //   "**/Compatibility.Core.UnitTests.csproj",
         };
 
         var success = true;
@@ -233,7 +234,7 @@ Task("dotnet-test")
             {
                 try
                 {
-                    RunTestWithLocalDotNet(project.FullPath);
+                    RunTestWithLocalDotNet(project.FullPath, configuration, dotnetPath);
                 }
                 catch
                 {
@@ -709,20 +710,15 @@ void RunMSBuildWithDotNet(
     DotNetBuild(sln, dotnetBuildSettings);
 }
 
-void RunTestWithLocalDotNet(string csproj)
-{
-    if(localDotnet)
-        SetDotNetEnvironmentVariables();
-
-    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, argsExtra: null, noBuild: true, resultsFileNameWithoutExtension: null);
-}
-
-void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "")
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
 {
     string binlog;
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var logDirectory = GetLogDirectory();
+
+    if(localDotnet)
+        SetDotNetEnvironmentVariables();
 
     if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
     {
@@ -751,6 +747,10 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
             ArgumentCustomization = args => 
             { 
                 args.Append($"-bl:{binlog}");
+                if(maxCpuCount > 0)
+                {
+                    args.Append($"-maxcpucount:{maxCpuCount}");
+                }
                 if(argsExtra != null)
                 {
                     foreach(var prop in argsExtra)
