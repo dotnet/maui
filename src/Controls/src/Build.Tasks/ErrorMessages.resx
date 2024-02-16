@@ -243,6 +243,11 @@
   <data name="XDataTypeSyntax" xml:space="preserve">
     <value>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}.</value>
   </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>Consider attributing the markup extension "{0}" with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any.</value>
+    <comment>0 is type name</comment>
+  </data>
+
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Undeclared xmlns prefix "{0}".</value>
     <comment>0 is the xmlns prefix</comment>

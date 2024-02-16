@@ -55,11 +55,27 @@ namespace Microsoft.Maui.Platform
 		bool _internalChangeFlag;
 		int _cachedCursorPosition;
 		int _cachedTextLength;
+		readonly long _token;
 
 		public MauiPasswordTextBox()
 		{
 			TextChanging += OnNativeTextChanging;
 			TextChanged += OnNativeTextChanged;
+			_token = RegisterPropertyChangedCallback(TextBox.InputScopeProperty, OnInputScopePropertyChanged);
+			Unloaded += (s, e) =>
+			{
+				UnregisterPropertyChangedCallback(TextBox.InputScopeProperty, _token);
+			};
+		}
+
+		static void OnInputScopePropertyChanged(DependencyObject sender, DependencyProperty dp)
+		{
+			if (sender is not MauiPasswordTextBox mauiTxtBox || mauiTxtBox.IsPassword)
+			{
+				return;
+			}
+
+			mauiTxtBox.IsPassword = mauiTxtBox.InputScope?.Names?.Any(x => x.NameValue == InputScopeNameValue.Password) ?? false;
 		}
 
 		public bool IsPassword

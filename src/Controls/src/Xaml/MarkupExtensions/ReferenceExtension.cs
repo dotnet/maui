@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Name))]
+	[RequireService([typeof(IReferenceProvider), typeof(IProvideValueTarget)])]
 	public class ReferenceExtension : IMarkupExtension
 	{
 		public string Name { get; set; }

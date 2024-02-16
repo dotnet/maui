@@ -8,6 +8,11 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Default))]
+	[RequireService(
+		[typeof(IProvideValueTarget),
+		 typeof(IValueConverterProvider),
+		 typeof(IXmlLineInfoProvider),
+		 typeof(IConverterOptions)])]
 	public class OnIdiomExtension : IMarkupExtension
 	{
 		// See Device.Idiom

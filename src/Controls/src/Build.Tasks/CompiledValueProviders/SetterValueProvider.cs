@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				yield return instruction;
 
 			//push the value
-			foreach (var instruction in ((ValueNode)valueNode).PushConvertedValue(context, bpRef, valueNode.PushServiceProvider(context, bpRef: bpRef), boxValueTypes: true, unboxValueTypes: false))
+			foreach (var instruction in ((ValueNode)valueNode).PushConvertedValue(context, bpRef, (requiredServices) => valueNode.PushServiceProvider(context, requiredServices, bpRef: bpRef), boxValueTypes: true, unboxValueTypes: false))
 				yield return instruction;
 
 			//set the value

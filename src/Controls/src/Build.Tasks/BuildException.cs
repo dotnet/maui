@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static BuildExceptionCode XStaticSyntax = new BuildExceptionCode("XFC", 0100, nameof(XStaticSyntax), "");
 		public static BuildExceptionCode XStaticResolution = new BuildExceptionCode("XFC", 0101, nameof(XStaticResolution), "");
 		public static BuildExceptionCode XDataTypeSyntax = new BuildExceptionCode("XFC", 0102, nameof(XDataTypeSyntax), "");
+		public static BuildExceptionCode UnattributedMarkupType = new BuildExceptionCode("XC", 0103, nameof(UnattributedMarkupType), ""); //warning
 
 		//Style, StyleSheets, Resources
 		public static BuildExceptionCode StyleSheetSourceOrContent = new BuildExceptionCode("XFC", 0120, nameof(StyleSheetSourceOrContent), "");
