@@ -106,6 +106,7 @@ Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> b
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
 Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
 Microsoft.Maui.Controls.VisualElement.~VisualElement() -> void
+override Microsoft.Maui.Controls.Handlers.Items.TemplatedCell.PrepareForReuse() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillLayoutSubviews() -> void
 override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.LayoutSubviews() -> void
@@ -250,3 +251,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
+~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
+~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]

@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -357,6 +358,18 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
+			out XamlParseException exception)
+		{
+			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
+			{
+				throw new NotSupportedException(RuntimeFeature.XamlRuntimeParsingNotSupportedErrorMessage);
+			}
+
+			return GetElementTypeCore(xmlType, xmlInfo, currentAssembly, out exception);
+		}
+
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+		private static Type GetElementTypeCore(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
 			out XamlParseException exception)
 		{
 			bool hasRetriedNsSearch = false;
