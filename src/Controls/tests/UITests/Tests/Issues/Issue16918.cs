@@ -1,8 +1,8 @@
-﻿using Microsoft.Maui.Appium;
-using Microsoft.Maui.AppiumTests;
 using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
-namespace Controls.AppiumTests.Tests.Issues
+namespace Microsoft.Maui.AppiumTests.Issues
 {
 	public class Issue16918 : _IssuesUITest
 	{
@@ -16,7 +16,7 @@ namespace Controls.AppiumTests.Tests.Issues
 		public void Issue16918Test()
 		{
 			// https://github.com/dotnet/maui/issues/16918
-			UITestContext.IgnoreIfPlatforms(new[]
+			this.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac,
 				TestDevice.Android,
