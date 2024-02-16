@@ -73,8 +73,11 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(macosTestsVmPool)
-      vmImage: $(macosTestsVmImage)
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
   
   - name: windowsPool
     type: object
@@ -129,13 +132,11 @@ stages:
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
-        # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ '16.4' ]
+        iosVersions: [ '17.2' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
         androidApiLevels: [ 30 ]
-        # androidApiLevels: [ 30, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ '16.4' ]
+        iosVersions: [ '17.2' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if or(parameters.CompatibilityTests, ne(variables['Build.Reason'], 'PullRequest')) }}:
         runCompatibilityTests: true

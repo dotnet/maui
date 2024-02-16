@@ -1,0 +1,21 @@
+This folder can contain all the Windows-specific assets that your app may use.
+
+Accessing items here can be done using the `ms-appx` uri sceme;
+
+For example, if there is a file:
+
+    \Assets\my_image.png
+
+This can be accessed with the uri:
+
+    ms-appx:///Assets/my_image.png
+
+The files in the root ofthe Assets folder are meant to only be accessible from
+the Windows-specific files - such as the Package.appxmanifest. When using an
+asset for the manifest, you would refer to it with the `Asset\` prefix.
+
+For images that are meant to be accessed from cross-platform code, like XAML
+files, images should be placed into the `Assets\Images` folder as those are
+packaged differently to ensure the path matches that for the other platforms.
+
+For more information, see the Assets\ImagesAboutWinUIImages.txt file.
