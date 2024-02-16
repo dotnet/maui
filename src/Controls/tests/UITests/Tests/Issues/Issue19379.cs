@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Not able to update CollectionView header";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void UpdateCollectionViewHeaderTest()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });

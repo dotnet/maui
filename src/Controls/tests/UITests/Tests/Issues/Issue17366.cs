@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Wrong gray color using transparent in iOS gradients";
 
 		[Test]
+		[Category(UITestCategories.Brush)]
 		public void Issue17366Test()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },

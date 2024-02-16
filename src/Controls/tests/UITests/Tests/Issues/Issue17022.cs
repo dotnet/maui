@@ -14,7 +14,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		// TODO: Add shell navigation bar tests when we can call shell in UITest
 		[Test]
-        [TestCase("NewNavigationPageButton", false)]
+		[Category(UITestCategories.Navigation)]
+		[TestCase("NewNavigationPageButton", false)]
         [TestCase("NewNavigationPageTransparentButton", false)]
         [TestCase("NewNavigationPageTranslucentButton", false)]
         [TestCase("NewNavigationPageTransparentTranslucentButton", false)]
@@ -69,7 +70,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
             {
                 App.WaitForElement("PopPageButton").Click();
             }
-
 		}
 	}
 }

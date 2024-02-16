@@ -11,6 +11,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "[D9] Editor IsReadOnly works";
 
 		[Test]
+		[Category(UITestCategories.Editor)]
 		public void Issue18754Test()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows },

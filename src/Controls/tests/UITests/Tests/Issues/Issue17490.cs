@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Crash using Pinvoke.SetParent to create Window as Child";
 
 		[Test]
+		[Category(UITestCategories.Window)]
 		public void AppDoesntCrashWhenOpeningWinUIWindowParentedToCurrentWindow()
 		{
 			this.IgnoreIfPlatforms(new[]

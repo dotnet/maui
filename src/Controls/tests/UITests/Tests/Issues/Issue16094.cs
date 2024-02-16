@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Shadows don't respect control shape";
 
 		[Test]
+		[Category(UITestCategories.Editor)]
 		public void Issue16094Test()
 		{
 			App.WaitForElement("EditorControl");

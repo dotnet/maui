@@ -15,6 +15,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Can scroll ListView inside RefreshView";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public async Task Issue18896Test()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },

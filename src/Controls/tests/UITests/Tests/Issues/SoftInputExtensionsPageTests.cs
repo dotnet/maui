@@ -11,6 +11,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Soft Input Extension Methods";
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void SoftInputExtensionsPageTest()
 		{
 			// Make sure the buttons appear on the screen.

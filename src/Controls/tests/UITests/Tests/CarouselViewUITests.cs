@@ -26,6 +26,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewSetPosition()
 		{
 			if (Device != TestDevice.Android)
@@ -42,6 +43,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewGoToNextCurrentItem()
 		{
 			if (Device != TestDevice.Android)

@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Can scroll CollectionView inside RefreshView";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		[Ignore("This test is failing on iOS17, https://github.com/dotnet/maui/issues/20582")]
 		public async Task Issue18751Test()
 		{

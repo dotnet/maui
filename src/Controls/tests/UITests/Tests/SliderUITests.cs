@@ -26,6 +26,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Slider)]
 		[Description("Set different slider values")]
 		public void SetSliderValue()
 		{

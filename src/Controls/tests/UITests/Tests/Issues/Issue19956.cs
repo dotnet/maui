@@ -13,7 +13,8 @@ public class Issue19956: _IssuesUITest
     public override string Issue => "Sticky headers and bottom content insets";
 
     [Test]
-    public void ContentAccountsForStickyHeaders()
+	[Category(UITestCategories.Entry)]
+	public void ContentAccountsForStickyHeaders()
     {
         this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
             "This is an iOS Keyboard Scrolling issue.");

@@ -10,6 +10,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "CollectionView header and footer not displaying on Windows";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void HeaderAndFooterRender()
 		{
 			App.WaitForElement("collectionView");

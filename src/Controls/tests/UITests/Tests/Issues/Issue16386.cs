@@ -14,6 +14,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Process the hardware enter key as \"Done\"";
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void HittingEnterKeySendsDone()
 		{
 			this.IgnoreIfPlatforms(new[]

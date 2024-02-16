@@ -26,6 +26,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public void PointerGestureTest()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS },
@@ -45,6 +46,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public void DoubleTap()
 		{
 			App.WaitForElement("TargetView");

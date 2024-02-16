@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "CollectionView runtime binding errors when loading the ItemSource asynchronously";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewBindingContextOnlyChangesOnce()
 		{
 			Assert.AreEqual("1", App.WaitForElement("LabelBindingCount").GetText());

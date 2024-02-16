@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Setting MaximumTrackColor on Slider has no effect";
 
 		[Test]
+		[Category(UITestCategories.Slider)]
 		public void SettingMaximumTrackColorOnSliderWorks()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Windows }, "Regression test validating the design differences between iOS and Mac specifically");

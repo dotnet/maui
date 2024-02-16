@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Editor MaxLength property works as expected";
 
 		[Test]
+		[Category(UITestCategories.Editor)]
 		public void EditorMaxLengthWorks()
 		{
 			App.WaitForElement("WaitForStubControl");

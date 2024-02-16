@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Editor IsReadOnly property prevent from modifying the text";
 
 		[Test]
+		[Category(UITestCategories.Editor)]
 		public async Task EditorIsReadOnlyPreventModify()
 		{
 			App.WaitForElement("WaitForStubControl");

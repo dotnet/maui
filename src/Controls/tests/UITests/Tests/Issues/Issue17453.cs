@@ -11,6 +11,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Clear Entry text tapping the clear button not working";
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void EntryClearButtonWorksEntryDoesntClearWhenNotClickingOnClear()
 		{
 			// https://github.com/dotnet/maui/issues/17453

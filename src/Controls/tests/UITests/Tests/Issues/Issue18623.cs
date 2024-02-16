@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Entry IsPassword obscure the text";
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public async Task EntryIsPasswordObscureText()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },
