@@ -1,0 +1,19 @@
+parameters:
+  poolName: Azure Pipelines
+  vmImage: windows-latest
+  os: windows
+  dependsOn: []
+  stageName: 'polycheck'
+  displayName: 'PolyCheck'
+
+stages:
+  - template: security/policheck/v3.yml@yaml-templates
+    parameters:
+      windowsPoolName: ${{ parameters.poolName }}
+      windowsImageOverride: 'none'
+      stageDependsOn: ${{ parameters.dependsOn }}
+      sourceGdnSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\source.gdnsuppress'
+      tsaConfigFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\tsaoptions-v2.json'
+      tsaUploadEnabled: true
+      policheckExclusionFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\PoliCheck.Exclusions.xml' 
+      policheckGdnSuppressionFilesFolder: '$(System.DefaultWorkingDirectory)\eng\automation\guardian'
