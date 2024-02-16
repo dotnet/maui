@@ -19,5 +19,16 @@ namespace Maui.Controls.Sample.Pages
 			var imageBytes = Convert.FromBase64String(Base64EncodedImage);
 			StreamSourceImage.Source = ImageSource.FromStream(() => new MemoryStream(imageBytes));
 		}
+
+		void AnimationStartStop_Clicked(object sender, EventArgs e)
+		{
+			AnimatedGifImage.IsAnimationPlaying = !AnimatedGifImage.IsAnimationPlaying;
+		}
+
+		void UseOnlineSource_Clicked(object sender, EventArgs e)
+		{
+			AnimatedGifImage.Source =
+				ImageSource.FromUri(new Uri("https://news.microsoft.com/wp-content/uploads/prod/2022/07/hexagon_print.gif"));
+		}
 	}
 }

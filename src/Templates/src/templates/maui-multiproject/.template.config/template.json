@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Mobile" ],
+  "identity": "Microsoft.Maui.MultiProjectApp.CSharp.DOTNET_TFM_VERSION_VALUE",
+  "groupIdentity": "Microsoft.Maui.MultiProjectApp",
+  "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
+  "name": ".NET MAUI Multi-Project App",
+  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI with multiple, separate app projects.",
+  "shortName": "maui-multiproject",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "MauiApp.1",
+  "primaryOutputs": [
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "MauiApp.1/MainPage.xaml.cs"
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "MauiApp.1/MainPage.xaml"
+    }
+  ],
+  "postActions": [
+    {
+      "id": "openInEditor",
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\")",
+      "description": "Opens MainPage.xaml in the editor.",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0;1"
+      },
+      "continueOnError": true
+    }
+  ],
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "copyOnly": [ "**/*.svg", "**/*.ttf" ],
+      "modifiers": [
+        {
+          "condition": "(!android && !AllPlatforms)",
+          "exclude": [
+            "MauiApp.1.Droid/**/*"
+          ]
+        },
+        {
+          "condition": "(!ios && !AllPlatforms)",
+          "exclude": [
+            "MauiApp.1.iOS/**/*"
+          ]
+        },
+        {
+          "condition": "(!maccatalyst && !AllPlatforms)",
+          "exclude": [
+            "MauiApp.1.Mac/**/*"
+          ]
+        },
+        {
+          "condition": "(!winui && !AllPlatforms)",
+          "exclude": [
+            "MauiApp.1.WinUI/**/*"
+          ]
+        }
+      ]
+    }
+  ],
+  "preferNameDirectory": true,
+  "guids": [
+    "87919f9c-abb8-48e5-bae7-eb1b4140f6a8"
+  ],
+  "symbols": {
+    "applicationId": {
+      "type": "parameter",
+      "description": "Overrides the $(ApplicationId) in the project",
+      "datatype": "string"
+    },
+    "msExtensionsLoggingDebugVersion": {
+      "type": "parameter",
+      "dataType": "string",
+      "replaces": "MS_EXT_LOG_DEBUG_VERSION",
+      "defaultValue": "MS_EXT_LOG_DEBUG_VERSION_VALUE"
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "DOTNET_TFM_VALUE",
+          "description": "Target DOTNET_TFM_VALUE"
+        }
+      ],
+      "replaces": "DOTNET_TFM",
+      "defaultValue": "DOTNET_TFM_VALUE"
+    },
+    "android": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "defaultIfOptionWithoutValue": "true",
+      "displayName": "Android",
+      "description": "Include the Android app head project"
+    },
+    "ios": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "defaultIfOptionWithoutValue": "true",
+      "displayName": "iOS",
+      "description": "Include the iOS app head project"
+    },
+    "maccatalyst": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "defaultIfOptionWithoutValue": "true",
+      "displayName": "macOS using Mac Catalyst",
+      "description": "Include the macOS app head project (using Mac Catalyst)"
+    },
+    "winui": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "defaultIfOptionWithoutValue": "true",
+      "displayName": "Windows using WinUI 3",
+      "description": "Include the Windows app head project (using WinUI 3)"
+    },
+    "AllPlatforms": {
+      "type": "computed",
+      "value": "(!android && !ios && !maccatalyst && !winui)"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "PhoneProductId": {
+        "type": "generated",
+        "generator": "guid",
+        "replaces": "$guid9$"
+      },
+      "nameToLower":{
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source" : "name",
+        "toLower": true
+      }
+    },
+    "nameToAppId": {
+        "type": "generated",
+        "generator": "regex",
+        "dataType": "string",
+        "parameters": {
+          "source": "nameToLower",
+          "steps": [
+            {
+              "regex": "[^a-z0-9_\\.]",
+              "replacement": ""
+            }
+          ]
+        }
+      },
+      "defaultAppId":{
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          {
+            "type": "const",
+            "value": "com.companyname."
+          },
+          {
+            "type": "ref",
+            "value": "nameToAppId"
+          }
+        ]
+      }
+    },
+    "finalAppId":{
+      "type":"generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "applicationId",
+        "fallbackVariableName": "defaultAppId"
+      },
+      "replaces": "com.companyname.mauiapp"
+    }
+  },
+  "defaultName": "MauiApp1"
+}

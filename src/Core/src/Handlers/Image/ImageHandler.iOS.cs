@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -51,7 +50,23 @@ namespace Microsoft.Maui.Handlers
 				if (Handler?.PlatformView is not UIImageView imageView)
 					return;
 
-				imageView.Image = platformImage;
+				if (platformImage?.Images is not null)
+				{
+					imageView.Image = platformImage.Images[0];
+
+					imageView.AnimationImages = platformImage.Images;
+					imageView.AnimationDuration = platformImage.Duration;
+				}
+				else
+				{
+					imageView.AnimationImages = null;
+					imageView.AnimationDuration = 0.0;
+
+					imageView.Image = platformImage;
+				}
+
+				Handler?.UpdateValue(nameof(IImage.IsAnimationPlaying));
+
 				if (Handler?.VirtualView is IImage image && image.Source is IStreamImageSource)
 					imageView.InvalidateMeasure(image);
 			}

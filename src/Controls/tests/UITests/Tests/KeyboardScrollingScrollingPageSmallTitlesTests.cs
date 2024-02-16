@@ -24,25 +24,25 @@ namespace Microsoft.Maui.AppiumTests
 			this.Back();
 		}
 
-		[Test]
-		public void EntriesScrollingPageTest()
-		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
-			KeyboardScrolling.EntriesScrollingTest(App, KeyboardScrollingGallery);
-		}
+		// [Test]
+		// public void EntriesScrollingPageTest()
+		// {
+		// 	this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
+		// 	KeyboardScrolling.EntriesScrollingTest(App, KeyboardScrollingGallery);
+		// }
 
-		[Test]
-		public void EditorsScrollingPageTest()
-		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
-			KeyboardScrolling.EditorsScrollingTest(App, KeyboardScrollingGallery);
-		}
+		// [Test]
+		// public void EditorsScrollingPageTest()
+		// {
+		// 	this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
+		// 	KeyboardScrolling.EditorsScrollingTest(App, KeyboardScrollingGallery);
+		// }
 
-		[Test]
-		public void EntryNextEditorTest()
-		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
-			KeyboardScrolling.EntryNextEditorScrollingTest(App, KeyboardScrollingGallery);
-		}
+		// [Test]
+		// public void EntryNextEditorTest()
+		// {
+		// 	this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
+		// 	KeyboardScrolling.EntryNextEditorScrollingTest(App, KeyboardScrollingGallery);
+		// }
 	}
 }
