@@ -90,12 +90,15 @@ namespace UITest.Appium
 			int endX = (int)(position.X + (size.Width * swipePercentage));
 			int endY = startY;
 
+			// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
 			new TouchAction(driver)
 				.Press(startX, startY)
 				.Wait(swipeSpeed)
 				.MoveTo(endX, endY)
 				.Release()
 				.Perform();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void SwipeToLeft(AppiumDriver driver, AppiumElement? element, double swipePercentage, int swipeSpeed, bool withInertia = true)
@@ -109,12 +112,15 @@ namespace UITest.Appium
 			int endX = (int)(position.X + (size.Width * 0.05));
 			int endY = startY;
 
+			// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
 			new TouchAction(driver)
 				.Press(startX, startY)
 				.Wait(swipeSpeed)
 				.MoveTo(endX, endY)
 				.Release()
 				.Perform();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

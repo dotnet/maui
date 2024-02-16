@@ -147,12 +147,15 @@ namespace UITest.Appium
 			int endX = (int)(position.X + (size.Width * swipePercentage));
 			int endY = startY;
 
+			// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
 			new TouchAction(driver)
 				.Press(startX, startY)
 				.Wait(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)
 				.MoveTo(endX, endY)
 				.Release()
 				.Perform();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void ScrollToDown(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
@@ -166,12 +169,15 @@ namespace UITest.Appium
 			int endX = startX;
 			int endY = (int)(position.Y + (size.Height * 0.05));
 
+			// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
 			new TouchAction(driver)
 				.Press(startX, startY)
 				.Wait(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)
 				.MoveTo(endX, endY)
 				.Release()
 				.Perform();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void ScrollToRight(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
@@ -185,12 +191,15 @@ namespace UITest.Appium
 			int endX = (int)(position.X + (size.Width * 0.05));
 			int endY = startY;
 
+			// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
 			new TouchAction(driver)
 				.Press(startX, startY)
 				.Wait(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)
 				.MoveTo(endX, endY)
 				.Release()
 				.Perform();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void ScrollToUp(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
@@ -204,12 +213,15 @@ namespace UITest.Appium
 			int endX = startX;
 			int endY = (int)(position.Y + (size.Height * swipePercentage));
 
+			// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
 			new TouchAction(driver)
 				.Press(startX, startY)
 				.Wait(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)
 				.MoveTo(endX, endY)
 				.Release()
 				.Perform();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

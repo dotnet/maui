@@ -77,7 +77,10 @@ namespace UITest.Appium
 
 			double moveToX = (x + size.Width) * value / maximum;
 
+			// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
 			TouchAction touchAction = new TouchAction(driver);
+#pragma warning restore CS0618 // Type or member is obsolete
 			touchAction
 				.Press(x, y)
 				.MoveTo(moveToX, y)

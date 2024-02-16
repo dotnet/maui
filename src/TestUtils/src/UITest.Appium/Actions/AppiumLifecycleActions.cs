@@ -54,7 +54,10 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
+			// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
 			_app.Driver.LaunchApp();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -93,25 +96,8 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			// Terminate App not supported on Mac
-			if (_app.GetTestDevice() == TestDevice.Mac)
-			{
-				_app.Driver.ResetApp();
-			}
-			else if (_app.GetTestDevice() == TestDevice.Windows)
-			{
-				CloseApp(parameters);
-				_app.Driver.LaunchApp();
-			}
-			else
-			{
-				_app.Driver.TerminateApp(_app.GetAppId());
-
-				if (_app.GetTestDevice() == TestDevice.iOS)
-					_app.Driver.ActivateApp(_app.GetAppId());
-				else
-					_app.Driver.LaunchApp();
-			}
+			// TODO: Reset no longer exists.
+			//_app.Driver.ResetApp();
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -121,8 +107,9 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			if(_app.AppState != ApplicationState.NotRunning)
-				_app.Driver.CloseApp();
+#pragma warning disable CS0618 // Type or member is obsolete
+			_app.Driver.CloseApp();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
