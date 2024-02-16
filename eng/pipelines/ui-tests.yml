@@ -108,7 +108,6 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
-        - Agent.OSVersion -equals 13.5
 
 
 resources:
