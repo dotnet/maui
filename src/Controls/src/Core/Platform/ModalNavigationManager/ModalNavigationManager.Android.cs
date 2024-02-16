@@ -204,10 +204,10 @@ namespace Microsoft.Maui.Controls.Platform
 			ModalFragment _modalFragment;
 			FragmentManager? _fragmentManager;
 			NavigationRootManager? NavigationRootManager => _modalFragment.NavigationRootManager;
-			int _currentRootViewHeight = 0;
+			/*int _currentRootViewHeight = 0;
 			int _currentRootViewWidth = 0;
 			GenericGlobalLayoutListener? _rootViewLayoutListener;
-			AView? _rootView;
+			AView? _rootView;*/
 
 			AView GetWindowRootView() =>
 				 _windowMauiContext
