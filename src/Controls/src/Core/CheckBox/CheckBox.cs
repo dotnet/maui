@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="Type[@FullName='Microsoft.Maui.Controls.CheckBox']/Docs/*" />
-	public partial class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement, ICheckBox
+	public partial class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement, ICheckBox, ICommandElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;
 		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='IsCheckedVisualState']/Docs/*" />
@@ -16,10 +18,40 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), false,
 				propertyChanged: (bindable, oldValue, newValue) =>
 				{
-					((CheckBox)bindable).Handler?.UpdateValue(nameof(ICheckBox.Foreground));
-					((CheckBox)bindable).CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
-					((CheckBox)bindable).ChangeVisualState();
+					if (bindable is not CheckBox checkBox)
+					{
+						return;
+					}
+
+					checkBox.Handler?.UpdateValue(nameof(ICheckBox.Foreground));
+					checkBox.CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
+					if (checkBox.Command is not null && checkBox.Command.CanExecute(null))
+					{
+						checkBox.Command?.Execute(checkBox.CommandParameter);
+					}
+
+					checkBox.ChangeVisualState();
 				}, defaultBindingMode: BindingMode.TwoWay);
+
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(CheckBox), null, propertyChanging: CommandElement.OnCommandChanging, propertyChanged: CommandElement.OnCommandChanged);
+
+		public ICommand Command
+		{
+			get => (ICommand)GetValue(CommandProperty);
+			set => SetValue(CommandProperty, value);
+		}
+
+		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(CheckBox), null, propertyChanged: CommandElement.OnCommandParameterChanged);
+
+		public object CommandParameter
+		{
+			get => GetValue(CommandParameterProperty);
+			set => SetValue(CommandParameterProperty, value);
+		}
+
+
 
 		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
@@ -72,6 +104,13 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
 		bool IBorderElement.IsBorderColorSet() => false;
 		bool IBorderElement.IsBorderWidthSet() => false;
+
+		public void CanExecuteChanged(object sender, EventArgs e)
+		{
+			RefreshIsEnabledProperty();
+		}
+
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		public Paint Foreground => Color?.AsPaint();
 
 		bool ICheckBox.IsChecked
