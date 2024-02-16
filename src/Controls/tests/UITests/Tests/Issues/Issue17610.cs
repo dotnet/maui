@@ -37,12 +37,15 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			var toX = (int)rect2.CenterX();
 			var toY = (int)rect2.CenterY();
 
+			// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
 			new TouchAction(androidApp.Driver)
 				.Press(fromX, fromY)
 				.MoveTo(toX, toY)
 				.MoveTo(fromX, fromY)
 				.Release()
 				.Perform();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			VerifyScreenshot();
 		}

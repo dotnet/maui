@@ -26,9 +26,13 @@ public class Issue19956: _IssuesUITest
         var stickyHeader = App.WaitForElement("StickyHeader");
         var stickyHeaderRect = stickyHeader.GetRect();
 
-        // Scroll to the bottom of the page
-        var actions = new TouchAction(app.Driver);
-        actions.LongPress(null, 5, 650).MoveTo(null, 5, 100).Release().Perform();
+		// Scroll to the bottom of the page
+
+		// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
+		var actions = new TouchAction(app.Driver);
+#pragma warning restore CS0618 // Type or member is obsolete
+		actions.LongPress(null, 5, 650).MoveTo(null, 5, 100).Release().Perform();
 
         app.Click("Entry12");
         ValidateEntryPosition("Entry12", app, stickyHeaderRect);
@@ -75,9 +79,12 @@ public class Issue19956: _IssuesUITest
 
     static void ScrollToBottom(AppiumApp app)
     {
-        var actions = new TouchAction(app.Driver);
-        // scroll up once to trigger resetting content insets
-        actions.LongPress(null, 5, 300).MoveTo(null, 5, 450).Release().Perform();
+		// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
+		var actions = new TouchAction(app.Driver);
+#pragma warning restore CS0618 // Type or member is obsolete
+							  // scroll up once to trigger resetting content insets
+		actions.LongPress(null, 5, 300).MoveTo(null, 5, 450).Release().Perform();
         actions.LongPress(null, 5, 400).MoveTo(null, 5, 100).Release().Perform();
 
         actions.LongPress(null, 5, 400).MoveTo(null, 5, 100).Release().Perform();

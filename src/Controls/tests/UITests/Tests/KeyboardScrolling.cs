@@ -45,7 +45,11 @@ namespace Microsoft.Maui.AppiumTests
 					ClickText(app, $"Entry{i}", isEditor, out didReachEndofPage);
 
 				// Scroll to the top of the page
+
+				// TODO: Obsolete, need changes.
+#pragma warning disable CS0618 // Type or member is obsolete
 				var actions = new TouchAction(App.Driver);
+#pragma warning restore CS0618 // Type or member is obsolete
 				actions.LongPress(null, 5, 300).MoveTo(null, 5, 650).Release().Perform();
 
 				if (!didReachEndofPage)
