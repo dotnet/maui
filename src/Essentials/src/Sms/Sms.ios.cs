@@ -1,6 +1,7 @@
-using System.Linq;
 using System.Threading.Tasks;
 #if !(MACCATALYST || MACOS)
+using System;
+using System.Linq;
 using MessageUI;
 #endif
 
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			if (!string.IsNullOrWhiteSpace(message?.Body))
 				messageController.Body = message.Body;
 
-			messageController.Recipients = message?.Recipients?.ToArray() ?? new string[] { };
+			messageController.Recipients = message?.Recipients?.ToArray() ?? Array.Empty<string>();
 
 			// show the controller
 			var tcs = new TaskCompletionSource<bool>();

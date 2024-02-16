@@ -320,10 +320,17 @@ namespace Microsoft.Maui.Platform
 			editText.SetSelection(previousCursorPosition);
 		}
 
-		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction? currentInputImeFlag)
+		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction currentInputImeFlag)
 		{
 			var actionId = e.ActionId;
 			var evt = e.Event;
+
+			// On API 34 it looks like they fixed the issue where the actionId is ImeAction.ImeNull when using a keyboard
+			// so I'm just setting the actionId here to whatever the user has 
+			if (actionId == ImeAction.ImeNull && evt?.KeyCode == Keycode.Enter)
+			{
+				actionId = currentInputImeFlag;
+			}
 
 			return
 				actionId == ImeAction.Done ||

@@ -58,6 +58,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ConstrainedDimension = default;
 		}
 
+		internal void Unbind()
+		{
+			if (PlatformHandler?.VirtualView is View view)
+			{
+				view.MeasureInvalidated -= MeasureInvalidated;
+				view.BindingContext = null;
+			}
+		}
+
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
 			UICollectionViewLayoutAttributes layoutAttributes)
 		{
@@ -116,6 +125,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_size = rectangle.Size;
 		}
 
+		public override void PrepareForReuse()
+		{
+			Unbind();
+			base.PrepareForReuse();
+		}
+
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
 			var oldElement = PlatformHandler?.VirtualView as View;
@@ -157,18 +172,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Same template
 				if (oldElement != null)
 				{
-					if (oldElement.BindingContext == null || !(oldElement.BindingContext.Equals(bindingContext)))
-					{
-						// If the data is different, update it
+					oldElement.BindingContext = bindingContext;
+					oldElement.MeasureInvalidated += MeasureInvalidated;
 
-						// Unhook the MeasureInvalidated handler, otherwise it'll fire for every invalidation during the 
-						// BindingContext change
-						oldElement.MeasureInvalidated -= MeasureInvalidated;
-						oldElement.BindingContext = bindingContext;
-						oldElement.MeasureInvalidated += MeasureInvalidated;
-
-						UpdateCellSize();
-					}
+					UpdateCellSize();
 				}
 			}
 

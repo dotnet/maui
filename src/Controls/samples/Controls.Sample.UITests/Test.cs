@@ -475,6 +475,7 @@ namespace Maui.Controls.Sample
 			VerticalTextAlignmentEnd,
 			MaxLines,
 			HtmlTextType,
+			BrokenHtmlTextType,
 			HtmlTextTypeMultipleLines,
 			HtmlTextLabelProperties,
 			TextTypeToggle,
@@ -709,6 +710,14 @@ namespace Maui.Controls.Sample
 			PeekAreaInsets,
 			Position,
 			IsBounceEnabled
+		}
+
+		public enum ImageLoading
+		{
+			FromBundleSvg,
+			FromBundlePng,
+			FromBundleJpg,
+			FromBundleGif,
 		}
 
 		public enum InputTransparency

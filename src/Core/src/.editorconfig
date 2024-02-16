@@ -10,7 +10,6 @@ dotnet_diagnostic.CA1307.severity = error
 dotnet_diagnostic.CA1805.severity = error
 dotnet_diagnostic.CA1806.severity = error
 dotnet_diagnostic.CA1822.severity = error
-dotnet_diagnostic.CA1825.severity = error
 dotnet_diagnostic.CA1834.severity = error
 dotnet_diagnostic.CA1845.severity = error
 dotnet_diagnostic.CA1846.severity = error

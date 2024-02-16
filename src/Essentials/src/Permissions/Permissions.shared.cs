@@ -253,6 +253,14 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		/// <summary>
+		/// Represents permission to post notifications
+		/// </summary>
+		public partial class PostNotifications
+		{
+		}
+
+
+		/// <summary>
 		/// Represents permission to access the device reminders data.
 		/// </summary>
 		public partial class Reminders

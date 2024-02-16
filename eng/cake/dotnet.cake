@@ -54,6 +54,12 @@ Task("dotnet")
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration),
         });
+
+        DotNetTool("tool",  new DotNetToolSettings {
+		    ToolPath = dotnetPath,
+		    DiagnosticOutput = true,	
+		    ArgumentCustomization = args => args.Append("restore")
+	    });
     });
 
 Task("dotnet-local-workloads")
@@ -81,6 +87,12 @@ Task("dotnet-local-workloads")
                 .WithTarget("Install"),
             ToolPath = dotnetPath,
         });
+
+        DotNetTool("tool",  new DotNetToolSettings {
+		    ToolPath = dotnetPath,
+		    DiagnosticOutput = true,	
+		    ArgumentCustomization = args => args.Append("restore")
+	    });
     });
 
 Task("dotnet-buildtasks")

@@ -38,7 +38,7 @@ string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ?
 	$"iossimulator-{System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString().ToLower()}"
   : $"ios-arm64";
 string CONFIGURATION = Argument("configuration", "Debug");
-bool DEVICE_CLEANUP = Argument("cleanup", true);
+bool DEVICE_CLEANUP = Argument("cleanup", !IsCIBuild());
 string TEST_FRAMEWORK = "net472";
 
 Information("Project File: {0}", PROJECT);
@@ -77,6 +77,7 @@ Setup(context =>
 	if (TEST_DEVICE.IndexOf("_") != -1) 
 	{
 		GetSimulators(TEST_DEVICE);
+		ResetSimulators(TEST_DEVICE);
 	}
 });
 
@@ -99,13 +100,11 @@ void Cleanup()
 		return;
 	}
 	var simulatorName = "XHarness";
-	if(iosVersion.Contains("17"))
-		simulatorName = "iPhone 15";	
-	Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersion);
+	Information("Looking for simulator: {0} ios version {1}", simulatorName, iosVersion);
 	var xharness = sims.Where(s => s.Name.Contains(simulatorName))?.ToArray();
 	if(xharness == null || xharness.Length == 0)
 	{
-		Information("No XHarness simulators found to delete.");
+		Information("No simulators with {0} found to delete.", simulatorName);
 		return;
 	}
 	foreach (var sim in xharness) {
@@ -239,6 +238,8 @@ Task("Test")
 				$"--app=\"{TEST_APP}\" " +
 				$"--targets=\"{TEST_DEVICE}\" " +
 				$"--output-directory=\"{TEST_RESULTS}\" " +
+				$"--timeout=01:15:00 " +
+				$"--launch-timeout=00:06:00 " +
 				xcode_args +
 				$"--verbosity=\"Debug\" ");
 			
@@ -449,11 +450,9 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		else
 		{
 			var simulatorName = "XHarness";
-			if(iosVersionToRun.Contains("17"))
-				simulatorName = "iPhone 15";	
 			Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersionToRun);
 			var sims = ListAppleSimulators();
-			var simXH = sims.Where(s => s.Name.Contains(simulatorName)).FirstOrDefault();
+			var simXH = sims.Where(s => s.Name.Contains(simulatorName) && s.Name.Contains(iosVersionToRun)).FirstOrDefault();
 			if(simXH == null)
 				throw new Exception("No simulator was found to run tests on.");
 
@@ -476,6 +475,19 @@ void GetSimulators(string version)
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
 				$"\"{version}\" " +
+				$"--verbosity=\"Debug\" ")
+		});
+}
+
+void ResetSimulators(string version)
+{
+	var logDirectory = GetLogDirectory();
+	DotNetTool("tool", new DotNetToolSettings {
+			ToolPath = DOTNET_TOOL_PATH,
+			DiagnosticOutput = true,
+			ArgumentCustomization = args => args.Append("run xharness apple simulators reset-simulator " +
+				$"--output-directory=\"{logDirectory}\" " +
+				$"--target=\"{version}\" " +
 				$"--verbosity=\"Debug\" ")
 		});
 }

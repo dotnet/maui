@@ -1,4 +1,4 @@
-﻿#nullable enable
+﻿
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Clear(this UIImageView imageView)
 		{
+			// stop the animation if there is one
+			imageView.StopAnimating();
+			imageView.AnimationImages = null;
 			imageView.Image = null;
 		}
 
@@ -35,12 +38,14 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: This method does not appear to be used, should we obsolete in net9?
 		public static void UpdateSource(this UIImageView imageView, UIImage? uIImage, IImageSourcePart image)
 		{
 			imageView.Image = uIImage;
 			imageView.UpdateIsAnimationPlaying(image);
 		}
 
+		// TODO: This method does not appear to be used, should we obsolete in net9?
 		public static Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(
 			this UIImageView imageView,
 			IImageSourcePart image,
