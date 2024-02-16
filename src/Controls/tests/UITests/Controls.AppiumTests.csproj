@@ -6,7 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <SingleProject>true</SingleProject>
-    <DefineConstants Condition=" '$(_UseNativeAot)' == 'true' ">$(DefineConstants);NATIVE_AOT</DefineConstants>
   </PropertyGroup>
 
    <PropertyGroup>

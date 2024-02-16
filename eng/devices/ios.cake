@@ -310,12 +310,16 @@ Task("uitest")
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
+	var uiTestDefines = "IOSUITEST";
+
+	if (USE_NATIVE_AOT)
+		uiTestDefines = $"{uiTestDefines}%3BNATIVE_AOT";
+
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			ToolPath = DOTNET_TOOL_PATH,
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
-				.Append("/p:ExtraDefineConstants=IOSUITEST")
-				.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
+				.Append($"/p:ExtraDefineConstants={uiTestDefines}")
 				.Append("/bl:" + binlog)
 				.Append("/tl")
 			

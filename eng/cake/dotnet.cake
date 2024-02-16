@@ -194,7 +194,7 @@ Task("dotnet-samples")
             projectsToBuild = "./Microsoft.Maui.Samples.slnf";
         }
 
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, maxCpuCount: 1, binlogPrefix: "sample-");
+        RunMSBuildWithDotNet(projectsToBuild, properties, maxCpuCount: 1, binlogPrefix: "sample-");
     });
 
 Task("dotnet-legacy-controlgallery")
