@@ -1,9 +1,9 @@
 using CoreGraphics;
 using UIKit;
 
-namespace Microsoft.Maui.Platform;
+namespace Microsoft.Maui.Controls.Handlers.Items;
 
-public class MauiCollectionView : UICollectionView
+internal class MauiCollectionView : UICollectionView
 {
 	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
 	{
