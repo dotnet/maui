@@ -279,13 +279,15 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
-				if (oldvalue != null)
-					(bindable as VisualElement)?.StopNotifyingBackgroundChanges();
+				if (oldvalue == null) return;
+
+				(bindable as VisualElement)?.StopNotifyingBackgroundChanges();
 			},
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				if (newvalue != null)
-					(bindable as VisualElement)?.NotifyBackgroundChanges();
+				if (newvalue == null) return;
+
+				(bindable as VisualElement)?.NotifyBackgroundChanges();
 			});
 
 		WeakBackgroundChangedProxy _backgroundProxy;
@@ -316,6 +318,9 @@ namespace Microsoft.Maui.Controls
 				_backgroundChanged ??= (sender, e) => OnPropertyChanged(nameof(Background));
 				_backgroundProxy ??= new();
 				_backgroundProxy.Subscribe(background, _backgroundChanged);
+							
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(background.OnParentResourcesChanged);
 			}
 		}
 
@@ -327,6 +332,8 @@ namespace Microsoft.Maui.Controls
 
 			if (background != null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(background.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(background, null);
 				_backgroundProxy?.Unsubscribe();
 			}
