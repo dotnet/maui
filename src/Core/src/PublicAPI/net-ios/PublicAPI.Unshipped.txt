@@ -41,8 +41,6 @@ Microsoft.Maui.Platform.IImageSourcePartSetter.ImageSourcePart.get -> Microsoft.
 Microsoft.Maui.Platform.IImageSourcePartSetter.SetImageSource(UIKit.UIImage? platformImage) -> void
 Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Platform.IImageSourcePartSetter! setter) -> void
 Microsoft.Maui.Platform.KeyboardAutoManagerScroll
-Microsoft.Maui.Platform.MauiCollectionView
-Microsoft.Maui.Platform.MauiCollectionView.MauiCollectionView(CoreGraphics.CGRect frame, UIKit.UICollectionViewLayout! layout) -> void
 Microsoft.Maui.Platform.MauiImageView.MauiImageView(Microsoft.Maui.Handlers.IImageHandler! handler) -> void
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.set -> void
@@ -64,7 +62,6 @@ override Microsoft.Maui.Platform.ContentView.WillRemoveSubview(UIKit.UIView! uiv
 override Microsoft.Maui.Platform.MauiActivityIndicator.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiBoxView.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiCheckBox.MovedToWindow() -> void
-override Microsoft.Maui.Platform.MauiCollectionView.ScrollRectToVisible(CoreGraphics.CGRect rect, bool animated) -> void
 override Microsoft.Maui.Platform.MauiLabel.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiPageControl.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiRefreshView.Bounds.get -> CoreGraphics.CGRect
