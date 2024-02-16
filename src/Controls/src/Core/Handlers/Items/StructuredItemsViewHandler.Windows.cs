@@ -106,6 +106,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				Element.RemoveLogicalChild(_currentHeader);
 				_currentHeader = null;
+
+				// Make sure we cleanup the previous header since we no longer use a XAML converter
+				// to create/remove the WrapperControl
+				if (ListViewBase.Header is ViewToHandlerConverter.WrapperControl wrapper)
+				{
+					wrapper.CleanUp();
+				}
 			}
 
 			var header = ItemsView.Header;
@@ -154,6 +161,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				Element.RemoveLogicalChild(_currentFooter);
 				_currentFooter = null;
+
+				// Make sure we cleanup the previous header since we no longer use a XAML converter
+				// to create/remove the WrapperControl
+				if (ListViewBase.Footer is ViewToHandlerConverter.WrapperControl wrapper)
+				{
+					wrapper.CleanUp();
+				}
 			}
 
 			var footer = ItemsView.Footer;
