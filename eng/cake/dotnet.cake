@@ -217,13 +217,13 @@ Task("dotnet-test")
         var tests = new []
         {
             "**/Controls.Core.UnitTests.csproj",
-         //   "**/Controls.Core.Design.UnitTests.csproj",
+            "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
-         //   "**/Compatibility.Core.UnitTests.csproj",
+            "**/Compatibility.Core.UnitTests.csproj",
         };
 
         var success = true;
