@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 
@@ -43,14 +44,28 @@ public partial class Maui20616
         [Test]
         public void XDataTypeCanBeGeneric([Values(false, true)] bool useCompiledXaml)
         {
+            var page = new Maui20616(useCompiledXaml);
+
+            page.LabelA.BindingContext = new ViewModel20616<string> { Value = "ABC" };
+            Assert.AreEqual("ABC", page.LabelA.Text);
+
             if (useCompiledXaml)
             {
-                MockCompiler.Compile(typeof(Maui20616));
+                var binding = page.LabelA.GetContext(Label.TextProperty).Bindings.Values.Single();
+                Assert.That(binding, Is.TypeOf<TypedBinding<ViewModel20616<string>, string>>());
             }
-            else
+
+            page.LabelB.BindingContext = new ViewModel20616<ViewModel20616<bool>> { Value = new ViewModel20616<bool> { Value = true } };
+            Assert.AreEqual("True", page.LabelB.Text);
+
+            if (useCompiledXaml)
             {
-                new Maui20616(useCompiledXaml: false);
+                var binding = page.LabelB.GetContext(Label.TextProperty).Bindings.Values.Single();
+                Assert.That(binding, Is.TypeOf<TypedBinding<ViewModel20616<ViewModel20616<bool>>, bool>>());
             }
+
+            Assert.AreEqual(typeof(ViewModel20616<bool>), page.Resources["ViewModelBool"]);
+            Assert.AreEqual(typeof(ViewModel20616<ViewModel20616<string>>), page.Resources["NestedViewModel"]);
         }
     }
 }
