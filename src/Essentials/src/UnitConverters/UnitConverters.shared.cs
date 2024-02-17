@@ -236,8 +236,10 @@ namespace Microsoft.Maui.Media
 		public static double CoordinatesToMiles(double lat1, double lon1, double lat2, double lon2) =>
 			KilometersToMiles(CoordinatesToKilometers(lat1, lon1, lat2, lon2));
 
+		public static Func<double, double, double, double, double> CoordinatesToKilometersAlgorithm = CoordinatesToKilometersHaversine;
+
 		/// <summary>
-		/// Calculates the distance between two coordinates in kilometers.
+		/// Calculates the distance between two coordinates in kilometers
 		/// </summary>
 		/// <param name="lat1">First latitude.</param>
 		/// <param name="lon1">First longitude.</param>
@@ -245,6 +247,21 @@ namespace Microsoft.Maui.Media
 		/// <param name="lon2">Second longitude.</param>
 		/// <returns>The distance in kilometers.</returns>
 		public static double CoordinatesToKilometers(double lat1, double lon1, double lat2, double lon2)
+		{
+			return CoordinatesToKilometersAlgorithm(lat1, lon1, lat2, lon2);
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Spherical Haversine optimized model
+		/// Usage: general purpose - tradeoff between accuracy and preformance
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersSphericalHaversine(double lat1, double lon1, double lat2, double lon2)
 		{
 			if (lat1 == lat2 && lon1 == lon2)
 				return 0;
@@ -262,6 +279,159 @@ namespace Microsoft.Maui.Media
 			var c = 2 * Math.Asin(Math.Sqrt(a));
 
 			return meanEarthRadiusInKilometers * c;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Euclidian Planar (Flat Earth) with converging meridians model - Pytagora's algorithm
+		///	Usage: small displacements - performance optimized
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersEuclidianPlanarConvergingMeridiansPytagora (double lat1, double lon1, double lat2, double lon2)
+		{
+			double delta_phi_lat    = DegreesToRadians(lat2 - lat1);
+			double delta_lmb_lon    = DegreesToRadians(lon2 - lon1);
+			double mean_phi_lat     = DegreesToRadians((lat1 + lat2) * 0.5);
+
+			double cos_mean_phi_lat = Math.Cos(mean_phi_lat);
+
+			double D = 
+						meanEarthRadiusInKilometers
+						*
+						Math.Sqrt
+							(
+								delta_phi_lat * delta_phi_lat
+								+ 
+								delta_lmb_lon * cos_mean_phi_lat 
+								* 
+								delta_lmb_lon * cos_mean_phi_lat
+							);
+
+			return D;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Euclidian Planar (Flat Earth) FCC Algorithm
+		///	Usage: small displacements - performance optimized - suitable for mobile apps (tracking)
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersEuclidianPlanarFCC (double lat1, double lon1, double lat2, double lon2)
+		{
+			double lat = DegreesToRadians( ( lat1 + lat2 ) * 0.5 );
+			double delta_lat = ( lat1 - lat2 );
+			double delta_lon = ( lon1 - lon2 );
+
+			// Chebishev
+			double K1 = 111.13209 - 0.56605 * Math.Cos( 2 * lat) + 0.00120 * Math.Cos( 4 * lat);
+			double K2 = 111.41513 * Math.Cos( lat ) - 0.09455 * Math.Cos( 3 * lat ) + 0.00012 * Math.Cos( 5 * lat );
+			double d = 
+						Math.Sqrt
+							(
+								// Pow 2x slower 23.322 ns  vs 46.795 ns
+								// Math.Pow( K1 * ( lat1 - lat2 ), 2 )                                        
+								K1 * delta_lat * K1 * delta_lat
+								+ 
+								// Pow 2x slower
+								// Math.Pow( K2 * ( lon1 - lon2 ), 2 )
+								K2 * delta_lon * K2 * delta_lon
+							);
+
+			return d /  1000.0;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Spherical Equirectangular Pytagora's Algorithm
+		///	Usage: general purpose
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersSphericalEquirectangularPytagoras (double lat1, double lon1, double lat2, double lon2)
+		{
+			double lat1_r = DegreesToRadians( lat1 ); // φ, λ in radians
+			double lat2_r = DegreesToRadians( lat2 );
+			// double λ1 = lon1; 
+			// double λ2 = lon2;
+			//double Δφ = DegreesToRadians( (lat2-lat1) );
+			//double Δλ = DegreesToRadians( (lon2-lon1) );
+
+			double x = 
+						DegreesToRadians( lon2 - lon1 ) 
+						* 
+						Math.Cos( ( lat1_r + lat2_r ) * 0.5 )
+						;
+			double y =  DegreesToRadians( lat2 - lat1 );
+			double d = Math.Sqrt( x * x + y * y ) * meanEarthRadiusInKilometers;
+
+			return d;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Spherical Great Circle 
+		///	Usage: general purpose
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersSphericalGreatCircle (double lat1, double lon1, double lat2, double lon2)
+		{
+			double lat1_r = Radian.FromDegrees(lat1);
+			double lat2_r = Radian.FromDegrees(lat2);
+			double lat_r = Radian.FromDegrees(lat1 -lat2);
+			double lon_r = Radian.FromDegrees(lon1 -lon2);
+
+			double a = lon_r * Math.Cos( (lat1_r + lat2_r) * 0.5 );
+			double central_angle = Math.Sqrt( a * a + lat_r * lat_r);
+
+			double d = meanEarthRadiusInKilometers * central_angle;
+
+			return d;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Spherical Law of Cosines 
+		///	Usage: general purpose
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersSphericalLawOfCosines (double lat1, double lon1, double lat2, double lon2)
+		{
+			double lat1_r = Radian.FromDegrees( lat1 );
+			double lat2_r = Radian.FromDegrees( lat2 );
+			double delta_lon_r = Radian.FromDegrees( (lon2 - lon1) );
+			double d =
+						Math.Acos
+								(
+									Math.Sin(lat1_r) * Math.Sin(lat2_r)
+									+
+									Math.Cos(lat1_r) * Math.Cos(lat2_r) 
+									* 
+									Math.Cos(delta_lon_r)
+								)
+								*
+								meanEarthRadiusInKilometers
+								;
+
+			return d;
 		}
 
 		/// <summary>
