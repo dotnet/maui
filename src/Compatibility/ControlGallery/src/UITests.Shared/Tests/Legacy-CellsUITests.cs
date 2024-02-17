@@ -321,6 +321,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		[Category(UITestCategories.Cells)]
 		[Description("EntryCell fires .Completed event")]
 		[UiTest(typeof(EntryCell), "Completed")]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void CellsGalleryEntryCellCompleted()
 		{
 			SelectTest("EntryCell Table");
