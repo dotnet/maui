@@ -287,6 +287,344 @@ namespace Microsoft.Maui.Media
 		}
 
 		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Euclidian Planar (Flat Earth) with converging meridians model - Pytagora's algorithm
+		///	Usage: small displacements - performance optimized
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersEuclidianPlanarConvergingMeridiansPytagora (double lat1, double lon1, double lat2, double lon2)
+		{
+			double delta_phi_lat    = DegreesToRadians(lat2 - lat1);
+			double delta_lmb_lon    = DegreesToRadians(lon2 - lon1);
+			double mean_phi_lat     = DegreesToRadians((lat1 + lat2) * 0.5);
+
+			double cos_mean_phi_lat = Math.Cos(mean_phi_lat);
+
+			double D = 
+						meanEarthRadiusInKilometers
+						*
+						Math.Sqrt
+							(
+								delta_phi_lat * delta_phi_lat
+								+ 
+								delta_lmb_lon * cos_mean_phi_lat 
+								* 
+								delta_lmb_lon * cos_mean_phi_lat
+							);
+
+			return D;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Euclidian Planar (Flat Earth) FCC Algorithm
+		///	Usage: small displacements - performance optimized - suitable for mobile apps (tracking)
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersEuclidianPlanarFCC (double lat1, double lon1, double lat2, double lon2)
+		{
+			double lat = DegreesToRadians( ( lat1 + lat2 ) * 0.5 );
+			double delta_lat = ( lat1 - lat2 );
+			double delta_lon = ( lon1 - lon2 );
+
+			// Chebishev
+			double K1 = 111.13209 - 0.56605 * Math.Cos( 2 * lat) + 0.00120 * Math.Cos( 4 * lat);
+			double K2 = 111.41513 * Math.Cos( lat ) - 0.09455 * Math.Cos( 3 * lat ) + 0.00012 * Math.Cos( 5 * lat );
+			double d = 
+						Math.Sqrt
+							(
+								// Pow 2x slower 23.322 ns  vs 46.795 ns
+								// Math.Pow( K1 * ( lat1 - lat2 ), 2 )                                        
+								K1 * delta_lat * K1 * delta_lat
+								+ 
+								// Pow 2x slower
+								// Math.Pow( K2 * ( lon1 - lon2 ), 2 )
+								K2 * delta_lon * K2 * delta_lon
+							);
+
+			return d /  1000.0;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Spherical Equirectangular Pytagora's Algorithm
+		///	Usage: general purpose
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersSphericalEquirectangularPytagoras (double lat1, double lon1, double lat2, double lon2)
+		{
+			double lat1_r = DegreesToRadians( lat1 ); // φ, λ in radians
+			double lat2_r = DegreesToRadians( lat2 );
+			// double λ1 = lon1; 
+			// double λ2 = lon2;
+			//double Δφ = DegreesToRadians( (lat2-lat1) );
+			//double Δλ = DegreesToRadians( (lon2-lon1) );
+
+			double x = 
+						DegreesToRadians( lon2 - lon1 ) 
+						* 
+						Math.Cos( ( lat1_r + lat2_r ) * 0.5 )
+						;
+			double y =  DegreesToRadians( lat2 - lat1 );
+			double d = Math.Sqrt( x * x + y * y ) * meanEarthRadiusInKilometers;
+
+			return d;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Spherical Great Circle 
+		///	Usage: general purpose
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersSphericalGreatCircle (double lat1, double lon1, double lat2, double lon2)
+		{
+			double lat1_r = DegreesToRadians(lat1);
+			double lat2_r = DegreesToRadians(lat2);
+			double lat_r = DegreesToRadians(lat1 -lat2);
+			double lon_r = DegreesToRadians(lon1 -lon2);
+
+			double a = lon_r * Math.Cos( (lat1_r + lat2_r) * 0.5 );
+			double central_angle = Math.Sqrt( a * a + lat_r * lat_r);
+
+			double d = meanEarthRadiusInKilometers * central_angle;
+
+			return d;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Spherical Law of Cosines 
+		///	Usage: general purpose
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersSphericalLawOfCosines (double lat1, double lon1, double lat2, double lon2)
+		{
+			double lat1_r = DegreesToRadians( lat1 );
+			double lat2_r = DegreesToRadians( lat2 );
+			double delta_lon_r = DegreesToRadians( (lon2 - lon1) );
+			double d =
+						Math.Acos
+								(
+									Math.Sin(lat1_r) * Math.Sin(lat2_r)
+									+
+									Math.Cos(lat1_r) * Math.Cos(lat2_r) 
+									* 
+									Math.Cos(delta_lon_r)
+								)
+								*
+								meanEarthRadiusInKilometers
+								;
+
+			return d;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Spherical Law of Cosines 
+		///	Usage: general purpose
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersEllipsoidalVincenty (double lat1, double lon1, double lat2, double lon2)
+		{
+			double lat1rad             = DegreesToRadians(lat1);
+			double lat2rad             = DegreesToRadians(lat2);
+			double lon1rad             = DegreesToRadians(lon1);
+			double lon2rad             = DegreesToRadians(lon2);
+
+			double dlat = lat2rad - lat1rad;
+			double dlon = lon2rad - lon1rad;
+
+			double a =
+						Math.Sin(dlat / 2) * Math.Sin(dlat / 2)
+						+
+						Math.Cos(lat1rad) * Math.Cos(lat2rad) * Math.Sin(dlon / 2) * Math.Sin(dlon / 2)
+						;
+			double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+			// Calculate the ellipsoid parameters
+			double b = 
+						(1 - flatteningEarthRadius) 
+						* 
+						// Earth.Radius.Average             // semi-minor axis of the Earth's ellipsoid
+															// error in article using 6371 which is average radius
+															// 
+						equatorialEarthRadiusInKilometers
+						;
+			double d = c * b;
+
+			return d;
+		}
+
+		/// <summary>
+		/// Calculates the distance between two coordinates in kilometers
+		///	Spherical Law of Cosines 
+		///	Usage: general purpose
+		/// </summary>
+		/// <param name="lat1">First latitude.</param>
+		/// <param name="lon1">First longitude.</param>
+		/// <param name="lat2">Second latitude.</param>
+		/// <param name="lon2">Second longitude.</param>
+		/// <param name="maxIterations">Maximal number of iterations.</param>
+		/// <param name="tolerance">Tolerance for the algorithm</param>
+		/// <returns>The distance in kilometers.</returns>
+		public static double CoordinatesToKilometersEllipsoidalVincentyIterative (double lat1, double lon1, double lat2, double lon2, int maxIterations = 200, double tolerance = 10e-12)
+		{
+                    double a = equatorialEarthRadiusInKilometers;
+                    double f = flatteningEarthRadius;
+                    double b = (1 - f) * a;
+                    
+                    double phi_1 = lat1;
+                    double L_1 = lon1;
+                    double phi_2 = lat2;
+                    double L_2 = lon2;
+
+                    double u_1 = Math.Atan((1 - f) * Math.Tan(DegreesToRadians(phi_1)));
+                    double u_2 = Math.Atan((1 - f) * Math.Tan(DegreesToRadians(phi_2)));
+
+                    double L = DegreesToRadians(L_2 - L_1);
+
+                    double sin_u1 = Math.Sin(u_1);
+                    double cos_u1 = Math.Cos(u_1);
+                    double sin_u2 = Math.Sin(u_2);
+                    double cos_u2 = Math.Cos(u_2);
+
+                    double Lambda = L;                  // # set initial value of lambda to L
+
+                    double cos_sigma = 0;
+                    double cos_sq_alpha = 0;
+                    double sigma = 0;
+                    double sin_sigma = 0;
+                    double cos2_sigma_m = 0;
+                    
+                    int iterations = 0;
+                    while (iterations < maxIterations)
+                    {
+                        iterations++;
+
+                        double cos_lambda = Math.Cos(Lambda);
+                        double sin_lambda = Math.Sin(Lambda);
+                        sin_sigma = Math.Sqrt
+                                            (
+                                                (cos_u2 * Math.Sin(Lambda)) 
+                                                * 
+                                                (cos_u2 * Math.Sin(Lambda)) 
+                                                +
+                                                (cos_u1 * sin_u2 - sin_u1 * cos_u2 * cos_lambda) 
+                                                * 
+                                                (cos_u1 * sin_u2 - sin_u1 * cos_u2 * cos_lambda)
+                                            );
+                        cos_sigma = sin_u1 * sin_u2 + cos_u1 * cos_u2 * cos_lambda;
+                        sigma = Math.Atan2(sin_sigma, cos_sigma);
+                        double sin_alpha = (cos_u1 * cos_u2 * sin_lambda) / sin_sigma;
+                        cos_sq_alpha = 1 - sin_alpha * sin_alpha;
+                        cos2_sigma_m = cos_sigma - ((2 * sin_u1 * sin_u2) / cos_sq_alpha);
+                        double C = 
+                                    (flatteningEarthRadius / 16) 
+                                    * 
+                                    cos_sq_alpha 
+                                    * 
+                                    (4 + flatteningEarthRadius * (4 - 3 * cos_sq_alpha))
+                                    ;
+                        double Lambda_prev = Lambda;
+                        Lambda = 
+                                    L 
+                                    + 
+                                    (1 - C) * flatteningEarthRadius * sin_alpha 
+                                    *
+                                    (
+                                        sigma 
+                                        + 
+                                        C * sin_sigma 
+                                        * 
+                                        (
+                                            cos2_sigma_m 
+                                            + 
+                                            C * cos_sigma * (-1 + 2 * cos2_sigma_m * cos2_sigma_m)
+                                        )
+                                    );
+
+                        // successful convergence
+                        double diff = Math.Abs(Lambda_prev - Lambda);
+                        if (diff <= tolerance)
+                        {
+                            break;
+                        }
+                    }
+
+                    double b_squared = b * b;
+                    double u_sq = cos_sq_alpha * ((a * a - b_squared) / b_squared);
+                    double A =
+                                1
+                                +
+                                (u_sq / 16384)
+                                * 
+                                (
+                                    4096 
+                                    + 
+                                    u_sq 
+                                    *
+                                    (
+                                        -768 + u_sq * (320 - 175 * u_sq)
+                                    )
+                                );
+                    double B =
+                                (u_sq / 1024)
+                                * 
+                                (
+                                    256 
+                                    + 
+                                    u_sq * (-128 + u_sq * (74 - 47 * u_sq))
+                                );
+                    double delta_sig =
+                                        B * sin_sigma 
+                                        * 
+                                        (
+                                            cos2_sigma_m 
+                                            + 
+                                            0.25 * B 
+                                            * 
+                                            (
+                                                cos_sigma * (-1 + 2 * cos2_sigma_m * cos2_sigma_m) 
+                                                -
+                                                (1 / 6) * B 
+                                                * 
+                                                cos2_sigma_m * (-3 + 4 * sin_sigma * sin_sigma) 
+                                                *
+                                                (-3 + 4 * cos2_sigma_m * cos2_sigma_m)
+                                            )
+                                        );
+
+                    double distance = b * A * (sigma - delta_sig);
+
+                    return distance;
+		}
+
+		/// <summary>
 		/// International survey foot defined as exactly 0.3048 meters by convention in 1959. This is the most common modern foot measure.
 		/// </summary>
 		public static double MetersToInternationalFeet(double meters) =>
