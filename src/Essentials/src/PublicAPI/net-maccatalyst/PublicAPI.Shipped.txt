@@ -1222,6 +1222,13 @@ static Microsoft.Maui.Media.UnitConverters.CelsiusToKelvin(double celsius) -> do
 static Microsoft.Maui.Media.UnitConverters.CoordinatesToKilometers(double lat1, double lon1, double lat2, double lon2) -> double
 static Microsoft.Maui.Media.UnitConverters.CoordinatesToKilometersAlgorithm -> System.Func<double, double, double, double, double>
 static Microsoft.Maui.Media.UnitConverters.CoordinatesToKilometersSphericalHaversine(double lat1, double lon1, double lat2, double lon2) -> double
+static Microsoft.Maui.Media.UnitConverters.CoordinatesToKilometersEuclidianPlanarConvergingMeridiansPytagora(double lat1, double lon1, double lat2, double lon2) -> double
+static Microsoft.Maui.Media.UnitConverters.CoordinatesToKilometersEuclidianPlanarFCC(double lat1, double lon1, double lat2, double lon2) -> double
+static Microsoft.Maui.Media.UnitConverters.CoordinatesToKilometersSphericalEquirectangularPytagoras(double lat1, double lon1, double lat2, double lon2) -> double
+static Microsoft.Maui.Media.UnitConverters.CoordinatesToKilometersSphericalGreatCircle(double lat1, double lon1, double lat2, double lon2) -> double
+static Microsoft.Maui.Media.UnitConverters.CoordinatesToKilometersSphericalLawOfCosines(double lat1, double lon1, double lat2, double lon2) -> double
+static Microsoft.Maui.Media.UnitConverters.CoordinatesToKilometersEllipsoidalVincenty(double lat1, double lon1, double lat2, double lon2) -> double
+static Microsoft.Maui.Media.UnitConverters.CoordinatesToKilometersEllipsoidalVincentyIterative(double lat1, double lon1, double lat2, double lon2, int maxIterations, double tolerance) -> double
 static Microsoft.Maui.Media.UnitConverters.CoordinatesToMiles(double lat1, double lon1, double lat2, double lon2) -> double
 static Microsoft.Maui.Media.UnitConverters.DegreesPerSecondToHertz(double degrees) -> double
 static Microsoft.Maui.Media.UnitConverters.DegreesPerSecondToRadiansPerSecond(double degrees) -> double
