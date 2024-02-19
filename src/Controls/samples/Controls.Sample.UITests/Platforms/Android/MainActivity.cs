@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Content.PM;
+using Android.Runtime;
 using Microsoft.Maui;
 
 namespace Maui.Controls.Sample.Platform
