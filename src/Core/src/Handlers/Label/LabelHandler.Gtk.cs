@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 
 				// SharedTextLayout.LineBreakMode = virtualView.LineBreakMode.GetLineBreakMode();
 
-				var heightForWidth = !heightConstrained;
+				var heightForWidth = nativeView.RequestMode == SizeRequestMode.HeightForWidth;
 
 				var constraint = Math.Max(heightForWidth ? widthConstraint - hMargin : heightConstraint - vMargin,
 					1);
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Handlers
 					layout.Width = Math.Max((widthConstraint - hMargin).ScaledToPango(), -1);
 				}
 
-				(width, height) = layout.GetPixelSize(nativeView.Text, constraint, heightForWidth);
+				(width, height) = layout.GetPixelSize(nativeView.Text, constraint, nativeView.RequestMode == SizeRequestMode.HeightForWidth);
 
 				if (lh > 0)
 				{

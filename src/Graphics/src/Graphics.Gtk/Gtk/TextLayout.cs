@@ -18,6 +18,7 @@ public class TextLayout : IDisposable {
 
 		_context = context;
 	}
+	public TextLayout() { }
 
 	public Context Context => _context;
 

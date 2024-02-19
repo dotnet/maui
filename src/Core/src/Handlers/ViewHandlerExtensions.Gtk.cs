@@ -57,7 +57,7 @@ namespace Microsoft.Maui
 			double? explicitWidth = (virtualView.Width >= 0) ? virtualView.Width : null;
 			double? explicitHeight = (virtualView.Height >= 0) ? virtualView.Height : null;
 
-			Size measured = platformView.GetDesiredSize(widthConstraint, heightConstraint);
+			Size measured = platformView.GetDesiredSize(widthConstraint, heightConstraint).Minimum;
 			return new Size(explicitWidth ?? measured.Width, explicitHeight ?? measured.Height);
 		}
 

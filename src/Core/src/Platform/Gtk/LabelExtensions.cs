@@ -169,11 +169,15 @@ namespace Microsoft.Maui
 			nativeLabel.Justify = label.HorizontalTextAlignment.ToJustification();
 			nativeLabel.Xalign = label.HorizontalTextAlignment.ToXyAlign();
 
+			if (nativeLabel is LabelView labelView)
+				labelView.HorizontalTextAlignment = label.HorizontalTextAlignment;
 		}
 
 		public static void UpdateVerticalTextAlignment(this Label nativeLabel, ILabel label)
 		{
 			nativeLabel.Yalign = label.VerticalTextAlignment.ToXyAlign();
+			if (nativeLabel is LabelView labelView)
+				labelView.VerticalTextAlignment = label.VerticalTextAlignment;
 		}
 
 	}

@@ -50,6 +50,14 @@ namespace Microsoft.Maui
 			int naturalHeight = 0;
 			int minimumWidth = 0;
 			int naturalWidth = 0;
+#pragma warning disable CS0162 // Unreachable code detected
+
+			if (false)
+			{
+				nativeView.GetSizeRequest(out var w, out var h);
+
+				return new SizeRequest(new Size(w, h));
+			}
 
 			if (nativeView.RequestMode == SizeRequestMode.WidthForHeight)
 			{
@@ -106,6 +114,7 @@ namespace Microsoft.Maui
 
 
 			return new SizeRequest(new Size(naturalWidth, naturalHeight), new Size(minimumWidth, minimumHeight));
+#pragma warning restore CS0162 // Unreachable code detected
 		}
 
 		public static void Arrange(this Widget? nativeView, Rect rect)
