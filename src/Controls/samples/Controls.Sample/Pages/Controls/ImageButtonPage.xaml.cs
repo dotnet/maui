@@ -33,6 +33,12 @@ namespace Maui.Controls.Sample.Pages
 			ResizeImageButton.HeightRequest = 100;
 			ResizeImageButton.WidthRequest = 100;
 		}
+
+		void UseOnlineSource_Clicked(object sender, EventArgs e)
+		{
+			AnimatedGifImage.Source =
+				ImageSource.FromUri(new Uri("https://news.microsoft.com/wp-content/uploads/prod/2022/07/hexagon_print.gif"));
+		}
 	}
 
 	public class ImageButtonPageViewModel : BindableObject

@@ -17,12 +17,12 @@ namespace Microsoft.Maui.Hosting
 				DispatcherProvider.Current);
 
 			// register a fallback dispatcher when the service provider does not support keyed services
-			builder.Services.TryAddSingleton<ApplicationDispatcher>((svc) => new ApplicationDispatcher(GetDispatcher(svc)));
+			builder.Services.TryAddSingleton<ApplicationDispatcher>((svc) => new ApplicationDispatcher(GetDispatcher(svc, false)));
 			// register the initializer so we can init the dispatcher in the app thread for the app
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IMauiInitializeService, ApplicationDispatcherInitializer>());
 
 			// register the Dispatcher as a scoped service as there may be different dispatchers per window
-			builder.Services.TryAddScoped<IDispatcher>((svc) => GetDispatcher(svc));
+			builder.Services.TryAddScoped<IDispatcher>((svc) => GetDispatcher(svc, true));
 			// register the initializer so we can init the dispatcher in the window thread for that window
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Scoped<IMauiInitializeScopedService, DispatcherInitializer>());
 
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Hosting
 			return provider.GetService<ApplicationDispatcher>()?.Dispatcher;
 		}
 
-		static IDispatcher GetDispatcher(IServiceProvider services)
+		static IDispatcher GetDispatcher(IServiceProvider services, bool fallBackToApplicationDispatcher)
 		{
 			var provider = services.GetRequiredService<IDispatcherProvider>();
 			if (DispatcherProvider.SetCurrent(provider))
@@ -65,7 +65,12 @@ namespace Microsoft.Maui.Hosting
 				services.CreateLogger<Dispatcher>()?.LogWarning("Replaced an existing DispatcherProvider with one from the service provider.");
 			}
 
-			return Dispatcher.GetForCurrentThread()!;
+			var result = Dispatcher.GetForCurrentThread();
+			
+			if (fallBackToApplicationDispatcher && result is null)
+				result = services.GetRequiredService<ApplicationDispatcher>().Dispatcher;
+
+			return result!;
 		}
 
 		class ApplicationDispatcherInitializer : IMauiInitializeService

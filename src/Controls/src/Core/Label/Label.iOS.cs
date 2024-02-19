@@ -1,11 +1,22 @@
 #nullable disable
 using System;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
+using UIKit;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Label
 	{
+		protected override Size ArrangeOverride(Rect bounds)
+		{
+			var size = base.ArrangeOverride(bounds);
+
+			RecalculateSpanPositions();
+
+			return size;
+		}
+
 		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
 
 		public static void MapText(ILabelHandler handler, Label label)
@@ -38,6 +49,17 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			LabelHandler.MapFormatting(handler, label);
+		}
+
+		void RecalculateSpanPositions()
+		{
+			if (Handler is LabelHandler labelHandler)
+			{
+				if (labelHandler.PlatformView is not UILabel platformView || labelHandler.VirtualView is not Label virtualView)
+					return;
+
+				platformView.RecalculateSpanPositions(virtualView);
+			}
 		}
 	}
 }
