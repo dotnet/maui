@@ -54,7 +54,6 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			// TODO: Obsolete, need changes.
 #pragma warning disable CS0618 // Type or member is obsolete
 			_app.Driver.LaunchApp();
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -96,8 +95,8 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			// TODO: Reset no longer exists.
-			//_app.Driver.ResetApp();
+			_app.Driver.TerminateApp(_app.GetAppId());
+			_app.Driver.ActivateApp(_app.GetAppId());
 
 			return CommandResponse.SuccessEmptyResponse;
 		}

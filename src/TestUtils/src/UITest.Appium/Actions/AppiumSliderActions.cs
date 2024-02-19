@@ -1,5 +1,7 @@
 ﻿using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.Interactions;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -75,17 +77,15 @@ namespace UITest.Appium
 			int x = position.X;
 			int y = position.Y;
 
-			double moveToX = (x + size.Width) * value / maximum;
+			int moveToX = (int)((x + size.Width) * value / maximum);
 
-			// TODO: Obsolete, need changes.
-#pragma warning disable CS0618 // Type or member is obsolete
-			TouchAction touchAction = new TouchAction(driver);
-#pragma warning restore CS0618 // Type or member is obsolete
-			touchAction
-				.Press(x, y)
-				.MoveTo(moveToX, y)
-				.Release()
-				.Perform();
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+			var touchSequence = new ActionSequence(touchDevice, 0);
+			touchSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, y, TimeSpan.Zero));
+			touchSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+			touchSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, moveToX, y, TimeSpan.Zero));
+			touchSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+			driver.PerformActions([touchSequence]);
 		}
 	}
 }
