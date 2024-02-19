@@ -180,8 +180,65 @@ namespace Tests
 		[InlineData(45.80721, 15.96757, 19.432608, -99.133209, 10264.4796)] // zagreb -> mexico city
 		[InlineData(43.623409, -79.368683, 42.35866, -71.05674, 690.2032)] // toronto -> boston, ma
 		[InlineData(37.720134, -122.182552, 37.720266, -122.181969, .0533)]
+		[InlineData(45.76087009225421, 16.005469744473892, 45.76103944060098, 16.00473213700773, 60.23923912057531)] // moljac's/mel's (zagreb) Mom's to neighbors 60 m
+		[InlineData(45.7610525393467, 16.00470531491805, 45.761106805546284, 16.004720067067375, 6.14169687264418)] // moljac's/mel's (zagreb) van length 5.99 m
+		[InlineData(45.761023067164665, 16.00474018363232, 45.761009968412004, 16.00479449836392, 4.45813672297928)] // moljac's/mel's (zagreb) Mom's car 
 		public void CoordinatesToKilometers(double lat1, double lon1, double lat2, double lon2, double distance)
 		{
+			Assert.Equal(distance, UnitConverters.CoordinatesToKilometers(lat1, lon1, lat2, lon2), 4);
+			var location1 = new Location(lat1, lon1);
+			var location2 = new Location(lat2, lon2);
+			Assert.Equal(distance, Location.CalculateDistance(location1, location2, DistanceUnits.Kilometers), 4);
+			Assert.Equal(distance, Location.CalculateDistance(location2, location1, DistanceUnits.Kilometers), 4);
+			Assert.Equal(distance, location1.CalculateDistance(location2, DistanceUnits.Kilometers), 4);
+			Assert.Equal(distance, location2.CalculateDistance(location1, DistanceUnits.Kilometers), 4);
+			Assert.Equal(distance, LocationExtensions.CalculateDistance(location1, location2, DistanceUnits.Kilometers), 4);
+			Assert.Equal(distance, LocationExtensions.CalculateDistance(location2, location1, DistanceUnits.Kilometers), 4);
+		}
+
+		[Theory]
+		[InlineData(55.85781, -4.24253, 51.509865, -0.118092, 554.3128)] // glasgow -> london
+		[InlineData(36.12, -86.67, 33.94, -118.40, 2886.4444)] // nashville, tn -> los angeles, ca
+		[InlineData(51.509865, -0.118092, -33.92528, 18.42389, 9671.1251)] // london -> cape town
+		[InlineData(51.509865, -0.118092, 40.42028, -3.70577, 1263.4938)] // london -> madrid
+		[InlineData(42.93708, -75.6107, -33.92528, 18.42389, 12789.5628)] // new york -> cape town
+		[InlineData(45.80721, 15.96757, 19.432608, -99.133209, 10264.4796)] // zagreb -> mexico city
+		[InlineData(43.623409, -79.368683, 42.35866, -71.05674, 690.2032)] // toronto -> boston, ma
+		[InlineData(37.720134, -122.182552, 37.720266, -122.181969, .0533)]
+		[InlineData(45.76087009225421, 16.005469744473892, 45.76103944060098, 16.00473213700773, 60.23923912057531)] // moljac's/mel's (zagreb) Mom's to neighbors 60 m
+		[InlineData(45.7610525393467, 16.00470531491805, 45.761106805546284, 16.004720067067375, 6.14169687264418)] // moljac's/mel's (zagreb) van length 5.99 m
+		[InlineData(45.761023067164665, 16.00474018363232, 45.761009968412004, 16.00479449836392, 4.45813672297928)] // moljac's/mel's (zagreb) Mom's car 
+		public void CoordinatesToKilometersHaversine_AlgorithmType_Haversine(double lat1, double lon1, double lat2, double lon2, double distance)
+		{
+			UnitConverters.CoordinatesToKilometersAlgorithm = UnitConverters.CoordinatesToKilometersAlgorithmType.Haversine;
+
+			Assert.Equal(distance, UnitConverters.CoordinatesToKilometers(lat1, lon1, lat2, lon2), 4);
+			var location1 = new Location(lat1, lon1);
+			var location2 = new Location(lat2, lon2);
+			Assert.Equal(distance, Location.CalculateDistance(location1, location2, DistanceUnits.Kilometers), 4);
+			Assert.Equal(distance, Location.CalculateDistance(location2, location1, DistanceUnits.Kilometers), 4);
+			Assert.Equal(distance, location1.CalculateDistance(location2, DistanceUnits.Kilometers), 4);
+			Assert.Equal(distance, location2.CalculateDistance(location1, DistanceUnits.Kilometers), 4);
+			Assert.Equal(distance, LocationExtensions.CalculateDistance(location1, location2, DistanceUnits.Kilometers), 4);
+			Assert.Equal(distance, LocationExtensions.CalculateDistance(location2, location1, DistanceUnits.Kilometers), 4);
+		}
+
+		[Theory]
+		[InlineData(55.85781, -4.24253, 51.509865, -0.118092, 554.3128)] // glasgow -> london
+		[InlineData(36.12, -86.67, 33.94, -118.40, 2886.4444)] // nashville, tn -> los angeles, ca
+		[InlineData(51.509865, -0.118092, -33.92528, 18.42389, 9671.1251)] // london -> cape town
+		[InlineData(51.509865, -0.118092, 40.42028, -3.70577, 1263.4938)] // london -> madrid
+		[InlineData(42.93708, -75.6107, -33.92528, 18.42389, 12789.5628)] // new york -> cape town
+		[InlineData(45.80721, 15.96757, 19.432608, -99.133209, 10264.4796)] // zagreb -> mexico city
+		[InlineData(43.623409, -79.368683, 42.35866, -71.05674, 690.2032)] // toronto -> boston, ma
+		[InlineData(37.720134, -122.182552, 37.720266, -122.181969, .0533)]
+		[InlineData(45.76087009225421, 16.005469744473892, 45.76103944060098, 16.00473213700773, 60.23923912057531)] // moljac's/mel's (zagreb) Mom's to neighbors 60 m
+		[InlineData(45.7610525393467, 16.00470531491805, 45.761106805546284, 16.004720067067375, 6.14169687264418)] // moljac's/mel's (zagreb) van length 5.99 m
+		[InlineData(45.761023067164665, 16.00474018363232, 45.761009968412004, 16.00479449836392, 4.45813672297928)] // moljac's/mel's (zagreb) Mom's car 
+		public void CoordinatesToKilometersHaversine_AlgorithmType_Haversine(double lat1, double lon1, double lat2, double lon2, double distance)
+		{
+			UnitConverters.CoordinatesToKilometersAlgorithm = UnitConverters.CoordinatesToKilometersSphericalHaversine;
+
 			Assert.Equal(distance, UnitConverters.CoordinatesToKilometers(lat1, lon1, lat2, lon2), 4);
 			var location1 = new Location(lat1, lon1);
 			var location2 = new Location(lat2, lon2);
