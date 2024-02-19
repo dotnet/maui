@@ -106,9 +106,7 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			_app.Driver.CloseApp();
-#pragma warning restore CS0618 // Type or member is obsolete
+			_app.Driver.TerminateApp(_app.GetAppId());
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
