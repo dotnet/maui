@@ -73,7 +73,6 @@ jobs:
     demands:
       - macOS.Name -equals Ventura
       - macOS.Architecture -equals x64
-      - Agent.OSVersion -equals 13.5
   steps:
 
   - ${{ each step in parameters.prepareSteps }}:
