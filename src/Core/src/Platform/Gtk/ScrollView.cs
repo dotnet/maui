@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 		internal Func<Graphics.Rect, Graphics.Size>? CrossPlatformArrange { get; set; }
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 
-		protected  void OnAdjustSizeRequest_(Orientation orientation, out int minimum_size, out int natural_size)
+		protected   void _OnAdjustSizeRequest(Orientation orientation, out int minimum_size, out int natural_size)
 		{
 			base.OnAdjustSizeRequest(orientation, out minimum_size, out natural_size);
 

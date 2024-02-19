@@ -61,7 +61,12 @@ namespace Microsoft.Maui
 
 			if (nativeView.RequestMode == SizeRequestMode.WidthForHeight)
 			{
-				if (widthConstrained)
+				if ((heightConstrained) && (widthConstrained))
+				{
+					minimumWidth = naturalWidth = (int)widthConstraint;
+					minimumHeight = naturalHeight = (int)heightConstraint;
+				}
+				else if (widthConstrained)
 				{
 					nativeView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
 				}
@@ -69,11 +74,7 @@ namespace Microsoft.Maui
 				{
 					nativeView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
 				}
-				else if ((heightConstrained) && (widthConstrained))
-				{
-					minimumWidth = naturalWidth = (int)widthConstraint;
-					minimumHeight = naturalHeight = (int)heightConstraint;
-				}
+	
 				else
 				{
 					nativeView.GetPreferredHeight(out minimumHeight, out naturalHeight);
@@ -82,7 +83,12 @@ namespace Microsoft.Maui
 			}
 			else if (nativeView.RequestMode == Gtk.SizeRequestMode.HeightForWidth)
 			{
-				if (heightConstrained)
+				if ((heightConstrained) && (widthConstrained))
+				{
+					minimumWidth = naturalWidth = (int)widthConstraint;
+					minimumHeight = naturalHeight = (int)heightConstraint;
+				}
+				else if (heightConstrained)
 				{
 					nativeView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
 				}
@@ -90,11 +96,7 @@ namespace Microsoft.Maui
 				{
 					nativeView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
 				}
-				else if ((heightConstrained) && (widthConstrained))
-				{
-					minimumWidth = naturalWidth = (int)widthConstraint;
-					minimumHeight = naturalHeight = (int)heightConstraint;
-				}
+
 				else
 				{
 					nativeView.GetPreferredWidth(out minimumWidth, out naturalWidth);

@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		public  Size _GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (PlatformView is not { } nativeView)
 				return default;

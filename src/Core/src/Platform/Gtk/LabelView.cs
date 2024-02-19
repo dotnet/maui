@@ -14,17 +14,18 @@ namespace Microsoft.Maui.Platform
 
 		public float LineHeight { get; set; }
 
-		internal TextAlignment HorizontalTextAlignment { get; set; }
+		public TextAlignment HorizontalTextAlignment { get; set; }
 
-		internal TextAlignment VerticalTextAlignment { get; set; }
+		public TextAlignment VerticalTextAlignment { get; set; }
 
-		protected override void OnAdjustSizeRequest(Orientation orientation, out int minimum_size, out int natural_size)
+		public LineBreakMode LineBreakMode { get; set; } = LineBreakMode.TailTruncation;
+
+		protected  void _OnAdjustSizeRequest(Orientation orientation, out int minimum_size, out int natural_size)
 		{
 			if (LineHeight > 1)
 				Layout.LineSpacing = LineHeight;
 
 			base.OnAdjustSizeRequest(orientation, out minimum_size, out natural_size);
-
 			var wContraint = orientation == Orientation.Horizontal ? natural_size : double.PositiveInfinity;
 			var hContraint = orientation == Orientation.Vertical ? natural_size : double.PositiveInfinity;
 			var size = GetDesiredSize(wContraint, hContraint, this.RequestMode == SizeRequestMode.HeightForWidth);
@@ -41,6 +42,7 @@ namespace Microsoft.Maui.Platform
 			if (LineHeight > 1)
 				Layout.LineSpacing = LineHeight;
 
+			// GetDesiredSize(Allocation.Width, Allocation.Height, RequestMode == SizeRequestMode.HeightForWidth);
 			return base.OnDrawn(cr);
 		}
 
@@ -98,6 +100,10 @@ namespace Microsoft.Maui.Platform
 					lh = layout.GetLineHeigth(nativeView.Lines, false);
 					layout.Height = (int)lh;
 				}
+			}
+			else
+			{
+				layout.Height = Math.Max((heightConstraint - vMargin).ScaledToPango(), -1);
 			}
 
 			if (!heightForWidth && heightConstrained && widthConstrained)
