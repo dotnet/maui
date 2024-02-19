@@ -24,16 +24,12 @@ namespace Microsoft.Maui.AppiumTests
 					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
 					if (retries++ < SetupMaxRetries)
 					{
-						Reset();
+						ResetApp();
 					}
 					else
 					{
 						throw;
 					}
-				}
-				finally
-				{
-					ResetApp();
 				}
 			}
 		}

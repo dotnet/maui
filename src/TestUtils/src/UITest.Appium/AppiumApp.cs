@@ -113,6 +113,9 @@ namespace UITest.Appium
 			if (config.GetProperty<bool>("FullReset"))
 				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "true");
 
+			if (config.GetProperty<bool>("NoReset"))
+				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");
+
 			var appPath = config.GetProperty<string>("AppPath");
 			if (!string.IsNullOrEmpty(appPath))
 				appiumOptions.App = appPath;

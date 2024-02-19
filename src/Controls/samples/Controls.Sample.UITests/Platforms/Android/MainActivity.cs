@@ -11,6 +11,7 @@ namespace Maui.Controls.Sample.Platform
 	[IntentFilter(
 		new[] { Microsoft.Maui.ApplicationModel.Platform.Intent.ActionAppAction },
 		Categories = new[] { Android.Content.Intent.CategoryDefault })]
+	[Register("com.microsoft.maui.uitests.MainActivity")]
 	public class MainActivity : MauiAppCompatActivity
 	{
 	}

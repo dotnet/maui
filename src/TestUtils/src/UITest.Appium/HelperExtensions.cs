@@ -541,6 +541,26 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("back", ImmutableDictionary<string, object>.Empty);
 		}
 
+		/// <summary>
+		/// Return the AppId of the running app. This is used inside any appium command that want the app id
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static string GetAppId(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"GetAppId is only supported on AppiumApp");
+			}
+
+			var appId = aaa.Config.GetProperty<string>("AppId");
+			if (appId is not null)
+			{
+				return appId;
+			}
+
+			throw new InvalidOperationException("AppId not found");
+		}
+
 		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
