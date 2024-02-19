@@ -83,7 +83,7 @@ namespace UITest.Appium
 			var touchSequence = new ActionSequence(touchDevice, 0);
 			touchSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, y, TimeSpan.Zero));
 			touchSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			touchSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, moveToX, y, TimeSpan.Zero));
+			touchSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, moveToX, y, TimeSpan.FromMicroseconds(250)));
 			touchSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([touchSequence]);
 		}

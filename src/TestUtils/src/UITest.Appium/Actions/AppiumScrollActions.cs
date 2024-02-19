@@ -151,9 +151,9 @@ namespace UITest.Appium
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var scrollSequence = new ActionSequence(touchDevice, 0);
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
 			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.Zero));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
 			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([scrollSequence]);
 		}
@@ -171,9 +171,9 @@ namespace UITest.Appium
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var scrollSequence = new ActionSequence(touchDevice, 0);
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
 			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.Zero));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
 			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([scrollSequence]);
 		}
@@ -191,9 +191,9 @@ namespace UITest.Appium
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var scrollSequence = new ActionSequence(touchDevice, 0);
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
 			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.Zero));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
 			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([scrollSequence]);
 		}
@@ -211,9 +211,9 @@ namespace UITest.Appium
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var scrollSequence = new ActionSequence(touchDevice, 0);
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
 			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.Zero));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
 			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([scrollSequence]);
 		}

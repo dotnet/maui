@@ -94,9 +94,9 @@ namespace UITest.Appium
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var swipeSequence = new ActionSequence(touchDevice, 0);
-			swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.FromMilliseconds(swipeSpeed)));
+			swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
 			swipeSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.Zero));
+			swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(swipeSpeed)));
 			swipeSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([swipeSequence]);
 		}
@@ -114,9 +114,9 @@ namespace UITest.Appium
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var swipeSequence = new ActionSequence(touchDevice, 0);
-			swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.FromMilliseconds(swipeSpeed)));
+			swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
 			swipeSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.Zero));
+			swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(swipeSpeed)));
 			swipeSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([swipeSequence]);
 		}
