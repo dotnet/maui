@@ -110,11 +110,11 @@ namespace Maui.Controls.Sample.Issues
 							{
 								Children =
 								{
-									new ContentPage() { Title = "Test", Content = new Label(){Text = "Background/Minimize the app" } },
 									new NavigationPage(CreateDestinationPage())
 									{
 										Title = "Test"
-									}
+									},
+									new ContentPage() { Title = "Test", Content = new Label(){Text = "Second Page" } },
 								}
 							};
 							return Task.CompletedTask;
