@@ -65,6 +65,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		void ResetApp()
 		{
+			Reset();
 			App.ResetApp();
 		}
 	}

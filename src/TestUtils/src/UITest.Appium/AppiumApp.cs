@@ -110,6 +110,7 @@ namespace UITest.Appium
 			if (!string.IsNullOrWhiteSpace(testName))
 				appiumOptions.AddAdditionalAppiumOption("testName", testName);
 
+			// Reset Strategies: https://appium.readthedocs.io/en/stable/en/writing-running-appium/other/reset-strategies/
 			if (config.GetProperty<bool>("FullReset"))
 				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "true");
 
