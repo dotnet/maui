@@ -200,6 +200,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			MeasuredMinimum = null;
+			// RequestedWidth = null;
+			// RequestedHeight = null;
 		}
 
 		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
@@ -333,21 +335,21 @@ namespace Microsoft.Maui.Platform
 		// 	return Gtk.SizeRequestMode.WidthForHeight;
 		// }
 
-		double? LastH { get; set; }
+		double? RequestedHeight { get; set; }
 
-		double? LastW { get; set; }
+		double? RequestedWidth { get; set; }
 
 		protected override void OnGetPreferredHeight(out int minimum_height, out int natural_height)
 		{
 			base.OnGetPreferredHeight(out minimum_height, out natural_height);
 			// containers need initial width in height_for_width mode
 			// dirty fix: do not constrain width on first allocation 
-			var force_width = LastW ?? double.PositiveInfinity;
+			var force_width = RequestedWidth ?? double.PositiveInfinity;
 
 			if (IsReallocating)
 				force_width = Allocation.Width;
 
-			var size = Measure(force_width, minimum_height > 0 ? minimum_height : LastH ?? double.PositiveInfinity);
+			var size = Measure(force_width, minimum_height > 0 ? minimum_height : RequestedHeight ?? double.PositiveInfinity);
 
 			if (size.Height < HeightRequest)
 				minimum_height = natural_height = HeightRequest;
@@ -360,12 +362,12 @@ namespace Microsoft.Maui.Platform
 			base.OnGetPreferredWidth(out minimum_width, out natural_width);
 			// containers need initial height in width_for_height mode
 			// dirty fix: do not constrain height on first allocation
-			var force_height = LastH ?? double.PositiveInfinity;
+			var force_height = RequestedHeight ?? double.PositiveInfinity;
 
 			if (IsReallocating)
 				force_height = Allocation.Height;
 
-			var size = Measure(minimum_width > 0 ? minimum_width : LastW ?? double.PositiveInfinity, force_height);
+			var size = Measure(minimum_width > 0 ? minimum_width : RequestedWidth ?? double.PositiveInfinity, force_height);
 
 			if (size.Width < WidthRequest)
 				minimum_width = natural_width = WidthRequest;
@@ -375,33 +377,33 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnGetPreferredHeightForWidth(int width, out int minimum_height, out int natural_height)
 		{
-			LastW = width;
+			RequestedWidth = width;
 
 			base.OnGetPreferredHeightForWidth(width, out minimum_height, out natural_height);
 
-			var size = Measure(width, minimum_height > 0 ? minimum_height : LastH ?? double.PositiveInfinity);
+			var size = Measure(width, minimum_height > 0 ? minimum_height : RequestedHeight ?? double.PositiveInfinity);
 
 			if (size.Height < HeightRequest)
 				minimum_height = natural_height = HeightRequest;
 			else
 				minimum_height = natural_height = (int)size.Height;
 
-			LastH = null;
+			RequestedHeight = null;
 		}
 
 		protected override void OnGetPreferredWidthForHeight(int height, out int minimum_width, out int natural_width)
 		{
-			LastH = height;
+			RequestedHeight = height;
 
 			base.OnGetPreferredWidthForHeight(height, out minimum_width, out natural_width);
-			var size = Measure(minimum_width > 0 ? minimum_width : LastW ?? double.PositiveInfinity, height);
+			var size = Measure(minimum_width > 0 ? minimum_width : RequestedWidth ?? double.PositiveInfinity, height);
 
 			if (size.Width < WidthRequest)
 				minimum_width = natural_width = WidthRequest;
 			else
 				minimum_width = natural_width = (int)size.Width;
 
-			LastW = null;
+			RequestedWidth = null;
 		}
 
 #endif
