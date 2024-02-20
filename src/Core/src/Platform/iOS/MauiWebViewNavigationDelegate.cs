@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[Export("webView:didFinishNavigation:")]
-		public void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
+		public async void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
 			var handler = Handler;
 			var virtualView = handler?.VirtualView;
@@ -43,7 +43,11 @@ namespace Microsoft.Maui.Platform
 
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Success);
 
-			handler.PlatformView?.UpdateCanGoBackForward(virtualView);
+			// ProcessNavigatedAsync calls UpdateCanGoBackForward
+			if (handler is WebViewHandler webViewHandler)
+				await webViewHandler.ProcessNavigatedAsync(url);
+			else
+				handler.PlatformView?.UpdateCanGoBackForward(virtualView);
 		}
 
 		[Export("webView:didFailNavigation:withError:")]

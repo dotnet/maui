@@ -77,15 +77,11 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[Export("webView:didFinishNavigation:")]
-		public async void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
+		#pragma warning disable CA1822 // Selectors can't be static, or else it won't be found
+		public void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
+		#pragma warning restore CA1822
 		{
-			var url = CurrentUrl;
-
-			if (url == null || url == $"file://{NSBundle.MainBundle.BundlePath}/")
-				return;
-
-			if (_handler.TryGetTarget(out var handler))
-				await handler.ProcessNavigatedAsync(url);
+			// Implementation is in MauiWebViewNavigationDelegate
 		}
 
 		public void LoadHtml(string? html, string? baseUrl)
