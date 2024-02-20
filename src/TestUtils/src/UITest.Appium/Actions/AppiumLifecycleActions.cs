@@ -87,11 +87,15 @@ namespace UITest.Appium
 			if (_app.GetTestDevice() == TestDevice.Mac)
 			{
 				_app.Driver.ResetApp();
-			}
+			}			
 			else
 			{
 				_app.Driver.TerminateApp(_app.GetAppId());
-				_app.Driver.LaunchApp();
+
+				if (_app.GetTestDevice() == TestDevice.iOS)
+					_app.Driver.ActivateApp(_app.GetAppId());
+				else 
+					_app.Driver.LaunchApp();
 			}
 
 			return CommandResponse.SuccessEmptyResponse;
