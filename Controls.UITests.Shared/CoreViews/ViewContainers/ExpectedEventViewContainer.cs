@@ -1,9 +1,6 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.UITests
 {
-	internal class ExpectedEventViewContainer<T> : ViewContainer<T>
+	public class ExpectedEventViewContainer<T> : ViewContainer<T>
 		where T : View
 	{
 		readonly string _key;

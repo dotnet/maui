@@ -1,8 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.UITests
 {
-	internal interface IViewContainer<out T>
+	public interface IViewContainer<out T>
 		where T : View
 	{
 		Label TitleLabel { get; }

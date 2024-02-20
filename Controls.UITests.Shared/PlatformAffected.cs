@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.UITests
 {
 	[Flags]
 	public enum PlatformAffected

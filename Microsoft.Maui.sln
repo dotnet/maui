@@ -269,6 +269,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Legacy.Sample.UITe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Legacy.Sample.UITests.WinUI", "Controls.Legacy.Sample.UITests.WinUI\Controls.Legacy.Sample.UITests.WinUI.csproj", "{8C4ED288-852C-4822-ADDC-67FE86CCFBF3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.UITests.Shared", "Controls.UITests.Shared\Controls.UITests.Shared.csproj", "{2FE71A0A-3610-4D95-AB01-67F0E7866D2A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -685,6 +687,10 @@ Global
 		{8C4ED288-852C-4822-ADDC-67FE86CCFBF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C4ED288-852C-4822-ADDC-67FE86CCFBF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C4ED288-852C-4822-ADDC-67FE86CCFBF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FE71A0A-3610-4D95-AB01-67F0E7866D2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FE71A0A-3610-4D95-AB01-67F0E7866D2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FE71A0A-3610-4D95-AB01-67F0E7866D2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FE71A0A-3610-4D95-AB01-67F0E7866D2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -810,6 +816,7 @@ Global
 		{366BEA18-1B38-435F-879F-FD5B7CFF7DDF} = {787E6AEE-3099-4162-A2C9-C1D01D87136A}
 		{32088CE4-AD17-435E-8EF4-41CB20636E57} = {787E6AEE-3099-4162-A2C9-C1D01D87136A}
 		{8C4ED288-852C-4822-ADDC-67FE86CCFBF3} = {787E6AEE-3099-4162-A2C9-C1D01D87136A}
+		{2FE71A0A-3610-4D95-AB01-67F0E7866D2A} = {E1082E26-D700-4127-9329-66D673FD2D55}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

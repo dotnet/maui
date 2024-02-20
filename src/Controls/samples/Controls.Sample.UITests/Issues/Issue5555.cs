@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Maui.Controls.UITests;
 
 namespace Maui.Controls.Sample.Issues
 {

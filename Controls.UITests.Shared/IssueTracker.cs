@@ -1,4 +1,4 @@
-﻿namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.UITests
 {
 	public enum IssueTracker
 	{

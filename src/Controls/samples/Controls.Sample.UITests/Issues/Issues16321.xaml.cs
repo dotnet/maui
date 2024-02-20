@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui;
+using Maui.Controls.UITests;
 using System.Linq;
 using System;
 

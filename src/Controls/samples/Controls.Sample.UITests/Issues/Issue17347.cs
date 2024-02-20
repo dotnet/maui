@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
+using Maui.Controls.UITests;
 
 namespace Maui.Controls.Sample.Issues
 {

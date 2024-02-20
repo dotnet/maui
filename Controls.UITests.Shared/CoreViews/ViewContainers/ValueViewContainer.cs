@@ -1,9 +1,6 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.UITests
 {
-	internal class ValueViewContainer<T> : ViewContainer<T> where T : View
+	public class ValueViewContainer<T> : ViewContainer<T> where T : View
 	{
 		public ValueViewContainer(Enum formsMember, T view, string bindingPath, Func<object, object> converterAction) : base(formsMember, view)
 		{

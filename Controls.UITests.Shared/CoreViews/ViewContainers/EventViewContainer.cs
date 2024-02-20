@@ -1,9 +1,6 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.UITests
 {
-	internal class EventViewContainer<T> : ViewContainer<T>
+	public class EventViewContainer<T> : ViewContainer<T>
 	where T : View
 	{
 		string _formsMember;

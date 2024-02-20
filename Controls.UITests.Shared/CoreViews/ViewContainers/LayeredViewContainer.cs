@@ -1,11 +1,6 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.UITests
 {
-	internal class LayeredViewContainer<T> : ViewContainer<T> where T : View
+	public class LayeredViewContainer<T> : ViewContainer<T> where T : View
 	{
 		public LayeredViewContainer(Enum formsMember, T view) : base(formsMember, view)
 		{

@@ -1,12 +1,11 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample
+﻿#nullable disable
+namespace Maui.Controls.UITests
 {
 	public class GenericValueConverter : IValueConverter
 	{
-		Func<object, object> _convert;
-		Func<object, object> _back;
+		readonly Func<object, object> _convert;
+		readonly Func<object, object> _back;
+
 		public GenericValueConverter(Func<object, object> convert, Func<object, object> back = null)
 		{
 			_convert = convert;

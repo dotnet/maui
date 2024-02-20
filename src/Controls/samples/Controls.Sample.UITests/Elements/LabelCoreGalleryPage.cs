@@ -1,6 +1,7 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Maui.Controls.UITests;
 
 namespace Maui.Controls.Sample;
 

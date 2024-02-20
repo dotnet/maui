@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample
+﻿#nullable disable
+namespace Maui.Controls.UITests
 {
-	internal abstract class CoreGalleryBasePage : CoreGalleryBasePage<View>
+	public abstract class CoreGalleryBasePage : CoreGalleryBasePage<View>
 	{
 	}
 
-	internal abstract class CoreGalleryBasePage<TView> : ContentPage
+	public abstract class CoreGalleryBasePage<TView> : ContentPage
 		where TView : View
 	{
 		readonly List<IViewContainer<TView>> _viewContainers = new();
@@ -36,7 +31,7 @@ namespace Maui.Controls.Sample
 		/// </summary>
 		protected virtual bool SupportsScroll => true;
 
-		internal CoreGalleryBasePage()
+		public CoreGalleryBasePage()
 		{
 			Initialize();
 

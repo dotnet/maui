@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
+﻿#nullable disable
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Maui.Controls.Sample
+namespace Maui.Controls.UITests
 {
 	[Preserve(AllMembers = true)]
 	internal class MultiBindingHack : INotifyPropertyChanged

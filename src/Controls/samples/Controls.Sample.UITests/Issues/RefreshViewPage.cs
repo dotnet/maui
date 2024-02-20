@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Maui.Controls.UITests;
 
 namespace Maui.Controls.Sample.Issues
 {

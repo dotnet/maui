@@ -1,9 +1,6 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.UITests
 {
-	internal class ViewContainer<T> : IViewContainer<T>
+	public class ViewContainer<T> : IViewContainer<T>
 		where T : View
 	{
 		public Label TitleLabel { get; private set; }

@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Maui.Controls.UITests;
 using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 using FlyoutPage = Microsoft.Maui.Controls.FlyoutPage;
 

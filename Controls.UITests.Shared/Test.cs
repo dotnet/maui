@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.UITests
 {
 	public static class Test
 	{

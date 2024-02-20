@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
+using Maui.Controls.UITests;
 
 namespace Maui.Controls.Sample.Issues
 {
