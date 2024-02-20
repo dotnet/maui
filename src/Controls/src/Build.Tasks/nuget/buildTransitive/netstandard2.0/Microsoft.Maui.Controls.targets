@@ -210,7 +210,7 @@
     <PropertyGroup>
       <MauiXamlRuntimeParsingSupport Condition="'$(MauiXamlRuntimeParsingSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiXamlRuntimeParsingSupport>
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
-      <MauiShellSearchResultRendererDefaultTemplateSupported Condition="'$(MauiShellSearchResultRendererDefaultTemplateSupported)' == '' and '$(PublishAot)' == 'true'">false</MauiShellSearchResultRendererDefaultTemplateSupported>
+      <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == '' and '$(PublishAot)' == 'true'">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
     </PropertyGroup>
     <ItemGroup>
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported"
@@ -221,9 +221,9 @@
                                       Condition="'$(MauiEnableIVisualAssemblyScanning)' != ''"
                                       Value="$(MauiEnableIVisualAssemblyScanning)"
                                       Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDefaultTemplateSupported"
-                                      Condition="'$(MauiShellSearchResultRendererDefaultTemplateSupported)' != ''"
-                                      Value="$(MauiShellSearchResultRendererDefaultTemplateSupported)"
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported"
+                                      Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' != ''"
+                                      Value="$(MauiShellSearchResultsRendererDisplayMemberNameSupported)"
                                       Trim="true" />
     </ItemGroup>
   </Target>

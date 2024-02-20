@@ -37,7 +37,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return _defaultTemplate ?? (_defaultTemplate = new DataTemplate(() =>
 					{
 						var label = new Label();
-						label.SetBinding(Label.TextProperty, SearchHandler.DisplayMemberName ?? ".");
+
+						if (RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported)
+						{
+							label.SetBinding(Label.TextProperty, SearchHandler.DisplayMemberName ?? ".");
+						}
+						else
+						{
+							if (SearchHandler.DisplayMemberName is not null)
+							{
+								throw new InvalidOperationException(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedErrorMessage);
+							}
+
+							label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel(string.Empty, static (object o) => o));
+						}
+
 						label.HorizontalTextAlignment = TextAlignment.Center;
 						label.VerticalTextAlignment = TextAlignment.Center;
 
@@ -89,11 +103,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (template == null)
 			{
-				if (!RuntimeFeature.IsShellSearchResultsRendererDefaultTemplateSupported)
-				{
-					throw new ArgumentNullException(nameof(SearchHandler.ItemTemplate), "ItemTemplate must be set on SearchHandler");
-				}
-
 				template = DefaultTemplate;
 			}
 
