@@ -123,20 +123,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					templatedCell.Unbind();
 				}
 			}
-
-			if (ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
-			{
-				var actualWidth = collectionView.ContentSize.Width - collectionView.Bounds.Size.Width;
-				if (collectionView.ContentOffset.X >= actualWidth || collectionView.ContentOffset.X < 0)
-					return;
-			}
-			else
-			{
-				var actualHeight = collectionView.ContentSize.Height - collectionView.Bounds.Size.Height;
-
-				if (collectionView.ContentOffset.Y >= actualHeight || collectionView.ContentOffset.Y < 0)
-					return;
-			}
 		}
 
 		protected virtual (bool VisibleItems, NSIndexPath First, NSIndexPath Center, NSIndexPath Last) GetVisibleItemsIndexPath()

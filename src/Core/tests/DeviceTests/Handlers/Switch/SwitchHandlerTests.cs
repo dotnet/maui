@@ -37,6 +37,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, fireCount);
 		}
 
+#if !WINDOWS
+// WINDOWS: https://github.com/dotnet/maui/issues/20535
 		[Theory(DisplayName = "Track Color Initializes Correctly")]
 		[InlineData(true)]
 		//[InlineData(false)] // Track color is not always visible when off
@@ -66,6 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 				await ValidateTrackColor(switchStub, Colors.Red, () => switchStub.TrackColor = Colors.Red);
 			});
 		}
+#endif
 
 		[Fact(DisplayName = "ThumbColor Initializes Correctly", Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/1275")]
 		public async Task ThumbColorInitializesCorrectly()

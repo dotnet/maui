@@ -1,0 +1,1 @@
+This folder can contain all the iOS-specific resources that your app may use.

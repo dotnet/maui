@@ -21,20 +21,12 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var stream = await imageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+				using var cgImageSource =
+					await imageSource.GetPlatformImageSourceAsync(cancellationToken).ConfigureAwait(false);
+				if (cgImageSource is null)
+					throw new InvalidOperationException("Unable to load image file.");
 
-				if (stream == null)
-					throw new InvalidOperationException("Unable to load image stream.");
-
-				using var data = NSData.FromStream(stream);
-				if (data == null)
-					throw new InvalidOperationException("Unable to load image stream data.");
-
-				// We do not need to pass the scale in here as the image file is not scaled to the screen scale.
-				var image = UIImage.LoadFromData(data);
-
-				if (image == null)
-					throw new InvalidOperationException("Unable to decode image from stream.");
+				var image = cgImageSource.GetPlatformImage();
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 

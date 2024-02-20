@@ -15,8 +15,7 @@ namespace Microsoft.Maui.Networking
 		/// Unique identifier for the connectivity changed action on Android.
 		/// </summary>
 		public const string ConnectivityChangedAction = "com.maui.essentials.ESSENTIALS_CONNECTIVITY_CHANGED";
-		static Intent connectivityIntent = new Intent(ConnectivityChangedAction);
-
+		
 		static ConnectivityManager connectivityManager;
 
 		static ConnectivityManager ConnectivityManager =>
@@ -45,13 +44,15 @@ namespace Microsoft.Maui.Networking
 
 			conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
 
-			PlatformUtils.RegisterBroadcastReceiver(conectivityReceiver, filter, true);
+			PlatformUtils.RegisterBroadcastReceiver(conectivityReceiver, filter);
 		}
 
 		void StopListeners()
 		{
 			if (conectivityReceiver == null)
+			{
 				return;
+			}
 
 			try
 			{
@@ -77,11 +78,15 @@ namespace Microsoft.Maui.Networking
 		void RegisterNetworkCallback()
 		{
 			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
 				return;
+			}
 
 			var manager = ConnectivityManager;
 			if (manager == null)
+			{
 				return;
+			}
 
 			var request = new NetworkRequest.Builder().Build();
 			networkCallback = new EssentialsNetworkCallback();
@@ -91,11 +96,15 @@ namespace Microsoft.Maui.Networking
 		void UnregisterNetworkCallback()
 		{
 			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
 				return;
+			}
 
 			var manager = ConnectivityManager;
 			if (manager == null || networkCallback == null)
+			{
 				return;
+			}
 
 			manager.UnregisterNetworkCallback(networkCallback);
 
@@ -104,6 +113,14 @@ namespace Microsoft.Maui.Networking
 
 		class EssentialsNetworkCallback : ConnectivityManager.NetworkCallback
 		{
+			readonly Intent connectivityIntent;
+
+			public EssentialsNetworkCallback()
+			{
+				connectivityIntent = new Intent(ConnectivityChangedAction);
+				connectivityIntent.SetPackage(Application.Context.PackageName);
+			}
+
 			public override void OnAvailable(Network network) =>
 				Application.Context.SendBroadcast(connectivityIntent);
 
@@ -159,7 +176,9 @@ namespace Microsoft.Maui.Networking
 							var capabilities = manager.GetNetworkCapabilities(network);
 
 							if (capabilities == null)
+							{
 								continue;
+							}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CA1416 // Validate platform compatibility
@@ -167,7 +186,9 @@ namespace Microsoft.Maui.Networking
 							var info = manager.GetNetworkInfo(network);
 
 							if (info == null || !info.IsAvailable)
+							{
 								continue;
+							}
 #pragma warning restore CS0618 // Type or member is obsolete
 
 							// Check to see if it has the internet capability
@@ -200,12 +221,18 @@ namespace Microsoft.Maui.Networking
 					void ProcessNetworkInfo(NetworkInfo info)
 					{
 						if (info == null || !info.IsAvailable)
+						{
 							return;
+						}
 
 						if (info.IsConnected)
+						{
 							currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
+						}
 						else if (info.IsConnectedOrConnecting)
+						{
 							currentAccess = IsBetterAccess(currentAccess, NetworkAccess.ConstrainedInternet);
+						}
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -250,7 +277,9 @@ namespace Microsoft.Maui.Networking
 
 					var p = ProcessNetworkInfo(info);
 					if (p.HasValue)
+					{
 						yield return p.Value;
+					}
 				}
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -258,7 +287,9 @@ namespace Microsoft.Maui.Networking
 				{
 
 					if (info == null || !info.IsAvailable || !info.IsConnectedOrConnecting)
+					{
 						return null;
+					}
 
 
 					return GetConnectionType(info.Type, info.TypeName);
@@ -289,22 +320,34 @@ namespace Microsoft.Maui.Networking
 					return ConnectionProfile.Unknown;
 				default:
 					if (string.IsNullOrWhiteSpace(typeName))
+					{
 						return ConnectionProfile.Unknown;
+					}
 
 					if (typeName.Contains("mobile", StringComparison.OrdinalIgnoreCase))
+					{
 						return ConnectionProfile.Cellular;
+					}
 
 					if (typeName.Contains("wimax", StringComparison.OrdinalIgnoreCase))
+					{
 						return ConnectionProfile.Cellular;
+					}
 
 					if (typeName.Contains("wifi", StringComparison.OrdinalIgnoreCase))
+					{
 						return ConnectionProfile.WiFi;
+					}
 
 					if (typeName.Contains("ethernet", StringComparison.OrdinalIgnoreCase))
+					{
 						return ConnectionProfile.Ethernet;
+					}
 
 					if (typeName.Contains("bluetooth", StringComparison.OrdinalIgnoreCase))
+					{
 						return ConnectionProfile.Bluetooth;
+					}
 
 					return ConnectionProfile.Unknown;
 			}
@@ -335,7 +378,9 @@ namespace Microsoft.Maui.Networking
 #pragma warning disable CS0618 // Type or member is obsolete
 			if (intent.Action != ConnectivityManager.ConnectivityAction && intent.Action != ConnectivityImplementation.ConnectivityChangedAction)
 #pragma warning restore CS0618 // Type or member is obsolete
+			{
 				return;
+			}
 
 			// await 1500ms to ensure that the the connection manager updates
 			await Task.Delay(1500);
