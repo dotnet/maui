@@ -76,12 +76,16 @@ namespace Microsoft.Maui.Platform
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 
-		[Export("webView:didFinishNavigation:")]
-		#pragma warning disable CA1822 // Selectors can't be static, or else it won't be found
-		public void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
-		#pragma warning restore CA1822
+		[Obsolete("Use MauiWebViewNavigationDelegate.DidFinishNavigation instead.")]
+		public async void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
-			// Implementation is in MauiWebViewNavigationDelegate
+			var url = CurrentUrl;
+
+			if (url == null || url == $"file://{NSBundle.MainBundle.BundlePath}/")
+				return;
+
+			if (_handler.TryGetTarget(out var handler))
+				await handler.ProcessNavigatedAsync(url);
 		}
 
 		public void LoadHtml(string? html, string? baseUrl)
