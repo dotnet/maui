@@ -45,12 +45,15 @@ namespace Microsoft.Maui.Controls.Platform
 			// We need this variable because in some cases because of the iOS's
 			// auto correction eg. eg '--' => '—' the actual text in the input might have
 			// a different length that the one that has been set in the control.
-			var newTextLength = textInput.TextInRange(textRange)?.Length ?? 0;
+			var newTextLength = !string.IsNullOrWhiteSpace(inputView.Text) ? textInput.TextInRange(textRange)?.Length ?? 0 : 0;
 
 			var newText = TextTransformUtilites.GetTransformedText(
 				inputView?.Text,
 				textInput.GetSecureTextEntry() ? TextTransform.Default : inputView.TextTransform
 				);
+
+			if (!string.IsNullOrWhiteSpace(oldText))
+				newTextLength = newText.Length;
 
 			if (oldText != newText)
 			{
