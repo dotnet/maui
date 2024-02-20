@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleDisplayName</key>
-    <string>MauiMultiHeadApp</string>
+    <string>Maui.Controls.Legacy.Sample</string>
     <key>CFBundleIdentifier</key>
     <string>com.microsoft.controls.legacy.uiapp</string>
     <key>CFBundleShortVersionString</key>

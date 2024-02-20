@@ -3,9 +3,9 @@
     x:Class="Maui.Controls.Legacy.Sample.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MauiMultiHeadApp"
+    xmlns:local="clr-namespace:Maui.Controls.Legacy.Sample"
     xmlns:pages="clr-namespace:Maui.Controls.Legacy.Sample.Pages"
-    Title="MauiMultiHeadApp"
+    Title="Maui.Controls.Legacy.Sample"
     Shell.FlyoutBehavior="Disabled">
 
     <TabBar>
