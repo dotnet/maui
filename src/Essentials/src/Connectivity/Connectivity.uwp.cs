@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.NetworkInformation;
 using Windows.Networking.Connectivity;
 
@@ -75,7 +76,13 @@ namespace Microsoft.Maui.Networking
 		{
 			get
 			{
-				var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+				NetworkInterface[] networkInterfaces = [];
+				try
+				{
+					networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+				}
+				catch (NetworkInformationException) { }
+
 				foreach (var nic in networkInterfaces)
 				{
 					if (nic.OperationalStatus is not OperationalStatus.Up ||
