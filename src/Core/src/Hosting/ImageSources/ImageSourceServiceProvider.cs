@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Hosting
 			{
 				var genericConcreteType = ImageSourceServiceType.MakeGenericType(type);
 
-				if (genericConcreteType != null && GetServiceDescriptor(genericConcreteType) != null)
+				if (genericConcreteType != null && InternalCollection.TryGetService(genericConcreteType, out _))
 					return genericConcreteType;
 
 				return ImageSourceServiceType.MakeGenericType(GetImageSourceType(type));
