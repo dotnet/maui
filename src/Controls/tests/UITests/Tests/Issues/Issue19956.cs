@@ -34,7 +34,7 @@ public class Issue19956: _IssuesUITest
 		var scrollSequence = new ActionSequence(touchDevice, 0);
 		scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 650, TimeSpan.Zero));
 		scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-		scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500));
+		scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500)));
 		scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 100, TimeSpan.FromMilliseconds(250)));
 		scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 		app.Driver.PerformActions([scrollSequence]);
