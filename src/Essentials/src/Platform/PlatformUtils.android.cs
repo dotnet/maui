@@ -26,13 +26,12 @@ namespace Microsoft.Maui.ApplicationModel
 			return requestCode;
 		}
 
-		internal static Intent? RegisterBroadcastReceiver(BroadcastReceiver? receiver, IntentFilter filter, bool exported)
+		internal static Intent? RegisterBroadcastReceiver(BroadcastReceiver? receiver, IntentFilter filter)
 		{
 #if ANDROID34_0_OR_GREATER
 			if (OperatingSystem.IsAndroidVersionAtLeast(34))
 			{
-				var flags = exported ? ReceiverFlags.Exported : ReceiverFlags.NotExported;
-				return Application.Context.RegisterReceiver(receiver, filter, flags);
+				return Application.Context.RegisterReceiver(receiver, filter, ReceiverFlags.NotExported);
 			}
 #endif
 			return Application.Context.RegisterReceiver(receiver, filter);

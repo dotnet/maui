@@ -81,8 +81,8 @@ steps:
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-        rm -r $HOME/Library/Logs/CoreSimulator/*
-        rm -r $HOME/Library/Logs/DiagnosticReports/*
+        if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+        if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
       displayName: Delete Old Simulator Logs
       condition: always()
       continueOnError: true
