@@ -13,6 +13,14 @@ parameters:
   provisionPlatform: "windows"
 
 steps:
+  - bash: |
+      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
+      $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+    displayName: 'Clean bot'
+    continueOnError: true
+    condition: ${{ eq(parameters.platform, 'ios') }}
+    timeoutInMinutes: 60
 
   - template: provision.yml
     parameters:
@@ -42,8 +50,8 @@ steps:
     displayName: 'Build the Legacy ControlGallery'
 
   - bash: |
-      rm -r $HOME/Library/Logs/CoreSimulator/*
-      rm -r $HOME/Library/Logs/DiagnosticReports/*
+      if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+      if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
     displayName: Delete Old Simulator Logs
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true

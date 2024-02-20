@@ -13,6 +13,14 @@ parameters:
   rebootAgent: true
 
 steps:
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
+        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      displayName: 'Clean bot'
+      continueOnError: true
+      timeoutInMinutes: 60
   - template: provision.yml
     parameters:
       ${{ if eq(parameters.platform, 'windows')}}:
@@ -73,8 +81,8 @@ steps:
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-        rm -r $HOME/Library/Logs/CoreSimulator/*
-        rm -r $HOME/Library/Logs/DiagnosticReports/*
+        if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+        if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
       displayName: Delete Old Simulator Logs
       condition: always()
       continueOnError: true
@@ -99,6 +107,15 @@ steps:
         suffix=$(date +%Y%m%d%H%M%S)
         zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
         zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
+      displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
+
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+        zip -9r "$(LogDirectory)/DiagnosticReports.zip" "$HOME/Library/Logs/DiagnosticReports/"
       displayName: Zip Simulator Logs
       condition: always()
       continueOnError: true
