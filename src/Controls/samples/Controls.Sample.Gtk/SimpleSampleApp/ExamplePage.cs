@@ -32,18 +32,20 @@ namespace Maui.SimpleSampleApp
 			"Cras rutrum scelerisque elit, et porta est lobortis ac. " +
 			"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
 
-		const bool ShowLorem = true;
-
+		const bool ShowLorem = false;
+		ScrollOrientation ScrollOrientation = ScrollOrientation.Vertical;
+		
 		public ExamplePage(IServiceProvider services, MainPageViewModel viewModel)
 		{
 			_services = services;
 			BindingContext = _viewModel = viewModel;
-
+			SetupMauiLayout();
+			// SetupMauiLorem();
+			
 			// SetupMauiLayoutLayouts();
 
 			// SetupMauiLayoutSimple();
-			//SetupMauiLayout();
-			SetupMauiLorem();
+
 			// SetupMauiLayoutDrawables();
 		}
 
@@ -60,7 +62,7 @@ namespace Maui.SimpleSampleApp
 			Content = new ScrollView
 			{
 				Content = verticalStack,
-				Orientation = ScrollOrientation.Vertical
+				Orientation = this.ScrollOrientation
 			};
 		}
 
@@ -683,7 +685,7 @@ namespace Maui.SimpleSampleApp
 			Content = new ScrollView
 			{
 				Content = verticalStack,
-				Orientation = ScrollOrientation.Vertical
+				Orientation = ScrollOrientation
 			};
 		}
 

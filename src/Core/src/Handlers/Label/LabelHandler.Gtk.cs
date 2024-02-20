@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Handlers
 
 	public partial class LabelHandler : ViewHandler<ILabel, LabelView>
 	{
-
 		private static Microsoft.Maui.Graphics.Platform.Gtk.TextLayout? _textLayout;
 		static PlatformStringSizeService? _stringSizeService;
 
@@ -21,96 +20,25 @@ namespace Microsoft.Maui.Handlers
 		// https://docs.gtk.org/gtk3/class.Label.html
 		protected override LabelView CreatePlatformView()
 		{
-			return new()
-			{
-				LineWrap = true,
-				Halign = Align.Fill,
-				Xalign = 0,
-			};
+			return new() { LineWrap = true, Halign = Align.Fill, Xalign = 0, };
 		}
 
-		public  Size _GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (PlatformView is not { } nativeView)
+			if (PlatformView is not { } platformView)
 				return default;
 
 			if (VirtualView is not { } virtualView)
 				return default;
+			
+			double? explicitWidth = (virtualView.Width >= 0) ? virtualView.Width : null;
+			double? explicitHeight = (virtualView.Height >= 0) ? virtualView.Height : null;
+			
+			var size = platformView.GetDesiredSize(
+				explicitWidth ?? widthConstraint,
+				explicitHeight ?? heightConstraint);
 
-			int width = -1;
-			int height = -1;
-
-			var widthConstrained = !double.IsPositiveInfinity(widthConstraint);
-			var heightConstrained = !double.IsPositiveInfinity(heightConstraint);
-
-			var hMargin = nativeView.MarginStart + nativeView.MarginEnd;
-			var vMargin = nativeView.MarginTop + nativeView.MarginBottom;
-
-			// try use layout from Label: not working
-
-			lock (SharedTextLayout)
-			{
-				SharedTextLayout.FontDescription = nativeView.GetPangoFontDescription();
-
-				SharedTextLayout.TextFlow = TextFlow.ClipBounds;
-				SharedTextLayout.HorizontalAlignment = virtualView.HorizontalTextAlignment.GetHorizontalAlignment();
-				SharedTextLayout.VerticalAlignment = virtualView.VerticalTextAlignment.GetVerticalAlignment();
-
-				// SharedTextLayout.LineBreakMode = virtualView.LineBreakMode.GetLineBreakMode();
-
-				var heightForWidth = nativeView.RequestMode == SizeRequestMode.HeightForWidth;
-
-				var constraint = Math.Max(heightForWidth ? widthConstraint - hMargin : heightConstraint - vMargin,
-					1);
-
-				var lh = 0d;
-				var layout = SharedTextLayout.GetLayout();
-				layout.Height = -1;
-				layout.Width = -1;
-				layout.Ellipsize = nativeView.Ellipsize;
-				layout.Spacing = nativeView.Layout.Spacing;
-
-				layout.Attributes = nativeView.Attributes;
-
-				if (virtualView.LineHeight > 1)
-					layout.LineSpacing = (float)virtualView.LineHeight;
-				else
-				{
-					layout.LineSpacing = 0;
-				}
-
-				layout.SetText(nativeView.Text);
-
-				if (!heightConstrained)
-				{
-					if (nativeView.Lines > 0)
-					{
-						lh = layout.GetLineHeigth(nativeView.Lines, false);
-						layout.Height = (int)lh;
-					}
-				}
-
-				if (!heightForWidth && heightConstrained && widthConstrained)
-				{
-					layout.Width = Math.Max((widthConstraint - hMargin).ScaledToPango(), -1);
-				}
-
-				(width, height) = layout.GetPixelSize(nativeView.Text, constraint, nativeView.RequestMode == SizeRequestMode.HeightForWidth);
-
-				if (lh > 0)
-				{
-					height = Math.Min((int)lh.ScaledFromPango(), height);
-				}
-
-				layout.Attributes = null;
-
-			}
-
-			width += hMargin;
-			height += vMargin;
-
-			return new Size(width, height);
-
+			return size;
 		}
 
 		public static void MapText(ILabelHandler handler, ILabel label)
@@ -153,7 +81,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPadding(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView.WithPadding(label.Padding);
-
 		}
 
 		public static void MapCharacterSpacing(ILabelHandler handler, ILabel label)
@@ -197,9 +124,7 @@ namespace Microsoft.Maui.Handlers
 				// so we use LabelView, this sets it before OnDrawn:
 				nativeView.LineHeight = (float)label.LineHeight;
 			}
-
 		}
-
 	}
 
 }

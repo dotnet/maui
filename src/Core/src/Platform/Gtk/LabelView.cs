@@ -24,20 +24,23 @@ namespace Microsoft.Maui.Platform
 			SetLayout(Layout, this);
 
 			base.OnAdjustSizeRequest(orientation, out minimum_size, out natural_size);
-			return;
-			var wContraint = orientation == Orientation.Horizontal ? natural_size : double.PositiveInfinity;
-			var hContraint = orientation == Orientation.Vertical ? natural_size : double.PositiveInfinity;
-			var size = GetDesiredSize(wContraint, hContraint, this.RequestMode == SizeRequestMode.HeightForWidth);
-			natural_size = (int)(orientation == Orientation.Horizontal ? size.Width : size.Height);
 
-			wContraint = orientation == Orientation.Horizontal ? minimum_size : double.PositiveInfinity;
-			hContraint = orientation == Orientation.Vertical ? minimum_size : double.PositiveInfinity;
-			size = GetDesiredSize(wContraint, hContraint, this.RequestMode == SizeRequestMode.HeightForWidth);
-			minimum_size = (int)(orientation == Orientation.Horizontal ? size.Width : size.Height);
+			int Constrainted(int avail)
+			{
+				var wConstraint = orientation == Orientation.Horizontal ? avail : double.PositiveInfinity;
+				var hConstraint = orientation == Orientation.Vertical ? avail : double.PositiveInfinity;
+				var size = GetDesiredSize(wConstraint, hConstraint);
+
+				return (int)(orientation == Orientation.Horizontal ? size.Width : size.Height);
+			}
+
+			natural_size = Constrainted(natural_size);
+			minimum_size = Constrainted(minimum_size);
 		}
 
-		internal Size GetDesiredSize(double wContraint, double hContraint, bool heightForWidth)
-			=> GetDesiredSize(Layout, wContraint, hContraint, heightForWidth, Text, Lines,
+		internal Size GetDesiredSize(double wConstraint, double hConstraint)
+			=> GetDesiredSize(Layout, wConstraint, hConstraint,
+				RequestMode == SizeRequestMode.HeightForWidth, Text, Lines,
 				MarginStart, MarginTop, MarginEnd, MarginBottom);
 
 		protected override bool OnDrawn(Context cr)
@@ -54,6 +57,7 @@ namespace Microsoft.Maui.Platform
 			layout.Wrap = platformView.LineBreakMode.GetLineBreakMode().ToPangoWrap();
 			layout.Ellipsize = platformView.LineBreakMode.GetLineBreakMode().ToPangoEllipsize();
 			layout.LineSpacing = platformView.LineHeight > 1 ? platformView.LineHeight : 0;
+			layout.FontDescription = platformView.GetPangoFontDescription();
 		}
 
 		public static void SetLayoutFromLabel(Pango.Layout layout, Label platformView)
@@ -64,7 +68,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static Size GetDesiredSize(Pango.Layout layout, double widthConstraint, double heightConstraint, bool heightForWidth,
-			string text, int lines, int marginStart,int marginTop, int marginEnd, int marginBottom)
+			string text, int lines, int marginStart, int marginTop, int marginEnd, int marginBottom)
 		{
 			int width = -1;
 			int height = -1;
