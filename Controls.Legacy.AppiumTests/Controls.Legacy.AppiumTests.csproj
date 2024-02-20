@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(_MauiDotNetTfm)</TargetFrameworks>
@@ -20,7 +20,18 @@
   <PropertyGroup>
     <DefineConstants Condition=" '$(ExtraDefineConstants)' != '' ">$(DefineConstants);$(ExtraDefineConstants)</DefineConstants>
   </PropertyGroup>
-
+  
+  <ItemGroup>
+    <ProjectReference Include="..\src\Controls\Foldable\src\Controls.Foldable.csproj" />
+    <ProjectReference Include="..\src\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\src\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\src\Controls\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\src\Core\src\Core.csproj" />
+    <ProjectReference Include="..\src\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
+    <ProjectReference Include="..\src\TestUtils\src\UITest.Core\UITest.Core.csproj" />
+    <ProjectReference Include="..\src\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" Version="5.0.0-beta02" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.3" />
