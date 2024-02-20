@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Graphics.Platform.Gtk;
 
-internal static class TextLayoutExtensions {
+public static class TextLayoutExtensions {
 
 	public static void SetFontStyle(this TextLayout it, IFont font, double? fontSize = null, int? weight = null, FontStyleType? fontStyleType = null) {
 

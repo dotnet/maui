@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Platform
 
 	public class LabelView : Label
 	{
-
 		public float LineHeight { get; set; }
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
@@ -20,12 +19,12 @@ namespace Microsoft.Maui.Platform
 
 		public LineBreakMode LineBreakMode { get; set; } = LineBreakMode.TailTruncation;
 
-		protected  void _OnAdjustSizeRequest(Orientation orientation, out int minimum_size, out int natural_size)
+		protected override void OnAdjustSizeRequest(Orientation orientation, out int minimum_size, out int natural_size)
 		{
-			if (LineHeight > 1)
-				Layout.LineSpacing = LineHeight;
+			SetLayout(Layout, this);
 
 			base.OnAdjustSizeRequest(orientation, out minimum_size, out natural_size);
+			return;
 			var wContraint = orientation == Orientation.Horizontal ? natural_size : double.PositiveInfinity;
 			var hContraint = orientation == Orientation.Vertical ? natural_size : double.PositiveInfinity;
 			var size = GetDesiredSize(wContraint, hContraint, this.RequestMode == SizeRequestMode.HeightForWidth);
@@ -37,67 +36,60 @@ namespace Microsoft.Maui.Platform
 			minimum_size = (int)(orientation == Orientation.Horizontal ? size.Width : size.Height);
 		}
 
+		internal Size GetDesiredSize(double wContraint, double hContraint, bool heightForWidth)
+			=> GetDesiredSize(Layout, wContraint, hContraint, heightForWidth, Text, Lines,
+				MarginStart, MarginTop, MarginEnd, MarginBottom);
+
 		protected override bool OnDrawn(Context cr)
 		{
-			if (LineHeight > 1)
-				Layout.LineSpacing = LineHeight;
-
-			// GetDesiredSize(Allocation.Width, Allocation.Height, RequestMode == SizeRequestMode.HeightForWidth);
+			SetLayout(Layout, this);
 			return base.OnDrawn(cr);
 		}
 
-		private static Microsoft.Maui.Graphics.Platform.Gtk.TextLayout? _textLayout;
-
-		public Microsoft.Maui.Graphics.Platform.Gtk.TextLayout SharedTextLayout => _textLayout ??= new Microsoft.Maui.Graphics.Platform.Gtk.TextLayout { HeightForWidth = true };
-
-		public Size GetDesiredSize(double widthConstraint, double heightConstraint, bool heightForWidth)
+		public static void SetLayout(Pango.Layout layout, LabelView platformView)
 		{
+			var horizontalTextAlignment = platformView.HorizontalTextAlignment.GetHorizontalAlignment();
+			layout.Alignment = horizontalTextAlignment.ToPango();
+			layout.Justify = horizontalTextAlignment.HasFlag(HorizontalAlignment.Justified);
+			layout.Wrap = platformView.LineBreakMode.GetLineBreakMode().ToPangoWrap();
+			layout.Ellipsize = platformView.LineBreakMode.GetLineBreakMode().ToPangoEllipsize();
+			layout.LineSpacing = platformView.LineHeight > 1 ? platformView.LineHeight : 0;
+		}
 
-			var nativeView = this;
+		public static void SetLayoutFromLabel(Pango.Layout layout, Label platformView)
+		{
+			layout.Ellipsize = platformView.Ellipsize;
+			layout.Spacing = platformView.Layout.Spacing;
+			layout.Attributes = platformView.Attributes;
+		}
+
+		public static Size GetDesiredSize(Pango.Layout layout, double widthConstraint, double heightConstraint, bool heightForWidth,
+			string text, int lines, int marginStart,int marginTop, int marginEnd, int marginBottom)
+		{
 			int width = -1;
 			int height = -1;
 
 			var widthConstrained = !double.IsPositiveInfinity(widthConstraint);
 			var heightConstrained = !double.IsPositiveInfinity(heightConstraint);
 
-			var hMargin = nativeView.MarginStart + nativeView.MarginEnd;
-			var vMargin = nativeView.MarginTop + nativeView.MarginBottom;
-
-			SharedTextLayout.SetLayout(this.Layout);
-			SharedTextLayout.FontDescription = nativeView.GetPangoFontDescription();
-
-			SharedTextLayout.TextFlow = TextFlow.ClipBounds;
-			SharedTextLayout.HorizontalAlignment = HorizontalTextAlignment.GetHorizontalAlignment();
-			SharedTextLayout.VerticalAlignment = VerticalTextAlignment.GetVerticalAlignment();
-
-			// SharedTextLayout.LineBreakMode = virtualView.LineBreakMode.GetLineBreakMode();
+			var hMargin = marginStart + marginEnd;
+			var vMargin = marginTop + marginBottom;
 
 			var constraint = Math.Max(heightForWidth ? widthConstraint - hMargin : heightConstraint - vMargin,
 				1);
 
 			var lh = 0d;
-			var layout = SharedTextLayout.GetLayout();
+
 			layout.Height = -1;
 			layout.Width = -1;
-			layout.Ellipsize = nativeView.Ellipsize;
-			layout.Spacing = nativeView.Layout.Spacing;
 
-			layout.Attributes = nativeView.Attributes;
-
-			if (LineHeight > 1)
-				layout.LineSpacing = (float)LineHeight;
-			else
-			{
-				layout.LineSpacing = 0;
-			}
-
-			layout.SetText(nativeView.Text);
+			layout.SetText(text);
 
 			if (!heightConstrained)
 			{
-				if (nativeView.Lines > 0)
+				if (lines > 0)
 				{
-					lh = layout.GetLineHeigth(nativeView.Lines, false);
+					lh = layout.GetLineHeigth(lines, false);
 					layout.Height = (int)lh;
 				}
 			}
@@ -111,7 +103,7 @@ namespace Microsoft.Maui.Platform
 				layout.Width = Math.Max((widthConstraint - hMargin).ScaledToPango(), -1);
 			}
 
-			(width, height) = layout.GetPixelSize(nativeView.Text, constraint, heightForWidth);
+			(width, height) = layout.GetPixelSize(text, constraint, heightForWidth);
 
 			if (lh > 0)
 			{
@@ -124,9 +116,7 @@ namespace Microsoft.Maui.Platform
 			height += vMargin;
 
 			return new Size(width, height);
-
 		}
-
 	}
 
 }
