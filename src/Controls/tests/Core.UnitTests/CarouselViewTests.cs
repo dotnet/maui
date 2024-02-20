@@ -122,5 +122,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(0, carouselView.Position);
 		}
+
+		[Fact]
+		public void CheckBoxClickWhenCommandCanExecuteFalse()
+		{
+			bool invoked = false;
+			var checkBox = new CheckBox()
+			{
+				Command = new Command(() => invoked = true
+				, () => false),
+				IsChecked = false
+			};
+
+			checkBox.IsChecked = true;
+
+			Assert.False(invoked);
+		}
+
+		[Fact]
+		public void CheckBoxClickWhenCommandCanExecuteTrue()
+		{
+			bool invoked = false;
+			var checkBox = new CheckBox()
+			{
+				Command = new Command(() => invoked = true
+				, () => true),
+				IsChecked = false
+			};
+
+			checkBox.IsChecked = true;
+
+			Assert.True(invoked);
+		}
 	}
 }
