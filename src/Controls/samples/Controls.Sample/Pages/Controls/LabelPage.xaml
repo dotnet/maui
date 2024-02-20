@@ -167,13 +167,41 @@
                         <Span
                              x:Name="Link3"
                              TextDecorations="Underline"
-                             Text="Link3_1&#10;Link3_2"
+                             Text="Link3_1&#10;Link3_2&#10;"
                              TextColor="Blue">
                             <Span.GestureRecognizers>
                                 <TapGestureRecognizer
                                     Tapped="OnLink3Tapped" />
                             </Span.GestureRecognizers>
                         </Span>
+                        <Span
+                            Text="Mixed with other spans:&#10;" />
+                        <Span
+                            Text="Regular text " />
+                        <Span
+                             x:Name="Link4"
+                             TextDecorations="Underline"
+                             Text="Link4_1&#10;Link4_2"
+                             TextColor="Blue">
+                            <Span.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Tapped="OnLink4Tapped" />
+                            </Span.GestureRecognizers>
+                        </Span>
+                        <Span
+                            Text=" more text " />
+                        <Span
+                             x:Name="Link5"
+                             TextDecorations="Underline"
+                             Text="Link5_1&#10;Link5_2&#10;"
+                             TextColor="Blue">
+                            <Span.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Tapped="OnLink5Tapped" />
+                            </Span.GestureRecognizers>
+                        </Span>
+                        <Span
+                            Text=" more text." />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>

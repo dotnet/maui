@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Animations
 		/// </summary>
 		public bool HasFinished { get; protected set; }
 
-		/// <summary>dotnet_analyzer_diagnostic.CA1805.severity = none
+		/// <summary>
 		/// Specifies whether this animation should repeat.
 		/// </summary>
 		public bool Repeats { get; set; }

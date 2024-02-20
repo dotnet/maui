@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Devices
 		void StartEnergySaverListeners()
 		{
 			powerReceiver = new EnergySaverBroadcastReceiver(OnEnergySaverChanged);
-			PlatformUtils.RegisterBroadcastReceiver(powerReceiver, new IntentFilter(PowerManager.ActionPowerSaveModeChanged), false);
+			PlatformUtils.RegisterBroadcastReceiver(powerReceiver, new IntentFilter(PowerManager.ActionPowerSaveModeChanged));
 		}
 
 		void StopEnergySaverListeners()
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Devices
 			Permissions.EnsureDeclared<Permissions.Battery>();
 
 			batteryReceiver = new BatteryBroadcastReceiver(OnBatteryInfoChanged);
-			PlatformUtils.RegisterBroadcastReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged), false);
+			PlatformUtils.RegisterBroadcastReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
 		}
 
 		void StopBatteryListeners()
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Devices
 				Permissions.EnsureDeclared<Permissions.Battery>();
 
 				using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter, false))
+				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter))
 				{
 					if (battery is null)
 						return -1; // Unknown
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Devices
 				Permissions.EnsureDeclared<Permissions.Battery>();
 
 				using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter, false))
+				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter))
 				{
 					if (battery is null)
 						return BatteryState.Unknown;
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Devices
 				Permissions.EnsureDeclared<Permissions.Battery>();
 
 				using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter, false))
+				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter))
 				{
 					if (battery is null)
 						return BatteryPowerSource.Unknown;

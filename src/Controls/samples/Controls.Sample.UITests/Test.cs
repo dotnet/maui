@@ -712,6 +712,14 @@ namespace Maui.Controls.Sample
 			IsBounceEnabled
 		}
 
+		public enum ImageLoading
+		{
+			FromBundleSvg,
+			FromBundlePng,
+			FromBundleJpg,
+			FromBundleGif,
+		}
+
 		public enum InputTransparency
 		{
 			Default,
