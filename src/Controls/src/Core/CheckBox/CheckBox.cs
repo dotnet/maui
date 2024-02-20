@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 					checkBox.CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
 					if (checkBox.Command is not null && checkBox.Command.CanExecute(null))
 					{
-						checkBox.Command?.Execute(checkBox.CommandParameter);
+						checkBox.Command.Execute(checkBox.CommandParameter);
 					}
 
 					checkBox.ChangeVisualState();
@@ -105,10 +105,11 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBorderColorSet() => false;
 		bool IBorderElement.IsBorderWidthSet() => false;
 
-		public void CanExecuteChanged(object sender, EventArgs e)
-		{
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
 			RefreshIsEnabledProperty();
-		}
+
+		protected override bool IsEnabledCore =>
+			base.IsEnabledCore && CommandElement.GetCanExecute(this);
 
 #pragma warning restore RS0016 // Add public types and members to the declared API
 		public Paint Foreground => Color?.AsPaint();
