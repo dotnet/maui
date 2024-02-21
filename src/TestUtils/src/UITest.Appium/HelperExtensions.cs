@@ -562,6 +562,22 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Retrieve the target device this test is running against
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns></returns>
+		/// <exception cref="InvalidOperationException"></exception>
+		public static TestDevice GetTestDevice(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"GetTestDevice is only supported on AppiumApp");
+			}
+
+			return aaa.Config.GetProperty<TestDevice>("TestDevice");
+		}
+
+		/// <summary>
 		/// Check if element has focused
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
