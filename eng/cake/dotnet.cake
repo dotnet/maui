@@ -696,7 +696,10 @@ void RunMSBuildWithDotNet(
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
-        .EnableBinaryLogger(binlog);
+        .EnableBinaryLogger(binlog)
+        
+        .SetVerbosity(Verbosity.Diagnostic)
+        ;
 
     if (warningsAsError)
     {
@@ -725,6 +728,7 @@ void RunMSBuildWithDotNet(
             args.Append($"-f {targetFramework}");
 
         //args.Append("/tl");
+        args.Append("-tl:false");
 
         return args;
     };
