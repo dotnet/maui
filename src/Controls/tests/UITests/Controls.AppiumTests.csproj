@@ -23,6 +23,8 @@
 
   <ItemGroup>
     <Compile Include="..\..\samples\Controls.Sample.UITests\Test.cs" Link="Test.cs" />
+    <!-- Issues tests are disabled with NativeAOT (see https://github.com/dotnet/maui/issues/20553) -->
+    <Compile Condition=" '$(_UseNativeAot)' == 'true' " Remove="Tests/Issues/**/*.*" />
   </ItemGroup>
 
   <ItemGroup>

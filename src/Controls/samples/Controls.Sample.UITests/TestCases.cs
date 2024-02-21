@@ -168,6 +168,10 @@ namespace Maui.Controls.Sample
 
 				var assembly = typeof(TestCases).Assembly;
 
+#if NATIVE_AOT
+				// Issues tests are disabled with NativeAOT (see https://github.com/dotnet/maui/issues/20553)
+				_issues = new();
+#else
 				_issues =
 					(from type in assembly.GetTypes()
 					 let attribute = type.GetCustomAttribute<IssueAttribute>()
@@ -181,6 +185,7 @@ namespace Maui.Controls.Sample
 						 Description = attribute.Description,
 						 Action = ActivatePageAndNavigate(attribute, type)
 					 }).ToList();
+#endif
 
 				VerifyNoDuplicates();
 

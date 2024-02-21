@@ -25,6 +25,14 @@ var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Maps.*.nupkg",
     "Microsoft.AspNetCore.Components.WebView.*.nupkg",
 };
+public enum RuntimeVariant
+{
+	Mono,
+	NativeAOT
+}
+
+RuntimeVariant RUNTIME_VARIANT = Argument("runtimevariant", RuntimeVariant.Mono);
+bool USE_NATIVE_AOT = RUNTIME_VARIANT == RuntimeVariant.NativeAOT ? true : false;
 
 ProcessTFMSwitches();
 
@@ -168,7 +176,25 @@ Task("dotnet-samples")
                 ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
             };
         }
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
+
+        string projectsToBuild;
+        if (USE_NATIVE_AOT)
+        {
+            if (configuration.Equals("Debug", StringComparison.OrdinalIgnoreCase))
+            {
+                var errMsg = $"Error: Building dotnet-samples with NativeAOT is only supported in Release configuration";
+                Error(errMsg);
+                throw new Exception(errMsg);
+            }
+            projectsToBuild = "./src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
+            properties["_UseNativeAot"] = "true";
+        }
+        else
+        {
+            projectsToBuild = "./Microsoft.Maui.Samples.slnf";
+        }
+
+        RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
     });
 
 Task("dotnet-legacy-controlgallery")
