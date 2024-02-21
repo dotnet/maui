@@ -18,7 +18,6 @@
   <ItemGroup>
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
     <PackageReference Include="SkiaSharp.Views.Gtk3" />
-    <PackageReference Include="GtkSharp" Version="3.24.24.34" />
   </ItemGroup>
 
 </Project>

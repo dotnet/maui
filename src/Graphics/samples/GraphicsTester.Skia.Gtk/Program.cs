@@ -2,6 +2,7 @@
 // Happy coding!!! - GtkSharp Team
 
 using System;
+using GraphicsTester.Scenarios;
 using Gtk;
 using Microsoft.Maui.Graphics.Skia;
 
@@ -20,6 +21,7 @@ namespace Samples
 			Application.Init();
 
 			App = new Application("Microsoft.Maui.Graphics.Samples.Gtk.Skia", GLib.ApplicationFlags.None);
+			App.Startup += (s, e) => AbstractScenario.ImageLoadingService = new SkiaImageLoadingService();
 
 			App.Startup += (s, e) =>
 			{
