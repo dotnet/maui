@@ -571,7 +571,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Retrive the target device this test is running against
+		/// Retrieve the target device this test is running against
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <returns></returns>
