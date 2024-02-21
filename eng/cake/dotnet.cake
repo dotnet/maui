@@ -153,7 +153,7 @@ Task("dotnet-build")
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
         }
         else
         {
@@ -194,7 +194,7 @@ Task("dotnet-samples")
             projectsToBuild = "./Microsoft.Maui.Samples.slnf";
         }
 
-        RunMSBuildWithDotNet(projectsToBuild, properties, maxCpuCount: 1, binlogPrefix: "sample-");
+        RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
     });
 
 Task("dotnet-legacy-controlgallery")
@@ -231,8 +231,7 @@ Task("dotnet-integration-test")
             pathDotnet: dotnetPath,
             noBuild: true,
             resultsFileNameWithoutExtension: Argument("resultsfilename", ""),
-            filter: Argument("filter", ""),
-            maxCpuCount: 1);
+            filter: Argument("filter", ""));
     });
 
 Task("dotnet-test")
@@ -243,13 +242,13 @@ Task("dotnet-test")
         var tests = new []
         {
             "**/Controls.Core.UnitTests.csproj",
-         //   "**/Controls.Core.Design.UnitTests.csproj",
+        //    "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
-         //   "**/Compatibility.Core.UnitTests.csproj",
+            "**/Compatibility.Core.UnitTests.csproj",
         };
 
         var success = true;

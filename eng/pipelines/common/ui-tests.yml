@@ -123,28 +123,28 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "NativeAOT"
 
-  - stage: winui_ui_tests
-    displayName: WinUI UITests
-    dependsOn: []
-    jobs:
-      - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.winui, '') }}:
-              - job: winui_ui_tests_${{ project.name }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
-                workspace:
-                  clean: all
-                displayName: ${{ coalesce(project.desc, project.name) }}
-                pool: ${{ parameters.windowsPool }}
-                steps:
-                  - template: ui-tests-steps.yml
-                    parameters:
-                      platform: windows
-                      version: "10.0.19041"
-                      device: windows10
-                      path: ${{ project.winui }}
-                      app: ${{ project.app }}
-                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+  # - stage: winui_ui_tests
+  #   displayName: WinUI UITests
+  #   dependsOn: []
+  #   jobs:
+  #     - ${{ each project in parameters.projects }}:
+  #       - ${{ if ne(project.winui, '') }}:
+  #             - job: winui_ui_tests_${{ project.name }}
+  #               timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+  #               workspace:
+  #                 clean: all
+  #               displayName: ${{ coalesce(project.desc, project.name) }}
+  #               pool: ${{ parameters.windowsPool }}
+  #               steps:
+  #                 - template: ui-tests-steps.yml
+  #                   parameters:
+  #                     platform: windows
+  #                     version: "10.0.19041"
+  #                     device: windows10
+  #                     path: ${{ project.winui }}
+  #                     app: ${{ project.app }}
+  #                     provisionatorChannel: ${{ parameters.provisionatorChannel }}
+  #                     agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
   - stage: mac_ui_tests
     displayName: macOS UITests

@@ -52,9 +52,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
                 else
                 {
                     if (isTopOfScreen)
+                    {
                         Assert.AreEqual(rect.Y, 0);
+                    }
                     else
+                    {
                         Assert.AreNotEqual(rect.Y, 0);
+                    }
                 }
             }
             catch 
