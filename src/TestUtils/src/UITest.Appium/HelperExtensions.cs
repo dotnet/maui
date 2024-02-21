@@ -95,7 +95,7 @@ namespace UITest.Appium
 				ske.PressKeyCode(keyCode, metastate);
 				return;
 			}
-			
+
 			throw new InvalidOperationException($"SendKeys is not supported on {aaa.Driver}");
 		}
 
@@ -453,6 +453,15 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// If the application is already running then it will be brought to the foreground.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ForegroundApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("foregroundApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
 		/// Reset the currently running app for this session.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -541,6 +550,41 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("back", ImmutableDictionary<string, object>.Empty);
 		}
 
+		/// <summary>
+		/// Return the AppId of the running app. This is used inside any appium command that want the app id
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static string GetAppId(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"GetAppId is only supported on AppiumApp");
+			}
+
+			var appId = aaa.Config.GetProperty<string>("AppId");
+			if (appId is not null)
+			{
+				return appId;
+			}
+
+			throw new InvalidOperationException("AppId not found");
+		}
+
+		/// <summary>
+		/// Retrieve the target device this test is running against
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns></returns>
+		/// <exception cref="InvalidOperationException"></exception>
+		public static TestDevice GetTestDevice(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"GetTestDevice is only supported on AppiumApp");
+			}
+
+			return aaa.Config.GetProperty<TestDevice>("TestDevice");
+		}
 
 		/// <summary>
 		/// Check if element has focused
