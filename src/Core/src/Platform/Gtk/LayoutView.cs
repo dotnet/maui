@@ -202,8 +202,11 @@ namespace Microsoft.Maui.Platform
 			}
 
 			MeasuredMinimum = null;
-			// RequestedWidth = null;
-			// RequestedHeight = null;
+#if !USE_ADJUSTSIZEREQUEST
+			RequestedWidth = null;
+			RequestedHeight = null;
+
+#endif			
 		}
 
 		protected override void OnSizeAllocated(Gdk.Rectangle allocation)

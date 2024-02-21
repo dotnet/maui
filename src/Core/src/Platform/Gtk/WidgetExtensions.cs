@@ -144,7 +144,7 @@ namespace Microsoft.Maui
 			nativeView.QueueAllocate();
 		}
 
-		static int Request(double viewSize) => viewSize >= 0 ? (int)viewSize : -1;
+		public static int Request(double viewSize) => viewSize >= 0 ? (int)viewSize : -1;
 
 		public static void UpdateWidth(this Widget nativeView, IView view)
 		{
