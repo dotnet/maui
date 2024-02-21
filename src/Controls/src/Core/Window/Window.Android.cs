@@ -7,7 +7,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Window
+	public partial class Window : IPlatformEventsListener
 	{
 		internal Activity PlatformActivity =>
 			(Handler?.PlatformView as Activity) ?? throw new InvalidOperationException("Window should have an Activity set.");
@@ -35,6 +35,14 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnParentChangedCore();
 			Handler?.UpdateValue(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName);
+		}
+
+
+		internal event EventHandler<MotionEvent?>? DispatchTouchEvent;
+		bool IPlatformEventsListener.DispatchTouchEvent(MotionEvent? e)
+		{
+			DispatchTouchEvent?.Invoke(this, e);
+			return false;
 		}
 	}
 }

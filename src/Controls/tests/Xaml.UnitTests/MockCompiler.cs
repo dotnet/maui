@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 		public static void Compile(Type type, string targetFramework = null)
 		{
-			MethodDefinition _;
 			Compile(type, out _, targetFramework);
 		}
 

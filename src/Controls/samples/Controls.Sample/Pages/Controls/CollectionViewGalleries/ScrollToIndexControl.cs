@@ -104,7 +104,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			}
 		}
 
-		void ScrollTo(object sender, EventArgs e)
+		void ScrollTo(object? sender, EventArgs e)
 		{
 			ScrollTo();
 		}

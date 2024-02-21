@@ -10,7 +10,7 @@ using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 {
-	public partial class HandlerTestBase : TestBase, IDisposable
+	public partial class HandlerTestBase : TestBase, IAsyncDisposable
 	{
 		private MauiApp _mauiApp;
 		private IMauiContext _mauiContext;
@@ -38,9 +38,12 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 			_mauiContext = new ContextStub(_mauiApp.Services);
 		}
 
-		public void Dispose()
+		public async ValueTask DisposeAsync()
 		{
-			((IDisposable)_mauiApp)?.Dispose();
+			if (_mauiApp != null)
+			{
+				await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+			}
 
 			_mauiApp = null;
 			_mauiContext = null;

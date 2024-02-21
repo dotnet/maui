@@ -376,12 +376,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 				tabBarTextColor = barTextColor.ToPlatform();
 
-			var attributes = new UIStringAttributes();
-			attributes.ForegroundColor = tabBarTextColor;
-
 			foreach (UITabBarItem item in TabBar.Items)
 			{
-				item.SetTitleTextAttributes(attributes, UIControlState.Normal);
+				item.SetTitleTextAttributes(new UIStringAttributes() { ForegroundColor = tabBarTextColor }, UIControlState.Normal);
+				item.SetTitleTextAttributes(new UIStringAttributes() { ForegroundColor = tabBarTextColor }, UIControlState.Selected);
+				item.SetTitleTextAttributes(new UIStringAttributes() { ForegroundColor = tabBarTextColor }, UIControlState.Disabled);
 			}
 
 			// set TintColor for selected icon
@@ -389,7 +388,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance();
 			else
+			{
 				TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToPlatform();
+			}
 		}
 
 		void UpdateBarTranslucent()
@@ -507,7 +508,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) ? Tabbed.SelectedTabColor : null,
 				Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? Tabbed.UnselectedTabColor : null,
 				Tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? Tabbed.BarBackgroundColor : null,
-				Tabbed.IsSet(TabbedPage.BarTextColorProperty) ? Tabbed.BarTextColor : null);
+				Tabbed.IsSet(TabbedPage.BarTextColorProperty) ? Tabbed.BarTextColor : null,
+				null);
 		}
 
 		#region IPlatformViewHandler

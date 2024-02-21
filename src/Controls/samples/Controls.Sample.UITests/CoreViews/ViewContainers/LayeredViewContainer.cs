@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample
 	{
 		public LayeredViewContainer(Enum formsMember, T view) : base(formsMember, view)
 		{
-			var layout = new AbsoluteLayout();
+			var layout = new Grid();
 
 			var hiddenButton = new Button
 			{
@@ -18,11 +18,7 @@ namespace Maui.Controls.Sample
 			};
 
 			layout.Children.Add(hiddenButton);
-			AbsoluteLayout.SetLayoutFlags(hiddenButton, AbsoluteLayoutFlags.All);
-			AbsoluteLayout.SetLayoutBounds(hiddenButton, new Rect(0, 0, 1, 1));
 			layout.Children.Add(view);
-			AbsoluteLayout.SetLayoutBounds(view, new Rect(0, 0, 1, 1));
-			AbsoluteLayout.SetLayoutFlags(view, AbsoluteLayoutFlags.All);
 
 			var hiddenLabel = new Label
 			{

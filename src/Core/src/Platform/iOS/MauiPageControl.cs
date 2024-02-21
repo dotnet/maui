@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiPageControl : UIPageControl
+	public class MauiPageControl : UIPageControl, IUIViewLifeCycleEvents
 	{
 		const int DefaultIndicatorSize = 6;
 
-		IIndicatorView? _indicatorView;
+		WeakReference<IIndicatorView>? _indicatorView;
 		bool _updatingPosition;
 
 		public MauiPageControl()
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Platform
 			{
 				ValueChanged -= MauiPageControlValueChanged;
 			}
-			_indicatorView = indicatorView;
+			_indicatorView = indicatorView is null ? null : new(indicatorView);
 
 		}
 
@@ -79,11 +80,11 @@ namespace Microsoft.Maui.Platform
 
 			int GetCurrentPage()
 			{
-				if (_indicatorView == null)
+				if (_indicatorView is null || !_indicatorView.TryGetTarget(out var indicatorView))
 					return -1;
 
-				var maxVisible = _indicatorView.GetMaximumVisible();
-				var position = _indicatorView.Position;
+				var maxVisible = indicatorView.GetMaximumVisible();
+				var position = indicatorView.Position;
 				var index = position >= maxVisible ? maxVisible - 1 : position;
 				return index;
 			}
@@ -91,9 +92,9 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIndicatorCount()
 		{
-			if (_indicatorView == null)
+			if (_indicatorView is null || !_indicatorView.TryGetTarget(out var indicatorView))
 				return;
-			this.UpdatePages(_indicatorView.GetMaximumVisible());
+			this.UpdatePages(indicatorView.GetMaximumVisible());
 			UpdatePosition();
 		}
 
@@ -134,15 +135,28 @@ namespace Microsoft.Maui.Platform
 
 		void MauiPageControlValueChanged(object? sender, System.EventArgs e)
 		{
-			if (_updatingPosition || _indicatorView == null)
+			if (_updatingPosition || _indicatorView is null || !_indicatorView.TryGetTarget(out var indicatorView))
 				return;
 
-			_indicatorView.Position = (int)CurrentPage;
+			indicatorView.Position = (int)CurrentPage;
 			//if we are iOS13 or lower and we are using a Square shape
 			//we need to update the CornerRadius of the new shape.
 			if (IsSquare && !(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14)))
 				LayoutSubviews();
 
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

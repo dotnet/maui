@@ -343,7 +343,10 @@ namespace Microsoft.Maui.Controls
 		{
 			return new DataTemplate(() =>
 			{
-				var grid = new Grid();
+				var grid = new Grid()
+				{
+					IgnoreSafeArea = true
+				};
 
 				if (DeviceInfo.Platform == DevicePlatform.WinUI)
 					grid.ColumnSpacing = grid.RowSpacing = 0;

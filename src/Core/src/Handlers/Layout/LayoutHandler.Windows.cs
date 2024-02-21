@@ -123,12 +123,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		static void MapInputTransparent(ILayoutHandler handler, ILayout layout)
+		public static partial void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
-			if (handler.PlatformView is LayoutPanel layoutPanel && layout != null)
-			{
-				layoutPanel.UpdatePlatformViewBackground(layout);
-			}
+			handler.PlatformView?.UpdatePlatformViewBackground(layout);
+		}
+
+		public static partial void MapInputTransparent(ILayoutHandler handler, ILayout layout)
+		{
+			handler.PlatformView?.UpdatePlatformViewBackground(layout);
 		}
 	}
 }

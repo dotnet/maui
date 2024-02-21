@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Platform
 			UpdateValue(+Increment);
 		}
 
-		VisualStateCache PseudoDisable(Control control)
+		static VisualStateCache PseudoDisable(Control control)
 		{
 			if (VisualTreeHelper.GetChildrenCount(control) == 0)
 				control.ApplyTemplate();
@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Platform
 		cause, so this will have to suffice for now.
 		*/
 
-		void PsuedoEnable(Control control, ref VisualStateCache cache)
+		static void PsuedoEnable(Control control, ref VisualStateCache cache)
 		{
 			if (cache == null || VisualTreeHelper.GetChildrenCount(control) == 0)
 				return;

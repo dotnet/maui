@@ -34,7 +34,7 @@ stages:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
-                timeoutInMinutes: 120 # how long to run the job before automatically cancelling
+                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
@@ -48,7 +48,10 @@ stages:
                       version: ${{ api }}
                       path: ${{ project.android }}
                       app: ${{ project.app }}
-                      device: android-emulator-64_${{ api }}
+                      ${{ if eq(api, 27) }}:
+                        device: android-emulator-32_${{ api }}
+                      ${{ if not(eq(api, 27)) }}:
+                        device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
@@ -61,7 +64,7 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: ios_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
-                timeoutInMinutes: 120 # how long to run the job before automatically cancelling
+                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -92,7 +95,7 @@ stages:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
               - job: winui_ui_tests_${{ project.name }}
-                timeoutInMinutes: 120 # how long to run the job before automatically cancelling
+                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
@@ -115,7 +118,7 @@ stages:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
               - job: mac_ui_tests_${{ project.name }}
-                timeoutInMinutes: 120 # how long to run the job before automatically cancelling
+                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
@@ -160,7 +163,10 @@ stages:
                         path: ${{ project.compatibilityAndroidTestProject }}
                         app: ${{ project.compatibilityAndroidApp }}
                         targetSample: "dotnet-legacy-controlgallery-android"
-                        device: android-emulator-64_${{ api }}
+                        ${{ if eq(api, 27) }}:
+                          DEVICE: android-emulator-32_${{ api }}
+                        ${{ if not(eq(api, 27)) }}:
+                          DEVICE: android-emulator-64_${{ api }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 

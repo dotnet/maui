@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiCheckBox : UIButton
+	public class MauiCheckBox : UIButton, IUIViewLifeCycleEvents
 	{
 		// All these values were chosen to just match the android drawables that are used
 		const float DefaultSize = 18.0f;
@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Platform
 
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		public event EventHandler? CheckedChanged
 		{
 			add => _weakEventManager.AddEventHandler(value);
@@ -161,15 +160,15 @@ namespace Microsoft.Maui.Platform
 			return IsChecked ? Checked : Unchecked;
 		}
 
-		UIBezierPath CreateBoxPath(CGRect backgroundRect) => UIBezierPath.FromOval(backgroundRect);
-		UIBezierPath CreateCheckPath() => new UIBezierPath
+		static UIBezierPath CreateBoxPath(CGRect backgroundRect) => UIBezierPath.FromOval(backgroundRect);
+		static UIBezierPath CreateCheckPath() => new UIBezierPath
 		{
 			LineWidth = (nfloat)0.077,
 			LineCapStyle = CGLineCap.Round,
 			LineJoinStyle = CGLineJoin.Round
 		};
 
-		void DrawCheckMark(UIBezierPath path)
+		static void DrawCheckMark(UIBezierPath path)
 		{
 			path.MoveTo(new CGPoint(0.72f, 0.22f));
 			path.AddLineTo(new CGPoint(0.33f, 0.6f));
@@ -212,7 +211,7 @@ namespace Microsoft.Maui.Platform
 			return img;
 		}
 
-		UIImage CreateCheckMark()
+		static UIImage CreateCheckMark()
 		{
 			UIGraphics.BeginImageContextWithOptions(new CGSize(DefaultSize, DefaultSize), false, 0);
 			var context = UIGraphics.GetCurrentContext();
@@ -301,6 +300,20 @@ namespace Microsoft.Maui.Platform
 		{
 			get => (IsChecked) ? "1" : "0";
 			set { }
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

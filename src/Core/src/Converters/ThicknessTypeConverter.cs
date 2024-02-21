@@ -17,13 +17,14 @@ namespace Microsoft.Maui.Converters
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			// IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 
 			if (strValue != null)
 			{
 				strValue = strValue.Trim();
 
-				if (strValue.IndexOf(",", StringComparison.Ordinal) != -1)
+				if (strValue.ContainsChar(','))
 				{ //Xaml
 					var thickness = strValue.Split(',');
 					switch (thickness.Length)
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Converters
 							break;
 					}
 				}
-				else if (strValue.IndexOf(" ", StringComparison.Ordinal) != -1)
+				else if (strValue.ContainsChar(' '))
 				{ //CSS
 					var thickness = strValue.Split(' ');
 					switch (thickness.Length)

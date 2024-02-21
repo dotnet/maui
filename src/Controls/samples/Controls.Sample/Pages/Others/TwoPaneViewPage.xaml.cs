@@ -1,5 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Pages
 {
+	using System;
 	using Microsoft.Maui;
 	using Microsoft.Maui.Controls.Foldable;
 	using Microsoft.Maui.Foldable;
@@ -28,10 +29,10 @@
 			TallModeConfiguration.ItemsSource = System.Enum.GetValues(typeof(TwoPaneViewTallModeConfiguration));
 			WideModeConfiguration.ItemsSource = System.Enum.GetValues(typeof(TwoPaneViewWideModeConfiguration));
 
-			OnReset(null, null);
+			OnReset(null, EventArgs.Empty);
 		}
 
-		private void PaneLength_ValueChanged(object sender, Microsoft.Maui.Controls.ValueChangedEventArgs e)
+		private void PaneLength_ValueChanged(object? sender, Microsoft.Maui.Controls.ValueChangedEventArgs e)
 		{
 			twoPaneView.Pane1Length = new GridLength(Pane1Length.Value, GridUnitType.Star);
 			twoPaneView.Pane2Length = new GridLength(Pane2Length.Value, GridUnitType.Star);
@@ -51,7 +52,7 @@
 			hingeLabel.Text = "Hinge prepped " + await DualScreenInfo.Current.GetHingeAngleAsync();
 		}
 
-		private void Current_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		private void Current_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			spanLabel.Text += "Spanmode: " + DualScreenInfo.Current.SpanMode;
 		}
@@ -61,14 +62,14 @@
 			DualScreenInfo.Current.HingeAngleChanged -= Current_HingeAngleChanged;
 			DualScreenInfo.Current.PropertyChanged -= Current_PropertyChanged;
 		}
-		private void Current_HingeAngleChanged(object sender, HingeAngleChangedEventArgs e)
+		private void Current_HingeAngleChanged(object? sender, HingeAngleChangedEventArgs e)
 		{
 			System.Diagnostics.Debug.Write("TwoPaneViewPage.Current_HingeAngleChanged - " + e.HingeAngleInDegrees, "JWM");
 
 			hingeLabel.Text = "Hinge angle: " + e.HingeAngleInDegrees + " degrees";
 		}
 
-		void OnReset(object sender, System.EventArgs e)
+		void OnReset(object? sender, System.EventArgs e)
 		{
 			PanePriority.SelectedIndex = 0;
 			Pane1Length.Value = 0.5;

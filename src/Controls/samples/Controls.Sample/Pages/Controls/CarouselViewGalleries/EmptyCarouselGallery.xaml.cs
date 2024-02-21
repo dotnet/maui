@@ -22,14 +22,14 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 	[Preserve(AllMembers = true)]
 	public class EmptyCarouselGalleryViewModel : BindableObject
 	{
-		ObservableCollection<CarouselData> _items;
+		ObservableCollection<CarouselData>? _items;
 
 		public EmptyCarouselGalleryViewModel()
 		{
 			Items = new ObservableCollection<CarouselData>();
 		}
 
-		public ObservableCollection<CarouselData> Items
+		public ObservableCollection<CarouselData>? Items
 		{
 			get { return _items; }
 			set
@@ -66,7 +66,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			{
 				for (int n = 0; n < 5; n++)
 				{
-					Items.Add(new CarouselData
+					Items!.Add(new CarouselData
 					{
 						Color = Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255)),
 						Name = $"{n + 1}"

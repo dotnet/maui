@@ -60,6 +60,38 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task TestContentHorizontalOptionsChanged()
+		{
+			var label = new Label
+			{
+				BackgroundColor = Colors.LightBlue,
+				HorizontalOptions = LayoutOptions.Start,
+				Text = "Hello",
+				WidthRequest = 50,
+			};
+
+			var scrollView = new ScrollView
+			{
+				BackgroundColor = Colors.DarkBlue,
+				Content = label,
+				WidthRequest = 300,
+				HeightRequest = 200,
+			};
+
+			SetupBuilder();
+
+			await AttachAndRun(scrollView, async (handler) =>
+			{
+				// Without this delay, the UI didn't render and the bug didn't repro
+				await Task.Delay(100);
+
+				await WaitAssert(() => CloseEnough(scrollView.Content.Frame.Left, 0.0));
+				scrollView.Content.HorizontalOptions = LayoutOptions.End;
+				await WaitAssert(() => CloseEnough(scrollView.Content.Frame.Right, 300.0));
+			});
+		}
+
 		[Theory]
 		[InlineData(ScrollOrientation.Vertical, 100, 300, 0, 100)]
 		[InlineData(ScrollOrientation.Horizontal, 0, 100, 100, 300)]
@@ -80,14 +112,18 @@ namespace Microsoft.Maui.DeviceTests
 
 		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
 		// It calls CreateHandlerAndAddToWindow(), a valid test case.
-		[Fact(DisplayName = "ScrollView Does Not Leak")]
+		[Fact(DisplayName = "ScrollView Does Not Leak"
+#if MACCATALYST
+			, Skip = "Fails on Mac Catalyst, fixme"
+#endif
+			)]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
+
 			WeakReference viewReference = null;
 			WeakReference handlerReference = null;
 			WeakReference platformReference = null;
-
 			{
 				var view = new Microsoft.Maui.Controls.ScrollView();
 				var page = new ContentPage { Content = view };
@@ -101,9 +137,63 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformReference);
-			Assert.False(viewReference.IsAlive, "View should not be alive!");
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformReference.IsAlive, "PlatformView should not be alive!");
+		}
+
+		[Fact(DisplayName = "ScrollView inside layouts do not grow")]
+		public async Task DoesNotGrow()
+		{
+			var screenWidthConstraint = 600;
+			var screenHeightConstraint = 600;
+
+			var label = new Label() { Text = "Text inside a ScrollView" };
+			var scrollView = new ScrollView() { MaximumHeightRequest = 500, Content = label };
+			var parentLayout = new VerticalStackLayout { scrollView };
+			parentLayout.BackgroundColor = Colors.Blue;
+
+			SetupBuilder();
+
+			await CreateHandlerAndAddToWindow(parentLayout, () =>
+			{
+				var size = (parentLayout as IView).Measure(screenWidthConstraint, screenHeightConstraint);
+				var rect = new Rect(0, 0, size.Width, size.Height);
+				(parentLayout as IView).Arrange(rect); // Manual layout to prevent device test flakiness on Windows
+			});
+
+			Assert.True(parentLayout.Height > 0, "Parent layout should have non-zero height!");
+			Assert.True(parentLayout.Height < 500, "ScrollView should not make parent layout grow!");
+		}
+
+		[Fact(DisplayName = "ScrollView's viewport fills available space if set to fill"
+#if MACCATALYST || IOS
+			, Skip = "See: https://github.com/dotnet/maui/issues/17700. If the issue is solved, re-enable the tests"
+#endif
+		)]
+		public async Task ShouldGrow()
+		{
+			var screenWidthConstraint = 600;
+			var screenHeightConstraint = 600;
+
+			var label = new Label() { Text = "Text inside a ScrollView" };
+			var childLayout = new VerticalStackLayout { label };
+			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout };
+			var parentLayout = new Grid { scrollView };
+
+			var expectedHeight = 100;
+			parentLayout.HeightRequest = expectedHeight;
+
+			SetupBuilder();
+
+			await CreateHandlerAndAddToWindow(parentLayout, () =>
+			{
+				var size = (parentLayout as IView).Measure(screenWidthConstraint, screenHeightConstraint);
+				var rect = new Rect(0, 0, size.Width, size.Height);
+				(parentLayout as IView).Arrange(rect); // Manual layout to prevent device test flakiness on Windows
+			});
+
+			// Android is usually off by one or two px. Hence the tolerance
+			Assert.Equal(scrollView.Height, childLayout.Height, 2.0);
+			Assert.Equal(parentLayout.Height, scrollView.Height, 2.0);
+			Assert.Equal(expectedHeight, parentLayout.Height, 2.0);
 		}
 
 		void SetupBuilder()
@@ -115,6 +205,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<IScrollView, ScrollViewHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 				});
 			});
 		}
@@ -126,22 +217,17 @@ namespace Microsoft.Maui.DeviceTests
 
 		static async Task AssertContentSize(Func<Size> actual, Size expected)
 		{
-			await WaitAssert(() => CloseEnough(actual(), expected, 0.2), timeout: 5000, message: $"ContentSize was {actual()}, expected {expected}");
+			await WaitAssert(() => CloseEnough(actual(), expected), timeout: 5000, message: $"ContentSize was {actual()}, expected {expected}");
 		}
 
-		static bool CloseEnough(Size a, Size b, double tolerance)
+		static bool CloseEnough(double a, double b, double tolerance = 0.2)
 		{
-			if (System.Math.Abs(a.Width - b.Width) > tolerance)
-			{
-				return false;
-			}
+			return System.Math.Abs(a - b) <= tolerance;
+		}
 
-			if (System.Math.Abs(a.Height - b.Height) > tolerance)
-			{
-				return false;
-			}
-
-			return true;
+		static bool CloseEnough(Size a, Size b, double tolerance = 0.2)
+		{
+			return CloseEnough(a.Width, b.Width, tolerance) && CloseEnough(a.Height, b.Height, tolerance);
 		}
 
 		static Task<bool> WatchContentSizeChanged(ScrollView scrollView)

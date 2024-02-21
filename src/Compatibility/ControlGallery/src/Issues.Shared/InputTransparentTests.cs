@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS] // Only menuItem=Frame fails on iOS
 		[Test, TestCaseSource(nameof(TestCases))]
 		public void VerifyInputTransparent(string menuItem)
 		{

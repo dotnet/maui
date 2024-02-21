@@ -149,6 +149,44 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void BindingContextTransfersToNewSetOfSwipeItems()
+		{
+			var bc1 = new object();
+			var bc2 = new object();
+
+			var swipeView = new SwipeView();
+			var leftItems = swipeView.LeftItems;
+			var swipeItem = new SwipeItem();
+			leftItems.Add(swipeItem);
+			swipeView.BindingContext = bc1;
+
+			Assert.Equal(leftItems.BindingContext, bc1);
+			Assert.Equal(swipeItem.BindingContext, bc1);
+
+			Assert.Equal(leftItems, swipeView.LeftItems);
+			Assert.Contains(leftItems, (swipeView as IVisualTreeElement).GetVisualChildren());
+			Assert.Equal(swipeItem, (leftItems as IVisualTreeElement).GetVisualChildren()[0]);
+
+			var leftItems2 = new SwipeItems();
+			leftItems2.Add(swipeItem);
+			swipeView.LeftItems = leftItems2;
+
+			// now that this isn't the logical child of SwipeItems the parent should be null
+			Assert.Null(leftItems.Parent);
+
+			// The parent on swipeItem should now be leftItems2 because that's been set on SwipeView
+			Assert.NotSame(swipeItem.Parent, leftItems);
+			Assert.NotSame(leftItems.Parent, swipeView);
+
+			Assert.Equal(swipeItem.Parent, leftItems2);
+			Assert.Equal(leftItems2.Parent, swipeView);
+
+			swipeView.BindingContext = bc2;
+			Assert.Equal(leftItems2.BindingContext, bc2);
+			Assert.Equal(swipeItem.BindingContext, bc2);
+		}
+
+		[Fact]
 		public void TestDefaultSwipeItems()
 		{
 			var swipeView = new SwipeView();

@@ -14,9 +14,12 @@
                             <MenuFlyoutItem x:Name="Increment20MenuFlyoutItem" Text="Increment by 20" Clicked="OnIncrementMenuItemClicked" CommandParameter="20" />
                             <MenuFlyoutItem Text="Increment by 30 (disabled)" Clicked="OnIncrementMenuItemClicked" CommandParameter="30" x:Name="bbb" />
                             <MenuFlyoutItem Text="Increment by 40 (dynamic enabled/disabled)" Command="{Binding DynamicEnabledCommand}" CommandParameter="40" />
-                            <MenuFlyoutSubItem Text="More options">
-                                <MenuFlyoutItem Text="Increment by 1,000!" Clicked="OnIncrementMenuItemClicked" CommandParameter="1000"></MenuFlyoutItem>
-                                <MenuFlyoutItem Text="Increment by 1,000,000!" Clicked="OnIncrementMenuItemClicked" CommandParameter="1000000"></MenuFlyoutItem>
+                            <MenuFlyoutSubItem Text="Increment by 500" Clicked="OnIncrementMenuItemClicked" CommandParameter="500">
+                                <MenuFlyoutSubItem.KeyboardAccelerators>
+                                    <KeyboardAccelerator Modifiers="Alt" Key="F" />
+                                </MenuFlyoutSubItem.KeyboardAccelerators>
+                                <MenuFlyoutItem x:Name="Increment1000MenuFlyoutItem" Text="Increment by 1,000!" Clicked="OnIncrementMenuItemClicked" CommandParameter="1000"></MenuFlyoutItem>
+                                <MenuFlyoutItem x:Name="Increment1000000MenuFlyoutItem" Text="Increment by 1,000,000!" Clicked="OnIncrementMenuItemClicked" CommandParameter="1000000"></MenuFlyoutItem>
                             </MenuFlyoutSubItem>
                         </MenuFlyout>
                     </FlyoutBase.ContextFlyout>

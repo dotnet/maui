@@ -125,7 +125,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 #if WINDOWS
 				var dispatcher =
 					services.GetService<IDispatcher>() ??
-					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
+					IPlatformApplication.Current?.Services.GetRequiredService<IDispatcher>() ??
+					throw new InvalidOperationException("Unable to find Application Services");
 
 					dispatcher.DispatchIfRequired(() =>
 					{

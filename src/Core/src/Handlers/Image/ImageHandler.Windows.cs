@@ -6,12 +6,21 @@ using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageHandler : ViewHandler<IImage, Image>
+	public partial class ImageHandler : ViewHandler<IImage, WImage>
 	{
-		protected override Image CreatePlatformView() => new Image();
+		protected override WImage CreatePlatformView() => new WImage();
 
-		protected override void DisconnectHandler(Image platformView)
+		protected override void ConnectHandler(WImage platformView)
 		{
+			platformView.ImageOpened += OnImageOpened;
+
+			base.ConnectHandler(platformView);
+		}
+
+		protected override void DisconnectHandler(WImage platformView)
+		{
+			platformView.ImageOpened -= OnImageOpened;
+
 			base.DisconnectHandler(platformView);
 			SourceLoader.Reset();
 		}
@@ -38,7 +47,20 @@ namespace Microsoft.Maui.Handlers
 		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
 			handler.SourceLoader.UpdateImageSourceAsync();
 
-		void IImageSourcePartSetter.SetImageSource(ImageSource? obj) =>
-			PlatformView.Source = obj;
+		void OnImageOpened(object sender, RoutedEventArgs e)
+		{
+			UpdateValue(nameof(IImage.IsAnimationPlaying));
+		}
+
+		partial class ImageImageSourcePartSetter
+		{
+			public override void SetImageSource(ImageSource? platformImage)
+			{
+				if (Handler?.PlatformView is not WImage image)
+					return;
+
+				image.Source = platformImage;
+			}
+		}
 	}
 }

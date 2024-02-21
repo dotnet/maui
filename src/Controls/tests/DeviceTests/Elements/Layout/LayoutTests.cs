@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -277,5 +280,180 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(grid.Height <= grid.MaximumHeightRequest);
 		}
 
+		[Fact]
+		public async Task GridAddAndRemoveChildrenViaIndex()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Label), typeof(LabelHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			var grid = new Grid();
+			var label1 = new Label() { Text = "Lorem ipsum dolor" };
+			var label2 = new Label() { Text = "Hello world" };
+			var label3 = new Label() { Text = "The quick brown fox" };
+
+			grid.Add(label1);
+			grid.Add(label2);
+			grid.Add(label3);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await AttachAndRun(grid, (handler) =>
+				{
+					Assert.True((grid[1] as Label).Text == "Hello world");
+
+					// Remove middle item
+					grid.Remove(grid[1]);
+					Assert.True((grid[0] as Label).Text == "Lorem ipsum dolor");
+					Assert.True((grid[1] as Label).Text == "The quick brown fox");
+
+					// Insert item at start
+					grid.Insert(0, label2);
+					Assert.True((grid[0] as Label).Text == "Hello world");
+					Assert.True((grid[1] as Label).Text == "Lorem ipsum dolor");
+					Assert.True((grid[2] as Label).Text == "The quick brown fox");
+
+					// Remove another item
+					grid.Remove(grid[2]);
+					Assert.True((grid[0] as Label).Text == "Hello world");
+					Assert.True((grid[1] as Label).Text == "Lorem ipsum dolor");
+				});
+			});
+		}
+
+		/* Commented out of for now due to inconsistent platform behavior
+		[Fact("Ensures grid rows renders the correct size - Issue 15330")]
+		public async Task Issue15330()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<BoxView, BoxViewHandler>();
+				});
+			});
+
+			Grid grid = new Grid()
+			{
+				BackgroundColor = Colors.Cyan,
+				WidthRequest = 200,  // TODO: I really don't want to set size - need to hit iOS safe area too
+				HeightRequest = 500
+			};
+			grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+			grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+			grid.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+			grid.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+			grid.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+			BoxView boxView1 = new BoxView() { Color = Colors.Red };
+			Grid.SetColumn(boxView1, 1);
+			grid.Children.Add(boxView1);
+			var boxView2 = new BoxView() { Color = Colors.Lime };
+			Grid.SetRow(boxView2, 1);
+			grid.Children.Add(boxView2);
+			var boxView3 = new BoxView() { Color = Colors.Violet };
+			Grid.SetColumn(boxView3, 1);
+			Grid.SetRow(boxView3, 1);
+			Grid.SetRowSpan(boxView3, 2);
+			grid.Children.Add(boxView3);
+			var boxView4 = new BoxView() { Color = Colors.Yellow };
+			grid.Children.Add(boxView4);
+
+			await CreateHandlerAsync<BoxViewHandler>(boxView1);
+			await CreateHandlerAsync<BoxViewHandler>(boxView2);
+			await CreateHandlerAsync<BoxViewHandler>(boxView3);
+			await CreateHandlerAsync<BoxViewHandler>(boxView4);
+
+			var bitmap = await GetRawBitmap(grid, typeof(LayoutHandler));
+			var yellowBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Yellow).Single();
+			Assert.Equal(bitmap.Width / 2, yellowBlob.Width, 2d);
+			Assert.Equal(bitmap.Height / 3, yellowBlob.Height, 2d);
+			Assert.Equal(0, yellowBlob.MinColumn, 2d);
+			Assert.Equal(0, yellowBlob.MinRow, 2d);
+
+			var redBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Red).Single();
+			Assert.Equal(bitmap.Width / 2, redBlob.Width, 2d);
+			Assert.Equal(bitmap.Height / 3, redBlob.Height, 2d);
+			Assert.Equal(bitmap.Width / 2, redBlob.MinColumn, 2d);
+			Assert.Equal(0, redBlob.MinRow);
+
+			var limeBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Lime).Single();
+			Assert.Equal(bitmap.Width / 2, limeBlob.Width, 2d);
+			Assert.Equal(bitmap.Height / 3, limeBlob.Height, 2d);
+			Assert.Equal(0, limeBlob.MinColumn, 2d);
+			Assert.Equal(bitmap.Height / 3, limeBlob.MinRow, 2d);
+
+			var violetBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Violet).Single();
+			Assert.Equal(bitmap.Width / 2, violetBlob.Width, 2d);
+			Assert.Equal(bitmap.Height / 3 * 2, violetBlob.Height, 2d);
+			Assert.Equal(bitmap.Width / 2, violetBlob.MinColumn, 2d);
+			Assert.Equal(bitmap.Height / 3, violetBlob.MinRow, 2d);
+
+			var cyanBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Cyan).Single();
+			Assert.Equal(bitmap.Width / 2, cyanBlob.Width, 2d);
+			Assert.Equal(bitmap.Height / 3, cyanBlob.Height, 2d);
+			Assert.Equal(0, cyanBlob.MinColumn, 2d);
+			Assert.Equal(bitmap.Height / 3 * 2, cyanBlob.MinRow, 2d);
+		}*/
+
+		[Fact]
+		public async Task DependentLayoutBindingsResolve()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Entry), typeof(EntryHandler));
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			double expectedWidth = 200;
+
+			var outerGrid = new Grid()
+			{
+				WidthRequest = expectedWidth
+			};
+
+			var grid = new Grid
+			{
+				HeightRequest = 80,
+				HorizontalOptions = LayoutOptions.Fill
+			};
+
+			grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+			grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+
+			var entry = new Entry() { Text = "Lorem ipsum dolor", HorizontalOptions = LayoutOptions.Fill };
+			var button = new Button() { Text = "Hello world", HorizontalOptions = LayoutOptions.Fill };
+
+			grid.Add(entry);
+			grid.Add(button);
+
+			grid.SetColumn(entry, 0);
+			grid.SetColumn(button, 1);
+
+			// Because of this binding, the the layout will need two passes.
+			button.SetBinding(VisualElement.WidthRequestProperty, new Binding(nameof(View.Width), mode: BindingMode.Default, source: grid));
+
+			await AttachAndRun(outerGrid, async (handler) =>
+			{
+				// The layout needs to occur while the views are attached to the Window, otherwise they won't be able to schedule
+				// the second layout pass correctly on Android. That's why we don't add the inner Grid to the outer Grid until
+				// we're already attached.
+
+				outerGrid.Add(grid);
+
+				var expectation = () => button.Width == expectedWidth;
+
+				await expectation.AssertEventually(timeout: 2000, message: $"Button did not have expected Width of {expectedWidth}");
+			});
+		}
 	}
 }

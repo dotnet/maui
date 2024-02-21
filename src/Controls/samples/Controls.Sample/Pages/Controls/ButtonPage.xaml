@@ -138,6 +138,13 @@
                     CharacterSpacing="20"
                     Text="Button"/>
                 <Label
+                    Text="Character Spacing with Text Color"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    CharacterSpacing="20"
+                    TextColor="HotPink"
+                    Text="Button"/>
+                <Label
                     Text="Image Source"
                     Style="{StaticResource Headline}"/>
                 <Button

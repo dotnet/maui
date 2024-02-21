@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -37,19 +36,40 @@ namespace Microsoft.Maui.Handlers
 
 		public static async Task MapSourceAsync(IImageHandler handler, IImage image) =>
 			await handler.SourceLoader.UpdateImageSourceAsync();
-		
-		void IImageSourcePartSetter.SetImageSource(UIImage? source)
-		{
-			PlatformView.Image = source;
-
-			if (VirtualView.Source is IStreamImageSource)
-				PlatformView.InvalidateMeasure(VirtualView);
-		}
 
 		public void OnWindowChanged()
 		{
-			if (SourceLoader.SourceManager.IsResolutionDependent)
+			if (SourceLoader.SourceManager.RequiresReload(PlatformView))
 				UpdateValue(nameof(IImage.Source));
+		}
+
+		partial class ImageImageSourcePartSetter
+		{
+			public override void SetImageSource(UIImage? platformImage)
+			{
+				if (Handler?.PlatformView is not UIImageView imageView)
+					return;
+
+				if (platformImage?.Images is not null)
+				{
+					imageView.Image = platformImage.Images[0];
+
+					imageView.AnimationImages = platformImage.Images;
+					imageView.AnimationDuration = platformImage.Duration;
+				}
+				else
+				{
+					imageView.AnimationImages = null;
+					imageView.AnimationDuration = 0.0;
+
+					imageView.Image = platformImage;
+				}
+
+				Handler?.UpdateValue(nameof(IImage.IsAnimationPlaying));
+
+				if (Handler?.VirtualView is IImage image && image.Source is IStreamImageSource)
+					imageView.InvalidateMeasure(image);
+			}
 		}
 	}
 }

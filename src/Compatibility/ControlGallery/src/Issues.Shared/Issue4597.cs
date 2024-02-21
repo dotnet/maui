@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				if (result[0].Rect.Height > 1)
 					return result;
 
-				return new Xamarin.UITest.Queries.AppResult[0];
+				return Array.Empty<Xamarin.UITest.Queries.AppResult>();
 			}, 10, 4000);
 
 			Assert.AreEqual(1, images.Length);

@@ -17,6 +17,6 @@
     <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(Intermediate)" />
     <!-- Restore as a separate step due to: https://github.com/dotnet/sdk/issues/21877 -->
     <MSBuild Projects="$(CSProj)" Targets="Restore" />
-    <MSBuild Projects="$(CSProj)" Targets="Record" Properties="App=$(App);TargetFramework=net7.0-android;RuntimeIdentifier=$(RuntimeIdentifier)" />
+    <MSBuild Projects="$(CSProj)" Targets="Record" Properties="App=$(App);TargetFramework=$(_MauiDotNetTfm)-android;RuntimeIdentifier=$(RuntimeIdentifier)" />
   </Target>
 </Project>

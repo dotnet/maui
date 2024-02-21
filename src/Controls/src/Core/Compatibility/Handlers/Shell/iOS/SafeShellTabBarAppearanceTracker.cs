@@ -71,32 +71,48 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			IShellAppearanceElement appearanceElement = appearance;
 
+			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
+			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
+			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
+			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
+
 			controller.TabBar
 				.UpdateiOS15TabBarAppearance(
 					ref _tabBarAppearance,
 					null,
 					null,
-					appearanceElement.EffectiveTabBarForegroundColor,
-					appearanceElement.EffectiveTabBarUnselectedColor,
-					appearanceElement.EffectiveTabBarBackgroundColor,
-					appearanceElement.EffectiveTabBarTitleColor);
+					foregroundColor ?? titleColor,
+					unselectedColor,
+					backgroundColor,
+					titleColor ?? foregroundColor,
+					unselectedColor);
 		}
 
 		void UpdateTabBarAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
 			IShellAppearanceElement appearanceElement = appearance;
 			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
+			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
 			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
 
 			var tabBar = controller.TabBar;
 
-			if (backgroundColor != null)
+			if (backgroundColor is not null && backgroundColor.IsNotDefault())
 				tabBar.BarTintColor = backgroundColor.ToPlatform();
-			if (titleColor.IsDefault != null)
-				tabBar.TintColor = titleColor.ToPlatform();
-			if (unselectedColor.IsDefault != null)
+
+			if (unselectedColor is not null && unselectedColor.IsNotDefault())
+			{
 				tabBar.UnselectedItemTintColor = unselectedColor.ToPlatform();
+				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = unselectedColor.ToPlatform() }, UIControlState.Normal);
+			}
+
+			if (titleColor is not null && titleColor.IsNotDefault() ||
+				foregroundColor is not null && foregroundColor.IsNotDefault())
+			{
+				tabBar.TintColor = (foregroundColor ?? titleColor).ToPlatform();
+				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = (titleColor ?? foregroundColor).ToPlatform() }, UIControlState.Selected);
+			}
 		}
 	}
 }

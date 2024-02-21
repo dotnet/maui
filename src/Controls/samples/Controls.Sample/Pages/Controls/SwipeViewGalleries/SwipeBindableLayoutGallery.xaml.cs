@@ -24,16 +24,16 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 	[Preserve(AllMembers = true)]
 	public class Message
 	{
-		public string Title { get; set; }
-		public string SubTitle { get; set; }
-		public string Description { get; set; }
-		public string Date { get; set; }
+		public string? Title { get; set; }
+		public string? SubTitle { get; set; }
+		public string? Description { get; set; }
+		public string? Date { get; set; }
 	}
 
 	[Preserve(AllMembers = true)]
 	public class SwipeViewGalleryViewModel : BindableObject
 	{
-		ObservableCollection<Message> _messages;
+		ObservableCollection<Message>? _messages;
 
 		public SwipeViewGalleryViewModel()
 		{
@@ -41,7 +41,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			LoadMessages();
 		}
 
-		public ObservableCollection<Message> Messages
+		public ObservableCollection<Message>? Messages
 		{
 			get { return _messages; }
 			set
@@ -59,7 +59,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 		{
 			for (int i = 0; i < 100; i++)
 			{
-				Messages.Add(new Message { Title = $"Lorem ipsum {i + 1}", SubTitle = "Lorem ipsum dolor sit amet", Date = "Yesterday", Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." });
+				Messages!.Add(new Message { Title = $"Lorem ipsum {i + 1}", SubTitle = "Lorem ipsum dolor sit amet", Date = "Yesterday", Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." });
 			}
 		}
 

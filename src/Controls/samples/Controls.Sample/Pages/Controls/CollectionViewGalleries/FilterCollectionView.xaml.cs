@@ -24,7 +24,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			UpdateEmptyView();
 		}
 
-		void UseEmptyViewOnToggled(object sender, ToggledEventArgs e)
+		void UseEmptyViewOnToggled(object? sender, ToggledEventArgs e)
 		{
 			UpdateEmptyView();
 		}
@@ -49,7 +49,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			}
 		}
 
-		void SearchBarOnTextChanged(object sender, TextChangedEventArgs e)
+		void SearchBarOnTextChanged(object? sender, TextChangedEventArgs e)
 		{
 			_demoFilteredItemSource.FilterItems(e.NewTextValue);
 		}

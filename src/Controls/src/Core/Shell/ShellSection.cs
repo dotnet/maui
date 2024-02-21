@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 					if (Navigation.ModalStack[Navigation.ModalStack.Count - 1] is NavigationPage np)
 						return np.Navigation.NavigationStack[np.Navigation.NavigationStack.Count - 1];
 
-					return Navigation.ModalStack[0];
+					return Navigation.ModalStack[Navigation.ModalStack.Count - 1];
 				}
 
 				if (_navStack.Count > 1)

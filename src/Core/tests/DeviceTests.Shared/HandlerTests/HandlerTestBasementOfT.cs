@@ -3,6 +3,17 @@ using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 using Xunit.Sdk;
+#if __IOS__ || MACCATALYST
+using PlatformView = UIKit.UIView;
+#elif __ANDROID__
+using PlatformView = Android.Views.View;
+#elif WINDOWS
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+#elif TIZEN
+using PlatformView = Tizen.NUI.BaseComponents.View;
+#elif (NETSTANDARD || !PLATFORM)
+using PlatformView = System.Object;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -10,9 +21,6 @@ namespace Microsoft.Maui.DeviceTests
 		where THandler : class, IViewHandler, new()
 		where TStub : IStubBase, IView, new()
 	{
-		public static Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000) =>
-			AssertionExtensions.Wait(exitCondition, timeout);
-
 		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
 			CreateHandler<THandler>(view, mauiContext);
 
@@ -48,6 +56,20 @@ namespace Microsoft.Maui.DeviceTests
 			}, MauiContext, async (view) => (IPlatformViewHandler)(await CreateHandlerAsync(view)));
 		}
 
+		public Task AttachAndRun(PlatformView view, Action action) =>
+#if WINDOWS
+			view.AttachAndRun(action, MauiContext);
+#else
+			view.AttachAndRun(action);
+#endif
+
+		public Task AttachAndRun(PlatformView view, Func<Task> action) =>
+#if WINDOWS
+			view.AttachAndRun(action, MauiContext);
+#else
+			view.AttachAndRun(action);
+#endif
+
 		protected Task<THandler> CreateHandlerAsync(IView view)
 		{
 			return InvokeOnMainThreadAsync(() =>
@@ -56,12 +78,19 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task<TValue> GetValueAsync<TValue>(IView view, Func<THandler, TValue> func)
+		protected Task<TValue> GetValueAsync<TValue>(IView view, Func<THandler, TValue> func, bool attachAndRun = false)
 		{
-			return InvokeOnMainThreadAsync(() =>
+			return InvokeOnMainThreadAsync<TValue>(() =>
 			{
-				var handler = CreateHandler(view);
-				return func(handler);
+				if (attachAndRun)
+				{
+					return AttachAndRun(view, func);
+				}
+				else
+				{
+					THandler handler = CreateHandler(view);
+					return Task.FromResult(func(handler));
+				}
 			});
 		}
 

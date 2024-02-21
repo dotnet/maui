@@ -1,5 +1,6 @@
 #nullable disable
 
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
@@ -18,6 +19,24 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (View)GetValue(ContentProperty); }
 			set { SetValue(ContentProperty, value); }
+		}
+
+		/// <summary>Bindable property for <see cref="HideSoftInputOnTapped"/>.</summary>
+		public static readonly BindableProperty HideSoftInputOnTappedProperty
+			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), false);
+
+		/// <summary>
+		/// Gets or sets a value that indicates whether tapping anywhere on the page will cause the soft input to hide.
+		/// </summary>
+		public bool HideSoftInputOnTapped
+		{
+			get { return (bool)GetValue(HideSoftInputOnTappedProperty); }
+			set { SetValue(HideSoftInputOnTappedProperty, value); }
+		}
+
+		public ContentPage()
+		{
+			this.NavigatedTo += (_, _) => UpdateHideSoftInputOnTapped();
 		}
 
 		protected override void OnBindingContextChanged()
@@ -51,8 +70,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
-			return DesiredSize;
+			return this.ComputeDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		protected override Size ArrangeOverride(Rect bounds)

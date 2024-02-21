@@ -1,4 +1,3 @@
-using AndroidX.Window.Layout;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
@@ -7,9 +6,7 @@ namespace Microsoft.Maui.Platform
 	{
 		internal static Rect GetWindowFrame(this Android.App.Activity activity)
 		{
-			var wmc = WindowMetricsCalculator.Companion.OrCreate;
-			var wm = wmc.ComputeCurrentWindowMetrics(activity);
-			var bounds = wm.Bounds;
+			var bounds = PlatformInterop.GetCurrentWindowMetrics(activity);
 			return activity.FromPixels(bounds);
 		}
 

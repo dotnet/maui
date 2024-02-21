@@ -139,5 +139,10 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.InsertSubview(nativeChildView, targetIndex);
 			}
 		}
+
+		public static partial void MapBackground(ILayoutHandler handler, ILayout layout)
+		{
+			handler.PlatformView?.UpdateBackground(layout);
+		}
 	}
 }

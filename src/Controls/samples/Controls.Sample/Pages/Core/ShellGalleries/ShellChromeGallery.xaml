@@ -14,6 +14,10 @@
                 Style="{StaticResource Headline}"/>
             <Picker x:Name="flyoutBehavior" />
             <Label
+                Text="FlyoutIsPresented"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Toggle FlyoutIsPresented" x:Name="flyoutIsPresented" Clicked="OnToggleFlyoutIsPresented" />
+            <Label
                 Text="Flyout Background Color"
                 Style="{StaticResource Headline}"/>
             <Button Text="Toggle Flyout Background" x:Name="flyoutBackgroundColor" Clicked="OnToggleFlyoutBackgroundColor" />

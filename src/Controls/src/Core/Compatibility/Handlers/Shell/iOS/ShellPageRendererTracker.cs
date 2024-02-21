@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					primaries.Reverse();
 			}
 
-			NavigationItem.SetRightBarButtonItems(primaries == null ? new UIBarButtonItem[0] : primaries.ToArray(), false);
+			NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 
 			UpdateLeftToolbarItems();
 		}

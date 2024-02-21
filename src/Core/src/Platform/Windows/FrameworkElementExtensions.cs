@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI.ViewManagement;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
@@ -351,6 +353,53 @@ namespace Microsoft.Maui.Platform
 			};
 
 			nativeView.RequestedTheme = previous;
+		}
+
+		internal static float GetDisplayDensity(this UIElement? element) =>
+			(float)(element?.XamlRoot?.RasterizationScale ?? 1.0f);
+
+		internal static bool HideSoftInput(this FrameworkElement element)
+		{
+			if (TryGetInputPane(out var inputPane))
+			{
+				return inputPane.TryHide();
+			}
+
+			return false;
+		}
+
+		internal static bool ShowSoftInput(this FrameworkElement element)
+		{
+			if (TryGetInputPane(out var inputPane))
+			{
+				return inputPane.TryShow();
+			}
+
+			return false;
+		}
+
+		internal static bool IsSoftInputShowing(this FrameworkElement element)
+		{
+			if (TryGetInputPane(out var inputPane))
+			{
+				return inputPane.Visible;
+			}
+
+			return false;
+		}
+
+		internal static bool TryGetInputPane([NotNullWhen(true)] out InputPane? inputPane)
+		{
+			var handleId = Process.GetCurrentProcess().MainWindowHandle;
+			if (handleId == IntPtr.Zero)
+			{
+				inputPane = null;
+
+				return false;
+			}
+
+			inputPane = InputPaneInterop.GetForWindow(handleId);
+			return true;
 		}
 	}
 }

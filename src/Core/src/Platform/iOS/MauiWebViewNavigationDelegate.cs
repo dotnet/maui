@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Platform
 		public void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
 			var handler = Handler;
-			if (handler == null)
+			var virtualView = handler?.VirtualView;
+
+			if (handler == null || virtualView == null)
 				return;
 
 			handler.PlatformView?.UpdateCanGoBackForward(handler.VirtualView);
@@ -39,11 +41,6 @@ namespace Microsoft.Maui.Platform
 			if (url == $"file://{NSBundle.MainBundle.BundlePath}/")
 				return;
 
-			var virtualView = handler.VirtualView;
-
-			if (virtualView == null)
-				return;
-
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Success);
 
 			handler.PlatformView?.UpdateCanGoBackForward(virtualView);
@@ -53,15 +50,12 @@ namespace Microsoft.Maui.Platform
 		public void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 		{
 			var handler = Handler;
-			if (handler == null)
+			var virtualView = handler?.VirtualView;
+
+			if (handler == null || virtualView == null)
 				return;
 
 			var url = GetCurrentUrl();
-
-			var virtualView = handler.VirtualView;
-
-			if (virtualView == null)
-				return;
 
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Failure);
 
@@ -72,20 +66,16 @@ namespace Microsoft.Maui.Platform
 		public void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 		{
 			var handler = Handler;
-			if (handler == null)
+			var virtualView = handler?.VirtualView;
+
+			if (handler == null || virtualView == null)
 				return;
 
 			var url = GetCurrentUrl();
 
-			var virtualView = handler.VirtualView;
-
-			if (virtualView == null)
-				return;
-
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Failure);
 
 			handler.PlatformView?.UpdateCanGoBackForward(virtualView);
-
 		}
 
 		// https://stackoverflow.com/questions/37509990/migrating-from-uiwebview-to-wkwebview
@@ -93,8 +83,13 @@ namespace Microsoft.Maui.Platform
 		public void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 		{
 			var handler = Handler;
-			if (handler == null)
+			var virtualView = handler?.VirtualView;
+
+			if (handler == null || virtualView == null)
+			{
+				decisionHandler.Invoke(WKNavigationActionPolicy.Cancel);
 				return;
+			}
 
 			var navEvent = WebNavigationEvent.NewPage;
 			var navigationType = navigationAction.NavigationType;
@@ -126,11 +121,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_lastEvent = navEvent;
-
-			var virtualView = handler.VirtualView;
-
-			if (virtualView == null)
-				return;
 
 			var request = navigationAction.Request;
 			var lastUrl = request.Url.ToString();

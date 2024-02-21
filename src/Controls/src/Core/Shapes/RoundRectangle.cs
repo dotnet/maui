@@ -55,23 +55,17 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public override PathF GetPath()
 		{
-			var width = WidthForPathComputation;
-			var height = HeightForPathComputation;
-
-			var path = new PathF();
-
-			float x = (float)StrokeThickness / 2;
-			float y = (float)StrokeThickness / 2;
-
-			float w = (float)(width - StrokeThickness);
-			float h = (float)(height - StrokeThickness);
+			float w = (float)WidthForPathComputation;
+			float h = (float)HeightForPathComputation;
 
 			float topLeftCornerRadius = (float)CornerRadius.TopLeft;
 			float topRightCornerRadius = (float)CornerRadius.TopRight;
 			float bottomLeftCornerRadius = (float)CornerRadius.BottomLeft;
 			float bottomRightCornerRadius = (float)CornerRadius.BottomRight;
 
-			path.AppendRoundedRectangle(x, y, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
+			var path = new PathF();
+
+			path.AppendRoundedRectangle(0, 0, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
 
 			return path;
 		}
@@ -88,35 +82,31 @@ namespace Microsoft.Maui.Controls.Shapes
 			return path;
 		}
 
-		internal PathF GetInnerPath(float strokeWidth)
+		internal PathF GetInnerPath(float strokeThickness)
 		{
-			var width = WidthForPathComputation;
-			var height = HeightForPathComputation;
+			float w = (float)(WidthForPathComputation - strokeThickness);
+			float h = (float)(HeightForPathComputation - strokeThickness);
+			float x = strokeThickness / 2;
+			float y = strokeThickness / 2;
+
+			float topLeftCornerRadius = (float)Math.Max(0, CornerRadius.TopLeft - strokeThickness);
+			float topRightCornerRadius = (float)Math.Max(0, CornerRadius.TopRight - strokeThickness);
+			float bottomLeftCornerRadius = (float)Math.Max(0, CornerRadius.BottomLeft - strokeThickness);
+			float bottomRightCornerRadius = (float)Math.Max(0, CornerRadius.BottomRight - strokeThickness);
 
 			var path = new PathF();
-
-			float x = (float)StrokeThickness / 2;
-			float y = (float)StrokeThickness / 2;
-
-			float w = (float)(width - StrokeThickness);
-			float h = (float)(height - StrokeThickness);
-
-			float topLeftCornerRadius = (float)Math.Max(0, CornerRadius.TopLeft - strokeWidth);
-			float topRightCornerRadius = (float)Math.Max(0, CornerRadius.TopRight - strokeWidth);
-			float bottomLeftCornerRadius = (float)Math.Max(0, CornerRadius.BottomLeft - strokeWidth);
-			float bottomRightCornerRadius = (float)Math.Max(0, CornerRadius.BottomRight - strokeWidth);
 
 			path.AppendRoundedRectangle(x, y, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
 
 			return path;
 		}
 
-		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeWidth)
+		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeThickness)
 		{
 			_fallbackHeight = viewBounds.Height;
 			_fallbackWidth = viewBounds.Width;
 
-			var path = GetInnerPath(strokeWidth);
+			var path = GetInnerPath(strokeThickness);
 
 			TransformPathForBounds(path, viewBounds);
 

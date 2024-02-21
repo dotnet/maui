@@ -18,10 +18,5 @@ namespace Microsoft.Maui.Controls
 
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView, editor);
 		}
-
-		static void MapFocus(IViewHandler handler, IView view, object args)
-		{
-			handler.ShowKeyboardIfFocused(view);
-		}
 	}
 }

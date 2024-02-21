@@ -3,15 +3,15 @@
 
   <ItemGroup>
     <!-- skiasharp and skia-related -->
-    <PackageReference Include="HarfBuzzSharp" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.macOS" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp.HarfBuzz" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="HarfBuzzSharp" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.macOS" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Skia" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Custom" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Model" GeneratePathProperty="true" PrivateAssets="all" />

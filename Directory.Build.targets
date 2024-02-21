@@ -5,7 +5,7 @@
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Versions.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
-  <Import Project="eng\Microsoft.Extensions.targets" />
+  <Import Project="eng\NuGetVersions.targets" />
 
   <PropertyGroup>
      <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
@@ -14,8 +14,8 @@
 
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
-    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>11.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>11.0</TargetPlatformMinVersion>
     <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
@@ -54,13 +54,13 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
-  <!--
-    Comment out this section if you need to update Resource.designer.cs files.
-    See .github/DEVELOPMENT.md#Android for details.
+<!--
+    Disable generation of obj/Debug/net8.0-android/__Microsoft.Android.Resource.Designer.cs
+    Enable this individually in projects that declare/use AndroidResource IDs.
   -->
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true'">
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true' AND '$(MauiGenerateResourceDesigner)' != 'true'">
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
-    <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
+    <AndroidUseIntermediateDesignerFile Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))">false</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
 
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
@@ -76,9 +76,17 @@
   <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
   -->
-  <Import Project="src\Core\src\nuget\buildTransitive\WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
+  <Import Project="src\Core\src\nuget\buildTransitive\WinUI.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
 
-    <!-- Packaging -->
+  <!-- NuGet package information -->
+  <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+    <PackageTags Condition="'$(PackageTags)' == ''">$(DefaultPackageTags)</PackageTags>
+    <PackageIcon>$([System.IO.Path]::GetFileName('$(PackageIconFile)'))</PackageIcon>
+    <GenerateNuspecDependsOn>
+      _MauiPackReadmeFile;
+      $(GenerateNuspecDependsOn);
+    </GenerateNuspecDependsOn>
+  </PropertyGroup>
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
     <None Include="$(LicenseFile)"
           PackagePath="$([System.IO.Path]::GetFileName('$(LicenseFile)'))"
@@ -86,5 +94,22 @@
     <None Include="$(PackageThirdPartyNoticesFile)"
           PackagePath="$([System.IO.Path]::GetFileName('$(PackageThirdPartyNoticesFile)'))"
           Pack="true" />
+    <None Include="$(PackageIconFile)"
+          PackagePath="$([System.IO.Path]::GetFileName('$(PackageIconFile)'))"
+          Pack="true" />
   </ItemGroup>
+  <Target Name="_MauiPackReadmeFile" Condition="'$(IsPackable)' == 'true' and '$(PackageReadmeFile)' == ''">
+    <PropertyGroup>
+      <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(IntermediateOutputPath)\$(PackageReadmeFile)"
+                      Lines="$(Description)"
+                      Overwrite="true" />
+    <ItemGroup>
+      <_PackageFiles Include="$(IntermediateOutputPath)\$(PackageReadmeFile)"
+                     PackagePath="$(PackageReadmeFile)"
+                     Pack="true" />
+    </ItemGroup>
+  </Target>
+
 </Project>

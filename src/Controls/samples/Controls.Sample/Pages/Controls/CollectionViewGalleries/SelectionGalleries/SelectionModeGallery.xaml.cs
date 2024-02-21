@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 			UpdateSelectionInfoCommand();
 		}
 
-		void CollectionViewOnSelectionChanged(object sender, SelectionChangedEventArgs args)
+		void CollectionViewOnSelectionChanged(object? sender, SelectionChangedEventArgs args)
 		{
 			UpdateSelectionInfo(args.CurrentSelection, args.PreviousSelection);
 		}
@@ -59,11 +59,11 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 
 			if (CollectionView.SelectionMode == SelectionMode.Multiple)
 			{
-				current = CollectionView?.SelectedItems.ToCommaSeparatedList();
+				current = CollectionView.SelectedItems.ToCommaSeparatedList();
 			}
 			else if (CollectionView.SelectionMode == SelectionMode.Single)
 			{
-				current = ((CollectionViewGalleryTestItem)CollectionView?.SelectedItem)?.Caption;
+				current = ((CollectionViewGalleryTestItem)CollectionView.SelectedItem)?.Caption;
 			}
 
 			SelectedItemsCommand.Text = $"Selection (command): {current}";

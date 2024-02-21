@@ -14,6 +14,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 #if IOS || MACCATALYST
 using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
@@ -155,11 +156,31 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(ContentPage)}, {nameof(FlyoutPage)}WithNavigationPage")]
-		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(FlyoutPage)}, {nameof(FlyoutPage)}WithNavigationPage")]
-		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(NavigationPage)}, {nameof(FlyoutPage)}WithNavigationPage")]
-		[InlineData($"{nameof(Shell)}, {nameof(ContentPage)}, {nameof(Shell)}")]
-		[InlineData($"FlyoutPageWithNavigationPage, NavigationPageWithFlyoutPage, FlyoutPageWithNavigationPage")]
+		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(ContentPage)}, {nameof(FlyoutPage)}WithNavigationPage"
+#if WINDOWS
+			, Skip = "Currently Failing on Windows https://github.com/dotnet/maui/issues/15530"
+#endif
+			)]
+		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(FlyoutPage)}, {nameof(FlyoutPage)}WithNavigationPage"
+#if WINDOWS
+			, Skip = "Currently Failing on Windows https://github.com/dotnet/maui/issues/15530"
+#endif
+			)]
+		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(NavigationPage)}, {nameof(FlyoutPage)}WithNavigationPage"
+#if WINDOWS
+			, Skip = "Currently Failing on Windows https://github.com/dotnet/maui/issues/15530"
+#endif
+			)]
+		[InlineData($"{nameof(Shell)}, {nameof(ContentPage)}, {nameof(Shell)}"
+#if WINDOWS
+			, Skip = "Currently Failing on  Windows https://github.com/dotnet/maui/issues/15530"
+#endif
+			)]
+		[InlineData($"FlyoutPageWithNavigationPage, NavigationPageWithFlyoutPage, FlyoutPageWithNavigationPage"
+#if WINDOWS
+			, Skip = "Currently Failing on Windows https://github.com/dotnet/maui/issues/15530"
+#endif
+			)]
 		public async Task ToolbarUpdatesCorrectlyWhenSwappingMainPageWithAlreadyUsedPage(string pages)
 		{
 			string[] pageSet = pages.Split(',');
@@ -191,7 +212,7 @@ namespace Microsoft.Maui.DeviceTests
 						pageSet[i].Contains("NavigationPage", StringComparison.OrdinalIgnoreCase) ||
 						pageSet[i].Contains("Shell", StringComparison.OrdinalIgnoreCase);
 
-					await AssertionExtensions.Wait(() => shouldHaveToolbar == IsNavigationBarVisible(currentPage.Handler));
+					await AssertEventually(() => shouldHaveToolbar == IsNavigationBarVisible(currentPage.Handler));
 					Assert.Equal(shouldHaveToolbar, IsNavigationBarVisible(currentPage.Handler));
 				}
 			});

@@ -13,13 +13,14 @@ using Xunit;
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public static class Extensions
 	{
-		public static Task Wait(this Image image, int timeout = 1000) =>
-			AssertionExtensions.Wait(() => !image.IsLoading, timeout);
+		public static Task WaitUntilLoaded(this Image image, int timeout = 1000) =>
+			AssertEventually(() => !image.IsLoading, timeout, message: $"Timed out loading image {image}");
 
 		public static void SetupShellHandlers(this MauiAppBuilder builder)
 		{

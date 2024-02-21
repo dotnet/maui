@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.SearchBar']/Docs/*" />
-	public partial class SearchBar : InputView, IFontElement, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
+	public partial class SearchBar : InputView, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
 	{
 		/// <summary>Bindable property for <see cref="SearchCommand"/>.</summary>
 		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create(
@@ -32,28 +32,28 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='PlaceholderColorProperty']/Docs/*" />
 		public new static readonly BindableProperty PlaceholderColorProperty = InputView.PlaceholderColorProperty;
 
-		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
-		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
+		/// <inheritdoc cref="InputView.FontFamilyProperty"/>
+		public new static readonly BindableProperty FontFamilyProperty = InputView.FontFamilyProperty;
 
-		/// <summary>Bindable property for <see cref="FontSize"/>.</summary>
-		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
+		/// <inheritdoc cref="InputView.FontSizeProperty"/>
+		public new static readonly BindableProperty FontSizeProperty = InputView.FontSizeProperty;
 
-		/// <summary>Bindable property for <see cref="FontAttributes"/>.</summary>
-		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
+		/// <inheritdoc cref="InputView.FontAttributesProperty"/>
+		public new static readonly BindableProperty FontAttributesProperty = InputView.FontAttributesProperty;
+
+		/// <inheritdoc cref="InputView.FontAutoScalingEnabledProperty"/>
+		public new static readonly BindableProperty FontAutoScalingEnabledProperty = InputView.FontAutoScalingEnabledProperty;
 
 		/// <summary>
 		/// Backing store for the <see cref="InputView.IsTextPredictionEnabled"/> property.
 		/// </summary>
 		public static new readonly BindableProperty IsTextPredictionEnabledProperty = InputView.IsTextPredictionEnabledProperty;
 
-		/// <summary>Bindable property for <see cref="CursorPosition"/>.</summary>
-		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(SearchBar), 0, validateValue: (b, v) => (int)v >= 0);
+		/// <inheritdoc cref="InputView.CursorPositionProperty"/>
+		public new static readonly BindableProperty CursorPositionProperty = InputView.CursorPositionProperty;
 
-		/// <summary>Bindable property for <see cref="SelectionLength"/>.</summary>
-		public static readonly BindableProperty SelectionLengthProperty = BindableProperty.Create(nameof(SelectionLength), typeof(int), typeof(SearchBar), 0, validateValue: (b, v) => (int)v >= 0);
-
-		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
-		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+		/// <inheritdoc cref="InputView.SelectionLengthProperty"/>
+		public new static readonly BindableProperty SelectionLengthProperty = InputView.SelectionLengthProperty;
 
 		/// <summary>Bindable property for <see cref="HorizontalTextAlignment"/>.</summary>
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
@@ -104,67 +104,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SearchCommandParameterProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
-		public FontAttributes FontAttributes
-		{
-			get { return (FontAttributes)GetValue(FontAttributesProperty); }
-			set { SetValue(FontAttributesProperty, value); }
-		}
-
-		public int CursorPosition
-		{
-			get { return (int)GetValue(CursorPositionProperty); }
-			set { SetValue(CursorPositionProperty, value); }
-		}
-
-		public int SelectionLength
-		{
-			get { return (int)GetValue(SelectionLengthProperty); }
-			set { SetValue(SelectionLengthProperty, value); }
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='FontFamily']/Docs/*" />
-		public string FontFamily
-		{
-			get { return (string)GetValue(FontFamilyProperty); }
-			set { SetValue(FontFamilyProperty, value); }
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='FontSize']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
-		public double FontSize
-		{
-			get { return (double)GetValue(FontSizeProperty); }
-			set { SetValue(FontSizeProperty, value); }
-		}
-
-		public bool FontAutoScalingEnabled
-		{
-			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, value);
-		}
-
-		double IFontElement.FontSizeDefaultValueCreator() =>
-			this.GetDefaultFontSize();
-
-		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
-			HandleFontChanged();
-
-		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
-			HandleFontChanged();
-
-		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			HandleFontChanged();
-
-		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
-			HandleFontChanged();
-
-		void HandleFontChanged()
-		{
-			Handler?.UpdateValue(nameof(ITextStyle.Font));
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
-
 		public event EventHandler SearchButtonPressed;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
@@ -205,8 +144,6 @@ namespace Microsoft.Maui.Controls
 		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
 		{
 		}
-
-		Font ITextStyle.Font => this.ToFont();
 
 		bool ITextInput.IsTextPredictionEnabled => true;
 
