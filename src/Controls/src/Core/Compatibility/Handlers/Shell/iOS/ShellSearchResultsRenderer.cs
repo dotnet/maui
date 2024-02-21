@@ -3,6 +3,7 @@ using System;
 using System.Collections.Specialized;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Extensions.Logging;
 using ObjCRuntime;
 using UIKit;
 
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							if (SearchHandler.DisplayMemberName is not null)
 							{
-								throw new InvalidOperationException(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedErrorMessage);
+								Application.Current?.FindMauiContext()?.CreateLogger<ShellSearchResultsRenderer>().LogWarning(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
 							}
 
 							label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel(string.Empty, static (object o) => o));
