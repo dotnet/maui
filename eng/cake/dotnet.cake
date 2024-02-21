@@ -698,7 +698,7 @@ void RunMSBuildWithDotNet(
         .WithTarget(target)
         .EnableBinaryLogger(binlog)
         
-        .SetVerbosity(Verbosity.Diagnostic)
+       // .SetVerbosity(Verbosity.Diagnostic)
         ;
 
     if (warningsAsError)
@@ -729,6 +729,7 @@ void RunMSBuildWithDotNet(
 
         //args.Append("/tl");
         args.Append("-tl:false");
+        args.Append("-v diag");
 
         return args;
     };
