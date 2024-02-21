@@ -118,25 +118,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Toolbar Uses TabbedPage Title When Set")]
-		public async Task ToolbarTabbedPageTitle()
-		{
-			SetupBuilder();
-			var navPage = new NavigationPage(
-				new TabbedPage
-				{
-					Title = "Tabbed Page Title",
-					Children = { new ContentPage { Title = "Child Page Title" } },
-				});
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
-			{
-				string title = GetToolbarTitle(handler);
-				Assert.Equal("Tabbed Page Title", title);
-				return Task.CompletedTask;
-			});
-		}
-
 		[Fact(DisplayName = "Toolbar Uses TabbedPage Child Title")]
 		public async Task ToolbarTabbedPageChildTitle()
 		{
