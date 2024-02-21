@@ -190,6 +190,8 @@ namespace Microsoft.Maui.Platform
 
 		protected Rectangle LastAllocation { get; set; }
 
+		protected Rectangle? CurrentAllocation { get; set; }
+
 		protected void ClearMeasured(bool clearCache = true)
 		{
 			if (clearCache && !MeasureCache.IsEmpty)
@@ -223,16 +225,16 @@ namespace Microsoft.Maui.Platform
 				IsReallocating = true;
 
 				var mAllocation = allocation.ToRect();
+				CurrentAllocation = mAllocation;
 
 				clearCache = LastAllocation.IsEmpty || mAllocation.IsEmpty || LastAllocation != mAllocation;
 				ClearMeasured(clearCache);
-
-				LastAllocation = mAllocation;
 
 				if (RestrictToMeasuredAllocation)
 				{
 					var mesuredAllocation = Measure(allocation.Width, allocation.Height);
 					mAllocation.Size = mesuredAllocation;
+					CurrentAllocation = mAllocation;
 				}
 
 				ArrangeAllocation(new Rectangle(Point.Zero, mAllocation.Size));
@@ -246,11 +248,13 @@ namespace Microsoft.Maui.Platform
 				}
 
 				base.OnSizeAllocated(allocation);
+				LastAllocation = mAllocation;
 			}
 			finally
 			{
 				IsReallocating = false;
 				IsSizeAllocating = false;
+				CurrentAllocation = null;
 			}
 		}
 
@@ -270,10 +274,12 @@ namespace Microsoft.Maui.Platform
 				try
 				{
 					LastAllocation = Allocation.ToRect();
+					CurrentAllocation = LastAllocation;
 					Measure(Allocation.Width, Allocation.Height);
 				}
 				catch
 				{
+					CurrentAllocation = null;
 					IsReallocating = false;
 				}
 			}
@@ -346,8 +352,8 @@ namespace Microsoft.Maui.Platform
 			// dirty fix: do not constrain width on first allocation 
 			var force_width = RequestedWidth ?? double.PositiveInfinity;
 
-			if (IsReallocating)
-				force_width = Allocation.Width;
+			if (IsReallocating && CurrentAllocation.HasValue)
+				force_width = CurrentAllocation.Value.Width;
 
 			var size = Measure(force_width, minimum_height > 0 ? minimum_height : RequestedHeight ?? double.PositiveInfinity);
 
@@ -364,8 +370,8 @@ namespace Microsoft.Maui.Platform
 			// dirty fix: do not constrain height on first allocation
 			var force_height = RequestedHeight ?? double.PositiveInfinity;
 
-			if (IsReallocating)
-				force_height = Allocation.Height;
+			if (IsReallocating && CurrentAllocation.HasValue)
+				force_height = CurrentAllocation.Value.Height;
 
 			var size = Measure(minimum_width > 0 ? minimum_width : RequestedWidth ?? double.PositiveInfinity, force_height);
 
@@ -388,7 +394,7 @@ namespace Microsoft.Maui.Platform
 			else
 				minimum_height = natural_height = (int)size.Height;
 
-			RequestedHeight = null;
+			RequestedWidth = null;
 		}
 
 		protected override void OnGetPreferredWidthForHeight(int height, out int minimum_width, out int natural_width)
@@ -403,7 +409,7 @@ namespace Microsoft.Maui.Platform
 			else
 				minimum_width = natural_width = (int)size.Width;
 
-			RequestedWidth = null;
+			RequestedHeight = null;
 		}
 
 #endif

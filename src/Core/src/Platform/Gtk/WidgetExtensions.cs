@@ -9,6 +9,7 @@ namespace Microsoft.Maui
 
 	public static class WidgetExtensions
 	{
+
 		public static void UpdateIsEnabled(this Widget nativeView, bool isEnabled) =>
 			nativeView.Sensitive = isEnabled;
 
@@ -68,13 +69,15 @@ namespace Microsoft.Maui
 				}
 				else if (widthConstrained)
 				{
+					minimumWidth = naturalWidth = (int)widthConstraint;
 					nativeView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
 				}
 				else if (heightConstrained)
 				{
+					minimumHeight = naturalHeight = (int)heightConstraint;
 					nativeView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
 				}
-	
+
 				else
 				{
 					nativeView.GetPreferredHeight(out minimumHeight, out naturalHeight);
@@ -90,10 +93,12 @@ namespace Microsoft.Maui
 				}
 				else if (heightConstrained)
 				{
+					minimumHeight = naturalHeight = (int)heightConstraint;
 					nativeView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
 				}
 				else if (widthConstrained)
 				{
+					minimumWidth = naturalWidth = (int)widthConstraint;
 					nativeView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
 				}
 
@@ -111,9 +116,9 @@ namespace Microsoft.Maui
 
 			if (nativeView.WidthRequest > minimumWidth)
 				minimumWidth = nativeView.WidthRequest;
+
 			if (nativeView.HeightRequest > minimumHeight)
 				minimumHeight = nativeView.HeightRequest;
-
 
 			return new SizeRequest(new Size(naturalWidth, naturalHeight), new Size(minimumWidth, minimumHeight));
 #pragma warning restore CS0162 // Unreachable code detected
@@ -251,6 +256,7 @@ namespace Microsoft.Maui
 
 		[MissingMapper]
 		public static void UpdateMaximumWidth(this Widget nativeView, IView view) { }
+
 	}
 
 }
