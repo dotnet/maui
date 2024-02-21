@@ -17,9 +17,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void WhenChangingBoxViewOpacityThenValueIsCorrectlySet()
 		{
-#if NATIVE_AOT
-			Assert.Ignore("Crashes with System.NullReferenceException when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553");
-#endif
 			App.WaitForElement(buttonId);
 
 			var initialOpacity = GetCurrentOpacityStatus();

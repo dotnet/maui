@@ -13,9 +13,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void SoftInputExtensionsPageTest()
 		{
-#if NATIVE_AOT
-			Assert.Ignore("Crashes with System.NullReferenceException when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553");
-#endif
 			// Make sure the buttons appear on the screen.
 			Task.Delay(1000).Wait();
 			App.Click("ShowKeyboard");

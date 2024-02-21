@@ -13,9 +13,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void ResizeScrollViewAndTapButtonTest()
 		{
-#if NATIVE_AOT
-			Assert.Ignore("Crashes with System.NullReferenceException when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553");
-#endif
 			// Tapping the Resize button will change the height of the ScrollView content
 			App.Click("Resize");
 

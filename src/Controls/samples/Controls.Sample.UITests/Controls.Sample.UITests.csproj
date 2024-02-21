@@ -23,6 +23,7 @@
     <PublishAot>true</PublishAot>
     <_IsPublishing>true</_IsPublishing>
     <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
+    <DefineConstants>$(DefineConstants);NATIVE_AOT</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">

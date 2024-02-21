@@ -15,9 +15,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void AppDoesntCrashWhenSettingNewTitleViewOnExistingPage()
 		{
-#if NATIVE_AOT
-			Assert.Ignore("Times out when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553");
-#endif
 			try
 			{
 				App.WaitForElement("TitleViewLabel4", timeout: TimeSpan.FromSeconds(4));

@@ -15,9 +15,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void AppDoesntCrashWhenReusingSameTitleView()
 		{
-#if NATIVE_AOT
-			Assert.Ignore("Times out when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553");
-#endif
 			App.WaitForElement("SuccessLabel");
 		}
 	}

@@ -4,9 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
-#if NATIVE_AOT
-	[Ignore("Crashes with Sequence contains no elements when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553")]
-#endif
 	public class HideSoftInputOnTappedPageTests : _IssuesUITest
 	{
 		public HideSoftInputOnTappedPageTests(TestDevice device) : base(device) { }

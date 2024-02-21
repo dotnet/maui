@@ -14,9 +14,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void CarouselItemLoadsInCorrectPosition()
 		{
-#if NATIVE_AOT
-			Assert.Ignore("Times out when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553");
-#endif
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
 				"The bug only happens on iOS; see https://github.com/dotnet/maui/issues/19657");
 

@@ -15,9 +15,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void UpdateCollectionViewHeaderTest()
 		{
-#if NATIVE_AOT
-			Assert.Ignore("Fails with Snapshot different than baseline when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553");
-#endif
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
 
 			App.WaitForElement("WaitForStubControl");

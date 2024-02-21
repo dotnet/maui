@@ -15,9 +15,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public async Task Issue18751Test()
 		{
-#if NATIVE_AOT
-			Assert.Ignore("Fails with Snapshot different than baseline when running with NativeAOT, see https://github.com/dotnet/maui/issues/20553");
-#endif
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows },
 				"Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994");
 
