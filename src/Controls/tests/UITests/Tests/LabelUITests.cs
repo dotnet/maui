@@ -31,11 +31,6 @@ public class LabelUITests : _ViewUITests
 			Assert.Ignore("Click (x, y) pointer type mouse is not implemented.");
 		}
 
-		if (Device == TestDevice.Windows)
-		{
-			Assert.Ignore("This test is failing on Windows because the feature is not yet implemented: https://github.com/dotnet/maui/issues/4734");
-		}
-
 		var remote = new EventViewContainerRemote(UITestContext, Test.FormattedString.SpanTapped);
 		remote.GoTo();
 
