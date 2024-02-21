@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // Type or member is obsolete
 using System.Linq;
 using System.Threading.Tasks;
 using Tizen.Security;
@@ -207,6 +208,10 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		public partial class Photos : BasePlatformPermission
+		{
+		}
+
+		public partial class PostNotifications : BasePlatformPermission
 		{
 		}
 

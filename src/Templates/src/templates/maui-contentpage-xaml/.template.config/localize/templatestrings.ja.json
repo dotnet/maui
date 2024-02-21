@@ -1,6 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI ContentPage (XAML)",
+  "description": "A page for displaying content using XAML.",
   "postActions/openInEditor/description": "エディターで NewPage1.xaml を開きます。",
   "symbols/namespace/description": "生成されたコードの名前空間"
 }

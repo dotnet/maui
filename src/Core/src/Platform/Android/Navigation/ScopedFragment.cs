@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly IMauiContext _mauiContext;
 
+		public bool IsDestroyed { get; private set; }
 		public IView DetailView { get; private set; }
 
 		public ScopedFragment(IView detailView, IMauiContext mauiContext)
@@ -16,10 +17,25 @@ namespace Microsoft.Maui.Platform
 			_mauiContext = mauiContext;
 		}
 
+		public override void OnViewStateRestored(Bundle? savedInstanceState)
+		{
+			// Fragments have the potential to "undestroy" if you reuse them
+			IsDestroyed = false;
+			base.OnViewStateRestored(savedInstanceState);
+		}
+
 		public override View OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 		{
+			// Fragments have the potential to "undestroy" if you reuse them
+			IsDestroyed = false;
 			var pageMauiContext = _mauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 			return DetailView.ToPlatform(pageMauiContext);
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			IsDestroyed = true;
 		}
 	}
 }

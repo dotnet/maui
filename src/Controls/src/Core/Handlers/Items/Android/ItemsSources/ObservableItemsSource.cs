@@ -10,15 +10,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		readonly IEnumerable _itemsSource;
 		readonly BindableObject _container;
 		readonly ICollectionChangedNotifier _notifier;
+		readonly WeakNotifyCollectionChangedProxy _proxy = new();
+		readonly NotifyCollectionChangedEventHandler _collectionChanged;
 		bool _disposed;
+
+		~ObservableItemsSource() => _proxy.Unsubscribe();
 
 		public ObservableItemsSource(IEnumerable itemSource, BindableObject container, ICollectionChangedNotifier notifier)
 		{
-			_itemsSource = itemSource as IList ?? itemSource as IEnumerable;
+			_itemsSource = itemSource;
 			_container = container;
 			_notifier = notifier;
-
-			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
+			_collectionChanged = CollectionChanged;
+			_proxy.Subscribe((INotifyCollectionChanged)itemSource, _collectionChanged);
 		}
 
 

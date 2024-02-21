@@ -4,12 +4,7 @@ namespace Maui.Controls.Sample.ViewModels
 {
 	public class LabelViewModel : BaseViewModel
 	{
-		string _htmlString;
-
-		public LabelViewModel()
-		{
-			HtmlString = "Html, &lt;b&gt;from ViewModel!&lt;/b&gt;";
-		}
+		string _htmlString = "Html, &lt;b&gt;from ViewModel!&lt;/b&gt;";
 
 		public string HtmlString
 		{

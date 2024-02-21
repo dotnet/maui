@@ -4,6 +4,7 @@
 	{
 		Github,
 		Bugzilla,
+		ManualTest,
 		None
 	}
 }

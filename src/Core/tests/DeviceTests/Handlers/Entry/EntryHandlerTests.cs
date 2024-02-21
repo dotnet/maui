@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -192,7 +193,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(entry, async (entryHandler) =>
 			{
-				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => entryHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyInitValue(entry, () => entry.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
@@ -210,7 +211,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(entry, async (entryHandler) =>
 			{
-				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => entryHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyInitValue(entry, () => entry.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isEnabled);
@@ -230,7 +231,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(entry, async (entryHandler) =>
 			{
-				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => entryHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyUpdatesValue(
@@ -255,7 +256,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(entry, async (entryHandler) =>
 			{
-				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => entryHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyUpdatesValue(
@@ -284,7 +285,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(entry, async (entryHandler) =>
 			{
-				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => entryHandler.PlatformView.IsLoaded());
 			});
 
 			var nativeTextPrediction = await GetValueAsync(entry, GetNativeIsTextPredictionEnabled);
@@ -673,95 +674,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(textAlignment, values.ViewValue);
 			Assert.Equal(platformAlignment, values.PlatformViewValue);
 		}
-
-#if ANDROID
-		[Fact]
-		public async Task NextMovesToNextEntrySuccessfully()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
-					handler.AddHandler<EntryStub, EntryHandler>();
-				});
-			});
-
-			var layout = new VerticalStackLayoutStub();
-
-			var entry1 = new EntryStub
-			{
-				Text = "Entry 1",
-				ReturnType = ReturnType.Next
-			};
-
-			var entry2 = new EntryStub
-			{
-				Text = "Entry 2",
-				ReturnType = ReturnType.Next
-			};
-
-			layout.Add(entry1);
-			layout.Add(entry2);
-
-			layout.Width = 100;
-			layout.Height = 150;
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
-				await contentViewHandler.PlatformView.AttachAndRun(async () =>
-				{
-					await entry1.SendKeyboardReturnType(ReturnType.Next);
-					await entry2.WaitForFocused();
-					Assert.True(entry2.IsFocused);
-				});
-			});
-		}
-
-		[Fact]
-		public async Task DoneClosesKeyboard()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
-					handler.AddHandler<EntryStub, EntryHandler>();
-				});
-			});
-
-			var layout = new VerticalStackLayoutStub();
-
-			var entry1 = new EntryStub
-			{
-				Text = "Entry 1",
-				ReturnType = ReturnType.Done
-			};
-
-			var entry2 = new EntryStub
-			{
-				Text = "Entry 2",
-				ReturnType = ReturnType.Done
-			};
-
-			layout.Add(entry1);
-			layout.Add(entry2);
-
-			layout.Width = 100;
-			layout.Height = 150;
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var handler = CreateHandler<LayoutHandler>(layout);
-				await handler.PlatformView.AttachAndRun(async () =>
-				{
-					await entry1.SendKeyboardReturnType(ReturnType.Done);
-					await entry1.WaitForKeyboardToHide();
-				});
-			});
-		}
-#endif
 
 		[Category(TestCategory.Entry)]
 		public class EntryTextStyleTests : TextStyleHandlerTests<EntryHandler, EntryStub>

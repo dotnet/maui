@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void RemoveShadowClicked(object sender, EventArgs e)
 		{
-			ClippedShadowView.Shadow = ShadowView.Shadow = ShadowViewGradient.Shadow = LabelShadowView.Shadow = null;
+			ClippedShadowView.Shadow = ShadowView.Shadow = ShadowViewGradient.Shadow = LabelShadowView.Shadow = null!;
 		}
 
 		void OnShadowOffsetXChanged(object sender, ValueChangedEventArgs e)

@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					if (string.IsNullOrEmpty(Property))
 						return null;
 					minfo = typeof(View).GetProperties().First(pi => pi.Name == Property && pi.CanRead && pi.GetMethod.IsPublic).GetMethod;
-					return Constraint.RelativeToParent(p => (double)minfo.Invoke(p, new object[] { }) * Factor + Constant);
+					return Constraint.RelativeToParent(p => (double)minfo.Invoke(p, Array.Empty<object>()) * Factor + Constant);
 				case ConstraintType.Constant:
 					return Constraint.Constant(Constant);
 				case ConstraintType.RelativeToView:
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						view = ((INameScope)valueProvider.TargetObject).FindByName<View>(ElementName);
 					}
 					return Constraint.RelativeToView(view, delegate (RelativeLayout p, View v)
-					{ return (double)minfo.Invoke(v, new object[] { }) * Factor + Constant; });
+					{ return (double)minfo.Invoke(v, Array.Empty<object>()) * Factor + Constant; });
 			}
 		}
 	}

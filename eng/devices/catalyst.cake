@@ -1,21 +1,21 @@
 #load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
+#load "./devices-shared.cake"
 
-string TARGET = Argument("target", "Test");
-
-const string dotnetVersion = "net7.0";
+const string dotnetVersion = "net8.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? "");
+FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? "maccatalyst");
 
 // optional
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
+var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-maccatalyst");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("MAC_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("MAC_TEST_APP") ?? "");
-FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? "");
+FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? DEFAULT_APP_PROJECT);
 var TEST_RESULTS = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
 
 // other
@@ -29,8 +29,25 @@ Information("Build Configuration: {0}", CONFIGURATION);
 Information("Build Runtime Identifier: {0}", RUNTIME_IDENTIFIER);
 Information("Build Target Framework: {0}", TARGET_FRAMEWORK);
 
+string DOTNET_TOOL_PATH = "/usr/local/share/dotnet/dotnet";
+
+var localDotnetiOS = GetBuildVariable("workloads", "local") == "local";
+if (localDotnetiOS)
+{
+	Information("Using local dotnet");
+	DOTNET_TOOL_PATH = $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet";
+}
+else
+{
+	Information("Using system dotnet");
+}
+
 Setup(context =>
 {
+	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
+	Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
+	Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+
 	Cleanup();
 });
 
@@ -54,15 +71,13 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-catalyst.binlog";
 
-	SetDotNetEnvironmentVariables(DOTNET_PATH);
-
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 		Configuration = CONFIGURATION,
 		Framework = TARGET_FRAMEWORK,
 		MSBuildSettings = new DotNetMSBuildSettings {
 			MaxCpuCount = 0
 		},
-		ToolPath = DOTNET_PATH,
+		ToolPath = DOTNET_TOOL_PATH,
 		ArgumentCustomization = args => args
 			.Append("/p:BuildIpa=true")
 			.Append("/p:RuntimeIdentifier=" + RUNTIME_IDENTIFIER)
@@ -79,7 +94,13 @@ Task("Test")
 			throw new Exception("If no app was specified, an app must be provided.");
 		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER).FullPath;
 		var apps = GetDirectories(binDir + "/*.app");
-		TEST_APP = apps.First().FullPath;
+		if (apps.Any()) {
+			TEST_APP = apps.First().FullPath;
+		}
+		else {
+			Error("Error: Couldn't find .app file");
+			throw new Exception("Error: Couldn't find .app file");
+		}
 	}
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
 		TEST_RESULTS = TEST_APP + "-results";
@@ -96,10 +117,14 @@ Task("Test")
 		// Because we retry on CI we don't want to delete the previous failures
 		// We want to publish those files for reference
 		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
+
+		//SetDotNetEnvironmentVariables("/Users/runner/hostedtoolcache/dotnet");
 	}
+
 
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
+		ToolPath = DOTNET_TOOL_PATH,
 		ArgumentCustomization = args => args.Append("run xharness apple test " +
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
@@ -163,6 +188,7 @@ Task("uitest")
 	Information("Run App project {0}",TEST_APP_PROJECT.FullPath);
 	DotNetBuild(TEST_APP_PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
+			ToolPath = DOTNET_TOOL_PATH,
 			ArgumentCustomization = args => args
 				.Append($"-f {TARGET_FRAMEWORK}")
 				.Append("-t:Run")
@@ -174,6 +200,7 @@ Task("uitest")
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-mac.binlog";
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
+			ToolPath = DOTNET_TOOL_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=MACUITEST")
 				.Append("/bl:" + binlog)
@@ -183,7 +210,7 @@ Task("uitest")
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_mac.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, pathDotnet: DOTNET_TOOL_PATH, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-catalyst");
 });
 
 RunTarget(TARGET);

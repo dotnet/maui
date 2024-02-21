@@ -2,12 +2,17 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
-		<IsPackable>true</IsPackable>
-		<PackageId>Microsoft.Maui.Controls</PackageId>
 		<!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
 		<NoPackageAnalysis>true</NoPackageAnalysis>
 		<!-- Do not include any assemblies from this project as it is a "meta" project -->
 		<IncludeBuildOutput>false</IncludeBuildOutput>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- NuGet package information -->
+		<IsPackable>true</IsPackable>
+		<PackageId>Microsoft.Maui.Controls</PackageId>
+		<Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, macOS, Tizen, and Windows from a single shared codebase.</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

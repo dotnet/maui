@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Controls;
@@ -74,6 +75,26 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
 			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
+		}
+
+		/// <summary>
+		/// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
+		/// </summary>
+		/// <param name="workItem">The action to call.</param>
+		/// <returns>Returns a <see cref="Task"/> representing <c>true</c> if the <paramref name="workItem"/> was called, or <c>false</c> if it was not called because Blazor is not currently running.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
+#if ANDROID
+		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+#endif
+		public virtual async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
+		{
+			ArgumentNullException.ThrowIfNull(workItem);
+			if (Handler is null)
+			{
+				return false;
+			}
+
+			return await ((BlazorWebViewHandler)(Handler!)).TryDispatchAsync(workItem);
 		}
 
 		/// <inheritdoc />

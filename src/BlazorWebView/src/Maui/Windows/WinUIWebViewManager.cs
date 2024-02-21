@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -84,86 +85,113 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			_logger.HandlingWebRequest(requestUri);
 
-			// First, call into WebViewManager to see if it has a framework file for this request. It will
-			// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
-			// return a file.
-			if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers)
+			var uri = new Uri(requestUri);
+			var relativePath = AppOriginUri.IsBaseOf(uri) ? AppOriginUri.MakeRelativeUri(uri).ToString() : null;
+
+			// Check if the uri is _framework/blazor.modules.json is a special case as the built-in file provider
+			// brings in a default implementation.
+			if (relativePath != null &&
+				string.Equals(relativePath, "_framework/blazor.modules.json", StringComparison.Ordinal) &&
+				await TryServeFromFolderAsync(eventArgs, allowFallbackOnHostPage: false, requestUri, relativePath))
+			{
+				_logger.ResponseContentBeingSent(requestUri, 200);
+			}
+			else if (TryGetResponseContent(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers)
 				&& statusCode != 404)
 			{
+				// First, call into WebViewManager to see if it has a framework file for this request. It will
+				// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
+				// return a file.
 				var headerString = GetHeaderString(headers);
 				_logger.ResponseContentBeingSent(requestUri, statusCode);
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content.AsRandomAccessStream(), statusCode, statusMessage, headerString);
 			}
-			else if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
+			else if (relativePath != null)
 			{
-				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
-
-				// If the path does not end in a file extension (or is empty), it's most likely referring to a page,
-				// in which case we should allow falling back on the host page.
-				if (allowFallbackOnHostPage && !Path.HasExtension(relativePath))
-				{
-					relativePath = _hostPageRelativePath;
-				}
-				relativePath = Path.Combine(_contentRootRelativeToAppRoot, relativePath.Replace('/', '\\'));
-				statusCode = 200;
-				statusMessage = "OK";
-				var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(relativePath);
-				headers = StaticContentProvider.GetResponseHeaders(contentType);
-				IRandomAccessStream? stream = null;
-				if (_isPackagedApp)
-				{
-					var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
-					if (winUIItem != null)
-					{
-						using var contentStream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
-						stream = await CopyContentToRandomAccessStreamAsync(contentStream);
-					}
-				}
-				else
-				{
-					var path = Path.Combine(AppContext.BaseDirectory, relativePath);
-					if (File.Exists(path))
-					{
-						using var contentStream = File.OpenRead(path);
-						stream = await CopyContentToRandomAccessStreamAsync(contentStream);
-					}
-				}
-
-				var hotReloadedContent = Stream.Null;
-				if (StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
-				{
-					stream = await CopyContentToRandomAccessStreamAsync(hotReloadedContent);
-				}
-
-				if (stream != null)
-				{
-					var headerString = GetHeaderString(headers);
-
-					_logger.ResponseContentBeingSent(requestUri, statusCode);
-
-					eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
-						stream,
-						statusCode,
-						statusMessage,
-						headerString);
-				}
-				else
-				{
-					_logger.ReponseContentNotFound(requestUri);
-				}
-
-				async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
-				{
-					using var memStream = new MemoryStream();
-					await content.CopyToAsync(memStream);
-					var randomAccessStream = new InMemoryRandomAccessStream();
-					await randomAccessStream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
-					return randomAccessStream;
-				}
+				await TryServeFromFolderAsync(
+					eventArgs,
+					allowFallbackOnHostPage,
+					requestUri,
+					relativePath);
 			}
 
 			// Notify WebView2 that the deferred (async) operation is complete and we set a response.
 			deferral.Complete();
+		}
+
+		private async Task<bool> TryServeFromFolderAsync(
+			CoreWebView2WebResourceRequestedEventArgs eventArgs,
+			bool allowFallbackOnHostPage,
+			string requestUri,
+			string relativePath)
+		{
+			// If the path does not end in a file extension (or is empty), it's most likely referring to a page,
+			// in which case we should allow falling back on the host page.
+			if (allowFallbackOnHostPage && !Path.HasExtension(relativePath))
+			{
+				relativePath = _hostPageRelativePath;
+			}
+			relativePath = Path.Combine(_contentRootRelativeToAppRoot, relativePath.Replace('/', '\\'));
+			var statusCode = 200;
+			var statusMessage = "OK";
+			var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(relativePath);
+			var headers = StaticContentProvider.GetResponseHeaders(contentType);
+			IRandomAccessStream? stream = null;
+			if (_isPackagedApp)
+			{
+				var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
+				var location = Package.Current.InstalledLocation.Path;
+				if (winUIItem != null)
+				{
+					using var contentStream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
+					stream = await CopyContentToRandomAccessStreamAsync(contentStream);
+				}
+			}
+			else
+			{
+				var path = Path.Combine(AppContext.BaseDirectory, relativePath);
+				if (File.Exists(path))
+				{
+					using var contentStream = File.OpenRead(path);
+					stream = await CopyContentToRandomAccessStreamAsync(contentStream);
+				}
+			}
+
+			var hotReloadedContent = Stream.Null;
+			if (StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
+			{
+				stream = await CopyContentToRandomAccessStreamAsync(hotReloadedContent);
+			}
+
+			if (stream != null)
+			{
+				var headerString = GetHeaderString(headers);
+
+				_logger.ResponseContentBeingSent(requestUri, statusCode);
+
+				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
+					stream,
+					statusCode,
+					statusMessage,
+					headerString);
+
+				return true;
+			}
+			else
+			{
+				_logger.ReponseContentNotFound(requestUri);
+			}
+
+			return false;
+
+			async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
+			{
+				using var memStream = new MemoryStream();
+				await content.CopyToAsync(memStream);
+				var randomAccessStream = new InMemoryRandomAccessStream();
+				await randomAccessStream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+				return randomAccessStream;
+			}
 		}
 
 		/// <inheritdoc />

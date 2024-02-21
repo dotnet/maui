@@ -26,23 +26,23 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 	[Preserve(AllMembers = true)]
 	class Item
 	{
-		public string Id { get; set; }
-		public string Text { get; set; }
-		public string Description { get; set; }
+		public string? Id { get; set; }
+		public string? Text { get; set; }
+		public string? Description { get; set; }
 	}
 
 	[Preserve(AllMembers = true)]
 	class ItemsViewModel : INotifyPropertyChanged
 	{
 		public ObservableCollection<Item> Items { get; set; }
-		public Command LoadItemsCommand { get; set; }
+		public Command? LoadItemsCommand { get; set; }
 
-		Item _selectedItem;
-		readonly Label _result;
+		Item? _selectedItem;
+		readonly Label _result = default!;
 
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
-		public Item SelectedItem
+		public Item? SelectedItem
 		{
 			get => _selectedItem;
 			set { _selectedItem = value; OnPropertyChanged(); }
@@ -82,7 +82,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 					_result.Text = "Success";
 				}
 			});
-			_result = result;
+			_result = result ?? throw new ArgumentNullException(nameof(result));
 		}
 	}
 }

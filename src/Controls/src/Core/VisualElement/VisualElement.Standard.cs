@@ -10,11 +10,11 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Window != null)
 			{
-				OnLoadedCore();
+				SendLoaded();
 			}
 			else
 			{
-				OnUnloadedCore();
+				SendUnloaded();
 			}
 		}
 	}

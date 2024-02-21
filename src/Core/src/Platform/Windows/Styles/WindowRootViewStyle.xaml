@@ -3,15 +3,6 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:maui="using:Microsoft.Maui.Platform">
 
-    <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Default">
-            <SolidColorBrush x:Key="TitleBarBackgroundColor" Color="#FF000000" />
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="Light">
-            <SolidColorBrush x:Key="TitleBarBackgroundColor" Color="#FFFFFFFF" />
-        </ResourceDictionary>
-    </ResourceDictionary.ThemeDictionaries>
-    
     <maui:DefaultOrUserDataTemplateSelector 
         UserTemplateName="MauiAppTitleBarTemplate" 
         DefaultTemplateName="MauiAppTitleBarTemplateDefault"
@@ -26,7 +17,6 @@
         <Border
             Canvas.ZIndex="1" 
             VerticalAlignment="Stretch"
-            Background="{ThemeResource TitleBarBackgroundColor}"
             Margin="0,0,0,0">
             <StackPanel Orientation="Horizontal" Margin="12, 0, 0, 0" x:Name="RootStackPanel">
                 <Image 

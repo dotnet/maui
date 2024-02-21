@@ -12,44 +12,11 @@ namespace Microsoft.Maui.Controls.Platform
 	internal static class TextBlockExtensions
 	{
 		public static void UpdateLineBreakMode(this TextBlock textBlock, Label label) =>
-			textBlock.UpdateLineBreakMode(label.LineBreakMode);
+			textBlock.SetLineBreakMode(label.LineBreakMode, label.MaxLines);
 
 		public static void UpdateLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode)
 		{
-			if (textBlock == null)
-				return;
-
-			switch (lineBreakMode)
-			{
-				case LineBreakMode.NoWrap:
-					textBlock.TextTrimming = TextTrimming.Clip;
-					textBlock.TextWrapping = TextWrapping.NoWrap;
-					break;
-				case LineBreakMode.WordWrap:
-					textBlock.TextTrimming = TextTrimming.None;
-					textBlock.TextWrapping = TextWrapping.Wrap;
-					break;
-				case LineBreakMode.CharacterWrap:
-					textBlock.TextTrimming = TextTrimming.WordEllipsis;
-					textBlock.TextWrapping = TextWrapping.Wrap;
-					break;
-				case LineBreakMode.HeadTruncation:
-					// TODO: This truncates at the end.
-					textBlock.TextTrimming = TextTrimming.WordEllipsis;
-					DetermineTruncatedTextWrapping(textBlock);
-					break;
-				case LineBreakMode.TailTruncation:
-					textBlock.TextTrimming = TextTrimming.CharacterEllipsis;
-					DetermineTruncatedTextWrapping(textBlock);
-					break;
-				case LineBreakMode.MiddleTruncation:
-					// TODO: This truncates at the end.
-					textBlock.TextTrimming = TextTrimming.WordEllipsis;
-					DetermineTruncatedTextWrapping(textBlock);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			textBlock.SetLineBreakMode(lineBreakMode, null);
 		}
 
 		static void DetermineTruncatedTextWrapping(TextBlock textBlock) =>
@@ -87,10 +54,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateMaxLines(this TextBlock platformControl, Label label)
 		{
-			if (label.MaxLines >= 0)
-				platformControl.MaxLines = label.MaxLines;
-			else
-				platformControl.MaxLines = 0;
+			// Linebreak mode also handles setting MaxLines
+			platformControl.SetLineBreakMode(label.LineBreakMode, label.MaxLines);
 		}
 
 		public static void UpdateDetectReadingOrderFromContent(this TextBlock platformControl, Label label)
@@ -99,6 +64,46 @@ namespace Microsoft.Maui.Controls.Platform
 				platformControl.SetTextReadingOrder(label.OnThisPlatform().GetDetectReadingOrderFromContent());
 		}
 
+		internal static void SetLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode, int? maxLines = null)
+		{
+			if (maxLines.HasValue && maxLines >= 0)
+				textBlock.MaxLines = maxLines.Value;
+			else
+				textBlock.MaxLines = 0;
+
+			switch (lineBreakMode)
+			{
+				case LineBreakMode.NoWrap:
+					textBlock.TextTrimming = TextTrimming.Clip;
+					textBlock.TextWrapping = TextWrapping.NoWrap;
+					break;
+				case LineBreakMode.WordWrap:
+					textBlock.TextTrimming = TextTrimming.None;
+					textBlock.TextWrapping = TextWrapping.Wrap;
+					break;
+				case LineBreakMode.CharacterWrap:
+					textBlock.TextTrimming = TextTrimming.WordEllipsis;
+					textBlock.TextWrapping = TextWrapping.Wrap;
+					break;
+				case LineBreakMode.HeadTruncation:
+					// TODO: This truncates at the end.
+					textBlock.TextTrimming = TextTrimming.WordEllipsis;
+					DetermineTruncatedTextWrapping(textBlock);
+					break;
+				case LineBreakMode.TailTruncation:
+					textBlock.TextTrimming = TextTrimming.CharacterEllipsis;
+					DetermineTruncatedTextWrapping(textBlock);
+					break;
+				case LineBreakMode.MiddleTruncation:
+					// TODO: This truncates at the end.
+					textBlock.TextTrimming = TextTrimming.WordEllipsis;
+					DetermineTruncatedTextWrapping(textBlock);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+	
 		internal static void SetTextReadingOrder(this TextBlock platformControl, bool detectReadingOrderFromContent) =>
 			platformControl.TextReadingOrder = detectReadingOrderFromContent
 				? TextReadingOrder.DetectFromContent

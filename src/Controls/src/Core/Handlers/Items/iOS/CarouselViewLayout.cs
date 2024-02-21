@@ -1,28 +1,30 @@
 #nullable disable
 using System;
 using CoreGraphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class CarouselViewLayout : ItemsViewLayout
 	{
-		readonly CarouselView _carouselView;
+		readonly WeakReference<CarouselView> _carouselView;
 		readonly ItemsLayout _itemsLayout;
 		CGPoint? _pendingOffset;
 
 		public CarouselViewLayout(ItemsLayout itemsLayout, CarouselView carouselView) : base(itemsLayout)
 		{
-			_carouselView = carouselView;
+			_carouselView = new(carouselView);
 			_itemsLayout = itemsLayout;
 		}
 
 		public override void ConstrainTo(CGSize size)
 		{
+			if (!_carouselView.TryGetTarget(out var carouselView))
+				return;
+
 			// TODO: Should we scale the items 
-			var width = size.Width != 0 ? size.Width - _carouselView.PeekAreaInsets.Left - _carouselView.PeekAreaInsets.Right : 0;
-			var height = size.Height != 0 ? size.Height - _carouselView.PeekAreaInsets.Top - _carouselView.PeekAreaInsets.Bottom : 0;
+			var width = size.Width != 0 ? size.Width - carouselView.PeekAreaInsets.Left - carouselView.PeekAreaInsets.Right : 0;
+			var height = size.Height != 0 ? size.Height - carouselView.PeekAreaInsets.Top - carouselView.PeekAreaInsets.Bottom : 0;
 
 			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{
@@ -44,11 +46,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
+			if (!_carouselView.TryGetTarget(out var carouselView))
+				return default;
+
 			var insets = base.GetInsetForSection(collectionView, layout, section);
-			var left = insets.Left + (float)_carouselView.PeekAreaInsets.Left;
-			var right = insets.Right + (float)_carouselView.PeekAreaInsets.Right;
-			var top = insets.Top + (float)_carouselView.PeekAreaInsets.Top;
-			var bottom = insets.Bottom + (float)_carouselView.PeekAreaInsets.Bottom;
+			var left = insets.Left + (float)carouselView.PeekAreaInsets.Left;
+			var right = insets.Right + (float)carouselView.PeekAreaInsets.Right;
+			var top = insets.Top + (float)carouselView.PeekAreaInsets.Top;
+			var bottom = insets.Bottom + (float)carouselView.PeekAreaInsets.Bottom;
 
 			return new UIEdgeInsets(top, left, bottom, right);
 		}
@@ -57,6 +62,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.PrepareForCollectionViewUpdates(updateItems);
 
+			if (!_carouselView.TryGetTarget(out var carouselView))
+				return;
+
 			// Determine whether the change is a removal 
 			if (updateItems.Length == 0 || updateItems[0].UpdateAction != UICollectionUpdateAction.Delete)
 			{
@@ -64,7 +72,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// Determine whether the removed item is before the current position
-			if (updateItems[0].IndexPathBeforeUpdate.Item >= _carouselView.Position)
+			if (updateItems[0].IndexPathBeforeUpdate.Item >= carouselView.Position)
 			{
 				return;
 			}

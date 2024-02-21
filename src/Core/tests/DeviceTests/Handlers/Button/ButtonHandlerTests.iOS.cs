@@ -36,6 +36,45 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingAndTextColorInitializesCorrectly()
+		{
+			string originalText = "Test";
+			var xplatCharacterSpacing = 4;
+			var color = Colors.HotPink;
+
+			var button = new ButtonStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				TextColor = color,
+				Text = originalText
+			};
+
+			var values = await GetValueAsync(button, (handler) =>
+			{
+				return new
+				{
+					ViewValue = button.CharacterSpacing,
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
+				};
+			});
+
+			var colorvalues = await GetValueAsync(button, (handler) =>
+			{
+				return new
+				{
+					ViewValue = button.TextColor,
+					PlatformViewValue = GetNativeTextColor(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
+
+			Assert.Equal(color, colorvalues.ViewValue);
+			Assert.Equal(color, colorvalues.PlatformViewValue);
+		}
+
 		[Fact(DisplayName = "CharacterSpacing updates size Correctly")]
 		public async Task CharacterSpacingUpdatesSizeCorrectly()
 		{

@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	[Obsolete]
-	internal class ResourcesProvider : ISystemResourcesProvider
+	internal sealed class ResourcesProvider : ISystemResourcesProvider
 	{
 		ResourceDictionary _dictionary;
 		static global::Android.Content.Context _applicationContext;

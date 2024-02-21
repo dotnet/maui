@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
@@ -18,7 +19,10 @@ namespace Microsoft.Maui.Controls
 		{
 			foreach (var item in swipeItems)
 				if (item is Element e)
+				{
+					CheckParent(e);
 					AddLogicalChild(e);
+				}
 
 			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
@@ -128,7 +132,10 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (var item in notifyCollectionChangedEventArgs.NewItems)
 					if (item is Element e)
+					{
+						CheckParent(e);
 						AddLogicalChild(e);
+					}
 			}
 
 			if (notifyCollectionChangedEventArgs.OldItems is not null)
@@ -144,6 +151,19 @@ namespace Microsoft.Maui.Controls
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return _swipeItems.GetEnumerator();
+		}
+
+		// If a SwipeItem occupies multiple SwipeItems, we only want the logical hierarchy
+		// to wire up to the SwipeItems that are currently part of a SwipeView.
+		// We could throw an exception here but that would be too hostile of a breaking behavior.
+		// TODO NET9 This warning should probably be elevated to `Element` for NET9
+		void CheckParent(Element e)
+		{
+			if (e.Parent is not null && e.Parent != this)
+			{
+				this.CreateLogger<SwipeItems>()
+					?.LogWarning($"{e} is already part of {e.Parent}. Remove from {e.Parent} to avoid inconsistent behavior.");
+			}
 		}
 	}
 }

@@ -9,7 +9,6 @@
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
-    <AndroidLinkMode>None</AndroidLinkMode>
     <NoWarn>IL2036;0618;0612</NoWarn>
   </PropertyGroup>
 

@@ -76,7 +76,7 @@ namespace Microsoft.Maui
 			// First check Alias
 			if (_fontRegistrar.GetFont(fontFamily) is string fontPostScriptName)
 			{
-				if (fontPostScriptName.Contains("://", StringComparison.Ordinal) && fontPostScriptName.Contains("#", StringComparison.Ordinal))
+				if (fontPostScriptName.Contains("://", StringComparison.Ordinal) && fontPostScriptName.Contains('#', StringComparison.Ordinal))
 				{
 					// The registrar has given us a perfect path, so use it exactly
 					yield return fontPostScriptName;

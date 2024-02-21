@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		[Obsolete("Use EditorHandler.Mapper instead.")]
 		public static IPropertyMapper<IEditor, EditorHandler> ControlsEditorMapper =
-			new PropertyMapper<Editor, EditorHandler>(EditorHandler.Mapper);
+			new ControlsMapper<Editor, EditorHandler>(EditorHandler.Mapper);
 
 		internal static new void RemapForControls()
 		{
@@ -18,8 +19,12 @@ namespace Microsoft.Maui.Controls
 			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(Text), MapText);
 			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(TextTransform), MapText);
 
+#if IOS || ANDROID
+			EditorHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+#endif
+
 #if ANDROID
-			EditorHandler.CommandMapper.PrependToMapping(nameof(IEditor.Focus), MapFocus);
+			EditorHandler.CommandMapper.PrependToMapping(nameof(IEditor.Focus), InputView.MapFocus);
 #endif
 		}
 	}

@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// This is very strange what we are about to do. For whatever reason if you take this animation
 			// and wrap it into an animation set it will have a 1 frame glitch at the start where the
-			// fragment shows at the final position. That sucks. So instead we reach into the returned
+			// fragment shows at the final position. So instead we reach into the returned
 			// set and hook up to the first item. This means any animation we use depends on the first item
 			// finishing at the end of the animation.
 

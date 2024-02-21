@@ -1,6 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI ContentPage(C#)",
+  "description": "A page for displaying content using C#.",
   "postActions/openInEditor/description": "편집기에서 NewPage1.cs를 엽니다.",
   "symbols/namespace/description": "생성된 코드의 네임스페이스입니다."
 }

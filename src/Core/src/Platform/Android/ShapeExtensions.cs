@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ShapeExtensions
 	{
-		public static Path ToPlatform(this IShape shape, Graphics.Rect bounds, float strokeThickness, bool innerPath = false)
+		public static Path ToPlatform(this IShape shape, Graphics.Rect bounds, float strokeThickness, float density, bool innerPath = false)
 		{
 			Graphics.Rect pathBounds;
 			PathF path;
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 				if (shape is IRoundRectangle roundRectangle)
 				{
 					path = roundRectangle.InnerPathForBounds(bounds, strokeThickness);
-					return path.AsAndroidPath();
+					return path.AsAndroidPath(scaleX: density, scaleY: density);
 				}
 
 				float x = (float)bounds.X + strokeThickness / 2;
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 
 			path = shape.PathForBounds(pathBounds);
 
-			return path.AsAndroidPath();
+			return path.AsAndroidPath(scaleX: density, scaleY: density);
 		}
 	}
 }

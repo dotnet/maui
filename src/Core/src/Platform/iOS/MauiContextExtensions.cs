@@ -10,9 +10,12 @@ namespace Microsoft.Maui.Platform
 		public static UIWindow GetPlatformWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<UIWindow>();
 
+		public static UIWindow? GetOptionalPlatformWindow(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetService<UIWindow>();
+
 		public static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
-			return MauiUIApplicationDelegate.Current.Services ??
+			return IPlatformApplication.Current?.Services ??
 				throw new InvalidOperationException("Unable to find Application Services");
 		}
 	}

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (pointCollection == null || pointCollection.Count == 0)
 			{
-				return new CGPoint[0];
+				return System.Array.Empty<CGPoint>();
 			}
 
 			CGPoint[] points = new CGPoint[pointCollection.Count];

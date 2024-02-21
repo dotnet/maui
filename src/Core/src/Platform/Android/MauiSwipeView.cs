@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
-		bool ShouldInterceptScrollChildrenTouch(ViewGroup scrollView, bool isHorizontal)
+		static bool ShouldInterceptScrollChildrenTouch(ViewGroup scrollView, bool isHorizontal)
 		{
 			AView? scrollViewContent = scrollView.GetChildAt(0);
 
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
-		bool IsViewInBounds(AView view, int x, int y)
+		static bool IsViewInBounds(AView view, int x, int y)
 		{
 			ARect outRect = new ARect();
 			view.GetHitRect(outRect);
@@ -295,9 +295,9 @@ namespace Microsoft.Maui.Platform
 			return _swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Right;
 		}
 
-		bool IsValidSwipeItems(ISwipeItems? swipeItems)
+		static bool IsValidSwipeItems(ISwipeItems? swipeItems)
 		{
-			return swipeItems != null && swipeItems.Where(s => GetIsVisible(s)).Count() > 0;
+			return swipeItems != null && swipeItems.Any(GetIsVisible);
 		}
 
 		bool ProcessSwipingInteractions(MotionEvent? e)
@@ -463,7 +463,7 @@ namespace Microsoft.Maui.Platform
 			return touchContent;
 		}
 
-		bool TouchInsideContent(double x1, double y1, double x2, double y2, double x, double y)
+		static bool TouchInsideContent(double x1, double y1, double x2, double y2, double x, double y)
 		{
 			if (x > x1 && x < (x1 + x2) && y > y1 && y < (y1 + y2))
 				return true;
@@ -1034,7 +1034,7 @@ namespace Microsoft.Maui.Platform
 			return ValidateSwipeThreshold(swipeThreshold);
 		}
 
-		bool GetIsVisible(ISwipeItem swipeItem)
+		static bool GetIsVisible(ISwipeItem swipeItem)
 		{
 			if (swipeItem is IView view)
 				return view.Visibility == Maui.Visibility.Visible;
@@ -1288,7 +1288,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void ExecuteSwipeItem(ISwipeItem item)
+		static void ExecuteSwipeItem(ISwipeItem item)
 		{
 			if (item == null)
 				return;

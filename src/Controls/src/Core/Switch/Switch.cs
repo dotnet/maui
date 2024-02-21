@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls
 		bool ISwitch.IsOn
 		{
 			get => IsToggled;
-			set => IsToggled = value;
+			set => SetValue(IsToggledProperty, value, SetterSpecificity.FromHandler);
 		}
 	}
 }

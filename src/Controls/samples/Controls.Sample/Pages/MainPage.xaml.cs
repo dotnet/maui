@@ -8,8 +8,8 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class MainPage
 	{
-		readonly IServiceProvider _services;
-		readonly MainViewModel _viewModel;
+		readonly IServiceProvider? _services;
+		readonly MainViewModel? _viewModel;
 
 		public MainPage(IServiceProvider services, MainViewModel viewModel)
 		{

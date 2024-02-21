@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Entry is a single line text entry. It is best used for collecting small discrete pieces of information, like usernames and passwords.
 	/// </summary>
-	public partial class Entry : InputView, IFontElement, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>, IEntry
+	public partial class Entry : InputView, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>, IEntry
 	{
 		/// <summary>
 		/// Backing store for the <see cref="ReturnType"/> property.
@@ -59,40 +59,26 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
-		/// <summary>
-		/// Backing store for the <see cref="ReturnType"/> property.
-		/// </summary>
-		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
+		/// <inheritdoc cref="InputView.FontFamilyProperty"/>
+		public static new readonly BindableProperty FontFamilyProperty = InputView.FontFamilyProperty;
 
-		/// <summary>
-		/// Backing store for the <see cref="ReturnType"/> property.
-		/// </summary>
-		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
+		/// <inheritdoc cref="InputView.FontSizeProperty"/>
+		public static new readonly BindableProperty FontSizeProperty = InputView.FontSizeProperty;
 
-		/// <summary>
-		/// Backing store for the <see cref="ReturnType"/> property.
-		/// </summary>
-		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
+		/// <inheritdoc cref="InputView.FontAttributesProperty"/>
+		public static new readonly BindableProperty FontAttributesProperty = InputView.FontAttributesProperty;
 
-		/// <summary>
-		/// Backing store for the <see cref="InputView.IsTextPredictionEnabled"/> property.
-		/// </summary>
+		/// <inheritdoc cref="InputView.FontAutoScalingEnabledProperty"/>
+		public static new readonly BindableProperty FontAutoScalingEnabledProperty = InputView.FontAutoScalingEnabledProperty;
+
+		/// <inheritdoc cref="InputView.IsTextPredictionEnabledProperty"/>
 		public static new readonly BindableProperty IsTextPredictionEnabledProperty = InputView.IsTextPredictionEnabledProperty;
 
-		/// <summary>
-		/// Backing store for the <see cref="ReturnType"/> property.
-		/// </summary>
-		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+		/// <inheritdoc cref="InputView.CursorPositionProperty"/>
+		public new static readonly BindableProperty CursorPositionProperty = InputView.CursorPositionProperty;
 
-		/// <summary>
-		/// Backing store for the <see cref="CursorPosition"/> property.
-		/// </summary>
-		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(Entry), 0, validateValue: (b, v) => (int)v >= 0);
-
-		/// <summary>
-		/// Backing store for the <see cref="SelectionLength"/> property.
-		/// </summary>
-		public static readonly BindableProperty SelectionLengthProperty = BindableProperty.Create(nameof(SelectionLength), typeof(int), typeof(Entry), 0, validateValue: (b, v) => (int)v >= 0);
+		/// <inheritdoc cref="InputView.SelectionLengthProperty"/>
+		public new static readonly BindableProperty SelectionLengthProperty = InputView.SelectionLengthProperty;
 
 		/// <summary>
 		/// Backing store for the <see cref="ClearButtonVisibility"/> property.
@@ -140,72 +126,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets a value that indicates whether the font for the text of this entry is bold, italic, or neither.
-		/// This is a bindable property.
-		/// </summary>
-		public FontAttributes FontAttributes
-		{
-			get { return (FontAttributes)GetValue(FontAttributesProperty); }
-			set { SetValue(FontAttributesProperty, value); }
-		}
-
-		/// <summary>
-		/// Gets or sets the font family for the text of this entry. This is a bindable property.
-		/// </summary>
-		public string FontFamily
-		{
-			get { return (string)GetValue(FontFamilyProperty); }
-			set { SetValue(FontFamilyProperty, value); }
-		}
-
-		/// <summary>
-		/// Gets or sets the size of the font for the text of this entry. This is a bindable property.
-		/// </summary>
-		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
-		public double FontSize
-		{
-			get { return (double)GetValue(FontSizeProperty); }
-			set { SetValue(FontSizeProperty, value); }
-		}
-
-		/// <summary>
-		/// Determines whether or not the font of this entry should scale automatically according to the operating system settings. Default value is <see langword="true"/>.
-		/// This is a bindable property.
-		/// </summary>
-		/// <remarks>Typically this should always be enabled for accessibility reasons.</remarks>
-		public bool FontAutoScalingEnabled
-		{
-			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, value);
-		}
-
-		/// <summary>
 		/// Determines what the return key on the on-screen keyboard should look like. This is a bindable property.
 		/// </summary>
 		public ReturnType ReturnType
 		{
 			get => (ReturnType)GetValue(ReturnTypeProperty);
 			set => SetValue(ReturnTypeProperty, value);
-		}
-
-		/// <summary>
-		/// Gets or sets the position of the cursor. The value must be more than or equal to 0 and less or equal to the length of <see cref="InputView.Text"/>.
-		/// This is a bindable property.
-		/// </summary>
-		public int CursorPosition
-		{
-			get { return (int)GetValue(CursorPositionProperty); }
-			set { SetValue(CursorPositionProperty, value); }
-		}
-
-		/// <summary>
-		/// Gets or sets the length of the selection. The selection will start at <see cref="CursorPosition"/>.
-		/// This is a bindable property.
-		/// </summary>
-		public int SelectionLength
-		{
-			get { return (int)GetValue(SelectionLengthProperty); }
-			set { SetValue(SelectionLengthProperty, value); }
 		}
 
 		/// <summary>
@@ -235,27 +161,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (ClearButtonVisibility)GetValue(ClearButtonVisibilityProperty);
 			set => SetValue(ClearButtonVisibilityProperty, value);
-		}
-
-		double IFontElement.FontSizeDefaultValueCreator() =>
-			this.GetDefaultFontSize();
-
-		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
-			HandleFontChanged();
-
-		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
-			HandleFontChanged();
-
-		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			HandleFontChanged();
-
-		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
-			HandleFontChanged();
-
-		void HandleFontChanged()
-		{
-			Handler?.UpdateValue(nameof(ITextStyle.Font));
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		/// <summary>
@@ -290,8 +195,6 @@ namespace Microsoft.Maui.Controls
 		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
 		{
 		}
-
-		Font ITextStyle.Font => this.ToFont();
 
 		void IEntry.Completed()
 		{

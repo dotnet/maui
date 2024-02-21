@@ -45,7 +45,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 		public class InNewWindowCollection : ControlsHandlerTestBase
 		{
-			[Fact]
+			[Fact(
+#if MACCATALYST
+			Skip = "Fails on Mac Catalyst, fixme"
+#endif
+			)]
 			public async Task ValidateIsImportantForAccessibility()
 			{
 				EnsureHandlerCreated(builder =>

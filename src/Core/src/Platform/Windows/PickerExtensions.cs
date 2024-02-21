@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Platform
 		static readonly string[] TextColorResourceKeys =
 		{
 			"ComboBoxForeground",
+			"ComboBoxForegroundPointerOver",
 			"ComboBoxForegroundDisabled",
 			"ComboBoxForegroundFocused",
 			"ComboBoxForegroundFocusedPressed",

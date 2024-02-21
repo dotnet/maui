@@ -68,7 +68,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(platformAlignment, values.PlatformViewValue);
 		}
 
-		[Theory(DisplayName = "MaxLength Works Correctly")]
+		[Theory(DisplayName = "MaxLength Works Correctly"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/7939"
+#endif
+		)]
 		[InlineData("123")]
 		[InlineData("Hello")]
 		[InlineData("Goodbye")]

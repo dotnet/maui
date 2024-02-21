@@ -27,14 +27,14 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.HeaderFooterGalleri
 			readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(3);
 			DateTime _currentTime;
 
-			public event PropertyChangedEventHandler PropertyChanged;
+			public event PropertyChangedEventHandler? PropertyChanged;
 
 			public HeaderFooterDemoModel()
 			{
 				CurrentTime = DateTime.Now;
 			}
 
-			void OnPropertyChanged([CallerMemberName] string property = null)
+			void OnPropertyChanged([CallerMemberName] string property = "")
 			{
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
 			}

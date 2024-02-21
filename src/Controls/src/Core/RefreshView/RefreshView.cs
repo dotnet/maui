@@ -150,5 +150,11 @@ namespace Microsoft.Maui.Controls
 		Paint IRefreshView.RefreshColor => RefreshColor?.AsPaint();
 
 		IView IRefreshView.Content => base.Content;
+
+		bool IRefreshView.IsRefreshing
+		{
+			get => IsRefreshing;
+			set { SetValue(IsRefreshingProperty, value, SetterSpecificity.FromHandler); }
+		}
 	}
 }

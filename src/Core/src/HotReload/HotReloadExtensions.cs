@@ -41,7 +41,7 @@ namespace Microsoft.Maui.HotReload
 			var flags = BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic;
 			if (isSubclass)
 				flags = BindingFlags.Static | BindingFlags.NonPublic;
-			var foos = type.GetMethods(flags).Where(x => x.GetCustomAttributes(typeof(OnHotReloadAttribute), true).Any()).ToList();
+			var foos = type.GetMethods(flags).Where(x => x.GetCustomAttributes(typeof(OnHotReloadAttribute), true).Length > 0).ToList();
 			foreach (var foo in foos)
 				yield return foo;
 

@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="graphicsView"><see cref="PlatformGraphicsView"/>.</param>
 		/// <returns>Offset Rectangle.</returns>
-		Point GenerateAdornerOffset(View graphicsView)
+		static Point GenerateAdornerOffset(View graphicsView)
 		{
 			if (graphicsView == null || graphicsView.Context?.GetActivity() is not Activity nativeActivity)
 				return new Point();

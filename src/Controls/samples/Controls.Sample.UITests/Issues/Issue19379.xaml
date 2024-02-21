@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19379"
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+    <VerticalStackLayout 
+        Padding="30,0"
+        Spacing="25">
+        <Label 
+            AutomationId="WaitForStubControl"
+            Text="Issue 19379"/>
+        <CollectionView 
+            Header="{Binding CustomHeader, Mode=TwoWay}"       
+            ItemsSource="{Binding ItemList}">
+            <CollectionView.HeaderTemplate>
+                <DataTemplate>
+                    <ContentView>
+                        <Label 
+                            Text="{Binding Title}" 
+                            BackgroundColor="Yellow" 
+                            Margin="0,10"/>
+                    </ContentView>
+                </DataTemplate>
+            </CollectionView.HeaderTemplate>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label 
+                        Text="{Binding .}"
+                        BackgroundColor="SkyBlue"
+                        Margin="10"
+                        VerticalOptions="Center"
+                        VerticalTextAlignment="Center"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <Button 
+            AutomationId="UpdateButton"
+            Text="Update the CollectionView header"
+            Clicked="Button_Clicked"/>
+    </VerticalStackLayout>
+</ContentPage>

@@ -17,7 +17,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <summary>The user granted permission or is automatically granted.</summary>
 		Granted = 3,
 
-		/// <summary>In a restricted state (only iOS).</summary>
+		/// <summary>In a restricted state.</summary>
 		Restricted = 4,
 
 		/// <summary>In a limited state (only iOS).</summary>

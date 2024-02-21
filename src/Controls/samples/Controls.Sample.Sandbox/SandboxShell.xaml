@@ -16,7 +16,7 @@
             <ShellContent Icon="dotnet_bot.png"
             Title="Home"
             ContentTemplate="{DataTemplate local:MainPage}"
-            Route="MainPage" />
+            Route="MainPage2" />
         </Tab>
     </TabBar>
 </Shell>

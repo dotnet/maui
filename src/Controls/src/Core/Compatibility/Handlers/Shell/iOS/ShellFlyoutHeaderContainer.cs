@@ -1,7 +1,4 @@
 #nullable disable
-using System;
-using CoreGraphics;
-using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
@@ -9,6 +6,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	internal class ShellFlyoutHeaderContainer : UIContainerView
 	{
 		Thickness _safearea = Thickness.Zero;
+
 		public ShellFlyoutHeaderContainer(View view) : base(view)
 		{
 			UpdateSafeAreaMargin();
@@ -21,13 +19,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (View.IsSet(View.MarginProperty))
 					return View.Margin;
 
+				if (View is ISafeAreaView sav && sav.IgnoreSafeArea)
+					return Thickness.Zero;
+
 				var safeArea = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 
+				// As the safe area is for the entire window, we should not account for the bottom area for the header, 
+				// otherwise it will be treated as margin added in between the header and content
 				return new Thickness(
 					safeArea.Left,
 					safeArea.Top,
 					safeArea.Right,
-					safeArea.Left);
+					0);
 			}
 		}
 

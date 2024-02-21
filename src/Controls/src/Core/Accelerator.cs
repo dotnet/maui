@@ -7,56 +7,37 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="Type[@FullName='Microsoft.Maui.Controls.Accelerator']/Docs/*" />
 	[System.ComponentModel.TypeConverter(typeof(AcceleratorTypeConverter))]
-	public class Accelerator : IAccelerator
+	[Obsolete("Use KeyboardAccelerator instead.")]
+	public class Accelerator
 	{
-		const string Separator = "+";
-		readonly string _text;
-		readonly List<string> _modifiers;
+		const char Separator = '+';
+		string _text;
 
-		internal Accelerator(string text, IEnumerable<string> modifiers, string key)
+		internal Accelerator(string text)
 		{
 			if (string.IsNullOrEmpty(text))
 				throw new ArgumentNullException(nameof(text));
-
 			_text = text;
-			Key = key;
-			_modifiers = new List<string>(modifiers);
 		}
 
-		/// <summary>
-		/// Gets the modifiers for the accelerator.
-		/// </summary>
-		public IEnumerable<string> Modifiers => _modifiers;
-
-		IReadOnlyList<string> IAccelerator.Modifiers => _modifiers;
+		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Modifiers']/Docs/*" />
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public IEnumerable<string> Modifiers { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Keys']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("Use Key instead.")]
-		public IEnumerable<string> Keys
-		{
-			get => Key is null ? null : new[] { Key };
-		}
-
-		/// <summary>
-		/// Gets the key for the accelerator.
-		/// </summary>
-		public string Key { get; }
+		public IEnumerable<string> Keys { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='FromString']/Docs/*" />
 		public static Accelerator FromString(string text)
 		{
-			if (string.IsNullOrEmpty(text))
-				throw new ArgumentNullException(nameof(text));
+			var accelarat = new Accelerator(text);
 
-			var str = text;
-			var modifiers = new List<string>();
-			var key = string.Empty;
-
-			var acceleratorParts = text.Split(new[] { Separator }, StringSplitOptions.None);
+			var acceleratorParts = text.Split(Separator);
 
 			if (acceleratorParts.Length > 1)
 			{
+				var modifiers = new List<string>();
 				for (int i = 0; i < acceleratorParts.Length; i++)
 				{
 					var modifierMask = acceleratorParts[i];
@@ -71,27 +52,27 @@ namespace Microsoft.Maui.Controls
 						case "win":
 							modifiers.Add(modiferMaskLower);
 #if NETSTANDARD2_0
-							text = text.Replace(modifierMask, string.Empty);
+							text = text.Replace(modifierMask, "");
 #else
-							text = text.Replace(modifierMask, string.Empty, StringComparison.Ordinal);
+							text = text.Replace(modifierMask, "", StringComparison.Ordinal);
 #endif
 							break;
 					}
 				}
+				accelarat.Modifiers = modifiers;
+
 			}
 
-			if (!string.Equals(text, Separator, StringComparison.Ordinal))
+			if (text != Separator.ToString())
 			{
-#if NETSTANDARD2_0
-				text = text.Replace(Separator, string.Empty);
-#else
-				text = text.Replace(Separator, string.Empty, StringComparison.Ordinal);
-#endif
+				var keys = text.Split(new char[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
+				accelarat.Keys = keys;
 			}
-
-			key = text;
-
-			return new Accelerator(str, modifiers, key);
+			else
+			{
+				accelarat.Keys = new[] { text };
+			}
+			return accelarat;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='ToString']/Docs/*" />

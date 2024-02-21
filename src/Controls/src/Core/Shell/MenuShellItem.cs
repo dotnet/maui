@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls
 				Shell.SetMenuItemTemplate(this, Shell.GetMenuItemTemplate(MenuItem));
 			else if (e.PropertyName == TitleProperty.PropertyName)
 				OnPropertyChanged(MenuItem.TextProperty.PropertyName);
-			else if (e.PropertyName == FlyoutItem.IsVisibleProperty.PropertyName)
+			else if (e.PropertyName == Shell.FlyoutItemIsVisibleProperty.PropertyName)
 				Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(MenuItem));
 		}
 
@@ -40,6 +40,8 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == nameof(Title))
 				OnPropertyChanged(nameof(Text));
+			else if (propertyName == Shell.FlyoutItemIsVisibleProperty.PropertyName && MenuItem != null)
+				Shell.SetFlyoutItemIsVisible(MenuItem, Shell.GetFlyoutItemIsVisible(this));
 		}
 
 		public MenuItem MenuItem { get; }

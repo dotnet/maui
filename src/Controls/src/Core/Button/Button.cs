@@ -577,6 +577,7 @@ namespace Microsoft.Maui.Controls
 
 			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 			{
+				// IMPORTANT! Update ButtonContentDesignTypeConverter.IsValid if making changes here
 				var strValue = value?.ToString();
 				if (strValue == null)
 					throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");

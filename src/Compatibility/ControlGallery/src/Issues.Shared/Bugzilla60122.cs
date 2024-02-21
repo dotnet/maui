@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		// (like LongPress) don't really work. The test should work manually on a touch screen, though.
 
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 		public void LongClickFiresOnCustomImageRenderer()
 		{

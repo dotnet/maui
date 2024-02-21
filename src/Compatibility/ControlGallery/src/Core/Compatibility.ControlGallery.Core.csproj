@@ -3,6 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.ControlGallery</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery</RootNamespace>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429;0618;0612</NoWarn>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0023</WarningsNotAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
@@ -10,14 +13,10 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>TRACE;DEBUG;PERF;APP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429;0618;0612</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DefineConstants>TRACE;APP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429;0618;0612</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework.StartsWith('uap10.0'))">
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>

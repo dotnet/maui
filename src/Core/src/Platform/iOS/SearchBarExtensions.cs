@@ -124,6 +124,9 @@ namespace Microsoft.Maui.Platform
 				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToPlatform(), UIControlState.Normal);
 				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToPlatform(), UIControlState.Highlighted);
 				cancelButton.SetTitleColor(searchBar.CancelButtonColor.ToPlatform(), UIControlState.Disabled);
+
+				if (cancelButton.TraitCollection.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+					cancelButton.TintColor = searchBar.CancelButtonColor.ToPlatform();
 			}
 		}
 

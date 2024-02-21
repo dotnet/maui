@@ -1,19 +1,14 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.SearchBar)]
 	public partial class SearchBarHandlerTests : CoreHandlerTestBase<SearchBarHandler, SearchBarStub>
 	{
-		[Theory(DisplayName = "Background Initializes Correctly"
-#if IOS
-			, Skip = "This test is currently invalid on iOS https://github.com/dotnet/maui/issues/13693"
-#endif
-			)]
+		[Theory(DisplayName = "Background Initializes Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
 		[InlineData(0xFF0000FF)]
@@ -27,8 +22,16 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Background",
 			};
 
+#if IOS || MACCATALYST
+			await ValidatePropertyInitValue(searchBar, () => 
+				(searchBar.Background as SolidPaint).Color, 
+				GetNativeBackgroundColor, 
+				(searchBar.Background as SolidPaint).Color);
+#else
 			await ValidateHasColor(searchBar, expected);
+#endif
 		}
+
 
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
@@ -93,7 +96,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
@@ -111,7 +114,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isEnabled);
@@ -131,7 +134,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyUpdatesValue(
@@ -156,7 +159,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyUpdatesValue(
@@ -185,7 +188,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
 			});
 
 			var nativeTextPrediction = await GetValueAsync(searchBar, GetNativeIsTextPredictionEnabled);
@@ -229,7 +232,11 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Placeholder, GetNativePlaceholder, searchBar.Placeholder);
 		}
 
-		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[Theory(DisplayName = "MaxLength Initializes Correctly"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/7939"
+#endif
+		)]
 		[InlineData(2)]
 		[InlineData(5)]
 		[InlineData(8)]
@@ -260,7 +267,17 @@ namespace Microsoft.Maui.DeviceTests
 				CancelButtonColor = Colors.Yellow,
 			};
 
+#if WINDOWS
+			// The cancel button won't exist in the SearchBar until the SearchBar is loaded (and OnApplyTemplate is called)
+			// so we need to attach the SearchBar to the running app before we can check the color
+
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
+			{
+				await ValidatePropertyInitValue(searchBar, () => searchBar.CancelButtonColor, GetNativeCancelButtonColor, Colors.Yellow);
+			});
+#else
 			await ValidateHasColor(searchBar, Colors.Yellow);
+#endif
 		}
 
 		[Fact(DisplayName = "Null Cancel Button Color Doesn't Crash")]

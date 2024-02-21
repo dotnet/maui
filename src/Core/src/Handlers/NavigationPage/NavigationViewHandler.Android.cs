@@ -41,9 +41,6 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
-
-			if (platformView is FragmentContainerView fcw)
-				fcw.ChildViewAdded += OnViewChildAdded;
 		}
 
 		void OnViewDetachedFromWindow(object? sender, View.ViewDetachedFromWindowEventArgs e)
@@ -69,9 +66,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
 			platformView.LayoutChange -= OnLayoutChanged;
-
-			if (platformView is FragmentContainerView fcw)
-				fcw.ChildViewAdded -= OnViewChildAdded;
 
 			_stackNavigationManager?.Disconnect();
 			base.OnDisconnectHandler(platformView);

@@ -83,7 +83,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 			Content = layout;
 		}
 
-		void OnAddButtonClicked(object sender, EventArgs e)
+		void OnAddButtonClicked(object? sender, EventArgs e)
 		{
 			var ellipseGeometry = new EllipseGeometry
 			{
@@ -95,7 +95,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 			_image.Clip = _grid.Clip = ellipseGeometry;
 		}
 
-		void OnRemoveButtonClicked(object sender, EventArgs e)
+		void OnRemoveButtonClicked(object? sender, EventArgs e)
 		{
 			_image.Clip = _grid.Clip = null;
 		}

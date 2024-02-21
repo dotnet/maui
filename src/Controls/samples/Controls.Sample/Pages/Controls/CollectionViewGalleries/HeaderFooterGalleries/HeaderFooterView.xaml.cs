@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.HeaderFooterGalleri
 
 	internal class HeaderFooterViewModel : DemoFilteredItemSource
 	{
-		public HeaderFooterViewModel(int count = 50, Func<string, CollectionViewGalleryTestItem, bool> filter = null) : base(count, filter)
+		public HeaderFooterViewModel(int count = 50, Func<string, CollectionViewGalleryTestItem, bool>? filter = null) : base(count, filter)
 		{
 		}
 

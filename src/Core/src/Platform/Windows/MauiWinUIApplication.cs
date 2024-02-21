@@ -21,10 +21,10 @@ namespace Microsoft.Maui
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			// Windows running on a different thread will "launch" the app again
-			if (Application != null)
+			if (_application != null && _services != null)
 			{
-				Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
-				Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+				_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+				_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 				return;
 			}
 
@@ -35,25 +35,54 @@ namespace Microsoft.Maui
 
 			var applicationContext = rootContext.MakeApplicationScope(this);
 
-			Services = applicationContext.Services;
+			_services = applicationContext.Services;
 
-			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+			_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
-			Application = Services.GetRequiredService<IApplication>();
+			_application = _services.GetRequiredService<IApplication>();
 
-			this.SetApplicationHandler(Application, applicationContext);
+			this.SetApplicationHandler(_application, applicationContext);
 
-			this.CreatePlatformWindow(Application, args);
+			this.CreatePlatformWindow(_application, args);
 
-			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+			_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
 
-		public IServiceProvider Services { get; protected set; } = null!;
+		IServiceProvider? _services;
 
-		public IApplication Application { get; protected set; } = null!;
+		IApplication? _application;
+
+		// TODO: we should investigate throwing an exception or changing the public API
+		IServiceProvider IPlatformApplication.Services => _services!;
+
+		IApplication IPlatformApplication.Application => _application!;
+
+		// TODO NET9 MARK THESE AS OBSOLETE. We didn't mark them obsolete in NET8 because that
+		// was causing warnings to generate for our WinUI projects, so we need to workaround that
+		// before we mark this as obsolete.
+		/// <summary>
+		/// Use the IPlatformApplication.Current.Services instead.
+		/// </summary>
+		public IServiceProvider Services
+		{
+			get => _services!;
+			protected set => _services = value;
+		}
+
+		// TODO NET9 MARK THESE AS OBSOLETE. We didn't mark them obsolete in NET8 because that
+		// was causing warnings to generate for our WinUI projects, so we need to workaround that
+		// before we mark this as obsolete.
+		/// <summary>
+		/// Use the IPlatformApplication.Current.Application instead.
+		/// </summary>
+		public IApplication Application
+		{
+			get => _application!;
+			protected set => _application = value;
+		}
 	}
 }

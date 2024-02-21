@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			}
 		}
 
-		public void UpdateSpan(object sender, EventArgs e)
+		public void UpdateSpan(object? sender, EventArgs e)
 		{
 			UpdateSpan();
 		}

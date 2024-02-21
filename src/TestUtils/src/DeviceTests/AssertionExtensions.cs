@@ -1,5 +1,6 @@
 using System;
 using System.Reflection.Metadata;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,48 +8,56 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
-		static readonly Random rnd = new Random();
-
-		public static async Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000)
+		public static async Task WaitForGC(params WeakReference[] references)
 		{
-			while ((timeout -= 100) > 0)
-			{
-				if (!exitCondition.Invoke())
-					await Task.Delay(rnd.Next(100, 200));
-				else
-					break;
-			}
-
-			return exitCondition.Invoke();
-		}
-
-		public static Task<bool> WaitForGC(params WeakReference[] references)
-		{
-			// Check all the WeakReference values are non-null
 			Assert.NotEmpty(references);
-			foreach (var reference in references)
-			{
-				Assert.NotNull(reference);
-			}
 
-			return Wait(() =>
+			bool referencesCollected()
 			{
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 
 				foreach (var reference in references)
 				{
+					Assert.NotNull(reference);
 					if (reference.IsAlive)
+					{
 						return false;
+					}
 				}
 
-				return true; // No references alive
-			}, timeout: 5000);
+				return true;
+			}
+
+			try
+			{
+				await AssertEventually(referencesCollected, timeout: 10000);
+			}
+			catch (XunitException ex)
+			{
+				throw new XunitException(ListLivingReferences(references), ex);
+			}
+		}
+
+		static string ListLivingReferences(WeakReference[] references)
+		{
+			StringBuilder stringBuilder = new StringBuilder();
+
+			foreach (var weakReference in references)
+			{
+				if (weakReference.IsAlive && weakReference.Target is object x)
+				{
+					stringBuilder.Append($"Reference to {x} (type {x.GetType()} is still alive.\n");
+				}
+			}
+
+			return stringBuilder.ToString();
 		}
 
 		public static void AssertHasFlag(this Enum self, Enum flag)
@@ -202,10 +211,10 @@ namespace Microsoft.Maui.DeviceTests
 			view.ToPlatform().FocusView(timeout);
 
 		public static bool IsAccessibilityElement(this IView view) =>
-			view.ToPlatform().IsAccessibilityElement();
+			(view.Handler as IPlatformViewHandler)?.PlatformView?.IsAccessibilityElement() == true;
 
 		public static bool IsExcludedWithChildren(this IView view) =>
-			view.ToPlatform().IsExcludedWithChildren();
+			(view.Handler as IPlatformViewHandler)?.PlatformView?.IsExcludedWithChildren() == true;
 
 		public static IDisposable OnUnloaded(this IElement element, Action action)
 		{
@@ -235,6 +244,27 @@ namespace Microsoft.Maui.DeviceTests
 				return false;
 
 			return pvh.PlatformView?.IsLoaded() == true;
+		}
+
+		public static async Task AssertEventually(this Func<bool> assertion, int timeout = 1000, int interval = 100, string message = "Assertion timed out")
+		{
+			do
+			{
+				if (assertion())
+				{
+					return;
+				}
+
+				await Task.Delay(interval);
+				timeout -= interval;
+
+			}
+			while (timeout >= 0);
+
+			if (!assertion())
+			{
+				throw new XunitException(message);
+			}
 		}
 	}
 }

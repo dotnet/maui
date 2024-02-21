@@ -44,6 +44,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			{
 				EnvVars[envvar] = Environment.GetEnvironmentVariable(envvar);
 			}
+
+			// Add entry to indicate we're running headless
+			EnvVars.Add("headlessrunner", "true");
 		}
 
 		static void SetEnvironmentVariables()

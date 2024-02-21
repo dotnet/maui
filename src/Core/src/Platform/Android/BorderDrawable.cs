@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 	public class BorderDrawable : PaintDrawable
 	{
 		readonly AContext? _context;
-		readonly double _density;
+		readonly float _density;
 
 		bool _invalidatePath;
 
@@ -292,6 +292,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_invalidatePath = false;
 
+				// TODO: Should this do the same thing as MauiDrawable.Android.cs? I suspect it should.
 				var path = GetPath(_width, _height, _cornerRadius, _strokeThickness);
 				var clipPath = path?.AsAndroidPath();
 
@@ -479,7 +480,7 @@ namespace Microsoft.Maui.Platform
 			platformPaint.SetShader(radialGradient);
 		}
 
-		GradientData GetGradientPaintData(GradientPaint gradientPaint)
+		static GradientData GetGradientPaintData(GradientPaint gradientPaint)
 		{
 			var orderStops = gradientPaint.GradientStops;
 

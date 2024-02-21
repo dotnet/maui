@@ -90,11 +90,6 @@ namespace Microsoft.Maui.Handlers
 				.UpdateImageSourceAsync()
 				.FireAndForget(handler);
 
-		void IImageSourcePartSetter.SetImageSource(ImageSource? platformImageSource)
-		{
-			PlatformView.UpdateImageSource(platformImageSource);
-		}
-
 		void OnClick(object sender, RoutedEventArgs e)
 		{
 			VirtualView?.Clicked();
@@ -108,6 +103,17 @@ namespace Microsoft.Maui.Handlers
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
 			VirtualView?.Released();
+		}
+
+		partial class ButtonImageSourcePartSetter
+		{
+			public override void SetImageSource(ImageSource? platformImage)
+			{
+				if (Handler?.PlatformView is not Button button)
+					return;
+
+				button.UpdateImageSource(platformImage);
+			}
 		}
 	}
 }

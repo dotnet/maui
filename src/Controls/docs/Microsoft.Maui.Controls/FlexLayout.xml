@@ -22,7 +22,7 @@
       <para>The <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> property determines the primary axis of the layout. The <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> property determines how <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> are laid out along the primary axis. The <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> property specifies how <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> are laid out along the cross axis; the <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignContent" /> property works similarly, but applies to entire rows or columns, not individual elements.</para>
       <para>The initial size of a child element is set with <see cref="M:Microsoft.Maui.Controls.FlexLayout.SetBasis(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Layouts.FlexBasis)" /> and its resizing behavior is set with  <see cref="M:Microsoft.Maui.Controls.FlexLayout.SetGrow(Microsoft.Maui.Controls.BindableObject,System.Single)" /> and <see cref="M:Microsoft.Maui.Controls.FlexLayout.SetShrink(Microsoft.Maui.Controls.BindableObject,System.Single)" />.</para>
     </remarks>
-    <related type="article" href="https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/layouts/flex-layout">The Microsoft.Maui.Controls FlexLayout</related>
+    <related type="article" href="https://learn.microsoft.com/dotnet/maui/user-interface/layouts/flexlayout">The .NET MAUI FlexLayout</related>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

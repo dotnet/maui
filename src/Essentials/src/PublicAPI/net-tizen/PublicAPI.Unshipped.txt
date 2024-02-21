@@ -4,7 +4,15 @@ Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(Sy
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.get -> Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder?
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.set -> void
 Microsoft.Maui.Devices.IFlashlight.IsSupportedAsync() -> System.Threading.Tasks.Task<bool>!
+Microsoft.Maui.Media.IMediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+Microsoft.Maui.Media.IMediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+Microsoft.Maui.Media.IMediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+Microsoft.Maui.Media.IMediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
 static Microsoft.Maui.Devices.Flashlight.IsSupportedAsync() -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Media.MediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+static Microsoft.Maui.Media.MediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+static Microsoft.Maui.Media.MediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+static Microsoft.Maui.Media.MediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.CallbackUri.get -> System.Uri
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri, Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder responseDecoder) -> void
 *REMOVED*Microsoft.Maui.Storage.ISecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string!>!
@@ -40,3 +48,11 @@ static Microsoft.Maui.Devices.Sensors.Geolocation.LocationChanged -> System.Even
 static Microsoft.Maui.Devices.Sensors.Geolocation.StartListeningForegroundAsync(Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest! request) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.StopListeningForeground() -> void
 *REMOVED*static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.Current.get -> Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer!
+*REMOVED*static Microsoft.Maui.Media.MediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+*REMOVED*static Microsoft.Maui.Media.MediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+*REMOVED*static Microsoft.Maui.Media.MediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+*REMOVED*static Microsoft.Maui.Media.MediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+*REMOVED*Microsoft.Maui.Media.IMediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+*REMOVED*Microsoft.Maui.Media.IMediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+*REMOVED*Microsoft.Maui.Media.IMediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+*REMOVED*Microsoft.Maui.Media.IMediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!

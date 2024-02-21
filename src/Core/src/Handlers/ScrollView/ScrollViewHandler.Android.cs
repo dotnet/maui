@@ -61,12 +61,12 @@ namespace Microsoft.Maui.Handlers
 
 				var orientation = virtualView.Orientation;
 
-				if (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Vertical)
+				if (!double.IsInfinity(heightConstraint) && (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Vertical))
 				{
 					heightSpec = AdjustSpecForAlignment(heightSpec, virtualView.VerticalLayoutAlignment);
 				}
 
-				if (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Horizontal)
+				if (!double.IsInfinity(widthConstraint) && (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Horizontal))
 				{
 					widthSpec = AdjustSpecForAlignment(widthSpec, virtualView.HorizontalLayoutAlignment);
 				}

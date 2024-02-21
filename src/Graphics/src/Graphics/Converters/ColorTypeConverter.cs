@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Graphics.Converters
 			if (!(value is Color color) || color == null)
 				throw new NotSupportedException();
 
-			return color.ToHex();
+			return color.ToRgbaHex();
 		}
 
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)

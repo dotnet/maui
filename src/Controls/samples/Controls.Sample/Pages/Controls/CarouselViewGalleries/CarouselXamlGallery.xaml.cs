@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 		bool _isLoop;
 		int _count;
 		int _position;
-		ObservableCollection<CarouselItem> _items;
+		ObservableCollection<CarouselItem>? _items;
 		CarouselXamlSampleType _type;
 		public CarouselViewModel(CarouselXamlSampleType type, bool loop, int initialItems = 5, int startCurrentItem = -1)
 		{
@@ -53,7 +53,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				}
 			}
 
-			WeakReferenceMessenger.Default.Register<ExampleTemplateCarousel, string>(this, "remove", (_, obj) => Items.Remove(obj.BindingContext as CarouselItem));
+			WeakReferenceMessenger.Default.Register<ExampleTemplateCarousel, string>(this, "remove", (_, obj) => Items!.Remove((obj.BindingContext as CarouselItem)!));
 
 			Items = new ObservableCollection<CarouselItem>(items);
 			Count = Items.Count - 1;
@@ -80,14 +80,14 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			set { SetProperty(ref _position, value); }
 		}
 
-		public ObservableCollection<CarouselItem> Items
+		public ObservableCollection<CarouselItem>? Items
 		{
 			get { return _items; }
 			set { SetProperty(ref _items, value); }
 		}
 
-		CarouselItem _selected;
-		public CarouselItem Selected
+		CarouselItem? _selected;
+		public CarouselItem? Selected
 		{
 			get { return _selected; }
 			set { SetProperty(ref _selected, value); }
@@ -95,13 +95,13 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 		public ICommand RemoveCommand => new Command(() =>
 		{
-			Items.Remove(Selected);
+			Items!.Remove(Selected!);
 			Count = Items.Count - 1;
 		});
 
 		public ICommand PreviousCommand => new Command(() =>
 		{
-			var indexCurrent = Items.IndexOf(Selected);
+			var indexCurrent = Items!.IndexOf(Selected!);
 			if (indexCurrent > 0)
 			{
 				var newItem = Items[indexCurrent - 1];
@@ -116,7 +116,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 		public ICommand NextCommand => new Command(() =>
 		{
-			var indexCurrent = Items.IndexOf(Selected);
+			var indexCurrent = Items!.IndexOf(Selected!);
 			if (indexCurrent < Items.Count - 1)
 			{
 				var newItem = Items[indexCurrent + 1];
@@ -133,7 +133,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 	[Preserve(AllMembers = true)]
 	internal class CarouselItem
 	{
-		public CarouselItem(int index, string image = null)
+		public CarouselItem(int index, string? image = null)
 		{
 			if (!string.IsNullOrEmpty(image))
 				FeaturedImage = image;
@@ -145,18 +145,18 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 		public string Image { get; set; }
 
-		public string FeaturedImage { get; set; }
+		public string? FeaturedImage { get; set; }
 	}
 
 	[Preserve(AllMembers = true)]
 	public class ViewModelBase2 : INotifyPropertyChanged
 	{
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
-		protected virtual ViewModelBase2 SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+		protected virtual ViewModelBase2 SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
 		{
 			field = value;
-			PropertyChangedEventHandler handler = PropertyChanged;
+			var handler = PropertyChanged;
 			if (handler != null)
 				handler(this, new PropertyChangedEventArgs(propertyName));
 			return this;

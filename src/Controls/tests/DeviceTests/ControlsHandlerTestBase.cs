@@ -15,6 +15,7 @@ using Xunit;
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
 			mauiAppBuilder.Services.AddSingleton<IApplication>((_) => new ApplicationStub());
+			mauiAppBuilder.Services.AddScoped(_ => new HideSoftInputOnTappedChangedManager());
 			return mauiAppBuilder.ConfigureTestBuilder();
 		}
 
@@ -190,7 +192,27 @@ namespace Microsoft.Maui.DeviceTests
 							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
 						}
 
-						await OnLoadedAsync(content as VisualElement);
+						if (content is VisualElement vc)
+						{
+							await OnLoadedAsync(vc);
+
+							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+							{
+								var batchTcs = new TaskCompletionSource();
+								vc.BatchCommitted += OnBatchCommitted;
+								await batchTcs.Task.WaitAsync(timeOut.Value);
+								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+								{
+									Assert.Fail($"{content} Failed to layout");
+								}
+
+								void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+								{
+									vc.BatchCommitted -= OnBatchCommitted;
+									batchTcs.SetResult();
+								}
+							}
+						}
 
 						// Gives time for the measure/layout pass to settle
 						await Task.Yield();
@@ -387,19 +409,26 @@ namespace Microsoft.Maui.DeviceTests
 			var source = new TaskCompletionSource();
 			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
-				await Task.Yield();
+				await Task.Delay(50);
 				source.TrySetResult();
 			}
 			else
 			{
 				EventHandler loaded = null;
 
-				loaded = (_, __) =>
+				loaded = async (_, __) =>
 				{
 					if (loaded is not null)
 						frameworkElement.Loaded -= loaded;
-
-					source.TrySetResult();
+					try
+					{
+						await Task.Yield();
+						source.TrySetResult();
+					}
+					catch (Exception e)
+					{
+						source.SetException(e);
+					}
 				};
 
 				frameworkElement.Loaded += loaded;
@@ -414,7 +443,7 @@ namespace Microsoft.Maui.DeviceTests
 			var source = new TaskCompletionSource();
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
-				await Task.Yield();
+				await Task.Delay(50);
 				source.TrySetResult();
 			}
 			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
@@ -422,18 +451,36 @@ namespace Microsoft.Maui.DeviceTests
 			// This is most likely a bug.
 			else if (frameworkElement.IsLoadedOnPlatform())
 			{
-				frameworkElement.OnUnloaded(() => source.TrySetResult());
+				frameworkElement.OnUnloaded(async () =>
+				{
+					try
+					{
+						await Task.Yield();
+						source.TrySetResult();
+					}
+					catch (Exception e)
+					{
+						source.SetException(e);
+					}
+				});
 			}
 			else
 			{
 				EventHandler unloaded = null;
 
-				unloaded = (_, __) =>
+				unloaded = async (_, __) =>
 				{
 					if (unloaded is not null)
 						frameworkElement.Unloaded -= unloaded;
-
-					source.TrySetResult();
+					try
+					{
+						await Task.Yield();
+						source.TrySetResult();
+					}
+					catch (Exception e)
+					{
+						source.SetException(e);
+					}
 				};
 
 				frameworkElement.Unloaded += unloaded;
@@ -475,6 +522,8 @@ namespace Microsoft.Maui.DeviceTests
 				if (page is IPageContainer<Page> pc)
 					await OnNavigatedToAsync(pc.CurrentPage);
 
+				await Task.Yield();
+
 				return;
 			}
 
@@ -488,6 +537,8 @@ namespace Microsoft.Maui.DeviceTests
 			// TabbedPage fires OnNavigated earlier than it should
 			if (page.Parent is TabbedPage)
 				await Task.Delay(10);
+
+			await Task.Yield();
 
 			void NavigatedTo(object sender, NavigatedToEventArgs e)
 			{
@@ -511,7 +562,7 @@ namespace Microsoft.Maui.DeviceTests
 			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
 
 			// Wait for the layout to propagate to the platform
-			await AssertionExtensions.Wait(
+			await AssertEventually(
 				() =>
 				{
 					var size = frameworkElement.GetBoundingBox().Size;

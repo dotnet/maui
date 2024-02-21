@@ -1,12 +1,13 @@
 ﻿#nullable disable
 using System;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Picker
 	{
 		[Obsolete("Use PickerHandler.Mapper instead.")]
-		public static IPropertyMapper<IPicker, PickerHandler> ControlsPickerMapper = new PropertyMapper<Picker, PickerHandler>(PickerHandler.Mapper);
+		public static IPropertyMapper<IPicker, PickerHandler> ControlsPickerMapper = new ControlsMapper<Picker, PickerHandler>(PickerHandler.Mapper);
 
 		internal static new void RemapForControls()
 		{

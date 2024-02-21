@@ -11,9 +11,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke) { }
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton) { }
 
-		void IImageSourcePartSetter.SetImageSource(object? obj)
+		partial class ImageButtonImageSourcePartSetter
 		{
-			throw new NotImplementedException();
+			public override void SetImageSource(object? platformImage) { }
 		}
 	}
 }

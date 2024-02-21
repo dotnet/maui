@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		}
 
-		internal ViewRenderer(Context context, IPropertyMapper mapper, CommandMapper? commandMapper = null)
+		protected ViewRenderer(Context context, IPropertyMapper mapper, CommandMapper? commandMapper = null)
 			: base(context, mapper, commandMapper)
 		{
 		}

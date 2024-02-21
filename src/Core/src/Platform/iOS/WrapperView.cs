@@ -1,17 +1,20 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : UIView, IDisposable
+	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents
 	{
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _backgroundMaskLayer;
 		CAShapeLayer? _shadowLayer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "_borderView is a SubView")]
 		UIView? _borderView;
 
 		public WrapperView()
@@ -117,7 +120,35 @@ namespace Microsoft.Maui.Platform
 
 			var child = Subviews[0];
 
+			// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
+			// This also affects ImageButtons
+			if (child is UIImageView imageView)
+			{
+				return imageView.SizeThatFitsImage(size);
+			}
+			else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
+			{
+				return imageButton.ImageView.SizeThatFitsImage(size);
+			}
+
 			return child.SizeThatFits(size);
+		}
+
+		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight)
+		{
+			if (Subviews.Length == 0)
+				return base.SizeThatFits(originalSpec);
+
+			var child = Subviews[0];
+
+			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
+			{
+				var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
+				var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;
+				return SizeThatFits(new CGSize(widthConstraint, heightConstraint));
+			}
+
+			return SizeThatFits(originalSpec);
 		}
 
 		public override void SetNeedsLayout()
@@ -244,6 +275,20 @@ namespace Microsoft.Maui.Platform
 					return subLayer;
 
 			return Layer;
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

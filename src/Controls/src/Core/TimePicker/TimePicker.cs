@@ -151,5 +151,11 @@ namespace Microsoft.Maui.Controls
 			=> InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		Font ITextStyle.Font => this.ToFont();
+
+		TimeSpan ITimePicker.Time
+		{
+			get => Time;
+			set => SetValue(TimeProperty, value, SetterSpecificity.FromHandler);
+		}
 	}
 }

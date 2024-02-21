@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 				if (button.StrokeThickness > 0)
 					mauiDrawable.SetBorderWidth(button.StrokeThickness);
 
-				if (button.CornerRadius > 0)
+				if (button.CornerRadius >= 0)
 					mauiDrawable.SetCornerRadius(button.CornerRadius);
 				else
 				{

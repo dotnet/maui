@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 	public class ItemContentControl : ContentControl
 	{
 		VisualElement _visualElement;
-		IViewHandler _renderer;
+		IViewHandler _handler;
 		DataTemplate _currentTemplate;
 
 		public ItemContentControl()
@@ -153,23 +153,24 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var itemsView = container as ItemsView;
 
-			if (itemsView != null && _renderer?.VirtualView is Element e)
+			if (itemsView != null && _handler?.VirtualView is Element e)
 			{
 				itemsView.RemoveLogicalChild(e);
 			}
 
-			if (dataContext == null || formsTemplate == null || container == null || mauiContext == null)
+			if (dataContext is null || formsTemplate is null || container is null || mauiContext is null)
 			{
 				return;
 			}
 
-			if (_renderer?.ContainerView == null || _currentTemplate != formsTemplate)
+			if (Content is null || _currentTemplate != formsTemplate)
 			{
 				// If the content has never been realized (i.e., this is a new instance), 
 				// or if we need to switch DataTemplates (because this instance is being recycled)
 				// then we'll need to create the content from the template 
 				_visualElement = formsTemplate.CreateContent(dataContext, container) as VisualElement;
-				_renderer = _visualElement.ToHandler(mauiContext);
+				_visualElement.BindingContext = dataContext;
+				_handler = _visualElement.ToHandler(mauiContext);
 
 				// We need to set IsPlatformStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
 				// event. If the CollectionView is in a Layout, the Layout won't measure or layout the CollectionView until
@@ -185,12 +186,19 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				// We are reusing this ItemContentControl and we can reuse the Element
-				_visualElement = _renderer.VirtualView as VisualElement;
+				_visualElement.BindingContext = dataContext;
 			}
 
-			Content = _renderer.ToPlatform();
+			if (_handler.VirtualView is ICrossPlatformLayout)
+			{
+				Content = _handler.ToPlatform();
+			}
+			else
+			{
+				Content = new ContentLayoutPanel(_handler.VirtualView);
+			}
+
 			itemsView?.AddLogicalChild(_visualElement);
-			_visualElement.BindingContext = dataContext;
 		}
 
 		void SetNativeStateConsistent(VisualElement visualElement)
@@ -210,7 +218,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void UpdateIsSelected(bool isSelected)
 		{
-			var formsElement = _renderer?.VirtualView as VisualElement;
+			var formsElement = _handler?.VirtualView as VisualElement;
 
 			if (formsElement == null)
 				return;
@@ -263,58 +271,37 @@ namespace Microsoft.Maui.Controls.Platform
 			this.SetAutomationPropertiesAccessibilityView(_visualElement, defaultAccessibilityView);
 		}
 
+		/// <inheritdoc/>
+		protected override WSize ArrangeOverride(WSize finalSize)
+		{
+			return base.ArrangeOverride(finalSize);
+		}
+
+		/// <inheritdoc/>
 		protected override WSize MeasureOverride(WSize availableSize)
 		{
-			if (_renderer == null)
+			if (_handler is null)
 			{
+				// Make sure we supply a real number for sizes otherwise virtualization won't function
+				if (double.IsFinite(availableSize.Width) && !double.IsFinite(availableSize.Height))
+					return new WSize(availableSize.Width, 32);
+				else if (!double.IsFinite(availableSize.Width) && double.IsFinite(availableSize.Height))
+					return new WSize(88, availableSize.Height);
+
 				return base.MeasureOverride(availableSize);
 			}
 
-			var frameworkElement = Content as FrameworkElement;
-			var formsElement = _renderer.VirtualView as VisualElement;
-			var margin = _renderer.VirtualView.Margin;
+			var width = ItemWidth == default ? availableSize.Width : ItemWidth;
+			var height = ItemHeight == default ? availableSize.Height : ItemHeight;
 
-			if (ItemHeight != default || ItemWidth != default)
-			{
-				formsElement.Layout(new Rect(0, 0, ItemWidth, ItemHeight));
+			// I realize if ItemWidth and ItemHeight are set that this call seems pointless, but it's not.
+			// From what I can tell, calling `base.MeasureOverride` causes the `ContentControl` to realize its content
+			// and build its visual tree. So, in order to just play nice with the WinUI `ContentControl` we always
+			// call base.MeasureOverride, so that we don't short circuit whatever bookkeeping it needs to do.
 
-				var wsize = new WSize(ItemWidth, ItemHeight);
+			var measureSize = base.MeasureOverride(new WSize(width, height));
 
-				frameworkElement.Margin =
-					WinUIHelpers.CreateThickness(
-						margin.Left + ItemSpacing.Left,
-						margin.Top + ItemSpacing.Top,
-						margin.Right + ItemSpacing.Right,
-						margin.Bottom + ItemSpacing.Bottom);
-
-				if (CanMeasureContent(frameworkElement))
-					frameworkElement.Measure(wsize);
-
-				return base.MeasureOverride(wsize);
-			}
-			else
-			{
-				var (width, height) = formsElement.Measure(availableSize.Width, availableSize.Height,
-					MeasureFlags.IncludeMargins).Request;
-
-				width = Max(width, availableSize.Width);
-				height = Max(height, availableSize.Height);
-
-				formsElement.Layout(new Rect(0, 0, width, height));
-
-				var wsize = new WSize(width, height);
-
-				frameworkElement.Margin = WinUIHelpers.CreateThickness(
-					margin.Left,
-					margin.Top,
-					margin.Right,
-					margin.Bottom);
-
-				if (CanMeasureContent(frameworkElement))
-					frameworkElement.Measure(wsize);
-
-				return base.MeasureOverride(wsize);
-			}
+			return new WSize(Max(measureSize.Width, width), Max(measureSize.Height, height));
 		}
 
 		double Max(double requested, double available)
@@ -327,13 +314,27 @@ namespace Microsoft.Maui.Controls.Platform
 			return double.IsInfinity(value) ? 0 : value;
 		}
 
-		bool CanMeasureContent(FrameworkElement frameworkElement)
-		{
-			// Measure the SwipeControl before has loaded causes a crash on the first layout pass
-			if (frameworkElement is SwipeControl swipeControl && !swipeControl.IsLoaded)
-				return false;
+		internal VisualElement GetVisualElement() => _visualElement;
 
-			return true;
+		class ContentLayoutPanel : Panel
+		{
+			IView _view;
+			public ContentLayoutPanel(IView view)
+			{
+				_view = view;
+
+				var platformView = view.ToPlatform();
+
+				// Just in case this view is already parented to a wrapper that's been cycled out
+				if (platformView.Parent is ContentLayoutPanel clp)
+					clp.Children.Remove(platformView);
+
+				Children.Add(platformView);
+			}
+
+			protected override WSize ArrangeOverride(WSize finalSize) => _view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
+
+			protected override WSize MeasureOverride(WSize availableSize) => _view.Measure(availableSize.Width, availableSize.Height).ToPlatform();
 		}
 	}
 }

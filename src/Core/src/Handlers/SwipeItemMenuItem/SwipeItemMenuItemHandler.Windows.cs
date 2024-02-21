@@ -1,4 +1,8 @@
-﻿using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -26,11 +30,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
 
-		public static void MapSource(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
-		{
-			handler.PlatformView.IconSource = view.Source?.ToIconSource(handler.MauiContext!);
-		}
-
 		protected override void ConnectHandler(WSwipeItem platformView)
 		{
 			base.ConnectHandler(platformView);
@@ -46,6 +45,17 @@ namespace Microsoft.Maui.Handlers
 		void OnSwipeItemInvoked(WSwipeItem sender, Microsoft.UI.Xaml.Controls.SwipeItemInvokedEventArgs args)
 		{
 			VirtualView.OnInvoked();
+		}
+
+		partial class SwipeItemMenuItemImageSourcePartSetter
+		{
+			public override void SetImageSource(ImageSource? platformImage)
+			{
+				if (Handler?.PlatformView is not WSwipeItem button)
+					return;
+
+				button.IconSource = new ImageIconSource { ImageSource = platformImage };
+			}
 		}
 	}
 }

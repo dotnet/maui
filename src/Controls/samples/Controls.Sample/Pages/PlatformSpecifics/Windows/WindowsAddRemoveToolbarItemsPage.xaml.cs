@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 			set { SetValue(ParentPageProperty, value); }
 		}
 
-		readonly Action _action;
+		readonly Action? _action;
 
 		public WindowsAddRemoveToolbarItemsPage()
 		{

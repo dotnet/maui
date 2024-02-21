@@ -1,6 +1,5 @@
 #nullable enable
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Media
@@ -19,29 +18,29 @@ namespace Microsoft.Maui.Media
 		/// Opens the media browser to select a photo.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
-		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo.</returns>
-		Task<FileResult> PickPhotoAsync(MediaPickerOptions? options = null);
+		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
 		/// Opens the camera to take a photo.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
-		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo.</returns>
-		Task<FileResult> CapturePhotoAsync(MediaPickerOptions? options = null);
+		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
 		/// Opens the media browser to select a video.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
-		/// <returns>A <see cref="FileResult"/> object containing details of the picked video.</returns>
-		Task<FileResult> PickVideoAsync(MediaPickerOptions? options = null);
+		/// <returns>A <see cref="FileResult"/> object containing details of the picked video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
 		/// Opens the camera to take a video.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
-		/// <returns>A <see cref="FileResult"/> object containing details of the captured video.</returns>
-		Task<FileResult> CaptureVideoAsync(MediaPickerOptions? options = null);
+		/// <returns>A <see cref="FileResult"/> object containing details of the captured video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null);
 	}
 
 	/// <summary>
@@ -59,32 +58,32 @@ namespace Microsoft.Maui.Media
 		/// Opens the media browser to select a photo.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
-		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo.</returns>
-		public static Task<FileResult> PickPhotoAsync(MediaPickerOptions? options = null) =>
+		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		public static Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null) =>
 			Default.PickPhotoAsync(options);
 
 		/// <summary>
 		/// Opens the camera to take a photo.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
-		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo.</returns>
-		public static Task<FileResult> CapturePhotoAsync(MediaPickerOptions? options = null) =>
+		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		public static Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null) =>
 			Default.CapturePhotoAsync(options);
 
 		/// <summary>
 		/// Opens the media browser to select a video.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
-		/// <returns>A <see cref="FileResult"/> object containing details of the picked video.</returns>
-		public static Task<FileResult> PickVideoAsync(MediaPickerOptions? options = null) =>
+		/// <returns>A <see cref="FileResult"/> object containing details of the picked video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		public static Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null) =>
 			Default.PickVideoAsync(options);
 
 		/// <summary>
 		/// Opens the camera to take a video.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
-		/// <returns>A <see cref="FileResult"/> object containing details of the captured video.</returns>
-		public static Task<FileResult> CaptureVideoAsync(MediaPickerOptions? options = null) =>
+		/// <returns>A <see cref="FileResult"/> object containing details of the captured video. When the operation was cancelled by the user, this will return <see langword="null"/>.</returns>
+		public static Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null) =>
 			Default.CaptureVideoAsync(options);
 
 		static IMediaPicker? defaultImplementation;

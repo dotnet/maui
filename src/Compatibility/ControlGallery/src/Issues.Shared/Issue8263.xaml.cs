@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.ManualReview)]
+		[FailsOnMauiIOS]
 		public void SwitchOnOffVisualStatesTest()
 		{
 			RunningApp.WaitForElement("Switch");

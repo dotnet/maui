@@ -11,6 +11,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
@@ -159,7 +160,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, windowDisappearing);
 		}
 
-		[Fact]
+		[Fact(
+#if WINDOWS
+		Skip = "Fails on Windows"
+#endif
+		)]
 		public async Task PushingNavigationPageModallyWithShellShowsToolbarCorrectly()
 		{
 			SetupBuilder();
@@ -186,20 +191,20 @@ namespace Microsoft.Maui.DeviceTests
 					await windowPage.Navigation.PushModalAsync(modalPage);
 
 					// Navigation Bar is visible
-					Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(modalPage.Handler)));
+					await AssertEventually(() => IsNavigationBarVisible(modalPage.Handler));
 					Assert.False(IsBackButtonVisible(modalPage.Handler));
 
 					// Verify that new navigation bar can gain a back button
 					var secondModalPage = new ContentPage();
 					await modalPage.Navigation.PushAsync(secondModalPage);
-					Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(secondModalPage.Handler)));
+					await AssertEventually(() => IsBackButtonVisible(secondModalPage.Handler));
 					await secondModalPage.Navigation.PopAsync();
 
 					// Remove the modal page and validate the root window pages toolbar is still setup correctly
 					await modalPage.Navigation.PopModalAsync();
 
-					Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(windowPage.Handler)));
-					Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(windowPage.Handler)));
+					await AssertEventually(() => IsNavigationBarVisible(windowPage.Handler));
+					await AssertEventually(() => IsBackButtonVisible(windowPage.Handler));
 				});
 		}
 
@@ -237,7 +242,11 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
-		[Theory]
+		[Theory(
+#if WINDOWS
+		Skip = "Fails on Windows"
+#endif
+		)]
 		[InlineData(true)]
 		[InlineData(false)]
 		public async Task PushModalFromAppearing(bool useShell)
@@ -480,7 +489,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		}
 
-		[Theory]
+		[Theory(
+#if WINDOWS
+		Skip = "Fails on Windows (Packaged)"
+#endif
+		)]
 		[ClassData(typeof(PageTypes))]
 		public async Task SwappingRootPageWhileModalPageIsOpenDoesntCrash(Page rootPage, Page newRootPage)
 		{

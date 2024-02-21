@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls
 
 		internal override BindingBase Clone()
 		{
-			return new Binding(Path, Mode)
+			var clone = new Binding(Path, Mode)
 			{
 				Converter = Converter,
 				ConverterParameter = ConverterParameter,
@@ -295,6 +295,11 @@ namespace Microsoft.Maui.Controls
 				TargetNullValue = TargetNullValue,
 				FallbackValue = FallbackValue,
 			};
+
+			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+
+			return clone;
 		}
 
 		internal override object GetSourceValue(object value, Type targetPropertyType)

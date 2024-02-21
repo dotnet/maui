@@ -555,7 +555,7 @@ namespace Microsoft.Maui.Controls
 				OnDescendantRemoved(element);
 		}
 
-		/// <summary>Raises the <see cref="ParentSet"/> event. Implement this method in order to add behavior when the element is added to a parent.</summary>
+		/// <summary>Raises the (internal) <c>ParentSet</c> event. Implement this method in order to add behavior when the element is added to a parent.</summary>
 		/// <remarks>Implementors must call the base method.</remarks>
 		protected virtual void OnParentSet()
 		{
@@ -928,7 +928,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <inheritdoc/>
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			if (effect is RoutingEffect re && re.Inner != null)

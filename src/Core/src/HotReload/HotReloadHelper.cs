@@ -24,22 +24,29 @@ namespace Microsoft.Maui.HotReload
 		}
 		public static bool IsEnabled { get; set; } = Debugger.IsAttached;
 
+		internal static bool IsSupported
+#if !NETSTANDARD
+			=> System.Reflection.Metadata.MetadataUpdater.IsSupported;
+#else
+			=> true;
+#endif
+
 		public static void Register(IHotReloadableView view, params object[] parameters)
 		{
-			if (!IsEnabled)
+			if (!IsSupported || !IsEnabled)
 				return;
 			currentViews[view] = parameters;
 		}
 
 		public static void UnRegister(IHotReloadableView view)
 		{
-			if (!IsEnabled)
+			if (!IsSupported || !IsEnabled)
 				return;
 			currentViews.Remove(view);
 		}
 		public static bool IsReplacedView(IHotReloadableView view, IView newView)
 		{
-			if (!IsEnabled)
+			if (!IsSupported || !IsEnabled)
 				return false;
 			if (view == null || newView == null)
 				return false;
@@ -50,7 +57,7 @@ namespace Microsoft.Maui.HotReload
 		}
 		public static IView GetReplacedView(IHotReloadableView view)
 		{
-			if (!IsEnabled)
+			if (!IsSupported || !IsEnabled)
 				return view;
 
 			var viewType = view.GetType();
@@ -83,7 +90,6 @@ namespace Microsoft.Maui.HotReload
 
 		static void TransferState(IHotReloadableView oldView, IView newView)
 		{
-
 			oldView.TransferState(newView);
 		}
 
@@ -93,7 +99,7 @@ namespace Microsoft.Maui.HotReload
 		static Dictionary<string, List<KeyValuePair<Type, Type>>> replacedHandlers = new(StringComparer.Ordinal);
 		public static void RegisterReplacedView(string oldViewType, Type newViewType)
 		{
-			if (!IsEnabled)
+			if (!IsSupported || !IsEnabled)
 				return;
 
 			Action<MethodInfo> executeStaticMethod = (method) =>

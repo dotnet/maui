@@ -38,5 +38,18 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 
 			return appHostBuilder;
 		}
+
+#if WINDOWS
+		public static MauiAppBuilder UseControlsHeadlessRunner(this MauiAppBuilder appHostBuilder, HeadlessRunnerOptions options)
+		{
+			appHostBuilder.Services.AddSingleton(options);
+
+			appHostBuilder.Services.AddTransient(svc => new ControlsHeadlessTestRunner(
+					svc.GetRequiredService<HeadlessRunnerOptions>(),
+					svc.GetRequiredService<TestOptions>()));
+
+			return appHostBuilder;
+		}
+#endif
 	}
 }

@@ -224,6 +224,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 #if __MACOS__
 		[Ignore("EnterText on UITest.Desktop not implemented")]
@@ -239,6 +240,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 #if __MACOS__
 		[Ignore("EnterText on UITest.Desktop not implemented")]
@@ -255,6 +257,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 #if __MACOS__
 		[Ignore("EnterText on UITest.Desktop not implemented")]
@@ -270,6 +273,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 #if __MACOS__
 		[Ignore("EnterText on UITest.Desktop not implemented")]

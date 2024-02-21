@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
@@ -16,7 +17,13 @@ namespace Microsoft.Maui
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
 		internal const string GetConfigurationSelectorName = "application:configurationForConnectingSceneSession:options:";
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IMauiContext is a non-NSObject in MAUI.")]
 		IMauiContext _applicationContext = null!;
+
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IServiceProvider is a non-NSObject from Microsoft.Extensions.DependencyInjection.")]
+		IServiceProvider? _services;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IApplication is a non-NSObject in MAUI.")]
+		IApplication? _application;
 
 		protected MauiUIApplicationDelegate() : base()
 		{
@@ -41,9 +48,9 @@ namespace Microsoft.Maui
 
 			_applicationContext = rootContext.MakeApplicationScope(this);
 
-			Services = _applicationContext.Services;
+			_services = _applicationContext.Services;
 
-			Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
+			_services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 
 			return true;
 		}
@@ -51,20 +58,20 @@ namespace Microsoft.Maui
 		[Export("application:didFinishLaunchingWithOptions:")]
 		public virtual bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			Application = Services.GetRequiredService<IApplication>();
+			_application = _services!.GetRequiredService<IApplication>();
 
-			this.SetApplicationHandler(Application, _applicationContext);
+			this.SetApplicationHandler(_application, _applicationContext);
 
 			// if there is no scene delegate or support for scene delegates, then we set up the window here
 			if (!this.HasSceneManifest())
 			{
-				this.CreatePlatformWindow(Application, application, launchOptions);
+				this.CreatePlatformWindow(_application, application, launchOptions);
 
 				if (Window != null)
-					Services?.InvokeLifecycleEvents<iOSLifecycle.OnPlatformWindowCreated>(del => del(Window));
+					_services?.InvokeLifecycleEvents<iOSLifecycle.OnPlatformWindowCreated>(del => del(Window));
 			}
 
-			Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
+			_services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
 
 			return true;
 		}
@@ -87,7 +94,7 @@ namespace Microsoft.Maui
 		[Export("application:performActionForShortcutItem:completionHandler:")]
 		public virtual void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
 		{
-			Services?.InvokeLifecycleEvents<iOSLifecycle.PerformActionForShortcutItem>(del => del(application, shortcutItem, completionHandler));
+			_services?.InvokeLifecycleEvents<iOSLifecycle.PerformActionForShortcutItem>(del => del(application, shortcutItem, completionHandler));
 		}
 
 		[Export("application:openURL:options:")]
@@ -95,7 +102,7 @@ namespace Microsoft.Maui
 		{
 			var wasHandled = false;
 
-			Services?.InvokeLifecycleEvents<iOSLifecycle.OpenUrl>(del =>
+			_services?.InvokeLifecycleEvents<iOSLifecycle.OpenUrl>(del =>
 			{
 				wasHandled = del(application, url, options) || wasHandled;
 			});
@@ -108,7 +115,7 @@ namespace Microsoft.Maui
 		{
 			var wasHandled = false;
 
-			Services?.InvokeLifecycleEvents<iOSLifecycle.ContinueUserActivity>(del =>
+			_services?.InvokeLifecycleEvents<iOSLifecycle.ContinueUserActivity>(del =>
 			{
 				wasHandled = del(application, userActivity, completionHandler) || wasHandled;
 			});
@@ -119,52 +126,68 @@ namespace Microsoft.Maui
 		[Export("applicationDidBecomeActive:")]
 		public virtual void OnActivated(UIApplication application)
 		{
-			Services?.InvokeLifecycleEvents<iOSLifecycle.OnActivated>(del => del(application));
+			_services?.InvokeLifecycleEvents<iOSLifecycle.OnActivated>(del => del(application));
 		}
 
 		[Export("applicationWillResignActive:")]
 		public virtual void OnResignActivation(UIApplication application)
 		{
-			Services?.InvokeLifecycleEvents<iOSLifecycle.OnResignActivation>(del => del(application));
+			_services?.InvokeLifecycleEvents<iOSLifecycle.OnResignActivation>(del => del(application));
 		}
 
 		[Export("applicationWillTerminate:")]
 		public virtual void WillTerminate(UIApplication application)
 		{
-			Services?.InvokeLifecycleEvents<iOSLifecycle.WillTerminate>(del => del(application));
+			_services?.InvokeLifecycleEvents<iOSLifecycle.WillTerminate>(del => del(application));
 		}
 
 		[Export("applicationDidEnterBackground:")]
 		public virtual void DidEnterBackground(UIApplication application)
 		{
-			Services?.InvokeLifecycleEvents<iOSLifecycle.DidEnterBackground>(del => del(application));
+			_services?.InvokeLifecycleEvents<iOSLifecycle.DidEnterBackground>(del => del(application));
 		}
 
 		[Export("applicationWillEnterForeground:")]
 		public virtual void WillEnterForeground(UIApplication application)
 		{
-			Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
+			_services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
 		}
 
 		[Export("applicationSignificantTimeChange:")]
 		public virtual void ApplicationSignificantTimeChange(UIApplication application)
 		{
-			Services?.InvokeLifecycleEvents<iOSLifecycle.ApplicationSignificantTimeChange>(del => del(application));
+			_services?.InvokeLifecycleEvents<iOSLifecycle.ApplicationSignificantTimeChange>(del => del(application));
 		}
 
 		[Export("application:performFetchWithCompletionHandler:")]
 		public virtual void PerformFetch(UIApplication application, Action<UIBackgroundFetchResult> completionHandler)
 		{
-			Services?.InvokeLifecycleEvents<iOSLifecycle.PerformFetch>(del => del(application, completionHandler));
+			_services?.InvokeLifecycleEvents<iOSLifecycle.PerformFetch>(del => del(application, completionHandler));
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "There can only be one MauiUIApplicationDelegate.")]
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;
 
 		[Export("window")]
 		public virtual UIWindow? Window { get; set; }
 
-		public IServiceProvider Services { get; protected set; } = null!;
+		// TODO: we should investigate throwing an exception or changing the public API
+		IServiceProvider IPlatformApplication.Services => _services!;
 
-		public IApplication Application { get; protected set; } = null!;
+		IApplication IPlatformApplication.Application => _application!;
+
+		[Obsolete("Use the IPlatformApplication.Current.Services instead.")]
+		public IServiceProvider Services
+		{
+			get => _services!;
+			protected set => _services = value;
+		}
+
+		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
+		public IApplication Application
+		{
+			get => _application!;
+			protected set => _application = value;
+		}
 	}
 }

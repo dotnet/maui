@@ -395,6 +395,12 @@ namespace Microsoft.Maui.Controls
 
 		IList<string> IPicker.Items => Items;
 
+		int IPicker.SelectedIndex
+		{
+			get => SelectedIndex;
+			set => SetValue(SelectedIndexProperty, value, SetterSpecificity.FromHandler);
+		}
+
 		int IItemDelegate<string>.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 
 		string IItemDelegate<string>.GetItem(int index)

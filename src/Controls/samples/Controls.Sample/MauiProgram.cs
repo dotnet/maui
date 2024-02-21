@@ -45,6 +45,13 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
+
+			appBuilder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions
+			{
+				ValidateOnBuild = true,
+				ValidateScopes = true,
+			}));
+
 #if __ANDROID__ || __IOS__
 			appBuilder.UseMauiMaps();
 #endif
@@ -97,7 +104,7 @@ namespace Maui.Controls.Sample
 			});
 
 			appBuilder.Configuration.AddInMemoryCollection(
-				new Dictionary<string, string>
+				new Dictionary<string, string?>
 					{
 						{"MyKey", "Dictionary MyKey Value"},
 						{":Title", "Dictionary_Title"},
@@ -260,7 +267,7 @@ namespace Maui.Controls.Sample
 						.OnTerminate((a) => LogEvent(nameof(TizenLifecycle.OnTerminate))));
 #endif
 
-					static bool LogEvent(string eventName, string type = null)
+					static bool LogEvent(string eventName, string? type = null)
 					{
 						Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
 						return true;
@@ -272,6 +279,21 @@ namespace Maui.Controls.Sample
 
 			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
 			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });
+
+			Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(TransparentEntry), (handler, view) =>
+			{
+				if (view is TransparentEntry)
+				{
+#if ANDROID
+					handler.PlatformView.Background = null;
+					handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+#elif IOS
+					handler.PlatformView.BackgroundColor = UIKit.UIColor.Clear;
+					handler.PlatformView.Layer.BorderWidth = 0;
+					handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#endif
+				}
+			});
 
 			return appBuilder.Build();
 		}

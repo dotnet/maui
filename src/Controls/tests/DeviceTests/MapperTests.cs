@@ -12,6 +12,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category(TestCategory.Mapper)]
 	public class MapperTests : ControlsHandlerTestBase
 	{
 		[Theory]

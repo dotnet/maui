@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -270,6 +271,79 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await Task.Delay(100);
 				ValidatePlatformCells(listView);
+			});
+		}
+
+		[Fact("Cells Do Not Leak"
+#if !WINDOWS
+			, Skip = "Skip for now on other platforms, due to how cells are recycled this does not pass."
+#endif
+		)]
+		public async Task CellsDoNotLeak()
+		{
+			SetupBuilder();
+
+			var references = new List<WeakReference>();
+			var listView = new ListView
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var cell = new TextCell();
+					references.Add(new(cell));
+					return cell;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<ListViewRenderer>(listView, async _ =>
+			{
+				listView.ItemsSource = new[] { 1, 2, 3 };
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+				listView.ItemsSource = null;
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+			});
+
+			await AssertionExtensions.WaitForGC(references.ToArray());
+		}
+
+		[Fact("Cells Repopulate After Null ItemsSource")]
+		public async Task CellsRepopulateAfterNullItemsSource()
+		{
+			SetupBuilder();
+
+			List<TextCell> cells = null;
+
+			var listView = new ListView
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var cell = new TextCell();
+					cell.SetBinding(TextCell.TextProperty, new Binding("."));
+					cells?.Add(cell);
+					return cell;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<ListViewRenderer>(listView, async _ =>
+			{
+				listView.ItemsSource = new[] { 1, 2, 3 };
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+				listView.ItemsSource = null;
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+
+				// Now track the new cells
+				cells = new();
+				listView.ItemsSource = new[] { 4, 5, 6 };
+				await Task.Delay(100);
+				ValidatePlatformCells(listView);
+
+				Assert.Equal(3, cells.Count);
+				Assert.Equal("4", cells[0].Text);
+				Assert.Equal("5", cells[1].Text);
+				Assert.Equal("6", cells[2].Text);
 			});
 		}
 	}

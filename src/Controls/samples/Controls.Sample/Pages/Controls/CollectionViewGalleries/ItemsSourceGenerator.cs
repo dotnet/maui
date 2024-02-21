@@ -20,13 +20,13 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 
 	internal class ItemsSourceGenerator : ContentView
 	{
-		public event EventHandler<NotifyCollectionChangedEventArgs> CollectionChanged;
+		public event EventHandler<NotifyCollectionChangedEventArgs>? CollectionChanged;
 		readonly ItemsView _cv;
 		private ItemsSourceType _itemsSourceType;
 		readonly Entry _entry;
 		int _count = 0;
 
-		CarouselView carousel => _cv as CarouselView;
+		CarouselView? carousel => _cv as CarouselView;
 
 		public int Count => _count;
 
@@ -57,7 +57,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			button.Clicked += GenerateItems;
 			WeakReferenceMessenger.Default.Register<ExampleTemplateCarousel, string>(this, "remove", (_, obj) =>
 			{
-				(cv.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>).Remove(obj.BindingContext as CollectionViewGalleryTestItem);
+				(cv.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>)!.Remove((obj.BindingContext as CollectionViewGalleryTestItem)!);
 			});
 
 			Content = layout;
@@ -114,7 +114,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			}
 		}
 
-		ObservableCollection<CollectionViewGalleryTestItem> _obsCollection;
+		ObservableCollection<CollectionViewGalleryTestItem>? _obsCollection;
 		void GenerateObservableCollection()
 		{
 			if (int.TryParse(_entry.Text, out int count))
@@ -180,7 +180,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		}
 
 
-		void GenerateItems(object sender, EventArgs e)
+		void GenerateItems(object? sender, EventArgs e)
 		{
 			GenerateItems();
 

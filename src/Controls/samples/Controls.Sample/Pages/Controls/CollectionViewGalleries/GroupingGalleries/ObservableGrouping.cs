@@ -55,7 +55,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries
 			{
 				var selectedMember = collectionView.SelectedItem as Member;
 				var team = FindTeam(itemsSource, selectedMember);
-				team?.Remove(selectedMember);
+				team?.Remove(selectedMember!);
 			};
 
 			var adder = new Button { Text = "Add After Selected", AutomationId = "AddItem", Style = buttonStyle };
@@ -69,7 +69,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries
 					return;
 				}
 
-				team.Insert(team.IndexOf(selectedMember) + 1, new Member("Spider-Man"));
+				team.Insert(team.IndexOf(selectedMember!) + 1, new Member("Spider-Man"));
 			};
 
 			AddStuffToGridRow(layout, 0, remover, adder);
@@ -85,8 +85,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries
 					return;
 				}
 
-				team.Insert(team.IndexOf(selectedMember) + 1, new Member("Spider-Man"));
-				team.Remove(selectedMember);
+				team.Insert(team.IndexOf(selectedMember!) + 1, new Member("Spider-Man"));
+				team.Remove(selectedMember!);
 			};
 
 			var mover = new Button
@@ -105,8 +105,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries
 					return;
 				}
 
-				team.Remove(selectedMember);
-				itemsSource[0].Add(selectedMember);
+				team.Remove(selectedMember!);
+				itemsSource[0].Add(selectedMember!);
 			};
 
 			AddStuffToGridRow(layout, 1, replacer, mover);
@@ -120,7 +120,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries
 			groupRemover.Clicked += (obj, args) =>
 			{
 				itemsSource?.Remove(itemsSource[0]);
-				if (itemsSource.Count > 0)
+				if (itemsSource!.Count > 0)
 				{
 					groupRemover.Text = $"Remove {itemsSource[0].Name}";
 				}
@@ -242,7 +242,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries
 			});
 		}
 
-		ObservableTeam FindTeam(ObservableSuperTeams teams, Member member)
+		ObservableTeam? FindTeam(ObservableSuperTeams teams, Member? member)
 		{
 			if (member == null)
 			{

@@ -135,11 +135,13 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusLost += OnUnfocused;
 		}
 
+#pragma warning disable CA1822 // Mark members as static; Disabling, can't make this static without making the other partial implementations static
 		partial void DisconnectingHandler(PlatformView platformView)
 		{
 			if (platformView == null)
 				return;
 		}
+#pragma warning restore CA1822
 
 		void OnPlatformViewDeleted(object? sender, EventArgs e)
 		{

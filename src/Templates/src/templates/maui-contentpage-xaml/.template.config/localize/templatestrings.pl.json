@@ -1,6 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI ContentPage (XAML)",
+  "description": "A page for displaying content using XAML.",
   "postActions/openInEditor/description": "Otwiera plik NewPage1.xaml w edytorze.",
   "symbols/namespace/description": "przestrzeń nazw wygenerowanego kodu."
 }

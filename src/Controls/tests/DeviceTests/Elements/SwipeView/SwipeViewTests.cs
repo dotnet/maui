@@ -100,9 +100,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
-			Assert.False(viewReference.IsAlive, "SwipeItem should not be alive!");
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 #endif
 	}

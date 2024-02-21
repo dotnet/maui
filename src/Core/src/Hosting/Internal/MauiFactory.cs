@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Hosting.Internal
 		protected IMauiServiceCollection InternalCollection => _collection;
 
 		// TODO: do this properly and support scopes
-		readonly IDictionary<ServiceDescriptor, object?> _singletons;
+		readonly ConcurrentDictionary<ServiceDescriptor, object?> _singletons;
 
 		public MauiFactory(IMauiServiceCollection collection)
 		{

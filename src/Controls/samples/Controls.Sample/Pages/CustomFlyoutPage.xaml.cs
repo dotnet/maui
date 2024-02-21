@@ -15,11 +15,11 @@ namespace Maui.Controls.Sample.Pages
 			Flyout.BindingContext = viewModel;
 		}
 
-		private void Detail_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		private void Detail_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(NavigationPage.CurrentPage))
 			{
-				Flyout.BindingContext = (Detail as NavigationPage).CurrentPage.BindingContext;
+				Flyout.BindingContext = (Detail as NavigationPage)!.CurrentPage.BindingContext;
 			}
 		}
 	}

@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
+using AView = Android.Views.View;
 
 
 namespace Microsoft.Maui.DeviceTests
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
-		async Task ValidateTabBarItemColor(ShellSection item, Color expectedColor, bool hasColor)
+		BottomNavigationView GetTab(ShellSection item)
 		{
 			var shell = item.FindParentOfType<Shell>();
 			var renderer = (ShellRenderer)shell.Handler;
@@ -33,21 +34,41 @@ namespace Microsoft.Maui.DeviceTests
 			if (index >= menu.Size())
 				Assert.Fail("Menu Item has not been created for this item");
 
-			var navigationMenu = (BottomNavigationMenuView)bottomView.MenuView;
-			var navItems = navigationMenu.GetChildrenOfType<BottomNavigationItemView>();
+			return bottomView;
+		}
 
-			var navItemView =
-				navItems.Single(x =>
-				{
-					return x.GetChildrenOfType<TextView>()
-						.Where(tv => String.Equals(tv.Text, item.Title, StringComparison.OrdinalIgnoreCase))
-						.Count() > 0;
-				});
-
+		async Task ValidateTabBarIconColor(
+			ShellSection item,
+			Color iconColor,
+			bool hasColor)
+		{
 			if (hasColor)
-				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), item.FindMauiContext());
+			{
+				await AssertionExtensions.AssertTabItemIconContainsColor(GetTab(item),
+					item.Title, iconColor, MauiContext);
+			}
 			else
-				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), item.FindMauiContext());
+			{
+				await AssertionExtensions.AssertTabItemIconDoesNotContainColor(GetTab(item),
+					item.Title, iconColor, MauiContext);
+			}
+		}
+
+		async Task ValidateTabBarTextColor(
+				ShellSection item,
+				Color textColor,
+				bool hasColor)
+		{
+			if (hasColor)
+			{
+				await AssertionExtensions.AssertTabItemTextContainsColor(GetTab(item),
+					item.Title, textColor, MauiContext);
+			}
+			else
+			{
+				await AssertionExtensions.AssertTabItemTextDoesNotContainColor(GetTab(item),
+					item.Title, textColor, MauiContext);
+			}
 		}
 	}
 }

@@ -16,12 +16,12 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnNewWindowClicked(object sender, EventArgs e)
 		{
-			Application.Current.OpenWindow(new Window(new MultiWindowPage()));
+			Application.Current!.OpenWindow(new Window(new MultiWindowPage()));
 		}
 
 		void OnCloseWindowClicked(object sender, EventArgs e)
 		{
-			Application.Current.CloseWindow(Window);
+			Application.Current!.CloseWindow(Window);
 		}
 
 		async void OnOpenDialogClicked(object sender, EventArgs e)

@@ -49,7 +49,18 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for attached property <c>NavBarIsVisible</c>.</summary>
 		public static readonly BindableProperty NavBarIsVisibleProperty =
-			BindableProperty.CreateAttached("NavBarIsVisible", typeof(bool), typeof(Shell), true);
+			BindableProperty.CreateAttached("NavBarIsVisible", typeof(bool), typeof(Shell), true, propertyChanged: OnNavBarIsVisibleChanged);
+
+		private static void OnNavBarIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			// Nav bar visibility change is only interesting from the Shell down to the current Page.
+			// Make sure the ShellToolbar knows about any possible change.
+			Shell shell = bindable as Shell
+				?? (bindable as BaseShellItem)?.FindParentOfType<Shell>()
+				?? (bindable as Page)?.FindParentOfType<Shell>();
+
+			shell?.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
+		}
 
 		/// <summary>Bindable property for attached property <c>NavBarHasShadow</c>.</summary>
 		public static readonly BindableProperty NavBarHasShadowProperty =

@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 			MyButton.Clicked -= OnButtonClicked;
 		}
 
-		void OnButtonClicked(object sender, System.EventArgs e)
+		void OnButtonClicked(object? sender, System.EventArgs e)
 		{
 			UpdateBrush();
 		}

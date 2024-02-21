@@ -9,8 +9,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.HeaderFooterGalleri
 	{
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(10);
 
-		object header = null;
-		object footer = null;
+		object? header;
+		object? footer;
 
 		public HeaderFooterGrid()
 		{

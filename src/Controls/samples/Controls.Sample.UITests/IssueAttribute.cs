@@ -8,9 +8,18 @@ namespace Maui.Controls.Sample
 		AllowMultiple = true)]
 	public class IssueAttribute : Attribute
 	{
-		//bool _modal;
-
 		public IssueAttribute(IssueTracker issueTracker, int issueNumber, string description,
+			NavigationBehavior navigationBehavior = NavigationBehavior.Default, int issueTestNumber = 0)
+		{
+			IssueTracker = issueTracker;
+			IssueNumber = issueNumber.ToString();
+			Description = description;
+			PlatformsAffected = PlatformAffected.Default;
+			NavigationBehavior = navigationBehavior;
+			IssueTestNumber = issueTestNumber;
+		}
+
+		public IssueAttribute(IssueTracker issueTracker, string issueNumber, string description,
 			NavigationBehavior navigationBehavior = NavigationBehavior.Default, int issueTestNumber = 0)
 		{
 			IssueTracker = issueTracker;
@@ -26,6 +35,18 @@ namespace Maui.Controls.Sample
 			int issueTestNumber = 0)
 		{
 			IssueTracker = issueTracker;
+			IssueNumber = issueNumber.ToString();
+			Description = description;
+			PlatformsAffected = platformsAffected;
+			NavigationBehavior = navigationBehavior;
+			IssueTestNumber = issueTestNumber;
+		}
+
+		public IssueAttribute(IssueTracker issueTracker, string issueNumber, string description,
+			PlatformAffected platformsAffected, NavigationBehavior navigationBehavior = NavigationBehavior.Default,
+			int issueTestNumber = 0)
+		{
+			IssueTracker = issueTracker;
 			IssueNumber = issueNumber;
 			Description = description;
 			PlatformsAffected = platformsAffected;
@@ -35,7 +56,7 @@ namespace Maui.Controls.Sample
 
 		public IssueTracker IssueTracker { get; }
 
-		public int IssueNumber { get; }
+		public string IssueNumber { get; }
 
 		public int IssueTestNumber { get; }
 

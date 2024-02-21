@@ -711,6 +711,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var root = new ContentPage { Title = "Root" };
 			var navPage = new TestNavigationPage(useMaui, root);
+			_ = new TestWindow(navPage);
 
 			var isFinalized = false;
 

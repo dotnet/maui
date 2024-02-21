@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class TabbedPage
 	{
 		[Obsolete("Use TabbedViewHandler.Mapper instead.")]
-		public static IPropertyMapper<ITabbedView, ITabbedViewHandler> ControlsTabbedPageMapper = new PropertyMapper<TabbedPage, ITabbedViewHandler>(TabbedViewHandler.Mapper);
+		public static IPropertyMapper<ITabbedView, ITabbedViewHandler> ControlsTabbedPageMapper = new ControlsMapper<TabbedPage, ITabbedViewHandler>(TabbedViewHandler.Mapper);
 
 		internal new static void RemapForControls()
 		{

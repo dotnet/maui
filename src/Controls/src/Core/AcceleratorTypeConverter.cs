@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls
 	/// in any combination of upper or lower case letters, as well as any available keys on the platform.
 	/// The returned <see cref="Accelerator" /> has its <see cref="Accelerator.Modifiers" /> array filled with the specified modifiers,
 	/// and its <see cref="Accelerator.Keys" /> array filled with the remaining keys.</remarks>
+	[Obsolete("Use KeyboardAccelerator instead.")]
 	public class AcceleratorTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

@@ -14,7 +14,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	internal class ContextActionsCell : UITableViewCell, INativeElementView
+	internal sealed class ContextActionsCell : UITableViewCell, INativeElementView
 	{
 		public const string Key = "ContextActionsCell";
 
@@ -58,15 +58,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public UITableViewCell ContentCell { get; private set; }
 
-		public bool IsOpen
-		{
-			get { return ScrollDelegate.IsOpen; }
-		}
+		public bool IsOpen => ScrollDelegate.IsOpen;
 
-		ContextScrollViewDelegate ScrollDelegate
-		{
-			get { return (ContextScrollViewDelegate)_scroller.Delegate; }
-		}
+		ContextScrollViewDelegate ScrollDelegate => (ContextScrollViewDelegate)_scroller.Delegate;
 
 		Element INativeElementView.Element
 		{
@@ -628,7 +622,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			table.AddGestureRecognizer(new SelectGestureRecognizer());
 		}
 
-		class SelectGestureRecognizer : UITapGestureRecognizer
+		private sealed class SelectGestureRecognizer : UITapGestureRecognizer
 		{
 			NSIndexPath _lastPath;
 
@@ -663,12 +657,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		class MoreActionSheetController : UIAlertController
+		private sealed class MoreActionSheetController : UIAlertController
 		{
-			public override UIAlertControllerStyle PreferredStyle
-			{
-				get { return UIAlertControllerStyle.ActionSheet; }
-			}
+			public override UIAlertControllerStyle PreferredStyle => UIAlertControllerStyle.ActionSheet;
 
 			public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 			{

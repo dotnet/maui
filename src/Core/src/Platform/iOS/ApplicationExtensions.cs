@@ -23,11 +23,24 @@ namespace Microsoft.Maui.Platform
 			var state = args?.State;
 			var userActivity = state.ToUserActivity(MauiUIApplicationDelegate.MauiSceneConfigurationKey);
 
-			UIApplication.SharedApplication.RequestSceneSessionActivation(
-				null,
-				userActivity,
-				null,
-				err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description));
+			Action<NSError> errorAction = err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description);
+#if NET8_0_OR_GREATER
+			if (OperatingSystem.IsIOSVersionAtLeast(17))
+			{
+				var request = UISceneSessionActivationRequest.Create();
+				request.UserActivity = userActivity;
+				UIApplication.SharedApplication.ActivateSceneSession(request, errorAction);
+			}
+			else
+#endif
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+			{
+				UIApplication.SharedApplication.RequestSceneSessionActivation(
+					null,
+					userActivity,
+					null,
+					errorAction);
+			}
 		}
 
 		public static void CreatePlatformWindow(this IUIApplicationDelegate platformApplication, IApplication application, UIApplication uiApplication, NSDictionary launchOptions)
@@ -129,6 +142,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateUserInterfaceStyle(this IApplication application)
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13) && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				return;
+
 			if (application is null)
 				return;
 

@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Microsoft.Maui.Controls.Compatibility.UITests.MovedToAppium]
 		public void ShouldNotCrash()
 		{
 			RunningApp.Tap(q => q.Marked("crashButton"));

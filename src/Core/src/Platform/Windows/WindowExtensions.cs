@@ -235,8 +235,6 @@ namespace Microsoft.Maui.Platform
 				return 1.0f;
 			}
 
-			var id = platformWindow.AppWindow.Id;
-
 			return PlatformMethods.GetDpiForWindow(hwnd) / DeviceDisplay.BaseLogicalDpi;
 		}
 

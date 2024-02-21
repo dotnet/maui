@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<FontNamedSizeService>();
 #pragma warning restore CS0612, CA1416 // Type or member is obsolete
 #endif
-
+			builder.Services.AddScoped(_ => new HideSoftInputOnTappedChangedManager());
 			builder.ConfigureImageSourceHandlers();
 			builder
 				.ConfigureMauiHandlers(handlers =>
@@ -196,9 +196,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			public void Initialize(IServiceProvider services)
 			{
 #if WINDOWS
-				var dispatcher =
-					services.GetService<IDispatcher>() ??
-					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
+				var dispatcher = services.GetRequiredApplicationDispatcher();
 
 				dispatcher
 					.DispatchIfRequired(() =>
@@ -253,6 +251,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			RefreshView.RemapForControls();
 			Shape.RemapForControls();
 			WebView.RemapForControls();
+			ContentPage.RemapForControls();
 
 			return builder;
 		}

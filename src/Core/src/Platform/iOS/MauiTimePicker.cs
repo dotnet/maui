@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiTimePicker : NoCaretField
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		readonly UIDatePicker _picker;
 
 #if !MACCATALYST

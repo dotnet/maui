@@ -45,7 +45,7 @@ namespace Maui.Controls.Sample.Pages
 			UpdateGradientStopColor(LinearBrushPolygon.Fill as LinearGradientBrush, gradientStop, color);
 		}
 
-		void UpdateGradientStopColor(GradientBrush gradientBrush, int index, Color color)
+		void UpdateGradientStopColor(GradientBrush? gradientBrush, int index, Color color)
 		{
 			if (gradientBrush is null)
 				return;

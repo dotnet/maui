@@ -24,6 +24,22 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
+		public async Task ConnectivityChanged_Does_Not_Crash()
+		{
+			Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+
+			// just ensure there is no need for the OS to "respond" to a new subscription
+			await Task.Delay(1000);
+
+			Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
+
+			static void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
+			{
+				// do nothing
+			}
+		}
+
+		[Fact]
 		public async Task Test()
 		{
 			var current = Connectivity.Current.NetworkAccess;

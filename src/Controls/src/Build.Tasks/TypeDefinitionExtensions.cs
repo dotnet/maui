@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static bool IsPublicOrVisibleInternal(this TypeDefinition self, ModuleDefinition module)
 		{
-			if (self.IsPublic)
+			if (self.IsPublic || self.IsNestedPublic)
 				return true;
 			if (self.Module == module)
 				return true;

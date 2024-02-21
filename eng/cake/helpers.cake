@@ -136,7 +136,7 @@ void RunTestsNunit(string unitTestLibrary, NUnit3Settings settings)
 
     SetTestResultsEnvironmentVariables(settings.Work?.ToString());
 
-    void SetTestResultsEnvironmentVariables(string? path)
+    void SetTestResultsEnvironmentVariables(string path)
     {
         var doc = new System.Xml.XmlDocument();
         if(string.IsNullOrEmpty(path))

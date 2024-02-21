@@ -155,6 +155,15 @@
                     Minimum="0"
                     Maximum="60"
                     Value =" 10"/>
+                <Label
+                    Text="Animated GIF"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton
+                    x:Name="AnimatedGifImage"
+                    Source="animated_heart.gif" />
+                <Button
+                    Text="Use Online Source"
+                    Clicked="UseOnlineSource_Clicked"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

@@ -390,12 +390,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			if (dataTypeNode is null)
+			{
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+
 				yield break;
+			}
 
 			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Microsoft.Maui.Controls.Xaml.NullExtension))
+			{
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 				yield break;
+			}
 
 			string dataType = null;
 
@@ -412,12 +419,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (dataType is null)
 				throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
 
-			var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
-			var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix) ?? "";
-			if (!string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(namespaceuri))
+			XmlType dtXType = null;
+			try
+			{
+				dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
+					?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+			}
+			catch (XamlParseException)
+			{
+				var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
 				throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
-
-			var dtXType = new XmlType(namespaceuri, dataType, null);
+			}
 
 			var tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
 			if (tSourceRef == null)
@@ -1011,7 +1023,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			var isObsolete = bpDef.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
 			if (isObsolete)
-				context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"BindableProperty {localName} is deprecated.", null);
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
 
 			return bpRef;
 		}
@@ -1351,12 +1363,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var property = parent.VariableType.GetProperty(context.Cache, pd => pd.Name == localName, out declaringTypeReference);
 			var propertyIsObsolete = property.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
 			if (propertyIsObsolete)
-				context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"Property {localName} is deprecated.", null);
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
 
 			var propertySetter = property.SetMethod;
 			var propertySetterIsObsolete = propertySetter.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
 			if (propertySetterIsObsolete)
-				context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"Property setter for {localName} is deprecated.", null);
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
 
 			//			IL_0007:  ldloc.0
 			//			IL_0008:  ldstr "foo"
@@ -1457,7 +1469,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		static bool CanAddToResourceDictionary(VariableDefinition parent, TypeReference collectionType, IElementNode node, IXmlLineInfo lineInfo, ILContext context)
 		{
 			if (collectionType.FullName != "Microsoft.Maui.Controls.ResourceDictionary"
-				&& collectionType.ResolveCached(context.Cache).BaseType?.FullName != "Microsoft.Maui.Controls.ResourceDictionary")
+				&& !collectionType.InheritsFromOrImplements(context.Cache, context.Module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary"))))
 				return false;
 
 			if (node.Properties.ContainsKey(XmlName.xKey))
@@ -1614,6 +1626,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				Root = root,
 				XamlFilePath = parentContext.XamlFilePath,
+				LoggingHelper = parentContext.LoggingHelper,
 			};
 
 			//Instanciate nested class

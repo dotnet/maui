@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Hosting.Internal
 		{
 		}
 
-		private static IMauiServiceCollection CreateHandlerCollection(IEnumerable<HandlerMauiAppBuilderExtensions.HandlerRegistration> registrationActions)
+		static MauiHandlersCollection CreateHandlerCollection(IEnumerable<HandlerMauiAppBuilderExtensions.HandlerRegistration> registrationActions)
 		{
 			var collection = new MauiHandlersCollection();
 			if (registrationActions != null)

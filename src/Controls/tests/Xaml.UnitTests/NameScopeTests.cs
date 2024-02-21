@@ -1,4 +1,6 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -47,6 +49,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void DataTemplateChildrenDoesNotParticipateToParentNameScope()
 		{
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
 			var xaml = @"
 				<ListView
 				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
@@ -69,6 +73,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ElementsCreatedFromDataTemplateHaveTheirOwnNameScope()
 		{
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+
 			var xaml = @"
 				<ListView
 				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""

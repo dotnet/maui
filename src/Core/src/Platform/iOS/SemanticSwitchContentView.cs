@@ -18,18 +18,19 @@ internal class SemanticSwitchContentView : ContentView
 		IsAccessibilityElement = true;
 	}
 
-	static UIKit.UIAccessibilityTrait? s_switchAccessibilityTraits;
-	UIKit.UIAccessibilityTrait SwitchAccessibilityTraits
+	static UIAccessibilityTrait? s_switchAccessibilityTraits;
+
+	static UIAccessibilityTrait SwitchAccessibilityTraits
 	{
 		get
 		{
 			if (s_switchAccessibilityTraits == null ||
-				s_switchAccessibilityTraits == UIKit.UIAccessibilityTrait.None)
+				s_switchAccessibilityTraits == UIAccessibilityTrait.None)
 			{
-				s_switchAccessibilityTraits = new UIKit.UISwitch().AccessibilityTraits;
+				s_switchAccessibilityTraits = new UISwitch().AccessibilityTraits;
 			}
 
-			return s_switchAccessibilityTraits ?? UIKit.UIAccessibilityTrait.None;
+			return s_switchAccessibilityTraits ?? UIAccessibilityTrait.None;
 		}
 	}
 

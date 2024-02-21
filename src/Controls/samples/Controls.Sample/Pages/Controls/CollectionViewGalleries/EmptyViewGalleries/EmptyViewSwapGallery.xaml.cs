@@ -29,12 +29,12 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 			SwitchEmptyView();
 		}
 
-		private void SearchBarTextChanged(object sender, TextChangedEventArgs e)
+		private void SearchBarTextChanged(object? sender, TextChangedEventArgs e)
 		{
 			_demoFilteredItemSource.FilterItems(SearchBar.Text);
 		}
 
-		private void EmptyViewSwitchToggled(object sender, ToggledEventArgs e)
+		private void EmptyViewSwitchToggled(object? sender, ToggledEventArgs e)
 		{
 			SwitchEmptyView();
 		}

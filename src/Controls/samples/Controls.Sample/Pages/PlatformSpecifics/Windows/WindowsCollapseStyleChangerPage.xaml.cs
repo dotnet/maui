@@ -40,7 +40,7 @@ namespace Maui.Controls.Sample.Pages
 			if (newValue != null)
 			{
 				var enumType = typeof(CollapseStyle);
-				var instance = element as WindowsCollapseStyleChangerPage;
+				var instance = (element as WindowsCollapseStyleChangerPage)!;
 				instance.picker.SelectedIndex = Array.IndexOf(Enum.GetNames(enumType), Enum.GetName(enumType, instance.ParentPage.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetCollapseStyle()));
 			}
 		}

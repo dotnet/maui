@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController, ISwipeView
+	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController, ISwipeView, IVisualTreeElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;
 
@@ -21,6 +23,8 @@ namespace Microsoft.Maui.Controls
 			// This just disables any of the legacy layout code from running
 			DisableLayout = true;
 
+			// SwipeItems is an Element so it participates in the Visual Hierarchy.
+			// This is why we add each set of items to the logical children of swipeview
 			AddLogicalChild(RightItems);
 			AddLogicalChild(LeftItems);
 			AddLogicalChild(TopItems);
@@ -92,6 +96,40 @@ namespace Microsoft.Maui.Controls
 			set => ((ISwipeView)this).IsOpen = value;
 		}
 
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
+		{
+			List<Maui.IVisualTreeElement> elements = new List<IVisualTreeElement>();
+
+			// I realize we are adding these all via AddLogicalChild but the base Compatibility.Layout
+			// Implements IVisualTreeElement.GetVisualChildren() and ruins that so we need to explicitly
+			// implement IVTE so we can collect up all the logical children for IVTE
+			// This is required for hot reload and live visual tree to work as well
+
+			elements.Add(LeftItems);
+			elements.Add(RightItems);
+			elements.Add(TopItems);
+			elements.Add(BottomItems);
+
+			foreach (var item in InternalChildren)
+			{
+				if (item is IVisualTreeElement vte)
+				{
+					elements.Add(vte);
+				}
+			}
+
+			return elements;
+		}
+
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+			SetInheritedBindingContext(LeftItems, BindingContext);
+			SetInheritedBindingContext(RightItems, BindingContext);
+			SetInheritedBindingContext(TopItems, BindingContext);
+			SetInheritedBindingContext(BottomItems, BindingContext);
+		}
+
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is not SwipeView swipeView)
@@ -115,18 +153,12 @@ namespace Microsoft.Maui.Controls
 			{
 				if (sender is SwipeItems swipeItems)
 					SendChange(swipeItems);
-
-				if (sender is IEnumerable<ISwipeItem> enumerable)
-					SendChange(new SwipeItems(enumerable));
 			}
 
 			void SwipeItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 			{
 				if (sender is SwipeItems swipeItems)
 					SendChange(swipeItems);
-
-				if (sender is IEnumerable<ISwipeItem> enumerable)
-					SendChange(new SwipeItems(enumerable));
 			}
 
 			void SendChange(SwipeItems swipeItems)

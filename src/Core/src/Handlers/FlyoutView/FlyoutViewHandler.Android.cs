@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Android.App.Roles;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.Fragment.App;
+using AndroidX.Lifecycle;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -50,15 +54,19 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			if (_detailViewFragment != null && _detailViewFragment?.DetailView == VirtualView.Detail)
+			if (_detailViewFragment is not null &&
+				_detailViewFragment?.DetailView == VirtualView.Detail &&
+				!_detailViewFragment.IsDestroyed)
+			{
 				return;
+			}
 
 			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
 				pvh.DisconnectHandler();
 
-			if (VirtualView.Detail == null)
+			if (VirtualView.Detail is null)
 			{
-				if (_detailViewFragment != null)
+				if (_detailViewFragment is not null)
 				{
 					MauiContext
 						.GetFragmentManager()
@@ -71,6 +79,7 @@ namespace Microsoft.Maui.Handlers
 			else
 			{
 				_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
+
 				MauiContext
 					.GetFragmentManager()
 					.BeginTransaction()
@@ -266,13 +275,24 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(View platformView)
 		{
 			if (platformView is DrawerLayout dl)
+			{
 				dl.DrawerStateChanged += OnDrawerStateChanged;
+				dl.ViewAttachedToWindow += DrawerLayoutAttached;
+			}
 		}
 
 		protected override void DisconnectHandler(View platformView)
 		{
 			if (platformView is DrawerLayout dl)
+			{
 				dl.DrawerStateChanged -= OnDrawerStateChanged;
+				dl.ViewAttachedToWindow -= DrawerLayoutAttached;
+			}
+		}
+
+		void DrawerLayoutAttached(object? sender, View.ViewAttachedToWindowEventArgs e)
+		{
+			UpdateDetailsFragmentView();
 		}
 
 		void OnDrawerStateChanged(object? sender, DrawerLayout.DrawerStateChangedEventArgs e)

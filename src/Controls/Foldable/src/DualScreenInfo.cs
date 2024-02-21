@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Foldable
 
 		internal DualScreenInfo(VisualElement element, IFoldableService dualScreenService)
 		{
-			_spanningBounds = new Rect[0];
+			_spanningBounds = Array.Empty<Rect>();
 			Element = element;
 			_dualScreenService = dualScreenService;
 
@@ -179,10 +179,10 @@ namespace Microsoft.Maui.Foldable
 			var hinge = guide.Hinge;
 
 			if (hinge == Rect.Zero)
-				return new Rect[0];
+				return Array.Empty<Rect>();
 
 			if (guide.Pane2 == Rect.Zero)
-				return new Rect[0];
+				return Array.Empty<Rect>();
 
 			//TODO: I think this should this be checking SpanMode==Wide
 			if (IsLandscape)

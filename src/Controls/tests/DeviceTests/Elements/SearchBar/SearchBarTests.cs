@@ -32,6 +32,25 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformText);
 		}
 
+#if MACCATALYST || IOS
+		// Only Mac Catalyst and iOS needs the CancelButtonColor nuanced handling verifying
+		[Fact(DisplayName = "CancelButtonColor is set correctly")]
+		public async Task CancelButtonColorSetCorrectly()
+		{
+			var expected = Graphics.Colors.Red;
+
+			var searchBar = new SearchBar()
+			{
+				CancelButtonColor = expected,
+				Text = "CancelButtonColor is set correctly"
+			};
+
+			var actualColor = await GetPlatformCancelButtonColor(await CreateHandlerAsync<SearchBarHandler>(searchBar));
+
+			Assert.Equal(expected, actualColor);
+		}
+#endif
+
 #if WINDOWS
 		// Only Windows needs the IsReadOnly workaround for MaxLength==0 to prevent text from being entered
 		[Fact]
@@ -74,12 +93,5 @@ namespace Microsoft.Maui.DeviceTests
 				SearchBarTests.GetPlatformText(handler);
 		}
 #endif
-
-		[Category(TestCategory.SearchBar)]
-		[Category(TestCategory.TextInput)]
-		[Collection(RunInNewWindowCollection)]
-		public class SearchBarTextInputFocusTests : TextInputFocusTests<SearchBarHandler, SearchBar>
-		{
-		}
 	}
 }

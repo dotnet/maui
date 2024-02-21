@@ -5,7 +5,7 @@ using Android.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	internal class ConditionalFocusLayout : LinearLayout, global::Android.Views.View.IOnTouchListener
+	internal sealed class ConditionalFocusLayout : LinearLayout, global::Android.Views.View.IOnTouchListener
 	{
 		public ConditionalFocusLayout(System.IntPtr p, global::Android.Runtime.JniHandleOwnership o) : base(p, o)
 		{

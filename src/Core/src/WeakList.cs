@@ -12,7 +12,7 @@ namespace Microsoft.Maui;
 class WeakList<T> : IEnumerable<T> where T : class
 {
 	readonly List<WeakReference<T>> _list = new();
-	int _operations = 0;
+	int _operations;
 
 	public int Count => _list.Count;
 

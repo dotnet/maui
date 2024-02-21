@@ -2,7 +2,7 @@
   "author": "Microsoft",
   "name": ".NET MAUI Blazor 應用程式",
   "description": "此專案可用於建立適用於 iOS、Android、Mac Catalyst、Tizen 和使用 Blazor 的 WinUI 的 .NET MAUI 應用程式",
-  "postActions/openInEditor/description": "在編輯器中開啟 Pages/Index.razor。",
+  "postActions/openInEditor/description": "在編輯器中開啟 Components/Pages/Home.razor。",
   "symbols/applicationId/description": "覆寫專案中的 $(ApplicationId)",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"

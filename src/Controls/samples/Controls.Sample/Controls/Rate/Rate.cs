@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Controls
 	{
 		const string ElementPanel = "PART_Panel";
 
-		StackLayout _rateLayout;
+		StackLayout _rateLayout = default!;
 
 		public static readonly BindableProperty IconProperty =
 			BindableProperty.Create(nameof(Icon), typeof(Geometry), typeof(Rate), GetDefaultIcon());
@@ -24,7 +24,7 @@ namespace Maui.Controls.Sample.Controls
 
 		static Geometry GetDefaultIcon()
 		{
-			Application.Current.Resources.TryGetValue("StarGeometry", out object resource);
+			Application.Current!.Resources.TryGetValue("StarGeometry", out object resource);
 			PathGeometry pathGeometry = (PathGeometry)resource;
 
 			return pathGeometry;
@@ -144,18 +144,18 @@ namespace Maui.Controls.Sample.Controls
 			set => SetValue(ValueProperty, value);
 		}
 
-		public event EventHandler<ValueChangedEventArgs> ValueChanged;
+		public event EventHandler<ValueChangedEventArgs>? ValueChanged;
 
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
 
-			_rateLayout = GetTemplateChild(ElementPanel) as StackLayout;
+			_rateLayout = (GetTemplateChild(ElementPanel) as StackLayout)!;
 
 			UpdateRateItems();
 		}
 
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = "")
 		{
 			base.OnPropertyChanged(propertyName);
 
@@ -282,9 +282,9 @@ namespace Maui.Controls.Sample.Controls
 			ValueChanged?.Invoke(this, new ValueChangedEventArgs(Value));
 		}
 
-		void OnTapped(object sender, EventArgs e)
+		void OnTapped(object? sender, EventArgs e)
 		{
-			var star = (IView)sender;
+			var star = (IView)sender!;
 			var index = _rateLayout.Children.IndexOf(star);
 
 			Value = index + 1;

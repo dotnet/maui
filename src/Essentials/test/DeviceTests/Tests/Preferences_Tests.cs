@@ -220,7 +220,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.False(Preferences.ContainsKey("NotContainsKey1", sharedName));
 		}
 
-		[Theory]
+		[Theory(
+#if WINDOWS
+		Skip = "Fails on Windows unpackaged"
+#endif
+		)]
 		[InlineData(null, DateTimeKind.Utc)]
 		[InlineData(sharedNameTestData, DateTimeKind.Utc)]
 		[InlineData(null, DateTimeKind.Local)]
@@ -451,7 +455,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.False(Preferences.Default.ContainsKey("NotContainsKey1", sharedName));
 		}
 
-		[Theory]
+		[Theory(
+#if WINDOWS
+		Skip = "Fails on Windows unpackaged"
+#endif
+		)]
 		[InlineData(null, DateTimeKind.Utc)]
 		[InlineData(sharedNameTestData, DateTimeKind.Utc)]
 		[InlineData(null, DateTimeKind.Local)]

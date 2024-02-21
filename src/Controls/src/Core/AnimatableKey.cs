@@ -4,7 +4,7 @@ using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui.Controls
 {
-	internal class AnimatableKey
+	internal sealed class AnimatableKey
 	{
 		public AnimatableKey(IAnimatable animatable, string handle)
 		{
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		protected bool Equals(AnimatableKey other)
+		private bool Equals(AnimatableKey other)
 		{
 			if (!string.Equals(Handle, other.Handle, StringComparison.Ordinal))
 			{

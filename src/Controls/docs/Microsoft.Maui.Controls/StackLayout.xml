@@ -31,7 +31,7 @@
     <remarks>
       <para>Because <see cref="T:Microsoft.Maui.Controls.StackLayout" /> layouts override the bounds on their child elements, application developers should not set bounds on them.</para>
       <example>
-        <para>The following example code, adapted from the <format type="text/html"><a href="https://docs.microsoft.com/samples/xamarin/xamarin-forms-samples/formsgallery/" target="_blank">FormsGallery</a></format> example shows how to create a new <see cref="T:Microsoft.Maui.Controls.StackLayout" /> with children that explore many of the layout behaviors of <see cref="T:Microsoft.Maui.Controls.StackLayout" />:</para>
+        <para>The following example code shows how to create a new <see cref="T:Microsoft.Maui.Controls.StackLayout" /> with children that explore many of the layout behaviors of <see cref="T:Microsoft.Maui.Controls.StackLayout" />:</para>
         <code lang="csharp lang-csharp"><![CDATA[
 StackLayout stackLayout = new StackLayout
 {

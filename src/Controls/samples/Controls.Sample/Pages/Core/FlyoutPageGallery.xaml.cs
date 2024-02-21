@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Pages
 	public partial class FlyoutPageGallery
 	{
 
-		FlyoutPage FlyoutPage => Application.Current.MainPage as FlyoutPage;
+		FlyoutPage? FlyoutPage => Application.Current!.MainPage as FlyoutPage;
 		public FlyoutPageGallery()
 		{
 			InitializeComponent();
@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Pages
 			if (FlyoutPage == null)
 				return;
 
-			FlyoutPage.IsGestureEnabled = (sender as CheckBox).IsChecked;
+			FlyoutPage.IsGestureEnabled = (sender as CheckBox)!.IsChecked;
 		}
 
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Pages
 			FlyoutPage.IsPresentedChanged += OnPresentedChanged;
 		}
 
-		private void OnPresentedChanged(object sender, EventArgs e)
+		private void OnPresentedChanged(object? sender, EventArgs e)
 		{
 			UpdatePresentedLabel();
 		}
@@ -54,7 +54,7 @@ namespace Maui.Controls.Sample.Pages
 			lblPresented.Text = $"Flyout Is Currently: {FlyoutPage.IsPresented}";
 		}
 
-		void OnFlyoutBehaviorPickerSelectedIndexChanged(object sender, EventArgs e)
+		void OnFlyoutBehaviorPickerSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			if (FlyoutPage == null)
 				return;

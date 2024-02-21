@@ -12,6 +12,7 @@
     <WindowsPackageType>MSIX</WindowsPackageType>
     <GenerateLibraryLayout>false</GenerateLibraryLayout>
     <IsPackable>false</IsPackable>
+    <UseRidGraph>true</UseRidGraph>
   </PropertyGroup>
 
   <ItemGroup>

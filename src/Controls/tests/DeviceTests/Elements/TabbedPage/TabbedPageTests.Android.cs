@@ -18,6 +18,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 				tabbedPage.Children[1].IconImageSource = "blue.png";
 
 				// let the icon and title propagate
-				await AssertionExtensions.Wait(() => menuItem1.Icon != icon1);
+				await AssertEventually(() => menuItem1.Icon != icon1);
 
 				menu = GetBottomNavigationView(handler).Menu;
 				Assert.Equal(menuItem1, menu.GetItem(0));
@@ -111,12 +112,52 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		BottomNavigationView GetBottomNavigationView(TabbedViewHandler tabViewHandler)
+		BottomNavigationView GetBottomNavigationView(IPlatformViewHandler tabViewHandler)
 		{
 			var layout = tabViewHandler.PlatformView.FindParent((view) => view is CoordinatorLayout)
 				as CoordinatorLayout;
 
 			return layout.GetFirstChildOfType<BottomNavigationView>();
+		}
+
+		async Task ValidateTabBarIconColor(
+			TabbedPage tabbedPage,
+			string tabText,
+			Color iconColor,
+			bool hasColor)
+		{
+			if (hasColor)
+			{
+				await AssertionExtensions.AssertTabItemIconContainsColor(
+					GetBottomNavigationView((tabbedPage.Handler as IPlatformViewHandler)),
+					tabText, iconColor, MauiContext);
+			}
+			else
+			{
+				await AssertionExtensions.AssertTabItemIconDoesNotContainColor(
+					GetBottomNavigationView((tabbedPage.Handler as IPlatformViewHandler)),
+					tabText, iconColor, MauiContext);
+			}
+		}
+
+		async Task ValidateTabBarTextColor(
+			TabbedPage tabbedPage,
+			string tabText,
+			Color iconColor,
+			bool hasColor)
+		{
+			if (hasColor)
+			{
+				await AssertionExtensions.AssertTabItemTextContainsColor(
+					GetBottomNavigationView((tabbedPage.Handler as IPlatformViewHandler)),
+					tabText, iconColor, MauiContext);
+			}
+			else
+			{
+				await AssertionExtensions.AssertTabItemTextDoesNotContainColor(
+					GetBottomNavigationView((tabbedPage.Handler as IPlatformViewHandler)),
+					tabText, iconColor, MauiContext);
+			}
 		}
 	}
 }

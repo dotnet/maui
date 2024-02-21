@@ -15,9 +15,9 @@ namespace Maui.Controls.Sample
 			get { return false; }
 		}
 
-		protected override void Build(StackLayout stackLayout)
+		protected override void Build()
 		{
-			base.Build(stackLayout);
+			base.Build();
 
 			var isCheckedContainer = new ValueViewContainer<CheckBox>(Test.CheckBox.IsChecked, new CheckBox() { IsChecked = true, HorizontalOptions = LayoutOptions.Start }, "IsChecked", value => value.ToString());
 			Add(isCheckedContainer);

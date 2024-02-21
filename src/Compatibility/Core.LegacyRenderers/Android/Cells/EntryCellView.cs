@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				OnKeyboardDoneButtonPressed(EditText, EventArgs.Empty);
 				EditText.ClearFocus();
-				v.HideKeyboard();
+				v.HideSoftInput();
 			}
 
 			// Fire Completed and dismiss keyboard for hardware / physical keyboards
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				OnKeyboardDoneButtonPressed(EditText, EventArgs.Empty);
 				EditText.ClearFocus();
-				v.HideKeyboard();
+				v.HideSoftInput();
 			}
 
 			return true;

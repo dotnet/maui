@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 			ResetButton.Clicked += ResetButtonClicked;
 		}
 
-		void ResetButtonClicked(object sender, EventArgs e)
+		void ResetButtonClicked(object? sender, EventArgs e)
 		{
 			_demoFilteredItemSource = new DemoFilteredItemSource(new Random().Next(3, 50));
 			CollectionView.ItemsSource = _demoFilteredItemSource.Items;

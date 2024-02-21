@@ -18,7 +18,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 
 		private void ResetClicked(object sender, EventArgs e)
 		{
-			_vm.SelectedItem = _vm.Items[0];
+			_vm.SelectedItem = _vm.Items![0];
 		}
 
 		private void ClearClicked(object sender, EventArgs e)

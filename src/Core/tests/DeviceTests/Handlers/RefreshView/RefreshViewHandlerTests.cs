@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 #else
 			await AttachAndRun(RefreshView, async (handler) =>
 			{
-				await Wait(() => GetPlatformIsRefreshing((RefreshViewHandler)handler) == isRefreshing);
+				await AssertEventually(() => GetPlatformIsRefreshing((RefreshViewHandler)handler) == isRefreshing);
 				await Assert();
 			});
 #endif

@@ -11,29 +11,29 @@ namespace Maui.Controls.Sample.Pages
 	{
 		public class SwipeContainer : VerticalStackLayout
 		{
-			public EventHandler SwipeLeft;
-			public EventHandler SwipeRight;
-			public EventHandler SwipeUp;
-			public EventHandler SwipeDown;
+			public EventHandler? SwipeLeft;
+			public EventHandler? SwipeRight;
+			public EventHandler? SwipeUp;
+			public EventHandler? SwipeDown;
 
 			public SwipeContainer()
 			{
 			}
 
 
-			public View Content
+			public View? Content
 			{
-				get => (View)Children.LastOrDefault();
+				get => (View)(Children.LastOrDefault()!);
 				set
 				{
 					if (Children.Count > 0)
 						Remove(Children[0]);
 
 					Add(value);
-					value.GestureRecognizers.Add(GetSwipeRight());
-					value.GestureRecognizers.Add(GetSwipeLeft());
-					value.GestureRecognizers.Add(GetSwipeUp());
-					value.GestureRecognizers.Add(GetSwipeDown());
+					value!.GestureRecognizers.Add(GetSwipeRight());
+					value!.GestureRecognizers.Add(GetSwipeLeft());
+					value!.GestureRecognizers.Add(GetSwipeUp());
+					value!.GestureRecognizers.Add(GetSwipeDown());
 				}
 			}
 

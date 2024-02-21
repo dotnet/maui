@@ -37,11 +37,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			{
 				var isEmulator =
 					DeviceInfo.Model.Contains("sdk_gphone_x86", StringComparison.Ordinal) ||
+					DeviceInfo.Model.Contains("sdk_gphone64_x86_64", StringComparison.Ordinal) ||
 					DeviceInfo.Model.Contains("google_sdk", StringComparison.Ordinal) ||
 					DeviceInfo.Model.Contains("Emulator", StringComparison.Ordinal) ||
 					DeviceInfo.Model.Contains("Android SDK built for x86", StringComparison.Ordinal);
 
-				Assert.True(isEmulator);
+				Assert.True(isEmulator, DeviceInfo.Model);
 			}
 #else
 			throw new PlatformNotSupportedException();

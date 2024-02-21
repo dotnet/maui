@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 		: CanvasState
 	{
-		private static readonly float[] _emptyFloatArray = new float[] { };
+		private static readonly float[] _emptyFloatArray = Array.Empty<float>();
 
 		private readonly PlatformCanvas _owner;
 		private readonly PlatformCanvasState _parentState;

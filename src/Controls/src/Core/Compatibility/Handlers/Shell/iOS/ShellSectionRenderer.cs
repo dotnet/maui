@@ -724,11 +724,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var element = _self.ElementForViewController(viewController);
 
-				bool navBarVisible;
-				if (element is ShellSection)
-					navBarVisible = _self._renderer.ShowNavBar;
-				else
-					navBarVisible = Shell.GetNavBarIsVisible(element);
+				bool navBarVisible = false;
+
+				if (element is not null)
+				{
+					if (element is ShellSection)
+						navBarVisible = _self._renderer.ShowNavBar;
+					else
+						navBarVisible = Shell.GetNavBarIsVisible(element);
+				}
 
 				navigationController.SetNavigationBarHidden(!navBarVisible, true);
 

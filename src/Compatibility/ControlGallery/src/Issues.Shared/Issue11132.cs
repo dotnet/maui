@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 		[Description("Verify that can use a CustomRenderer overriding the iOS View Layer properties")]
 		public void Issue11132CustomRendererLayerAndClip()

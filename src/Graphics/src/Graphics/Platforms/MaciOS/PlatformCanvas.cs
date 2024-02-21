@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Graphics.Platform
 {
 	public partial class PlatformCanvas : AbstractCanvas<PlatformCanvasState>
 	{
-		private static readonly nfloat[] EmptyNFloatArray = { };
+		private static readonly nfloat[] EmptyNFloatArray = Array.Empty<nfloat>();
 		private static readonly CGAffineTransform FlipTransform = new CGAffineTransform(1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f);
 
 		private bool _antialias = true;

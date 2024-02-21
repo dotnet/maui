@@ -63,7 +63,7 @@ namespace Microsoft.Maui
 		{
 			_ = input ?? throw new ArgumentNullException(nameof(input));
 
-			var hashIndex = input.IndexOf("#", StringComparison.Ordinal);
+			var hashIndex = input.IndexOfChar('#');
 			//UWP names require Spaces. Sometimes people may use those, "CuteFont-Regular#Cute Font" should be "CuteFont-Regular#CuteFont"
 			var postScriptName = hashIndex > 0 ? input.Substring(hashIndex + 1)
 #if NETSTANDARD2_0
@@ -98,7 +98,7 @@ namespace Microsoft.Maui
 		{
 			_ = fontFamily ?? throw new ArgumentNullException(nameof(fontFamily));
 
-			if (fontFamily.IndexOf(" ", StringComparison.Ordinal) != -1)
+			if (fontFamily.ContainsChar(' '))
 			{
 				yield return fontFamily;
 				//We are done, they have spaces, they have it handled.
@@ -107,7 +107,7 @@ namespace Microsoft.Maui
 
 			string currentString = "";
 			char lastCharacter = ' ';
-			var index = fontFamily.LastIndexOf("-", StringComparison.Ordinal);
+			var index = fontFamily.LastIndexOf('-');
 			bool multipleCaps = false;
 			var cleansedString = index > 0 ? fontFamily.Substring(0, index) : fontFamily;
 			foreach (var c in cleansedString)

@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		Drawable? GetShape(AColor color)
+		AShapeDrawable? GetShape(AColor color)
 		{
 			if (_indicatorView == null || Context == null)
 				return null;

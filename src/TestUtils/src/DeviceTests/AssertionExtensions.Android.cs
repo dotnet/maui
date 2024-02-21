@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
@@ -8,12 +9,17 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using AndroidX.Core.View;
+using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.Navigation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using MColor = Microsoft.Maui.Graphics.Color;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests
@@ -147,93 +153,62 @@ namespace Microsoft.Maui.DeviceTests
 			return Task.CompletedTask;
 		}
 
-		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string message = "")
+		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string? message = null)
 		{
-			if (KeyboardManager.IsSoftKeyboardVisible(view))
+			if (view.IsSoftInputShowing())
 				return;
 
-			try
+			await view.FocusView(timeout);
+			await Task.Yield();
+			view.ShowSoftInput();
+			await Task.Yield();
+
+			if (string.IsNullOrEmpty(message))
 			{
-				await view.FocusView(timeout);
-				await Task.Yield();
-				KeyboardManager.ShowKeyboard(view);
-				await Task.Yield();
-
-				bool result = await Wait(() =>
-				{
-					if (!KeyboardManager.IsSoftKeyboardVisible(view))
-						KeyboardManager.ShowKeyboard(view);
-
-					return KeyboardManager.IsSoftKeyboardVisible(view);
-
-				}, timeout);
-
-				await Task.Delay(100);
-				Assert.True(KeyboardManager.IsSoftKeyboardVisible(view));
+				message = $"Keyboard did not show for {view}";
 			}
-			catch (Exception ex)
-			{
-				if (!string.IsNullOrEmpty(message))
-					throw new Exception(message, ex);
-				else
-					throw;
-			}
+
+			await AssertEventually(view.IsSoftInputShowing, timeout: timeout, message: message);
 		}
 
 		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string? message = null)
 		{
-			if (!KeyboardManager.IsSoftKeyboardVisible(view))
+			if (!view.IsSoftInputShowing())
 				return;
 
-			try
+			view.HideSoftInput();
+			await Task.Yield();
+
+			if (string.IsNullOrEmpty(message))
 			{
-				KeyboardManager.HideKeyboard(view);
-				await Task.Yield();
-				bool result = await Wait(() =>
-				{
-					if (!KeyboardManager.IsSoftKeyboardVisible(view))
-						KeyboardManager.HideKeyboard(view);
-
-					return !KeyboardManager.IsSoftKeyboardVisible(view);
-
-				}, timeout);
-
-				await Task.Delay(100);
-				Assert.True(!KeyboardManager.IsSoftKeyboardVisible(view));
+				message = $"Keyboard did not hide for {view}";
 			}
-			catch (Exception ex)
-			{
-				if (!string.IsNullOrEmpty(message))
-					throw new Exception(message, ex);
-				else
-					throw;
-			}
+
+			await AssertEventually(() => !view.IsSoftInputShowing(), timeout: timeout, message: message);
 		}
 
-		public static async Task WaitForKeyboardToShow(this AView view, int timeout = 1000, string message = "")
+		public static async Task WaitForKeyboardToShow(this AView view, int timeout = 1000, string? message = null)
 		{
-			try
+			if (string.IsNullOrEmpty(message))
 			{
-				var result = await Wait(() => KeyboardManager.IsSoftKeyboardVisible(view), timeout);
-				Assert.True(result);
+				message = $"Keyboard did not show for {view}";
+			}
 
-				// Even if the OS is reporting that the keyboard has opened it seems like the animation hasn't quite finished
-				// If you try to call hide too quickly after showing, sometimes it will just show and then pop back down.
-				await Task.Delay(100);
-			}
-			catch (Exception ex)
-			{
-				if (!string.IsNullOrEmpty(message))
-					throw new Exception(message, ex);
-				else
-					throw;
-			}
+			await AssertEventually(view.IsSoftInputShowing, timeout: timeout, message: message);
+
+			// Even if the OS is reporting that the keyboard has opened it seems like the animation hasn't quite finished
+			// If you try to call hide too quickly after showing, sometimes it will just show and then pop back down.
+			await Task.Delay(100);
 		}
 
-		public static async Task WaitForKeyboardToHide(this AView view, int timeout = 1000)
+		public static async Task WaitForKeyboardToHide(this AView view, int timeout = 1000, string? message = null)
 		{
-			var result = await Wait(() => !KeyboardManager.IsSoftKeyboardVisible(view), timeout);
-			Assert.True(result, "Keyboard failed to hide");
+			if (string.IsNullOrEmpty(message))
+			{
+				message = $"Keyboard did not hide for {view}";
+			}
+
+			await AssertEventually(() => !view.IsSoftInputShowing(), timeout: timeout, message: message);
 
 			// Even if the OS is reporting that the keyboard has closed it seems like the animation hasn't quite finished
 			// If you try to call hide too quickly after showing, sometimes it will just hide and then pop back up.
@@ -243,7 +218,8 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task WaitForLayoutOrNonZeroSize(this AView view, int timeout = 1000) =>
 			Task.WhenAll(
 				view.WaitForLayout(timeout),
-				Wait(() => view.Width > 0 && view.Height > 0, timeout));
+				AssertEventually(() => ViewCompat.IsLaidOut(view), timeout,
+					message: $"Timed out waiting for {view} to have {nameof(view.Width)} and {nameof(view.Height)} greater than zero"));
 
 		public static Task<bool> WaitForLayout(this AView view, int timeout = 1000)
 		{
@@ -271,12 +247,12 @@ namespace Microsoft.Maui.DeviceTests
 		public static string ToBase64String(this Bitmap bitmap)
 		{
 			using var ms = new MemoryStream();
-			bitmap.Compress(Bitmap.CompressFormat.Png, 0, ms);
+			bitmap.Compress(Bitmap.CompressFormat.Png!, 0, ms);
 			return Convert.ToBase64String(ms.ToArray());
 		}
 
 		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y) =>
-			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
+			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in rendered view.");
 
 		public static string CreateColorError(this Bitmap bitmap, string message) =>
 			$"{message} This is what it looked like:<img>{bitmap.ToBase64String()}</img>";
@@ -358,6 +334,13 @@ namespace Microsoft.Maui.DeviceTests
 					Gravity = GravityFlags.Center
 				};
 
+				// Ensure that the view gets _some_ width/height; the combination of WrapContent and Center above means that 
+				// the default Fill layout options will have no effect, so unless the root test object or its Content has a
+				// WidthRequest/HeightRequest, the actual layout height and width may be zero 
+
+				view.SetMinimumWidth(40);
+				view.SetMinimumHeight(40);
+
 				var act = context.GetActivity()!;
 				var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;
 
@@ -412,7 +395,7 @@ namespace Microsoft.Maui.DeviceTests
 			var actualColor = bitmap.ColorAtPoint(x, y);
 
 			if (!actualColor.IsEquivalent(expectedColor))
-				Assert.Equal(expectedColor, actualColor);
+				throw new XunitException(CreateColorAtPointError(bitmap, expectedColor, x, y));
 
 			return bitmap;
 		}
@@ -523,6 +506,19 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
+		public static async Task<Bitmap> AssertColorsAtPointsAsync(this AView view, Graphics.Color[] colors, Graphics.Point[] points, IMauiContext mauiContext)
+		{
+			var density = mauiContext.Context.GetDisplayDensity();
+			var bitmap = await view.ToBitmap(mauiContext);
+
+			for (int i = 0; i < points.Length; i++)
+			{
+				bitmap.AssertColorAtPoint(colors[i].ToPlatform(), (int)(points[i].X * density), (int)(points[i].Y * density));
+			}
+
+			return bitmap;
+		}
+
 		public static async Task<Bitmap> AssertColorAtCenterAsync(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
@@ -629,5 +625,81 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static bool IsExcludedWithChildren(this AView view) =>
 			view.GetSemanticPlatformElement().ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
+
+		static public Task AssertTabItemTextDoesNotContainColor(
+			this BottomNavigationView navigationView,
+			string tabText,
+			MColor expectedColor,
+			IMauiContext mauiContext) => AssertTabItemTextColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemTextContainsColor(
+			this BottomNavigationView navigationView,
+			string tabText,
+			MColor expectedColor,
+			IMauiContext mauiContext) => AssertTabItemTextColor(navigationView, tabText, expectedColor, true, mauiContext);
+
+		static async Task AssertTabItemTextColor(
+			this BottomNavigationView navigationView,
+			string tabText,
+			MColor expectedColor,
+			bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var navItemView = (AView?)GetTab(navigationView, tabText)?.GetFirstChildOfType<TextView>()?.Parent;
+
+			if (navItemView is null)
+				throw new Exception("Unable to locate Tab Item Text Container");
+
+			if (hasColor)
+				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), mauiContext);
+			else
+				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), mauiContext);
+		}
+
+		static async Task AssertTabItemIconColor(
+			this BottomNavigationView navigationView, string tabText, MColor expectedColor, bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var navItemView = (AView?)GetTab(navigationView, tabText)?.GetFirstChildOfType<ImageView>()?.Parent;
+
+			if (navItemView is null)
+				throw new Exception("Unable to locate Tab Item Icon Container");
+
+			if (hasColor)
+				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), mauiContext);
+			else
+				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), mauiContext);
+		}
+
+		static public Task AssertTabItemIconDoesNotContainColor(
+			this BottomNavigationView navigationView,
+			string tabText,
+			MColor expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemIconContainsColor(
+			this BottomNavigationView navigationView,
+			string tabText,
+			MColor expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, true, mauiContext);
+
+		static BottomNavigationItemView GetTab(
+			this BottomNavigationView bottomView, string tabText)
+		{
+			var menu = bottomView.Menu;
+
+			var navigationMenu = (BottomNavigationMenuView)bottomView.MenuView;
+			var navItems = navigationMenu.GetChildrenOfType<BottomNavigationItemView>();
+
+			var navItemView =
+				navItems.Single(x =>
+				{
+					return x.GetChildrenOfType<TextView>()
+						.Where(tv => String.Equals(tv.Text, tabText, StringComparison.OrdinalIgnoreCase))
+						.Count() > 0;
+				});
+
+			return navItemView;
+		}
 	}
 }

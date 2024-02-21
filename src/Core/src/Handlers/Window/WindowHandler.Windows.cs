@@ -160,7 +160,10 @@ namespace Microsoft.Maui.Handlers
 			if (!AppWindowTitleBar.IsCustomizationSupported())
 				return;
 
-			var titleBar = handler.PlatformView.AppWindow.TitleBar;
+			var titleBar = handler.PlatformView.GetAppWindow()?.TitleBar;
+			if (titleBar is null)
+				return;
+
 			var titleBarRects = window.TitleBarDragRectangles;
 
 			if (titleBarRects is null)

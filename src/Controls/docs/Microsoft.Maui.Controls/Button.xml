@@ -68,7 +68,7 @@
         BorderColor="Black"
         HorizontalOptions="Center"/>
 ]]></code>
-        To display the <c>icon.png</c> image with the above XAML, the developer must place it in the appropriate location, with the appropriate build action, specific to each platform project. The <format type="text/html"><a href="https://developer.xamarin.com/guides/xamarin-forms/user-interface/images/">Images</a></format> topic explains this and other important details about working with images in Microsoft.Maui.Controls.
+        To display the <c>icon.png</c> image with the above XAML, the developer must place it in the appropriate location, with the appropriate build action, specific to each platform project.
       </example>
       <format type="text/html">
         <h1>Button Events</h1>

@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Devices
 				);
 
 		/// <summary>
-		/// Returns a string representation of the current value of <see cref="devicePlatform"/>.
+		/// Returns a string representation of the current value of the device platform.
 		/// </summary>
 		/// <returns>A string representation of this instance in the format of <c>{device platform}</c> or an empty string when no device platform is set.</returns>
 		public override string ToString() =>

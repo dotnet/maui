@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class AndroidTitleViewPage : ContentPage
 	{
-		readonly ICommand _returnToPlatformSpecificsPage;
+		readonly ICommand? _returnToPlatformSpecificsPage;
 
 		public AndroidTitleViewPage()
 		{

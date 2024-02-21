@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Platform
 			catch (Exception)
 			{
 				// If anything goes wrong just show the html
-				platformControl.Text = global::Windows.Data.Html.HtmlUtilities.ConvertToText(label.Text);
+				platformControl.Text = label.Text;
 			}
 		}
 

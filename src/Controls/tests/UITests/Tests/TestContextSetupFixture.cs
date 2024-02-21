@@ -1,25 +1,14 @@
-﻿using NUnit.Framework;
-using TestUtils.Appium.UITests;
+﻿using UITest.Appium;
 
 // SetupFixture runs once for all tests under the same namespace, if placed outside the namespace it will run once for all tests in the assembly
-[SetUpFixture]
-public class TestContextSetupFixture
+public class AssemblySetupFixture : UITestContextSetupFixture
 {
-	static AppiumContext? _testContext;
+	AppiumServerContext? _appiumServerContext;
 
-	public static IContext TestContext { get { return _testContext ?? throw new InvalidOperationException("Trying to get the TestContext before setup has run"); } }
-
-	[OneTimeSetUp]
-	public void RunBeforeAnyTests()
+	public override void Initialize()
 	{
-		_testContext = new AppiumContext();
-		_testContext.CreateAndStartServer();
-	}
-
-	[OneTimeTearDown]
-	public void RunAfterAnyTests()
-	{
-		_testContext?.Dispose();
-		_testContext = null;
+		_appiumServerContext = new AppiumServerContext();
+		_appiumServerContext.CreateAndStartServer();
+		_serverContext = _appiumServerContext;
 	}
 }

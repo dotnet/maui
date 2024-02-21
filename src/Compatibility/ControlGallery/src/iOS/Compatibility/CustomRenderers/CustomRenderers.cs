@@ -169,8 +169,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.iOS
 
 
 	/// <summary>
-	/// Sample of a custom cell layout, taken from the iOS docs at
-	/// http://developer.xamarin.com/guides/ios/user_interface/tables/part_3_-_customizing_a_table's_appearance/
+	/// Sample of a custom cell layout.
 	/// </summary>
 	public class NativeiOSCell : UITableViewCell
 	{
@@ -224,8 +223,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.iOS
 	}
 
 	/// <summary>
-	/// Sample of a custom cell layout, taken from the iOS docs at
-	/// http://developer.xamarin.com/guides/ios/user_interface/tables/part_3_-_customizing_a_table's_appearance/
+	/// Sample of a custom cell layout.
 	/// </summary>
 	public class NativeiOSListViewCell : UITableViewCell
 	{

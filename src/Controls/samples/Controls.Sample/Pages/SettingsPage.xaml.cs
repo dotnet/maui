@@ -18,7 +18,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnRTLToggled(object sender, ToggledEventArgs e)
 		{
-			var mainPage = Application.Current.MainPage;
+			var mainPage = Application.Current!.MainPage;
 
 			if (mainPage == null)
 				return;

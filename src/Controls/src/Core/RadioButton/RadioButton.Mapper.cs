@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls
 
 		[Obsolete("Use RadioButtonHandler.Mapper instead.")]
 		public static IPropertyMapper<RadioButton, RadioButtonHandler> ControlsRadioButtonMapper =
-			new PropertyMapper<RadioButton, RadioButtonHandler>(RadioButtonHandler.Mapper);
+			new ControlsMapper<RadioButton, RadioButtonHandler>(RadioButtonHandler.Mapper);
 
 		internal new static void RemapForControls()
 		{

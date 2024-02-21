@@ -387,6 +387,8 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			void registerSourceInfo(object target, string path)
 			{
+				if (VisualDiagnostics.GetSourceInfo(target) != null)
+					return;
 				var assemblyName = rootElement.GetType().Assembly?.GetName().Name;
 				if (lineInfo != null)
 					VisualDiagnostics.RegisterSourceInfo(target, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), lineInfo.LineNumber, lineInfo.LinePosition);
@@ -483,9 +485,36 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (addMethod == null)
 				return false;
 
-			foreach (var mi in rootElement.GetType().GetRuntimeMethods())
+			var rootElementType = rootElement.GetType();
+			do
 			{
-				if (mi.Name == (string)value)
+				MethodInfo mi = null;
+				try
+				{
+					mi = rootElementType.GetMethod((string)value, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+				}
+				catch (AmbiguousMatchException)
+				{
+					var n_params = eventInfo.EventHandlerType.GetMethod("Invoke").GetParameters().Length;
+					var methodinfos = rootElementType.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+						.Where(mi => mi.Name == (string)value && mi.GetParameters().Length == n_params)
+						.ToArray();
+
+					//try to find an event handler with a signature matching the button delegate signature
+					foreach (var methodinfo in methodinfos)
+					{
+						var parameters = methodinfo.GetParameters();
+						for (var i = 0; i < n_params; i++)
+						{
+							if (!parameters[i].ParameterType.IsAssignableFrom(eventInfo.EventHandlerType.GetMethod("Invoke").GetParameters()[i].ParameterType))
+								break;
+						}
+						mi = methodinfo;
+						break;
+					}
+				}
+
+				if (mi != null)
 				{
 					try
 					{
@@ -497,7 +526,8 @@ namespace Microsoft.Maui.Controls.Xaml
 						// incorrect method signature
 					}
 				}
-			}
+				rootElementType = rootElementType.BaseType;
+			} while (rootElementType is not null);
 
 			exception = new XamlParseException($"No method {value} with correct signature found on type {rootElement.GetType()}", lineInfo);
 			return false;
@@ -697,7 +727,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (!IsVisibleFrom(getter, rootElement))
 				return false;
 
-			value = getter.Invoke(element, new object[] { });
+			value = getter.Invoke(element, Array.Empty<object>());
 			return true;
 		}
 

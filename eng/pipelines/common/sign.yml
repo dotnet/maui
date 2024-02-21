@@ -1,6 +1,6 @@
 stages:
   - stage: nuget_signing
-    dependsOn: pack_net6
+    dependsOn: pack_net
     displayName: Sign Nuget
     jobs:
       - template: sign-artifacts/jobs/v2.yml@yaml-templates
@@ -13,7 +13,7 @@ stages:
           signedArtifactPath: signed
           displayName: Sign Phase
           condition: and(succeeded(), eq(variables.signingCondition, true))
-
+      
       - template: nuget-msi-convert/job/v3.yml@yaml-templates
         parameters:
           yamlResourceName: yaml-templates
@@ -23,3 +23,20 @@ stages:
           artifactPath: signed
           propsArtifactName: nuget
           signType: Real
+          postConvertSteps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: nuget
+              downloadPath: $(Build.ArtifactStagingDirectory)\sign-verify
+              patterns: |
+                **/SignVerifyIgnore.txt
+
+          - task: MicroBuildCodesignVerify@3
+            displayName: verify signed msi content
+            inputs:
+              TargetFolders: |
+                $(Build.ArtifactStagingDirectory)\bin\manifests
+                $(Build.ArtifactStagingDirectory)\bin\manifests-multitarget
+                $(Build.ArtifactStagingDirectory)\bin\msi-nupkgs
+              ExcludeSNVerify: true
+              ApprovalListPathForCerts: $(Build.ArtifactStagingDirectory)\sign-verify\SignVerifyIgnore.txt

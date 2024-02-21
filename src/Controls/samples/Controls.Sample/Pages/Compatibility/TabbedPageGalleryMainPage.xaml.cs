@@ -14,12 +14,12 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		TabbedPage _tabbedPage;
+		TabbedPage? _tabbedPage;
 		TabbedPage GetTabbedPage() => _tabbedPage ??= (TabbedPage)Parent;
 
 		void SetNewMainPage(Page page)
 		{
-			Application.Current.Windows[0].Page = page;
+			Application.Current!.Windows[0].Page = page;
 		}
 
 		void OnTabbedPageAsRoot(object sender, EventArgs e)
@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample.Pages
 				{
 					Children =
 					{
-						Handler.MauiContext.Services.GetRequiredService<Page>(),
+						Handler!.MauiContext!.Services.GetRequiredService<Page>(),
 						new NavigationPage(new Pages.NavigationGallery()) { Title = "Navigation Gallery" }
 					}
 				};
@@ -43,14 +43,14 @@ namespace Maui.Controls.Sample.Pages
 			{
 				Children =
 				{
-					Handler.MauiContext.Services.GetRequiredService<Page>(),
+					Handler!.MauiContext!.Services.GetRequiredService<Page>(),
 					new NavigationPage(new Pages.NavigationGallery()) { Title = "Navigation Gallery" }
 				}
 			};
 
 			SetNewMainPage(bottomTabs);
 			AndroidSpecific.TabbedPage.SetToolbarPlacement(bottomTabs, AndroidSpecific.ToolbarPlacement.Bottom);
-			Application.Current.MainPage = bottomTabs;
+			Application.Current!.MainPage = bottomTabs;
 		}
 
 		void OnChangeTabIndex(object sender, EventArgs e)

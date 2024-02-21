@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -58,8 +59,13 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
-				await image.Wait();
-				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+				var rootView = handler.ToPlatform();
+
+				await rootView.AttachAndRun(async () =>
+				{
+					await image.WaitUntilLoaded();
+					await rootView.AssertContainsColor(Colors.Red, MauiContext);
+				});
 			});
 		}
 	}

@@ -257,13 +257,11 @@ namespace Microsoft.Maui.Controls
 			remove { _goForwardRequested -= value; }
 		}
 
-		/// <inheritdoc/>
 		void IWebViewController.SendNavigated(WebNavigatedEventArgs args)
 		{
 			Navigated?.Invoke(this, args);
 		}
 
-		/// <inheritdoc/>
 		void IWebViewController.SendNavigating(WebNavigatingEventArgs args)
 		{
 			Navigating?.Invoke(this, args);

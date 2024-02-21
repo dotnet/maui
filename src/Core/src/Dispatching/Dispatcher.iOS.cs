@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Dispatching
 			return true;
 		}
 
-		IDispatcherTimer CreateTimerImplementation()
+		DispatcherTimer CreateTimerImplementation()
 		{
 			return new DispatcherTimer(_dispatchQueue);
 		}
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Dispatching
 	/// <inheritdoc/>
 	public partial class DispatcherProvider
 	{
-		static IDispatcher? GetForCurrentThreadImplementation()
+		static Dispatcher? GetForCurrentThreadImplementation()
 		{
 #pragma warning disable BI1234, CA1416, CA1422 // Type or member is obsolete, has [UnsupportedOSPlatform("ios6.0")], deprecated but still works
 			var q = DispatchQueue.CurrentQueue;

@@ -355,19 +355,6 @@
 ~Microsoft.Maui.Controls.DeviceStateTrigger.Device.get -> string
 ~Microsoft.Maui.Controls.DeviceStateTrigger.Device.set -> void
 ~Microsoft.Maui.Controls.DoubleCollection.DoubleCollection(double[] values) -> void
-~Microsoft.Maui.Controls.DragEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage
-~Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage dataPackage) -> void
-~Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommand.get -> System.Windows.Input.ICommand
-~Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommand.set -> void
-~Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameter.get -> object
-~Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameter.set -> void
-~Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommand.get -> System.Windows.Input.ICommand
-~Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommand.set -> void
-~Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.get -> object
-~Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.set -> void
-~Microsoft.Maui.Controls.DragStartingEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage
-~Microsoft.Maui.Controls.DropEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackageView
-~Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView view) -> void
 ~Microsoft.Maui.Controls.DropGestureRecognizer.DragLeaveCommand.get -> System.Windows.Input.ICommand
 ~Microsoft.Maui.Controls.DropGestureRecognizer.DragLeaveCommand.set -> void
 ~Microsoft.Maui.Controls.DropGestureRecognizer.DragLeaveCommandParameter.get -> object
@@ -3306,11 +3293,6 @@
 ~static readonly Microsoft.Maui.Controls.Device.Styles.TitleStyle -> Microsoft.Maui.Controls.Style
 ~static readonly Microsoft.Maui.Controls.Device.Styles.TitleStyleKey -> string
 ~static readonly Microsoft.Maui.Controls.DeviceStateTrigger.DeviceProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.DropGestureRecognizer.AllowDropProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.DropGestureRecognizer.DragLeaveCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.DropGestureRecognizer.DragLeaveCommandProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -4574,8 +4556,6 @@ Microsoft.Maui.Controls.DragGestureRecognizer
 Microsoft.Maui.Controls.DragGestureRecognizer.CanDrag.get -> bool
 Microsoft.Maui.Controls.DragGestureRecognizer.CanDrag.set -> void
 Microsoft.Maui.Controls.DragGestureRecognizer.DragGestureRecognizer() -> void
-Microsoft.Maui.Controls.DragGestureRecognizer.DragStarting -> System.EventHandler<Microsoft.Maui.Controls.DragStartingEventArgs>
-Microsoft.Maui.Controls.DragGestureRecognizer.DropCompleted -> System.EventHandler<Microsoft.Maui.Controls.DropCompletedEventArgs>
 Microsoft.Maui.Controls.DragStartingEventArgs
 Microsoft.Maui.Controls.DragStartingEventArgs.Cancel.get -> bool
 Microsoft.Maui.Controls.DragStartingEventArgs.Cancel.set -> void
@@ -5801,18 +5781,6 @@ Microsoft.Maui.Controls.Platform.ViewToHandlerConverter.ViewToHandlerConverter()
 Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs
 Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs.VisualElementChangedEventArgs(Microsoft.Maui.Controls.VisualElement? oldElement, Microsoft.Maui.Controls.VisualElement? newElement) -> void
 Microsoft.Maui.Controls.Platform.VisualElementExtensions
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Container.get -> Microsoft.UI.Xaml.FrameworkElement?
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Container.set -> void
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Control.get -> TPlatformElement?
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Control.set -> void
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Dispose() -> void
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Element.get -> TElement?
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Element.set -> void
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.PreventGestureBubbling.get -> bool
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.PreventGestureBubbling.set -> void
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Updated -> System.EventHandler?
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.VisualElementTracker() -> void
 Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>
 Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.PlatformBehavior() -> void
 Microsoft.Maui.Controls.PlatformBehavior<TView>
@@ -7473,9 +7441,6 @@ virtual Microsoft.Maui.Controls.Page.LayoutChildren(double x, double y, double w
 virtual Microsoft.Maui.Controls.Page.OnAppearing() -> void
 virtual Microsoft.Maui.Controls.Page.OnBackButtonPressed() -> bool
 virtual Microsoft.Maui.Controls.Page.OnDisappearing() -> void
-virtual Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs! e) -> void
-virtual Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.UpdatePlatformControl() -> void
 virtual Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnAttachedTo(TView! bindable, TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnDetachedFrom(TView! bindable, TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Controls.PointerEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?

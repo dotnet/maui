@@ -552,7 +552,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Control.VerticalScrollBarEnabled = newVerticalScrollVisibility == ScrollBarVisibility.Always;
 		}
 
-		internal class Container : ViewGroup
+		internal sealed class Container : ViewGroup
 		{
 			IPlatformViewHandler _child;
 

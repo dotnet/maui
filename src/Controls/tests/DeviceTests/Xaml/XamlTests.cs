@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category(TestCategory.Xaml)]
 	public class XamlTests
 	{
 		[Fact("Parsed XAML can use mscorlib")]

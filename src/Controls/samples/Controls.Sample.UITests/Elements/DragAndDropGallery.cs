@@ -9,6 +9,7 @@ namespace Maui.Controls.Sample
 		{
 			Add(new DragAndDropEvents());
 			Add(new DragAndDropBetweenLayouts());
+			Add(new DragAndDropEventArgs());
 		}
 	}
 }

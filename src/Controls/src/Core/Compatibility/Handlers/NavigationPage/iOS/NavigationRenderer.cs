@@ -21,6 +21,7 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -243,6 +244,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
+				Delegate = null;
 				foreach (var childViewController in ViewControllers)
 					childViewController.Dispose();
 
@@ -344,7 +346,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
+#pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
+#pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the control adheres to changes in UI theme
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				UpdateBackgroundColor();
@@ -673,26 +677,42 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateBarBackground()
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
+			var barBackgroundBrush = NavPage.BarBackground;
+
+			// if the brush has a solid color, treat it as a Color so we can compute the alpha value
+			if (NavPage.BarBackground is SolidColorBrush scb)
+			{
+				barBackgroundColor = scb.Color;
+				barBackgroundBrush = null;
+			}
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
-
-				navigationBarAppearance.ConfigureWithOpaqueBackground();
-
-				if (barBackgroundColor == null)
+				if (barBackgroundColor is null)
 				{
+					navigationBarAppearance.ConfigureWithOpaqueBackground();
 					navigationBarAppearance.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
 
 					var parentingViewController = GetParentingViewController();
 					parentingViewController?.SetupDefaultNavigationBarAppearance();
 				}
 				else
-					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
+				{
+					if(barBackgroundColor?.Alpha < 1f)
+						navigationBarAppearance.ConfigureWithTransparentBackground();
+					else
+						navigationBarAppearance.ConfigureWithOpaqueBackground();
 
-				var barBackgroundBrush = NavPage.BarBackground;
-				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
-				navigationBarAppearance.BackgroundImage = backgroundImage;
+					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
+				}
+
+				if (barBackgroundBrush is not null)
+				{
+					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+
+					navigationBarAppearance.BackgroundImage = backgroundImage;
+				}
 
 				NavigationBar.CompactAppearance = navigationBarAppearance;
 				NavigationBar.StandardAppearance = navigationBarAppearance;
@@ -700,14 +720,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				// Set navigation bar background color
-				NavigationBar.BarTintColor = barBackgroundColor == null
-					? UINavigationBar.Appearance.BarTintColor
-					: barBackgroundColor.ToPlatform();
+				if(barBackgroundColor?.Alpha == 0f)
+				{
+					NavigationBar.SetTransparentNavigationBar();
+				}
+				else
+				{
+					// Set navigation bar background color
+					NavigationBar.BarTintColor = barBackgroundColor == null
+						? UINavigationBar.Appearance.BarTintColor
+						: barBackgroundColor.ToPlatform();
 
-				var barBackgroundBrush = NavPage.BarBackground;
-				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
-				NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+					NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+				}
 			}
 		}
 
@@ -1146,25 +1172,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// the animation changing the frame during navigation
 				if (_navigation.TryGetTarget(out n) &&
 					ChildViewControllers.Length > 0 &&
-					!n._navigating)
-				{
-					nfloat offset = 0;
+					!n._disposed &&
+					!n._navigating
+					)
+				{	
+					var vc = ChildViewControllers[^1];
 
-					if (n._hasNavigationBar)
-						offset = n.NavigationBar.Frame.Bottom;
+					if (vc is null)
+						return;
 
-					if (!n._secondaryToolbar.Hidden)
+					var newAdditionalSafeArea = vc.AdditionalSafeAreaInsets;
+					var offset = n._secondaryToolbar.Hidden ? 0 : n._secondaryToolbar.Frame.Height;
+
+					if (newAdditionalSafeArea.Top != offset)
 					{
-						offset += n._secondaryToolbar.Bounds.Height;
-					}
-
-					if (View.Frame.Y != offset)
-					{
-						var newY = offset - View.Frame.Y;
-						var newHeight = View.Frame.Height - newY;
-
-						View.Frame =
-							new RectangleF(0, offset, View.Bounds.Width, newHeight);
+						newAdditionalSafeArea.Top = offset;
+						vc.AdditionalSafeAreaInsets = newAdditionalSafeArea;
 					}
 				}
 			}
@@ -1526,8 +1549,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (primaries != null)
 					primaries.Reverse();
-				NavigationItem.SetRightBarButtonItems(primaries == null ? new UIBarButtonItem[0] : primaries.ToArray(), false);
-				ToolbarItems = secondaries == null ? new UIBarButtonItem[0] : secondaries.ToArray();
+				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
+				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
 
 				NavigationRenderer n;
 				if (_navigation.TryGetTarget(out n))
@@ -1759,12 +1782,38 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (view != null)
 				{
 					_view = view;
-					var platformView = view.ToPlatform(view.FindMauiContext());
-					_child = (IPlatformViewHandler)view.Handler;
-					AddSubview(platformView);
+
+					if (_view.Parent is null)
+					{
+						_view.ParentSet += OnTitleViewParentSet;
+					}
+					else
+					{
+						SetupTitleView();
+					}
 				}
 
 				ClipsToBounds = true;
+			}
+
+			void OnTitleViewParentSet(object sender, EventArgs e)
+			{
+				if (sender is View view)
+					view.ParentSet -= OnTitleViewParentSet;
+
+				SetupTitleView();
+			}
+
+			void SetupTitleView()
+			{
+				var mauiContext = _view.FindMauiContext();
+				if (_view is not null && mauiContext is not null)
+				{
+					var platformView = _view.ToPlatform(mauiContext);
+					_child = (IPlatformViewHandler)_view.Handler;
+					AddSubview(platformView);
+				}
+
 			}
 
 			public override CGSize IntrinsicContentSize => UILayoutFittingExpandedSize;
@@ -1872,6 +1921,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						_child.PlatformView.RemoveFromSuperview();
 						_child.DisconnectHandler();
 						_child = null;
+					}
+
+					if (_view is not null)
+					{
+						_view.ParentSet -= OnTitleViewParentSet;
 					}
 
 					_view = null;

@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 		object? _containerView;
 		object? _platformView;
 		object? _handler;
+		bool _didHaveWindow;
 
 		public bool IsConnected => GesturePlatformManager != null;
 		public GesturePlatformManager? GesturePlatformManager { get; private set; }
@@ -48,6 +49,7 @@ namespace Microsoft.Maui.Controls.Platform
 			GesturePlatformManager?.Dispose();
 			GesturePlatformManager = null;
 			_handler = null;
+			_didHaveWindow = false;
 			_containerView = null;
 			_platformView = null;
 		}
@@ -55,10 +57,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void SetupGestureManager()
 		{
 			var handler = _view.Handler;
-			var window = _view.Window;
 
 			if (handler == null ||
-				window == null)
+				(_didHaveWindow && _view.Window == null))
 			{
 				DisconnectGestures();
 				return;
@@ -79,6 +80,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_handler = handler;
 			_containerView = handler.ContainerView;
 			_platformView = handler.PlatformView;
+			_didHaveWindow = _view.Window != null;
 		}
 	}
 }

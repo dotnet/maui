@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkiaSharp.Views.WPF" Version="2.88.0" />
+    <PackageReference Include="SkiaSharp.Views.WPF" />
   </ItemGroup>
 
 </Project>

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static nfloat[] ToArray(this DoubleCollection doubleCollection)
 		{
 			if (doubleCollection == null || doubleCollection.Count == 0)
-				return new nfloat[0];
+				return Array.Empty<nfloat>();
 			else
 			{
 

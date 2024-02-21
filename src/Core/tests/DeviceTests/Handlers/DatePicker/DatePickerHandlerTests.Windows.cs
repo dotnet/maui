@@ -9,6 +9,20 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class DatePickerHandlerTests
 	{
+		[Fact]
+		public override async Task DisconnectHandlerDoesntCrash()
+		{
+			var datePicker = new DatePickerStub
+			{
+				MinimumDate = DateTime.Today.AddDays(-1),
+				MaximumDate = DateTime.Today.AddDays(1),
+				Date = DateTime.Today
+			};
+
+			var handler = await CreateHandlerAsync(datePicker) as IPlatformViewHandler;
+			await InvokeOnMainThreadAsync(handler.DisconnectHandler);
+		}
+
 		[Theory(DisplayName = "Format Initializes Correctly")]
 		[InlineData("dd/MM/yyyy", "{day.integer(2)}/{month.integer(2)}/{year.full}")]
 		[InlineData("d/M/yy", "{day.integer}/{month.integer(1)}/{year.abbreviated}")]
