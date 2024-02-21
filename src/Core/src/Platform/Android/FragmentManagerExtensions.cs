@@ -108,6 +108,12 @@ namespace Microsoft.Maui.Platform
 				_context = context;
 			}
 
+			public override void OnFragmentDestroyed(FragmentManager fm, Fragment f)
+			{
+				base.OnFragmentDestroyed(fm, f);
+				Disconnect();
+			}
+
 			public override void OnFragmentResumed(FragmentManager fm, Fragment f)
 			{
 				base.OnFragmentResumed(fm, f);
