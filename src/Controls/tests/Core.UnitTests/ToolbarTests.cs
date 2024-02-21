@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ToolbarTitle_UsesTabbedPageChildTitle()
 		{
-			var window = new Window();
+			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
 			var childPage = new ContentPage { Title = "Child Test Title" };
 			var tabbedPage = new TabbedPage
