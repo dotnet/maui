@@ -12,11 +12,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Border");
 
-			var view = new BorderView()
-			{
-				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
-				CrossPlatformArrange = VirtualView.CrossPlatformArrange
-			};
+			var view = new BorderView() { CrossPlatformLayout = VirtualView };
+
 			return view;
 		}
 
@@ -27,8 +24,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
-			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			PlatformView.CrossPlatformLayout = VirtualView;
 		}
 
 		static partial void UpdateContent(IBorderHandler handler)
@@ -40,19 +36,19 @@ namespace Microsoft.Maui.Handlers
 			if (virtualView is { PresentedContent: IView view })
 				platformView.Content = view.ToPlatform(mauiContext);
 		}
-		
+
 		public override void PlatformArrange(Rect rect)
 		{
-			PlatformView?.CrossPlatformArrange?.Invoke(rect);
+			PlatformView?.CrossPlatformLayout?.CrossPlatformArrange(rect);
 
 			PlatformView?.Arrange(rect);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (PlatformView?.CrossPlatformMeasure is { })
+			if (PlatformView?.CrossPlatformLayout is { })
 			{
-				var cf= PlatformView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+				var cf = PlatformView.CrossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 				return cf;
 			}
