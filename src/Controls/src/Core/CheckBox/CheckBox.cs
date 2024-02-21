@@ -34,7 +34,6 @@ namespace Microsoft.Maui.Controls
 				}, defaultBindingMode: BindingMode.TwoWay);
 
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(CheckBox), null, propertyChanging: CommandElement.OnCommandChanging, propertyChanged: CommandElement.OnCommandChanged);
 
 		public ICommand Command
@@ -76,9 +75,13 @@ namespace Microsoft.Maui.Controls
 		protected internal override void ChangeVisualState()
 		{
 			if (IsEnabled && IsChecked)
+			{
 				VisualStateManager.GoToState(this, IsCheckedVisualState);
+			}
 			else
+			{
 				base.ChangeVisualState();
+			}
 		}
 
 		public event EventHandler<CheckedChangedEventArgs> CheckedChanged;
@@ -111,7 +114,6 @@ namespace Microsoft.Maui.Controls
 		protected override bool IsEnabledCore =>
 			base.IsEnabledCore && CommandElement.GetCanExecute(this);
 
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		public Paint Foreground => Color?.AsPaint();
 
 		bool ICheckBox.IsChecked
