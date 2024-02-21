@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(_MauiDotNetTfm)-gtk</TargetFrameworks>
+    <SupportedOSPlatformVersion>3.24</SupportedOSPlatformVersion>
+    <Description>Build Gtk applications with Blazor and WebKit</Description>
+    <DefineConstants>$(DefineConstants);WEBKIT_GTK</DefineConstants>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027;RS0016</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SharedSource\**\*.cs" Link="SharedSource\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="build\**\*" />
+    <None Include="build\**\*" Pack="True" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Gtk.SharedSource\**\*.cs" Link="Gtk\SharedSource\%(Filename)%(Extension)" />
+  </ItemGroup>
+  
+  <!-- this can be removed if GtkSharp is updated to version >= 3.24.24.114 -->
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  
+</Project>

@@ -4,6 +4,8 @@
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 #elif WEBVIEW2_WPF
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
+#elif WEBKIT_GTK
+namespace Microsoft.AspNetCore.Components.WebView.Gtk
 #elif WEBVIEW2_MAUI
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 #else

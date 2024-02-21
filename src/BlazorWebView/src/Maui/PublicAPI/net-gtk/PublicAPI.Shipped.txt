@@ -44,7 +44,6 @@ Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.CancelLoad = 2 -> Mic
 Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenExternally = 0 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy.OpenInWebView = 1 -> Microsoft.AspNetCore.Components.WebView.UrlLoadingStrategy
 Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions
-override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.CreatePlatformView() -> Gtk.Widget!
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapHostPage(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
 static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapRootComponents(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddBlazorWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

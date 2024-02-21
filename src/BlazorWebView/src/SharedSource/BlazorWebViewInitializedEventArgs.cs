@@ -15,6 +15,8 @@ using AWebView = Android.Webkit.WebView;
 using WebKit;
 #elif TIZEN
 using TWebView = Tizen.NUI.BaseComponents.WebView;
+#elif GTK
+using TWebView = WebKit.WebView;
 #endif
 
 namespace Microsoft.AspNetCore.Components.WebView
@@ -46,6 +48,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 		/// Gets the <see cref="TWebView"/> instance that was initialized.
 		/// </summary>
 		public TWebView WebView { get; internal set; }
+#elif GTK
+		/// <summary>
+		/// Gets the <see cref="TWebView"/> instance that was initialized.
+		/// </summary>
+		public TWebView WebView { get; internal set; }		
 #endif
 	}
 }

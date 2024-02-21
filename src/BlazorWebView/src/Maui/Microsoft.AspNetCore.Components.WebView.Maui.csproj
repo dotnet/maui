@@ -39,6 +39,11 @@
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'gtk' ">
+    <Compile Include="..\Gtk.SharedSource\**\*.cs" Link="Gtk\SharedSource\%(Filename)%(Extension)"/>
+  </ItemGroup>
+
+
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
   <Import Project="$(MauiRootDirectory)src\Workload\Shared\LibraryPacks.targets" />
 

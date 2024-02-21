@@ -3,6 +3,8 @@
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 #elif WEBVIEW2_WPF
 using Microsoft.AspNetCore.Components.WebView.Wpf;
+#elif WEBKIT_GTK
+using Microsoft.AspNetCore.Components.WebView.Gtk;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Maui.Hosting;
@@ -35,6 +37,8 @@ namespace Microsoft.Extensions.DependencyInjection
 		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
 #endif
 		public static IMauiBlazorWebViewBuilder AddMauiBlazorWebView(this IServiceCollection services)
+#elif WEBKIT_GTK
+		public static IGtkBlazorWebViewBuilder AddGtkBlazorWebView(this IServiceCollection services)
 #else
 #error Must define WEBVIEW2_WINFORMS, WEBVIEW2_WPF, WEBVIEW2_MAUI
 #endif
@@ -51,6 +55,9 @@ namespace Microsoft.Extensions.DependencyInjection
 #elif WEBVIEW2_WPF
 			services.TryAddSingleton(_ => new WpfBlazorMarkerService());
 			return new WpfBlazorWebViewBuilder(services);
+#elif WEBKIT_GTK
+			services.TryAddSingleton<GtkBlazorMarkerService>();
+			return new GtkBlazorWebViewBuilder(services);			
 #endif
 		}
 
