@@ -155,45 +155,6 @@ namespace Microsoft.Maui.IntegrationTests
 					},
 				}
 			},
-			new WarningsPerFile
-			{
-				File = "src/Core/src/Hosting/Internal/MauiFactory.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2055",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Hosting.Internal.MauiFactory.GetService(Type,ServiceDescriptor,IEnumerable`1<ServiceDescriptor>): Call to 'System.Type.MakeGenericType(Type[])' can not be statically analyzed. It's not possible to guarantee the availability of requirements of the generic type.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL3050",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Hosting.Internal.MauiFactory.GetService(Type,ServiceDescriptor,IEnumerable`1<ServiceDescriptor>): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2077",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Hosting.Internal.MauiFactory.GetService(Type,ServiceDescriptor,IEnumerable`1<ServiceDescriptor>): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The field 'Microsoft.Maui.Hosting.Internal.MauiFactory.ListType' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2070",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Hosting.Internal.MauiFactory.GetServiceBaseTypes(Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.Interfaces' in call to 'System.Type.GetInterfaces()'. The parameter '#0' of method 'Microsoft.Maui.Hosting.Internal.MauiFactory.GetServiceBaseTypes(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
 		};
 
 		#region Utility methods for generating the list of expected warnings

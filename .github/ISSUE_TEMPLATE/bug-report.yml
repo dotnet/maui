@@ -45,8 +45,9 @@ body:
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
         - 
-        - 8.0.6
-        - 8.0.3
+        - 8.0.7 SR2
+        - 8.0.6 SR1
+        - 8.0.3 GA
         - 7.0.101
         - 7.0.100
         - 7.0.96
@@ -103,8 +104,9 @@ body:
         - 8.0.0-rc.1.9171
         - 8.0.0-rc.2.9373
         - 8.0.0-rc.2.9511
-        - 8.0.3
-        - 8.0.6
+        - 8.0.3 GA
+        - 8.0.6 SR1
+        - 8.0.7 SR2
     validations:
       required: true
   - type: dropdown
@@ -139,7 +141,7 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      description: Including a binary log or 'binlog' to your issue (see [Capturing Binary Logs](https://github.com/dotnet/maui/wiki/Capturing-Binary-Logs) for more info) is helpful in diagnosing your issue.  You can also paste any relevant log output below. This will be automatically formatted into code, so no need for backticks.
       render: shell
   - type: markdown
     attributes:

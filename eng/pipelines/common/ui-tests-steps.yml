@@ -107,8 +107,8 @@ steps:
     displayName: 'Build the samples'
 
   - bash: |
-      rm -r $HOME/Library/Logs/CoreSimulator/*
-      rm -r $HOME/Library/Logs/DiagnosticReports/*
+      if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+      if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
     displayName: Delete Old Simulator Logs
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
