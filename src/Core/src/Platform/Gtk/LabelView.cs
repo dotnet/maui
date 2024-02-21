@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Platform
 
 	public class LabelView : Label
 	{
+
 		public float LineHeight { get; set; }
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
@@ -24,6 +25,8 @@ namespace Microsoft.Maui.Platform
 			SetLayout(Layout, this);
 
 			base.OnAdjustSizeRequest(orientation, out minimum_size, out natural_size);
+
+			return;
 
 			int Constrainted(int avail)
 			{
@@ -46,6 +49,7 @@ namespace Microsoft.Maui.Platform
 		protected override bool OnDrawn(Context cr)
 		{
 			SetLayout(Layout, this);
+
 			return base.OnDrawn(cr);
 		}
 
@@ -97,30 +101,40 @@ namespace Microsoft.Maui.Platform
 					layout.Height = (int)lh;
 				}
 			}
-			else
-			{
-				layout.Height = Math.Max((heightConstraint - vMargin).ScaledToPango(), -1);
-			}
-
+			
 			if (!heightForWidth && heightConstrained && widthConstrained)
 			{
 				layout.Width = Math.Max((widthConstraint - hMargin).ScaledToPango(), -1);
 			}
 
-			(width, height) = layout.GetPixelSize(text, constraint, heightForWidth);
+			var desiredSize = double.IsInfinity(constraint) ? -1 : constraint;
 
+			if (desiredSize > 0)
+			{
+				if (heightForWidth)
+					layout.Width = desiredSize.ScaledToPango();
+				else
+					layout.Height = desiredSize.ScaledToPango();
+			
+			}
+
+			layout.SetText(text);
+			layout.GetPixelSize(out var textWidth, out var textHeight);
+			
+			width = textWidth;
+			height = textHeight;
+			
 			if (lh > 0)
 			{
 				height = Math.Min((int)lh.ScaledFromPango(), height);
 			}
-
-			layout.Attributes = null;
 
 			width += hMargin;
 			height += vMargin;
 
 			return new Size(width, height);
 		}
+
 	}
 
 }
