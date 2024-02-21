@@ -1,27 +1,42 @@
-﻿using Microsoft.Maui.Controls.Platform;
+﻿#nullable disable
+using TCollectionView = Gtk.UIExtensions.NUI.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
-		[MissingMapper]
+		protected override TCollectionView CreatePlatformView()
+		{
+			return new MauiStructuredItemsView<TItemsView>();
+		}
+
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateAdaptor();
 		}
 
-		[MissingMapper]
 		public static void MapFooterTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateAdaptor();
 		}
 
-		[MissingMapper]
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateLayoutManager();
 		}
 
-		[MissingMapper]
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateLayoutManager();
+		}
+
+		public static void MapFooter(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		{
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateAdaptor();
+		}
+		public static void MapHeader(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
+		{
+			(handler.PlatformView as MauiCollectionView<TItemsView>)?.UpdateAdaptor();
 		}
 	}
 }

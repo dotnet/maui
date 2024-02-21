@@ -1,23 +1,28 @@
-﻿using Microsoft.Maui.Controls.Platform;
+﻿#nullable disable
+using TCollectionView = Gtk.UIExtensions.NUI.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
+		protected override TCollectionView CreatePlatformView()
+		{
+			return new MauiSelectableItemsView<TItemsView>();
+		}
 
-		[MissingMapper]
 		public static void MapSelectedItem(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
-		{ }
+		{
+			(handler.PlatformView as MauiSelectableItemsView<TItemsView>)?.UpdateSelection();
+		}
 
-		[MissingMapper]
 		public static void MapSelectedItems(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
-		{ }
+		{
+			(handler.PlatformView as MauiSelectableItemsView<TItemsView>)?.UpdateSelection();
+		}
 
-		[MissingMapper]
 		public static void MapSelectionMode(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
-		{ }
-
+		{
+			(handler.PlatformView as MauiSelectableItemsView<TItemsView>)?.UpdateSelection();
+		}
 	}
-
 }
