@@ -34,6 +34,8 @@ public class StackNavigationManager
 	public void NavigateTo(NavigationRequest request)
 	{
 		_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} must not be null");
+		_ = NavigationView ?? throw new InvalidOperationException($"{nameof(NavigationView)} must not be null");
+
 
 		if (request.NavigationStack.FirstOrDefault() is { } firstOrDefault && firstOrDefault.ToPlatform(Context) is { } s)
 		{

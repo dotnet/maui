@@ -18,7 +18,13 @@ namespace Microsoft.Maui.Platform
 			get => _content;
 			set
 			{
-				_content?.Unparent();
+				if (_content == value)
+					return;
+
+				if (_content is { })
+					Remove(_content);
+
+				// _content?.Unparent();
 
 				_content = value;
 
