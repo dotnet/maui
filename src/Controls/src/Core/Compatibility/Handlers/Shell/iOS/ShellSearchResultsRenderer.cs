@@ -47,7 +47,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							if (SearchHandler.DisplayMemberName is not null)
 							{
-								Application.Current?.FindMauiContext()?.CreateLogger<ShellSearchResultsRenderer>().LogWarning(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
+								Application.Current?.FindMauiContext()?.CreateLogger<ShellSearchResultsRenderer>()?.LogError(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
+								throw new InvalidOperationException(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
 							}
 
 							label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel(string.Empty, static (object o) => o));
