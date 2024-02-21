@@ -6,6 +6,15 @@ namespace Microsoft.Maui.Handlers
 	public partial class WindowHandler : ElementHandler<IWindow, Gtk.Window>
 	{
 
+		protected override void ConnectHandler(Gtk.Window platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			// update the platform window with the user size/position
+			platformView.UpdatePosition(VirtualView);
+			platformView.UpdateSize(VirtualView);
+		}
+
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
 			handler.PlatformView.UpdateTitle(window);
 
@@ -20,18 +29,19 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args) { }
-		
-		[MissingMapper]
-		public static void MapX(IWindowHandler handler, IWindow view) { }
 
-		[MissingMapper]
-		public static void MapY(IWindowHandler handler, IWindow view) { }
+		public static void MapX(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateX(view);
 
-		[MissingMapper]
-		public static void MapWidth(IWindowHandler handler, IWindow view) { }
+		public static void MapY(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateY(view);
 
-		[MissingMapper]
-		public static void MapHeight(IWindowHandler handler, IWindow view) { }
+		public static void MapWidth(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateWidth(view);
+
+		public static void MapHeight(IWindowHandler handler, IWindow view) =>
+			handler.PlatformView?.UpdateHeight(view);
+
 	}
 
 }

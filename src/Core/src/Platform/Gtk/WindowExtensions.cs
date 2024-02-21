@@ -46,6 +46,40 @@ namespace Microsoft.Maui.Platform
 		internal static DisplayOrientation GetOrientation(this IWindow? window) =>
 			DeviceDisplay.Current.MainDisplayInfo.Orientation;
 
+		public static void UpdateX(this Gtk.Window platformWindow, IWindow window) =>
+			platformWindow.UpdatePosition(window);
+
+		public static void UpdateY(this Gtk.Window platformWindow, IWindow window) =>
+			platformWindow.UpdatePosition(window);
+
+		public static void UpdatePosition(this Gtk.Window platformWindow, IWindow window)
+		{
+
+			var x = (int)window.X;
+			var y = (int)window.Y;
+
+			platformWindow.Move(x, y);
+		}
+
+		public static void UpdateWidth(this Gtk.Window platformWindow, IWindow window) =>
+			platformWindow.UpdateSize(window);
+
+		public static void UpdateHeight(this Gtk.Window platformWindow, IWindow window) =>
+			platformWindow.UpdateSize(window);
+
+		public static void UpdateSize(this Gtk.Window platformWindow, IWindow window)
+		{
+
+			var width = (int)window.Width;
+			var height = (int)window.Height;
+
+			if (width <= 0 || height <= 0)
+				return;
+
+			platformWindow.Resize(width, height);
+			platformWindow.QueueResize();
+		}
+
 	}
 
 }
