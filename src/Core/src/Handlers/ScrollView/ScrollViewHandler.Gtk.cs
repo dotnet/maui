@@ -131,6 +131,7 @@ namespace Microsoft.Maui.Handlers
 			widget.ButtonPressEvent -= OnNativeViewButtonPressEvent;
 			widget.ButtonReleaseEvent -= OnNativeViewButtonReleaseEvent;
 			widget.ScrollEvent -= OnNativeViewScrollEvent;
+			widget.MotionNotifyEvent -= OnNativeViewMotionNotifyEvent;
 
 		}
 
