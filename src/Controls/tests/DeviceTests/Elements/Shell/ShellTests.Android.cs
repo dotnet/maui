@@ -28,6 +28,40 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task CanHideNavBarShadow(bool navBarHasShadow)
+		{
+			SetupBuilder();
+
+			var contentPage = new ContentPage() { Title = "Flyout Item" };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { contentPage } };
+
+				shell.FlyoutContent = new VerticalStackLayout()
+				{
+					new Label(){ Text = "Flyout Content"}
+				};
+
+				Shell.SetNavBarHasShadow(contentPage, navBarHasShadow);
+			});
+			
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await Task.Delay(100);
+
+				var platformToolbar = GetPlatformToolbar(handler);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+
+				if(navBarHasShadow)
+					Assert.True(appBar.Elevation > 0);
+				else
+					Assert.True(appBar.Elevation == 0);
+			});
+		}
+
 		protected async Task CheckFlyoutState(ShellRenderer handler, bool desiredState)
 		{
 			var drawerLayout = GetDrawerLayout(handler);
