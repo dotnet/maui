@@ -84,5 +84,8 @@ namespace GraphicsTester.Scenarios
 		{
 			throw new System.NotImplementedException();
 		}
+
+		public static IImageLoadingService ImageLoadingService { get; set; }
+
 	}
 }

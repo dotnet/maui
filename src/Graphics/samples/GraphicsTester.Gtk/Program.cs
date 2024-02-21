@@ -2,6 +2,7 @@
 // Happy coding!!! - GtkSharp Team
 
 using System;
+using GraphicsTester.Scenarios;
 using Gtk;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 
@@ -20,7 +21,7 @@ class Program
 		App = new Application("Microsoft.Maui.Graphics.Samples", GLib.ApplicationFlags.None);
 
 		App.Startup += (s, e) => StartupTests();
-
+		App.Startup += (s, e) => AbstractScenario.ImageLoadingService = new PlatformImageLoadingService();
 		App.Startup += (s, e) =>
 		{
 			Win = new MainWindow();
