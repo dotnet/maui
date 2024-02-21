@@ -826,7 +826,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var sibling = siblings[i];
 
-				if (sibling.Subviews is not null && sibling.Subviews.Length > 0)
+				if (!sibling.Hidden && sibling.Subviews?.Length > 0)
 				{
 					var childVal = sibling.Subviews[0].FindNextView(0, isValidType);
 					if (childVal is not null)

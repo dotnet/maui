@@ -1,7 +1,7 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Blazor", "Blazor Hybrid" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Blazor", "Blazor Hybrid", "Mobile" ],
     "identity": "Microsoft.Maui.BlazorApp.CSharp.DOTNET_TFM_VERSION_VALUE",
     "groupIdentity": "Microsoft.Maui.BlazorApp",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",

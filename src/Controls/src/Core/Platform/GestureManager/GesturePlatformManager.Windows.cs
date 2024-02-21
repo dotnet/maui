@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (view == null)
 				return;
-
+			
 			_isPanning = true;
 
 			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
@@ -440,8 +440,10 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
 		{
 			var view = Element as View;
+
 			if (view == null)
 				return;
+
 			HandleSwipe(e, view);
 			HandlePinch(e, view);
 			HandlePan(e, view);
@@ -468,12 +470,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
-			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-				_fingers.Remove(id);
+			if (!_isPanning)
+			{
+				uint id = e.Pointer.PointerId;
+				if (_fingers.Contains(id))
+					_fingers.Remove(id);
+			}
+			
 			SwipeComplete(true);
 			PinchComplete(true);
-			PanComplete(true);
 		}
 
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
