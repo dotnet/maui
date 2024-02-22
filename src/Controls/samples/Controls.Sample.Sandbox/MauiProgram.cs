@@ -14,8 +14,7 @@ namespace Maui.Controls.Sample
 				.UseMauiMaps()
 				.UseMauiApp<App>()
 				.ConfigureMauiHandlers(handlers => {  
-                #if IOS
-					// comment this out to test without the handler
+                #if IOS  
                     handlers.AddHandler(typeof(Shell), typeof(CustomShellHandler));  
                 #endif  
                 })
