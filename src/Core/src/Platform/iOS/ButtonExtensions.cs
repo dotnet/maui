@@ -85,10 +85,9 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CA1416
 		}
 
-		public static void UpdateAttributedTitle(this UIButton platformButton, IButtonHandler handler, ITextStyle textStyle)
+		public static void UpdateAttributedTitle(this UIButton platformButton, IFontManager fontManager, ITextStyle textStyle)
 		{
 			// Any text update requires that we update any attributed string formatting
-			var fontManager = handler.GetRequiredService<IFontManager>();
 			var uiFontAttribute = fontManager.GetFont(textStyle.Font, UIFont.ButtonFontSize);
 			var attributedString = new NSMutableAttributedString(new NSAttributedString(platformButton.CurrentTitle!));
 
