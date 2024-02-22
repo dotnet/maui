@@ -46,8 +46,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
-    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.44-beta" />
-    <PackageReference Include="VisualTestUtils" Version="0.9.44-beta" />
+    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.46-beta" />
+    <PackageReference Include="VisualTestUtils" Version="0.9.46-beta" />
   </ItemGroup>
   <ItemGroup Condition="$(UseLocalVisualTestUtils) != ''">
     <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />

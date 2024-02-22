@@ -327,7 +327,7 @@ namespace Microsoft.Maui.Controls.Platform
 					var windowInsets = ViewCompat.GetRootWindowInsets(decorView);
 					if (windowInsets is not null)
 					{
-						var barInsets = windowInsets.GetInsetsIgnoringVisibility(WindowInsetsCompat.Type.SystemBars());
+						var barInsets = windowInsets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 
 						if (mlp.TopMargin != barInsets.Top)
 							mlp.TopMargin = barInsets.Top;
