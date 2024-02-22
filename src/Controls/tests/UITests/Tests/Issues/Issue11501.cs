@@ -16,13 +16,19 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[TestCase("SwapFlyoutPage")]
 		[TestCase("SwapTabbedPage")]
 		[TestCase("RemoveAddTabs")]
-		public void MakingFragmentRelatedChangesWhileAppIsBackgroundedFails(string scenario)
+		public async Task MakingFragmentRelatedChangesWhileAppIsBackgroundedFails(string scenario)
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
+
 			try
 			{
 				App.WaitForElement(scenario);
 				App.Click(scenario);
 				App.BackgroundApp();
+
+				// Wait for app to finish backgrounding
+				await Task.Yield();
+				App.WaitForNoElement("BackgroundMe");
 				App.ForegroundApp();
 				App.WaitForElement("Restore");
 				App.Click("Restore");

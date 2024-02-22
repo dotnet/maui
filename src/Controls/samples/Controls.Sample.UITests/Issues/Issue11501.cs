@@ -59,7 +59,7 @@ namespace Maui.Controls.Sample.Issues
 					Command = new Command( () =>
 					{
 						Application.Current.MainPage =
-							new ContentPage() { Title = "Test", Content = new Label() { Text = "Background/Minimize the app" } };
+							new ContentPage() { Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
 
 						ConnectToWindow();
 						_currentTest = () =>
@@ -78,7 +78,7 @@ namespace Maui.Controls.Sample.Issues
 						var flyoutPage = new FlyoutPage()
 						{
 							Flyout = new ContentPage() { Title = "Test", Content = new Label(){Text = "Background/Minimize the app" } },
-							Detail = new NavigationPage(new ContentPage(){ Title = "Test", Content = new Label() { Text = "Background/Minimize the app" } })
+							Detail = new NavigationPage(new ContentPage(){ Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } })
 							{
 								Title = "Test"
 							},
@@ -102,7 +102,7 @@ namespace Maui.Controls.Sample.Issues
 					AutomationId = "SwapTabbedPage",
 					Command = new Command( () =>
 					{
-						Application.Current.MainPage = new ContentPage() { Title = "Test", Content = new Label() { Text = "Background/Minimize the app" } };
+						Application.Current.MainPage = new ContentPage() { Title = "Test", Content = new Label() {AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
 						ConnectToWindow();
 						_currentTest = () =>
 						{
@@ -131,7 +131,7 @@ namespace Maui.Controls.Sample.Issues
 						{
 							Children =
 							{
-								new ContentPage() { Title = "Test", Content = new Label(){Text = "Background/Minimize the app" } },
+								new ContentPage() { Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } },
 								new NavigationPage(CreateDestinationPage())
 								{
 									Title = "Test"
