@@ -89,8 +89,8 @@
     <MacCatalystTargetFrameworkVersion>13.5</MacCatalystTargetFrameworkVersion>
     <MacosTargetFrameworkVersion>10.14</MacosTargetFrameworkVersion>
     <AndroidTargetFrameworkVersion>30.0</AndroidTargetFrameworkVersion>
-    <WindowsTargetFrameworkVersion>10.0.19041</WindowsTargetFrameworkVersion>
-    <Windows2TargetFrameworkVersion>10.0.20348</Windows2TargetFrameworkVersion>
+    <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
+    <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>6.5</TizenTargetFrameworkVersion>
   </PropertyGroup>
 
