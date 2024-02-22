@@ -28,11 +28,12 @@ public class AppiumSetup
 			// Always Android for Android
 			PlatformName = "Android",
 
-			// RELEASE BUILDS
+			// RELEASE BUILD SETUP
 			// The full path to the .apk file
 			// This only works with release builds because debug builds have fast deployment enabled
 			// and Appium isn't compatible with fast deployment
 			// App = Path.Join(TestContext.CurrentContext.TestDirectory, "../../../../MauiApp/bin/Release/net8.0-android/com.companyname.basicappiumsample-Signed.apk"),
+			// END RELEASE BUILD SETUP
 		};
 
 		// DEBUG BUILD SETUP
@@ -41,10 +42,10 @@ public class AppiumSetup
         // Release builds have Fast Deployment disabled
         // https://learn.microsoft.com/xamarin/android/deploy-test/building-apps/build-process#fast-deployment
         androidOptions.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");
-        androidOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, "com.companyname.basicappiumsample");
+        androidOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, "com.microsoft.mauicompatibilitygallery");
 
         //Make sure to set [Register("com.companyname.basicappiumsample.MainActivity")] on the MainActivity of your android application
-		androidOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"com.companyname.basicappiumsample.MainActivity");
+		androidOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"com.microsoft.mauicompatibilitygallery.MainActivity");
         // END DEBUG BUILD SETUP
 
 

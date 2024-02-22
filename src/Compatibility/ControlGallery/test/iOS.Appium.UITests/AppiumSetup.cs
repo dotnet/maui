@@ -30,7 +30,7 @@ public class AppiumSetup
 			// Don't specify if you don't want a specific device
 			DeviceName = "iPhone 15 Pro",
 			// The full path to the .app file to test or the bundle id if the app is already installed on the device
-			App = "com.companyname.basicappiumsample",
+			App = "com.microsoft.mauicompatibilitygallery",
 		};
 
 		// Note there are many more options that you can use to influence the app under test according to your needs
