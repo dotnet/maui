@@ -666,9 +666,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					var defaultColors =  styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
 					if (defaultColors is not null)
 					{
-						defaultColor = defaultColors.DefaultColor;
-						var light = (int)new Color(0, 0, 0, 0.6f).ToPlatform();
-						var dark = (int)new Color(1, 1, 1, 0.6f).ToPlatform();				
+						defaultColor = defaultColors.DefaultColor;		
 					}
 					else
 					{
