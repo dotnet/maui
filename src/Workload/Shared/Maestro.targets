@@ -1,4 +1,8 @@
 <Project>
+  <PropertyGroup>
+    <RootManifestOutputPath>$([MSBuild]::EnsureTrailingSlash($(OutputPath)))</RootManifestOutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Arcade.Sdk" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" PrivateAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" PrivateAssets="all" />
@@ -8,7 +12,7 @@
 
   <Target Name="PushManifestToBuildAssetRegistry" >
     <ItemGroup>
-      <BuildArtifacts Include="$(OutputPath)\**\*.nupkg" />
+      <BuildArtifacts Include="$(RootManifestOutputPath)**\*.nupkg" />
     </ItemGroup>
 
     <Error Condition="'@(BuildArtifacts)' == ''" Text="No packages to create manifest from." />
@@ -25,7 +29,7 @@
 
     <GenerateBuildManifest
         Artifacts="@(BuildArtifacts)"
-        OutputPath="$(OutputPath)\bar-manifests\AssetManifest.xml"
+        OutputPath="$(RootManifestOutputPath)bar-manifests\AssetManifest.xml"
         BuildId="$(BUILD_BUILDNUMBER)"
         BuildData="@(ManifestBuildData)"
         RepoUri="$(BUILD_REPOSITORY_URI)"
@@ -41,7 +45,7 @@
 
     <MSBuild
         Projects="$(PkgMicrosoft_DotNet_Arcade_Sdk)\tools\SdkTasks\PublishBuildAssets.proj"
-        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(_MauiDotNetVersion);ManifestsPath=$(OutputPath)bar-manifests;MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com"
+        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(_MauiDotNetVersion);ManifestsPath=$(RootManifestOutputPath)bar-manifests;MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com"
     />
   </Target>
 
