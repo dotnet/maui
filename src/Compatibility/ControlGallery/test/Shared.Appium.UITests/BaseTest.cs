@@ -17,4 +17,15 @@ public abstract class BaseTest
 
 		return App.FindElement(MobileBy.Id(id));
 	}
+
+	protected void NavigateToGallery(string galleryName)
+	{
+		//App.FindElement(MobileBy.AccessibilityId("Open Gallery")).Click();
+		App.FindElement(MobileBy.AccessibilityId(galleryName)).Click();
+	}
+
+	protected void NavigateToIssuesList()
+	{
+		App.FindElement(MobileBy.Id("com.microsoft.mauicompatibilitygallery:id/GoToTestButton")).Click();
+	}
 }
