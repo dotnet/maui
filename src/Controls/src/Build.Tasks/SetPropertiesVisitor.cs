@@ -530,7 +530,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (p.Length > 0)
 				{
-					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic, out var propDeclTypeRef)
+					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic && !pd.GetMethod.IsStatic, out var propDeclTypeRef)
 						?? throw new BuildException(BuildExceptionCode.BindingPropertyNotFound, lineInfo, null, p, previousPartTypeRef);
 					properties.Add((property, propDeclTypeRef, null));
 					previousPartTypeRef = property.PropertyType.ResolveGenericParameters(propDeclTypeRef);
