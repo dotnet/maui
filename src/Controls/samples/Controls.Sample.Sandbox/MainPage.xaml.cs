@@ -49,15 +49,13 @@ namespace Maui.Controls.Sample
 
             if (parentView != null)
             {
-                // heights
+                // height constraint
                 NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Bottom, 1.0f, 0.0f).Active = true;
                 NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Top, 1.0f, 0.0f).Active = true;
 
-                // widths
-                NSLayoutConstraint.Create(parentView.Superview, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, parentView.Superview.Superview, NSLayoutAttribute.Leading, 1.0f, 0.0f).Active = true;
-                NSLayoutConstraint.Create(parentView.Superview, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, parentView.Superview.Superview, NSLayoutAttribute.Trailing, 1.0f, 0.0f).Active = true;
-                NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, parentView.Superview.Superview, NSLayoutAttribute.Leading, 1.0f, 0.0f).Active = true;
-                NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, parentView.Superview.Superview, NSLayoutAttribute.Trailing, 1.0f, 0.0f).Active = true;
+                // width constraint
+                NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Leading, 1.0f, 0.0f).Active = true;
+                NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Trailing, 1.0f, 0.0f).Active = true;
             }
             _baseTracker.UpdateLayout(controller);
         }
