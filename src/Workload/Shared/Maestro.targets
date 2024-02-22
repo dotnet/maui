@@ -36,12 +36,12 @@
     <MSBuild
         Targets="Restore"
         Projects="$(PkgMicrosoft_DotNet_Arcade_Sdk)\tools\SdkTasks\PublishBuildAssets.proj"
-        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(PackageReferenceVersion)"
+        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(_MauiDotNetVersion)"
     />
 
     <MSBuild
         Projects="$(PkgMicrosoft_DotNet_Arcade_Sdk)\tools\SdkTasks\PublishBuildAssets.proj"
-        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(PackageReferenceVersion);ManifestsPath=$(OutputPath)bar-manifests;MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com"
+        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(_MauiDotNetVersion);ManifestsPath=$(OutputPath)bar-manifests;MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com"
     />
   </Target>
 
