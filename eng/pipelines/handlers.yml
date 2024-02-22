@@ -127,8 +127,6 @@ parameters:
     default:
       - name: default
         tfm: default
-      # - name: net6
-      #   tfm: net6.0
       - name: net8
         tfm: net8.0
 
@@ -236,7 +234,6 @@ stages:
             demands:
               - macOS.Name -equals Ventura
               - macOS.Architecture -equals x64
-              - Agent.OSVersion -equals 13.5
           steps:
             - template: common/provision.yml
               parameters:

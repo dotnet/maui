@@ -333,7 +333,7 @@ Task("uitest")
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=ANDROID")
@@ -494,6 +494,9 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 						}
 	};
 	
+	Information("The platform version to run tests:");
+	SetEnvironmentVariable("DEVICE_SKIN", DEVICE_SKIN);
+
 	if(!string.IsNullOrEmpty(DEVICE_UDID))
 	{
 		SetEnvironmentVariable("DEVICE_UDID", DEVICE_UDID);

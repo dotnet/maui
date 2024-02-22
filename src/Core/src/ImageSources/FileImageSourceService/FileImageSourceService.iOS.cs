@@ -21,10 +21,11 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var image = imageSource.GetPlatformImage();
-
-				if (image == null)
+				using var cgImageSource = imageSource.GetPlatformImageSource(out var loadedScale);
+				if (cgImageSource is null)
 					throw new InvalidOperationException("Unable to load image file.");
+
+				var image = cgImageSource.GetPlatformImage(loadedScale);
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 

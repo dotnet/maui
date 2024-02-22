@@ -1,4 +1,5 @@
-﻿using UITest.Core;
+﻿using OpenQA.Selenium.Appium.Android;
+using UITest.Core;
 
 namespace UITest.Appium
 {
@@ -6,6 +7,7 @@ namespace UITest.Appium
 	{
 		const string LaunchAppCommand = "launchApp";
 		const string BackgroundAppCommand = "backgroundApp";
+		const string ForegroundAppCommand = "foregroundApp";
 		const string ResetAppCommand = "resetApp";
 		const string CloseAppCommand = "closeApp";
 		const string BackCommand = "back";
@@ -15,6 +17,7 @@ namespace UITest.Appium
 		readonly List<string> _commands = new()
 		{
 			LaunchAppCommand,
+			ForegroundAppCommand,
 			BackgroundAppCommand,
 			ResetAppCommand,
 			CloseAppCommand,
@@ -36,6 +39,7 @@ namespace UITest.Appium
 			return commandName switch
 			{
 				LaunchAppCommand => LaunchApp(parameters),
+				ForegroundAppCommand => ForegroundApp(parameters),
 				BackgroundAppCommand => BackgroundApp(parameters),
 				ResetAppCommand => ResetApp(parameters),
 				CloseAppCommand => CloseApp(parameters),
@@ -50,6 +54,16 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			_app.Driver.LaunchApp();
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		CommandResponse ForegroundApp(IDictionary<string, object> parameters)
+		{
+			if (_app?.Driver is null)
+				return CommandResponse.FailedEmptyResponse;
+
+			_app.Driver.ActivateApp(_app.GetAppId());
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -69,7 +83,25 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			_app.Driver.ResetApp();
+			// Terminate App not supported on Mac
+			if (_app.GetTestDevice() == TestDevice.Mac)
+			{
+				_app.Driver.ResetApp();
+			}
+			else if (_app.GetTestDevice() == TestDevice.Windows)
+			{
+				CloseApp(parameters);
+				_app.Driver.LaunchApp();
+			}
+			else
+			{
+				_app.Driver.TerminateApp(_app.GetAppId());
+
+				if (_app.GetTestDevice() == TestDevice.iOS)
+					_app.Driver.ActivateApp(_app.GetAppId());
+				else
+					_app.Driver.LaunchApp();
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
