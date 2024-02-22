@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Net.NetworkInformation;
 using Windows.Networking.Connectivity;
 
@@ -81,7 +81,10 @@ namespace Microsoft.Maui.Networking
 				{
 					networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
 				}
-				catch (NetworkInformationException) { }
+				catch (NetworkInformationException ex) 
+				{
+					Debug.WriteLine($"Unable to get network interfaces. Error: {ex.Message}");
+				}
 
 				foreach (var nic in networkInterfaces)
 				{
