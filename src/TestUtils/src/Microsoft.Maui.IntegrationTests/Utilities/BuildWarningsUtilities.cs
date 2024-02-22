@@ -139,22 +139,6 @@ namespace Microsoft.Maui.IntegrationTests
 					},
 				}
 			},
-			new WarningsPerFile
-			{
-				File = "src/Controls/src/Core/Shell/ShellContent.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2072",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.ShellContent.ApplyQueryAttributes(Object,ShellRouteParameters,ShellRouteParameters): 'name' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeProperty(Type,String)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.ShellContent.ApplyQueryAttributes(Object,ShellRouteParameters,ShellRouteParameters): 'name' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeProperty(Type,String)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
 		};
 
 		#region Utility methods for generating the list of expected warnings
