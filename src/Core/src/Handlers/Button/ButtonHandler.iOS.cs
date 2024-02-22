@@ -90,7 +90,8 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateText(button);
 
 			// Any text update requires that we update any attributed string formatting
-			handler.PlatformView?.UpdateAttributedTitle(handler, button);
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.PlatformView?.UpdateAttributedTitle(fontManager, button);
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
@@ -109,14 +110,16 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateTextColor(button);
 			}
 
-			handler.PlatformView?.UpdateAttributedTitle(handler, button!);
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.PlatformView?.UpdateAttributedTitle(fontManager, button!);
 		}
 
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(button);
 
-			handler.PlatformView?.UpdateAttributedTitle(handler, button);
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.PlatformView?.UpdateAttributedTitle(fontManager, button);
 		}
 
 		public static void MapPadding(IButtonHandler handler, IButton button)
@@ -130,12 +133,13 @@ namespace Microsoft.Maui.Handlers
 
 			handler.PlatformView?.UpdateFont(button, fontManager);
 
-			handler.PlatformView?.UpdateAttributedTitle(handler, button);
+			handler.PlatformView?.UpdateAttributedTitle(fontManager, button);
 		}
 
 		public static void MapFormatting(IButtonHandler handler, IText button)
 		{
-			handler.PlatformView?.UpdateAttributedTitle(handler, button);
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.PlatformView?.UpdateAttributedTitle(fontManager, button);
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IImage image) =>

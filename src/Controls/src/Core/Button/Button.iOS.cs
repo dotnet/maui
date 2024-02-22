@@ -35,7 +35,8 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView?.UpdateText(button);
 
 			// Update all of the attributed text formatting properties
-			handler.PlatformView?.UpdateAttributedTitle(handler, button);
+			var fontManager = handler.GetRequiredService<IFontManager>();
+			handler.PlatformView?.UpdateAttributedTitle(fontManager, button);
 		}
 	}
 }
