@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue19500">
     <Editor
         HeightRequest="100"
-        IsReadOnly="False"
+        IsReadOnly="True"
         AutomationId="editor"
         Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla porttitor mauris non ornare ultrices. Ut semper ultrices justo eget semper.
               Ut imperdiet dolor ut vestibulum molestie. Duis a libero ex. Etiam mi urna, lobortis sed tincidunt in, tempus eget magna. Aenean quis malesuada eros.
