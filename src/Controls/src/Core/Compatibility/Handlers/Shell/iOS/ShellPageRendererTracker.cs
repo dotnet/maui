@@ -509,7 +509,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 				{
-					TranslatesAutoresizingMaskIntoConstraints = false;
+					TranslatesAutoresizingMaskIntoConstraints = true;
+					AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
 				}
 				else
 				{
@@ -540,8 +541,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					UpdateFrame(Superview);
 				}
 
+				UpdateFrame(Superview);
 				base.LayoutSubviews();
 			}
+
+// #pragma warning disable RS0016 // Add public types and members to the declared API
+// 			public override void LayoutMarginsDidChange()
+// #pragma warning restore RS0016 // Add public types and members to the declared API
+// 			{
+// 				base.LayoutMarginsDidChange();
+// 				UpdateFrame(Superview);
+// 			}
 
 			public override void WillMoveToSuperview(UIView newSuper)
 			{
@@ -557,6 +567,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						Frame = new CGRect(Frame.X, newSuper.Bounds.Y, Frame.Width, newSuper.Bounds.Height);
 
 					Height = newSuper.Bounds.Height;
+					Width = newSuper.Bounds.Width;
 				}
 			}
 
