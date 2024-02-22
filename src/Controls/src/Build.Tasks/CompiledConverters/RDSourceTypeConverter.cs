@@ -45,15 +45,22 @@ namespace Microsoft.Maui.Controls.XamlC
 			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 
 			//fail early
-			var resourceId = XamlCTask.GetResourceIdForPath(context.Cache, module, resourcePath);
-			if (resourceId == null)
+			var resourceType = XamlCTask.GetTypeForPath(context.Cache, module, resourcePath);
+			if (resourceType == null)
 				throw new BuildException(BuildExceptionCode.ResourceMissing, node, null, value);
 
+			// validate that the resourceType has a default ctor
+			var resourceTypeDef = resourceType.ResolveCached(context.Cache);
+			var defaultCtor = resourceTypeDef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters);
+			if (defaultCtor == null)
+				throw new BuildException(BuildExceptionCode.ConstructorDefaultMissing, node, null, resourceTypeDef);
+
 			var resourceDictionaryType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary");
+			var resourceDictionaryTypeDefinition = currentModule.GetTypeDefinition(context.Cache, resourceDictionaryType);
 
 			//abuse the converter, produce some side effect, but leave the stack untouched
-			//public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
-			foreach (var instruction in context.Variables[rdNode].LoadAs(context.Cache, currentModule.GetTypeDefinition(context.Cache, resourceDictionaryType), currentModule))
+			//public void SetAndCreateSource<TResourceType>(Uri value)
+			foreach (var instruction in context.Variables[rdNode].LoadAs(context.Cache, resourceDictionaryTypeDefinition, currentModule))
 				yield return instruction;
 			//reappend assembly= in all cases, see other RD converter
 			if (!string.IsNullOrEmpty(asmName))
@@ -65,28 +72,21 @@ namespace Microsoft.Maui.Controls.XamlC
 
 			//keep the Uri for later
 			yield return Create(Dup);
-			var uriVarDef = new VariableDefinition(currentModule.ImportReference(context.Cache, ("System", "System", "Uri")));
+			var uriType = currentModule.ImportReference(context.Cache, ("System", "System", "Uri"));
+			var uriVarDef = new VariableDefinition(uriType);
 			body.Variables.Add(uriVarDef);
 			yield return Create(Stloc, uriVarDef);
-			yield return Create(Ldstr, resourcePath); //resourcePath
 
-			if (!string.IsNullOrEmpty(asmName))
-			{
-				yield return Create(Ldstr, asmName);
-				yield return Create(Call, currentModule.ImportMethodReference(context.Cache, ("mscorlib", "System.Reflection", "Assembly"), methodName: "Load", parameterTypes: new[] { ("mscorlib", "System", "String") }, isStatic: true));
-			}
-			else //we could use assembly.Load in the 'else' part too, but I don't want to change working code right now
-			{
-				yield return Create(Ldtoken, currentModule.ImportReference(((ILRootNode)rootNode).TypeReference));
-				yield return Create(Call, currentModule.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-				yield return Create(Callvirt, currentModule.ImportPropertyGetterReference(context.Cache, ("mscorlib", "System", "Type"), propertyName: "Assembly", flatten: true));
-			}
-			foreach (var instruction in node.PushXmlLineInfo(context))
-				yield return instruction; //lineinfo
-			yield return Create(Callvirt, currentModule.ImportMethodReference(context.Cache,
-																	   resourceDictionaryType,
-																	   methodName: "SetAndLoadSource",
-																	   parameterTypes: new[] { ("System", "System", "Uri"), ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") }));
+			var method = currentModule.ImportMethodReference(
+							context.Cache,
+							resourceDictionaryTypeDefinition,
+							methodName: "SetAndCreateSource",
+							parameterTypes: new[] { uriType });
+
+			var genericInstanceMethod = new GenericInstanceMethod(method);
+			genericInstanceMethod.GenericArguments.Add(resourceType);
+
+			yield return Create(Callvirt, genericInstanceMethod);
 			//ldloc the stored uri as return value
 			yield return Create(Ldloc, uriVarDef);
 		}

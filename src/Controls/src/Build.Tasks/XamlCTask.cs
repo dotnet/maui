@@ -413,5 +413,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 			return null;
 		}
+
+		internal static TypeReference GetTypeForPath(XamlCache cache, ModuleDefinition module, string path)
+		{
+			foreach (var ca in module.GetCustomAttributes())
+			{
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
+					continue;
+				if (ca.ConstructorArguments[1].Value as string != path)
+					continue;
+				return ca.ConstructorArguments[2].Value as TypeReference;
+			}
+			return null;
+		}
 	}
 }
