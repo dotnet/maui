@@ -13,16 +13,6 @@
 
     <Error Condition="'@(BuildArtifacts)' == ''" Text="No packages to create manifest from." />
 
-    <PropertyGroup>
-      <BUILD_BUILDID>test-buildid</BUILD_BUILDID>
-      <SYSTEM_DEFINITIONID>test-defid</SYSTEM_DEFINITIONID>
-      <SYSTEM_TEAMPROJECT>test-teamproject</SYSTEM_TEAMPROJECT>
-      <BUILD_BUILDNUMBER>test-buildnum</BUILD_BUILDNUMBER>
-      <BUILD_REPOSITORY_URI>test-repouri</BUILD_REPOSITORY_URI>
-      <BUILD_SOURCEBRANCH>test-sourcebranch</BUILD_SOURCEBRANCH>
-      <BUILD_SOURCEVERSION>test-sourcevers</BUILD_SOURCEVERSION>
-    </PropertyGroup>
-
     <ItemGroup>
       <ManifestBuildData Include="InitialAssetsLocation=https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json" />
       <ManifestBuildData Include="AzureDevOpsBuildId=$(BUILD_BUILDID)" />

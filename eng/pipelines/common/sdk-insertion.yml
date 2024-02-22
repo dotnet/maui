@@ -5,7 +5,7 @@ parameters:
 
 jobs:
 - job: create_artifact_statuses
-  displayName: Create GitHub Artifact Status And Push to Maestro
+  displayName: Create GitHub Artifact Status and Push to Maestro
   timeoutInMinutes: 60
   pool:
     name: ${{ parameters.poolName }}
