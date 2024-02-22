@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Controls
 #if IOS
 			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName, MapPrefersLargeTitles);
 			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName, MapIsNavigationBarTranslucent);
-			
+#endif
+#if IOS || MACCATALYST
 			// Only map the Toolbar when it is on the NavigationPage, for now
 			WindowHandler.Mapper.ReplaceMapping<Window, IWindowHandler>(nameof(IToolbarElement.Toolbar), MapToolbar);
 #endif

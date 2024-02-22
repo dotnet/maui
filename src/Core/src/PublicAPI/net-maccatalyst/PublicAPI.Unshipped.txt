@@ -53,6 +53,7 @@ Microsoft.Maui.Platform.NavigationManager.SetToolbarElement(Microsoft.Maui.ITool
 Microsoft.Maui.Platform.NavigationManager.ToolbarElement.get -> Microsoft.Maui.IToolbarElement?
 Microsoft.Maui.Platform.StackNavigationManager
 Microsoft.Maui.Platform.StackNavigationManager.StackNavigationManager(Microsoft.Maui.IMauiContext! mauiContext) -> void
+Microsoft.Maui.Platform.UINavigationControllerExtensions
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.Platform.MauiScrollView
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView() -> void
@@ -135,6 +136,7 @@ static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handle
 static Microsoft.Maui.Platform.ApplicationExtensions.UpdateUserInterfaceStyle(this Microsoft.Maui.IApplication! application) -> void
 static Microsoft.Maui.Platform.TextFieldExtensions.UpdateIsSpellCheckEnabled(this UIKit.UITextField! textField, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.TextViewExtensions.UpdateIsSpellCheckEnabled(this UIKit.UITextView! textView, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Platform.UINavigationControllerExtensions.UpdateNavigationBarVisibility(this UIKit.UINavigationController! navigationController, bool isNavigationbarVisible, bool animated) -> void
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this WebKit.WKWebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void

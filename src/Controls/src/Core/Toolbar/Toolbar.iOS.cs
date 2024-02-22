@@ -1,5 +1,6 @@
 ﻿using System;
 using CoreGraphics;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
@@ -10,51 +11,59 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Toolbar
 	{
-		NavigationManager? NavigationManager => Handler.MauiContext?.GetNavigationManager();
+		NavigationManager? NavigationManager => Handler?.MauiContext?.GetNavigationManager();
 
-		UINavigationController? NavigationController => NavigationManager?.NavigationController;
+		internal UINavigationController? NavigationController => NavigationManager?.NavigationController;
 
 		public static void MapIsVisible(IToolbarHandler handler, Toolbar toolbar)
-		{
-			if (toolbar == null)
-			{
-				return;
-			}
-
-			if (toolbar?.NavigationController == null)
-			{
-				throw new NullReferenceException("NavigationController is null.");
-			}
-
-			if (toolbar.NavigationController.NavigationBarHidden == toolbar.IsVisible)
-			{
-				// TODO: the view underneath this jumps up when the toolbar is hidden and down when it's shown
-				// rather than smoothly animating the transition. It's not clear how to fix this
-				// Also, when the toolbar is hidden and another page is pushed, the toolbar for the page that's about to hide
-				// gets its toolbar back right before the animation of the push of the new page
-				toolbar.NavigationController.SetNavigationBarHidden(!toolbar.IsVisible, true);
-			}
-		}
-
-		public static void MapBackButtonVisible(IToolbarHandler handler, Toolbar toolbar)
 		{
 			if (toolbar.NavigationController == null)
 			{
 				throw new NullReferenceException("NavigationController is null.");
 			}
 
-			var navigationItem = toolbar.NavigationController.TopViewController.NavigationItem;
-			if (navigationItem.HidesBackButton == !toolbar.BackButtonVisible)
-			{
-				return;
-			}
-
-			navigationItem.HidesBackButton = !toolbar.BackButtonVisible;
+			toolbar.NavigationController.UpdateNavigationBarVisibility(toolbar.IsVisible, true); // TODO: maybe this needs to go through the ViewController (top one?)
 		}
 
-		public static void MapTitleIcon(IToolbarHandler arg1, Toolbar arg2)
+		public static void MapBackButtonVisible(IToolbarHandler handler, Toolbar toolbar)
 		{
+			handler.PlatformView.UpdateBackButtonVisibility(toolbar);
+			handler.PlatformView.UpdateTitleArea(toolbar);
+		}
 
+		public static void MapBackButtonTitle(IToolbarHandler handler, Toolbar toolbar)
+		{
+			handler.PlatformView.UpdateTitleArea(toolbar);
+		}
+
+		public static void MapTitleIcon(IToolbarHandler handler, Toolbar toolbar)
+		{
+			handler.PlatformView.UpdateTitleArea(toolbar);
+		}
+
+		public static void MapTitleView(IToolbarHandler handler, Toolbar toolbar)
+		{
+			handler.PlatformView.UpdateTitleArea(toolbar);
+		}
+
+		public static void MapIconColor(IToolbarHandler handler, Toolbar toolbar)
+		{
+			handler.PlatformView.UpdateBarTextColor(toolbar);
+		}
+
+		public static void MapBarBackground(IToolbarHandler handler, Toolbar toolbar)
+		{
+			handler.PlatformView.UpdateBarBackground(toolbar);
+		}
+
+		public static void MapBarTextColor(IToolbarHandler handler, Toolbar toolbar)
+		{
+			handler.PlatformView.UpdateBarTextColor(toolbar);
+		}
+
+		public static void MapToolbarItems(IToolbarHandler handler, Toolbar toolbar)
+		{
+			handler.PlatformView.UpdateToolbarItems(toolbar);
 		}
 	}
 
@@ -134,7 +143,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public UIImageView Icon
+		public UIImageView? Icon
 		{
 			set
 			{

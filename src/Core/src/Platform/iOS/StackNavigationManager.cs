@@ -8,7 +8,7 @@ public class StackNavigationManager
 {
 	IMauiContext MauiContext { get; }
 
-	IReadOnlyList<IView> NavigationStack { get; set; } = new List<IView>();
+	IReadOnlyList<IView> NavigationStack { get; set; } = [];
 	IStackNavigationView? NavigationView { get; set; }
 	UINavigationController? NavigationController { get; set; }
 
@@ -42,6 +42,46 @@ public class StackNavigationManager
 			throw new InvalidOperationException("NavigationController cannot be null.");
 		}
 
+		var currentNavStack = NavigationStack;
+		var incomingNavStack = request.NavigationStack;
+		var isInitialNavigation = currentNavStack.Count == 0 && incomingNavStack.Count == 1;
+
+		//if (isInitialNavigation)
+		//{
+		//	SyncNativeStackWithNewStack(request);
+		//	NavigationStack = new List<IView>(request.NavigationStack);
+		//	NavigationView?.NavigationFinished(NavigationStack);
+		//	return;
+		//}
+
+
+		if (isInitialNavigation || currentNavStack.Count < incomingNavStack.Count && incomingNavStack.Count - currentNavStack.Count == 1)
+		{
+			NavigationController!.PushViewController(incomingNavStack[incomingNavStack.Count - 1].ToUIViewController(MauiContext), request.Animated);
+			NavigationStack = new List<IView>(request.NavigationStack);
+			NavigationView?.NavigationFinished(NavigationStack);
+			return;
+		}
+
+		if (currentNavStack.Count > incomingNavStack.Count)
+		{
+			var currentTop = currentNavStack[currentNavStack.Count - 1];
+			var incomingTop = incomingNavStack[incomingNavStack.Count - 1];
+
+			if (currentTop != incomingTop && currentNavStack.Count - incomingNavStack.Count == 1)
+			{
+				var topViewController = NavigationController!.TopViewController; // currentTop.ToUIViewController(MauiContext);
+				topViewController.NavigationController?.PopViewController(request.Animated);
+				//NavigationController!.PopViewController(request.Animated);
+				NavigationStack = new List<IView>(request.NavigationStack);
+				NavigationView?.NavigationFinished(NavigationStack);
+				return;
+			}
+
+			// otherwise, this changes a page/pages not on the top of the stack, so just sync the stacks
+		}
+
+		// The incoming and current stacks are the same length, so just sync the stacks
 		SyncNativeStackWithNewStack(request);
 		NavigationStack = new List<IView>(request.NavigationStack);
 		NavigationView?.NavigationFinished(NavigationStack);
@@ -54,20 +94,11 @@ public class StackNavigationManager
 		foreach (var page in request.NavigationStack)
 		{
 			UIViewController? viewController = null;
-			IPlatformViewHandler? handler = null;
 
 			if (page is IElement element)
 			{
-				if (element.Handler is IPlatformViewHandler nvh && nvh.ViewController != null)
-				{
-					handler = nvh;
-					viewController = nvh.ViewController;
-				}
-				else
-				{
-					handler = page.ToHandler(MauiContext);
-					viewController = handler.ViewController;
-				}
+				var handler = page.Handler;
+				viewController = page.ToUIViewController(MauiContext);
 
 				if (handler is FlyoutViewHandler flyoutHandler)
 				{
@@ -84,6 +115,14 @@ public class StackNavigationManager
 			{
 				throw new InvalidOperationException("ViewController cannot be null.");
 			}
+
+			//var wrapper = new ParentViewController(page.Handler as NavigationViewHandler 
+			//	?? throw new InvalidOperationException($"Could not convert handler to {nameof(NavigationViewHandler)}"));
+
+			//var containerViewController = new ParentViewController();
+			//containerViewController.View!.AddSubview(viewController.View!);
+			//containerViewController.AddChildViewController(viewController);
+			//viewController.DidMoveToParentViewController(containerViewController);
 
 			newStack.Add(viewController);
 		}

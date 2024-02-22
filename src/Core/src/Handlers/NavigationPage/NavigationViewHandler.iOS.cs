@@ -33,7 +33,7 @@ public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, U
 
 		NavigationManager?.SetNavigationController(_platformNavigationController);
 
-		return _platformNavigationController.View;
+		return _platformNavigationController.View; // TODO: maybe returning .View is not the best idea? Maybe we should return the NavigationController? Investigate.
 	}
 
 	protected override void ConnectHandler(UIView platformView)
@@ -50,6 +50,8 @@ public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, U
 	protected override void DisconnectHandler(UIView platformView)
 	{
 		StackNavigationManager?.Disconnect(VirtualView, _platformNavigationController!);
+		_platformNavigationController?.Dispose();
+		_platformNavigationController = null;
 		base.DisconnectHandler(platformView);
 	}
 
