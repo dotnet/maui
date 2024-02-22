@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		//Used by the XamlC compiled converter
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='SetAndCreateSource']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetAndCreateSource<T>(Uri value)
 			where T : ResourceDictionary, new()
