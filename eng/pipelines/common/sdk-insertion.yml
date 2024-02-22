@@ -66,10 +66,10 @@ jobs:
     inputs:
       projects: $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
       arguments: >-
-      -t:PushManifestToBuildAssetRegistry
-      -p:BuildAssetRegistryToken=$(MaestroAccessToken)
-      -p:OutputPath=$(Build.StagingDirectory)\nuget\
-      -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
+        -t:PushManifestToBuildAssetRegistry
+        -p:BuildAssetRegistryToken=$(MaestroAccessToken)
+        -p:OutputPath=$(Build.StagingDirectory)\nuget\
+        -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
     condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))
   - powershell: |
       $versionEndpoint = 'https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc-version?api-version=2019-01-16'
