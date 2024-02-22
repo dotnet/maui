@@ -3,4 +3,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+
+    <Shell.TitleView>
+        <HorizontalStackLayout VerticalOptions="Fill" Background="LightBlue">
+            <Label
+            Text="Shell.TitleView"
+            TextColor="Black"
+            VerticalTextAlignment="Center"
+            VerticalOptions="Center"
+            HeightRequest="50"
+            FontSize="Medium" />
+        </HorizontalStackLayout>
+    </Shell.TitleView>
 </ContentPage>

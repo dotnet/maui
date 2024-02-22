@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 
 namespace Maui.Controls.Sample
 {
@@ -12,6 +13,11 @@ namespace Maui.Controls.Sample
 				.CreateBuilder()
 				.UseMauiMaps()
 				.UseMauiApp<App>()
+				.ConfigureMauiHandlers(handlers => {  
+                #if IOS  
+                    handlers.AddHandler(typeof(Shell), typeof(CustomShellHandler));  
+                #endif  
+                })
 				.Build();
 	}
 
@@ -20,7 +26,7 @@ namespace Maui.Controls.Sample
 		protected override Window CreateWindow(IActivationState? activationState)
 		{
 			// To test shell scenarios, change this to true
-			bool useShell = false;
+			bool useShell = true;
 
 			if (!useShell)
 			{

@@ -4,19 +4,46 @@
     x:Class="Maui.Controls.Sample.SandboxShell"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Name="shell">
+    <Shell.TitleView>
+        <HorizontalStackLayout VerticalOptions="Fill" Background="Green">
+            <Label
+            Text="Shell.TitleView"
+            TextColor="Black"
+            VerticalTextAlignment="Center"
+            VerticalOptions="Center"
+            HeightRequest="50"
+            FontSize="Medium" />
+        </HorizontalStackLayout>
+    </Shell.TitleView>
+
     <TabBar Shell.TabBarForegroundColor="Green"
         Shell.TabBarUnselectedColor="Red">
-        <Tab Title="MainPage1" Icon="groceries.png">
+        <Tab Title="Tab1" Icon="groceries.png">
+
             <ShellContent Icon="groceries.png"
             Title="Home"
             ContentTemplate="{DataTemplate local:MainPage}"
-            Route="MainPage" />
+            Route="MainPage1" />
+            <ShellContent Icon="groceries.png"
+            Title="Home"
+            ContentTemplate="{DataTemplate local:MainPage}"
+            Route="MainPage1" />
+            <ShellContent Icon="groceries.png"
+            Title="Home"
+            ContentTemplate="{DataTemplate local:MainPage}"
+            Route="MainPage1" />
         </Tab>
-        <Tab Title="MainPage2" Icon="dotnet_bot.png">
-            <ShellContent Icon="dotnet_bot.png"
+        <Tab Title="Tab2" Icon="shopping_cart.png">
+            <ShellContent Icon="shopping_cart.png"
             Title="Home"
             ContentTemplate="{DataTemplate local:MainPage}"
             Route="MainPage2" />
+        </Tab>
+        <Tab Title="Tab3" Icon="shopping_cart.png">
+            <ShellContent Icon="shopping_cart.png"
+            Title="Home"
+            ContentTemplate="{DataTemplate local:MainPage}"
+            Route="MainPage3" />
         </Tab>
     </TabBar>
 </Shell>
