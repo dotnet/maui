@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace UITests;
 
-public class PlatformSpecificSampleTest : BaseTest
+public class PlatformSpecificSampleTest : UITestBase
 {
 	[Test]
 	public void SampleTest()
