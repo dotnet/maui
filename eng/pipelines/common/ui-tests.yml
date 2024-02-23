@@ -108,12 +108,10 @@ stages:
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
-                      platform: ios
-                      ${{ if eq(version, 'latest') }}:
-                        version: 16.4
-                      ${{ if ne(version, 'latest') }}:
-                        version: ${{ version }}
-                      path: ${{ project.ios }}
+                      platform: windows
+                      version: "10.0.19041.0"
+                      device: windows10
+                      path: ${{ project.winui }}
                       app: ${{ project.app }}
                       ${{ if eq(version, 'latest') }}:
                         device: ios-simulator-64
