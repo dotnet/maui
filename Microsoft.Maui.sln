@@ -261,6 +261,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UITest.NUnit", "src\TestUti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.Gtk", "src\Controls\samples\Controls.Sample.Gtk\Controls.Sample.Gtk.csproj", "{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorGtkApp", "src\BlazorWebView\samples\BlazorGtkApp\BlazorGtkApp.csproj", "{1FBAE048-FE7A-4D26-AF5A-23C35320A061}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebView.Gtk", "src\BlazorWebView\src\Gtk\Microsoft.AspNetCore.Components.WebView.Gtk.csproj", "{544312DA-10C9-4B90-B21D-0C5081BA4EDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -662,6 +666,14 @@ Global
 		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FBAE048-FE7A-4D26-AF5A-23C35320A061}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FBAE048-FE7A-4D26-AF5A-23C35320A061}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FBAE048-FE7A-4D26-AF5A-23C35320A061}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FBAE048-FE7A-4D26-AF5A-23C35320A061}.Release|Any CPU.Build.0 = Release|Any CPU
+		{544312DA-10C9-4B90-B21D-0C5081BA4EDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{544312DA-10C9-4B90-B21D-0C5081BA4EDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{544312DA-10C9-4B90-B21D-0C5081BA4EDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{544312DA-10C9-4B90-B21D-0C5081BA4EDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -783,6 +795,8 @@ Global
 		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974} = {42AB9AE1-631D-4AD4-85B7-910FF0940BDB}
 		{624D161D-762C-45F7-9CBC-9929BA5D13EF} = {1BA0121E-0B83-4C8F-81BE-C293E7E35DCE}
 		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3} = {E1082E26-D700-4127-9329-66D673FD2D55}
+		{1FBAE048-FE7A-4D26-AF5A-23C35320A061} = {A8E9400E-70DD-421F-8609-1C2FA4AE8E71}
+		{544312DA-10C9-4B90-B21D-0C5081BA4EDD} = {ED7F28E0-D0AF-417D-983D-3D874EEE8554}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

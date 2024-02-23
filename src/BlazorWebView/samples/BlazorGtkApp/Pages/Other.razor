@@ -1,0 +1,26 @@
+﻿@page "/other"
+@inject NavigationManager NavigationManager
+
+<div>
+    Here is another page. Looks like navigation works.
+
+    <button @onclick="BackToHome">Navigate back programmatically</button>
+</div>
+
+<div>
+    <input type="text" @bind-value="@textValue" />
+    <textarea cols=24 rows=10 />
+</div>
+
+<div>
+    The text is: @textValue
+</div>
+
+@code {
+    string textValue = null!;
+
+    void BackToHome()
+    {
+        NavigationManager.NavigateTo("");
+    }
+}
