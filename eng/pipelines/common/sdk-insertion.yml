@@ -11,8 +11,7 @@ jobs:
     name: ${{ parameters.poolName }}
     vmImage: ${{ parameters.vmImage }}
   variables:
-  - ${{ if eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true') }}:
-    - group: Publish-Build-Assets
+  - group: Publish-Build-Assets
   steps:
   - checkout: self
   - task: DownloadPipelineArtifact@2
