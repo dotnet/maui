@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
+	[AcceptEmptyServiceProvider]
 	public class AppendMarkupExtension : IMarkupExtension
 	{
 		public object Value0 { get; set; }

@@ -45,6 +45,7 @@ Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
+Information("Runtime Variant: {0}", RUNTIME_VARIANT);
 
 string DOTNET_TOOL_PATH = "/usr/local/share/dotnet/dotnet";
 
@@ -166,6 +167,13 @@ Task("uitest-build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(DEFAULT_APP_PROJECT);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
 
+	if (USE_NATIVE_AOT && CONFIGURATION.Equals("Debug", StringComparison.OrdinalIgnoreCase))
+	{
+		var errMsg = $"Error: Running UI tests with NativeAOT is only supported in Release configuration";
+		Error(errMsg);
+		throw new Exception(errMsg);
+	}
+
 	Information("app" +DEFAULT_APP_PROJECT);
 	DotNetBuild(DEFAULT_APP_PROJECT, new DotNetBuildSettings {
 		Configuration = CONFIGURATION,
@@ -175,14 +183,10 @@ Task("uitest-build")
 		{ 	
 			args
 			.Append("/p:BuildIpa=true")
+			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 			.Append("/bl:" + binlog)
-			.Append("/tl");
-			
-			// if we building for a device
-			if(TEST_DEVICE.ToLower().Contains("device"))
-			{
-				args.Append("/p:RuntimeIdentifier=ios-arm64");
-			}
+			.Append("/tl")
+			.Append($"/p:RuntimeIdentifier={DOTNET_PLATFORM}");
 
 			return args;
 		}
@@ -311,6 +315,7 @@ Task("uitest")
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=IOSUITEST")
+				.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 				.Append("/bl:" + binlog)
 				.Append("/tl")
 			

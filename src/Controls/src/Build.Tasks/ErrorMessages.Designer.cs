@@ -382,6 +382,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks {
             get {
                 return ResourceManager.GetString("XStaticSyntax", resourceCulture);
             }
+        }        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Consider attributing the markup extension with [AcceptEmptyServiceProvider] or [RequireService]..
+        /// </summary>
+        internal static string UnattributedMarkupType {
+            get {
+                return ResourceManager.GetString("UnattributedMarkupType", resourceCulture);
+            }
         }
 
         /// <summary>

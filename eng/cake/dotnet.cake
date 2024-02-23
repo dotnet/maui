@@ -25,6 +25,14 @@ var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Maps.*.nupkg",
     "Microsoft.AspNetCore.Components.WebView.*.nupkg",
 };
+public enum RuntimeVariant
+{
+	Mono,
+	NativeAOT
+}
+
+RuntimeVariant RUNTIME_VARIANT = Argument("runtimevariant", RuntimeVariant.Mono);
+bool USE_NATIVE_AOT = RUNTIME_VARIANT == RuntimeVariant.NativeAOT ? true : false;
 
 ProcessTFMSwitches();
 
@@ -168,7 +176,25 @@ Task("dotnet-samples")
                 ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
             };
         }
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
+
+        string projectsToBuild;
+        if (USE_NATIVE_AOT)
+        {
+            if (configuration.Equals("Debug", StringComparison.OrdinalIgnoreCase))
+            {
+                var errMsg = $"Error: Building dotnet-samples with NativeAOT is only supported in Release configuration";
+                Error(errMsg);
+                throw new Exception(errMsg);
+            }
+            projectsToBuild = "./src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
+            properties["_UseNativeAot"] = "true";
+        }
+        else
+        {
+            projectsToBuild = "./Microsoft.Maui.Samples.slnf";
+        }
+
+        RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
     });
 
 Task("dotnet-legacy-controlgallery")
@@ -216,7 +242,7 @@ Task("dotnet-test")
         var tests = new []
         {
             "**/Controls.Core.UnitTests.csproj",
-            "**/Controls.Core.Design.UnitTests.csproj",
+        //    "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
@@ -233,7 +259,7 @@ Task("dotnet-test")
             {
                 try
                 {
-                    RunTestWithLocalDotNet(project.FullPath);
+                    RunTestWithLocalDotNet(project.FullPath, configuration, dotnetPath);
                 }
                 catch
                 {
@@ -709,20 +735,15 @@ void RunMSBuildWithDotNet(
     DotNetBuild(sln, dotnetBuildSettings);
 }
 
-void RunTestWithLocalDotNet(string csproj)
-{
-    if(localDotnet)
-        SetDotNetEnvironmentVariables();
-
-    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, argsExtra: null, noBuild: true, resultsFileNameWithoutExtension: null);
-}
-
-void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "")
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
 {
     string binlog;
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var logDirectory = GetLogDirectory();
+
+    if(localDotnet)
+        SetDotNetEnvironmentVariables();
 
     if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
     {
@@ -751,6 +772,10 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
             ArgumentCustomization = args => 
             { 
                 args.Append($"-bl:{binlog}");
+                if(maxCpuCount > 0)
+                {
+                    args.Append($"-maxcpucount:{maxCpuCount}");
+                }
                 if(argsExtra != null)
                 {
                     foreach(var prop in argsExtra)

@@ -15,15 +15,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	class SetPropertiesVisitor : IXamlNodeVisitor
 	{
-		static readonly IList<XmlName> skips = new List<XmlName>
-		{
+		static readonly IList<XmlName> skips =
+		[
 			XmlName.xKey,
 			XmlName.xTypeArguments,
 			XmlName.xArguments,
 			XmlName.xFactoryMethod,
 			XmlName.xName,
 			XmlName.xDataType
-		};
+		];
 
 		public SetPropertiesVisitor(ILContext context, bool stopOnResourceDictionary = false)
 		{
@@ -51,8 +51,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public void Visit(ValueNode node, INode parentNode)
 		{
 			//TODO support Label text as element
-			XmlName propertyName;
-			if (!TryGetPropertyName(node, parentNode, out propertyName))
+			if (!TryGetPropertyName(node, parentNode, out XmlName propertyName))
 			{
 				if (!IsCollectionItem(node, parentNode))
 					return;
@@ -275,8 +274,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					vardefref.VariableDefinition = new VariableDefinition(module.ImportReference(genericArguments.First()));
 				foreach (var instruction in context.Variables[node].LoadAs(context.Cache, markupExtension, module))
 					yield return instruction;
-				foreach (var instruction in node.PushServiceProvider(context, bpRef, propertyRef, propertyDeclaringTypeRef))
-					yield return instruction;
+				yield return Instruction.Create(OpCodes.Ldnull); //ArrayExtension does not require ServiceProvider
 				yield return Instruction.Create(OpCodes.Callvirt, provideValue);
 
 				if (arrayTypeRef != null)
@@ -287,6 +285,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				out markupExtension, out genericArguments))
 			{
 				var acceptEmptyServiceProvider = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
+				var requireServiceAttribute = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
+				var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
+
+				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
+					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
+
 				if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension"
 					&& bpRef != null //do not compile bindings if we're not gonna SetBinding
 					)
@@ -303,9 +307,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				foreach (var instruction in context.Variables[node].LoadAs(context.Cache, markupExtension, module))
 					yield return instruction;
 				if (acceptEmptyServiceProvider)
-					yield return Instruction.Create(OpCodes.Ldnull);
+					yield return Create(Ldnull);
 				else
-					foreach (var instruction in node.PushServiceProvider(context, bpRef, propertyRef, propertyDeclaringTypeRef))
+					foreach (var instruction in node.PushServiceProvider(context, requiredServiceType, bpRef, propertyRef, propertyDeclaringTypeRef))
 						yield return instruction;
 				yield return Instruction.Create(OpCodes.Callvirt, provideValue);
 				yield return Instruction.Create(OpCodes.Stloc, vardefref.VariableDefinition);
@@ -313,6 +317,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			else if (context.Variables[node].VariableType.ImplementsInterface(context.Cache, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IMarkupExtension"))))
 			{
 				var acceptEmptyServiceProvider = context.Variables[node].VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
+				var requireServiceAttribute = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
+				var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
+
+				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
+					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
+
 				var markupExtensionType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IMarkupExtension");
 				vardefref.VariableDefinition = new VariableDefinition(module.TypeSystem.Object);
 				foreach (var instruction in context.Variables[node].LoadAs(context.Cache, module.GetTypeDefinition(context.Cache, markupExtensionType), module))
@@ -320,7 +330,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (acceptEmptyServiceProvider)
 					yield return Create(Ldnull);
 				else
-					foreach (var instruction in node.PushServiceProvider(context, bpRef, propertyRef, propertyDeclaringTypeRef))
+					foreach (var instruction in node.PushServiceProvider(context, requiredServiceType, bpRef, propertyRef, propertyDeclaringTypeRef))
 						yield return instruction;
 				yield return Create(Callvirt, module.ImportMethodReference(context.Cache,
 																		   markupExtensionType,
@@ -331,6 +341,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			else if (context.Variables[node].VariableType.ImplementsInterface(context.Cache, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IValueProvider"))))
 			{
 				var acceptEmptyServiceProvider = context.Variables[node].VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
+				var requireServiceAttribute = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
+				var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
+
+				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
+					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
+
 				var valueProviderType = context.Variables[node].VariableType;
 				//If the IValueProvider has a ProvideCompiledAttribute that can be resolved, shortcut this
 				var compiledValueProviderName = valueProviderType?.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?[0].Value as string;
@@ -356,7 +372,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (acceptEmptyServiceProvider)
 					yield return Create(Ldnull);
 				else
-					foreach (var instruction in node.PushServiceProvider(context, bpRef, propertyRef, propertyDeclaringTypeRef))
+					foreach (var instruction in node.PushServiceProvider(context, requiredServiceType, bpRef, propertyRef, propertyDeclaringTypeRef))
 						yield return instruction;
 				yield return Create(Callvirt, module.ImportMethodReference(context.Cache,
 																		   valueProviderInterface,
@@ -513,7 +529,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (p.Length > 0)
 				{
-					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic, out var propDeclTypeRef)
+					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic && !pd.GetMethod.IsStatic, out var propDeclTypeRef)
 						?? throw new BuildException(BuildExceptionCode.BindingPropertyNotFound, lineInfo, null, p, previousPartTypeRef);
 					properties.Add((property, propDeclTypeRef, null));
 					previousPartTypeRef = property.PropertyType.ResolveGenericParameters(propDeclTypeRef);
@@ -1252,7 +1268,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			if (valueNode != null)
 			{
-				foreach (var instruction in valueNode.PushConvertedValue(context, bpRef, valueNode.PushServiceProvider(context, bpRef: bpRef), true, false))
+				//FIXME which services are required here ?
+				foreach (var instruction in valueNode.PushConvertedValue(context, bpRef, (requiredServices) => valueNode.PushServiceProvider(context, requiredServices, bpRef: bpRef), true, false))
 					yield return instruction;
 			}
 			else if (elementNode != null)
@@ -1383,7 +1400,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			if (valueNode != null)
 			{
-				foreach (var instruction in valueNode.PushConvertedValue(context, propertyType, new ICustomAttributeProvider[] { property, propertyType.ResolveCached(context.Cache) }, valueNode.PushServiceProvider(context, propertyRef: property), false, true))
+				//FIXME which services are required here ?
+				foreach (var instruction in valueNode.PushConvertedValue(context, propertyType, new ICustomAttributeProvider[] { property, propertyType.ResolveCached(context.Cache) }, (requiredServices) => valueNode.PushServiceProvider(context, requiredServices, propertyRef: property), false, true))
 					yield return instruction;
 				if (parent.VariableType.IsValueType)
 					yield return Instruction.Create(OpCodes.Call, propertySetterRef);

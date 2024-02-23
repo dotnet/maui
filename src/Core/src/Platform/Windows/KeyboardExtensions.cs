@@ -41,6 +41,18 @@ namespace Microsoft.Maui.Platform
 			{
 				name.NameValue = InputScopeNameValue.Url;
 			}
+			else if (self == Keyboard.Password)
+			{
+				name.NameValue = InputScopeNameValue.Password;
+			}
+			else if (self == Keyboard.Date)
+			{
+				name.NameValue = InputScopeNameValue.DateDayNumber | InputScopeNameValue.DateMonthNumber | InputScopeNameValue.DateYear;
+			}
+			else if (self == Keyboard.Time)
+			{
+				name.NameValue = InputScopeNameValue.TimeHour | InputScopeNameValue.TimeMinutesOrSeconds;
+			}
 			else
 			{
 				var custom = (CustomKeyboard)self;
@@ -115,6 +127,18 @@ namespace Microsoft.Maui.Platform
 			else if (self == Keyboard.Url)
 			{
 				name.NameValue = InputScopeNameValue.Url;
+			}
+			else if (self == Keyboard.Password)
+			{
+				name.NameValue = InputScopeNameValue.Password;
+			}
+			else if (self == Keyboard.Date)
+			{
+				name.NameValue = InputScopeNameValue.DateDayNumber | InputScopeNameValue.DateMonthNumber | InputScopeNameValue.DateYear;
+			}
+			else if (self == Keyboard.Time)
+			{
+				name.NameValue = InputScopeNameValue.TimeHour | InputScopeNameValue.TimeMinutesOrSeconds;
 			}
 			else
 			{

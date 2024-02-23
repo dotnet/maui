@@ -55,15 +55,15 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
-  - stage: ios_ui_tests
-    displayName: iOS UITests
+  - stage: ios_ui_tests_mono
+    displayName: iOS UITests Mono
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-              - job: ios_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
+              - job: ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -87,29 +87,64 @@ stages:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      runtimeVariant : "Mono"
 
-  - stage: winui_ui_tests
-    displayName: WinUI UITests
+  - stage: ios_ui_tests_nativeaot
+    displayName: iOS UITests NativeAOT
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.winui, '') }}:
-              - job: winui_ui_tests_${{ project.name }}
+        - ${{ if ne(project.ios, '') }}:
+          - ${{ each version in parameters.iosVersions }}:
+            - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
+              - job: ios_ui_tests_nativeaot_${{ project.name }}_${{ replace(version, '.', '_') }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
-                displayName: ${{ coalesce(project.desc, project.name) }}
-                pool: ${{ parameters.windowsPool }}
+                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                pool: ${{ parameters.iosPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
-                      platform: windows
-                      version: "10.0.19041"
-                      device: windows10
-                      path: ${{ project.winui }}
+                      platform: ios
+                      ${{ if eq(version, 'latest') }}:
+                        version: 16.4
+                      ${{ if ne(version, 'latest') }}:
+                        version: ${{ version }}
+                      path: ${{ project.ios }}
                       app: ${{ project.app }}
+                      ${{ if eq(version, 'latest') }}:
+                        device: ios-simulator-64
+                      ${{ if ne(version, 'latest') }}:
+                        device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      runtimeVariant : "NativeAOT"
+
+  # - stage: winui_ui_tests
+  #   displayName: WinUI UITests
+  #   dependsOn: []
+  #   jobs:
+  #     - ${{ each project in parameters.projects }}:
+  #       - ${{ if ne(project.winui, '') }}:
+  #             - job: winui_ui_tests_${{ project.name }}
+  #               timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+  #               workspace:
+  #                 clean: all
+  #               displayName: ${{ coalesce(project.desc, project.name) }}
+  #               pool: ${{ parameters.windowsPool }}
+  #               steps:
+  #                 - template: ui-tests-steps.yml
+  #                   parameters:
+  #                     platform: windows
+  #                     version: "10.0.19041"
+  #                     device: windows10
+  #                     path: ${{ project.winui }}
+  #                     app: ${{ project.app }}
+  #                     provisionatorChannel: ${{ parameters.provisionatorChannel }}
+  #                     agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
   - stage: mac_ui_tests
     displayName: macOS UITests
