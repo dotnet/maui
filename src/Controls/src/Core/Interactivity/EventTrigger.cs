@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty("Actions")]
 	public sealed class EventTrigger : TriggerBase
 	{
-		static readonly MethodInfo s_handlerinfo = typeof(EventTrigger).GetRuntimeMethods().Single(mi => mi.Name == "OnEventTriggered" && mi.IsPublic == false);
+		static readonly MethodInfo s_handlerinfo = typeof(EventTrigger).GetMethod(nameof(OnEventTriggered), BindingFlags.Instance | BindingFlags.NonPublic, binder: null, types: new Type[] { typeof(object), typeof(EventArgs) }, modifiers: null);
 		readonly List<BindableObject> _associatedObjects = new List<BindableObject>();
 
 		EventInfo _eventinfo;
@@ -87,7 +87,6 @@ namespace Microsoft.Maui.Controls
 				_eventinfo.RemoveEventHandler(bindable, _handlerdelegate);
 		}
 
-		[Preserve]
 		void OnEventTriggered(object sender, EventArgs e)
 		{
 			var bindable = (BindableObject)sender;
