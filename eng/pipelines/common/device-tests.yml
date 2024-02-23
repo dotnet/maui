@@ -167,7 +167,7 @@ stages:
           parameters:
             platform: windows
             path: $(PROJECT_PATH)
-            apiVersion: 10.0.19041
+            apiVersion: 10.0.19041.0
             windowsPackageId: $(PACKAGE_ID)
             device: $(DEVICE) # For Windows this switches between packaged and unpackaged
             provisionatorChannel: ${{ parameters.provisionatorChannel }}

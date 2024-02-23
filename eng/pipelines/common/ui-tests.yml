@@ -104,7 +104,7 @@ stages:
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: windows
-                      version: "10.0.19041"
+                      version: "10.0.19041.0"
                       device: windows10
                       path: ${{ project.winui }}
                       app: ${{ project.app }}
