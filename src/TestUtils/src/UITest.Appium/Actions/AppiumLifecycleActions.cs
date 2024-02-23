@@ -93,8 +93,16 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			_app.Driver.TerminateApp(_app.GetAppId());
-			_app.Driver.ActivateApp(_app.GetAppId());
+			if (_app.GetTestDevice() == TestDevice.Windows)
+			{
+				CloseApp(parameters);
+				_app.Driver.ActivateApp(_app.GetAppId());
+			}
+			else
+			{
+				_app.Driver.TerminateApp(_app.GetAppId());
+				_app.Driver.ActivateApp(_app.GetAppId());
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
