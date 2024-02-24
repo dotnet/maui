@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using CoreFoundation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -73,13 +74,16 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view is UIScrollView scrollView)
 			{
-				if (scrollView.ContentOffset.Y < 0)
-					return true;
-
 				if (refreshing)
 					scrollView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY - _refreshControlHeight), true);
 				else
-					scrollView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY), true);
+				{
+					// Restore the scroll position after a slight delay to ensure layout has stabilized
+					DispatchQueue.MainQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, TimeSpan.FromMilliseconds(100)), () =>
+					{
+						scrollView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY), true);
+					});
+				}
 
 				return true;
 			}
@@ -140,6 +144,13 @@ namespace Microsoft.Maui.Platform
 					scrollView.RefreshControl = _refreshControl;
 				else
 					scrollView.InsertSubview(_refreshControl, index);
+
+				//Setting the bounds so that the refresh control renders above the potential header
+				_refreshControl.Bounds = new CGRect(
+					_refreshControl.Bounds.X,
+					-scrollView.ContentOffset.Y,
+					_refreshControl.Bounds.Width,
+					_refreshControl.Bounds.Height);
 
 				scrollView.AlwaysBounceVertical = true;
 
