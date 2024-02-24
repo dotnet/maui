@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Platform
 
 			// If we end up removing the destination that was initially the StartDestination
 			// The Navigation Graph can get really confused
-			if (NavGraph.StartDestination != startId)
+			if (NavGraph.FindStartDestination(NavGraph).Id != startId)
 				NavGraph.StartDestination = startId;
 
 			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
