@@ -1,14 +1,17 @@
 parameters:
-  poolName: Azure Pipelines
-  vmImage: windows-latest 
+  poolName: VSEngSS-MicroBuild2022-1ES
+  vmImage: ''
+  pushMauiPackagesToMaestro: false
 
 jobs:
 - job: create_artifact_statuses
-  displayName: Create GitHub Artifact Status
+  displayName: Create GitHub Artifact Status and Push to Maestro
   timeoutInMinutes: 60
   pool:
     name: ${{ parameters.poolName }}
     vmImage: ${{ parameters.vmImage }}
+  variables:
+  - group: Publish-Build-Assets
   steps:
   - checkout: self
   - task: DownloadPipelineArtifact@2
@@ -57,3 +60,21 @@ jobs:
         inputs:
           artifactName: vsdrop-multitarget-signed
           downloadPath: $(Build.StagingDirectory)/$(MultiTargetVSDropCommitStatusName)
+  - task: DotNetCoreCLI@2
+    displayName: Generate and publish BAR manifest
+    inputs:
+      projects: $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
+      arguments: >-
+        -t:PushManifestToBuildAssetRegistry
+        -p:BuildAssetRegistryToken=$(MaestroAccessToken)
+        -p:OutputPath=$(Build.StagingDirectory)\nuget\
+        -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
+    condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))
+  - powershell: |
+      $versionEndpoint = 'https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc-version?api-version=2019-01-16'
+      $darcVersion = $(Invoke-WebRequest -Uri $versionEndpoint -UseBasicParsing).Content
+      $arcadeServicesSource = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+      & dotnet tool update microsoft.dotnet.darc --version "$darcVersion" --add-source "$arcadeServicesSource" --tool-path $(Agent.ToolsDirectory)\darc -v n
+      & $(Agent.ToolsDirectory)\darc\darc add-build-to-channel --default-channels --id $(BARBuildId) --publishing-infra-version 3 --skip-assets-publishing --password $(MaestroAccessToken) --azdev-pat $(publishing-dnceng-devdiv-code-r-build-re)
+    displayName: Add build to default darc channel
+    condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))
