@@ -60,7 +60,7 @@ public class PlatformCanvasState : CanvasState {
 
 	public float Alpha { get; set; }
 
-	private readonly double[] zerodash = new double[0];
+	private readonly double[] zerodash = Array.Empty<double>();
 
 	public double[] NativeDash => StrokeDashPattern != null ? Array.ConvertAll(StrokeDashPattern, f => (double) f) : zerodash;
 
