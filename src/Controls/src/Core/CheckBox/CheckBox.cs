@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 
 					checkBox.Handler?.UpdateValue(nameof(ICheckBox.Foreground));
 					checkBox.CheckedChanged?.Invoke(bindable, new CheckedChangedEventArgs((bool)newValue));
-					if (checkBox.Command is not null && checkBox.Command.CanExecute(null))
+					if (checkBox.Command is not null && checkBox.Command.CanExecute(checkBox.CommandParameter))
 					{
 						checkBox.Command.Execute(checkBox.CommandParameter);
 					}
