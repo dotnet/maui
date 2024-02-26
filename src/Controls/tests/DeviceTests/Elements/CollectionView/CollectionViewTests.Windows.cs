@@ -9,6 +9,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WSetter = Microsoft.UI.Xaml.Setter;
 
 namespace Microsoft.Maui.DeviceTests
@@ -151,13 +152,14 @@ namespace Microsoft.Maui.DeviceTests
 
 				await Task.Delay(2000);
 
-				await AssertionExtensions.Wait(() =>
+				bool listIsDoneGrowing()
 				{
-					// Wait until the list stops growing
 					prevChildCount = childCount;
 					childCount = listView.GetChildren<UI.Xaml.Controls.TextBlock>().Count();
 					return childCount == prevChildCount;
-				}, 10000);
+				}
+
+				await AssertEventually(listIsDoneGrowing, timeout: 10000);
 
 				// If this is broken we'll get way more than 1000 elements
 				Assert.True(childCount < 1000);

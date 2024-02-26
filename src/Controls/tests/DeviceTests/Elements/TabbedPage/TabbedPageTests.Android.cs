@@ -18,6 +18,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 				tabbedPage.Children[1].IconImageSource = "blue.png";
 
 				// let the icon and title propagate
-				await AssertionExtensions.Wait(() => menuItem1.Icon != icon1);
+				await AssertEventually(() => menuItem1.Icon != icon1);
 
 				menu = GetBottomNavigationView(handler).Menu;
 				Assert.Equal(menuItem1, menu.GetItem(0));

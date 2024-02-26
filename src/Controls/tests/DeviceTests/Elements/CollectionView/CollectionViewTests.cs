@@ -15,6 +15,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Abstractions;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -80,7 +81,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			await collectionView.AttachAndRun<CollectionViewHandler>(async (handler) =>
 			{
-				await AssertionExtensions.Wait(() => buttons.Count > 1 && buttons.Last().Frame.Height > 0 && buttons.Last().IsLoaded);
+				bool expectation() => buttons.Count > 1 && buttons.Last().Frame.Height > 0 && buttons.Last().IsLoaded;
+
+				await AssertEventually(expectation);
 				var button = buttons.Last();
 				var bounds = GetCollectionViewCellBounds(button);
 				var buttonBounds = button.GetBoundingBox();
@@ -131,7 +134,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(weakReference);
-			Assert.False(weakReference.IsAlive, "ObservableCollection should not be alive!");
 			Assert.NotNull(logicalChildren);
 			Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
 		}
@@ -196,7 +198,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					if (n == 0)
 					{
-						await AssertionExtensions.Wait(() => collectionView.Frame.Width > 0 && collectionView.Frame.Height > 0);
+						await AssertEventually(() => collectionView.Frame.Width > 0 && collectionView.Frame.Height > 0);
 					}
 					else
 					{
@@ -395,5 +397,68 @@ namespace Microsoft.Maui.DeviceTests
 				timeout -= interval;
 			}
 		}
+
+		[Fact]
+		public async Task ClearingItemsSourceClearsBindingContext()
+		{
+			SetupBuilder();
+
+			IReadOnlyList<Element> logicalChildren = null;
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new DataTemplate(() => new Label() { HeightRequest = 30, WidthRequest = 200 }),
+				WidthRequest = 200,
+				HeightRequest = 200,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var data = new ObservableCollection<MyRecord>()
+				{
+					new MyRecord("Item 1"),
+					new MyRecord("Item 2"),
+					new MyRecord("Item 3"),
+				};
+				collectionView.ItemsSource = data;
+				await Task.Delay(100);
+
+				logicalChildren = collectionView.LogicalChildrenInternal;
+				Assert.NotNull(logicalChildren);
+				Assert.True(logicalChildren.Count == 3);
+
+				// Clear collection
+				var savedItems = data.ToArray();
+				data.Clear();
+
+				await Task.Delay(100);
+
+				// Check that all logical children have no binding context
+				foreach (var logicalChild in logicalChildren)
+				{
+					Assert.Null(logicalChild.BindingContext);
+				}
+
+				// Re-add the old children
+				foreach (var savedItem in savedItems)
+				{
+					data.Add(savedItem);
+				}
+
+				await Task.Delay(100);
+
+				// Check that the right number of logical children have binding context again
+				int boundChildren = 0;
+				foreach (var logicalChild in logicalChildren)
+				{
+					if (logicalChild.BindingContext is not null)
+					{
+						boundChildren++;
+					}
+				}
+				Assert.Equal(3, boundChildren);
+			});
+		}
+
+		record MyRecord(string Name);
 	}
 }

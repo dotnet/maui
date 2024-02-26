@@ -1,11 +1,7 @@
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Xml.Linq;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.Appium.Interfaces;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -14,6 +10,14 @@ namespace UITest.Appium
 	{
 		static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
+		/// <summary>
+		/// For desktop, this will perform a mouse click on the target element.
+		/// For mobile, this will tap the element.
+		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
+		/// https://github.com/dotnet/maui/issues/19754
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element</param>
 		public static void Click(this IApp app, string element)
 		{
 			app.FindElement(element).Click();
@@ -72,11 +76,41 @@ namespace UITest.Appium
 			return (bool)responseValue;
 		}
 
+		/// <summary>
+		/// (Android Only) Sends a device key event with meta state.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="keyCode"> Code for the key pressed on the Android device</param>
+		/// <param name="metastate">metastate for the key press</param>
+		/// <exception cref="InvalidOperationException"></exception>
+		public static void SendKeys(this IApp app, int keyCode, int metastate = 0)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"SendKeys is only supported on AppiumApp");
+			}
+
+			if (aaa.Driver is ISendsKeyEvents ske)
+			{
+				ske.PressKeyCode(keyCode, metastate);
+				return;
+			}
+
+			throw new InvalidOperationException($"SendKeys is not supported on {aaa.Driver}");
+		}
+
 		public static void ClearText(this IApp app, string element)
 		{
 			app.FindElement(element).Clear();
 		}
 
+		/// <summary>
+		/// For desktop, this will perform a mouse click on the target element.
+		/// For mobile, this will tap the element.
+		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
+		/// https://github.com/dotnet/maui/issues/19754
+		/// </summary>
+		/// <param name="element">Target Element</param>
 		public static void Click(this IUIElement element)
 		{
 			element.Command.Execute("click", new Dictionary<string, object>()
@@ -382,6 +416,10 @@ namespace UITest.Appium
 
 		/// <summary>
 		/// Performs a tap / touch gesture on the given coordinates.
+		/// This API currently doesn't work on Catalyst https://github.com/dotnet/maui/issues/19754
+		/// For Catalyst you'll currently need to use Click instead. 
+		/// Tap is more mobile-specific and provides more flexibility than click. Click is more general and is 
+		/// used for simpler interactions. Depending on the context of your test, you might prefer one over the other.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="x">The x coordinate to tap.</param>
@@ -412,6 +450,15 @@ namespace UITest.Appium
 		public static void BackgroundApp(this IApp app)
 		{
 			app.CommandExecutor.Execute("backgroundApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// If the application is already running then it will be brought to the foreground.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ForegroundApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("foregroundApp", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
@@ -501,6 +548,62 @@ namespace UITest.Appium
 		public static void Back(this IApp app)
 		{
 			app.CommandExecutor.Execute("back", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Return the AppId of the running app. This is used inside any appium command that want the app id
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static string GetAppId(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"GetAppId is only supported on AppiumApp");
+			}
+
+			var appId = aaa.Config.GetProperty<string>("AppId");
+			if (appId is not null)
+			{
+				return appId;
+			}
+
+			throw new InvalidOperationException("AppId not found");
+		}
+
+		/// <summary>
+		/// Retrieve the target device this test is running against
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns></returns>
+		/// <exception cref="InvalidOperationException"></exception>
+		public static TestDevice GetTestDevice(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"GetTestDevice is only supported on AppiumApp");
+			}
+
+			return aaa.Config.GetProperty<TestDevice>("TestDevice");
+		}
+
+		/// <summary>
+		/// Check if element has focused
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="id">Target element</param>
+		/// <returns>Returns <see langword="true"/> if focused</returns>
+		/// <exception cref="InvalidOperationException"></exception>
+		public static bool IsFocused(this IApp app, string id)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"IsFocused is only supported on AppiumApp");
+			}
+
+			var activeElement = aaa.Driver.SwitchTo().ActiveElement();
+			var element = (AppiumDriverElement)app.WaitForElement(id);
+
+			return element.AppiumElement.Equals(activeElement);
 		}
 
 		static IUIElement Wait(Func<IUIElement> query,

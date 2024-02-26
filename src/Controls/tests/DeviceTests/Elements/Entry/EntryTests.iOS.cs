@@ -8,6 +8,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -263,7 +264,7 @@ namespace Microsoft.Maui.DeviceTests
 				await CreateHandlerAndAddToWindow(rootPage, async () =>
 				{
 					KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform());
-					await AssertionExtensions.Wait(() => entry2.IsFocused);
+					await AssertEventually(() => entry2.IsFocused);
 					isFocused = entry2.IsFocused;
 				});
 

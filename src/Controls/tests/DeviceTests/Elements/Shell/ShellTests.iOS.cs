@@ -16,6 +16,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 using UIModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle;
 
@@ -285,10 +286,7 @@ namespace Microsoft.Maui.DeviceTests
 			var flyoutView = GetFlyoutPlatformView(shellRenderer);
 			shellRenderer.Shell.FlyoutIsPresented = true;
 
-			await AssertionExtensions.Wait(() =>
-			{
-				return flyoutView.Frame.X == 0;
-			}, timeOut?.Milliseconds ?? 1000);
+			await AssertEventually(() => flyoutView.Frame.X == 0, timeOut?.Milliseconds ?? 1000);
 
 			return;
 		}
@@ -325,15 +323,17 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		protected async Task ScrollFlyoutToBottom(ShellRenderer shellRenderer)
+		protected async Task<double> ScrollFlyoutToBottom(ShellHandler shellHandler)
 		{
-			var platformView = GetFlyoutPlatformView(shellRenderer);
-			var tableView = platformView.FindDescendantView<UITableView>();
-			var bottomOffset = new CGPoint(0, tableView.ContentSize.Height - tableView.Bounds.Height + tableView.ContentInset.Bottom);
-			tableView.SetContentOffset(bottomOffset, false);
-			await Task.Delay(1);
+			var platformView = GetFlyoutPlatformView(shellHandler);
+			var scrollView = platformView.FindDescendantView<UIScrollView>();
+			var bottomOffset = new CGPoint(0, scrollView.ContentSize.Height - scrollView.Bounds.Height + scrollView.ContentInset.Bottom);
 
-			return;
+			scrollView.SetContentOffset(bottomOffset, false);
+
+			await Task.Delay(10);
+
+			return bottomOffset.Y;
 		}
 #if IOS
 		[Fact(DisplayName = "Back Button Text Has Correct Default")]
@@ -351,7 +351,7 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PushAsync(new ContentPage() { Title = "Page 2" });
 				await OnNavigatedToAsync(shell.CurrentPage);
 
-				Assert.True(await AssertionExtensions.Wait(() => GetBackButtonText(handler) == "Page 1"));
+				await AssertEventually(() => GetBackButtonText(handler) == "Page 1");
 			});
 		}
 
@@ -376,9 +376,9 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PushAsync(page2);
 				await shell.Navigation.PushAsync(page3);
 
-				Assert.True(await AssertionExtensions.Wait(() => GetBackButtonText(handler) == "Text Override"));
+				await AssertEventually(() => GetBackButtonText(handler) == "Text Override");
 				await shell.Navigation.PopAsync();
-				Assert.True(await AssertionExtensions.Wait(() => GetBackButtonText(handler) == "Page 1"));
+				await AssertEventually(() => GetBackButtonText(handler) == "Page 1");
 			});
 		}
 #endif

@@ -9,12 +9,14 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using AndroidX.Core.View;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.Navigation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using MColor = Microsoft.Maui.Graphics.Color;
@@ -151,37 +153,22 @@ namespace Microsoft.Maui.DeviceTests
 			return Task.CompletedTask;
 		}
 
-		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string message = "")
+		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string? message = null)
 		{
 			if (view.IsSoftInputShowing())
 				return;
 
-			try
+			await view.FocusView(timeout);
+			await Task.Yield();
+			view.ShowSoftInput();
+			await Task.Yield();
+
+			if (string.IsNullOrEmpty(message))
 			{
-				await view.FocusView(timeout);
-				await Task.Yield();
-				view.ShowSoftInput();
-				await Task.Yield();
-
-				bool result = await Wait(() =>
-				{
-					if (!view.IsSoftInputShowing())
-						view.ShowSoftInput();
-
-					return view.IsSoftInputShowing();
-
-				}, timeout);
-
-				await Task.Delay(100);
-				Assert.True(view.IsSoftInputShowing());
+				message = $"Keyboard did not show for {view}";
 			}
-			catch (Exception ex)
-			{
-				if (!string.IsNullOrEmpty(message))
-					throw new Exception(message, ex);
-				else
-					throw;
-			}
+
+			await AssertEventually(view.IsSoftInputShowing, timeout: timeout, message: message);
 		}
 
 		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string? message = null)
@@ -189,55 +176,39 @@ namespace Microsoft.Maui.DeviceTests
 			if (!view.IsSoftInputShowing())
 				return;
 
-			try
+			view.HideSoftInput();
+			await Task.Yield();
+
+			if (string.IsNullOrEmpty(message))
 			{
-				view.HideSoftInput();
-				await Task.Yield();
-				bool result = await Wait(() =>
-				{
-					if (!view.IsSoftInputShowing())
-						view.HideSoftInput();
-
-					return !view.IsSoftInputShowing();
-
-				}, timeout);
-
-				await Task.Delay(100);
-				Assert.True(!view.IsSoftInputShowing());
+				message = $"Keyboard did not hide for {view}";
 			}
-			catch (Exception ex)
-			{
-				if (!string.IsNullOrEmpty(message))
-					throw new Exception(message, ex);
-				else
-					throw;
-			}
+
+			await AssertEventually(() => !view.IsSoftInputShowing(), timeout: timeout, message: message);
 		}
 
-		public static async Task WaitForKeyboardToShow(this AView view, int timeout = 1000, string message = "")
+		public static async Task WaitForKeyboardToShow(this AView view, int timeout = 1000, string? message = null)
 		{
-			try
+			if (string.IsNullOrEmpty(message))
 			{
-				var result = await Wait(() => view.IsSoftInputShowing(), timeout);
-				Assert.True(result);
+				message = $"Keyboard did not show for {view}";
+			}
 
-				// Even if the OS is reporting that the keyboard has opened it seems like the animation hasn't quite finished
-				// If you try to call hide too quickly after showing, sometimes it will just show and then pop back down.
-				await Task.Delay(100);
-			}
-			catch (Exception ex)
-			{
-				if (!string.IsNullOrEmpty(message))
-					throw new Exception(message, ex);
-				else
-					throw;
-			}
+			await AssertEventually(view.IsSoftInputShowing, timeout: timeout, message: message);
+
+			// Even if the OS is reporting that the keyboard has opened it seems like the animation hasn't quite finished
+			// If you try to call hide too quickly after showing, sometimes it will just show and then pop back down.
+			await Task.Delay(100);
 		}
 
-		public static async Task WaitForKeyboardToHide(this AView view, int timeout = 1000)
+		public static async Task WaitForKeyboardToHide(this AView view, int timeout = 1000, string? message = null)
 		{
-			var result = await Wait(() => !view.IsSoftInputShowing(), timeout);
-			Assert.True(result, "Keyboard failed to hide");
+			if (string.IsNullOrEmpty(message))
+			{
+				message = $"Keyboard did not hide for {view}";
+			}
+
+			await AssertEventually(() => !view.IsSoftInputShowing(), timeout: timeout, message: message);
 
 			// Even if the OS is reporting that the keyboard has closed it seems like the animation hasn't quite finished
 			// If you try to call hide too quickly after showing, sometimes it will just hide and then pop back up.
@@ -247,7 +218,8 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task WaitForLayoutOrNonZeroSize(this AView view, int timeout = 1000) =>
 			Task.WhenAll(
 				view.WaitForLayout(timeout),
-				Wait(() => view.Width > 0 && view.Height > 0, timeout));
+				AssertEventually(() => ViewCompat.IsLaidOut(view), timeout,
+					message: $"Timed out waiting for {view} to have {nameof(view.Width)} and {nameof(view.Height)} greater than zero"));
 
 		public static Task<bool> WaitForLayout(this AView view, int timeout = 1000)
 		{
@@ -361,6 +333,13 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Gravity = GravityFlags.Center
 				};
+
+				// Ensure that the view gets _some_ width/height; the combination of WrapContent and Center above means that 
+				// the default Fill layout options will have no effect, so unless the root test object or its Content has a
+				// WidthRequest/HeightRequest, the actual layout height and width may be zero 
+
+				view.SetMinimumWidth(40);
+				view.SetMinimumHeight(40);
 
 				var act = context.GetActivity()!;
 				var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;

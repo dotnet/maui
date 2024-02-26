@@ -269,9 +269,43 @@ As an example, take a Grid with `HeightRequest="100"` and `RowDefinitions="*,2*,
 
 ## AbsoluteLayout
 
-TK
+AbsoluteLayout allows child views to be positioned and sized using explicit values and/or proportionally to the size of the layout.
 
+The layout of a child view in AbsoluteLayout can be specified with a combination of two values:
 
+### LayoutBounds
+
+The layout bounds of a child view is a `Rect` which specifies the position and size of the view. If not specified, the default layout bounds for a view are a position of (0, 0) with the `Width` and `Height` properties set to `AbsoluteLayout.AutoSize` (a constant value of -1). 
+
+### LayoutFlags
+
+The layout flags of a child view specify how the values in the layout bounds are used. By default, no flags are specified (`AbsoluteLayoutFlags.None`). The `XProportional` and `YProportional` values can be independently set, or both values can be set at once by setting `PositionProportional`. Likewise, `HeightProportional` and `WidthProportional` can be set independently, or both can be set at once with `SizeProportional`. All flags can be set at once using `AbsoluteLayoutFlags.All`.
+
+### Layout Bounds/Flags Interaction
+
+The layout rules for a child view are determined by a combination of its layout bounds and its layout flags:
+
+#### Position
+
+If the `XProportional`/`YProportional` flags are set, then the X/Y values of the layout bounds are multiplied by the width/height of the AbsoluteLayout to determine the final X/Y coordinate values. For instance, imagine an AbsoluteLayout which is 100 x 100. It has a child with layout bounds of (0.4, 0.6, 20, 20), and the child's `XProportional` and `YProportional` flags are set. The position of that child will be X = (100 * 0.4) = 40 and Y = (100 * 0.6) = 60. 
+
+If `XProportional`/`YProportional` flags are not set, then the X and Y values in the layout bounds are explicit values. For instance, imagine an AbsoluteLayout which is 100 x 100. It has a child with layout bounds of (45, 67, 20, 20), and the child's `XProportional` and `YProportional` flags are  _not_ set. The position of that child will be X = 45 and Y = 67. 
+
+Both explicit and proportional position values _can_ exceed the boundaries of the AbsoluteLayout.
+
+#### Size
+
+If the `WidthProportional`/`HeightProportional` flags are set, then the Width/Height values of the layout bounds are multiplied by the width/height of the AbsoluteLayout to determine the final Width/Height values. For instance, imagine an AbsoluteLayout which is 100 x 100. It has a child with layout bounds of (0, 0, 0.3, 0.47), and the child's `WidthProportional` and `HeightProportional` flags are set. The size of that child will be Width = (100 * 0.3) = 30 and Height = (100 * 0.47) = 47. 
+
+If `WidthProportional`/`HeightProportional` flags are not set, then the Width and Height values in the layout bounds are explicit values. For instance, imagine an AbsoluteLayout which is 100 x 100. It has a child with layout bounds of (0, 0, 45, 20), and the child's `WidthProportional` and `HeightProportional` flags are  _not_ set. The size of that child will be Width = 45 and Height = 20. 
+
+Both explicit and proportional size values _can_ exceed the boundaries of the AbsoluteLayout.
+
+### Unbounded Dimensions
+
+If the AbsoluteLayout is unbounded along a dimension (e.g., if it's a child of a VerticalStackLayout, and is not provided with an explicit height), then the concept of "proportional" along that dimension has no meaning. Proportional flags along those dimensions are ignored; if the layout bounds specifies a non-Auto value along that dimension, it will be used. Otherwise, the automatic size of the view will be used along that dimension.
+
+For example, say an AbsoluteLayout is the child of a VerticalStackLayout with a width of 200. The only child of the AbsoluteLayout has LayoutBounds of (0, 0, 100, 0.5) and has `AbsoluteLayoutFlags.HeightProportional` set. Because the AbsoluteLayout has no vertical constraints, the `AbsoluteLayoutFlags.HeightProportional` flag is ignored, and the child's height is set to the value of 0.5 from its layout bounds. 
 
 # The Layout Process
 
@@ -419,7 +453,7 @@ Anything that was marked "AndExpand" should go in its own row or column with a s
 
 ### ScrollView Changes
 
-The other main difference is that the Xamarin.Forms ScrollView does not behave consistently when stacking. It has some arbitary limits on minimum size which depend partially on its content, and it will compress to allow other items to fit on the screen inside a StackLayout in ways that are inconsistent and sometimes surprising. 
+The other main difference is that the Xamarin.Forms ScrollView does not behave consistently when stacking. It has some arbitrary limits on minimum size which depend partially on its content, and it will compress to allow other items to fit on the screen inside a StackLayout in ways that are inconsistent and sometimes surprising. 
 
 MAUI, on the other hand, simply allows the ScrollView to expand its viewport to the size of its content unless otherwise constrained. This means that inside of a VerticalStackLayout, which can expand infinitely, a ScrollView will simply set the height of its viewport to the height of the contnet; it will not scroll. This can be a little surprising for Forms users. Remember, StackLayouts simply continue in their stacking direction until they run out of content; they do not subdivide their container along that axis. If you want to limit your content to a constrained space in a direction, you should use another control, like a Grid.
 

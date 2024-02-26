@@ -140,21 +140,6 @@ namespace Microsoft.Maui.IntegrationTests
 			},
 			new WarningsPerFile
 			{
-				File = "src/Controls/src/Core/ResourceDictionary.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2067",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.ResourceDictionary.<>c.<SetAndLoadSource>b__8_0(Type): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The parameter 'key' of method 'Microsoft.Maui.Controls.ResourceDictionary.<>c.<SetAndLoadSource>b__8_0(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
 				File = "src/Controls/src/Xaml/XamlParser.cs",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
@@ -186,37 +171,6 @@ namespace Microsoft.Maui.IntegrationTests
 			},
 			new WarningsPerFile
 			{
-				File = "src/Controls/src/Core/BindableProperty.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2067",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.BindableProperty.BindableProperty(String,Type,Type,Object,BindingMode,BindableProperty.ValidateValueDelegate,BindableProperty.BindingPropertyChangedDelegate,BindableProperty.BindingPropertyChangingDelegate,BindableProperty.CoerceValueDelegate,BindableProperty.BindablePropertyBindingChanging,Boolean,BindableProperty.CreateDefaultValueDelegate): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The parameter '#1' of method 'Microsoft.Maui.Controls.BindableProperty.BindableProperty(String,Type,Type,Object,BindingMode,BindableProperty.ValidateValueDelegate,BindableProperty.BindingPropertyChangedDelegate,BindableProperty.BindingPropertyChangingDelegate,BindableProperty.CoerceValueDelegate,BindableProperty.BindablePropertyBindingChanging,Boolean,BindableProperty.CreateDefaultValueDelegate)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
-				File = "src/Core/src/HotReload/HotReloadHelper.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2067",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.HotReload.MauiHotReloadHelper.GetReplacedView(IHotReloadableView): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The parameter '#ILLink.Shared.TypeSystemProxy.ParameterIndex' of method 'System.Collections.Generic.Dictionary`2<String,Type>.TryGetValue(String,Type&)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.HotReload.MauiHotReloadHelper.GetReplacedView(IHotReloadableView): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicConstructors' in call to 'System.Activator.CreateInstance(Type,Object[])'. The parameter '#ILLink.Shared.TypeSystemProxy.ParameterIndex' of method 'System.Collections.Generic.Dictionary`2<String,Type>.TryGetValue(String,Type&)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
 				File = "src/Controls/src/Core/Xaml/TypeConversionExtensions.cs",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
@@ -227,39 +181,6 @@ namespace Microsoft.Maui.IntegrationTests
 						{
 							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetImplicitConversionOperator(Type,Type,Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods' in call to 'System.Type.GetMethod(String,BindingFlags,Binder,Type[],ParameterModifier[])'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetImplicitConversionOperator(Type,Type,Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
 							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetImplicitConversionOperator(Type,Type,Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods' in call to 'System.Type.GetMethods(BindingFlags)'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetImplicitConversionOperator(Type,Type,Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2072",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.<>c__DisplayClass2_0.<ConvertTo>b__0(): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The return value of method 'Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetTypeConverterType(IEnumerable`1<CustomAttributeData>)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.<>c__DisplayClass2_0.<ConvertTo>b__0(): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The return value of method 'Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetTypeConverterType(IEnumerable`1<CustomAttributeData>)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.<>c__DisplayClass1_0.<ConvertTo>b__0(): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The return value of method 'Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetTypeConverterType(IEnumerable`1<CustomAttributeData>)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2057",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetTypeConverterType(IEnumerable`1<CustomAttributeData>): Unrecognized value passed to the parameter 'typeName' of method 'System.Type.GetType(String)'. It's not possible to guarantee the availability of the target type.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
-				File = "src/Controls/src/Core/Routing.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2111",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Routing..cctor(): Method 'Microsoft.Maui.Controls.Routing.RegisterRoute(String,Type)' with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.",
 						}
 					},
 				}
@@ -276,21 +197,6 @@ namespace Microsoft.Maui.IntegrationTests
 						{
 							"Microsoft.Maui.Controls.ShellContent.ApplyQueryAttributes(Object,ShellRouteParameters,ShellRouteParameters): 'name' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeProperty(Type,String)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
 							"Microsoft.Maui.Controls.ShellContent.ApplyQueryAttributes(Object,ShellRouteParameters,ShellRouteParameters): 'name' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeProperty(Type,String)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
-				File = "src/Controls/src/Core/DependencyService.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2073",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.DependencyService.FindImplementor(Type): 'Microsoft.Maui.Controls.DependencyService.FindImplementor(Type)' method return value does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' requirements. The return value of method 'System.Linq.Enumerable.FirstOrDefault<Type>(IEnumerable`1<Type>,Func`2<Type,Boolean>)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
 						}
 					},
 				}

@@ -13,7 +13,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
-
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 #if IOS || MACCATALYST
 using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.DeviceTests
 				if (!CanDeviceDoSplitMode(flyoutPage))
 					return;
 
-				await AssertionExtensions.Wait(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
+				await AssertEventually(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
 
 				var detailBounds = flyoutPage.Detail.GetBoundingBox();
 				var flyoutBounds = flyoutPage.Flyout.GetBoundingBox();
@@ -256,14 +256,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(IsBackButtonVisible(handler));
 
 				await first.PushAsync(new ContentPage());
-				await AssertionExtensions.Wait(() => IsBackButtonVisible(handler));
+				await AssertEventually(() => IsBackButtonVisible(handler));
 				Assert.True(IsBackButtonVisible(handler));
 
 				flyoutPage.Detail = second;
 				Assert.False(IsBackButtonVisible(handler));
 
 				await second.PushAsync(new ContentPage());
-				await AssertionExtensions.Wait(() => IsBackButtonVisible(handler));
+				await AssertEventually(() => IsBackButtonVisible(handler));
 				Assert.True(IsBackButtonVisible(handler));
 			});
 		}

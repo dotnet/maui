@@ -1,6 +1,7 @@
 parameters:
-  poolName: Azure Pipelines
-  vmImage: windows-latest 
+  poolName: VSEngSS-MicroBuild2022-1ES
+  vmImage: ''
+  pushMauiPackagesToMaestro: false
 
 stages:
   - stage: sdk_insertion
@@ -12,6 +13,7 @@ stages:
       parameters:
         poolName: ${{ parameters.poolName }}
         vmImage: ${{ parameters.vmImage }}
+        pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
 
   - stage: sbom
     displayName: 'Software Bill of Materials'

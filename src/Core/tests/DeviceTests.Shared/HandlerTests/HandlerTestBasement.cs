@@ -39,6 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 			var appBuilder = MauiApp.CreateBuilder();
 
 			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
+			appBuilder.Services.AddKeyedSingleton<IDispatcher>(typeof(IApplication), (svc, key) => TestDispatcher.Current);
 			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
 			appBuilder.Services.AddSingleton<IApplication>((_) => new CoreApplicationStub());
 

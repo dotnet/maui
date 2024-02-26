@@ -167,13 +167,41 @@
                         <Span
                              x:Name="Link3"
                              TextDecorations="Underline"
-                             Text="Link3_1&#10;Link3_2"
+                             Text="Link3_1&#10;Link3_2&#10;"
                              TextColor="Blue">
                             <Span.GestureRecognizers>
                                 <TapGestureRecognizer
                                     Tapped="OnLink3Tapped" />
                             </Span.GestureRecognizers>
                         </Span>
+                        <Span
+                            Text="Mixed with other spans:&#10;" />
+                        <Span
+                            Text="Regular text " />
+                        <Span
+                             x:Name="Link4"
+                             TextDecorations="Underline"
+                             Text="Link4_1&#10;Link4_2"
+                             TextColor="Blue">
+                            <Span.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Tapped="OnLink4Tapped" />
+                            </Span.GestureRecognizers>
+                        </Span>
+                        <Span
+                            Text=" more text " />
+                        <Span
+                             x:Name="Link5"
+                             TextDecorations="Underline"
+                             Text="Link5_1&#10;Link5_2&#10;"
+                             TextColor="Blue">
+                            <Span.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Tapped="OnLink5Tapped" />
+                            </Span.GestureRecognizers>
+                        </Span>
+                        <Span
+                            Text=" more text." />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
@@ -229,6 +257,13 @@
                 Text="TailTruncation"
                 Style="{StaticResource Headline}" />
             <Label
+                LineBreakMode ="TailTruncation"
+                Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+            <Label
+                Text="TailTruncation (with 2 MaxLines)"
+                Style="{StaticResource Headline}" />
+            <Label
+                MaxLines="2"
                 LineBreakMode ="TailTruncation"
                 Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
             <Label

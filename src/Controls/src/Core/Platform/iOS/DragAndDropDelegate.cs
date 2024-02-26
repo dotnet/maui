@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls.Platform
 			},
 			element);
 
-			return returnValue ?? new UIDragItem[0];
+			return returnValue ?? Array.Empty<UIDragItem>();
 		}
 
 		void SetLocalObject(UIDragItem dragItem, IPlatformViewHandler handler, DataPackage data)

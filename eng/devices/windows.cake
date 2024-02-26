@@ -5,7 +5,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-const string defaultVersion = "10.0.19041";
+const string defaultVersion = "10.0.19041.0";
 const string dotnetVersion = "net8.0";
 
 // required

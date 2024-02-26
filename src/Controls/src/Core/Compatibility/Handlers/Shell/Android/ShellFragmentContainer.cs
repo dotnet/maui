@@ -7,7 +7,7 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	internal class ShellFragmentContainer : Fragment
+	internal sealed class ShellFragmentContainer : Fragment
 	{
 		Page _page;
 		IMauiContext _mauiContext;

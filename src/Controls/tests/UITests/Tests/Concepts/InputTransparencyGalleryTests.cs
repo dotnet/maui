@@ -24,10 +24,20 @@ namespace Microsoft.Maui.AppiumTests
 
 		[Test]
 		[Combinatorial]
-		public void InputTransparencyMatrix([Values] bool rootTrans, [Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
+		public void InputTransparencyWhenRootIsTransparentMatrix([Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
 		{
-			var (clickable, passthru) = Test.InputTransparencyMatrix.States[(rootTrans, rootCascade, nestedTrans, nestedCascade, trans)];
-			var key = Test.InputTransparencyMatrix.GetKey(rootTrans, rootCascade, nestedTrans, nestedCascade, trans, clickable, passthru);
+			var (clickable, passthru) = Test.InputTransparencyMatrix.States[(true, rootCascade, nestedTrans, nestedCascade, trans)];
+			var key = Test.InputTransparencyMatrix.GetKey(true, rootCascade, nestedTrans, nestedCascade, trans, clickable, passthru);
+
+			RunTest(key, clickable, passthru);
+		}
+
+		[Test]
+		[Combinatorial]
+		public void InputTransparencyWhenRootIsNotTransparentMatrix([Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
+		{
+			var (clickable, passthru) = Test.InputTransparencyMatrix.States[(false, rootCascade, nestedTrans, nestedCascade, trans)];
+			var key = Test.InputTransparencyMatrix.GetKey(false, rootCascade, nestedTrans, nestedCascade, trans, clickable, passthru);
 
 			RunTest(key, clickable, passthru);
 		}

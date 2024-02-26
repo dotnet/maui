@@ -123,10 +123,6 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			await AssertionExtensions.WaitForGC(labels.ToArray());
-			foreach (var reference in labels)
-			{
-				Assert.False(reference.IsAlive, "View should not be alive!");
-			}
 		}
 
 		Rect GetCollectionViewCellBounds(IView cellContent)

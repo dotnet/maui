@@ -13,6 +13,7 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
@@ -63,6 +64,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		static bool IsViewLaidOut(object platformView)
+		{
+			var frameworkElement = platformView as WFrameworkElement;
+			return frameworkElement is not null && (frameworkElement.ActualHeight > 0 || frameworkElement.ActualWidth > 0);
+		}
+
 		[Fact(DisplayName = "Shell FlyoutIcon Initializes Correctly")]
 		public async Task ShellFlyoutIconInitializesCorrectly()
 		{
@@ -85,11 +92,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.NotNull(shellItemView);
 
-				await AssertionExtensions.Wait(() =>
-				{
-					var platformView = shell.Handler.PlatformView as FrameworkElement;
-					return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
-				});
+				await AssertEventually(() => IsViewLaidOut(shell.Handler.PlatformView));
 
 				var animatedIcon = GetNativeAnimatedIcon(handler);
 				Assert.NotNull(animatedIcon);
@@ -129,11 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(shellItemView);
 				Assert.Equal(expectedShellItems, shellItemView.PaneDisplayMode);
 
-				await AssertionExtensions.AssertEventually(() =>
-				{
-					var platformView = shell.CurrentPage.Handler.PlatformView as FrameworkElement;
-					return platformView is not null && (platformView.ActualHeight > 0 || platformView.ActualWidth > 0);
-				});
+				await AssertEventually(() => IsViewLaidOut(shell.Handler.PlatformView));
 
 				await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
 			});
@@ -598,7 +597,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				Assert.True(await AssertionExtensions.Wait(() => mainPage.ToPlatform().GetLocationOnScreen().Value.Y > 0));
+				await AssertEventually(() => mainPage.ToPlatform().GetLocationOnScreen().Value.Y > 0);
 				var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
 				var position = mainPage.ToPlatform().GetLocationOnScreen();
 
@@ -722,7 +721,7 @@ namespace Microsoft.Maui.DeviceTests
 				tabbedView.SelectedItem = platformTabItems[1].MenuItemsSource[1];
 
 				// Wait for the selected item to propagate to the rootview
-				await AssertionExtensions.Wait(() => (rootView.SelectedItem as NavigationViewItemViewModel).Data == flyoutItems[0][1]);
+				await AssertEventually(() => (rootView.SelectedItem as NavigationViewItemViewModel).Data == flyoutItems[0][1]);
 
 				// Verify that the flyout item updates
 				Assert.Equal((rootView.SelectedItem as NavigationViewItemViewModel).Data, flyoutItems[0][1]);

@@ -10,6 +10,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -122,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 				await (navPage.CurrentNavigationTask ?? Task.CompletedTask);
 
 				// Wait for back button to hide
-				Assert.True(await AssertionExtensions.Wait(() => !IsBackButtonVisible(handler)));
+				await AssertEventually(() => !IsBackButtonVisible(handler));
 
 				stackNavigationView.RequestNavigation(
 					   new NavigationRequest(_currentNavStack, true));
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 				await (navPage.CurrentNavigationTask ?? Task.CompletedTask);
 
 				// Wait for back button to reveal itself
-				Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(handler)));
+				await AssertEventually(() => IsBackButtonVisible(handler));
 			});
 		}
 
@@ -176,11 +177,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(handler)));
+				await AssertEventually(() => IsNavigationBarVisible(handler));
 				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, false);
-				Assert.True(await AssertionExtensions.Wait(() => !IsNavigationBarVisible(handler)));
+				await AssertEventually(() => !IsNavigationBarVisible(handler));
 				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, true);
-				Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(handler)));
+				await AssertEventually(() => IsNavigationBarVisible(handler));
 			});
 		}
 
@@ -196,7 +197,7 @@ namespace Microsoft.Maui.DeviceTests
 				var contentPage = new ContentPage();
 				window.Page = contentPage;
 				await OnLoadedAsync(contentPage);
-				Assert.True(await AssertionExtensions.Wait(() => !IsNavigationBarVisible(handler)));
+				await AssertEventually(() => !IsNavigationBarVisible(handler));
 			});
 		}
 
@@ -330,7 +331,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(pageReference);
-			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 
 		[Fact(DisplayName = "Can Reuse Pages"
