@@ -63,6 +63,7 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+override Microsoft.Maui.Controls.CheckBox.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetItemViewType(int position) -> int
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.OnAttachedToWindow() -> void
@@ -125,6 +126,10 @@ Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
 override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
+~Microsoft.Maui.Controls.CheckBox.Command.get -> System.Windows.Input.ICommand
+~Microsoft.Maui.Controls.CheckBox.Command.set -> void
+~Microsoft.Maui.Controls.CheckBox.CommandParameter.get -> object
+~Microsoft.Maui.Controls.CheckBox.CommandParameter.set -> void
 ~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
 ~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
 ~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
@@ -136,6 +141,8 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
+~static readonly Microsoft.Maui.Controls.CheckBox.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.CheckBox.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAutoScalingEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
