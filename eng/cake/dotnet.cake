@@ -579,7 +579,6 @@ void SetDotNetEnvironmentVariables(string dotnetDir = null)
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
     SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
-    SetEnvironmentVariable("ForceNet8Current", "true");
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
     // Get "full" .binlog in Project System Tools
@@ -696,7 +695,10 @@ void RunMSBuildWithDotNet(
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
-        .EnableBinaryLogger(binlog);
+        .EnableBinaryLogger(binlog)
+        
+       // .SetVerbosity(Verbosity.Diagnostic)
+        ;
 
     if (warningsAsError)
     {
@@ -725,6 +727,8 @@ void RunMSBuildWithDotNet(
             args.Append($"-f {targetFramework}");
 
         //args.Append("/tl");
+        args.Append("-tl:false");
+        args.Append("-v diag");
 
         return args;
     };
