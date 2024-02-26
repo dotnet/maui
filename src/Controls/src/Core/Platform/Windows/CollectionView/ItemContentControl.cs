@@ -163,12 +163,19 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			// If the template is a DataTemplateSelector, we need to get the actual DataTemplate to use
+			// for our recycle check below
+			if (formsTemplate is DataTemplateSelector dataTemplateSelector)
+			{
+				formsTemplate = dataTemplateSelector.SelectTemplate(dataContext, container);
+			}
+
 			if (Content is null || _currentTemplate != formsTemplate)
 			{
 				// If the content has never been realized (i.e., this is a new instance), 
 				// or if we need to switch DataTemplates (because this instance is being recycled)
 				// then we'll need to create the content from the template 
-				_visualElement = formsTemplate.CreateContent(dataContext, container) as VisualElement;
+				_visualElement = formsTemplate.CreateContent() as VisualElement;
 				_visualElement.BindingContext = dataContext;
 				_handler = _visualElement.ToHandler(mauiContext);
 
