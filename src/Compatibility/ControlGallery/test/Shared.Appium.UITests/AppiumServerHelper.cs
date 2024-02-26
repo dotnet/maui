@@ -4,7 +4,7 @@ namespace UITests;
 
 public static class AppiumServerHelper
 {
-	static AppiumLocalService? _appiumLocalService;
+	static AppiumLocalService? AppiumLocalService;
 
 	public const string DefaultHostAddress = "127.0.0.1";
 	public const int DefaultHostPort = 4723;
@@ -12,7 +12,7 @@ public static class AppiumServerHelper
 	public static void StartAppiumLocalServer(string host = DefaultHostAddress,
 		int port = DefaultHostPort)
 	{
-		if (_appiumLocalService is not null)
+		if (AppiumLocalService is not null)
 		{
 			return;
 		}
@@ -22,12 +22,12 @@ public static class AppiumServerHelper
 			.UsingPort(port);
 
 		// Start the server with the builder
-		_appiumLocalService = builder.Build();
-		_appiumLocalService.Start();
+		AppiumLocalService = builder.Build();
+		AppiumLocalService.Start();
 	}
 
 	public static void DisposeAppiumLocalServer()
 	{
-		_appiumLocalService?.Dispose();
+		AppiumLocalService?.Dispose();
 	}
 }

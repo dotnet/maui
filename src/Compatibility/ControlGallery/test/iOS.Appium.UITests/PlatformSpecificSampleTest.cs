@@ -2,11 +2,15 @@ using NUnit.Framework;
 
 namespace UITests;
 
-public class PlatformSpecificSampleTest : BaseTest
+public class PlatformSpecificSampleTest : UITest
 {
+	public PlatformSpecificSampleTest(TestDevice testDevice) : base(testDevice)
+	{
+	}
+
 	[Test]
 	public void SampleTest()
 	{
-		App.GetScreenshot().SaveAsFile($"{nameof(SampleTest)}.png");
+		Driver.GetScreenshot().SaveAsFile($"{nameof(SampleTest)}.png");
 	}
 }

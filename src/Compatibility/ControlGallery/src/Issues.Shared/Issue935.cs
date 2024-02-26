@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var label = new Label
 			{
+				AutomationId = "TestLabel",
 				Text = "I have been selected:"
 			};
 

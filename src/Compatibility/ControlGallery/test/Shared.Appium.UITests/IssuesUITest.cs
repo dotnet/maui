@@ -1,39 +1,63 @@
 ﻿using NUnit.Framework;
-using OpenQA.Selenium.Support.UI;
+using UITest.Appium;
 
-namespace UITests;
-public abstract class IssuesUITest : UITestBase
+namespace UITests
 {
-	public abstract string Issue { get; }
-
-	[SetUp]
-	public void FixtureSetup()
+	public abstract class IssuesUITest : UITest
 	{
-		try
+		public IssuesUITest(TestDevice device) : base(device) { }
+
+		protected override void FixtureSetup()
 		{
-			RecordTestSetup();
-			NavigateToIssue(Issue);
+			int retries = 0;
+			while (true)
+			{
+				try
+				{
+					base.FixtureSetup();
+					NavigateToIssue(Issue);
+					break;
+				}
+				catch (Exception e)
+				{
+					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+					if (retries++ < SetupMaxRetries)
+					{
+						Reset();
+					}
+					else
+					{
+						throw;
+					}
+				}
+			}
 		}
-		catch (Exception e)
+
+		protected override void FixtureTeardown()
 		{
-			TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. {Environment.NewLine}Exception details: {e}");
+			base.FixtureTeardown();
+			try
+			{
+				this.Back();
+				App.Click("GoBackToGalleriesButton");
+			}
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+			}
 		}
-	}
 
-	public void NavigateToIssue(string issue)
-	{
-		_ = App.TerminateApp("com.microsoft.mauicompatibilitygallery");
-		App.ActivateApp("com.microsoft.mauicompatibilitygallery");
+		public abstract string Issue { get; }
 
-		WebDriverWait wait = new WebDriverWait(App, TimeSpan.FromSeconds(30));
-		wait.Until(x => FindUIElement("com.microsoft.mauicompatibilitygallery:id/SearchBar"));
+		private void NavigateToIssue(string issue)
+		{
+			App.NavigateToIssues();
 
-		NavigateToIssuesList();
+			App.EnterText("SearchBarGo", issue);
 
-		var issuesSearchBar = wait.Until(x => FindUIElement("com.microsoft.mauicompatibilitygallery:id/SearchBarGo"));
-
-		issuesSearchBar.Click();
-		issuesSearchBar.SendKeys(issue);
-		FindUIElement("com.microsoft.mauicompatibilitygallery:id/SearchButton").Click();
+			App.WaitForElement("SearchButton");
+			App.Click("SearchButton");
+		}
 	}
 }

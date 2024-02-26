@@ -15,4 +15,10 @@
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="snapshots\android\" />
+    <Folder Include="snapshots\ios\" />
+    <Folder Include="snapshots\windows\" />
+  </ItemGroup>
+
 </Project>

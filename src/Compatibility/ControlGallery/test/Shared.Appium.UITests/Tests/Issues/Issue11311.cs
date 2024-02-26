@@ -1,17 +1,22 @@
 ﻿using NUnit.Framework;
-using OpenQA.Selenium;
 
 namespace UITests
 {
 	public class Issue11311 : IssuesUITest
 	{
+		public Issue11311(TestDevice testDevice) : base(testDevice)
+		{
+		}
+
 		public override string Issue => "[Regression] CollectionView NSRangeException";
 
 		[Test]
 		public void CollectionViewWithFooterShouldNotCrashOnDisplay()
 		{
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+
 			// If this hasn't already crashed, the test is passing
-			App.FindElement(By.XPath("//*[@text=\"Success\"]"));
+			App.FindElement("Success");
 		}
 	}
 }
