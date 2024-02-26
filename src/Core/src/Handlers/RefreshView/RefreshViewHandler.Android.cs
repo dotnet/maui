@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			platformView.Refresh += OnSwipeRefresh;
-			platformView.SetProgressViewEndTarget(true, 50);
 		}
 
 		void OnSwipeRefresh(object? sender, System.EventArgs e)

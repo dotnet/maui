@@ -5,7 +5,6 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -66,7 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var preferredSize = preferredAttributes.Frame.Size;
 
-			if (SizesAreSame(preferredSize, _size)
+			if (preferredSize.IsCloseTo(_size)
 				&& AttributesConsistentWithConstrainedDimension(preferredAttributes))
 			{
 				return preferredAttributes;
@@ -78,8 +77,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 
 			OnLayoutAttributesChanged(preferredAttributes);
-
-			//_isMeasured = true;
 
 			return preferredAttributes;
 		}
@@ -153,16 +150,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// emit a bunch of needless binding errors
 				itemsView.AddLogicalChild(view);
 
-				// Prevents the use of default color when there are VisualStateManager with Selected state setting the background color
-				// First we check whether the cell has the default selected background color; if it does, then we should check
-				// to see if the cell content is the VSM to set a selected color 
-				if (SelectedBackgroundView.BackgroundColor == Maui.Platform.ColorExtensions.Gray && IsUsingVSMForSelectionColor(view))
-				{
-					SelectedBackgroundView = new UIView
-					{
-						BackgroundColor = UIColor.Clear
-					};
-				}
+				UpdateSelectionColor(view);
 			}
 			else
 			{
@@ -257,6 +245,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				base.Selected = value;
 
 				UpdateVisualStates();
+
+				if (base.Selected)
+				{
+					// This must be called here otherwise the first item will have a gray background
+					UpdateSelectionColor();
+				}
 			}
 		}
 
@@ -290,23 +284,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected abstract bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes);
 
-		bool SizesAreSame(CGSize preferredSize, Size elementSize)
-		{
-			const double tolerance = 0.000001;
-
-			if (Math.Abs(preferredSize.Height - elementSize.Height) > tolerance)
-			{
-				return false;
-			}
-
-			if (Math.Abs(preferredSize.Width - elementSize.Width) > tolerance)
-			{
-				return false;
-			}
-
-			return true;
-		}
-
 		void UpdateVisualStates()
 		{
 			if (PlatformHandler?.VirtualView is VisualElement element)
@@ -314,6 +291,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				VisualStateManager.GoToState(element, Selected
 					? VisualStateManager.CommonStates.Selected
 					: VisualStateManager.CommonStates.Normal);
+			}
+		}
+
+		void UpdateSelectionColor()
+		{
+			if (PlatformHandler.VirtualView is not View view)
+			{
+				return;
+			}
+
+			UpdateSelectionColor(view);
+		}
+
+		void UpdateSelectionColor(View view)
+		{
+			// Prevents the use of default color when there are VisualStateManager with Selected state setting the background color
+			// First we check whether the cell has the default selected background color; if it does, then we should check
+			// to see if the cell content is the VSM to set a selected color
+
+			if (ColorExtensions.AreEqual(SelectedBackgroundView.BackgroundColor, ColorExtensions.Gray) && IsUsingVSMForSelectionColor(view))
+			{
+				SelectedBackgroundView.BackgroundColor = UIColor.Clear;
 			}
 		}
 	}

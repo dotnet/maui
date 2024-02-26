@@ -475,6 +475,7 @@ namespace Maui.Controls.Sample
 			VerticalTextAlignmentEnd,
 			MaxLines,
 			HtmlTextType,
+			BrokenHtmlTextType,
 			HtmlTextTypeMultipleLines,
 			HtmlTextLabelProperties,
 			TextTypeToggle,

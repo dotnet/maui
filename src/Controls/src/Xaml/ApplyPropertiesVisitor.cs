@@ -727,7 +727,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (!IsVisibleFrom(getter, rootElement))
 				return false;
 
-			value = getter.Invoke(element, new object[] { });
+			value = getter.Invoke(element, Array.Empty<object>());
 			return true;
 		}
 

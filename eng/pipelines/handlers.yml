@@ -64,6 +64,11 @@ parameters:
   - name: BuildEverything
     type: boolean
     default: false
+
+  - name: RunCompliance
+    type: boolean
+    default: false
+
   - name: BuildConfigurations
     type: object
     default:
@@ -83,6 +88,7 @@ parameters:
         bootsAndroid: $(Android.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: build-macos
+ 
   - name: PackPlatforms
     type: object
     default:
@@ -215,6 +221,7 @@ stages:
                 poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
+                artifactBinaries: 'pack-binaries'
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
   - stage: samples_net
@@ -275,7 +282,26 @@ stages:
         BuildPlatforms: ${{ parameters.BuildPlatforms }}
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - template: common/security-compliance.yml
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
     - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
     - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
+    - ${{ if or(eq(variables['Build.Reason'], 'Schedule'), parameters.RunCompliance) }}:
+      - template: security/full/v1.yml@yaml-templates
+        parameters:
+          stageDependsOn: 'pack_net'
+          complianceEnabled: true
+          complianceTimeoutInMinutes: 480
+          scanArtifacts: ['pack-binaries']
+          antiMalwareEnabled: true
+          binSkimEnabled: true
+          #binSkimTargetGlob: '$(Build.ArtifactStagingDirectory)\binaries-to-scan\pack-binaries\src\Controls\src\Nuget\bin\Release\net8.0\*.dll'
+          sourceGdnSuppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
+          tsaConfigFile: '$(Build.SourcesDirectory)\eng\automation\guardian\tsaoptions-v2.json'
+          policheckExclusionFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\PoliCheck.Exclusions.xml' 
+          policheckGdnSuppressionFilesFolder: '$(System.DefaultWorkingDirectory)\eng\automation\guardian'
+          credScanEnabled: true
+          credScanSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\CredScanSuppressions.json'
+          enableCodeInspector: true
+          apiScanEnabled: true
+          apiScanSoftwareName: 'MAUI'
+          apiScanSoftwareVersionNum: $(Build.BuildNumber)

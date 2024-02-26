@@ -24,13 +24,16 @@ namespace Microsoft.Maui.Platform
 			var userActivity = state.ToUserActivity(MauiUIApplicationDelegate.MauiSceneConfigurationKey);
 
 			Action<NSError> errorAction = err => application.Handler?.MauiContext?.CreateLogger<IApplication>()?.LogError(new NSErrorException(err), err.Description);
+#if NET8_0_OR_GREATER
 			if (OperatingSystem.IsIOSVersionAtLeast(17))
 			{
 				var request = UISceneSessionActivationRequest.Create();
 				request.UserActivity = userActivity;
 				UIApplication.SharedApplication.ActivateSceneSession(request, errorAction);
 			}
-			else if(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+			else
+#endif
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
 			{
 				UIApplication.SharedApplication.RequestSceneSessionActivation(
 					null,

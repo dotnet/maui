@@ -91,7 +91,7 @@ namespace Microsoft.Maui
 
 			if (_windowIcon != IntPtr.Zero)
 			{
-				DestroyIcon(_windowIcon);
+				_ = DestroyIcon(_windowIcon);
 				_windowIcon = IntPtr.Zero;
 			}
 

@@ -103,8 +103,8 @@ namespace Microsoft.Maui.Layouts
 				_columnSpacing = grid.ColumnSpacing;
 				_rowSpacing = grid.RowSpacing;
 
-				_rows = InitializeRows(grid.RowDefinitions);
-				_columns = InitializeColumns(grid.ColumnDefinitions);
+				_rows = GridStructure.InitializeRows(grid.RowDefinitions);
+				_columns = GridStructure.InitializeColumns(grid.ColumnDefinitions);
 
 				_rowStarCount = CountStars(_rows);
 				_columnStarCount = CountStars(_columns);
@@ -146,13 +146,13 @@ namespace Microsoft.Maui.Layouts
 
 			static Definition[] Implied()
 			{
-				return new Definition[]
-				{
+				return
+				[
 					new Definition(GridLength.Star)
-				};
+				];
 			}
 
-			Definition[] InitializeRows(IReadOnlyList<IGridRowDefinition> rowDefinitions)
+			static Definition[] InitializeRows(IReadOnlyList<IGridRowDefinition> rowDefinitions)
 			{
 				int count = rowDefinitions.Count;
 
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Layouts
 				return rows;
 			}
 
-			Definition[] InitializeColumns(IReadOnlyList<IGridColumnDefinition> columnDefinitions)
+			static Definition[] InitializeColumns(IReadOnlyList<IGridColumnDefinition> columnDefinitions)
 			{
 				int count = columnDefinitions.Count;
 
@@ -816,7 +816,7 @@ namespace Microsoft.Maui.Layouts
 					// If the grid is constrained vertically, we will need to limit the upper size of * rows;
 					// if not, they can be whatever size makes sense for the content
 					var limitStarRowHeights = !double.IsInfinity(_gridHeightConstraint);
-					ExpandStarDefinitions(_rows, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight() - _padding.VerticalThickness, 
+					ExpandStarDefinitions(_rows, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight() - _padding.VerticalThickness,
 						_rowSpacing, _rowStarCount, limitStarRowHeights);
 				}
 
@@ -825,7 +825,7 @@ namespace Microsoft.Maui.Layouts
 					// If the grid is constrained horizontally, we will need to limit the upper size of * columns;
 					// if not, they can be whatever size makes sense for the content
 					var limitStarRowWidths = !double.IsInfinity(_gridWidthConstraint);
-					ExpandStarDefinitions(_columns, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth() - _padding.HorizontalThickness, 
+					ExpandStarDefinitions(_columns, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth() - _padding.HorizontalThickness,
 						_columnSpacing, _columnStarCount, limitStarRowWidths);
 				}
 			}

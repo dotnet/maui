@@ -89,7 +89,7 @@ namespace Microsoft.Maui
 
 				sizeThatFits = imageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
 			}
-			else if (platformView is UIButton imageButton && imageButton.ImageView?.Image is not null)
+			else if (platformView is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
 			{
 				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
 				heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -10,7 +11,6 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
-using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				.Build();
 
 			// reset all the mappings
-			foreach(var item in ButtonWithControlsMapperHandler.Mapper.GetKeys())
+			foreach (var item in ButtonWithControlsMapperHandler.Mapper.GetKeys())
 			{
 				ButtonWithControlsMapperHandler.Mapper[item] = ButtonWithControlsMapperHandler.MapperTest;
 			}

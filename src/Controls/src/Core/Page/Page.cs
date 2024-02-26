@@ -788,11 +788,7 @@ namespace Microsoft.Maui.Controls
 		internal Toolbar Toolbar
 		{
 			get => _toolbar;
-			set
-			{
-				_toolbar = value;
-				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
-			}
+			set => ToolbarElement.SetValue(ref _toolbar, value, Handler);
 		}
 
 		internal void SendNavigatedTo(NavigatedToEventArgs args)

@@ -68,7 +68,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workload", "Workload", "{EC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Sdk", "src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj", "{C5C434A7-4E1F-456F-A23A-F2566C98301A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Maui", "src\Workload\Microsoft.NET.Sdk.Maui\Microsoft.NET.Sdk.Maui.csproj", "{081EE5E5-69D4-493C-9EB4-47423C4728AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Maui.Manifest", "src\Workload\Microsoft.NET.Sdk.Maui.Manifest\Microsoft.NET.Sdk.Maui.Manifest.csproj", "{081EE5E5-69D4-493C-9EB4-47423C4728AB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests.Runners", "src\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj", "{316C0861-069B-4572-879F-F01E568F33A2}"
 EndProject

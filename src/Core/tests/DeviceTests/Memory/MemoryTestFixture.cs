@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-
 namespace Microsoft.Maui.Handlers.Memory
 {
 	public class MemoryTestFixture : IDisposable
 	{
-		Dictionary<Type, (WeakReference handler, WeakReference view)> _handlers
-			= new Dictionary<Type, (WeakReference handler, WeakReference view)>();
+		readonly Dictionary<Type, (WeakReference handler, WeakReference view)> _handlers = new();
 
 		public MemoryTestFixture()
 		{
@@ -20,24 +18,14 @@ namespace Microsoft.Maui.Handlers.Memory
 
 		public bool DoReferencesStillExist(Type handlerType)
 		{
-			WeakReference weakHandler;
-			WeakReference weakView;
-			(weakHandler, weakView) = _handlers[handlerType];
+			(WeakReference weakHandler, WeakReference weakView) = _handlers[handlerType];
 
-
-			if (weakHandler.Target != null ||
-				weakHandler.IsAlive ||
-				weakView.Target != null ||
-				weakView.IsAlive)
-			{
-				return true;
-			}
-
-			return false;
+			return weakHandler.IsAlive || weakView.IsAlive;
 		}
 
 		public void Dispose()
 		{
+			GC.SuppressFinalize(this);
 			_handlers.Clear();
 		}
 	}

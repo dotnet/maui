@@ -275,6 +275,16 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 		{
 			var label = new Label
 			{
+				Text = "<h1>Broken Html!<h1>",
+				TextType = TextType.Html
+			};
+			var htmlLabelContainer = new ViewContainer<Label>(Test.Label.BrokenHtmlTextType, label);
+			Add(htmlLabelContainer);
+		}
+
+		{
+			var label = new Label
+			{
 				Text = "<h1>Hello world!</h1><p>Lorem <strong>ipsum</strong> bla di bla <i>blabla</i> blablabl&nbsp;ablabla & blablablablabl ablabl ablablabl ablablabla blablablablablablab lablablabla blablab lablablabla blablabl ablablablab lablabla blab lablablabla blablab lablabla blablablablab lablabla blablab lablablabl ablablabla blablablablablabla blablabla</p>",
 				TextType = TextType.Html,
 				MaxLines = 3

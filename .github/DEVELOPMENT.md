@@ -2,32 +2,29 @@
 
 This page contains steps to build and run the .NET MAUI repository from source. If you are looking to build apps with .NET MAUI please head over to the links in the [README](https://github.com/dotnet/maui/blob/main/README.md) to get started.
 
-## Visual Studio
-Install Visual Studio with .NET8 support.
-   - Windows: install VS 17.8 latest preview or newer
+## Initial setup
+   ### Windows
+   - Install VS 17.8 or newer
       - Follow [these steps](https://learn.microsoft.com/dotnet/maui/get-started/installation?tabs=vswin) to include MAUI
       - Select the 20348 SDK option inside Individual Components or [install 20348 manually](https://go.microsoft.com/fwlink/?linkid=2164145). If you know you have 20348 installed but are still getting an error around this SDK missing, trying uninstalling and reinstalling the SDK.
-   - [macOS](https://learn.microsoft.com/dotnet/maui/get-started/installation?tabs=vsmac)  
-   
-## iOS / MacCatalyst
+   - If building iOS with pair to Mac: Install current stable Xcode on your Mac. Install from the [App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) or [Apple Developer portal](https://developer.apple.com/download/more/?name=Xcode)
+   - If you're missing any of the Android SDKs, Visual Studio should prompt you to install them. If it doesn't prompt you then use the [Android SDK Manager](https://learn.microsoft.com/xamarin/android/get-started/installation/android-sdk) to install the necessary SDKs.
 
-iOS and MacCatalyst will require current stable Xcode. You can get this [here](https://developer.apple.com/download/more/?name=Xcode).
-
-## Android
-
-If you're missing any of the Android SDKs, Visual Studio should prompt you to install them. If it doesn't prompt you then use the [Android SDK Manager](https://learn.microsoft.com/xamarin/android/get-started/installation/android-sdk) to install the necessary SDKs.
-
+   ### Mac
+   - Install VS Code and dependencies
+      - Follow [these steps](https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?view=net-maui-8.0&tabs=visual-studio-code), installing VS Code, MAUI extension, .NET8, Xcode, OpenJDK, and Android SDK
+      - For Xcode, you can install from the [App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) or [Apple Developer portal](https://developer.apple.com/download/more/?name=Xcode)
+      
 ## Building the Build Tasks
-Before opening the solution in Visual Studio you **MUST** build the build tasks. You have two options:
+Before opening the solution in Visual Studio / VS Code you **MUST** build the build tasks.
 
+### Windows
 - Do this to build the build tasks and launch Visual Studio, automatically opening the default solution:
 
    ```dotnetcli
    dotnet tool restore
    dotnet cake --target=VS --workloads=global
    ```
-
-   *NOTE*: `--workloads=global` means use the normal (globally installed) .NET workloads.
 
 - OR do this to just build the build tasks. You can then launch Visual Studio manually and open the solution of your choosing:
 
@@ -36,12 +33,16 @@ Before opening the solution in Visual Studio you **MUST** build the build tasks.
    dotnet build ./Microsoft.Maui.BuildTasks.slnf
    ```
 
-- OR do this to build the tasks and open the Visual Studio Code codespace:
+### Mac
+- Do this to build the tasks and open the Visual Studio Code codespace:
    
    ```dotnetcli
    dotnet tool restore
    dotnet cake --target=VSCode --workloads=global
    ```
+
+*NOTE*: `--workloads=global` means use the normal (globally installed) .NET workloads.
+
 
 ## Available Solutions
 - Microsoft.Maui.sln
@@ -51,7 +52,9 @@ Before opening the solution in Visual Studio you **MUST** build the build tasks.
 - Microsoft.Maui-windows.slnf
   - `Microsoft.Maui-dev.sln` with all of the targets you can't build on `Windows` removed (GTK/Catalyst). Default solution on Windows.
 - Microsoft.Maui-mac.slnf
-  - `Microsoft.Maui-dev.sln` with all of the `Windows` targets filtered out. Default solution on Mac.
+  - `Microsoft.Maui-dev.sln` with all of the `Windows` targets filtered out. Legacy solution for VS Mac.
+- Microsoft.Maui-vscode.sln
+  - Solution for VS Code (VS Code doesn't support solution filters)
 
 *NOTE*: IntelliSense takes a decent amount of time to fully process your solution. It will eventually work through all the necessary tasks. If you are having IntelliSense issues, usually unloading/reloading the `maui.core` and `maui.controls` projects will resolve. 
 

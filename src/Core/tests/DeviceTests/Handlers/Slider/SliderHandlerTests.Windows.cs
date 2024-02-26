@@ -3,6 +3,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -54,9 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(slider);
 
-				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
-
-				Assert.True(imageLoaded);
+				await AssertEventually(() => ImageSourceLoaded(handler));
 
 				await Task.Delay(100);
 
@@ -82,8 +81,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(slider);
 
-				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
-				Assert.True(imageLoaded);
+				await AssertEventually(() => ImageSourceLoaded(handler));
 
 				await handler.PlatformView.AttachAndRun(async () =>
 				{

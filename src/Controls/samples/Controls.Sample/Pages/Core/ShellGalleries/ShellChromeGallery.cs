@@ -76,6 +76,11 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			AppShell!.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
 		}
 
+		void OnToggleFlyoutIsPresented(object sender, EventArgs e)
+		{
+			AppShell!.FlyoutIsPresented = !AppShell!.FlyoutIsPresented;
+		}
+		
 		void OnToggleFlyoutBackgroundColor(object sender, EventArgs e)
 		{
 			AppShell!.RemoveBinding(Shell.FlyoutBackgroundProperty);

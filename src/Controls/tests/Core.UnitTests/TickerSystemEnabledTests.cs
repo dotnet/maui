@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var fadeIn = new Animation(d => { view.Opacity = d; }, 0, 1);
 			var i = 0;
 
-			fadeIn.Commit(view, "fadeIn", length: 1000, repeat: () => ++i < 5 , 
+			fadeIn.Commit(view, "fadeIn", length: 1000, repeat: () => ++i < 5,
 			finished: (d, b) =>
 			{
 				if ((b || i >= 5) && !tcs.Task.IsCompleted)

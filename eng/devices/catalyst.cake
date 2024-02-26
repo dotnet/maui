@@ -29,8 +29,25 @@ Information("Build Configuration: {0}", CONFIGURATION);
 Information("Build Runtime Identifier: {0}", RUNTIME_IDENTIFIER);
 Information("Build Target Framework: {0}", TARGET_FRAMEWORK);
 
+string DOTNET_TOOL_PATH = "/usr/local/share/dotnet/dotnet";
+
+var localDotnetiOS = GetBuildVariable("workloads", "local") == "local";
+if (localDotnetiOS)
+{
+	Information("Using local dotnet");
+	DOTNET_TOOL_PATH = $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet";
+}
+else
+{
+	Information("Using system dotnet");
+}
+
 Setup(context =>
 {
+	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
+	Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
+	Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+
 	Cleanup();
 });
 
@@ -54,23 +71,13 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-catalyst.binlog";
 
-	Information($"Build target dotnet root: {DOTNET_ROOT}");
-	Information($"Build target set dotnet tool path: {DOTNET_PATH}");
-		
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("new dotnet root: {0}", localDotnetRoot);
-
-	DOTNET_ROOT = localDotnetRoot.ToString();
-
-	SetDotNetEnvironmentVariables(DOTNET_ROOT);
-
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 		Configuration = CONFIGURATION,
 		Framework = TARGET_FRAMEWORK,
 		MSBuildSettings = new DotNetMSBuildSettings {
 			MaxCpuCount = 0
 		},
-		ToolPath = DOTNET_PATH,
+		ToolPath = DOTNET_TOOL_PATH,
 		ArgumentCustomization = args => args
 			.Append("/p:BuildIpa=true")
 			.Append("/p:RuntimeIdentifier=" + RUNTIME_IDENTIFIER)
@@ -111,12 +118,13 @@ Task("Test")
 		// We want to publish those files for reference
 		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
 
-		SetDotNetEnvironmentVariables("/Users/runner/hostedtoolcache/dotnet");
+		//SetDotNetEnvironmentVariables("/Users/runner/hostedtoolcache/dotnet");
 	}
 
 
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
+		ToolPath = DOTNET_TOOL_PATH,
 		ArgumentCustomization = args => args.Append("run xharness apple test " +
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
@@ -180,6 +188,7 @@ Task("uitest")
 	Information("Run App project {0}",TEST_APP_PROJECT.FullPath);
 	DotNetBuild(TEST_APP_PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
+			ToolPath = DOTNET_TOOL_PATH,
 			ArgumentCustomization = args => args
 				.Append($"-f {TARGET_FRAMEWORK}")
 				.Append("-t:Run")
@@ -191,6 +200,7 @@ Task("uitest")
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-mac.binlog";
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
+			ToolPath = DOTNET_TOOL_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=MACUITEST")
 				.Append("/bl:" + binlog)
@@ -200,7 +210,7 @@ Task("uitest")
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_mac.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-catalyst");
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, pathDotnet: DOTNET_TOOL_PATH, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-catalyst");
 });
 
 RunTarget(TARGET);

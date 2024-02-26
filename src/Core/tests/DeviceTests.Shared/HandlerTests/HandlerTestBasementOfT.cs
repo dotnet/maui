@@ -10,9 +10,6 @@ namespace Microsoft.Maui.DeviceTests
 		where THandler : class, IViewHandler, new()
 		where TStub : IStubBase, IView, new()
 	{
-		public static Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000) =>
-			AssertionExtensions.Wait(exitCondition, timeout);
-
 		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
 			CreateHandler<THandler>(view, mauiContext);
 
@@ -56,12 +53,19 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task<TValue> GetValueAsync<TValue>(IView view, Func<THandler, TValue> func)
+		protected Task<TValue> GetValueAsync<TValue>(IView view, Func<THandler, TValue> func, bool attachAndRun = false)
 		{
-			return InvokeOnMainThreadAsync(() =>
+			return InvokeOnMainThreadAsync<TValue>(() =>
 			{
-				var handler = CreateHandler(view);
-				return func(handler);
+				if (attachAndRun)
+				{
+					return AttachAndRun(view, func);
+				}
+				else
+				{
+					THandler handler = CreateHandler(view);
+					return Task.FromResult(func(handler));
+				}
 			});
 		}
 

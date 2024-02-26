@@ -94,7 +94,7 @@
           "steps": [
             {
               "regex": "[^a-z0-9_\\.]",
-              "replacement": "_"
+              "replacement": ""
             }
           ]
         }

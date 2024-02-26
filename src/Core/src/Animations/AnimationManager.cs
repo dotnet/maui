@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Animations
 			GC.SuppressFinalize(this);
 		}
 
-		void ForceFinishAnimations() 
+		void ForceFinishAnimations()
 		{
 			var animations = new List<Animation>(_animations);
 			animations.ForEach(ForceFinish);
@@ -146,4 +146,4 @@ namespace Microsoft.Maui.Animations
 			return elapsedMilliseconds * SpeedModifier;
 		}
 	}
-} 
+}

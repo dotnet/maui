@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	}
 
-	internal static class SingleThreadSimulator 
+	internal static class SingleThreadSimulator
 	{
 		public static async Task Run(Func<Task> asyncMethod)
 		{

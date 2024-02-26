@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 		// itself from this dictionary. So until we can change that design, this dictionary must
 		// be thread-safe.
 		static readonly ConcurrentDictionary<int, Animation> s_tweeners;
-		
+
 		static readonly Dictionary<AnimatableKey, Info> s_animations;
 		static readonly Dictionary<AnimatableKey, int> s_kinetics;
 		static int s_currentTweener = 1;

@@ -157,8 +157,8 @@ jobs:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
         PRIVATE_BUILD: $(PrivateBuild)
 
-    - script: dotnet tool update Microsoft.DotNet.XHarness.CLI --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version "8.0.0-prerelease*" -g
-      displayName: install xharness
+    # - script: dotnet tool update Microsoft.DotNet.XHarness.CLI --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version "9.0.0-prerelease*" -g
+    #   displayName: install xharness
 
     - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
       displayName: Build Microsoft.Maui.IntegrationTests

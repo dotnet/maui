@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void Clear(LayoutViewGroup platformView)
+		static void Clear(LayoutViewGroup platformView)
 		{
 			if (platformView != null && !platformView.IsDisposed())
 				platformView.RemoveAllViews();
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		static int IndexOf(ViewGroup viewGroup, AView view)
+		static int IndexOf(LayoutViewGroup viewGroup, AView view)
 		{
 			for (int n = 0; n < viewGroup.ChildCount; n++)
 			{

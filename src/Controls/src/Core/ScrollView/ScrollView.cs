@@ -441,8 +441,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
-			return DesiredSize;
+			return this.ComputeDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)

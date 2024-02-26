@@ -829,7 +829,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		}
 	}
 
-	internal class ScrollLayoutManager : LinearLayoutManager
+	internal sealed class ScrollLayoutManager : LinearLayoutManager
 	{
 		public ScrollMode ScrollVertically { get; set; } = ScrollMode.Auto;
 

@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 		{
 			_step = step;
 		}
-		
+
 		protected override void OnTick(double millisecondsSinceLastUpdate)
 		{
 			var running = _step.Invoke((long)millisecondsSinceLastUpdate);
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		bool Step(long step) 
+		bool Step(long step)
 		{
 			if (step == long.MaxValue)
 			{
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls
 					Value = 0.0f;
 					return true;
 				}
-				
+
 				Finished?.Invoke(this, EventArgs.Empty);
 
 				Value = 0.0f;

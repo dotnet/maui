@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using Android.App;
 using Android.Content;
@@ -25,13 +26,28 @@ namespace Microsoft.Maui.ApplicationModel
 			return requestCode;
 		}
 
+		internal static Intent? RegisterBroadcastReceiver(BroadcastReceiver? receiver, IntentFilter filter, bool exported)
+		{
+#if ANDROID34_0_OR_GREATER
+			if (OperatingSystem.IsAndroidVersionAtLeast(34))
+			{
+				var flags = exported ? ReceiverFlags.Exported : ReceiverFlags.NotExported;
+				return Application.Context.RegisterReceiver(receiver, filter, flags);
+			}
+#endif
+			return Application.Context.RegisterReceiver(receiver, filter);
+		}
+
 		internal static bool HasSystemFeature(string systemFeature)
 		{
 			var packageManager = Application.Context.PackageManager;
-			foreach (var feature in packageManager.GetSystemAvailableFeatures())
+			if (packageManager is not null)
 			{
-				if (feature?.Name?.Equals(systemFeature, StringComparison.OrdinalIgnoreCase) ?? false)
-					return true;
+				foreach (var feature in packageManager.GetSystemAvailableFeatures())
+				{
+					if (feature?.Name?.Equals(systemFeature, StringComparison.OrdinalIgnoreCase) ?? false)
+						return true;
+				}
 			}
 			return false;
 		}
@@ -50,39 +66,6 @@ namespace Microsoft.Maui.ApplicationModel
 				return false;
 
 			return intent.ResolveActivity(pm) is ComponentName c && c.PackageName == expectedPackageName;
-		}
-
-		internal static Java.Util.Locale GetLocale()
-		{
-			var resources = Application.Context.Resources;
-			var config = resources.Configuration;
-
-#if __ANDROID_24__
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				return config.Locales.Get(0);
-#endif
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			return config.Locale;
-#pragma warning restore CS0618 // Type or member is obsolete
-		}
-
-		internal static void SetLocale(Java.Util.Locale locale)
-		{
-			Java.Util.Locale.Default = locale;
-			var resources = Application.Context.Resources;
-			var config = resources.Configuration;
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CA1422 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				config.SetLocale(locale);
-			else
-				config.Locale = locale;
-			resources.UpdateConfiguration(config, resources.DisplayMetrics);
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

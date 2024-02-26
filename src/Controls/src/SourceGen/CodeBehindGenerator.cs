@@ -152,7 +152,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 			if (!TryParseXaml(text, uid, compilation, caches, context.CancellationToken, projItem.TargetFramework, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
 			{
 				if (parseException != null)
-					context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, parseException.Message));
+				{
+					var location = projItem.RelativePath is not null ? Location.Create(projItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, parseException.Message));
+				}
 				return;
 			}
 			var sb = new StringBuilder();
@@ -260,6 +263,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 				return false;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
+			if (xmlDoc.DocumentElement.NamespaceURI == XamlParser.FormsUri)
+			{
+				exception = new Exception($"{XamlParser.FormsUri} is not a valid namespace. Use {XamlParser.MauiUri} instead");
+				return false;
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
+
 			cancellationToken.ThrowIfCancellationRequested();
 
 			// if the following xml processing instruction is present
@@ -295,7 +306,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 			if (rootClass != null)
 				XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootClrNamespace, out var rootAsm, out var targetPlatform);
-			else if (hasXamlCompilationProcessingInstruction)
+			else if (hasXamlCompilationProcessingInstruction && root.NamespaceURI == XamlParser.MauiUri)
 			{
 				rootClrNamespace = "__XamlGeneratedCode__";
 				rootType = $"__Type{uid}";
@@ -325,13 +336,13 @@ namespace Microsoft.Maui.Controls.SourceGen
 		{
 			var instruction = xmlDoc.SelectSingleNode("processing-instruction('xaml-comp')") as XmlProcessingInstruction;
 			if (instruction == null)
-				return false;
+				return true;
 
 			var parts = instruction.Data.Split(' ', '=');
 			var indexOfCompile = Array.IndexOf(parts, "compile");
 			if (indexOfCompile != -1)
-				return parts[indexOfCompile + 1].Trim('"', '\'').Equals("true", StringComparison.OrdinalIgnoreCase);
-			return false;
+				return !parts[indexOfCompile + 1].Trim('"', '\'').Equals("false", StringComparison.OrdinalIgnoreCase);
+			return true;
 		}
 
 		static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches caches, CancellationToken cancellationToken)

@@ -11,6 +11,7 @@ using Microsoft.Maui.Hosting;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {

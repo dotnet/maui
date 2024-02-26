@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class TestAnimationManager : AnimationManager
 	{
-		public TestAnimationManager(ITicker ticker = null) 
+		public TestAnimationManager(ITicker ticker = null)
 			: base(ticker ?? new BlockingTicker())
 		{
 		}

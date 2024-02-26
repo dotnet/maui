@@ -3,6 +3,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -93,7 +94,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
@@ -111,7 +112,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isEnabled);
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyUpdatesValue(
@@ -156,7 +157,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
 			});
 
 			await ValidatePropertyUpdatesValue(
@@ -185,7 +186,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded());
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
 			});
 
 			var nativeTextPrediction = await GetValueAsync(searchBar, GetNativeIsTextPredictionEnabled);

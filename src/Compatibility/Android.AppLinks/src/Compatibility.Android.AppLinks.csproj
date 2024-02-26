@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Xamarin.Firebase.AppIndexing" Version="120.0.0.12" />
+    <PackageReference Include="Xamarin.Firebase.AppIndexing" Version="120.0.0.15" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.6.1.2" />
   </ItemGroup>
 

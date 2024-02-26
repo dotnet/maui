@@ -45,6 +45,13 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
+
+			appBuilder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions
+			{
+				ValidateOnBuild = true,
+				ValidateScopes = true,
+			}));
+
 #if __ANDROID__ || __IOS__
 			appBuilder.UseMauiMaps();
 #endif
@@ -272,7 +279,7 @@ namespace Maui.Controls.Sample
 
 			// If someone wanted to completely turn off the CascadeInputTransparent behavior in their application, this next line would be an easy way to do it
 			// Microsoft.Maui.Controls.Layout.ControlsLayoutMapper.ModifyMapping(nameof(Microsoft.Maui.Controls.Layout.CascadeInputTransparent), (_, _, _) => { });
-			
+
 			Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(TransparentEntry), (handler, view) =>
 			{
 				if (view is TransparentEntry)

@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 			return modifierFlags;
 		}
 
-		static UIMenuElement CreateMenuItemKeyCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector, UIKeyModifierFlags modifierFlags, string key)
+		static UIKeyCommand CreateMenuItemKeyCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector, UIKeyModifierFlags modifierFlags, string key)
 		{
 			var keyCommand = UIKeyCommand.Create(
 				title: virtualView.Text,
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 			return keyCommand;
 		}
 
-		static UIMenuElement CreateMenuItemCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector)
+		static UICommand CreateMenuItemCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector)
 		{
 			var command = UICommand.Create(
 				title: virtualView.Text,

@@ -9,9 +9,9 @@ namespace Microsoft.Maui.Storage
 {
 	partial class SecureStorageImplementation : ISecureStorage
 	{
-		async Task<string> PlatformGetAsync(string key)
+		Task<string> PlatformGetAsync(string key)
 		{
-			return await Task.Run(() =>
+			return Task.Run(() =>
 			{
 				try
 				{
@@ -44,9 +44,9 @@ namespace Microsoft.Maui.Storage
 			});
 		}
 
-		async Task PlatformSetAsync(string key, string data)
+		Task PlatformSetAsync(string key, string data)
 		{
-			await Task.Run(() =>
+			return Task.Run(() =>
 			{
 				using ISharedPreferencesEditor editor = GetEncryptedSharedPreferences()?.Edit();
 				if (data is null)

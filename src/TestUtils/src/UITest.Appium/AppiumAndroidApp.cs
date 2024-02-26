@@ -58,8 +58,8 @@ namespace UITest.Appium
 
 				return Convert.ToInt32(state) switch
 				{
-					0 => ApplicationState.Not_Installed,
-					1 => ApplicationState.Not_Running,
+					0 => ApplicationState.NotInstalled,
+					1 => ApplicationState.NotRunning,
 					3 or
 					4 => ApplicationState.Running,
 					_ => ApplicationState.Unknown,

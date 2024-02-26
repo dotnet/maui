@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ namespace Microsoft.Maui
 {
 	public partial class MauiUIApplicationDelegate
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "There is a single MauiUIApplicationDelegate")]
 		internal IUIMenuBuilder? MenuBuilder { get; private set; }
 
 		[SupportedOSPlatform("ios13.0")]
@@ -82,7 +84,7 @@ namespace Microsoft.Maui
 
 		[SupportedOSPlatform("ios13.0")]
 		[Export(KeyboardAcceleratorExtensions.MenuItemSelectedSelector)]
-		internal void MenuItemSelected(UICommand uiCommand)
+		static internal void MenuItemSelected(UICommand uiCommand)
 		{
 			uiCommand.SendClicked();
 		}

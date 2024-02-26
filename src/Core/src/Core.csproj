@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
@@ -21,7 +21,7 @@
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
-    <PackageReference Include="MemoryAnalyzers" Version="0.1.0-beta.3" PrivateAssets="All" />
+    <PackageReference Include="MemoryAnalyzers" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
@@ -58,12 +58,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="nuget\**" PackagePath="" Pack="true" />
+    <None Include="nuget\**" Exclude="nuget\**\*.in.*" PackagePath="" Pack="true" />
   </ItemGroup>
 
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
-      <_CopyItems Include="nuget\buildTransitive\**" />
+      <_CopyItems Include="nuget\buildTransitive\**" Exclude="nuget\**\*.in.*" />
+      <_CopyItems Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
@@ -71,5 +72,37 @@
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+
+  <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
+
+  <Target Name="_GenerateBundledVersions"
+    BeforeTargets="Build;AssignTargetPaths"
+    DependsOnTargets="SetVersions"
+    Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng\Versions.props;nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.in.targets"
+    Outputs="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets">
+    <ItemGroup>
+      <_ValuesToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.in.targets"
+      DestinationFiles="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets"
+      />
+    <ReplaceText
+      Input="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets"
+      Output="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets"
+      OldValue="@%(_ValuesToReplace.Identity)@"
+      NewValue="$(%(_ValuesToReplace.PropertyName))"
+      />
+    <ItemGroup>
+      <None
+        Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets"
+        Link="nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.targets"
+        Pack="true"
+        PackagePath="buildTransitive"
+        Visible="false"
+        />
+      <FileWrites Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets" />
+    </ItemGroup>
+  </Target>
 
 </Project>

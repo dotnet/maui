@@ -1,5 +1,6 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -14,11 +15,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue17400Test()
 		{
-			UITestContext.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Android, TestDevice.Mac },
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Android, TestDevice.Mac },
 				"Is a Windows issue; see https://github.com/dotnet/maui/issues/17400");
 
 			App.WaitForElement("UpdateBtn");
-			App.Tap("UpdateBtn");
+			App.Click("UpdateBtn");
 
 			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();

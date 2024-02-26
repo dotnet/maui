@@ -62,9 +62,34 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PlatformInterop {
-    public static void requestLayoutIfNeeded(View view) {
-        if (!view.isInLayout())
+     public static void requestLayoutIfNeeded(View view) {
+        
+        // If the view isn't currently in the layout process, then we simply request
+        // that layout happen next time around
+        if (!view.isInLayout())	{
             view.requestLayout();
+			return;
+		}
+		
+        /* 
+            Something is requesting layout while the view is already in the middle of a layout pass. This is most 
+            likely because a layout-affecting property has been data bound to another layout-affecting property, e.g. 
+            binding the width of a child control to the ActualWidth of its parent.
+            
+            If we simply call `requestLayout()` again right now, it will set a flag which will be cleared at the end 
+            of the current layout pass, and the view will not be laid out with the updated values.
+
+            Instead, we post the layout request to the UI thread's queue, ensuring that it will happen after the current
+            layout pass has finished. Layout will happen again with the updated values.
+        */
+
+		Runnable runnable = () -> { 
+			if (!view.isInLayout())	{
+				view.requestLayout();
+			}
+		};
+		
+		view.post(runnable);
     }
 
     public static void removeFromParent(View view) {

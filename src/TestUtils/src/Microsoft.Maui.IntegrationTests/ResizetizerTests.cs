@@ -18,7 +18,7 @@ public class ResizetizerTests : BaseBuildTest
 	[TestCase("maui", "mauilib", true)] // net8.0-xxx
 	[TestCase("maui-blazor", "classlib", true)] // net8.0
 	[TestCase("maui-blazor", "mauilib", true)] // net8.0-xxx
-	// windows packaged/msix
+											   // windows packaged/msix
 	[TestCase("maui", "classlib", false)] // net8.0
 	[TestCase("maui", "mauilib", false)] // net8.0-xxx
 	[TestCase("maui-blazor", "classlib", false)] // net8.0

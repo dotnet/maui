@@ -160,7 +160,14 @@
 			DefaultCompile = "true"
 			ValidateOnly = "$(_MauiXamlCValidateOnly)"
 			TargetFramework = "$(TargetFramework)"
-			KeepXamlResources = "$(MauiKeepXamlResources)" />
+			KeepXamlResources = "$(MauiKeepXamlResources)"
+
+      WarningLevel = "$(WarningLevel)"
+      TreatWarningsAsErrors = "$(TreatWarningsAsErrors)"
+      NoWarn = "$(NoWarn)"
+      WarningsAsErrors = "$(WarningsAsErrors)"
+      WarningsNotAsErrors = "$(WarningsNotAsErrors)" />
+      
 		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True" />
 		<ItemGroup>
 			<FileWrites Include="$(IntermediateOutputPath)XamlC.stamp" />

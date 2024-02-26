@@ -27,7 +27,7 @@
     <Using Include="BenchmarkDotNet.Loggers" />
     <Using Include="BenchmarkDotNet.Order" />
     <Using Include="BenchmarkDotNet.Running" />
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.5.2136" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
     <PackageReference Include="Xamarin.Android.Glide" Version="4.14.2.1" />
   </ItemGroup>
   <ItemGroup>

@@ -5,6 +5,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageButtonHandler : ViewHandler<IImageButton, UIButton>
 	{
+		readonly ImageButtonProxy _proxy = new();
+
 		protected override UIButton CreatePlatformView()
 		{
 			var platformView = new UIButton(UIButtonType.System)
@@ -17,18 +19,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton platformView)
 		{
-			platformView.TouchUpInside += OnButtonTouchUpInside;
-			platformView.TouchUpOutside += OnButtonTouchUpOutside;
-			platformView.TouchDown += OnButtonTouchDown;
+			_proxy.Connect(VirtualView, platformView);
 
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(UIButton platformView)
 		{
-			platformView.TouchUpInside -= OnButtonTouchUpInside;
-			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
-			platformView.TouchDown -= OnButtonTouchDown;
+			_proxy.Disconnect(platformView);
 
 			base.DisconnectHandler(platformView);
 
@@ -55,22 +53,6 @@ namespace Microsoft.Maui.Handlers
 			(handler.PlatformView as UIButton)?.UpdatePadding(imageButton);
 		}
 
-		void OnButtonTouchUpInside(object? sender, EventArgs e)
-		{
-			VirtualView?.Released();
-			VirtualView?.Clicked();
-		}
-
-		void OnButtonTouchUpOutside(object? sender, EventArgs e)
-		{
-			VirtualView?.Released();
-		}
-
-		void OnButtonTouchDown(object? sender, EventArgs e)
-		{
-			VirtualView?.Pressed();
-		}
-
 		partial class ImageButtonImageSourcePartSetter
 		{
 			public override void SetImageSource(UIImage? platformImage)
@@ -83,6 +65,48 @@ namespace Microsoft.Maui.Handlers
 				button.SetImage(platformImage, UIControlState.Normal);
 				button.HorizontalAlignment = UIControlContentHorizontalAlignment.Fill;
 				button.VerticalAlignment = UIControlContentVerticalAlignment.Fill;
+			}
+		}
+
+		class ImageButtonProxy
+		{
+			WeakReference<IImageButton>? _virtualView;
+
+			IImageButton? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(IImageButton virtualView, UIButton platformView)
+			{
+				_virtualView = new(virtualView);
+
+				platformView.TouchUpInside += OnButtonTouchUpInside;
+				platformView.TouchUpOutside += OnButtonTouchUpOutside;
+				platformView.TouchDown += OnButtonTouchDown;
+			}
+
+			public void Disconnect(UIButton platformView)
+			{
+				platformView.TouchUpInside -= OnButtonTouchUpInside;
+				platformView.TouchUpOutside -= OnButtonTouchUpOutside;
+				platformView.TouchDown -= OnButtonTouchDown;
+			}
+
+			void OnButtonTouchUpInside(object? sender, EventArgs e)
+			{
+				if (VirtualView is IImageButton imageButton)
+				{
+					imageButton.Released();
+					imageButton.Clicked();
+				}
+			}
+
+			void OnButtonTouchUpOutside(object? sender, EventArgs e)
+			{
+				VirtualView?.Released();
+			}
+
+			void OnButtonTouchDown(object? sender, EventArgs e)
+			{
+				VirtualView?.Pressed();
 			}
 		}
 	}

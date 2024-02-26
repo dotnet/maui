@@ -60,14 +60,14 @@ namespace Microsoft.Maui.DeviceTests
 					// the first one works
 					image.Source = new FileImageSourceStub(firstPath);
 					handler.UpdateValue(nameof(IImage.Source));
-					await image.Wait();
+					await image.WaitUntilLoaded();
 
 					await platformView.AssertContainsColor(Colors.Blue.ToPlatform(), MauiContext);
 
 					// the second one does not
 					image.Source = new FileImageSourceStub(secondPath);
 					handler.UpdateValue(nameof(IImage.Source));
-					await image.Wait();
+					await image.WaitUntilLoaded();
 
 					await platformView.AssertContainsColor(expectedColor.ToPlatform(), MauiContext);
 				});
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(image);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				var expectedColor = Color.FromArgb(colorHex);
 
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(image);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await GetPlatformImageView(handler).AttachAndRun(() =>
 				{
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = (IPlatformViewHandler)CreateHandler(image);
 
-				await image.Wait(timeout: 5000);
+				await image.WaitUntilLoaded(timeout: 5000);
 
 #if __ANDROID__
 				handler.PlatformView.SetMinimumHeight(1);
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// get the handler and reset things we don't care about
 				var handler = CreateHandler<CountedImageHandler>(image);
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				handler.ImageEvents.Clear();
 
 				// get the service we are going to test with
@@ -246,7 +246,7 @@ namespace Microsoft.Maui.DeviceTests
 				handler.UpdateValue(nameof(IImage.Source));
 
 				// wait until everything is complete
-				await Task.WhenAll(image.Wait(), startingTask, finishingTask);
+				await Task.WhenAll(image.WaitUntilLoaded(), startingTask, finishingTask);
 
 				// verify that it all happened in the order as expected
 				order.Enqueue("After Finishing");
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// get the handler and reset things we don't care about
 				var handler = CreateHandler<CountedImageHandler>(image);
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				handler.ImageEvents.Clear();
 
 				// get the service we are going to test with
@@ -300,7 +300,7 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						image.Source = new CountedImageSourceStub(Colors.Red);
 						handler.UpdateValue(nameof(IImage.Source));
-						await image.Wait();
+						await image.WaitUntilLoaded();
 					});
 
 					// let the FIRST one continue
@@ -310,9 +310,9 @@ namespace Microsoft.Maui.DeviceTests
 				// set & apply the FIRST image source
 				image.Source = new CountedImageSourceStub(Colors.Blue, true);
 				handler.UpdateValue(nameof(IImage.Source));
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				await startingTask;
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				// make sure it did actually work
 				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
@@ -342,7 +342,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<CountedImageHandler>(image);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				// We expect that if the Image is created with no Source set, the platform image view
 				// will get a `null` image set
@@ -366,7 +366,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<CountedImageHandler>(image);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
@@ -395,7 +395,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<CountedImageHandler>(image);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
@@ -404,7 +404,7 @@ namespace Microsoft.Maui.DeviceTests
 				image.Source = new FileImageSourceStub("blue.png");
 				handler.UpdateValue(nameof(IImage.Source));
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
 
@@ -488,7 +488,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<CountedImageHandler>(image);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
@@ -497,7 +497,7 @@ namespace Microsoft.Maui.DeviceTests
 				image.Source = null;
 				handler.UpdateValue(nameof(IImage.Source));
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
 			});
@@ -515,14 +515,14 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<ImageHandler>(image);
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
 				image.Source = new FileImageSourceStub("fail.png");
 				handler.UpdateValue(nameof(IImage.Source));
 				await handler.PlatformView.AttachAndRun(() => { });
 
-				await image.Wait(5000);
+				await image.WaitUntilLoaded(5000);
 				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
 			});
 		}

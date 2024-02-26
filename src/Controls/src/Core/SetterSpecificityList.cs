@@ -91,26 +91,24 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Called by ClearValueCore, returns what the value would be if cleared
+		/// Called by ClearValueCore, returns what the top value would be if cleared
 		/// </summary>
-		public object? GetClearedValue()
+		public object? GetClearedValue(SetterSpecificity clearedSpecificity)
 		{
 			if (_values is not null)
 			{
-				return _values.Count >= 2 ? _values[_values.Keys[_values.Count - 2]] : null;
+				var index = _values.IndexOfKey(clearedSpecificity);
+				if (index == _values.Count - 1) //last value will be cleared
+					return _values.Count >= 2 ? _values[_values.Keys[_values.Count - 2]] : null;
+				return _values.Last().Value;
 			}
 
 			// Fast path should return the "lower" value
 			if (_first is not null && _second is not null)
 			{
-				if (_second.Value.Key.CompareTo(_first.Value.Key) >= 0)
-				{
-					return _first.Value.Value;
-				}
-				else
-				{
+				if (_first.Value.Key == clearedSpecificity)
 					return _second.Value.Value;
-				}
+				return _first.Value.Value;
 			}
 			else if (_first is not null)
 			{

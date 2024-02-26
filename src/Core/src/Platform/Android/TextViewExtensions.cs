@@ -1,5 +1,5 @@
 using System;
-using System.Web;
+using System.Net;
 using Android.Graphics;
 using Android.Text;
 using Android.Widget;
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextHtml(this TextView textView, ILabel label)
 		{
 			var text = label.Text ?? string.Empty;
-			var htmlText = HttpUtility.HtmlDecode(text);
+			var htmlText = WebUtility.HtmlDecode(text);
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 				textView.SetText(Html.FromHtml(htmlText, FromHtmlOptions.ModeCompact), BufferType.Spannable);

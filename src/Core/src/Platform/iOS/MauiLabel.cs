@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Platform
 			width: size.Width + TextInsets.Left + TextInsets.Right,
 			height: size.Height + TextInsets.Top + TextInsets.Bottom);
 
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler _movedToWindow;
 		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
 		{

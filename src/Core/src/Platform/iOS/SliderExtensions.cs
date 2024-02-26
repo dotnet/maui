@@ -32,10 +32,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMaximumTrackColor(this UISlider uiSlider, ISlider slider)
 		{
 			if (slider.MaximumTrackColor != null)
-			{
-				if (uiSlider.TraitCollection.UserInterfaceIdiom != UIUserInterfaceIdiom.Mac)
-					uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
-			}
+				uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
 		}
 
 		public static void UpdateThumbColor(this UISlider uiSlider, ISlider slider)

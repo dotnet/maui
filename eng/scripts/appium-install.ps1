@@ -33,34 +33,34 @@ The mac2 driver version to update or install
 PS> .\appium-install.ps1 '2.1.1' 2.7.2 2.25.1 4.30.2 1.6.1
 
 This would install or update Appium version 2.1.1, the windows driver 2.7.2, the uiautomator2 driver with 2.25.1, the xcuitest driver with 4.30.2 and mac2 driver with 1.6.1
-#>
 
+Versions for these steps are pinned and ideally stay in sync with the script that initializes the XAMBOT agents.
+Find the script for that on the DevDiv Azure DevOps instance, Engineering team, BotDeploy.PackageGeneration repo.
+#>
 
 param
 (
     [string] $appiumVersion = '2.1.1',
     [string] $windowsDriverVersion = '2.10.1',
     [string] $androidDriverVersion = '2.29.4',
-    [string] $iOSDriverVersion = '4.34.0',
+    [string] $iOSDriverVersion = '5.2.0',
     [string] $macDriverVersion = '1.7.2'
 )
 
 Write-Output  "Welcome to the Appium installer"
-node -v
-
-Write-Output  "Updating npm"
-npm install -g npm
 
 Write-Output  "Node version"
 node -v
 
 Write-Output  "Installing appium $appiumVersion"
 npm install -g appium@$appiumVersion
+
 write-Output  "Installed appium"
 appium -v
 
 Write-Output  "Installing appium doctor"
 npm install -g appium-doctor
+
 Write-Output  "Installed appium doctor"
 
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
@@ -68,25 +68,25 @@ Write-Output "List of installed drivers $existingDrivers"
 if ($existingDrivers.windows) {
     Write-Output  "Uninstalling appium driver windows"
     appium driver uninstall windows
-    Write-Output  "Unistalled appium driver windows"
+    Write-Output  "Uninstalled appium driver windows"
 }
 
 if ($existingDrivers.uiautomator2) {
     Write-Output  "Uninstalling appium driver uiautomator2"
     appium driver uninstall uiautomator2
-    Write-Output  "Unistalled appium driver uiautomator2"
+    Write-Output  "Uninstalled appium driver uiautomator2"
 }
 
 if ($existingDrivers.xcuitest) {
     Write-Output  "Uninstalling appium driver xcuitest"
     appium driver uninstall xcuitest
-    Write-Output  "Unistalled appium driver xcuitest"
+    Write-Output  "Uninstalled appium driver xcuitest"
 }
 
 if ($existingDrivers.mac2) {
     Write-Output  "Uninstalling appium driver mac2"
     appium driver uninstall mac2
-    Write-Output  "Unistalled appium driver mac2"
+    Write-Output  "Uninstalled appium driver mac2"
 }
 
 $drivers = appium driver list --installed --json  | ConvertFrom-Json

@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.~CarouselViewHandler() -> void
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> Microsoft.UI.Xaml.UIElement!
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.DragStartingEventArgs.get -> Microsoft.UI.Xaml.DragStartingEventArgs!
