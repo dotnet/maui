@@ -243,6 +243,11 @@ namespace Microsoft.Maui.Handlers
 
 			void OnEditingChanged(object? sender, EventArgs e)
 			{
+				if (sender is UITextField textField && VirtualView is ISearchBar virtualView)
+				{
+					virtualView.UpdateText(textField.Text);
+				}
+
 				if (Handler is SearchBarHandler handler)
 				{
 					handler.UpdateCancelButtonVisibility();
