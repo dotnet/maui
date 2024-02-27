@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Gtk;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using WebViewWidget = WebKit.WebView;
@@ -72,18 +74,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without platform web view instance.");
 			}
 
+			var logger = Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
+
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
 			var appRootDir = Environment.CurrentDirectory;
-			var hostPageFullPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(appRootDir, HostPage!)); // HostPage is nonnull because RequiredStartupPropertiesSet is checked above
-			var contentRootDirFullPath = System.IO.Path.GetDirectoryName(hostPageFullPath)!;
-			var contentRootRelativePath = System.IO.Path.GetRelativePath(appRootDir, contentRootDirFullPath);
-			var hostPageRelativePath = System.IO.Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
+			var hostPageFullPath = Path.GetFullPath(Path.Combine(appRootDir, HostPage!)); // HostPage is nonnull because RequiredStartupPropertiesSet is checked above
+			var contentRootDirFullPath = Path.GetDirectoryName(hostPageFullPath)!;
+			var contentRootRelativePath = Path.GetRelativePath(appRootDir, contentRootDirFullPath);
+			var hostPageRelativePath = Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
 			
+			logger.CreatingFileProvider(contentRootDirFullPath, hostPageRelativePath);
+
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDirFullPath);
 
 			_webviewManager = new GtkWebViewManager(
-				this.PlatformView,
+				PlatformView,
 				Services!,
 				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
 				fileProvider,
@@ -101,12 +107,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				foreach (var rootComponent in RootComponents)
 				{
+					if (rootComponent is null)
+					{
+						continue;
+					}
+
+					logger.AddingRootComponent(rootComponent.ComponentType?.FullName ?? string.Empty, rootComponent.Selector ?? string.Empty, rootComponent.Parameters?.Count ?? 0);
+
 					// Since the page isn't loaded yet, this will always complete synchronously
 					_ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
 				}
 			}
 
-			_webviewManager.Navigate("/");
+			logger.StartingInitialNavigation(VirtualView.StartPath);
+
+			_webviewManager.Navigate(VirtualView.StartPath);
 
 		}
 
