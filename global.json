@@ -5,5 +5,12 @@
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.3.0"
+  },
+  "sdk": {
+    "version": "8.0.0",
+    "rollForward": "latestFeature",
+    "allowPrerelease": true
   }
 }
+
+
