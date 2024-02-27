@@ -400,7 +400,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (VirtualView is not { } virtualView)
+			if (CrossPlatformLayout is not { } virtualView)
 				return;
 
 			double allocation = orientation == Orientation.Vertical ? AllocatedWidth : AllocatedHeight;
