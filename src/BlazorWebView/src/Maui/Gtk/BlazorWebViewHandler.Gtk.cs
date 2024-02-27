@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Gtk;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +30,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		/// <inheritdoc />
-		public virtual IFileProvider CreateFileProvider(string contentRootDir) => throw new NotSupportedException();
+		public virtual IFileProvider CreateFileProvider(string contentRootDir)
+		{
+			if (Directory.Exists(contentRootDir))
+			{
+				// Typical case after publishing, or if you're copying content to the bin dir in development for some nonstandard reason
+				return new PhysicalFileProvider(contentRootDir);
+			}
+
+			// Typical case in development, as the files come from Microsoft.AspNetCore.Components.WebView.StaticContentProvider
+			// instead and aren't copied to the bin dir
+			return new NullFileProvider();
+		}
 
 		/// <inheritdoc />
 		protected override void DisconnectHandler(WebViewWidget platformView)
@@ -62,10 +74,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
-			var contentRootDir = System.IO.Path.GetDirectoryName(HostPage!) ?? string.Empty;
-			var hostPageRelativePath = System.IO.Path.GetRelativePath(contentRootDir, HostPage!);
-
-			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
+			var appRootDir = Environment.CurrentDirectory;
+			var hostPageFullPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(appRootDir, HostPage!)); // HostPage is nonnull because RequiredStartupPropertiesSet is checked above
+			var contentRootDirFullPath = System.IO.Path.GetDirectoryName(hostPageFullPath)!;
+			var contentRootRelativePath = System.IO.Path.GetRelativePath(appRootDir, contentRootDirFullPath);
+			var hostPageRelativePath = System.IO.Path.GetRelativePath(contentRootDirFullPath, hostPageFullPath);
+			
+			var fileProvider = VirtualView.CreateFileProvider(contentRootDirFullPath);
 
 			_webviewManager = new GtkWebViewManager(
 				this.PlatformView,
@@ -73,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				VirtualView.JSComponents,
-				contentRootDir,
+				contentRootRelativePath,
 				hostPageRelativePath,
 				UrlLoading,
 				(args) => VirtualView.BlazorWebViewInitializing(args),
@@ -95,8 +110,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		}
 
-		bool RequiredStartupPropertiesSet => false;
-		
+		bool RequiredStartupPropertiesSet =>
+			HostPage != null &&
+			Services != null;
+
 		/// <summary>
 		/// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
 		/// </summary>
@@ -106,6 +123,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public virtual async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
 		{
 			ArgumentNullException.ThrowIfNull(workItem);
+
 			if (_webviewManager is null)
 			{
 				return false;
