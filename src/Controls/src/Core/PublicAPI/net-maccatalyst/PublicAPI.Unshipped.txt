@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Controls.CheckBox.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.DragInteraction.get -> UIKit.UIDragInteraction!
@@ -123,6 +124,10 @@ static Microsoft.Maui.Controls.Region.operator !=(Microsoft.Maui.Controls.Region
 static Microsoft.Maui.Controls.Region.operator ==(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
 static Microsoft.Maui.Controls.Shapes.Matrix.operator !=(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
 static Microsoft.Maui.Controls.Shapes.Matrix.operator ==(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
+~Microsoft.Maui.Controls.CheckBox.Command.get -> System.Windows.Input.ICommand
+~Microsoft.Maui.Controls.CheckBox.Command.set -> void
+~Microsoft.Maui.Controls.CheckBox.CommandParameter.get -> object
+~Microsoft.Maui.Controls.CheckBox.CommandParameter.set -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
@@ -148,6 +153,8 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
+~static readonly Microsoft.Maui.Controls.CheckBox.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.CheckBox.CommandProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAutoScalingEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -216,7 +223,6 @@ Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> UIKit.UIView!
 ~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.get -> bool
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.CursorPosition.get -> int
@@ -229,7 +235,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.CursorPosition.get -> int
@@ -242,7 +247,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.CursorPosition.get -> int
