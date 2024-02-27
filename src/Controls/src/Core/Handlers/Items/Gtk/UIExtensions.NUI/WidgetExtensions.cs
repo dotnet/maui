@@ -7,16 +7,15 @@ namespace Gtk.UIExtensions.NUI;
 
 public static class WidgetExtensions
 {
+	public static float PositionX(this Widget it) => it?.Allocation.X ?? 0;
 
-	public static float PositionX(this Widget it) => it.Allocation.X;
+	public static float PositionY(this Widget it) => it?.Allocation.Y ?? 0;
 
-	public static float PositionY(this Widget it) => it.Allocation.Y;
+	public static float SizeWidth(this Widget it) => it?.AllocatedWidth ?? 0;
 
-	public static float SizeWidth(this Widget it) => it.AllocatedWidth;
+	public static float SizeHeight(this Widget it) => it?.AllocatedHeight ?? 0;
 
-	public static float SizeHeight(this Widget it) => it.AllocatedHeight;
-
-	public static Size Size(this Widget it) => new Size(it.Allocation.Width, it.Allocation.Height);
+	public static Size Size(this Widget it) => it is not { } ? Microsoft.Maui.Graphics.Size.Zero : new(it.Allocation.Width, it.Allocation.Height);
 
 	public static void UpdateBounds(this Widget it, Rect bounds)
 	{
@@ -83,9 +82,7 @@ public static class WidgetExtensions
 
 	public static class DeviceInfo
 	{
-
 		public static double ScalingFactor = 1;
-
 	}
 
 	public static int ToScaledPixel(this double it) => (int)Math.Round(it * DeviceInfo.ScalingFactor);
@@ -136,7 +133,6 @@ public static class WidgetExtensions
 			it.Vexpand = true;
 		}
 	}
-
 }
 
 /// <summary>
@@ -156,7 +152,6 @@ public static class WidgetExtensions
 /// <since_tizen> 9 </since_tizen>
 public enum LayoutParamPolicies
 {
-
 	/// <summary>
 	/// Constant which indicates child size should match parent size.
 	/// </summary>
@@ -167,12 +162,9 @@ public enum LayoutParamPolicies
 	/// Constant which indicates parent should take the smallest size possible to wrap its children with their desired size.
 	/// </summary>
 	WrapContent
-
 }
 
 public enum ResizePolicyType
 {
-
 	FillToParent
-
 }
