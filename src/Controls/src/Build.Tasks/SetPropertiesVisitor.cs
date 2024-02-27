@@ -386,7 +386,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if (n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 					break;
-				n = n.Parent as IElementNode;
+				if (n.Parent is ListNode listNode)
+					n = listNode.Parent as IElementNode;
+				else
+					n = n.Parent as IElementNode;
 			}
 
 			if (dataTypeNode is null)
