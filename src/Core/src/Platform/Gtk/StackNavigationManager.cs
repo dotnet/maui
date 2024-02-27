@@ -37,10 +37,12 @@ public class StackNavigationManager
 		_ = NavigationView ?? throw new InvalidOperationException($"{nameof(NavigationView)} must not be null");
 
 
-		if (request.NavigationStack.FirstOrDefault() is { } firstOrDefault && firstOrDefault.ToPlatform(Context) is { } s)
+		if (request.NavigationStack.LastOrDefault() is { } view && view.ToPlatform(Context) is { } platformContent)
 		{
-			PlatformView.Content = s;
+			PlatformView.Content = platformContent;
 		}
+
+		NavigationView.NavigationFinished(request.NavigationStack);
 	}
 
 }
