@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override void PlatformArrange(Rect rect)
 		{
-			PlatformView?.Arrange(rect);
+			this.PlatformArrangeHandler(rect);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
