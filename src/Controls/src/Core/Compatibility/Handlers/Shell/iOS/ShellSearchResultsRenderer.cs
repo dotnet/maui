@@ -41,15 +41,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 						if (RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported)
 						{
+#pragma warning disable CS0618
 							label.SetBinding(Label.TextProperty, SearchHandler.DisplayMemberName ?? ".");
+#pragma warning restore CS0618
 						}
 						else
 						{
+#pragma warning disable CS0618
 							if (SearchHandler.DisplayMemberName is not null)
 							{
 								Application.Current?.FindMauiContext()?.CreateLogger<ShellSearchResultsRenderer>()?.LogError(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
 								throw new InvalidOperationException(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
 							}
+#pragma warning restore CS0618
 
 							label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel(string.Empty, static (object o) => o));
 						}
