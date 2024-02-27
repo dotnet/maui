@@ -207,8 +207,17 @@ namespace Microsoft.Maui.Platform
 		[MissingMapper]
 		public static void UpdateBorder(this Widget? platformView, IView view) { }
 
-		[MissingMapper]
-		public static void Focus(this Widget? platformView, FocusRequest request) { }
+		public static void Focus(this Widget? platformView, FocusRequest request)
+		{
+			if (platformView is not { })
+			{
+				request.TrySetResult(false);
+				return;
+			}
+
+			platformView.GrabFocus();
+			request.TrySetResult(platformView.HasFocus);
+		}
 
 		[MissingMapper]
 		public static void Unfocus(this Widget? platformView, IView view) { }
