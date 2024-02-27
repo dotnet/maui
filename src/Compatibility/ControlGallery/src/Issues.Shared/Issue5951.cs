@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var pushButton = new Button
 			{
+				AutomationId = "Push page",
 				Text = "Push page",
 				Command = new Command(async () =>
 				{
