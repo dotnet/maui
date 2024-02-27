@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 
 	// see: https://github.com/linuxmint/gtk/blob/master/gtk/gtkcontainer.c
 
-	public class LayoutView : Container, IGtkContainer
+	public class LayoutView : Container, IGtkContainer, ICrossPlatformLayoutBacking
 	{
 
 		protected override bool OnDrawn(Cairo.Context cr)
@@ -41,9 +41,7 @@ namespace Microsoft.Maui.Platform
 			return r;
 		}
 
-		public Func<ILayout>? CrossPlatformVirtualView { get; set; }
-
-		public ILayout? VirtualView => CrossPlatformVirtualView?.Invoke();
+		public ICrossPlatformLayout? CrossPlatformLayout { get; set; }
 
 		List<(IView view, Widget widget)> _children = new();
 
@@ -166,10 +164,12 @@ namespace Microsoft.Maui.Platform
 
 		protected void ArrangeAllocation(Rectangle allocation)
 		{
-			if (VirtualView is not { } virtualView)
+			if (CrossPlatformLayout is not { } virtualView)
+			{
 				return;
+			}
 
-			VirtualView.CrossPlatformArrange(allocation);
+			virtualView.CrossPlatformArrange(allocation);
 		}
 
 		protected bool RestrictToMeasuredAllocation { get; set; } = false;
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Platform
 			if (IsSizeAllocating)
 				return;
 
-			if (VirtualView is not { } virtualView)
+			if (CrossPlatformLayout is not { } crossPlatformLayout)
 			{
 				base.OnSizeAllocated(allocation);
 
@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Platform
 				ArrangeAllocation(new Rectangle(Point.Zero, mAllocation.Size));
 				AllocateChildren(mAllocation);
 
-				if (virtualView.Frame != mAllocation)
+				if (crossPlatformLayout is IView virualView && virualView.Frame != mAllocation)
 				{
 					// IsSizeAllocating = true;
 
@@ -291,10 +291,12 @@ namespace Microsoft.Maui.Platform
 		public Size Measure(double widthConstraint, double heightConstraint, SizeRequestMode mode = SizeRequestMode.ConstantSize)
 		{
 
-			if (VirtualView is not { } virtualView)
+			if (CrossPlatformLayout is not { } virtualView)
+			{
 				return Size.Zero;
+			}
 
-			var measured = VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			var measured = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 #if TRACE_ALLOCATION
 
@@ -468,7 +470,7 @@ namespace Microsoft.Maui.Platform
 
 		public Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (VirtualView is not { } virtualView)
+			if (CrossPlatformLayout is not IView virtualView)
 				return new Size(widthConstraint, heightConstraint);
 
 			double? explicitWidth = (virtualView.Width >= 0) ? virtualView.Width : null;

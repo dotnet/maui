@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(LayoutView)}");
 			}
 
-			return new LayoutView { CrossPlatformVirtualView = () => VirtualView, };
+			return new LayoutView { CrossPlatformLayout = VirtualView, };
 		}
 
 		public override void SetVirtualView(IView view)
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			PlatformView.CrossPlatformVirtualView = () => VirtualView;
+			PlatformView.CrossPlatformLayout = VirtualView;
 
 			PlatformView.ClearChildren();
 
