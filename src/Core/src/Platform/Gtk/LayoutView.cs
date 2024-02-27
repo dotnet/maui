@@ -1,9 +1,7 @@
 ﻿#define TRACE_ALLOCATION
 #define USE_ADJUSTSIZEREQUEST_
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Gtk;
 using Microsoft.Maui.Graphics.Platform.Gtk;
@@ -186,27 +184,23 @@ namespace Microsoft.Maui.Platform
 
 		protected Size? MeasuredSizeV { get; set; }
 
-		protected Size? MeasuredMinimum { get; set; }
-
 		protected Rectangle LastAllocation { get; set; }
 
 		protected Rectangle? CurrentAllocation { get; set; }
 
 		protected void ClearMeasured(bool clearCache = true)
 		{
-			if (clearCache && !MeasureCache.IsEmpty)
+			if (clearCache)
 			{
-				MeasureCache.Clear();
 				MeasuredSizeH = null;
 				MeasuredSizeV = null;
 			}
 
-			MeasuredMinimum = null;
 #if !USE_ADJUSTSIZEREQUEST
 			RequestedWidth = null;
 			RequestedHeight = null;
 
-#endif			
+#endif
 		}
 
 		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
@@ -245,9 +239,9 @@ namespace Microsoft.Maui.Platform
 
 				if (virtualView.Frame != mAllocation)
 				{
-					IsSizeAllocating = true;
+					// IsSizeAllocating = true;
 
-					Arrange(mAllocation);
+					// Arrange(mAllocation);
 				}
 
 				base.OnSizeAllocated(allocation);
@@ -292,45 +286,20 @@ namespace Microsoft.Maui.Platform
 
 #if TRACE_ALLOCATION
 		int _measureCount = 0;
-		bool _checkCacheHitFailed = false;
 #endif
-
-		protected ConcurrentDictionary<(double width, double height, SizeRequestMode mode), Size> MeasureCache { get; } = new();
 
 		public Size Measure(double widthConstraint, double heightConstraint, SizeRequestMode mode = SizeRequestMode.ConstantSize)
 		{
-			bool CanBeCached() => !double.IsPositiveInfinity(widthConstraint) && !double.IsPositiveInfinity(heightConstraint);
 
 			if (VirtualView is not { } virtualView)
 				return Size.Zero;
 
-			var key = (widthConstraint, heightConstraint, mode);
-
-			Size cached = Size.Zero;
-
-			bool cacheHit = CanBeCached() && MeasureCache.TryGetValue(key, out cached);
-
-			if (cacheHit && false)
-			{
-#if TRACE_ALLOCATION
-				if (!_checkCacheHitFailed)
-#endif
-					return cached;
-			}
-
 			var measured = VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 #if TRACE_ALLOCATION
-			if (_checkCacheHitFailed && cacheHit && measured != cached)
-			{
-				Debug.WriteLine($"{cached} =! {measured}");
-			}
 
 			_measureCount++;
 #endif
-
-			if (CanBeCached())
-				MeasureCache[key] = measured;
 
 			return measured;
 		}
