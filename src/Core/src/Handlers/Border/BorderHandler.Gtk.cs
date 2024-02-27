@@ -37,27 +37,6 @@ namespace Microsoft.Maui.Handlers
 				platformView.Content = view.ToPlatform(mauiContext);
 		}
 
-		public override void PlatformArrange(Rect rect)
-		{
-			PlatformView?.CrossPlatformLayout?.CrossPlatformArrange(rect);
-
-			PlatformView?.Arrange(rect);
-		}
-
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			if (PlatformView?.CrossPlatformLayout is { })
-			{
-				var cf = PlatformView.CrossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
-
-				return cf;
-			}
-
-			var size = base.GetDesiredSize(widthConstraint, heightConstraint);
-
-			return size;
-		}
-
 	}
 
 }
