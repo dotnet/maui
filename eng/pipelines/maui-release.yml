@@ -26,6 +26,9 @@ variables:
   - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
+  - name: pushMauiPackagesToMaestro
+    default: true
+
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
@@ -83,5 +86,4 @@ stages:
     - template: common/sign.yml                                     # Sign only using the private server
     - template: common/insertion.yml                                # Insert on VS and SDK
       parameters:
-        poolName: $(windowsNet6VmPool)
-        vmImage: $(windowsNet6VmImage)
+        pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}

@@ -78,11 +78,12 @@ namespace UITest.Appium
 		{
 			config.SetProperty("PlatformName", "Android");
 			config.SetProperty("AutomationName", "UIAutomator2");
+			var appId = config.GetProperty<string>("AppId");
 
 			var options = new AppiumOptions();
+
 			SetGeneralAppiumOptions(config, options);
 
-			var appId = config.GetProperty<string>("AppId");
 			if (!string.IsNullOrWhiteSpace(appId))
 			{
 				options.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");

@@ -95,7 +95,7 @@ namespace UITest.Appium
 				ske.PressKeyCode(keyCode, metastate);
 				return;
 			}
-			
+
 			throw new InvalidOperationException($"SendKeys is not supported on {aaa.Driver}");
 		}
 
@@ -450,6 +450,15 @@ namespace UITest.Appium
 		public static void BackgroundApp(this IApp app)
 		{
 			app.CommandExecutor.Execute("backgroundApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// If the application is already running then it will be brought to the foreground.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ForegroundApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("foregroundApp", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>

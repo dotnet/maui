@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Android.App.Roles;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -11,7 +10,6 @@ using Android.Graphics.Drawables;
 using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
-using AndroidX.ViewPager.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
@@ -60,13 +58,11 @@ namespace Microsoft.Maui.Controls.Handlers
 		ColorStateList _currentBarTextColorStateList;
 		bool _tabItemStyleLoaded;
 		TabLayoutMediator _tabLayoutMediator;
-
-		NavigationRootManager NavigationRootManager { get; }
+		IDisposable _pendingFragment;
 
 		public TabbedPageManager(IMauiContext context)
 		{
 			_context = context;
-			NavigationRootManager = _context.GetNavigationRootManager();
 			_listeners = new Listeners(this);
 			_viewPager = new ViewPager2(context.Context)
 			{
@@ -175,6 +171,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void RemoveTabs()
 		{
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+
 			if (_tabLayoutFragment != null)
 			{
 				var fragment = _tabLayoutFragment;
@@ -189,13 +188,19 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					SetContentBottomMargin(0);
 
-					_ = _context
-							.GetNavigationRootManager()
-							.FragmentManager
-							.BeginTransaction()
-							.Remove(fragment)
-							.SetReorderingAllowed(true)
-							.Commit();
+					if (_context?.Context is Context c)
+					{
+						_pendingFragment =
+							fragmentManager
+								.RunOrWaitForResume(c, fm =>
+								{
+									fm
+										.BeginTransaction()
+										.Remove(fragment)
+										.SetReorderingAllowed(true)
+										.Commit();
+								});
+					}
 				}
 
 				_tabplacementId = 0;
@@ -223,6 +228,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void SetTabLayout()
 		{
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+
 			int id;
 			var rootManager =
 				_context.GetNavigationRootManager();
@@ -231,7 +239,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (rootManager.RootView == null)
 			{
 				rootManager.RootViewChanged += RootViewChanged;
-
 				return;
 			}
 
@@ -241,7 +248,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (_tabplacementId == id)
 					return;
 
-				_tabLayoutFragment = new ViewFragment(BottomNavigationView);
 				SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
 			}
 			else
@@ -250,17 +256,34 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (_tabplacementId == id)
 					return;
 
-				_tabLayoutFragment = new ViewFragment(TabLayout);
 				SetContentBottomMargin(0);
 			}
 
-			_tabplacementId = id;
-			_ = rootManager
-					.FragmentManager
-					.BeginTransaction()
-					.Replace(id, _tabLayoutFragment)
-					.SetReorderingAllowed(true)
-					.Commit();
+			if (_context?.Context is Context c)
+			{
+				_pendingFragment =
+					rootManager
+						.FragmentManager
+						.RunOrWaitForResume(c, fm =>
+						{
+							if (IsBottomTabPlacement)
+							{
+								_tabLayoutFragment = new ViewFragment(BottomNavigationView);
+							}
+							else
+							{
+								_tabLayoutFragment = new ViewFragment(TabLayout);
+							}
+
+							_tabplacementId = id;
+
+							fm
+								.BeginTransactionEx()
+								.ReplaceEx(id, _tabLayoutFragment)
+								.SetReorderingAllowed(true)
+								.Commit();
+						});
+			}
 		}
 
 		void SetContentBottomMargin(int bottomMargin)
