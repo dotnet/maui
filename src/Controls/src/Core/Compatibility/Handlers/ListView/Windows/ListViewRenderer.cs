@@ -110,6 +110,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
+					List.ContainerContentChanging += (sender, args) =>
+					{
+						if (args.InRecycleQueue)
+						{
+							// If the item is in the recycle queue, it's not in the visual tree
+							// and we don't need to update anything
+							return;
+						}
+
+						var cell = args.ItemContainer.ContentTemplateRoot as CellControl;
+						if (cell == null)
+						{
+							return;
+						}
+						cell.Recycle();
+					};
 					List.SelectionChanged += OnControlSelectionChanged;
 					SetNativeControl(List);
 				}

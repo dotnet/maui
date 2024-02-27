@@ -616,6 +616,16 @@ namespace Microsoft.Maui.Controls.Internals
 			bindable.SetValue(IsGroupHeaderPropertyKey, value);
 		}
 
+		internal void SetupContent(TItem content, int index)
+		{
+			_itemsView.SetupContent(content, index);
+		}
+
+		internal void UnhookContent(TItem content)
+		{
+			_itemsView.UnhookContent(content);
+		}
+
 		internal TItem UpdateContent(TItem content, int index, object item)
 		{
 			content.BindingContext = item;

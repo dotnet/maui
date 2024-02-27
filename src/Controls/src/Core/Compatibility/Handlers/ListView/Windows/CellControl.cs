@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		Microsoft.UI.Xaml.DataTemplate _currentTemplate;
 		bool _isListViewRealized;
 		object _newValue;
+		DataTemplate _currentCellTemplate;
 
 		public CellControl()
 		{
@@ -66,6 +67,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (Cell == null)
 				return;
+
+			if (_listView.IsValueCreated)
+			{
+				_listView.Value.TemplatedItems.UnhookContent(Cell);
+			}
 
 			Cell.SendDisappearing();
 			// 🚀 unsubscribe from propertychanged
@@ -327,6 +333,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					});
 		}
 
+		internal void Recycle()
+		{
+			if (Cell != null && _listView.IsValueCreated)
+			{
+				_listView.Value.TemplatedItems.UnhookContent(Cell);
+			}
+		}
+
 		void SetCell(object newContext)
 		{
 			var cell = newContext as Cell;
@@ -350,6 +364,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				bool isGroupHeader = IsGroupHeader;
 				object bindingContext = newContext;
 				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
+				var templatedItems = lv.TemplatedItems;
+
+				if (oldCell != null)
+				{
+					templatedItems.UnhookContent(oldCell);
+				}
 
 				if (template is DataTemplateSelector dataTemplateSelector)
 				{
@@ -359,7 +379,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (template != null)
 				{
 					// Reuse the templated items from the parent ListView
-					var templatedItems = lv.TemplatedItems;
 					if (isGroupHeader)
 					{
 						var idx = templatedItems.GetGlobalIndexOfGroup(bindingContext);
@@ -382,14 +401,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						if (groupAndIndex.Item2 == -1)
 							return;
 
-						if (((templatedItems.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0) && oldCell != null)
+						if (_currentCellTemplate != template)
 						{
-							// Recycle the existing cell
-							cell = templatedItems.UpdateContent(oldCell, groupAndIndex.Item2);
+							cell = template.CreateContent() as Cell;
 						}
 						else
 						{
-							cell = templatedItems[groupAndIndex.Item2];
+							cell = oldCell;
+							cell.BindingContext = bindingContext;
 						}
 					}
 				}
@@ -411,11 +430,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// This provides the Group Header styling (e.g., larger font, etc.) when the
 				// template is loaded later.
 				cell.SetIsGroupHeader<ItemsView<Cell>, Cell>(isGroupHeader);
+
+				templatedItems.UnhookContent(cell);
+				_currentCellTemplate = template;
 			}
 
 			// 🚀 Only set the cell if it DID change
 			// Note: The cleanup (SendDisappearing(), etc.) is done by the Cell propertychanged callback so we do not need to do any cleanup ourselves.
-
 			if (Cell != cell)
 			{
 				Cell = cell;
