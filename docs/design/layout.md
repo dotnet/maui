@@ -453,7 +453,7 @@ Anything that was marked "AndExpand" should go in its own row or column with a s
 
 ### ScrollView Changes
 
-The other main difference is that the Xamarin.Forms ScrollView does not behave consistently when stacking. It has some arbitary limits on minimum size which depend partially on its content, and it will compress to allow other items to fit on the screen inside a StackLayout in ways that are inconsistent and sometimes surprising. 
+The other main difference is that the Xamarin.Forms ScrollView does not behave consistently when stacking. It has some arbitrary limits on minimum size which depend partially on its content, and it will compress to allow other items to fit on the screen inside a StackLayout in ways that are inconsistent and sometimes surprising. 
 
 MAUI, on the other hand, simply allows the ScrollView to expand its viewport to the size of its content unless otherwise constrained. This means that inside of a VerticalStackLayout, which can expand infinitely, a ScrollView will simply set the height of its viewport to the height of the contnet; it will not scroll. This can be a little surprising for Forms users. Remember, StackLayouts simply continue in their stacking direction until they run out of content; they do not subdivide their container along that axis. If you want to limit your content to a constrained space in a direction, you should use another control, like a Grid.
 
