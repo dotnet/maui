@@ -3,10 +3,8 @@ using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Platform
 {
-
 	public static partial class WindowExtensions
 	{
-
 		public static void UpdateTitle(this Gtk.Window platformWindow, IWindow window) =>
 			platformWindow.Title = window.Title;
 
@@ -54,7 +52,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePosition(this Gtk.Window platformWindow, IWindow window)
 		{
-
 			var x = (int)window.X;
 			var y = (int)window.Y;
 
@@ -69,7 +66,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateSize(this Gtk.Window platformWindow, IWindow window)
 		{
-
 			var width = (int)window.Width;
 			var height = (int)window.Height;
 
@@ -80,6 +76,7 @@ namespace Microsoft.Maui.Platform
 			platformWindow.QueueResize();
 		}
 
+		public static float GetDisplayDensity(this Gtk.Window platformWindow) =>
+			(float)platformWindow.ScaleFactor;
 	}
-
 }

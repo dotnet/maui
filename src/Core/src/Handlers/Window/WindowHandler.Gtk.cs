@@ -27,8 +27,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.Child = nativeContent;
 		}
 
-		[MissingMapper]
-		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args) { }
+		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
+		{
+			if (args is DisplayDensityRequest request)
+				request.SetResult(handler.PlatformView.GetDisplayDensity());
+		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
 			handler.PlatformView?.UpdateX(view);
