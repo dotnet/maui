@@ -284,24 +284,24 @@ namespace Microsoft.Maui.Handlers
 			switch (view.Orientation)
 			{
 				case ScrollOrientation.Both:
-					platformView.PropagateNaturalWidth = true;
-					platformView.PropagateNaturalHeight = true;
+					// platformView.PropagateNaturalWidth = true;
+					// platformView.PropagateNaturalHeight = true;
 					platformView.SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
 					platformView.HScrollbar.Visible = true;
 					platformView.VScrollbar.Visible = true;
 
 					break;
 				case ScrollOrientation.Horizontal:
-					platformView.PropagateNaturalWidth = true;
-					platformView.PropagateNaturalHeight = false;
+					// platformView.PropagateNaturalWidth = true;
+					// platformView.PropagateNaturalHeight = false;
 					platformView.SetPolicy(PolicyType.Automatic, PolicyType.Never);
 					platformView.HScrollbar.Visible = true;
 					platformView.VScrollbar.Visible = false;
 
 					break;
 				case ScrollOrientation.Vertical:
-					platformView.PropagateNaturalHeight = true;
-					platformView.PropagateNaturalWidth = false;
+					// platformView.PropagateNaturalHeight = true;
+					// platformView.PropagateNaturalWidth = false;
 					platformView.SetPolicy(PolicyType.Never, PolicyType.Automatic);
 					platformView.HScrollbar.Visible = false;
 					platformView.VScrollbar.Visible = true;
@@ -309,8 +309,8 @@ namespace Microsoft.Maui.Handlers
 					break;
 
 				case ScrollOrientation.Neither:
-					platformView.PropagateNaturalWidth = false;
-					platformView.PropagateNaturalHeight = false;
+					// platformView.PropagateNaturalWidth = false;
+					// platformView.PropagateNaturalHeight = false;
 					platformView.SetPolicy(PolicyType.Never, PolicyType.Never);
 					platformView.HScrollbar.Visible = false;
 					platformView.VScrollbar.Visible = false;
