@@ -144,6 +144,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.SelectionLengthProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
+static Microsoft.Maui.Controls.Slider.ControlsSliderMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.ISlider!, Microsoft.Maui.Handlers.SliderHandler!>?
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionIcon(Microsoft.Maui.Controls.ShellSection shellSection, Android.Views.IMenuItem menuItem) -> void
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionTitle(Microsoft.Maui.Controls.ShellSection shellSection, Android.Views.IMenuItem menuItem) -> void
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.OpenGLView>
