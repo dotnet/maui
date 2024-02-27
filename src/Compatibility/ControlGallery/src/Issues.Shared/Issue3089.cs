@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			{
 				ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = "add1" });
 
-				ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = "reload" });
+				ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { AutomationId = reload, Text = "reload" });
 
 				ToolbarItems[0].SetBinding(ToolbarItem.CommandProperty, "Add1Command");
 				ToolbarItems[1].SetBinding(ToolbarItem.CommandProperty, "Add2Command");
