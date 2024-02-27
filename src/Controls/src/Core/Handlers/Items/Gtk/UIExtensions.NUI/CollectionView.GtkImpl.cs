@@ -1,6 +1,7 @@
+#define USE_ADJUSTSIZEREQUEST_
+
 using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
@@ -12,6 +13,7 @@ namespace Gtk.UIExtensions.NUI;
 
 public partial class CollectionView
 {
+
 	protected override bool OnDrawn(Cairo.Context cr)
 	{
 		var r = base.OnDrawn(cr);
@@ -25,9 +27,11 @@ public partial class CollectionView
 
 	protected IView? VirtualView { get; set; }
 
+	protected Rectangle? CurrentAllocation { get; set; }
+
 	Rect LastAllocation { get; set; }
 
-	const bool RestrictToMesuredAllocation = false;
+	const bool RestrictToMesuredAllocation = true;
 
 	protected Size? MeasuredSizeH { get; set; }
 
@@ -40,6 +44,11 @@ public partial class CollectionView
 		MeasuredSizeH = null;
 		MeasuredSizeV = null;
 		MeasuredMinimum = null;
+#if !USE_ADJUSTSIZEREQUEST
+		RequestedWidth = null;
+		RequestedHeight = null;
+
+#endif
 	}
 
 	List<Widget> _children = new();
@@ -111,7 +120,8 @@ public partial class CollectionView
 			IsReallocating = true;
 
 			var mAllocation = allocation.ToRect();
-
+			CurrentAllocation = mAllocation;
+			
 			clearCache = LastAllocation.IsEmpty || mAllocation.IsEmpty || LastAllocation != mAllocation;
 			ClearMeasured(clearCache);
 
@@ -130,15 +140,16 @@ public partial class CollectionView
 
 			if (virtualView.Frame != mAllocation)
 			{
-				IsSizeAllocating = true;
-
-				Arrange(mAllocation);
+				// IsSizeAllocating = true;
+				//
+				// Arrange(mAllocation);
 			}
 
 			base.OnSizeAllocated(allocation);
 		}
 		finally
 		{
+			CurrentAllocation = null;
 			IsReallocating = false;
 			IsSizeAllocating = false;
 		}
@@ -248,6 +259,28 @@ public partial class CollectionView
 		return new(w, h);
 	}
 
+	bool RestrictToMeasuredArrange = false;
+
+	public void Arrange(Rectangle rect)
+	{
+		if (rect.IsEmpty)
+			return;
+
+		if (rect == Allocation.ToRect()) return;
+
+		if (IsSizeAllocating)
+		{
+			SizeAllocate(rect.ToNative());
+
+			return;
+		}
+
+		var arrangeSize = RestrictToMeasuredArrange ? Measure(rect.Width, rect.Height) : rect.Size;
+		var alloc = new Rectangle(rect.Location, arrangeSize);
+		SizeAllocate(alloc.ToNative());
+		QueueAllocate();
+	}
+
 	protected override void OnUnrealized()
 	{
 		// force reallocation on next realization, since allocation may be lost
@@ -274,7 +307,87 @@ public partial class CollectionView
 
 		base.OnRealized();
 	}
+#if !USE_ADJUSTSIZEREQUEST
 
+	// protected override SizeRequestMode OnGetRequestMode()
+	// {
+	// 	// dirty fix: unwrapped labels report fixed sizes, forcing parents to fixed mode
+	// 	//            -> report always width_for_height, since we don't support angles
+	// 	return Gtk.SizeRequestMode.WidthForHeight;
+	// }
+
+	double? RequestedHeight { get; set; }
+
+	double? RequestedWidth { get; set; }
+
+	protected override void OnGetPreferredHeight(out int minimum_height, out int natural_height)
+	{
+		base.OnGetPreferredHeight(out minimum_height, out natural_height);
+
+		var force_width = RequestedWidth ?? double.PositiveInfinity;
+
+		if (IsReallocating && CurrentAllocation.HasValue)
+			force_width = CurrentAllocation.Value.Width;
+
+		var size = Measure(force_width, minimum_height > 0 ? minimum_height : RequestedHeight ?? double.PositiveInfinity);
+
+		if (size.Height < HeightRequest)
+			minimum_height = natural_height = HeightRequest;
+		else
+			minimum_height = natural_height = (int)size.Height;
+	}
+
+	protected override void OnGetPreferredWidth(out int minimum_width, out int natural_width)
+	{
+		base.OnGetPreferredWidth(out minimum_width, out natural_width);
+
+		var force_height = RequestedHeight ?? double.PositiveInfinity;
+
+		if (IsReallocating && CurrentAllocation.HasValue)
+			force_height = CurrentAllocation.Value.Height;
+
+		var size = Measure(minimum_width > 0 ? minimum_width : RequestedWidth ?? double.PositiveInfinity, force_height);
+
+		if (size.Width < WidthRequest)
+			minimum_width = natural_width = WidthRequest;
+		else
+			minimum_width = natural_width = (int)size.Width;
+	}
+
+	protected override void OnGetPreferredHeightForWidth(int width, out int minimum_height, out int natural_height)
+	{
+		RequestedWidth = width;
+
+		base.OnGetPreferredHeightForWidth(width, out minimum_height, out natural_height);
+
+		var size = Measure(width, minimum_height > 0 ? minimum_height : RequestedHeight ?? double.PositiveInfinity);
+
+		if (size.Height < HeightRequest)
+			minimum_height = natural_height = HeightRequest;
+		else
+			minimum_height = natural_height = (int)size.Height;
+
+		RequestedWidth = null;
+	}
+
+	protected override void OnGetPreferredWidthForHeight(int height, out int minimum_width, out int natural_width)
+	{
+		RequestedHeight = height;
+
+		base.OnGetPreferredWidthForHeight(height, out minimum_width, out natural_width);
+		var size = Measure(minimum_width > 0 ? minimum_width : RequestedWidth ?? double.PositiveInfinity, height);
+
+		if (size.Width < WidthRequest)
+			minimum_width = natural_width = WidthRequest;
+		else
+			minimum_width = natural_width = (int)size.Width;
+
+		RequestedHeight = null;
+	}
+
+#endif
+
+#if USE_ADJUSTSIZEREQUEST
 	protected Size MeasureMinimum()
 	{
 		if (MeasuredMinimum != null)
@@ -386,25 +499,6 @@ public partial class CollectionView
 		}
 	}
 
-	const bool RestrictToMeasuredArrange = false;
+#endif
 
-	public void Arrange(Rectangle rect)
-	{
-		if (rect.IsEmpty)
-			return;
-
-		if (rect == Allocation.ToRect()) return;
-
-		if (IsSizeAllocating)
-		{
-			SizeAllocate(rect.ToNative());
-
-			return;
-		}
-
-		var arrangeSize = RestrictToMeasuredArrange ? Measure(rect.Width, rect.Height) : rect.Size;
-		var alloc = new Rectangle(rect.Location, arrangeSize);
-		SizeAllocate(alloc.ToNative());
-		QueueAllocate();
-	}
 }
