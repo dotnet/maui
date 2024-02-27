@@ -3,8 +3,8 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace UITests 
-{ 
-    internal class Issue2728 : IssuesUITest
+{
+	public class Issue2728 : IssuesUITest
 	{
 		const string LabelHome = "Hello Label";
 

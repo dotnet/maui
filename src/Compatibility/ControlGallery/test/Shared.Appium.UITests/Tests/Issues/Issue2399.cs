@@ -5,7 +5,7 @@ using UITest.Appium;
 
 namespace UITests
 {
-    internal class Issue2399 : IssuesUITest
+	public class Issue2399 : IssuesUITest
 	{
 		const string AllEventsHaveDetached = "AllEventsHaveDetached";
 

@@ -3,7 +3,7 @@ using UITest.Appium;
 
 namespace UITests
 {
-    internal class Issue2339 : IssuesUITest
+	public class Issue2339 : IssuesUITest
 	{
 		public Issue2339(TestDevice testDevice) : base(testDevice)
 		{
