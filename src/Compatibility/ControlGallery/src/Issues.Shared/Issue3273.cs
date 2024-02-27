@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				Children = {
 					statusLabel,
 					new Button {
+						AutomationId = "MoveItems",
 						Text = "Move items",
 						Command = new Command(() =>
 						{

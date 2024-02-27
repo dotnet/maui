@@ -15,7 +15,7 @@ namespace UITests
 		[Test]
 		public void Issue2259Tests()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
 
 			for (int i = 0; i < 20; i++)
 			{
