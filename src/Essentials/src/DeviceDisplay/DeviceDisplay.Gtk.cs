@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
@@ -5,10 +6,8 @@ using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Devices
 {
-
 	partial class DeviceDisplayImplementation
 	{
-
 		static bool PlatformKeepScreenOn
 		{
 			get => throw ExceptionUtils.NotSupportedOrImplementedException;
@@ -25,9 +24,20 @@ namespace Microsoft.Maui.Devices
 			return new DisplayInfo(geometry.Width, geometry.Height, DefaultScreen.Resolution, orientation, DisplayRotation.Unknown, rate);
 		}
 
-		protected override void StartScreenMetricsListeners() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		protected override void StartScreenMetricsListeners()
+		{
+			DefaultScreen.SizeChanged += DefaultScreenOnSizeChanged;
+		}
 
-		protected override void StopScreenMetricsListeners() => throw ExceptionUtils.NotSupportedOrImplementedException;
+		void DefaultScreenOnSizeChanged(object sender, EventArgs e)
+		{
+			OnMainDisplayInfoChanged();
+		}
+
+		protected override void StopScreenMetricsListeners()
+		{
+			DefaultScreen.SizeChanged += DefaultScreenOnSizeChanged;
+		}
 
 		public static Gdk.Screen DefaultScreen => Gdk.Screen.Default;
 
@@ -68,12 +78,10 @@ namespace Microsoft.Maui.Devices
 
 		public static IEnumerable<Gdk.Monitor> GetMonitors()
 		{
-
 			for (var i = 0; i < DefaultDisplay.NMonitors; i++)
 			{
 				yield return DefaultDisplay.GetMonitor(i);
 			}
-
 		}
 
 		protected override bool GetKeepScreenOn()
@@ -85,7 +93,5 @@ namespace Microsoft.Maui.Devices
 		{
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 		}
-
 	}
-
 }
