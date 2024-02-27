@@ -317,7 +317,7 @@ public static class KeyboardAutoManagerScroll
 		nfloat statusBarHeight;
 		nfloat navigationBarAreaHeight;
 
-		if (ContainerView.FindResponder<UINavigationController>() is UINavigationController navigationController)
+		if (View.FindResponder<UINavigationController>() is UINavigationController navigationController)
 		{
 			navigationBarAreaHeight = navigationController.NavigationBar.Frame.GetMaxY();
 		}
