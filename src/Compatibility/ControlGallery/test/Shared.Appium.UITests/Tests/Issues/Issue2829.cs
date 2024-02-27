@@ -3,7 +3,7 @@ using UITest.Appium;
 
 namespace UITests
 {
-    internal class Issue2829 : IssuesUITest
+	public class Issue2829 : IssuesUITest
 	{
 		const string kScrollMe = "kScrollMe";
 		const string kSuccess = "SUCCESS";

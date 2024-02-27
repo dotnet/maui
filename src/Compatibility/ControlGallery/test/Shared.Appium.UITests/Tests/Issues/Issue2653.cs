@@ -2,8 +2,8 @@
 using UITest.Appium;
 
 namespace UITests 
-{ 
-    internal class Issue2653 : IssuesUITest
+{
+	public class Issue2653 : IssuesUITest
 	{
 		const string ButtonText = "Insert Box View";
 		const string TestForButtonClicked = "Test For Clicked";

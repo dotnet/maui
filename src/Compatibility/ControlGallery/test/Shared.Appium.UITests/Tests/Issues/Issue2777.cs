@@ -4,10 +4,8 @@ using UITest.Core;
 
 namespace UITests
 {
-    internal class Issue2777 : IssuesUITest
+	public class Issue2777 : IssuesUITest
 	{
-		const string SwipeViewId = "SwipeViewId";
-
 		public Issue2777(TestDevice testDevice) : base(testDevice)
 		{
 		}
