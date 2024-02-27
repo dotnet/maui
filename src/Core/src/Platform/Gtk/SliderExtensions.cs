@@ -4,17 +4,17 @@ namespace Microsoft.Maui
 {
 	public static class SliderExtensions
 	{
-		public static void UpdateRange(this Range nativeSlider, IRange slider)
+		public static void UpdateRange(this Range platformView, IRange slider)
 		{
 			var minimum = slider.Minimum;
 			var maximum = slider.Maximum;
 
-			nativeSlider.SetRange(minimum, maximum);
+			platformView.SetRange(minimum, maximum);
 		}
 
-		public static void UpdateValue(this Range nativeSlider, IRange slider)
+		public static void UpdateValue(this Range platformView, IRange slider)
 		{
-			nativeSlider.Value = slider.Value;
+			platformView.Value = slider.Value;
 		}
 	}
 }

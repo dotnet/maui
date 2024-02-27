@@ -10,9 +10,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		public static void UpdateAutomationId(this Widget nativeView, IView view) { }
+		public static void UpdateAutomationId(this Widget platformView, IView view) { }
 
-		public static void UpdateBackground(this Widget nativeView, IView view)
+		public static void UpdateBackground(this Widget platformView, IView view)
 		{
 			var color = view.Background?.BackgroundColor;
 
@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Platform
 			if (color == null && css == null)
 				return;
 
-			switch (nativeView)
+			switch (platformView)
 			{
 				case ProgressBar:
-					nativeView.SetColor(color, "background-color", "trough > progress");
+					platformView.SetColor(color, "background-color", "trough > progress");
 
 					break;
 				case ComboBox box:
@@ -52,11 +52,11 @@ namespace Microsoft.Maui.Platform
 				default:
 					if (css != null)
 					{
-						nativeView.SetStyleValue(css, "background-image");
+						platformView.SetStyleValue(css, "background-image");
 					}
 					else
 					{
-						nativeView.SetBackgroundColor(color);
+						platformView.SetBackgroundColor(color);
 					}
 
 					break;
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Platform
 		public static Task UpdateBackgroundImageSourceAsync(this Widget platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 			=> Task.CompletedTask;
 
-		public static void UpdateForeground(this Widget nativeView, Paint? paint)
+		public static void UpdateForeground(this Widget platformView, Paint? paint)
 		{
 			if (paint == null)
 				return;
@@ -86,15 +86,15 @@ namespace Microsoft.Maui.Platform
 			if (color == null)
 				return;
 
-			switch (nativeView)
+			switch (platformView)
 			{
 				case ProgressBar:
-					nativeView.SetColor(color, "color", "trough > progress");
+					platformView.SetColor(color, "color", "trough > progress");
 
 					break;
 				case CheckButton:
 					// no effect as check is an icon
-					nativeView.SetColor(color, "color", "check");
+					platformView.SetColor(color, "color", "check");
 
 					break;
 				case ComboBox box:
@@ -102,51 +102,51 @@ namespace Microsoft.Maui.Platform
 
 					break;
 				default:
-					nativeView.SetForegroundColor(color);
+					platformView.SetForegroundColor(color);
 
 					break;
 			}
 		}
 
-		public static void UpdateIsEnabled(this Widget nativeView, IView view) =>
-			nativeView?.UpdateIsEnabled(view.IsEnabled);
+		public static void UpdateIsEnabled(this Widget platformView, IView view) =>
+			platformView?.UpdateIsEnabled(view.IsEnabled);
 
-		public static void UpdateVisibility(this Widget nativeView, IView view) =>
-			nativeView?.UpdateVisibility(view.Visibility);
+		public static void UpdateVisibility(this Widget platformView, IView view) =>
+			platformView?.UpdateVisibility(view.Visibility);
 
-		public static void UpdateSemantics(this Widget nativeView, IView view)
+		public static void UpdateSemantics(this Widget platformView, IView view)
 		{
 			if (view.Semantics is not { } semantics)
 				return;
 
-			nativeView.TooltipText = semantics.Hint;
+			platformView.TooltipText = semantics.Hint;
 
-			if (nativeView.Accessible is { } accessible and not Atk.NoOpObject && semantics.Description != null)
+			if (platformView.Accessible is { } accessible and not Atk.NoOpObject && semantics.Description != null)
 			{
 				accessible.Description = semantics.Description;
 			}
 		}
 
-		public static void UpdateOpacity(this Widget nativeView, IView view)
+		public static void UpdateOpacity(this Widget platformView, IView view)
 		{
-			nativeView.Opacity = view.Opacity;
+			platformView.Opacity = view.Opacity;
 		}
 
-		internal static void UpdateOpacity(this Widget nativeView, double opacity)
+		internal static void UpdateOpacity(this Widget platformView, double opacity)
 		{
-			nativeView.Opacity = opacity;
+			platformView.Opacity = opacity;
 		}
 
-		public static void UpdateClip(this WrapperView nativeView, IView view)
+		public static void UpdateClip(this WrapperView platformView, IView view)
 		{
-			nativeView.Clip = view.Clip;
+			platformView.Clip = view.Clip;
 		}
 
 		[MissingMapper]
-		public static void UpdateClip(this Widget nativeView, IView view) { }
+		public static void UpdateClip(this Widget platformView, IView view) { }
 
 		[MissingMapper]
-		public static void UpdateFlowDirection(this Widget nativeView, IView view) { }
+		public static void UpdateFlowDirection(this Widget platformView, IView view) { }
 
 		internal static Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
@@ -181,13 +181,13 @@ namespace Microsoft.Maui.Platform
 			return platformView.GetViewTransform();
 		}
 
-		internal static Matrix4x4 GetViewTransform(this Widget view)
+		internal static Matrix4x4 GetViewTransform(this Widget platformView)
 		{
-			if (view == null)
+			if (platformView == null)
 				return new Matrix4x4();
 
-			var bounds = view.GetPlatformViewBounds();
-			var scale = view.ScaleFactor;
+			var bounds = platformView.GetPlatformViewBounds();
+			var scale = platformView.ScaleFactor;
 
 			return new Matrix4x4()
 			{
@@ -196,9 +196,9 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		internal static Widget? GetParent(this Widget? view)
+		internal static Widget? GetParent(this Widget? platformView)
 		{
-			return view?.Parent;
+			return platformView?.Parent;
 		}
 
 		[MissingMapper]
@@ -219,12 +219,12 @@ namespace Microsoft.Maui.Platform
 		[MissingMapper]
 		public static void UpdateToolTip(this Widget? platformView, ToolTip? tooltip) { }
 
-		internal static IDisposable OnLoaded(this Widget? view, Action action)
+		internal static IDisposable OnLoaded(this Widget? platformView, Action action)
 		{
-			if (view is not { })
+			if (platformView is not { })
 				return new ActionDisposable(() => { });
 
-			if (view.IsLoaded())
+			if (platformView.IsLoaded())
 			{
 				action();
 				return new ActionDisposable(() => { });
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Platform
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
-					view.Realized -= routedEventHandler;
+					platformView.Realized -= routedEventHandler;
 			});
 
 			routedEventHandler = (_, __) =>
@@ -244,17 +244,17 @@ namespace Microsoft.Maui.Platform
 				action();
 			};
 
-			view.Realized += routedEventHandler;
+			platformView.Realized += routedEventHandler;
 			return disposable;
 		}
 
 		[MissingMapper]
-		internal static IDisposable OnUnloaded(this Widget? view, Action action)
+		internal static IDisposable OnUnloaded(this Widget? platformView, Action action)
 		{
-			if (view is not { })
+			if (platformView is not { })
 				return new ActionDisposable(() => { });
 
-			if (!view.IsLoaded())
+			if (!platformView.IsLoaded())
 			{
 				action();
 				return new ActionDisposable(() => { });
@@ -264,7 +264,7 @@ namespace Microsoft.Maui.Platform
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
-					view.Unrealized -= routedEventHandler;
+					platformView.Unrealized -= routedEventHandler;
 			});
 
 			routedEventHandler = (_, __) =>
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Platform
 				action();
 			};
 
-			view.Unrealized += routedEventHandler;
+			platformView.Unrealized += routedEventHandler;
 			return disposable;		}
 
 		public static bool IsLoaded(this Widget? platformView)
@@ -303,14 +303,14 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		internal static T? GetChildAt<T>(this Widget view, int index) where T : Widget
+		internal static T? GetChildAt<T>(this Widget platformView, int index) where T : Widget
 		{
-			if (view is Gtk.Container container && container.Children.Length < index)
+			if (platformView is Gtk.Container container && container.Children.Length < index)
 			{
 				return (T)container.Children[index];
 			}
 
-			if (view is Gtk.Bin bin && index == 0 && bin.Child is T child)
+			if (platformView is Gtk.Bin bin && index == 0 && bin.Child is T child)
 				return child;
 
 			return default;

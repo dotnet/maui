@@ -6,30 +6,30 @@ namespace Microsoft.Maui
 	public static class TextInputExtensions
 	{
 
-		public static void UpdateText(this Entry nativeEntry, ITextInput entry)
+		public static void UpdateText(this Entry platformView, ITextInput entry)
 		{
 			var text = entry.Text;
 
-			if (nativeEntry.Text != text)
+			if (platformView.Text != text)
 			{
 				if (!string.IsNullOrEmpty(text))
-					nativeEntry.Text = text;
+					platformView.Text = text;
 				else
 				{
-					nativeEntry.Buffer.SetText(string.Empty, -1);
+					platformView.Buffer.SetText(string.Empty, -1);
 
 				}
 			}
 
 		}
 
-		public static bool OnTextChanged(this Entry? nativeEntry, ITextInput? entry)
+		public static bool OnTextChanged(this Entry? platformView, ITextInput? entry)
 		{
-			if (entry == null || nativeEntry == null)
+			if (entry == null || platformView == null)
 				return false;
 
 			;
-			var text = nativeEntry.Text;
+			var text = platformView.Text;
 
 			if (entry.Text != text)
 			{
@@ -42,48 +42,48 @@ namespace Microsoft.Maui
 
 		}
 
-		public static void UpdatePlaceholder(this Entry nativeEntry, ITextInput entry)
+		public static void UpdatePlaceholder(this Entry platformView, ITextInput entry)
 		{
-			nativeEntry.PlaceholderText = entry.Placeholder;
+			platformView.PlaceholderText = entry.Placeholder;
 
 		}
 
-		public static void UpdateIsReadOnly(this Entry nativeEntry, ITextInput entry)
+		public static void UpdateIsReadOnly(this Entry platformView, ITextInput entry)
 		{
-			nativeEntry.IsEditable = !entry.IsReadOnly;
+			platformView.IsEditable = !entry.IsReadOnly;
 		}
 
-		public static void UpdateCursorPosition(this Gtk.Entry nativeEntry, IEntry entry)
+		public static void UpdateCursorPosition(this Gtk.Entry platformView, IEntry entry)
 		{
-			if (string.IsNullOrEmpty(nativeEntry.Text))
+			if (string.IsNullOrEmpty(platformView.Text))
 				return;
 
-			if (nativeEntry.Position != entry.CursorPosition)
-				nativeEntry.Position = entry.CursorPosition;
+			if (platformView.Position != entry.CursorPosition)
+				platformView.Position = entry.CursorPosition;
 		}
 
-		public static void UpdateSelectionLength(this Gtk.Entry nativeEntry, IEntry entry)
+		public static void UpdateSelectionLength(this Gtk.Entry platformView, IEntry entry)
 		{
-			if (string.IsNullOrEmpty(nativeEntry.Text))
+			if (string.IsNullOrEmpty(platformView.Text))
 				return;
 
-			nativeEntry.GetSelectionBounds(out var start, out var end);
+			platformView.GetSelectionBounds(out var start, out var end);
 
 			var length = end - start;
 
 			if (length != entry.SelectionLength)
 			{
-				nativeEntry.SelectRegion(start, entry.SelectionLength);
+				platformView.SelectRegion(start, entry.SelectionLength);
 			}
 		}
 
-		public static void OnCursorPositionChanged(this Entry? nativeEntry, IEntry? entry)
+		public static void OnCursorPositionChanged(this Entry? platformView, IEntry? entry)
 		{
-			if (entry == null || nativeEntry == null)
+			if (entry == null || platformView == null)
 				return;
 
 			;
-			var position = nativeEntry.Position;
+			var position = platformView.Position;
 
 			if (entry.CursorPosition != position)
 			{
@@ -92,12 +92,12 @@ namespace Microsoft.Maui
 
 		}
 
-		public static (int start, int end) GetSelection(this Entry? nativeEntry)
+		public static (int start, int end) GetSelection(this Entry? platformView)
 		{
-			if (nativeEntry == null)
+			if (platformView == null)
 				return default;
 
-			nativeEntry.GetSelectionBounds(out var start, out var end);
+			platformView.GetSelectionBounds(out var start, out var end);
 
 			return (start, end);
 		}
@@ -120,12 +120,12 @@ namespace Microsoft.Maui
 
 		}
 
-		public static void OnSelectionLengthChanged(this Entry? nativeEntry, IEntry? entry)
+		public static void OnSelectionLengthChanged(this Entry? platformView, IEntry? entry)
 		{
-			if (entry == null || nativeEntry == null)
+			if (entry == null || platformView == null)
 				return;
 
-			entry.OnSelectionLengthChanged(nativeEntry.GetSelection());
+			entry.OnSelectionLengthChanged(platformView.GetSelection());
 
 		}
 

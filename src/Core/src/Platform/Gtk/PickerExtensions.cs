@@ -9,47 +9,47 @@ namespace Microsoft.Maui
 	public static class PickerExtensions
 	{
 
-		public static Gtk.CellRendererText? GetCellRendererText(this Gtk.ComboBox? nativeView) =>
-			nativeView?.Cells.FirstOrDefault() is Gtk.CellRendererText cell ? cell : null;
+		public static Gtk.CellRendererText? GetCellRendererText(this Gtk.ComboBox? platformView) =>
+			platformView?.Cells.FirstOrDefault() is Gtk.CellRendererText cell ? cell : null;
 
-		public static void UpdateTextColor(this Gtk.ComboBox? nativeView, Color? color)
+		public static void UpdateTextColor(this Gtk.ComboBox? platformView, Color? color)
 		{
-			if (nativeView == null || color == null)
+			if (platformView == null || color == null)
 				return;
 
-			if (nativeView.HasEntry)
-				nativeView.SetColor(color, "color", "box.linked > entry.combo");
+			if (platformView.HasEntry)
+				platformView.SetColor(color, "color", "box.linked > entry.combo");
 
-			nativeView.GetCellRendererText().SetForeground(color);
+			platformView.GetCellRendererText().SetForeground(color);
 		}
 
-		public static void UpdateHorizontalTextAlignment(this Gtk.ComboBox? nativeView, TextAlignment? alignment)
+		public static void UpdateHorizontalTextAlignment(this Gtk.ComboBox? platformView, TextAlignment? alignment)
 		{
-			if (nativeView == null || alignment == null)
+			if (platformView == null || alignment == null)
 				return;
 
 			var nativeAlign = alignment.Value.ToXyAlign();
 
-			if (nativeView.HasEntry)
+			if (platformView.HasEntry)
 			{
-				nativeView.Entry.Xalign = nativeAlign;
+				platformView.Entry.Xalign = nativeAlign;
 			}
 
-			if (nativeView.GetCellRendererText() is { } cell)
+			if (platformView.GetCellRendererText() is { } cell)
 				cell.Xalign = nativeAlign;
 		}
 
-		public static void UpdateCharacterSpacing(this Gtk.ComboBox? nativeView, double spacing)
+		public static void UpdateCharacterSpacing(this Gtk.ComboBox? platformView, double spacing)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
-			if (nativeView.HasEntry)
+			if (platformView.HasEntry)
 			{
-				nativeView.Entry.Attributes = nativeView.Entry.Attributes.AttrListFor(spacing);
+				platformView.Entry.Attributes = platformView.Entry.Attributes.AttrListFor(spacing);
 			}
 
-			if (nativeView.GetCellRendererText() is { } cell)
+			if (platformView.GetCellRendererText() is { } cell)
 				cell.Attributes = cell.Attributes.AttrListFor(spacing);
 		}
 

@@ -4,11 +4,11 @@ namespace Microsoft.Maui
 {
 	public static class ProgressBarExtensions
 	{
-		public static void UpdateProgress(this ProgressBar nativeProgressBar, IProgress progress)
+		public static void UpdateProgress(this ProgressBar platformView, IProgress progress)
 		{
 			// https://docs.gtk.org/gtk3/method.ProgressBar.set_fraction.html
-			nativeProgressBar.Fraction = progress.Progress;
-			nativeProgressBar.TooltipText = $"{progress.Progress * 100}%";
+			platformView.Fraction = progress.Progress;
+			platformView.TooltipText = $"{progress.Progress * 100}%";
 		}
 	}
 }

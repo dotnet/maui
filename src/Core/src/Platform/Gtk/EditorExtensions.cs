@@ -6,10 +6,10 @@ namespace Microsoft.Maui
 	public static class EditorExtensions
 	{
 
-		public static void UpdateText(this TextView nativeEditor, IEditor editor)
+		public static void UpdateText(this TextView platformView, IEditor editor)
 		{
 			var text = editor.Text;
-			var buffer = nativeEditor.Buffer;
+			var buffer = platformView.Buffer;
 
 			if (buffer.Text == text) return;
 

@@ -4,9 +4,9 @@ namespace Microsoft.Maui.Platform
 {
 	public static class GraphicsViewExtensions
 	{
-		public static void UpdateDrawable(this PlatformTouchGraphicsView PlatformGraphicsView, IGraphicsView graphicsView)
+		public static void UpdateDrawable(this PlatformTouchGraphicsView platformView, IGraphicsView graphicsView)
 		{
-			PlatformGraphicsView.Drawable = graphicsView.Drawable;
+			platformView.Drawable = graphicsView.Drawable;
 		}
 	}
 }

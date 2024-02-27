@@ -4,15 +4,15 @@ namespace Microsoft.Maui
 {
 	public static class DatePickerExtensions
 	{
-		public static void UpdateDate(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
+		public static void UpdateDate(this MauiDatePicker platformView, IDatePicker datePicker)
 		{
-			nativeDatePicker.Date = datePicker.Date;
+			platformView.Date = datePicker.Date;
 
 		}
 		
-		public static void UpdateFormat(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
+		public static void UpdateFormat(this MauiDatePicker platformView, IDatePicker datePicker)
 		{
-			nativeDatePicker.Format = datePicker.Format;
+			platformView.Format = datePicker.Format;
 
 		}
 	}

@@ -7,14 +7,14 @@ namespace Microsoft.Maui.Platform
 	public static partial class WindowExtensions
 	{
 
-		public static void UpdateTitle(this Gtk.Window nativeWindow, IWindow window) =>
-			nativeWindow.Title = window.Title;
+		public static void UpdateTitle(this Gtk.Window platformWindow, IWindow window) =>
+			platformWindow.Title = window.Title;
 
-		public static IWindow GetWindow(this Gtk.Window nativeWindow)
+		public static IWindow GetWindow(this Gtk.Window platformWindow)
 		{
 			foreach (var window in MauiGtkApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.PlatformView is Gtk.Window win && win == nativeWindow)
+				if (window?.Handler?.PlatformView is Gtk.Window win && win == platformWindow)
 					return window;
 			}
 

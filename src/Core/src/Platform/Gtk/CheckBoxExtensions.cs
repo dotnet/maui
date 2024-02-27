@@ -4,9 +4,9 @@ namespace Microsoft.Maui
 {
 	public static class CheckBoxExtensions
 	{
-		public static void UpdateIsChecked(this CheckButton nativeCheckBox, ICheckBox checkBox)
+		public static void UpdateIsChecked(this CheckButton platformView, ICheckBox checkBox)
 		{
-			nativeCheckBox.Active = checkBox.IsChecked;
+			platformView.Active = checkBox.IsChecked;
 		}
 	}
 }

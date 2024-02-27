@@ -7,9 +7,9 @@ namespace Microsoft.Maui
 	{
 
 		[MissingMapper]
-		public static void UpdateScale(this Widget? nativeView, double scale)
+		public static void UpdateScale(this Widget? platformView, double scale)
 		{
-			if (nativeView == null || scale == 0)
+			if (platformView == null || scale == 0)
 				return;
 
 			// fails: transform' is not a valid property name

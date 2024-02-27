@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	public static class LayoutAlignmentExtensions
 	{
 
-		public static Align ToNative(this LayoutAlignment alignment) =>
+		public static Align ToPlatform(this LayoutAlignment alignment) =>
 			alignment switch
 			{
 				LayoutAlignment.Start => Align.Start,

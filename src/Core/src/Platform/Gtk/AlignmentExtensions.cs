@@ -4,7 +4,7 @@ namespace Microsoft.Maui
 {
 	public static class AlignmentExtensions
 	{
-		public static Align ToNative(this TextAlignment alignment)
+		public static Align ToPlatform(this TextAlignment alignment)
 		{
 			switch (alignment)
 			{

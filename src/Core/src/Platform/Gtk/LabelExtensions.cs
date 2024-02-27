@@ -9,18 +9,18 @@ namespace Microsoft.Maui
 	public static class LabelExtensions
 	{
 
-		public static void UpdateText(this Label nativeLabel, ILabel label, TextType type = TextType.Text)
+		public static void UpdateText(this Label platformView, ILabel label, TextType type = TextType.Text)
 		{
 			// https://docs.gtk.org/gtk3/method.Label.set_use_markup.html
 
 			if (type == TextType.Html)
 			{
-				nativeLabel.Markup = HtmlToPangoMarkup(label.Text);
+				platformView.Markup = HtmlToPangoMarkup(label.Text);
 			}
 			else
 			{
-				nativeLabel.UseMarkup = false;
-				nativeLabel.Text = label.Text;
+				platformView.UseMarkup = false;
+				platformView.Text = label.Text;
 			}
 
 		}
@@ -32,21 +32,21 @@ namespace Microsoft.Maui
 			return text;
 		}
 
-		public static void UpdateMaxLines(this Label nativeLabel, ILabel label)
+		public static void UpdateMaxLines(this Label platformView, ILabel label)
 		{
 			// nativeLabel.Lines = label.MaxLines;
-			nativeLabel.AdjustMaxLines();
+			platformView.AdjustMaxLines();
 
 		}
 
-		public static void AdjustMaxLines(this Label nativeLabel)
+		public static void AdjustMaxLines(this Label platformView)
 		{
-			if (nativeLabel.Lines > 0)
+			if (platformView.Lines > 0)
 			{
-				nativeLabel.LineWrap = true;
+				platformView.LineWrap = true;
 
-				if (nativeLabel.Ellipsize == EllipsizeMode.None)
-					nativeLabel.Ellipsize = EllipsizeMode.End;
+				if (platformView.Ellipsize == EllipsizeMode.None)
+					platformView.Ellipsize = EllipsizeMode.End;
 			}
 		}
 
@@ -109,7 +109,7 @@ namespace Microsoft.Maui
 			return res;
 		}
 
-		public static void UpdateLineBreakMode(this Label nativeLabel, ILabel label)
+		public static void UpdateLineBreakMode(this Label platformView, ILabel label)
 		{
 			var labelLineBreakMode = LineBreakMode.CharacterWrap;
 			var labelMaxLines = 0;
@@ -117,66 +117,66 @@ namespace Microsoft.Maui
 			switch (labelLineBreakMode)
 			{
 				case LineBreakMode.NoWrap:
-					nativeLabel.LineWrap = labelMaxLines > 0;
-					nativeLabel.Ellipsize = Pango.EllipsizeMode.None;
+					platformView.LineWrap = labelMaxLines > 0;
+					platformView.Ellipsize = Pango.EllipsizeMode.None;
 
 					break;
 				case LineBreakMode.WordWrap:
-					nativeLabel.LineWrap = true;
-					nativeLabel.Wrap = true;
+					platformView.LineWrap = true;
+					platformView.Wrap = true;
 
-					nativeLabel.LineWrapMode = Pango.WrapMode.Word;
-					nativeLabel.Ellipsize = Pango.EllipsizeMode.None;
+					platformView.LineWrapMode = Pango.WrapMode.Word;
+					platformView.Ellipsize = Pango.EllipsizeMode.None;
 
 					break;
 				case LineBreakMode.CharacterWrap:
-					nativeLabel.LineWrap = true;
-					nativeLabel.Wrap = true;
-					nativeLabel.LineWrapMode = Pango.WrapMode.Char;
-					nativeLabel.Ellipsize = Pango.EllipsizeMode.None;
+					platformView.LineWrap = true;
+					platformView.Wrap = true;
+					platformView.LineWrapMode = Pango.WrapMode.Char;
+					platformView.Ellipsize = Pango.EllipsizeMode.None;
 
 					break;
 				case LineBreakMode.HeadTruncation:
-					nativeLabel.LineWrap = true;
-					nativeLabel.Wrap = true;
-					nativeLabel.LineWrapMode = Pango.WrapMode.Word;
-					nativeLabel.Ellipsize = Pango.EllipsizeMode.Start;
+					platformView.LineWrap = true;
+					platformView.Wrap = true;
+					platformView.LineWrapMode = Pango.WrapMode.Word;
+					platformView.Ellipsize = Pango.EllipsizeMode.Start;
 
 					break;
 				case LineBreakMode.TailTruncation:
-					nativeLabel.LineWrap = true;
-					nativeLabel.LineWrapMode = Pango.WrapMode.Word;
-					nativeLabel.Wrap = true;
-					nativeLabel.Ellipsize = Pango.EllipsizeMode.End;
+					platformView.LineWrap = true;
+					platformView.LineWrapMode = Pango.WrapMode.Word;
+					platformView.Wrap = true;
+					platformView.Ellipsize = Pango.EllipsizeMode.End;
 
 					break;
 				case LineBreakMode.MiddleTruncation:
-					nativeLabel.LineWrap = true;
-					nativeLabel.Wrap = true;
-					nativeLabel.LineWrapMode = Pango.WrapMode.Word;
-					nativeLabel.Ellipsize = Pango.EllipsizeMode.Middle;
+					platformView.LineWrap = true;
+					platformView.Wrap = true;
+					platformView.LineWrapMode = Pango.WrapMode.Word;
+					platformView.Ellipsize = Pango.EllipsizeMode.Middle;
 
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 
-			nativeLabel.AdjustMaxLines();
+			platformView.AdjustMaxLines();
 		}
 
-		public static void UpdateHorizontalTextAlignment(this Label nativeLabel, ILabel label)
+		public static void UpdateHorizontalTextAlignment(this Label platformView, ILabel label)
 		{
-			nativeLabel.Justify = label.HorizontalTextAlignment.ToJustification();
-			nativeLabel.Xalign = label.HorizontalTextAlignment.ToXyAlign();
+			platformView.Justify = label.HorizontalTextAlignment.ToJustification();
+			platformView.Xalign = label.HorizontalTextAlignment.ToXyAlign();
 
-			if (nativeLabel is LabelView labelView)
+			if (platformView is LabelView labelView)
 				labelView.HorizontalTextAlignment = label.HorizontalTextAlignment;
 		}
 
-		public static void UpdateVerticalTextAlignment(this Label nativeLabel, ILabel label)
+		public static void UpdateVerticalTextAlignment(this Label platformView, ILabel label)
 		{
-			nativeLabel.Yalign = label.VerticalTextAlignment.ToXyAlign();
-			if (nativeLabel is LabelView labelView)
+			platformView.Yalign = label.VerticalTextAlignment.ToXyAlign();
+			if (platformView is LabelView labelView)
 				labelView.VerticalTextAlignment = label.VerticalTextAlignment;
 		}
 

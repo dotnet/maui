@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 		public static Thickness ToThickness(this Border it)
 			=> new(it.Left, it.Top, it.Right, it.Bottom);
 
-		public static Border ToNative(this Thickness it)
+		public static Border ToPlatform(this Thickness it)
 			=> new() { Left = (short)it.Left, Top = (short)it.Top, Right = (short)it.Right, Bottom = (short)it.Bottom };
 
 		public static TWidget? WithPadding<TWidget>(this TWidget? it, Thickness padding) where TWidget : Widget

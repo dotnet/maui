@@ -4,21 +4,21 @@ namespace Microsoft.Maui
 {
 	public static class StepperExtensions
 	{
-		public static void UpdateRange(this SpinButton nativeSlider, IRange slider)
+		public static void UpdateRange(this SpinButton platformView, IRange slider)
 		{
 			var minimum = slider.Minimum;
 			var maximum = slider.Maximum;
 
-			nativeSlider.SetRange(minimum, maximum);
+			platformView.SetRange(minimum, maximum);
 		}
 
-		public static void UpdateValue(this SpinButton nativeSlider, IRange slider)
+		public static void UpdateValue(this SpinButton platformView, IRange slider)
 		{
-			nativeSlider.Value = slider.Value;
+			platformView.Value = slider.Value;
 		}
-		public static void UpdateIncrement(this SpinButton nativeSlider, IStepper slider)
+		public static void UpdateIncrement(this SpinButton platformView, IStepper slider)
 		{
-			nativeSlider.SetIncrements(slider.Interval,1);
+			platformView.SetIncrements(slider.Interval,1);
 		}
 	}
 }

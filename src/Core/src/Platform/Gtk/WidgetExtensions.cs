@@ -10,19 +10,19 @@ namespace Microsoft.Maui
 	public static class WidgetExtensions
 	{
 
-		public static void UpdateIsEnabled(this Widget nativeView, bool isEnabled) =>
-			nativeView.Sensitive = isEnabled;
+		public static void UpdateIsEnabled(this Widget platformView, bool isEnabled) =>
+			platformView.Sensitive = isEnabled;
 
-		public static void UpdateVisibility(this Widget nativeView, Visibility visibility)
+		public static void UpdateVisibility(this Widget platformView, Visibility visibility)
 		{
 			switch (visibility)
 			{
 				case Visibility.Hidden:
-					nativeView.Visible = false;
+					platformView.Visible = false;
 
 					break;
 				case Visibility.Visible:
-					nativeView.Visible = true;
+					platformView.Visible = true;
 
 					break;
 				case Visibility.Collapsed:
@@ -34,11 +34,11 @@ namespace Microsoft.Maui
 		}
 
 		public static SizeRequest GetDesiredSize(
-			this Widget? nativeView,
+			this Widget? platformView,
 			double widthConstraint,
 			double heightConstraint)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return Graphics.Size.Zero;
 
 			if (widthConstraint < 0 || heightConstraint < 0)
@@ -55,12 +55,12 @@ namespace Microsoft.Maui
 
 			if (false &&(!widthConstrained && !heightConstrained))
 			{
-				nativeView.GetSizeRequest(out var w, out var h);
+				platformView.GetSizeRequest(out var w, out var h);
 
 				return new SizeRequest(new Size(w, h));
 			}
 
-			if (nativeView.RequestMode == SizeRequestMode.WidthForHeight)
+			if (platformView.RequestMode == SizeRequestMode.WidthForHeight)
 			{
 				if ((heightConstrained) && (widthConstrained))
 				{
@@ -70,21 +70,21 @@ namespace Microsoft.Maui
 				else if (widthConstrained)
 				{
 					minimumWidth = naturalWidth = (int)widthConstraint;
-					nativeView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
+					platformView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
 				}
 				else if (heightConstrained)
 				{
 					minimumHeight = naturalHeight = (int)heightConstraint;
-					nativeView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
+					platformView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
 				}
 
 				else
 				{
-					nativeView.GetPreferredHeight(out minimumHeight, out naturalHeight);
-					nativeView.GetPreferredWidthForHeight(minimumHeight, out minimumWidth, out naturalWidth);
+					platformView.GetPreferredHeight(out minimumHeight, out naturalHeight);
+					platformView.GetPreferredWidthForHeight(minimumHeight, out minimumWidth, out naturalWidth);
 				}
 			}
-			else if (nativeView.RequestMode == Gtk.SizeRequestMode.HeightForWidth)
+			else if (platformView.RequestMode == Gtk.SizeRequestMode.HeightForWidth)
 			{
 				if ((heightConstrained) && (widthConstrained))
 				{
@@ -94,87 +94,87 @@ namespace Microsoft.Maui
 				else if (heightConstrained)
 				{
 					minimumHeight = naturalHeight = (int)heightConstraint;
-					nativeView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
+					platformView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
 				}
 				else if (widthConstrained)
 				{
 					minimumWidth = naturalWidth = (int)widthConstraint;
-					nativeView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
+					platformView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
 				}
 
 				else
 				{
-					nativeView.GetPreferredWidth(out minimumWidth, out naturalWidth);
-					nativeView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
+					platformView.GetPreferredWidth(out minimumWidth, out naturalWidth);
+					platformView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
 				}
 			}
 			else
 			{
-				nativeView.GetPreferredWidth(out minimumWidth, out naturalWidth);
-				nativeView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
+				platformView.GetPreferredWidth(out minimumWidth, out naturalWidth);
+				platformView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
 			}
 
-			if (nativeView.WidthRequest > minimumWidth)
-				minimumWidth = nativeView.WidthRequest;
+			if (platformView.WidthRequest > minimumWidth)
+				minimumWidth = platformView.WidthRequest;
 
-			if (nativeView.HeightRequest > minimumHeight)
-				minimumHeight = nativeView.HeightRequest;
+			if (platformView.HeightRequest > minimumHeight)
+				minimumHeight = platformView.HeightRequest;
 
 			return new SizeRequest(new Size(naturalWidth, naturalHeight), new Size(minimumWidth, minimumHeight));
 #pragma warning restore CS0162 // Unreachable code detected
 		}
 
-		public static void Arrange(this Widget? nativeView, Rect rect)
+		public static void Arrange(this Widget? platformView, Rect rect)
 		{
-			if (nativeView == null)
+			if (platformView == null)
 				return;
 
 			if (rect.IsEmpty)
 				return;
 
-			if (rect != nativeView.Allocation.ToRect())
+			if (rect != platformView.Allocation.ToRect())
 			{
-				nativeView.SizeAllocate(rect.ToNative());
-				nativeView.QueueAllocate();
+				platformView.SizeAllocate(rect.ToNative());
+				platformView.QueueAllocate();
 			}
 		}
 
-		public static void InvalidateMeasure(this Widget nativeView, IView view)
+		public static void InvalidateMeasure(this Widget platformView, IView view)
 		{
-			nativeView.QueueAllocate();
+			platformView.QueueAllocate();
 		}
 
 		public static int Request(double viewSize) => viewSize >= 0 ? (int)viewSize : -1;
 
-		public static void UpdateWidth(this Widget nativeView, IView view)
+		public static void UpdateWidth(this Widget platformView, IView view)
 		{
 			var widthRequest = Request(view.Width);
 
-			if (widthRequest != -1 && widthRequest != nativeView.WidthRequest && widthRequest != nativeView.AllocatedWidth)
+			if (widthRequest != -1 && widthRequest != platformView.WidthRequest && widthRequest != platformView.AllocatedWidth)
 			{
-				nativeView.WidthRequest = widthRequest;
-				nativeView.QueueResize();
+				platformView.WidthRequest = widthRequest;
+				platformView.QueueResize();
 			}
 		}
 
-		public static void UpdateHeight(this Widget nativeView, IView view)
+		public static void UpdateHeight(this Widget platformView, IView view)
 		{
 			var heightRequest = Request(view.Height);
 
-			if (heightRequest != -1 && heightRequest != nativeView.HeightRequest && heightRequest != nativeView.AllocatedHeight)
+			if (heightRequest != -1 && heightRequest != platformView.HeightRequest && heightRequest != platformView.AllocatedHeight)
 			{
-				nativeView.HeightRequest = heightRequest;
-				nativeView.QueueResize();
+				platformView.HeightRequest = heightRequest;
+				platformView.QueueResize();
 			}
 		}
 
-		public static void UpdateFont(this Widget nativeView, ITextStyle textStyle, IFontManager fontManager)
+		public static void UpdateFont(this Widget platformView, ITextStyle textStyle, IFontManager fontManager)
 		{
 			var font = textStyle.Font;
 
 			var fontFamily = fontManager.GetFontFamily(font);
 #pragma warning disable 612
-			nativeView.ModifyFont(fontFamily);
+			platformView.ModifyFont(fontFamily);
 #pragma warning restore 612
 		}
 
@@ -252,10 +252,10 @@ namespace Microsoft.Maui
 		}
 
 		[MissingMapper]
-		public static void UpdateMaximumHeight(this Widget nativeView, IView view) { }
+		public static void UpdateMaximumHeight(this Widget platformView, IView view) { }
 
 		[MissingMapper]
-		public static void UpdateMaximumWidth(this Widget nativeView, IView view) { }
+		public static void UpdateMaximumWidth(this Widget platformView, IView view) { }
 
 	}
 
