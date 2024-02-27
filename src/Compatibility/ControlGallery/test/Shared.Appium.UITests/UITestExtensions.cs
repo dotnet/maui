@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
+using System.Drawing;
 
 namespace UITests
 {
@@ -74,6 +75,16 @@ namespace UITests
 				else
 					Assert.Ignore(message);
 			}
+		}
+
+		public static int CenterX(this Rectangle rect)
+		{
+			return rect.X + rect.Width / 2;
+		}
+
+		public static int CenterY(this Rectangle rect)
+		{
+			return rect.Y + rect.Height / 2;
 		}
 	}
 }

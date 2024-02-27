@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var buttonAdd = new Button
 			{
+				AutomationId = "AddButton",
 				Text = "Add",
 				HorizontalOptions = LayoutOptions.Start,
 				VerticalOptions = LayoutOptions.Center,
@@ -60,6 +61,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var buttonRemove = new Button
 			{
+				AutomationId = "RemoveButton",
 				Text = "Remove",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
@@ -67,6 +69,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var buttonScrollToBottom = new Button
 			{
+				AutomationId = "BottomButton",
 				Text = "Bottom",
 				HorizontalOptions = LayoutOptions.Start,
 				VerticalOptions = LayoutOptions.Center,
@@ -111,6 +114,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 					   }
 				   };
 
+				   nameLabel.SetBinding(AutomationIdProperty, "Name");
 				   nameLabel.SetBinding(Label.TextProperty, "Name");
 				   birthdayLabel.SetBinding(Label.TextProperty, new Binding("Birthday", BindingMode.OneWay, null, null, "Born {0:d}"));
 				   boxView.SetBinding(BoxView.ColorProperty, "FavoriteColor");

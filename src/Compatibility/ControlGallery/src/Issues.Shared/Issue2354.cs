@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
 			{
+				AutomationId = "TestListView",
 				ItemsSource = presidents,
 				ItemTemplate = cell,
 				RowHeight = 200
