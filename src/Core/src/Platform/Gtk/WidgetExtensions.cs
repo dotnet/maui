@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 			int naturalWidth = 0;
 #pragma warning disable CS0162 // Unreachable code detected
 
-			if (false)
+			if (false &&(!widthConstrained && !heightConstrained))
 			{
 				nativeView.GetSizeRequest(out var w, out var h);
 
