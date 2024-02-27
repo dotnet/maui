@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 
 	public partial class LabelHandler : ViewHandler<ILabel, LabelView>
 	{
+
 		private static Microsoft.Maui.Graphics.Platform.Gtk.TextLayout? _textLayout;
 		static PlatformStringSizeService? _stringSizeService;
 
@@ -20,7 +21,12 @@ namespace Microsoft.Maui.Handlers
 		// https://docs.gtk.org/gtk3/class.Label.html
 		protected override LabelView CreatePlatformView()
 		{
-			return new() { LineWrap = true, Halign = Align.Fill, Xalign = 0, };
+			return new()
+			{
+				LineWrap = true,
+				Halign = Align.Fill,
+				Xalign = 0,
+			};
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -30,13 +36,21 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is not { } virtualView)
 				return default;
-			
-			double? explicitWidth = (virtualView.Width >= 0) ? virtualView.Width : null;
-			double? explicitHeight = (virtualView.Height >= 0) ? virtualView.Height : null;
-			
-			var size = platformView.GetDesiredSize(
-				explicitWidth ?? widthConstraint,
-				explicitHeight ?? heightConstraint);
+
+			double explicitWidth = (virtualView.Width >= 0) ? virtualView.Width : widthConstraint;
+			double explicitHeight = (virtualView.Height >= 0) ? virtualView.Height : heightConstraint;
+
+			var widthConstrained = !double.IsPositiveInfinity(explicitWidth);
+			var heightConstrained = !double.IsPositiveInfinity(explicitHeight);
+			var size = platformView.GetDesiredSize(explicitWidth, explicitHeight);
+
+			platformView.GetPreferredSize(out var min, out var nat);
+
+			if (!widthConstrained && !heightConstrained)
+			{
+
+				return new Size(min.Width, min.Height);
+			}
 
 			return size;
 		}
@@ -125,6 +139,7 @@ namespace Microsoft.Maui.Handlers
 				nativeView.LineHeight = (float)label.LineHeight;
 			}
 		}
+
 	}
 
 }
