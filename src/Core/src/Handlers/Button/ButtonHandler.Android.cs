@@ -75,10 +75,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
 			if (handler is ButtonHandler buttonHandler)
-			{
-
 				buttonHandler.PlatformView?.UpdateBackground(button, buttonHandler._defaultDrawable);
-			}
 		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButton button)
