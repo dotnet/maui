@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// </summary>
 	public partial class BlazorWebView : View, IBlazorWebView
 	{
-		internal const string AppHostAddress = "localhost";
+		internal const string AppHostAddress = "127.0.0.1";
 
 		private readonly JSComponentConfigurationStore _jSComponents = new();
 
