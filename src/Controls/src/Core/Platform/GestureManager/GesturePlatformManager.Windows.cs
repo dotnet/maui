@@ -797,12 +797,30 @@ namespace Microsoft.Maui.Controls.Platform
 					return handled;
 				}
 
+				bool onlyDoubleTaps = false;
+
+				if (e is DoubleTappedRoutedEventArgs)
+				{
+					// Is there a recognizer that has exactly two taps?
+					foreach (var recognizer in tapGestures)
+					{
+						if (recognizer.NumberOfTapsRequired == 2)
+						{
+							onlyDoubleTaps = true;
+							break;
+						}
+					}
+				}
+
 				foreach (var recognizer in tapGestures)
 				{
-					recognizer.SendTapped(view, (relativeTo) => GetPosition(relativeTo, e));
+					if (!onlyDoubleTaps || recognizer.NumberOfTapsRequired == 2)
+					{
+						recognizer.SendTapped(view, (relativeTo) => GetPosition(relativeTo, e));
 
-					e.SetHandled(true);
-					handled = true;
+						e.SetHandled(true);
+						handled = true;
+					}
 				}
 
 				return handled;
@@ -827,7 +845,9 @@ namespace Microsoft.Maui.Controls.Platform
 					return false;
 
 				if (e is DoubleTappedRoutedEventArgs)
+				{
 					return g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2;
+				}
 
 				return g.NumberOfTapsRequired == 1;
 			}
