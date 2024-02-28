@@ -3,4 +3,35 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
+    <ContentPage.Resources>
+        <DataTemplate x:Key="validPersonTemplate">
+            <TextCell
+                Text="{Binding Name}" 
+                TextColor="Green"/>
+        </DataTemplate>
+        <DataTemplate x:Key="invalidPersonTemplate">
+            <TextCell
+                Text="{Binding Name}" 
+                TextColor="Red"/>
+        </DataTemplate>
+        <local:PersonDataTemplateSelector x:Key="personDataTemplateSelector"
+                                          ValidTemplate="{StaticResource validPersonTemplate}"
+                                          InvalidTemplate="{StaticResource invalidPersonTemplate}" />
+    </ContentPage.Resources>
+
+    <VerticalStackLayout
+        Margin="0,20,0,0">
+        <ListView x:Name="collectionView"
+                        
+                        HeightRequest="200"
+                        ItemTemplate="{StaticResource personDataTemplateSelector}" />
+
+        <Button
+            Text="Add New"
+            Clicked="AddButton_Clicked"/>
+        <Button
+            Text="Remove Selected"
+            Clicked="RemoveButton_Clicked"/>
+
+    </VerticalStackLayout>
 </ContentPage>
