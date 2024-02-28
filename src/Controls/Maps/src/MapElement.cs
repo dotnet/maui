@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Maps
 			5f);
 
 		/// <summary>
-		/// Gets or sets the stroke color.
+		/// Gets or sets the stroke color. This is a bindable property.
 		/// </summary>
 		public Color StrokeColor
 		{
@@ -36,7 +36,8 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// Gets or sets the stroke width.
+		/// Gets or sets the stroke width. The default value is <c>5f</c>.
+		/// This is a bindable property.
 		/// </summary>
 		public float StrokeWidth
 		{

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Maps
 			default(Color));
 
 		/// <summary>
-		/// Gets or sets the fill color.
+		/// Gets or sets the fill color. This is a bindable property.
 		/// </summary>
 		public Color FillColor
 		{

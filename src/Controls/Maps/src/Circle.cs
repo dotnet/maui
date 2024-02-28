@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Maps
 			null);
 
 		/// <summary>
-		/// Gets or sets the center location.
+		/// Gets or sets the center location. This is a bindable property.
 		/// </summary>
 		public Location Center
 		{
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// Gets or sets the radius.
+		/// Gets or sets the radius. This is a bindable property.
 		/// </summary>
 		public Distance Radius
 		{
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// Gets or sets the fill color.
+		/// Gets or sets the fill color. This is a bindable property.
 		/// </summary>
 		public Color FillColor
 		{
