@@ -35,6 +35,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}
 			catch
 			{
+				SaveUIDiagnosticInfo();
+
 				// Just in case these tests leave the app in an unreliable state
 				App.ResetApp();
 				FixtureSetup();
