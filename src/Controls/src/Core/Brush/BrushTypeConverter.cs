@@ -30,13 +30,24 @@ namespace Microsoft.Maui.Controls
 		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
 
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-			=> sourceType == typeof(string);
+			=> sourceType == typeof(string)
+				|| sourceType == typeof(Color)
+				|| sourceType == typeof(Paint);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-			=> false;
+			=> destinationType == typeof(Paint);
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			if (value is Color color)
+			{
+				return (Brush)color;
+			}
+			else if (value is Paint paint)
+			{
+				return (Brush)paint;
+			}
+
 			var strValue = value?.ToString();
 
 			if (strValue != null)
@@ -70,9 +81,15 @@ namespace Microsoft.Maui.Controls
 			return new SolidColorBrush(null);
 		}
 
-
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
-			=> throw new NotSupportedException();
+		{
+			if (value is Brush brush && destinationType == typeof(Paint))
+			{
+				return (Paint)brush;
+			}
+
+			throw new NotSupportedException();
+		}
 
 		public class GradientBrushParser
 		{
