@@ -340,9 +340,9 @@ namespace Microsoft.Maui.Graphics
 		/// <summary>
 		/// Calculates the area a string would occupy if drawn on the canvas.
 		/// </summary>
-		/// <param name="value">Text to calculate the size on.</param>
-		/// <param name="font"></param>
-		/// <param name="fontSize"></param>
+		/// <param name="value">String to calculate the size on.</param>
+		/// <param name="font">The string's font type.</param>
+		/// <param name="fontSize">The string's font size.</param>
 		/// <returns>The size of </returns>
 		public SizeF GetStringSize(string value, IFont font, float fontSize);
 
