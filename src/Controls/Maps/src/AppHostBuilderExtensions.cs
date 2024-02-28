@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		/// </summary>
 		/// <param name="builder">The <see cref="MauiAppBuilder"/> to configure.</param>
 		/// <returns>The configured <see cref="MauiAppBuilder"/>.</returns>
+		/// <exception cref="NotImplementedException">Thrown on Windows because the maps control currently is not implemented for Windows.</exception>
 		public static MauiAppBuilder UseMauiMaps(this MauiAppBuilder builder)
 		{
 			builder
@@ -56,6 +57,12 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
+		/// <summary>
+		/// Registers the .NET MAUI Maps handlers that are needed to render the map control.
+		/// </summary>
+		/// <param name="handlersCollection">An instance of <see cref="IMauiHandlersCollection"/> on which to register the map handlers.</param>
+		/// <returns>The provided <see cref="IMauiHandlersCollection"/> object with the registered map handlers for subsequent registration calls.</returns>
+		/// <exception cref="NotImplementedException">Thrown on Windows because the maps control currently is not implemented for Windows.</exception>
 		public static IMauiHandlersCollection AddMauiMaps(this IMauiHandlersCollection handlersCollection)
 		{
 #if __ANDROID__ || __IOS__
