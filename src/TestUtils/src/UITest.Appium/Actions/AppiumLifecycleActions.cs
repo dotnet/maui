@@ -74,6 +74,8 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			_app.Driver.BackgroundApp();
+			if (_app.GetTestDevice() == TestDevice.Android)
+				Thread.Sleep(500);
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
