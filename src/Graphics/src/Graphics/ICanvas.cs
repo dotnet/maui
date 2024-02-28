@@ -338,7 +338,7 @@ namespace Microsoft.Maui.Graphics
 		public void DrawImage(IImage image, float x, float y, float width, float height);
 
 		/// <summary>
-		/// Calculates the are a string would occupy if drawn on the canvas.
+		/// Calculates the area a string would occupy if drawn on the canvas.
 		/// </summary>
 		/// <param name="value">Text to calculate the size on.</param>
 		/// <param name="font"></param>
@@ -347,7 +347,7 @@ namespace Microsoft.Maui.Graphics
 		public SizeF GetStringSize(string value, IFont font, float fontSize);
 
 		/// <summary>
-		/// Calculates the are a string would occupy if drawn on the canvas.
+		/// Calculates the area a string would occupy if drawn on the canvas.
 		/// </summary>
 		/// <param name="value">String to calculate the size on.</param>
 		/// <param name="font">The string's font type.</param>
