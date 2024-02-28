@@ -8,6 +8,7 @@ Certain features of MAUI can be enabled or disabled using feature switches. The 
 | MauiEnableIVisualAssemblyScanning | Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled | When enabled, MAUI will scan assemblies for types implementing `IVisual` and for `[assembly: Visual(...)]` attributes and register these types. |
 | MauiShellSearchResultsRendererDisplayMemberNameSupported | Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported | When disabled, it is necessary to always set `ItemTemplate` of any `SearchHandler`. Displaying search results through `DisplayMemberName` will not work. |
 | MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
+| MauiImplicitCastOperatorsUsageViaReflectionSupport | Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported | When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This feature is not trim-compatible. |
 
 ## MauiXamlRuntimeParsingSupport
 
@@ -26,3 +27,26 @@ When this feature is disabled, any value set to [`SearchHandler.DisplayMemberNam
 ## MauiQueryPropertyAttributeSupport
 
 When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. Instead, implement the [`IQueryAttributable`](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation#process-navigation-data-using-a-single-method) interface whenever you need to accept query parameters.
+
+## MauiImplicitCastOperatorsUsageViaReflectionSupport
+
+When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This can affact the following scenarios:
+- bindings between properties with different types,
+- setting a property value of a bindable object with a value of different type.
+
+If your library or your app defines an implicit operator on a type that can be used in one of the previous scenarios, you should define a custom `TypeConverter` for your type and attach it to the type using the `[TypeConverter(typeof(MyTypeConverter))]` attribute.
+
+If you need to define a type converter for a type that you don't own, you can use `MauiAppBuilder.ConfigureTypeConversions`:
+
+```c#
+var builder = MauiApp.CreateBuilder();
+builder
+    .UseMauiApp<App>()
+    .ConfigureTypeConversions(config =>
+    {
+        config.AddTypeConverter<MyTypeA, MyTypeAConverter>();
+        config.AddTypeConverter<MyTypeB>(() => new MyTypeBConverter(myFlag: false));
+    });
+```
+
+_Note: Prefer using the `TypeConverterAttribute` as it can help the trimmer achieve better binary size in certain scenarios._
