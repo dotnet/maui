@@ -39,13 +39,13 @@ namespace Microsoft.Maui.Controls
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value is Color color)
+			if (value is Color colorValue)
 			{
-				return (Brush)color;
+				return (Brush)colorValue;
 			}
-			else if (value is Paint paint)
+			else if (value is Paint paintValue)
 			{
-				return (Brush)paint;
+				return (Brush)paintValue;
 			}
 
 			var strValue = value?.ToString();

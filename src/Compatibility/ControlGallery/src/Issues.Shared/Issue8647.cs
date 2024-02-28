@@ -64,11 +64,29 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			}
 		}
 
+		[TypeConverter(typeof(ItemTypeConverter))]
 		class Item
 		{
 			public string Value { get; set; }
 
 			public static implicit operator Item(string value) => new Item { Value = value };
+
+			private sealed class ItemTypeConverter : TypeConverter
+			{
+				public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+					=> sourceType == typeof(string);
+				public override object ConvertFromInvariantString(string value)
+					=> new Item { Value = value };
+				public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+					=> value switch
+					{
+						string str => (Item)str,
+						_ => throw new NotSupportedException(),
+					};
+
+				public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => false;
+				public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType) => throw new NotSupportedException();
+			}
 		}
 	}
 }

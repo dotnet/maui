@@ -16,6 +16,7 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	[Obsolete]
+	[TypeConverter(typeof(PlatformTypeConverter))]
 	public class Platform : BindableObject, IPlatformLayout, INavigation
 	{
 		readonly Context _context;
@@ -719,6 +720,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		#endregion
+
+		private sealed class PlatformTypeConverter : TypeConverter
+		{
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => destinationType == typeof(ViewGroup);
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+				=> value switch
+				{
+					Platform platformValue when destinationType == typeof(ViewGroup) => (ViewGroup)platformValue,
+					_ => throw new NotSupportedException(),
+				};
+
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) => false;
+			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) => throw new NotSupportedException();
+		}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 		internal class DefaultRenderer : VisualElementRenderer<View>, ILayoutChanges
