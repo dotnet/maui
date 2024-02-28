@@ -14,6 +14,9 @@ using Android.Gms.Maps;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
+	/// <summary>
+	/// This class contains the Map's <see cref="MauiAppBuilder"/> extensions.
+	/// </summary>
 	public static partial class AppHostBuilderExtensions
 	{
 		/// <summary>

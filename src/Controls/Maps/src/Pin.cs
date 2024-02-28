@@ -45,7 +45,8 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// Gets or sets the kind of pin.
+		/// Gets or sets the kind of pin. The default value is <see cref="PinType.Generic"/>.
+		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>Depending on the platform, and versions of the platform, this might change the visual representation. This varies between the different platforms.</remarks>
 		public PinType Type
