@@ -10,12 +10,16 @@ namespace Microsoft.Maui.Controls
 		internal IDisposable? SetupHideSoftInputOnTapped(UIView uiView)
 		{
 			if (!FeatureEnabled || uiView.Window is null)
+			{
 				return null;
+			}
 
-			var firstResponder = uiView.FindFirstResponder(v => v is UITextField or UITextView);
+			var firstResponder = uiView.FindFirstResponder();
 
-			if (firstResponder is null)
+			if (firstResponder is not (UITextField or UITextView))
+			{
 				return null;
+			}
 
 			return ResignFirstResponderTouchGestureRecognizer
 					.Update(firstResponder);
