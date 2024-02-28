@@ -8,7 +8,7 @@ using Microsoft.Maui.Maps;
 namespace Microsoft.Maui.Controls.Maps
 {
 	/// <summary>
-	/// Represents an element which is visually drawn on the map control.
+	/// Represents an element which is visually drawn on the <see cref="Map"/> control.
 	/// </summary>
 	public partial class MapElement : Element
 	{

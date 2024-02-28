@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// Gets or sets if scrolling by user input is enabled. Default value is <see langword="true"/>.
+		/// Gets or sets a value that indicates if scrolling by user input is enabled. Default value is <see langword="true"/>.
 		/// This is a bindable property.
 		/// </summary>
 		public bool IsScrollEnabled
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// Gets or sets if zooming by user input is enabled. Default value is <see langword="true"/>.
+		/// Gets or sets a value that indicates if zooming by user input is enabled. Default value is <see langword="true"/>.
 		/// This is a bindable property.
 		/// </summary>
 		public bool IsZoomEnabled
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// Gets or sets if the map shows an indicator of the current position of this device. Default value is <see langword="false"/>
+		/// Gets or sets a value that indicates if the map shows an indicator of the current position of this device. Default value is <see langword="false"/>
 		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>Depending on the platform it is likely that runtime permission(s) need to be requested to determine the current location of the device.</remarks>
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// Gets or sets if the map shows current traffic information. Default value is <see langword="false"/>.
+		/// Gets or sets a value that indicates if the map shows current traffic information. Default value is <see langword="false"/>.
 		/// This is a bindable property.
 		/// </summary>
 		public bool IsTrafficEnabled

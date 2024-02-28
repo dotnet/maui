@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Maps
 		/// </summary>
 		Location Center { get; }
 
-		
+		/// <summary>
+		/// Gets the radius.
+		/// </summary>
 		Distance Radius { get; }
 	}
 }

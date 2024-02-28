@@ -6,7 +6,7 @@ using Microsoft.Maui.Maps;
 namespace Microsoft.Maui.Controls.Maps
 {
 	/// <summary>
-	/// Represents a pin on the map control.
+	/// Represents a pin on the <see cref="Map"/> control.
 	/// </summary>
 	public partial class Pin : Element
 	{
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		///	Equality operator for equals.
+		/// Equality operator for equals.
 		/// </summary>
 		/// <param name="left">Left to compare.</param>
 		/// <param name="right">Right to compare.</param>
