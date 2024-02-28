@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Graphics
 		/// <param name="value">String to calculate the size on.</param>
 		/// <param name="font">The string's font type.</param>
 		/// <param name="fontSize">The string's font size.</param>
-		/// <returns>The size of </returns>
+		/// <returns>The area the string would occupy on the canvas.</returns>
 		public SizeF GetStringSize(string value, IFont font, float fontSize);
 
 		/// <summary>
@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Graphics
 		/// <param name="fontSize">The string's font size.</param>
 		/// <param name="horizontalAlignment">Horizontal alignment options for the string.</param>
 		/// <param name="verticalAlignment">Vertical alignment options for the string.</param>
-		/// <returns></returns>
+		/// <returns>The area the string would occupy on the canvas.</returns>
 		public SizeF GetStringSize(string value, IFont font, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment);
 	}
 }
