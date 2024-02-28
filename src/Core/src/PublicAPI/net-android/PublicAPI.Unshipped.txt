@@ -140,3 +140,8 @@ virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Mic
 ~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 ~override Microsoft.Maui.Platform.WrapperView.GetClipPath(int width, int height) -> Android.Graphics.Path
 *REMOVED*override Microsoft.Maui.Animations.PlatformTicker.SystemEnabled.get -> bool
+Microsoft.Maui.Hosting.TypeConversionAppBuilderExtensions
+static Microsoft.Maui.Hosting.TypeConversionAppBuilderExtensions.ConfigureTypeConversions(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.ITypeConversionBuilder!>! configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+Microsoft.Maui.Hosting.ITypeConversionBuilder
+Microsoft.Maui.Hosting.ITypeConversionBuilder.AddTypeConverter<T, TConverter>() -> Microsoft.Maui.Hosting.ITypeConversionBuilder!
+Microsoft.Maui.Hosting.ITypeConversionBuilder.AddTypeConverter<T>(System.Func<System.ComponentModel.TypeConverter!>! createConverter) -> Microsoft.Maui.Hosting.ITypeConversionBuilder!
