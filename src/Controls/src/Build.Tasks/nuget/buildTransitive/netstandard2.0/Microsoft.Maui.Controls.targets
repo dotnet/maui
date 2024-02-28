@@ -231,7 +231,7 @@
                                       Condition="'$(MauiQueryPropertyAttributeSupport)' != ''"
                                       Value="$(MauiQueryPropertyAttributeSupport)"
                                       Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupport"
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported"
                                       Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
                                       Value="$(MauiImplicitCastOperatorsUsageViaReflectionSupport)"
                                       Trim="true" />
