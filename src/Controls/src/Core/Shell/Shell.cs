@@ -84,6 +84,13 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
 			BindableProperty.CreateAttached("FlyoutItemIsVisible", typeof(bool), typeof(Shell), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
 		public static bool GetFlyoutItemIsVisible(BindableObject obj) => (bool)obj.GetValue(FlyoutItemIsVisibleProperty);
+
+		/// <summary>
+		/// Sets the visibility of Flyout items.
+		/// Flyout items are visible in the flyout by default. However, an item can be hidden in the flyout with the FlyoutItemIsVisible property.
+		/// </summary>
+		/// <param name="obj">The BindableObject that sets the visibility of Flyout items.</param>
+		/// <param name="isVisible">Set the visibility of Flyout items.</param>
 		public static void SetFlyoutItemIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(FlyoutItemIsVisibleProperty, isVisible);
 
 		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
@@ -108,7 +115,14 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetMenuItemTemplate']/Docs/*" />
 		public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetMenuItemTemplate']/Docs/*" />
+
+		/// <summary>
+		/// Sets the DataTemplate applied to MenuItem objects in the MenuItems collection.
+		/// Shell provides the Text and IconImageSource properties to the BindingContext of the MenuItemTemplate. 
+		/// You can also use Title in place of Text and Icon in place of IconImageSource which will let you reuse the same template for menu items and flyout items.
+		/// </summary>
+		/// <param name="obj">The BindableObject that sets the DataTemplate applied to MenuItem objects.</param>
+		/// <param name="menuItemTemplate">The DataTemplate applied to MenuItem objects.</param>
 		public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
 
 		/// <summary>Bindable property for attached property <c>ItemTemplate</c>.</summary>
@@ -117,7 +131,12 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetItemTemplate']/Docs/*" />
 		public static DataTemplate GetItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(ItemTemplateProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetItemTemplate']/Docs/*" />
+
+		/// <summary>
+		/// Sets DataTemplate applied to each ShellItem object managed by Shell.
+		/// </summary>
+		/// <param name="obj">The BindableObject that sets the DataTemplate applied to Item objects.</param>
+		/// <param name="itemTemplate">The DataTemplate applied to Item objects.</param>
 		public static void SetItemTemplate(BindableObject obj, DataTemplate itemTemplate) => obj.SetValue(ItemTemplateProperty, itemTemplate);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetBackButtonBehavior']/Docs/*" />
@@ -127,44 +146,109 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetPresentationMode']/Docs/*" />
 		public static PresentationMode GetPresentationMode(BindableObject obj) => (PresentationMode)obj.GetValue(PresentationModeProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetPresentationMode']/Docs/*" />
+
+		/// <summary>
+		/// Sets the navigation animation that occurs when a page is navigated to with the GoToAsync method.
+		/// Can set to one of the PresentationMode enumeration members:
+		/// - NotAnimated - indicates that the page will be displayed without a navigation animation.
+		/// - Animated - indicates that the page will be displayed with a navigation animation.This is the default value of the Shell.PresentationMode attached property.
+		/// - Modal - indicates that the page will be displayed as a modal page.
+		/// - ModalAnimated - indicates that the page will be displayed as a modal page, with a navigation animation.
+		/// - ModalNotAnimated - indicates that the page will be displayed as a modal page, without a navigation animation.
+		/// </summary>
+		/// <param name="obj">The BindableObject that modify the Shell tabs visibility.</param>
+		/// <param name="presentationMode">Define the navigation animation that occurs when a page is navigated.</param>
 		public static void SetPresentationMode(BindableObject obj, PresentationMode presentationMode) => obj.SetValue(PresentationModeProperty, presentationMode);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetFlyoutBehavior']/Docs/*" />
 		public static FlyoutBehavior GetFlyoutBehavior(BindableObject obj) => (FlyoutBehavior)obj.GetValue(FlyoutBehaviorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetFlyoutBehavior']/Docs/*" />
+
+		/// <summary>
+		/// Sets the behavior used to open the flyout.
+		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen. 
+		/// However, this behavior can be changed by setting the Shell.FlyoutBehavior attached property to one of the FlyoutBehavior enumeration members:
+		/// - Disabled - indicates that the flyout can't be opened by the user.
+		/// - Flyout - indicates that the flyout can be opened and closed by the user.This is the default value for the FlyoutBehavior property.
+		/// - Locked - indicates that the flyout can't be closed by the user, and that it doesn't overlap content.
+		/// </summary>
+		/// <param name="obj">The BindableObject that modify the Shell behavior used to open the flyout.</param>
+		/// <param name="value">The behavior used to open the flyout.</param>
 		public static void SetFlyoutBehavior(BindableObject obj, FlyoutBehavior value) => obj.SetValue(FlyoutBehaviorProperty, value);
 
 		public static double GetFlyoutWidth(BindableObject obj) => (double)obj.GetValue(FlyoutWidthProperty);
+
+		/// <summary>
+		/// Sets the width of the flyout.
+		/// This enables scenarios such as expanding the flyout across the entire screen.
+		/// </summary>
+		/// <param name="obj">The BindableObject that modify the width of the flyout.</param>
+		/// <param name="value">Define the width of the flyout.</param>
 		public static void SetFlyoutWidth(BindableObject obj, double value) => obj.SetValue(FlyoutWidthProperty, value);
 
 		public static double GetFlyoutHeight(BindableObject obj) => (double)obj.GetValue(FlyoutHeightProperty);
-		public static void SetFlyoutHeight(BindableObject obj, double value) => obj.SetValue(FlyoutHeightProperty, value);
 
+		/// <summary>
+		/// Sets the height of the flyout.
+		/// The height of the flyout can be customized by setting the Shell.FlyoutHeight attached properties to double value.
+		/// This enables scenarios such as reducing the height of the flyout so that it doesn't obscure the tab bar.
+		/// </summary>
+		/// <param name="obj">The BindableObject that modify the height of the flyout.</param>
+		/// <param name="value">Define the height of the flyout.</param>
+		public static void SetFlyoutHeight(BindableObject obj, double value) => obj.SetValue(FlyoutHeightProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetNavBarIsVisible']/Docs/*" />
 		public static bool GetNavBarIsVisible(BindableObject obj) => (bool)obj.GetValue(NavBarIsVisibleProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetNavBarIsVisible']/Docs/*" />
+
+		/// <summary>
+		/// Controls if the navigation bar is visible when a page is presented. 
+		/// By default the value of the property is true.
+		/// </summary>
+		/// <param name="obj">The BindableObject that modify the navigation bar visibility.</param>
+		/// <param name="value">Manage the navigation bar visibility.</param>
 		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetNavBarHasShadow']/Docs/*" />
 		public static bool GetNavBarHasShadow(BindableObject obj) => (bool)obj.GetValue(NavBarHasShadowProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetNavBarHasShadow']/Docs/*" />
+
+		/// <summary>
+		/// Controls whether the navigation bar has a shadow. 
+		/// By default the value of the property is true on Android, and false on other platforms.
+		/// </summary>
+		/// <param name="obj">The BindableObject that modify if the navigation bar has a shadow.</param>
+		/// <param name="value">Manage if the navigation bar has a shadow.</param>
 		public static void SetNavBarHasShadow(BindableObject obj, bool value) => obj.SetValue(NavBarHasShadowProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetSearchHandler']/Docs/*" />
 		public static SearchHandler GetSearchHandler(BindableObject obj) => (SearchHandler)obj.GetValue(SearchHandlerProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetSearchHandler']/Docs/*" />
+
+		/// <summary>
+		/// Enable the integrated search functionality in Shell.
+		/// Enabling it results in a search box being added at the top of the page.
+		/// </summary>
+		/// <param name="obj">The BindableObject that modify the Shell search functionality.</param>
+		/// <param name="handler">Define the integrated search functionality in Shell.</param>
 		public static void SetSearchHandler(BindableObject obj, SearchHandler handler) => obj.SetValue(SearchHandlerProperty, handler);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTabBarIsVisible']/Docs/*" />
 		public static bool GetTabBarIsVisible(BindableObject obj) => (bool)obj.GetValue(TabBarIsVisibleProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetTabBarIsVisible']/Docs/*" />
+
+		/// <summary>
+		/// Sets the tabs visibility in Shell.
+		/// The tab bar and tabs are visible in Shell applications by default. However, the tab bar can be hidden by setting the Shell.TabBarIsVisible attached property to false.
+		/// While this property can be set on a subclassed Shell object, it's typically set on any ShellContent or ContentPage objects that want to make the tab bar invisible.
+		/// </summary>
+		/// <param name="obj">The BindableObject that modify the Shell tabs visibility.</param>
+		/// <param name="value">The tabs visibility in Shell.</param>
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTitleView']/Docs/*" />
 		public static View GetTitleView(BindableObject obj) => (View)obj.GetValue(TitleViewProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetTitleView']/Docs/*" />
+
+		/// <summary>
+		/// Sets any View to be displayed in the navigation bar.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the TitleView is set.</param>
+		/// <param name="value">The View to be displayed in the navigation bar.</param>
 		public static void SetTitleView(BindableObject obj, View value) => obj.SetValue(TitleViewProperty, value);
 
 		static void OnFlyoutBehaviorChanged(BindableObject bindable, object oldValue, object newValue)
@@ -256,47 +340,98 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetForegroundColor']/Docs/*" />
 		public static Color GetForegroundColor(BindableObject obj) => (Color)obj.GetValue(ForegroundColorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetForegroundColor']/Docs/*" />
+
+		/// <summary>
+		/// Defines the foreground color for the tab bar. 
+		/// If the property is unset, the ForegroundColor property value is used.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the foreground color is set.</param>
+		/// <param name="value">The foreground color for the tab bar.</param>
 		public static void SetForegroundColor(BindableObject obj, Color value) => obj.SetValue(ForegroundColorProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTabBarBackgroundColor']/Docs/*" />
 		public static Color GetTabBarBackgroundColor(BindableObject obj) => (Color)obj.GetValue(TabBarBackgroundColorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetTabBarBackgroundColor']/Docs/*" />
+
+		/// <summary>
+		/// Sets the background color for the tab bar. 
+		/// If the property is unset, the BackgroundColor property value is used.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <param name="value">The background color for the tab bar.</param>
 		public static void SetTabBarBackgroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarBackgroundColorProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTabBarDisabledColor']/Docs/*" />
 		public static Color GetTabBarDisabledColor(BindableObject obj) => (Color)obj.GetValue(TabBarDisabledColorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetTabBarDisabledColor']/Docs/*" />
+
+		/// <summary>
+		/// Sets the disabled color for the tab bar. 
+		/// If the property is unset, the DisabledColor property value is used.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <param name="value">The disabled color for the tab bar.</param>
 		public static void SetTabBarDisabledColor(BindableObject obj, Color value) => obj.SetValue(TabBarDisabledColorProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTabBarForegroundColor']/Docs/*" />
 		public static Color GetTabBarForegroundColor(BindableObject obj) => (Color)obj.GetValue(TabBarForegroundColorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetTabBarForegroundColor']/Docs/*" />
+
+		/// <summary>
+		/// Sets the foreground color for the tab bar. 
+		/// If the property is unset, the ForegroundColor property value is used.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <param name="value">The foreground color for the tab bar.</param>
 		public static void SetTabBarForegroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarForegroundColorProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTabBarTitleColor']/Docs/*" />
 		public static Color GetTabBarTitleColor(BindableObject obj) => (Color)obj.GetValue(TabBarTitleColorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetTabBarTitleColor']/Docs/*" />
+
+		/// <summary>
+		/// Sets the title color for the tab bar. 
+		/// If the property is unset, the TitleColor property value will be used.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <param name="value">The title color for the tab bar.</param>
 		public static void SetTabBarTitleColor(BindableObject obj, Color value) => obj.SetValue(TabBarTitleColorProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTabBarUnselectedColor']/Docs/*" />
 		public static Color GetTabBarUnselectedColor(BindableObject obj) => (Color)obj.GetValue(TabBarUnselectedColorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetTabBarUnselectedColor']/Docs/*" />
+
+		/// <summary>
+		/// Sets the unselected color for the tab bar. 
+		/// If the property is unset, the UnselectedColor property value is used.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <param name="value">The unselected color for the tab bar.</param>
 		public static void SetTabBarUnselectedColor(BindableObject obj, Color value) => obj.SetValue(TabBarUnselectedColorProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTitleColor']/Docs/*" />
 		public static Color GetTitleColor(BindableObject obj) => (Color)obj.GetValue(TitleColorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetTitleColor']/Docs/*" />
+
+		/// <summary>
+		/// Sets the color used for the title of the current page.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <param name="value">The color used for the title of the current page.</param>
 		public static void SetTitleColor(BindableObject obj, Color value) => obj.SetValue(TitleColorProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetUnselectedColor']/Docs/*" />
 		public static Color GetUnselectedColor(BindableObject obj) => (Color)obj.GetValue(UnselectedColorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetUnselectedColor']/Docs/*" />
+
+		/// <summary>
+		/// Sets the color for unselected text and icons in the Shell chrome.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <param name="value">The color for unselected text and icons in the Shell chrome.</param>
 		public static void SetUnselectedColor(BindableObject obj, Color value) => obj.SetValue(UnselectedColorProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetFlyoutBackdrop']/Docs/*" />
 		public static Brush GetFlyoutBackdrop(BindableObject obj) => (Brush)obj.GetValue(FlyoutBackdropProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetFlyoutBackdrop']/Docs/*" />
+
+		/// <summary>
+		/// Sets the backdrop of the flyout, which is the appearance of the flyout overlay.
+		/// </summary>
+		/// <param name="obj">The BindableObject that sets the backdrop brush.</param>
+		/// <param name="value">The brushed used in the backdrop of the flyout.</param>
 		public static void SetFlyoutBackdrop(BindableObject obj, Brush value) => obj.SetValue(FlyoutBackdropProperty, value);
 
 		static void OnShellAppearanceValueChanged(BindableObject bindable, object oldValue, object newValue)
