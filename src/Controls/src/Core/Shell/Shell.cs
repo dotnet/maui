@@ -328,17 +328,27 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.CreateAttached("FlyoutBackdrop", typeof(Brush), typeof(Shell), Brush.Default,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for attached property <c>FlyoutWidth</c>.</summary>
+		/// <summary>
+		/// The width of the flyout.
+		/// This enables scenarios such as expanding the flyout across the entire screen.
+		/// </summary>
 		public static readonly BindableProperty FlyoutWidthProperty =
 			BindableProperty.CreateAttached("FlyoutWidth", typeof(double), typeof(Shell), -1d,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for attached property <c>FlyoutHeight</c>.</summary>
+		/// <summary>
+		/// The height of the flyout.
+		/// This enables scenarios such as reducing the height of the flyout so that it doesn't obscure the tab bar.
+		/// </summary>
 		public static readonly BindableProperty FlyoutHeightProperty =
 			BindableProperty.CreateAttached("FlyoutHeight", typeof(double), typeof(Shell), -1d,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetBackgroundColor']/Docs/*" />
+		/// <summary>
+		/// Gets the background color in the Shell chrome. 
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the background color is set.</param>
+		/// <returns>The background color from the Shell chrome.</returns>
 		public static Color GetBackgroundColor(BindableObject obj) => (Color)obj.GetValue(BackgroundColorProperty);
 
 		/// <summary>
@@ -349,7 +359,11 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The background color for the Shell chrome.</param>
 		public static void SetBackgroundColor(BindableObject obj, Color value) => obj.SetValue(BackgroundColorProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetDisabledColor']/Docs/*" />
+		/// <summary>
+		/// Gets the color to shade text and icons that are disabled.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the disabled color is set.</param>
+		/// <returns>The disabled color for the tab bar.</returns>
 		public static Color GetDisabledColor(BindableObject obj) => (Color)obj.GetValue(DisabledColorProperty);
 
 		/// <summary>
@@ -359,7 +373,11 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The disabled color for the tab bar.</param>
 		public static void SetDisabledColor(BindableObject obj, Color value) => obj.SetValue(DisabledColorProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetForegroundColor']/Docs/*" />
+		/// <summary>
+		/// Gets the foreground color for the tab bar. 
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the foreground color is set.</param>
+		/// <returns>The foreground color for the tab bar.</returns>
 		public static Color GetForegroundColor(BindableObject obj) => (Color)obj.GetValue(ForegroundColorProperty);
 
 		/// <summary>
@@ -370,7 +388,11 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The foreground color for the tab bar.</param>
 		public static void SetForegroundColor(BindableObject obj, Color value) => obj.SetValue(ForegroundColorProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTabBarBackgroundColor']/Docs/*" />
+		/// <summary>
+		/// Gets the background color for the tab bar.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <returns>The background color for the tab bar.</returns>
 		public static Color GetTabBarBackgroundColor(BindableObject obj) => (Color)obj.GetValue(TabBarBackgroundColorProperty);
 
 		/// <summary>
@@ -381,7 +403,11 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The background color for the tab bar.</param>
 		public static void SetTabBarBackgroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarBackgroundColorProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTabBarDisabledColor']/Docs/*" />
+		/// <summary>
+		/// Gets the background color for the tab bar. 
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <returns>The background color for the tab bar.</returns>
 		public static Color GetTabBarDisabledColor(BindableObject obj) => (Color)obj.GetValue(TabBarDisabledColorProperty);
 
 		/// <summary>
@@ -392,7 +418,11 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The disabled color for the tab bar.</param>
 		public static void SetTabBarDisabledColor(BindableObject obj, Color value) => obj.SetValue(TabBarDisabledColorProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTabBarForegroundColor']/Docs/*" />
+		/// <summary>
+		/// Gets the disabled color for the tab bar. 
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <returns>The disabled color for the tab bar.</returns>
 		public static Color GetTabBarForegroundColor(BindableObject obj) => (Color)obj.GetValue(TabBarForegroundColorProperty);
 
 		/// <summary>
@@ -403,7 +433,11 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The foreground color for the tab bar.</param>
 		public static void SetTabBarForegroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarForegroundColorProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetTabBarTitleColor']/Docs/*" />
+		/// <summary>
+		/// Gets the foreground color for the tab bar. 
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the color is set.</param>
+		/// <returns>The foreground color for the tab bar.</returns>
 		public static Color GetTabBarTitleColor(BindableObject obj) => (Color)obj.GetValue(TabBarTitleColorProperty);
 
 		/// <summary>
@@ -961,7 +995,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FlyoutIconProperty =
 			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null);
 
-		/// <summary>Bindable property for <see cref="FlyoutVerticalScrollMode"/>.</summary>
+		/// <summary>
+		/// Modify the behavior of the flyout scroll.
+		/// By default, a flyout can be scrolled vertically when the flyout items don't fit in the flyout. 
+		/// Can be changed by setting one of the ScrollMode enumeration members:
+		/// - Disabled – indicates that vertical scrolling will be disabled.
+		/// - Enabled – indicates that vertical scrolling will be enabled.
+		/// - Auto – indicates that vertical scrolling will be enabled if the flyout items don't fit in the flyout. This is the default value of the FlyoutVerticalScrollMode property.
+		/// </summary>
 		public static readonly BindableProperty FlyoutVerticalScrollModeProperty =
 			BindableProperty.Create(nameof(FlyoutVerticalScrollMode), typeof(ScrollMode), typeof(Shell), ScrollMode.Auto);
 
