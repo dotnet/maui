@@ -81,8 +81,7 @@ extends:
       codeql:
         runSourceLanguagesInSourceAnalysis: true
       policheck:
-        enabled: false
-        justification: Built in task does not support multi-language scanning
+        enabled: true
       spotBugs:
         enabled: false
         justification: 'Failing with "Could not successfully find the java tool launcher"'
@@ -158,12 +157,16 @@ extends:
 
         - template: /eng/pipelines/common/policheck.yml@self                                # Policheck
           parameters:
-            poolName: VSEngSS-MicroBuild2022-1ES
+            poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+            vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+            os: ${{ parameters.VM_IMAGE_HOST.os }}
 
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:
             dependsOn: ['pack_net']
-            poolName: VSEngSS-MicroBuild2022-1ES
+            poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+            vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+            os: ${{ parameters.VM_IMAGE_HOST.os }}
             scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
 
         

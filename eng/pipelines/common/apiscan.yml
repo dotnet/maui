@@ -1,6 +1,6 @@
 parameters:
-  poolName: Azure Pipelines
-  vmImage: windows-latest
+  poolName: VSEngSS-MicroBuild2022-1ES
+  vmImage: ''
   os: windows
   softwareName: 'MAUI'
   softwareVersion: 8.0
@@ -13,7 +13,7 @@ stages:
   - template: security/apiscan/v0.yml@yaml-templates
     parameters:
       windowsPoolName: ${{ parameters.poolName }}
-      windowsImageOverride: 'none'
+      windowsImageOverride: ${{ parameters.vmImage }}
       stageDependsOn: ${{ parameters.dependsOn }}
       timeoutInMinutes: 600
       scanArtifacts: ${{ parameters.scanArtifacts }}
