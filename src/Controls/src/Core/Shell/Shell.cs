@@ -352,17 +352,23 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.CreateAttached("DisabledColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for attached property <c>ForegroundColor</c>.</summary>
+		/// <summary>
+		/// Defines the color to shade text and icons.
+		/// </summary>
 		public static readonly BindableProperty ForegroundColorProperty =
 			BindableProperty.CreateAttached("ForegroundColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for attached property <c>TabBarBackgroundColor</c>.</summary>
+		/// <summary>
+		/// Defines the background color for the tab bar. If the property is unset, the BackgroundColor property value is used.
+		/// </summary>
 		public static readonly BindableProperty TabBarBackgroundColorProperty =
 			BindableProperty.CreateAttached("TabBarBackgroundColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for attached property <c>TabBarDisabledColor</c>.</summary>
+		/// <summary>
+		/// Defines the disabled color for the tab bar. If the property is unset, the DisabledColor property value is used.
+		/// </summary>
 		public static readonly BindableProperty TabBarDisabledColorProperty =
 			BindableProperty.CreateAttached("TabBarDisabledColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
@@ -372,22 +378,30 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.CreateAttached("TabBarForegroundColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for attached property <c>TabBarTitleColor</c>.</summary>
+		/// <summary>
+		/// Defines the title color for the tab bar. If the property is unset, the TitleColor property value will be used.
+		/// </summary>
 		public static readonly BindableProperty TabBarTitleColorProperty =
 			BindableProperty.CreateAttached("TabBarTitleColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for attached property <c>TabBarUnselectedColor</c>.</summary>
+		/// <summary>
+		/// Defines the unselected color for the tab bar. If the property is unset, the UnselectedColor property value is used.
+		/// </summary>
 		public static readonly BindableProperty TabBarUnselectedColorProperty =
 			BindableProperty.CreateAttached("TabBarUnselectedColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for attached property <c>TitleColor</c>.</summary>
+		/// <summary>
+		/// Defines the title color for the tab bar. If the property is unset, the TitleColor property value will be used.
+		/// </summary>
 		public static readonly BindableProperty TitleColorProperty =
 			BindableProperty.CreateAttached("TitleColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for attached property <c>UnselectedColor</c>.</summary>
+		/// <summary>
+		/// Defines the unselected color for the tab bar. If the property is unset, the UnselectedColor property value is used.
+		/// </summary>
 		public static readonly BindableProperty UnselectedColorProperty =
 			BindableProperty.CreateAttached("UnselectedColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
