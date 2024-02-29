@@ -14,15 +14,20 @@ namespace Microsoft.Maui.Controls
 				return null;
 			}
 
-			var firstResponder = uiView.FindFirstResponder();
+			UIView? uiText = uiView;
 
-			if (firstResponder is not (UITextField or UITextView))
+			if (uiText is not (UITextField or UITextView))
+			{
+				uiText = uiView.FindDescendantView<UIView>((view) => view is (UITextField or UITextView));
+			}
+
+			if (uiText is null)
 			{
 				return null;
 			}
 
 			return ResignFirstResponderTouchGestureRecognizer
-					.Update(firstResponder);
+					.Update(uiText);
 		}
 	}
 }
