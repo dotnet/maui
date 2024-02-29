@@ -1047,7 +1047,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FlyoutBackgroundImageAspectProperty =
 			BindableProperty.Create(nameof(FlyoutBackgroundImageAspect), typeof(Aspect), typeof(Shell), default(Aspect), BindingMode.OneTime);
 
-		/// <summary>Bindable property for <see cref="FlyoutBackgroundColor"/>.</summary>
+		/// <summary>
+		/// The background color of the Shell Flyout.
+		/// </summary>
 		public static readonly BindableProperty FlyoutBackgroundColorProperty =
 			BindableProperty.Create(nameof(FlyoutBackgroundColor), typeof(Color), typeof(Shell), null, BindingMode.OneTime);
 
@@ -1281,7 +1283,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentState']/Docs/*" />
 		public ShellNavigationState CurrentState => (ShellNavigationState)GetValue(CurrentStateProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutBackgroundImage']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the flyout background image. Of type ImageSource, could be a file, embedded resource, URI, or stream.
+		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource FlyoutBackgroundImage
 		{
@@ -1289,60 +1293,83 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FlyoutBackgroundImageProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutBackgroundImageAspect']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the aspect ratio of the background image.
+		/// </summary>
 		public Aspect FlyoutBackgroundImageAspect
 		{
 			get => (Aspect)GetValue(FlyoutBackgroundImageAspectProperty);
 			set => SetValue(FlyoutBackgroundImageAspectProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutBackgroundColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the background color of the Shell Flyout.
+		/// </summary>
 		public Color FlyoutBackgroundColor
 		{
 			get => (Color)GetValue(FlyoutBackgroundColorProperty);
 			set => SetValue(FlyoutBackgroundColorProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutBackground']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the background color of the Shell Flyout.
+		/// </summary>
 		public Brush FlyoutBackground
 		{
 			get => (Brush)GetValue(FlyoutBackgroundProperty);
 			set => SetValue(FlyoutBackgroundProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutBackdrop']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the backdrop of the flyout, which is the appearance of the flyout overlay.
+		/// </summary>
 		public Brush FlyoutBackdrop
 		{
 			get => (Brush)GetValue(FlyoutBackdropProperty);
 			set => SetValue(FlyoutBackdropProperty, value);
 		}
 
+		/// <summary>
+		/// Gets or sets the width of the flyout.
+		/// </summary>
 		public double FlyoutWidth
 		{
 			get => (double)GetValue(FlyoutWidthProperty);
 			set => SetValue(FlyoutWidthProperty, value);
 		}
 
+		/// <summary>
+		/// Gets or sets the height of the flyout.
+		/// </summary>
 		public double FlyoutHeight
 		{
 			get => (double)GetValue(FlyoutHeightProperty);
 			set => SetValue(FlyoutHeightProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutBehavior']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the behavior to open the flyout.
+		/// </summary>
 		public FlyoutBehavior FlyoutBehavior
 		{
 			get => (FlyoutBehavior)GetValue(FlyoutBehaviorProperty);
 			set => SetValue(FlyoutBehaviorProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutHeader']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the View that define the appearance of the flyout header.
+		/// The flyout header is the content that optionally appears at the top of the flyout.
+		/// </summary>
 		public object FlyoutHeader
 		{
 			get => GetValue(FlyoutHeaderProperty);
 			set => SetValue(FlyoutHeaderProperty, value);
 		}
 
+		/// <summary>
+		/// Gets or sets the View that define the appearance of the flyout footer.
+		/// The flyout footer is the content that optionally appears at the bottom of the flyout.
+		/// </summary>
 		public object FlyoutFooter
 		{
 			get => GetValue(FlyoutFooterProperty);
