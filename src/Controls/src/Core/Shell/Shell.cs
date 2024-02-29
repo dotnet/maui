@@ -330,12 +330,23 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetBackgroundColor']/Docs/*" />
 		public static Color GetBackgroundColor(BindableObject obj) => (Color)obj.GetValue(BackgroundColorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetBackgroundColor']/Docs/*" />
+
+		/// <summary>
+		/// Sets the background color in the Shell chrome. 
+		/// The color won't fill in behind the Shell content.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the background color is set.</param>
+		/// <param name="value">The background color for the Shell chrome.</param>
 		public static void SetBackgroundColor(BindableObject obj, Color value) => obj.SetValue(BackgroundColorProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetDisabledColor']/Docs/*" />
 		public static Color GetDisabledColor(BindableObject obj) => (Color)obj.GetValue(DisabledColorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetDisabledColor']/Docs/*" />
+
+		/// <summary>
+		/// Sets the color to shade text and icons that are disabled.
+		/// </summary>
+		/// <param name="obj">The BindableObject to which the disabled color is set.</param>
+		/// <param name="value">The disabled color for the tab bar.</param>
 		public static void SetDisabledColor(BindableObject obj, Color value) => obj.SetValue(DisabledColorProperty, value);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetForegroundColor']/Docs/*" />
