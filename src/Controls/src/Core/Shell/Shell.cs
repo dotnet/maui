@@ -204,7 +204,11 @@ namespace Microsoft.Maui.Controls
 		/// <param name="presentationMode">Define the navigation animation that occurs when a page is navigated.</param>
 		public static void SetPresentationMode(BindableObject obj, PresentationMode presentationMode) => obj.SetValue(PresentationModeProperty, presentationMode);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetFlyoutBehavior']/Docs/*" />
+		/// <summary>
+		/// Gets the navigation animation that occurs when a page is navigated to with the GoToAsync method.
+		/// </summary>
+		/// <param name="obj">The BindableObject that modify the Shell tabs visibility.</param>
+		/// <returns>The navigation animation that occurs when a page is navigated.</returns>
 		public static FlyoutBehavior GetFlyoutBehavior(BindableObject obj) => (FlyoutBehavior)obj.GetValue(FlyoutBehaviorProperty);
 
 		/// <summary>
@@ -1085,14 +1089,19 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlyoutFooterTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutFooterTemplateChanging);
 
-		/// <summary>Bindable property for <see cref="FlyoutIsPresented"/>.</summary>
+		/// <summary>
+		/// The flyout can be programmatically opened and closed by setting the FlyoutIsPresented property to a boolean value that indicates whether the flyout is currently open.
+		/// </summary>
 		public static readonly BindableProperty FlyoutIsPresentedProperty =
 			BindableProperty.Create(nameof(FlyoutIsPresented), typeof(bool), typeof(Shell), false, BindingMode.TwoWay);
 
 		/// <summary>Bindable property for <see cref="Items"/>.</summary>
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
 
-		/// <summary>Bindable property for <see cref="FlyoutIcon"/>.</summary>
+		/// <summary>
+		/// By default, Shell applications have a hamburger icon which, when pressed, opens the flyout.
+		///  This icon can be changed by setting the FlyoutIcon property.
+		/// </summary>
 		public static readonly BindableProperty FlyoutIconProperty =
 			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null);
 
@@ -1235,7 +1244,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutVerticalScrollMode']/Docs/*" />
+		/// <summary>
+		/// Modify the behavior of the flyout scroll.
+		/// </summary>
 		public ScrollMode FlyoutVerticalScrollMode
 		{
 			get => (ScrollMode)GetValue(FlyoutVerticalScrollModeProperty);
@@ -1246,14 +1257,18 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<ShellNavigatingEventArgs> Navigating;
 
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutIcon']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the icon that, when pressed, opens the Shell Flyout.
+		/// </summary>
 		public ImageSource FlyoutIcon
 		{
 			get => (ImageSource)GetValue(FlyoutIconProperty);
 			set => SetValue(FlyoutIconProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentItem']/Docs/*" />
+		/// <summary>
+		/// The currently selected ShellItem or FlyoutItem.
+		/// </summary>
 		public ShellItem CurrentItem
 		{
 			get => (ShellItem)GetValue(CurrentItemProperty);
