@@ -3,6 +3,8 @@ parameters:
   vmImage: ''
   os: windows 
   pushMauiPackagesToMaestro: false
+  nugetArtifactName: nuget-signed
+  nugetArtifactPath: $(Build.StagingDirectory)\nuget-signed
 
 jobs:
 - job: create_artifact_statuses
@@ -18,8 +20,8 @@ jobs:
   - checkout: self
   - task: DownloadPipelineArtifact@2
     inputs:
-      artifactName: nuget-signed
-      downloadPath: $(Build.StagingDirectory)\nuget-signed
+      artifactName: ${{ parameters.nugetArtifactName }}
+      downloadPath: ${{ parameters.nugetArtifactPath }}
       patterns: |
         *.nupkg
         **/*.snupkg
@@ -27,14 +29,14 @@ jobs:
   - task: DownloadPipelineArtifact@2
     inputs:
       artifactName: vs-msi-nugets
-      downloadPath: $(Build.StagingDirectory)\nuget-signed
+      downloadPath: ${{ parameters.nugetArtifactPath }}
   - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
     parameters:
       githubToken: $(github--pat--vs-mobiletools-engineering-service2)
       githubContext: $(NupkgCommitStatusName)
       blobName: $(NupkgCommitStatusName)
       packagePrefix: maui
-      artifactsPath: $(Build.StagingDirectory)\nuget-signed
+      artifactsPath: ${{ parameters.nugetArtifactPath }}
       yamlResourceName: yaml-templates
   - template: templates\common\upload-vs-insertion-artifacts.yml@sdk-insertions
     parameters:
@@ -69,7 +71,7 @@ jobs:
       arguments: >-
         -t:PushManifestToBuildAssetRegistry
         -p:BuildAssetRegistryToken=$(MaestroAccessToken)
-        -p:OutputPath=$(Build.StagingDirectory)\nuget\
+        -p:OutputPath=$(Build.StagingDirectory)\nuget-signed\
         -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
     condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))
   - powershell: |
