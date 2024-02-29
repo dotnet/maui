@@ -41,13 +41,6 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		public override void PlatformArrange(Rect rect)
-		{
-			base.PlatformArrange(rect);
-
-			UpdateValue(nameof(IImage.Source));
-		}
-
 #if MACCATALYST
 		//TODO: make this public on NET8
 		internal static void MapBackground(IButtonHandler handler, IButton button)
