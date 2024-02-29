@@ -1376,27 +1376,38 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FlyoutFooterProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutHeaderBehavior']/Docs/*" />
+		/// <summary>
+		/// Setting the FlyoutHeaderBehavior to CollapseOnScroll collapses the flyout as scrolling occurs. 
+		/// The other valid FlyoutHeaderBehavior values are Default, Fixed, and Scroll (scroll with the menu items).
+		/// </summary>
 		public FlyoutHeaderBehavior FlyoutHeaderBehavior
 		{
 			get => (FlyoutHeaderBehavior)GetValue(FlyoutHeaderBehaviorProperty);
 			set => SetValue(FlyoutHeaderBehaviorProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutHeaderTemplate']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the flyout header appearance using a DataTemplate.
+		/// </summary>
 		public DataTemplate FlyoutHeaderTemplate
 		{
 			get => (DataTemplate)GetValue(FlyoutHeaderTemplateProperty);
 			set => SetValue(FlyoutHeaderTemplateProperty, value);
 		}
 
+		/// <summary>
+		/// Gets or sets the flyout footer appearance using a DataTemplate.
+		/// </summary>
 		public DataTemplate FlyoutFooterTemplate
 		{
 			get => (DataTemplate)GetValue(FlyoutFooterTemplateProperty);
 			set => SetValue(FlyoutFooterTemplateProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='FlyoutIsPresented']/Docs/*" />
+
+		/// <summary>
+		/// Gets or sets the visible status of the Shell Flyout.
+		/// </summary>
 		public bool FlyoutIsPresented
 		{
 			get => (bool)GetValue(FlyoutIsPresentedProperty);
@@ -1406,14 +1417,18 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='Items']/Docs/*" />
 		public IList<ShellItem> Items => (IList<ShellItem>)GetValue(ItemsProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='ItemTemplate']/Docs/*" />
+		/// <summary>
+		/// Gets or sets DataTemplate applied to each of the Items.
+		/// </summary>
 		public DataTemplate ItemTemplate
 		{
 			get => GetItemTemplate(this);
 			set => SetItemTemplate(this, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='MenuItemTemplate']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the DataTemplate applied to MenuItem objects in the MenuItems collection.
+		/// </summary>
 		public DataTemplate MenuItemTemplate
 		{
 			get => GetMenuItemTemplate(this);
