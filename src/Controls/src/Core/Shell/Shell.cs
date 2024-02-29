@@ -899,7 +899,12 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FlyoutBackgroundImageProperty =
 			BindableProperty.Create(nameof(FlyoutBackgroundImage), typeof(ImageSource), typeof(Shell), default(ImageSource), BindingMode.OneTime);
 
-		/// <summary>Bindable property for <see cref="FlyoutBackgroundImageAspect"/>.</summary>
+		/// <summary>
+		/// The aspect ratio of the background image can be configured by setting the FlyoutBackgroundImageAspect property, of type Aspect, to one of the Aspect enumeration members:
+		/// - AspectFill - clips the image so that it fills the display area while preserving the aspect ratio.
+		/// - AspectFit - letterboxes the image, if required, so that the image fits into the display area, with blank space added to the top/bottom or sides depending on whether the image is wide or tall.This is the default value of the FlyoutBackgroundImageAspect property.
+		/// - Fill - stretches the image to completely and exactly fill the display area.This may result in image distortion.
+		/// </summary>
 		public static readonly BindableProperty FlyoutBackgroundImageAspectProperty =
 			BindableProperty.Create(nameof(FlyoutBackgroundImageAspect), typeof(Aspect), typeof(Shell), default(Aspect), BindingMode.OneTime);
 
@@ -915,22 +920,32 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FlyoutHeaderBehaviorProperty =
 			BindableProperty.Create(nameof(FlyoutHeaderBehavior), typeof(FlyoutHeaderBehavior), typeof(Shell), FlyoutHeaderBehavior.Default, BindingMode.OneTime);
 
-		/// <summary>Bindable property for <see cref="FlyoutHeader"/>.</summary>
+		/// <summary>
+		/// The flyout header appearance.
+		/// The flyout header is the content that optionally appears at the top of the flyout.
+		/// </summary>
 		public static readonly BindableProperty FlyoutHeaderProperty =
 			BindableProperty.Create(nameof(FlyoutHeader), typeof(object), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutHeaderChanging);
 
-		/// <summary>Bindable property for <see cref="FlyoutFooter"/>.</summary>
+		/// <summary>
+		/// The flyout footer appearance.
+		/// The flyout footer is the content that optionally appears at the bottom of the flyout.
+		/// </summary>
 		public static readonly BindableProperty FlyoutFooterProperty =
 			BindableProperty.Create(nameof(FlyoutFooter), typeof(object), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutFooterChanging);
 
-		/// <summary>Bindable property for <see cref="FlyoutHeaderTemplate"/>.</summary>
+		/// <summary>
+		/// The flyout header appearance can be defined by setting a DataTemplate.
+		/// </summary>
 		public static readonly BindableProperty FlyoutHeaderTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutHeaderTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutHeaderTemplateChanging);
 
-		/// <summary>Bindable property for <see cref="FlyoutFooterTemplate"/>.</summary>
+		/// <summary>
+		/// The flyout footer appearance can be defined by setting a DataTemplate.
+		/// </summary>
 		public static readonly BindableProperty FlyoutFooterTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutFooterTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutFooterTemplateChanging);
@@ -1723,12 +1738,15 @@ namespace Microsoft.Maui.Controls
 		#region Shell Flyout Content
 
 
-		/// <summary>Bindable property for <see cref="FlyoutContent"/>.</summary>
-
+		/// <summary>
+		/// Flyout items, which represent the flyout content, can optionally be replaced with your own content.
+		/// </summary>
 		public static readonly BindableProperty FlyoutContentProperty =
 			BindableProperty.Create(nameof(FlyoutContent), typeof(object), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentChanging);
 
-		/// <summary>Bindable property for <see cref="FlyoutContentTemplate"/>.</summary>
+		/// <summary>
+		/// The flyout content can be defined by setting a DataTemplate.
+		/// </summary>
 		public static readonly BindableProperty FlyoutContentTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutContentTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentTemplateChanging);
 
