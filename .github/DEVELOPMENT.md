@@ -63,7 +63,7 @@ Before opening the solution in Visual Studio / VS Code you **MUST** build the bu
 As a general rule:
 - [main](https://github.com/dotnet/maui/tree/main)
 
-Always use main when you are going to correct an issue or apply changes unless it involves breaking changes with changes and/or additions on public APIs. With changes to public APIs you must use the branch of the next dotnet version.
+Use ‘main’ for bug fixes that don’t require API changes. For new features and changes to public APIs, you must use the branch of the next .NET version.
 
 - [net9.0](https://github.com/dotnet/maui/tree/net9.0)
 
