@@ -141,7 +141,12 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetBackButtonBehavior']/Docs/*" />
 		public static BackButtonBehavior GetBackButtonBehavior(BindableObject obj) => (BackButtonBehavior)obj.GetValue(BackButtonBehaviorProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetBackButtonBehavior']/Docs/*" />
+
+		/// <summary>
+		/// Sets the behavior of the back button.
+		/// </summary>
+		/// <param name="obj">The BindableObject that sets the behavior of the back button.</param>
+		/// <param name="behavior">Sets the back button behavior.</param>
 		public static void SetBackButtonBehavior(BindableObject obj, BackButtonBehavior behavior) => obj.SetValue(BackButtonBehaviorProperty, behavior);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetPresentationMode']/Docs/*" />
@@ -263,7 +268,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='BackgroundColorProperty']/Docs/*" />
+		/// <summary>
+		/// BackgroundColor, of type Color, defines the background color in the Shell chrome. 
+		/// The color won't fill in behind the Shell content.
+		/// </summary>
 		public static readonly new BindableProperty BackgroundColorProperty =
 			BindableProperty.CreateAttached("BackgroundColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
@@ -313,7 +321,9 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.CreateAttached("UnselectedColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for attached property <c>FlyoutBackdrop</c>.</summary>
+		/// <summary>
+		/// The backdrop of the flyout, which is the appearance of the flyout overlay.
+		/// </summary>
 		public static readonly BindableProperty FlyoutBackdropProperty =
 			BindableProperty.CreateAttached("FlyoutBackdrop", typeof(Brush), typeof(Shell), Brush.Default,
 				propertyChanged: OnShellAppearanceValueChanged);
@@ -871,7 +881,9 @@ namespace Microsoft.Maui.Controls
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
 		}
 
-		/// <summary>Bindable property for <see cref="CurrentItem"/>.</summary>
+		/// <summary>
+		/// The currently selected ShellItem or FlyoutItem.
+		/// </summary>
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellItem), typeof(Shell), null, BindingMode.TwoWay,
 				propertyChanging: OnCurrentItemChanging,
@@ -880,7 +892,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CurrentState"/>.</summary>
 		public static readonly BindableProperty CurrentStateProperty = CurrentStatePropertyKey.BindableProperty;
 
-		/// <summary>Bindable property for <see cref="FlyoutBackgroundImage"/>.</summary>
+		/// <summary>
+		/// Sets the flyout background image, of type ImageSource, to a file, embedded resource, URI, or stream.
+		/// The flyout background image appears beneath the flyout header and behind any flyout items, menu items, and the flyout footer. 
+		/// </summary>
 		public static readonly BindableProperty FlyoutBackgroundImageProperty =
 			BindableProperty.Create(nameof(FlyoutBackgroundImage), typeof(ImageSource), typeof(Shell), default(ImageSource), BindingMode.OneTime);
 
