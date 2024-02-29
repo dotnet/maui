@@ -284,8 +284,16 @@ namespace Microsoft.Maui.Controls
 			},
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
+				if(oldvalue != null)
+				{
+					((Brush)oldvalue).Parent = null;
+				}
+
 				if (newvalue != null)
+				{
 					(bindable as VisualElement)?.NotifyBackgroundChanges();
+					((Brush)newvalue).Parent = bindable as VisualElement;
+				}
 			});
 
 		WeakBackgroundChangedProxy _backgroundProxy;
