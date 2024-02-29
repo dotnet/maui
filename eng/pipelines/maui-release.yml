@@ -155,12 +155,6 @@ extends:
             os: ${{ parameters.VM_IMAGE_HOST.os }}
             pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
 
-        - template: /eng/pipelines/common/policheck.yml@self                                # Policheck
-          parameters:
-            poolName: ${{ parameters.VM_IMAGE_HOST.name }}
-            vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
-            os: ${{ parameters.VM_IMAGE_HOST.os }}
-
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:
             dependsOn: ['pack_net']
