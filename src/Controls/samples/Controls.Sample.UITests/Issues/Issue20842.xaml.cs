@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Issue(IssueTracker.Github, "20842", "Can scroll CollectionView inside RefreshView", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, "20842", "Verify data templates in CollectionView virtualize correctly", PlatformAffected.UWP)]
 	public partial class Issue20842 : ContentPage
 	{
 		private readonly List<Person> people = new();
@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 
-			for (int i = 0; i < 10; i++)
+			for (int i = 0; i < 100; i++)
 			{
 				people.Add(new Person { Name = $"Kath {i}", DateOfBirth = new DateTime(1985, 11, 20), Location = "France" });
 				people.Add(new Person { Name = $"Steve {i}", DateOfBirth = new DateTime(1975, 1, 15), Location = "USA" });

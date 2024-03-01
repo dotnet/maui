@@ -13,19 +13,19 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 		}
 
-		public override string Issue => "[Windows] Verify data templates in CollectionView virtualize correctly";
+		public override string Issue => "Verify data templates in CollectionView virtualize correctly";
 
 		[Test]
-		public async void VerifyCollectionViewItemsAfterScrolling()
+		public async Task VerifyCollectionViewItemsAfterScrolling()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
 
 			App.WaitForElement(scrollUpButton);
 
 			App.Click(scrollDownButton);
-			await Task.Delay(500);
+			await Task.Delay(200);
 			App.Click(scrollUpButton);
-			await Task.Delay(500);
+			await Task.Delay(200);
 			App.Click(scrollDownButton);
 
 			VerifyScreenshot();
