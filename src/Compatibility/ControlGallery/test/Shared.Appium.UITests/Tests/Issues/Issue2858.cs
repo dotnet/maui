@@ -3,7 +3,7 @@ using UITest.Appium;
 
 namespace UITests
 {
-    internal class Issue2858 : IssuesUITest
+	public class Issue2858 : IssuesUITest
 	{
 		const string Success = "Success";
 		const string InnerGrid = "InnerGrid";
