@@ -11,6 +11,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "PointerOver VSM Breaks Button";
 
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void ButtonStillWorksWhenItHasPointerOverVSMSet()
 		{
 			App.Click("btn");

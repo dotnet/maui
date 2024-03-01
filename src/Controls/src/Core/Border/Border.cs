@@ -109,6 +109,9 @@ namespace Microsoft.Maui.Controls
 				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
 				_strokeProxy ??= new();
 				_strokeProxy.Subscribe(stroke, _strokeChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(stroke.OnParentResourcesChanged);
 			}
 		}
 
@@ -121,6 +124,8 @@ namespace Microsoft.Maui.Controls
 
 			if (stroke is not null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(stroke.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(stroke, null);
 				_strokeProxy?.Unsubscribe();
 			}

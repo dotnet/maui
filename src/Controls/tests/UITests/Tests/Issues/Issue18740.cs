@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Virtual keyboard appears with focus on Entry";
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		[TestCase("Entry")]
 		[TestCase("Editor")]
 		[TestCase("SearchBar")]

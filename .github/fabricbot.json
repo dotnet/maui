@@ -12,6 +12,10 @@
           "operator": "and",
           "operands": [
             {
+              "name": "isIssue",
+              "parameters": {}
+            },
+            {
               "name": "isAction",
               "parameters": {
                 "action": "created"
@@ -145,8 +149,7 @@
         ],
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ]
       }
     },
@@ -160,6 +163,10 @@
         "conditions": {
           "operator": "and",
           "operands": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
             {
               "name": "hasLabel",
               "parameters": {
@@ -991,8 +998,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "[Infrastructure PRs] Add area-infrastructure label to dependency update Pull Requests",
         "actions": [
@@ -1024,8 +1030,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Comment: Issue moved to Backlog",
         "actions": [
@@ -1058,8 +1063,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Replace `s/needs-info` with `s/pr-needs-author-input` for PRs",
         "actions": [
@@ -1104,8 +1108,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Remove `s/needs-repro` from PRs",
         "actions": [
@@ -1143,8 +1146,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add comment when 's/needs-info' is applied to issue",
         "actions": [
@@ -1176,8 +1178,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add comment when 's/needs-repro' is applied to issue",
         "actions": [
@@ -1341,8 +1342,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add area/controls label when any 'control-X' label is applied to the issue",
         "actions": [
@@ -1507,8 +1507,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add area/controls label when any 'control-X' label is applied to the PR",
         "actions": [
@@ -1653,8 +1652,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add 'partner' label when issue is opened by a partner",
         "actions": [
@@ -1690,8 +1688,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Ask user to use VS Feedback for VS issues",
         "actions": [
@@ -1741,8 +1738,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add 'i/great-reporter' when issue is opened by an author we know opens high quality issues",
         "actions": [
@@ -1774,8 +1770,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add comment when 's/try-latest-version' is applied to the issue",
         "actions": [
@@ -1927,8 +1922,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add 'community ✨' label to community contributions",
         "actions": [
@@ -2272,8 +2266,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Revitalize stale PR and reopen",
         "actions": [
@@ -2316,8 +2309,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add comment when 's/pr-needs-author-input' is applied to PR",
         "actions": [
@@ -2349,8 +2341,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Tag Dave Britch when a breaking change is tagged on an issue",
         "actions": [
@@ -2383,8 +2374,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Tag Dave Britch when a breaking change is tagged on an PR",
         "actions": [
@@ -2406,6 +2396,10 @@
         "conditions": {
           "operator": "and",
           "operands": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
             {
               "name": "hasLabel",
               "parameters": {
