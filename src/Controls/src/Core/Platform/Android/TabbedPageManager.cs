@@ -8,6 +8,7 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Widget;
@@ -24,6 +25,7 @@ using AColor = Android.Graphics.Color;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -59,6 +61,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		bool _tabItemStyleLoaded;
 		TabLayoutMediator _tabLayoutMediator;
 		IDisposable _pendingFragment;
+
+		NavigationRootManager NavigationRootManager { get; }
+		internal static bool IsDarkTheme => ((Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme) == AppTheme.Dark);
 
 		public TabbedPageManager(IMauiContext context)
 		{
@@ -629,7 +634,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			if (IsBottomTabPlacement)
 			{
-				if (_orignalTabIconColors == null)
+				if (_orignalTabIconColors is null)
 					_orignalTabIconColors = _bottomNavigationView.ItemIconTintList;
 			}
 			// this ensures that existing behavior doesn't change
@@ -645,7 +650,42 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_newTabIconColors != null)
 				return _newTabIconColors;
 
-			int defaultColor = barItemColor.ToPlatform().ToArgb();
+			int defaultColor;
+			
+			if (barItemColor is not null)
+			{
+				defaultColor = barItemColor.ToPlatform().ToArgb();
+			}
+			else
+			{
+				var styledAttributes = 
+					TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
+
+				try
+				{
+					var defaultColors =  styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
+					if (defaultColors is not null)
+					{
+						defaultColor = defaultColors.DefaultColor;		
+					}
+					else
+					{
+						// These are the defaults currently set inside android
+						// It's very unlikely we'll hit this path because the 
+						// NavigationBarView_itemIconTint should always resolve
+						// But just in case, we'll just hard code to some defaults
+						// instead of leaving the application in a broken state
+						if(IsDarkTheme)
+							defaultColor = new Color(1, 1, 1, 0.6f).ToPlatform();
+						else
+							defaultColor = new Color(0, 0, 0, 0.6f).ToPlatform();
+					}
+				}
+				finally
+				{
+					styledAttributes.Recycle();
+				}
+			}
 
 			if (barItemColor == null && _orignalTabIconColors != null)
 				defaultColor = _orignalTabIconColors.DefaultColor;

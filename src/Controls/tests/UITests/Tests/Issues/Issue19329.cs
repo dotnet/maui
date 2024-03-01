@@ -12,6 +12,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Pointer gestures should work with relative positions correctly";
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public void RelativePointerPositionIsComputedCorrectly()
 		{
 			_ = App.WaitForElement("TapHere");

@@ -131,7 +131,7 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		void SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
+		protected void SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
 		{
 			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
 			if (screenshotPath is not null)
