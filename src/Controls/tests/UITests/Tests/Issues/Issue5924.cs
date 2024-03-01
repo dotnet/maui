@@ -12,6 +12,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void TableViewViewCellVanishesAfterContentIsUpdated()
 		{
 			App.WaitForElement("entry");

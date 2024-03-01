@@ -16,6 +16,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Cancelling Refresh With Slow Scroll Leaves Refresh Icon Visible";
 
 		[Test]
+		[Category(UITestCategories.RefreshView)]
 		public void RefreshIconDisappearsWhenUserCancelsRefreshByScrollingBackUp()
 		{
 			this.IgnoreIfPlatforms(new[]

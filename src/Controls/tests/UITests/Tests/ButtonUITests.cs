@@ -20,6 +20,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void Clicked()
 		{
 			var remote = new EventViewContainerRemote(UITestContext, Test.Button.Clicked);

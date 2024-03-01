@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using NUnit.Framework;
+using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
 using VisualTestUtils;
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.AppiumTests
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\..\\..\\samples\\Controls.Sample.UITests");
 					var appProjectPath = Path.Combine(appProjectFolder, "Controls.Sample.UITests.csproj");
 					var windowsExe = "Controls.Sample.UITests.exe";
-					var windowsExePath = Path.Combine(appProjectFolder, $"bin\\{configuration}\\{frameworkVersion}-windows10.0.20348\\win10-x64\\{windowsExe}");
+					var windowsExePath = Path.Combine(appProjectFolder, $"bin\\{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
 
 					var appPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINDOWS_APP_PATH"))
 					   ? windowsExePath
@@ -83,6 +84,11 @@ namespace Microsoft.Maui.AppiumTests
 			}
 
 			return config;
+		}
+
+		public override void Reset()
+		{
+			App.ResetApp();
 		}
 
 		public void VerifyScreenshot(string? name = null)

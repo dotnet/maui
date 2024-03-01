@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "ContentPage BackgroundImageSource not working";
 
 		[Test]
+		[Category(UITestCategories.Page)]
 		public void ContentPageBackgroundImageSourceWorks()
 		{
 			App.WaitForElement("WaitForStubControl");
