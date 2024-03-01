@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.Github, 18242, "Button ImageSource not Scaling as expected", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, 18242, "Button ImageSource not Scaling as expected", PlatformAffected.All)]
 	public partial class Issue18242 : ContentPage
 	{
 		public Issue18242()

@@ -3,8 +3,8 @@ using System;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
-using ObjCRuntime;
 using UIKit;
+using Microsoft.Extensions.Logging;
 using static Microsoft.Maui.Controls.Button;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -182,15 +182,82 @@ namespace Microsoft.Maui.Controls.Platform
 
 			platformButton.UpdatePadding(button);
 
-#pragma warning disable CA1416, CA1422 // TODO: [UnsupportedOSPlatform("ios15.0")]
-			if (platformButton.ImageEdgeInsets != imageInsets ||
-				platformButton.TitleEdgeInsets != titleInsets)
+
+			// On iOS 15+, we will resize the image and then use the UIButton.Configuration to adjust the padding
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is not null)
 			{
-				platformButton.ImageEdgeInsets = imageInsets;
-				platformButton.TitleEdgeInsets = titleInsets;
-				platformButton.Superview?.SetNeedsLayout();
+				ResizeImage(platformButton, button, image);
+				var config = platformButton.Configuration;  
+
+				config.ImagePadding = imageInsets.Right - imageInsets.Left + titleInsets.Left - titleInsets.Right;
+				platformButton.Configuration = config;
 			}
-#pragma warning restore CA1416, CA1422
+
+			else if (!OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				if (platformButton.ImageEdgeInsets != imageInsets ||
+					platformButton.TitleEdgeInsets != titleInsets)
+				{
+					platformButton.ImageEdgeInsets = imageInsets;
+					platformButton.TitleEdgeInsets = titleInsets;
+					platformButton.Superview?.SetNeedsLayout();
+				}
+			}
+		}
+
+		static void ResizeImage(UIButton platformButton, Button button, UIImage image)
+		{
+			nfloat buttonSize = 0;
+
+			if (!OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				var contentEdgeInsets = platformButton.ContentEdgeInsets;
+				if (platformButton.Bounds != CGRect.Empty)
+				{
+					if (platformButton.Bounds.Height > platformButton.Bounds.Width)
+						buttonSize = platformButton.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right);
+					else
+						buttonSize = platformButton.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom);
+				}
+			}
+			else
+			{
+				if (platformButton.Bounds != CGRect.Empty && platformButton.Configuration?.ContentInsets is NSDirectionalEdgeInsets contentInsets)
+				{
+					if (platformButton.Bounds.Height > platformButton.Bounds.Width)
+						buttonSize = platformButton.Bounds.Width - (contentInsets.Leading + contentInsets.Trailing);
+					else
+						buttonSize = platformButton.Bounds.Height - (contentInsets.Top + contentInsets.Bottom);
+				}
+			}
+
+			try
+			{
+				if (buttonSize != 0)
+					image = ResizeImageSource(image, buttonSize, buttonSize);
+
+				image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+
+				platformButton.SetImage(image, UIControlState.Normal);
+			}
+			catch (Exception)
+			{
+				button.Handler.MauiContext?.CreateLogger<ButtonHandler>()?.LogWarning("Can not load Button ImageSource");
+			}
+		}
+
+		static UIImage ResizeImageSource(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
+		{
+			if (sourceImage is null || sourceImage.CGImage is null)
+				return null;
+
+			var sourceSize = sourceImage.Size;
+			float maxResizeFactor = (float)Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+
+			if (maxResizeFactor > 1)
+				return sourceImage;
+
+			return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
 		}
 
 		public static void UpdateText(this UIButton platformButton, Button button)

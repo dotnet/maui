@@ -9,10 +9,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIButton CreatePlatformView()
 		{
-			var platformView = new UIButton(UIButtonType.System)
+			var platformView = new UIButton(UIButtonType.System);
+
+			// Starting with iOS 15, we can use the UIButton.Configuration and assign future UIButton.Configuration.ContentInsets here instead of the deprecated UIButton.ContentEdgeInsets.
+			// It is important to note that the configuration will change any set style changes so we will do this right after creating the button.
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
 			{
-				ClipsToBounds = true
-			};
+				platformView.Configuration = UIButtonConfiguration.PlainButtonConfiguration;
+			}
+
+			platformView.ClipsToBounds = true;
 
 			return platformView;
 		}
