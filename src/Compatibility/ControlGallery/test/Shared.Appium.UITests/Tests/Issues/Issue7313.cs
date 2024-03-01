@@ -1,23 +1,24 @@
 ﻿using NUnit.Framework;
+using UITest.Appium;
 
 namespace UITests
 {
 	public class Issue7313 : IssuesUITest
 	{
-		const string kSuccess = "If you're reading this the test has passed";
-
 		public Issue7313(TestDevice testDevice) : base(testDevice)
 		{
 		}
 
-		public override string Issue => "[UWP] with ListView on page, Navigation.PopAsync() throws exception";
+		public override string Issue => "ListView RefreshControl Not Hiding";
 
 		[Test]
-		public void SettingBindingContextToNullBeforingPoppingPageCrashes()
+		public void RefreshControlTurnsOffSuccessfully()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForNoElement(kSuccess);
+			App.WaitForNoElement("If you see the refresh circle this test has failed");
+
+			App.WaitForNoElement("RefreshControl");
 		}
 	}
 }
