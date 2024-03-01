@@ -318,6 +318,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_container.DragOver -= HandleDragOver;
 				_container.Drop -= HandleDrop;
 				_container.Tapped -= OnTap;
+				_container.DoubleTapped -= OnTap;
 				_container.ManipulationDelta -= OnManipulationDelta;
 				_container.ManipulationStarted -= OnManipulationStarted;
 				_container.ManipulationCompleted -= OnManipulationCompleted;
