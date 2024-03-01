@@ -9,6 +9,7 @@ using Android.Views;
 using Android.Widget;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
+using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -20,6 +21,7 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 using Orientation = Android.Widget.Orientation;
 using Typeface = Android.Graphics.Typeface;
 using TypefaceStyle = Android.Graphics.TypefaceStyle;
+using AViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -112,7 +114,7 @@ namespace Microsoft.Maui.Controls.Platform
 					menuItem.SetChecked(true);
 			}
 
-			bottomView.SetShiftMode(false, false);
+			bottomView.SetShiftMode(false);
 
 			if (loadTasks.Count > 0)
 				await Task.WhenAll(loadTasks);
@@ -239,50 +241,21 @@ namespace Microsoft.Maui.Controls.Platform
 			return bottomSheetDialog;
 		}
 
+		internal static void SetShiftMode(this BottomNavigationView bottomNavigationView, bool enableShiftMode)
+		{
+			if (enableShiftMode)
+				bottomNavigationView.LabelVisibilityMode = ALabelVisibilityMode.LabelVisibilityAuto;
+			else
+				bottomNavigationView.LabelVisibilityMode = ALabelVisibilityMode.LabelVisibilityLabeled;
+		}
 
+		[Obsolete("Just set the LabelVisibilityMode property on the BottomNavigationView")]
 		public static void SetShiftMode(this BottomNavigationView bottomNavigationView, bool enableShiftMode, bool enableItemShiftMode)
 		{
-			try
-			{
-				var menuView = bottomNavigationView.GetChildAt(0) as BottomNavigationMenuView;
-				if (menuView is null)
-				{
-					System.Diagnostics.Debug.WriteLine("Unable to find BottomNavigationMenuView");
-					return;
-				}
-
-#if __ANDROID_28__
-				if (enableShiftMode)
-					bottomNavigationView.LabelVisibilityMode = ALabelVisibilityMode.LabelVisibilityAuto;
-				else
-					bottomNavigationView.LabelVisibilityMode = ALabelVisibilityMode.LabelVisibilityLabeled;
-#else
-				var shiftMode = menuView.Class.GetDeclaredField("mShiftingMode");
-				shiftMode.Accessible = true;
-				shiftMode.SetBoolean(menuView, enableShiftMode);
-				shiftMode.Accessible = false;
-				shiftMode.Dispose();
-#endif
-				for (int i = 0; i < menuView.ChildCount; i++)
-				{
-					var child = menuView.GetChildAt(i);
-					var item = child as BottomNavigationItemView;
-					if (item != null)
-					{
-#if __ANDROID_28__
-						item.SetShifting(enableItemShiftMode);
-#else
-						item.SetShiftingMode(enableItemShiftMode);
-#endif
-						item.SetChecked(item.ItemData.IsChecked);
-					}
-				}
-				menuView.UpdateMenuView();
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine($"Unable to set shift mode: {ex}");
-			}
+			if (enableShiftMode)
+				bottomNavigationView.LabelVisibilityMode = ALabelVisibilityMode.LabelVisibilityAuto;
+			else
+				bottomNavigationView.LabelVisibilityMode = ALabelVisibilityMode.LabelVisibilityLabeled;
 		}
 	}
 }
