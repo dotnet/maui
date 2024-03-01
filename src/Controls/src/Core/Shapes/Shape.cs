@@ -203,6 +203,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				_fillChanged ??= (sender, e) => OnPropertyChanged(nameof(Fill));
 				_fillProxy ??= new();
 				_fillProxy.Subscribe(fill, _fillChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(fill.OnParentResourcesChanged);
 			}
 		}
 
@@ -215,6 +218,8 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (fill is not null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(fill.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(fill, null);
 				_fillProxy?.Unsubscribe();
 			}
@@ -233,6 +238,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
 				_strokeProxy ??= new();
 				_strokeProxy.Subscribe(stroke, _strokeChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(stroke.OnParentResourcesChanged);
 			}
 		}
 
@@ -245,6 +253,8 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (stroke is not null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(stroke.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(stroke, null);
 				_strokeProxy?.Unsubscribe();
 			}

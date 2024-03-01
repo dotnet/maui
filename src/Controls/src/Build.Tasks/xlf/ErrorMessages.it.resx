@@ -232,7 +232,7 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>Con x:DataType è previsto un valore letterale stringa, un markup {{x:Type}} oppure {{x:Nul}l}.</value>
+    <value>Con x:DataType è previsto un valore letterale stringa, un markup {{x:Type}} oppure {{x:Null}}.</value>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Il prefisso xmlns "{0}" non è dichiarato.</value>

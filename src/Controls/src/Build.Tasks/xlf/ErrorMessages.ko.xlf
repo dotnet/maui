@@ -158,8 +158,8 @@
         <note>0 is a type name</note>
       </trans-unit>
       <trans-unit id="XDataTypeSyntax">
-        <source>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}.</source>
-        <target state="translated">x:DataType에는 {{x:Type}} 태그 또는 {{x:Nul}l} 문자열 리터럴이 필요합니다.</target>
+        <source>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}.</source>
+        <target state="translated">x:DataType에는 {{x:Type}} 태그 또는 {{x:Null}} 문자열 리터럴이 필요합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="XKeyNotLiteral">

@@ -139,29 +139,6 @@ namespace Microsoft.Maui.IntegrationTests
 					},
 				}
 			},
-			new WarningsPerFile
-			{
-				File = "src/Controls/src/Core/BindingExpression.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2070",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.BindingExpression.SetupPart(TypeInfo,BindingExpression.BindingExpressionPart): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Reflection.TypeInfo.GetDeclaredMethod(String)'. The parameter '#0' of method 'Microsoft.Maui.Controls.BindingExpression.SetupPart(TypeInfo,BindingExpression.BindingExpressionPart)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.BindingExpression.SetupPart(TypeInfo,BindingExpression.BindingExpressionPart): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Reflection.TypeInfo.GetDeclaredMethod(String)'. The parameter '#0' of method 'Microsoft.Maui.Controls.BindingExpression.SetupPart(TypeInfo,BindingExpression.BindingExpressionPart)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.BindingExpression.SetupPart(TypeInfo,BindingExpression.BindingExpressionPart): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties', 'DynamicallyAccessedMemberTypes.NonPublicProperties' in call to 'System.Reflection.TypeInfo.GetDeclaredProperty(String)'. The parameter '#0' of method 'Microsoft.Maui.Controls.BindingExpression.SetupPart(TypeInfo,BindingExpression.BindingExpressionPart)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.BindingExpression.SetupPart(TypeInfo,BindingExpression.BindingExpressionPart): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicFields', 'DynamicallyAccessedMemberTypes.NonPublicFields' in call to 'System.Reflection.TypeInfo.GetDeclaredField(String)'. The parameter '#0' of method 'Microsoft.Maui.Controls.BindingExpression.SetupPart(TypeInfo,BindingExpression.BindingExpressionPart)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.BindingExpression.SetupPart(TypeInfo,BindingExpression.BindingExpressionPart): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.Interfaces' in call to 'System.Reflection.TypeInfo.ImplementedInterfaces.get'. The parameter '#0' of method 'Microsoft.Maui.Controls.BindingExpression.SetupPart(TypeInfo,BindingExpression.BindingExpressionPart)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.BindingExpression.GetIndexer(TypeInfo,String,String): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties', 'DynamicallyAccessedMemberTypes.NonPublicProperties' in call to 'System.Reflection.TypeInfo.DeclaredProperties.get'. The parameter '#0' of method 'Microsoft.Maui.Controls.BindingExpression.GetIndexer(TypeInfo,String,String)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.BindingExpression.GetIndexer(TypeInfo,String,String): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties', 'DynamicallyAccessedMemberTypes.NonPublicProperties' in call to 'System.Reflection.TypeInfo.DeclaredProperties.get'. The parameter '#0' of method 'Microsoft.Maui.Controls.BindingExpression.GetIndexer(TypeInfo,String,String)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.BindingExpression.GetIndexer(TypeInfo,String,String): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties', 'DynamicallyAccessedMemberTypes.NonPublicProperties' in call to 'System.Reflection.TypeInfo.DeclaredProperties.get'. The parameter '#0' of method 'Microsoft.Maui.Controls.BindingExpression.GetIndexer(TypeInfo,String,String)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.BindingExpression.GetIndexer(TypeInfo,String,String): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.Interfaces' in call to 'System.Reflection.TypeInfo.ImplementedInterfaces.get'. The parameter '#0' of method 'Microsoft.Maui.Controls.BindingExpression.GetIndexer(TypeInfo,String,String)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
 		};
 
 		#region Utility methods for generating the list of expected warnings

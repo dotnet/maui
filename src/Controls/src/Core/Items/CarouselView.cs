@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -208,17 +209,17 @@ namespace Microsoft.Maui.Controls
 			if (indicatorView == null)
 				return;
 
-			indicatorView.SetBinding(IndicatorView.PositionProperty, new Binding
-			{
-				Path = nameof(CarouselView.Position),
-				Source = carouselView
-			});
+			indicatorView.SetBinding(IndicatorView.PositionProperty, TypedBinding.ForSingleNestingLevel(
+				nameof(CarouselView.Position),
+				getter: static (CarouselView carousel) => carousel.Position,
+				setter: static (carousel, val) => carousel.Position = val,
+				source: carouselView));
 
-			indicatorView.SetBinding(IndicatorView.ItemsSourceProperty, new Binding
-			{
-				Path = nameof(ItemsView.ItemsSource),
-				Source = carouselView
-			});
+			indicatorView.SetBinding(IndicatorView.ItemsSourceProperty, TypedBinding.ForSingleNestingLevel(
+				nameof(CarouselView.ItemsSource),
+				getter: static (CarouselView carousel) => carousel.ItemsSource,
+				setter: static (carousel, val) => carousel.ItemsSource = val,
+				source: carouselView));
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsScrolling']/Docs/*" />

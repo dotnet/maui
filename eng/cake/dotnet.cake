@@ -725,11 +725,7 @@ void RunMSBuildWithDotNet(
 
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
-
-        //args.Append("/tl");
-        args.Append("-tl:false");
-        args.Append("-v diag");
-
+    
         return args;
     };
 
