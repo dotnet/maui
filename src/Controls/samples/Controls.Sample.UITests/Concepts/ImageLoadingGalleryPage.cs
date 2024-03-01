@@ -5,6 +5,11 @@ namespace Maui.Controls.Sample
 {
 	internal class ImageLoadingGalleryPage : CoreGalleryBasePage
 	{
+		public ImageLoadingGalleryPage() : base()
+		{
+			((ScrollView)Content).VerticalScrollBarVisibility = Microsoft.Maui.ScrollBarVisibility.Always;
+		}
+
 		protected override void Build()
 		{
 			Add(Test.ImageLoading.FromBundleSvg, ImageSource.FromFile("dotnet_bot.png"));
