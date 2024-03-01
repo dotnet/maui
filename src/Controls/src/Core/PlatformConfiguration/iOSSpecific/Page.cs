@@ -71,33 +71,52 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for attached property <c>UseSafeArea</c>.</summary>
+		/// <summary>
+		/// Controls whether padding values are overridden with the safe area insets.
+		/// </summary>
 #if MACCATALYST
 		public static readonly BindableProperty UseSafeAreaProperty = BindableProperty.Create("UseSafeArea", typeof(bool), typeof(Page), true);
 #else
 		public static readonly BindableProperty UseSafeAreaProperty = BindableProperty.Create("UseSafeArea", typeof(bool), typeof(Page), false);
 #endif
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetUseSafeArea']/Docs/*" />
+		/// <summary>
+		/// Gets a Boolean value that tells whether padding values are overridden with values that conform to the safe area on the device.
+		/// </summary>
+		/// <param name="element">The element whose safe area behavior to get.</param>
+		/// <returns>A Boolean value that tells whether padding values are overridden or not.</returns>
 		public static bool GetUseSafeArea(BindableObject element)
 		{
 			return (bool)element.GetValue(UseSafeAreaProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetUseSafeArea'][1]/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls whether padding values are overridden with the safe area insets.
+		/// </summary>
+		/// <param name="element">The element whose safe area use behavior to set.</param>
+		/// <param name="value">The new safe area inset behavior.</param>
 		public static void SetUseSafeArea(BindableObject element, bool value)
 		{
 			element.SetValue(UseSafeAreaProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetUseSafeArea'][2]/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls whether padding values are overridden with the safe area insets.
+		/// </summary>
+		/// <param name="config">The element whose safe area behavior to get.</param>
+		/// <param name="value">The new safe area inset behavior.</param>
+		/// <returns></returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUseSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetUseSafeArea(config.Element, value);
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='UsingSafeArea']/Docs/*" />
+		/// <summary>
+		/// Returns a Boolean value that tells whether the padding is overridden with the safe area.
+		/// </summary>
+		/// <param name="config">The element whose safe area behavior to get.</param>
+		/// <returns>A Boolean value that tells whether the padding is overridden with the safe area.</returns>
 		public static bool UsingSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetUseSafeArea(config.Element);
@@ -161,29 +180,54 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="ModalPresentationStyle"/>.</summary>
+		/// <summary>
+		/// Defines the modal presentation style of the Page.
+		/// </summary>
 		public static readonly BindableProperty ModalPresentationStyleProperty =
 			BindableProperty.Create(nameof(ModalPresentationStyle), typeof(UIModalPresentationStyle), typeof(Page), UIModalPresentationStyle.FullScreen);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='ModalPresentationStyle']/Docs/*" />
+		/// <summary>
+		/// Gets the modal presentation style of the Page.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The modal presentation style.</returns>
 		public static UIModalPresentationStyle ModalPresentationStyle(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetModalPresentationStyle(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetModalPresentationStyle']/Docs/*" />
+		/// <summary>
+		/// Sets the modal presentation style.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The modal presentation style.</param>
+		/// <returns>The platform specific configuration that contains the element on which to perform the operation.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetModalPresentationStyle(this IPlatformElementConfiguration<iOS, FormsElement> config, UIModalPresentationStyle value)
 		{
 			SetModalPresentationStyle(config.Element, value);
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetModalPresentationStyle']/Docs/*" />
+		/// <summary>
+		/// Gets the current value of the UIModalPresentationStyle enumeration that's applied to the Page.
+		/// </summary>
+		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <returns>The current value of the UIModalPresentationStyle enumeration that's applied to the Page.</returns>
 		public static UIModalPresentationStyle GetModalPresentationStyle(BindableObject element)
 		{
 			return (UIModalPresentationStyle)element.GetValue(ModalPresentationStyleProperty);
 		}
 
+		/// <summary>
+		/// Sets the modal presentation style on a Page by specifying one of the following UIModalPresentationStyle enumeration values:
+		/// - FullScreen, which sets the modal presentation style to encompass the whole screen.By default, modal pages are displayed using this presentation style.
+		/// - FormSheet, which sets the modal presentation style to be centered on and smaller than the screen.
+		/// - Automatic, which sets the modal presentation style to the default chosen by the system. For most view controllers, UIKit maps this to UIModalPresentationStyle.PageSheet, but some system view controllers may map it to a different style.
+		/// - OverFullScreen, which sets the modal presentation style to cover the screen.
+		/// - PageSheet, which sets the modal presentation style to cover the underlying content.
+		/// </summary>
+		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <param name="value">The modal presentation style.</param>
 		static void SetModalPresentationStyle(BindableObject element, UIModalPresentationStyle value)
 		{
 			element.SetValue(ModalPresentationStyleProperty, value);
@@ -193,25 +237,42 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static readonly BindableProperty PrefersHomeIndicatorAutoHiddenProperty =
 			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetPrefersHomeIndicatorAutoHidden']/Docs/*" />
+		/// <summary>
+		/// Gets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
+		/// </summary>
+		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <returns></returns>
 		public static bool GetPrefersHomeIndicatorAutoHidden(BindableObject element)
 		{
 			return (bool)element.GetValue(PrefersHomeIndicatorAutoHiddenProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersHomeIndicatorAutoHidden'][1]/Docs/*" />
+		/// <summary>
+		/// Sets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
+		/// </summary>
+		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <param name="value">True when hide the home indicator, or false if you want the indicator to show at all times.</param>
 		public static void SetPrefersHomeIndicatorAutoHidden(BindableObject element, bool value)
 		{
 			element.SetValue(PrefersHomeIndicatorAutoHiddenProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='PrefersHomeIndicatorAutoHidden']/Docs/*" />
+		/// <summary>
+		/// Gets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>True when hide the home indicator, or false if you want the indicator to show at all times.</returns>
 		public static bool PrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetPrefersHomeIndicatorAutoHidden(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersHomeIndicatorAutoHidden'][2]/Docs/*" />
+		/// <summary>
+		/// Sets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">True when hide the home indicator, or false if you want the indicator to show at all times.</param>
+		/// <returns></returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetPrefersHomeIndicatorAutoHidden(config.Element, value);
