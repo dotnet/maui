@@ -18,6 +18,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.CheckBox)]
 		public override void _IsEnabled()
 		{
 			if (Device == TestDevice.Mac ||

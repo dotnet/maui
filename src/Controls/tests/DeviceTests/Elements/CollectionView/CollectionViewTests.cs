@@ -460,5 +460,53 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		record MyRecord(string Name);
+
+
+		[Fact]
+		public async Task SettingSelectedItemAfterModifyingCollectionDoesntCrash()
+		{
+			SetupBuilder();
+
+			var Items = new ObservableCollection<string>();
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label()
+					{
+						Text = "Margin Test",
+						Margin = new Thickness(10, 10, 10, 10),
+						HeightRequest = 50,
+					};
+
+					label.SetBinding(Label.TextProperty, new Binding("."));
+					return label;
+				}),
+				ItemsSource = Items,
+				SelectionMode = SelectionMode.Single
+			};
+
+			var vsl = new VerticalStackLayout()
+			{
+				collectionView				
+			};
+
+			vsl.HeightRequest = 500;
+			vsl.WidthRequest = 500;
+
+			var frame = collectionView.Frame;
+
+			await vsl.AttachAndRun<LayoutHandler>(async (handler) =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				frame = collectionView.Frame;
+				await Task.Yield();
+				Items.Add("Item 1");
+				Items.Add("Item 2");
+				Items.Add("Item 3");
+				collectionView.SelectedItem = Items.FirstOrDefault(x => x == "Item 3");
+				await WaitForUIUpdate(frame, collectionView);
+			}, MauiContext, (view) => CreateHandlerAsync<LayoutHandler>(view));
+		}
 	}
 }

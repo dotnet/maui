@@ -12,6 +12,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.TableView)]
 		public void TableViewMemoryLeakWhenUsingSwitchCellOrEntryCell()
 		{
 			this.IgnoreIfPlatforms(new[]

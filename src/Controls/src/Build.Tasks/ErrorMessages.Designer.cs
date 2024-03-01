@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}..
+        ///   Looks up a localized string similar to x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}..
         /// </summary>
         internal static string XDataTypeSyntax {
             get {

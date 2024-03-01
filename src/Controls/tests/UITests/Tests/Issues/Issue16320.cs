@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Adding an item to a CollectionView with linear layout crashes";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void Issue16320Test()
 		{
 			// TODO: It looks like this test has never passed on Android, failing with 
