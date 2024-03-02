@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample
 		public ImageLoadingGalleryPage() : base()
 		{
 #if WINDOWS
-			((ScrollView)Content).VerticalScrollBarVisibility = Microsoft.Maui.ScrollBarVisibility.Always;
+			((ScrollView)Content).VerticalScrollBarVisibility = Microsoft.Maui.ScrollBarVisibility.Never;
 #endif
 		}
 
