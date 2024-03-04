@@ -351,6 +351,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (content == null || _mauiContext == null)
 				return;
 
+			if (content is Border border)
+			{
+				foreach (var child in border.LogicalChildrenInternal)
+				{
+					if (child is IShape)
+					{
+						((VisualElement)child).IsVisible = false;
+						break;
+					}
+				}
+			}
+
 			var platformView = content.ToPlatform(_mauiContext);
 			AddView(platformView);
 		}
