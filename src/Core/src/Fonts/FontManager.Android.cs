@@ -19,6 +19,14 @@ namespace Microsoft.Maui
 			"fonts/",
 		};
 
+		static readonly Dictionary<string, FontWeight> FontWeightMap = new(StringComparer.OrdinalIgnoreCase)
+		{
+			{ "-light", FontWeight.Light },
+			{ "-medium", FontWeight.Medium },
+			{ "-black", FontWeight.Black }
+			// Add more styles as needed
+		};
+
 		readonly ConcurrentDictionary<(string? fontFamilyName, FontWeight weight, bool italic), Typeface?> _typefaces = new();
 		readonly IFontRegistrar _fontRegistrar;
 		readonly IServiceProvider? _serviceProvider;
@@ -173,21 +181,13 @@ namespace Microsoft.Maui
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(28))
 			{
-				var fontWeightMap = new Dictionary<string, FontWeight>
-				{
-					{ "-light", FontWeight.Light },
-					{ "-medium", FontWeight.Medium },
-					{ "-black", FontWeight.Black }
-					// Add more styles as needed
-				};
-
 				if (!string.IsNullOrWhiteSpace(fontFamily))
 				{
-					foreach (var fontWeight in fontWeightMap.Keys)
+					foreach (var fontWeight in FontWeightMap)
 					{
-						if (fontFamily.EndsWith(fontWeight, StringComparison.OrdinalIgnoreCase))
+						if (fontFamily.EndsWith(fontWeight.Key, StringComparison.OrdinalIgnoreCase))
 						{
-							return Typeface.Create(result, (int)fontWeightMap[fontWeight], italic);
+							return Typeface.Create(result, (int)fontWeight.Value, italic);
 						}
 					}
 				}
