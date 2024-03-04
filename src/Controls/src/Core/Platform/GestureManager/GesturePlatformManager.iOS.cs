@@ -516,7 +516,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static bool ShouldRecognizeTapsTogether(UIGestureRecognizer gesture, UIGestureRecognizer other)
 		{
-			// If multiple tap gestures are potentially firing (because multiple tap gesture recognizers have been
+			// If multiple tap gestures are potentially firing(because multiple tap gesture recognizers have been
 			// added to the MAUI Element), we want to allow them to fire simultaneously if they have the same number
 			// of taps and touches
 
@@ -670,8 +670,16 @@ namespace Microsoft.Maui.Controls.Platform
 					if (nativeRecognizer != null && PlatformView != null)
 					{
 						nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
-						PlatformView.AddGestureRecognizer(nativeRecognizer);
 
+						if (PlatformView is WrapperView wrapperView)
+						{
+							var platformView = wrapperView.Subviews[0];
+							platformView.AddGestureRecognizer(nativeRecognizer);
+						}
+						else
+						{
+							PlatformView.AddGestureRecognizer(nativeRecognizer);
+						}
 					}
 				}
 			}
