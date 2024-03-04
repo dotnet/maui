@@ -75,7 +75,7 @@ void Cleanup()
 		return;
 }
 
-void setBinLogDir();
+void setBinLogDir()
 {
 	var binDir = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
 	try {
