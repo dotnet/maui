@@ -50,18 +50,6 @@ var uninstallPS = new Action(() =>
 	} catch { }
 });
 
-var setBinLogDir = new Action<string>((dir) =>
-{
-	try {
-		StartProcess("cmd",
-			$"/c reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting\\LocalDumps\" /v DumpFolder /d \"{dir}\"");
-		StartProcess("cmd",
-			"/c reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting\\LocalDumps\" /v DumpType /t REG_DWORD /d 2");
-
-		Information($"Successfully set dump log file path to {dir}");
-	} catch { }
-});
-
 Information("Project File: {0}", PROJECT);
 Information("Application ID: {0}", PACKAGEID);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
@@ -73,6 +61,7 @@ Information("Windows version: {0}", windowsVersion);
 Setup(context =>
 {
 	Cleanup();
+	setBinLogDir();
 });
 
 Teardown(context =>
@@ -84,6 +73,19 @@ void Cleanup()
 {
 	if (!DEVICE_CLEANUP)
 		return;
+}
+
+void setBinLogDir();
+{
+	var binDir = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
+	try {
+		StartProcess("cmd",
+			$"/c reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting\\LocalDumps\" /v DumpFolder /d \"{binDir}\"");
+		StartProcess("cmd",
+			"/c reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting\\LocalDumps\" /v DumpType /t REG_DWORD /d 2");
+
+		Information($"Successfully set dump log file path to {binDir}");
+	} catch { }
 }
 
 Task("Cleanup");
@@ -225,9 +227,6 @@ Task("Test")
 	var testResultsPath = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
 	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
 	var testsToRunFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\devicetestcategories.txt";
-
-	// Ensure dump log settings
-	setBinLogDir(testResultsPath);
 
 	Information($"Test Results File: {testResultsFile}");
 	Information($"Tests To Run File: {testsToRunFile}");
