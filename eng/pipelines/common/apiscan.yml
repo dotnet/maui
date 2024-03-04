@@ -1,6 +1,6 @@
 parameters:
-  poolName: MAUI-1ESPT-Windows2022
-  vmImage: ''
+  poolName: MAUI-1ESPT
+  vmImage: '1ESPT-Windows2022'
   os: windows
   softwareName: 'MAUI'
   softwareVersion: 8.0
