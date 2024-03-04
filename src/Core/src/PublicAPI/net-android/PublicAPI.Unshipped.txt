@@ -65,6 +65,7 @@ override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.MauiAppCompatActivity.DispatchTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.ContentViewGroup.GetClipPath(int width, int height) -> Android.Graphics.Path?
+override Microsoft.Maui.Platform.MauiWebChromeClient.OnHideCustomView() -> void
 override Microsoft.Maui.Platform.NavigationViewFragment.OnDestroy() -> void
 override Microsoft.Maui.PlatformContentViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
 override Microsoft.Maui.PlatformContentViewGroup.ThresholdClass.get -> nint
@@ -121,6 +122,7 @@ static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, M
 *REMOVED*override Microsoft.Maui.Handlers.ViewHandler.SetVirtualView(Microsoft.Maui.IElement! element) -> void
 override Microsoft.Maui.Platform.WrapperView.Visibility.get -> Android.Views.ViewStates
 override Microsoft.Maui.Platform.WrapperView.Visibility.set -> void
+~override Microsoft.Maui.Platform.MauiWebChromeClient.OnShowCustomView(Android.Views.View view, Android.Webkit.WebChromeClient.ICustomViewCallback callback) -> void
 static Microsoft.Maui.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
 static Microsoft.Maui.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
