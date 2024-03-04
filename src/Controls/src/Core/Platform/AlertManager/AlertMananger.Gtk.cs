@@ -43,19 +43,24 @@ namespace Microsoft.Maui.Controls.Platform
 			internal AlertRequestHelper(Gtk.Window window)
 			{
 				PlatformWindow = window;
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 
 				MessagingCenter.Subscribe<Page, bool>(PlatformWindow, Page.BusySetSignalName, OnPageBusy);
 				MessagingCenter.Subscribe<Page, AlertArguments>(PlatformWindow, Page.AlertSignalName, OnAlertRequested);
 				MessagingCenter.Subscribe<Page, PromptArguments>(PlatformWindow, Page.PromptSignalName, OnPromptRequested);
 				MessagingCenter.Subscribe<Page, ActionSheetArguments>(PlatformWindow, Page.ActionSheetSignalName, OnActionSheetRequested);
+#pragma warning restore CS0618 // Type or member is obsolete
+				
 			}
 
 			public void Dispose()
 			{
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				MessagingCenter.Unsubscribe<Page, bool>(PlatformWindow, Page.BusySetSignalName);
 				MessagingCenter.Unsubscribe<Page, AlertArguments>(PlatformWindow, Page.AlertSignalName);
 				MessagingCenter.Unsubscribe<Page, PromptArguments>(PlatformWindow, Page.PromptSignalName);
 				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(PlatformWindow, Page.ActionSheetSignalName);
+#pragma warning restore CS0618 // Type or member is obsolete				
 			}
 
 			void OnPageBusy(Page sender, bool enabled)
