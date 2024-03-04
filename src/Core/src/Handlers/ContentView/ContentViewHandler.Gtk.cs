@@ -1,4 +1,5 @@
 ﻿using System;
+using Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -12,7 +13,11 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");
 			}
 
-			return new ContentView { CrossPlatformLayout = VirtualView };
+			return new ContentView
+			{
+				CrossPlatformLayout = VirtualView,
+				// Valign = Align.Start
+			};
 		}
 
 		public void UpdateContent()

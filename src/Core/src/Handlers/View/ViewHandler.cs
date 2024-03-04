@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.AnchorY)] = MapAnchorY,
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 				[nameof(IBorder.Border)] = MapBorderView,
-#if ANDROID || WINDOWS || TIZEN
+#if ANDROID || WINDOWS || TIZEN || GTK
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
 				[nameof(IView.InputTransparent)] = MapInputTransparent,

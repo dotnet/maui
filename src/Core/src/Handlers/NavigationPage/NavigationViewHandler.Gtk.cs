@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(nativeView);
 
+			nativeView.Connect(VirtualView);
 			NavigationManager.Connect(VirtualView, nativeView);
 		}
 
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 			NavigationManager.Disconnect(VirtualView, nativeView);
 
+			nativeView.Disconnect(VirtualView);
 			base.DisconnectHandler(nativeView);
 		}
 

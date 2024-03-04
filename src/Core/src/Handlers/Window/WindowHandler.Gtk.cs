@@ -45,6 +45,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHeight(IWindowHandler handler, IWindow view) =>
 			handler.PlatformView?.UpdateHeight(view);
 
+		public static void MapToolbar(IWindowHandler handler, IWindow view)
+		{
+			if (view is IToolbarElement tb)
+				ViewHandler.MapToolbar(handler, tb);
+		}
+
 	}
 
 }

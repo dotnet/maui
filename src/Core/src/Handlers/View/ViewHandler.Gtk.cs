@@ -39,18 +39,21 @@
 
 		public static void MapToolbar(IViewHandler handler, IView view)
 		{
-			if (handler.VirtualView is not IToolbarElement te || te.Toolbar == null)
-				return;
-
-			MapToolbar(handler, te);
+			if (view is IToolbarElement tb)
+				MapToolbar(handler, tb);
 		}
 
-		[MissingMapper]
-		internal static void MapToolbar(IElementHandler handler, IToolbarElement te)
+		internal static void MapToolbar(IElementHandler handler, IToolbarElement tb)
 		{
-			
+			if (handler.MauiContext is not null)
+			{
+				var toolbarContainer = handler.MauiContext.GetToolBarContainer();
+				if (toolbarContainer is not null)
+				{
+					toolbarContainer.SetToolbar(tb.Toolbar?.ToPlatform(handler.MauiContext) as MauiToolbar);
+				}
+			}
 		}
-
 	}
 
 }

@@ -2,9 +2,9 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ToolbarHandler : ElementHandler<IToolbar, Gtk.Widget>
+	public partial class ToolbarHandler : ElementHandler<IToolbar, MauiToolbar>
 	{
-		protected override Gtk.Widget CreatePlatformElement() => new NotImplementedView(nameof(IToolbar));
+		protected override MauiToolbar CreatePlatformElement() => new();
 
 		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
 		{
