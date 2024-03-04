@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Devices
 			var orientation = geometry.Height > geometry.Width ? DisplayOrientation.Portrait : DisplayOrientation.Landscape;
 			var rate = mainMonitor.RefreshRate / 1000; // The value is in milli-Hertz, so a refresh rate of 60Hz is returned as 60000.
 
-			return new DisplayInfo(geometry.Width, geometry.Height, DefaultScreen., orientation, DisplayRotation.Unknown, rate);
+			return new DisplayInfo(geometry.Width, geometry.Height, DefaultScreen.Resolution, orientation, DisplayRotation.Unknown, rate);
 		}
 
 		protected override void StartScreenMetricsListeners()
