@@ -21,8 +21,8 @@ namespace Microsoft.Maui.Controls
 		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2) =>
 			MapToolbarItems((IToolbarHandler)arg1, arg2);
 
-		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2) =>
-			MapTitle((IToolbarHandler)arg1, arg2);
+		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitleView((IToolbarHandler)arg1, arg2);
 
 		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2) =>
 			MapIconColor((IToolbarHandler)arg1, arg2);
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls
 		{ }
 
 		[MissingMapper]
-		public static void MapTitle(IToolbarHandler handler, Toolbar toolbar)
+		public static void MapTitleView(IToolbarHandler handler, Toolbar toolbar)
 		{ }
 
 		[MissingMapper]
