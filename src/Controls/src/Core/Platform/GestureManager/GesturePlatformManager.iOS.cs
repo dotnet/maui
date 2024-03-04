@@ -671,7 +671,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
 
-						if (PlatformView is WrapperView wrapperView)
+						if (PlatformView is WrapperView wrapperView && wrapperView.Subviews.Length > 0)
 						{
 							var platformView = wrapperView.Subviews[0];
 							platformView.AddGestureRecognizer(nativeRecognizer);
