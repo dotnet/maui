@@ -51,11 +51,11 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var result = new Label { };
 
-			var button = new Button { Text = Test9580 };
+			var button = new Button { AutomationId = Test9580, Text = Test9580 };
 			button.Clicked += (sender, args) =>
 			{
 				groups[0].Add(new _9580Item { Text = "An Item" });
-				result.Text = Success;
+				result.AutomationId = result.Text = Success;
 			};
 
 			layout.Children.Add(instructions);
