@@ -143,6 +143,13 @@ Setup(context =>
 		Information("Starting Emulator: {0}...", ANDROID_AVD);
 		emulatorProcess = AndroidEmulatorStart(ANDROID_AVD, emuSettings);
 	}
+
+	if (IsCIBuild())
+	{
+		AdbLogcat(new AdbLogcatOptions() { Clear = true });
+		AdbShell("pm disable-user --user 0 com.google.android.configupdater");
+		AdbShell("logcat -G 16M");
+	}
 });
 
 Teardown(context =>
@@ -150,6 +157,11 @@ Teardown(context =>
 	// no virtual device was used
 	if (emulatorProcess == null || !DEVICE_BOOT || TARGET.ToLower() == "boot")
 		return;
+
+	if (IsCIBuild())
+	{
+		AdbShell("pm enable --user 0 com.google.android.configupdater");
+	}
 
 	//stop and cleanup the emulator
 	Information("AdbEmuKill");
@@ -343,11 +355,7 @@ Task("uitest")
 	
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_android.log");
 
-	Information("Run UITests project {0}", PROJECT.FullPath);
-
-	AdbLogcat(new AdbLogcatOptions() { Clear = true });
-	AdbShell("pm disable-user --user 0 com.google.android.configupdater");
-	AdbShell("logcat -G 16M");
+	Information("Run UITests project {0}", PROJECT.FullPath);	
 	
 	try{
 		RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android"
@@ -358,9 +366,6 @@ Task("uitest")
 	{
 		WriteLogCat();
 		throw;
-	}
-	finally{
-		AdbShell("pm enable --user 0 com.google.android.configupdater");
 	}
 });
 
