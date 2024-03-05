@@ -358,9 +358,7 @@ Task("uitest")
 	Information("Run UITests project {0}", PROJECT.FullPath);	
 	
 	try{
-		RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android"
-		//, filter: "InputTransparencyWhenRootIsTransparentMatrix|InputTransparencySimple|InputTransparencyWhenRootIsNotTransparentMatrix"
-		);
+		RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
 	}
 	catch(Exception)
 	{
