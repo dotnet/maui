@@ -428,7 +428,7 @@ void WriteLogCat(string filename = null)
 	if (string.IsNullOrWhiteSpace(filename))
 	{
 		var timeStamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-		filename = $"logcat_{TARGET}_{timeStamp}.txt";
+		filename = $"logcat_{TARGET}_{timeStamp}.log";
 	}
 		
 	EnsureDirectoryExists(GetLogDirectory());
