@@ -3,10 +3,6 @@ parameters:
   type: string
   default: ''
 
-- name: poolName
-  type: string
-  default: ''
-
 - name: provisionatorChannel
   type: string
   default: 'latest'
@@ -19,12 +15,19 @@ parameters:
   type: string
   default: 'pack-binaries'
 
+- name: artifactsPath
+  type: string
+  default: (Build.ArtifactStagingDirectory)
+
 - name: nugetFolder
   type: string
   default: 'artifacts'
   
-
 - name: prepareSteps
+  type: stepList
+  default: []
+
+- name: postSteps
   type: stepList
   default: []
 
@@ -36,16 +39,15 @@ parameters:
   type: string
   default: $(System.DefaultWorkingDirectory)
 
-steps:
+- name: additionalArtifacts
+  type: object
+  default: []
 
-  - ${{ if ne(variables['Build.DefinitionName'], 'dotnet-maui') }}:
-    - template: provision.yml
-      parameters:
-        checkoutDirectory: ${{ parameters.checkoutDirectory }}
-        poolName: ${{ parameters.poolName }}
-        provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        gitHubToken: ${{ parameters.gitHubToken }}
-        skipAndroidImages: true
+- name: publishArtifacts
+  type: boolean
+  default: true
+
+steps:
 
   - ${{ each step in parameters.prepareSteps }}:
     - ${{ each pair in step }}:
@@ -116,6 +118,16 @@ steps:
       displayName: 'Diff .NET Maui artifacts with NuGet'
       workingDirectory: ${{ parameters.checkoutDirectory }}
 
+      # binaries for compliance scanning
+    - task: CopyFiles@2
+      displayName: 'Copy Binaries Files'
+      condition: succeeded()
+      inputs:
+        Contents: |
+          ${{ parameters.checkoutDirectory }}/src/Controls/src/Nuget/bin/Release/**/*.dll
+        TargetFolder: ${{ parameters.checkoutDirectory }}/artifacts/binaries
+        flattenFolders: false
+
   # artifacts
   - task: CopyFiles@2
     condition: always()
@@ -128,7 +140,8 @@ steps:
         ${{ parameters.checkoutDirectory }}/eng/automation/SignList.xml
         ${{ parameters.checkoutDirectory }}/eng/automation/SignVerifyIgnore.txt
         !${{ parameters.checkoutDirectory}}/artifacts/docs-packs/**
-      TargetFolder: $(build.artifactstagingdirectory)
+        !${{ parameters.checkoutDirectory}}/artifacts/binaries/**
+      TargetFolder: ${{ parameters.artifactsPath }}
       flattenFolders: true
 
   - task: CopyFiles@2
@@ -139,7 +152,7 @@ steps:
       Contents: |
         metadata/**
         api-diff/**
-      TargetFolder: $(build.artifactstagingdirectory)
+      TargetFolder: ${{ parameters.artifactsPath }}
 
   - task: CopyFiles@2
     displayName: 'Copy Log Files'
@@ -147,37 +160,33 @@ steps:
     inputs:
       Contents: |
         ${{ parameters.checkoutDirectory }}/artifacts/logs/**
-      TargetFolder: $(build.artifactstagingdirectory)/logs
+      TargetFolder: ${{ parameters.artifactsPath }}/logs
       flattenFolders: true
-
-  - task: PublishBuildArtifacts@1
-    condition: always()
-    displayName: publish artifacts
-    inputs:
-      ArtifactName: ${{ parameters.artifact }}
-  # xml-docs
-  - ${{ if eq(parameters.platform, 'Windows') }}:
+  
+  - ${{ if eq(parameters.publishArtifacts, 'true') }}:
     - task: PublishBuildArtifacts@1
       condition: always()
-      displayName: publish docs artifacts
+      displayName: publish artifacts
       inputs:
-        PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/docs-packs
-        ArtifactName: xml-docs
+        ArtifactName: ${{ parameters.artifact }}
+        PathToPublish: ${{ parameters.artifactsPath }}
+  
+    # xml-docs
+    - ${{ if eq(parameters.platform, 'Windows') }}:
+      - task: PublishBuildArtifacts@1
+        condition: always()
+        displayName: publish docs artifacts
+        inputs:
+          PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/docs-packs
+          ArtifactName: xml-docs
 
-    # binaries for compliance scanning
-    - task: CopyFiles@2
-      displayName: 'Copy Binaries Files'
-      condition: succeeded()
-      inputs:
-        Contents: |
-          ${{ parameters.checkoutDirectory }}/src/Controls/src/Nuget/bin/Release/**/*.dll
-        TargetFolder: ${{ parameters.checkoutDirectory }}/binaries
-        flattenFolders: false
+      - task: PublishBuildArtifacts@1
+        condition: succeeded()
+        displayName: publish binaries artifacts
+        inputs:
+          PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/binaries
+          ArtifactName: ${{ parameters.artifactBinaries }}
 
-    - task: PublishBuildArtifacts@1
-      condition: succeeded()
-      displayName: publish binaries artifacts
-      inputs:
-        PathToPublish: ${{ parameters.checkoutDirectory }}/binaries
-        ArtifactName: ${{ parameters.artifactBinaries }}
-
+  - ${{ each step in parameters.postSteps }}:
+    - ${{ each pair in step }}:
+        ${{ pair.key }}: ${{ pair.value }}

@@ -77,6 +77,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "StrokeShape Initializes Correctly")]
+		[InlineData("Ellipse")]
 		[InlineData("Rectangle")]
 		[InlineData("RoundRectangle")]
 		public async Task StrokeShapeInitializesCorrectly(string shape)
@@ -90,6 +91,11 @@ namespace Microsoft.Maui.DeviceTests
 				Height = 100,
 				Width = 300
 			};
+
+			if (shape == "Ellipse")
+			{
+				border.Shape = new EllipseShapeStub();
+			}
 
 			if (shape == "Rectangle")
 			{

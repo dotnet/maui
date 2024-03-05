@@ -386,7 +386,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if (n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 					break;
-				n = n.Parent as IElementNode;
+				if (n.Parent is ListNode listNode)
+					n = listNode.Parent as IElementNode;
+				else
+					n = n.Parent as IElementNode;
 			}
 
 			if (dataTypeNode is null)
@@ -419,12 +422,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (dataType is null)
 				throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
 
-			var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
-			var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix) ?? "";
-			if (!string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(namespaceuri))
+			XmlType dtXType = null;
+			try
+			{
+				dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
+					?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+			}
+			catch (XamlParseException)
+			{
+				var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
 				throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
-
-			var dtXType = new XmlType(namespaceuri, dataType, null);
+			}
 
 			var tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
 			if (tSourceRef == null)
@@ -1464,7 +1472,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		static bool CanAddToResourceDictionary(VariableDefinition parent, TypeReference collectionType, IElementNode node, IXmlLineInfo lineInfo, ILContext context)
 		{
 			if (collectionType.FullName != "Microsoft.Maui.Controls.ResourceDictionary"
-				&& collectionType.ResolveCached(context.Cache).BaseType?.FullName != "Microsoft.Maui.Controls.ResourceDictionary")
+				&& !collectionType.InheritsFromOrImplements(context.Cache, context.Module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary"))))
 				return false;
 
 			if (node.Properties.ContainsKey(XmlName.xKey))

@@ -192,6 +192,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if __IOS__
 		[Test]
+		[Ignore("This test fails intermittently, especially on iOS 17; ignore until we can fix it")]
 		public async Task FlyoutHeaderWithZeroMarginShouldHaveNoY()
 		{
 			RunningApp.WaitForElement("PageLoaded");

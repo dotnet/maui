@@ -42,6 +42,9 @@ parameters:
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
 
@@ -70,7 +73,6 @@ jobs:
     demands:
       - macOS.Name -equals Ventura
       - macOS.Architecture -equals x64
-      - Agent.OSVersion -equals 13.5
   steps:
 
   - ${{ each step in parameters.prepareSteps }}:
@@ -101,9 +103,11 @@ jobs:
 
   - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
     displayName: Build Microsoft.Maui.IntegrationTests
+    workingDirectory: ${{ parameters.checkoutDirectory }}
 
   - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="FullyQualifiedName=Microsoft.Maui.IntegrationTests.TemplateTests" --resultsfilename="integration-tests" --verbosity=diagnostic
     displayName: Run $(PLATFORM_NAME) templates build tests
+    workingDirectory: ${{ parameters.checkoutDirectory }}
 
   - task: PublishTestResults@2
     displayName: Publish the $(PLATFORM_NAME) templates build tests
