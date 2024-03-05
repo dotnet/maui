@@ -90,7 +90,7 @@ void setBinLogDir()
 			key = hklm.OpenSubKey(regKeyPath);
 			if (key == null)
 			{
-				key = RegistryKey.CreateSubKey(regKeyPath);
+				key = hklm.CreateSubKey(regKeyPath);
 			}
 			key.SetValue("DumpFolder", binDir);
 			key.SetValue("DumpType", 2);
