@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Controls if the navigation bar is visible when a page is presented. 
-		/// By default the value of the property is true.
+		/// By default the value of the property is <see langword="true"/>.
 		/// </summary>
 		/// <param name="obj">The BindableObject that modify the navigation bar visibility.</param>
 		/// <param name="value">Manages the navigation bar visibility.</param>
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Controls whether the navigation bar has a shadow. 
-		/// By default the value of the property is true on Android, and false on other platforms.
+		/// By default the value of the property is <see langword="true"/> on Android, and <see langword="false"/> on other platforms.
 		/// </summary>
 		/// <param name="obj">The BindableObject that modify if the navigation bar has a shadow.</param>
 		/// <param name="value">Manages if the navigation bar has a shadow.</param>
