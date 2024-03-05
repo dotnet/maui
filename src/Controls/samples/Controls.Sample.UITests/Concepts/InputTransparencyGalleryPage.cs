@@ -192,38 +192,7 @@ namespace Maui.Controls.Sample
 				};
 				return (grid, new { Bottom = bottom, Top = top });
 			})
-			.With(t =>
-			{
-				var v = t.ViewContainer.View;
-				var bottom = t.Additional.Bottom;
-				var top = Annotate(t.Additional.Top, v);
-				if (isClickable)
-				{
-					// if the button is clickable, then it should be clickable
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportSuccessEvent();
-				}
-				else if (!isPassThru)
-				{
-					// if one of the parent layouts are NOT transparent, then
-					// the tap should NOT go through to the bottom button
-#if ANDROID
-					// TODO: Android is broken with everything passing through
-					// https://github.com/dotnet/maui/issues/10252
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportSuccessEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-#else
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-#endif
-				}
-				else
-				{
-					// otherwise, the tap should go through
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportSuccessEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-				}
-			});
+			.With(t => WithAssert(isClickable, isPassThru, t.ViewContainer, t.Additional.Bottom, Annotate(t.Additional.Top, t.ViewContainer.View)));
 
 		void AddNesting(bool rootTrans, bool rootCascade, bool nestedTrans, bool nestedCascade, bool trans, bool isClickable, bool isPassThru) =>
 			Add(Test.InputTransparencyMatrix.GetKey(rootTrans, rootCascade, nestedTrans, nestedCascade, trans, isClickable, isPassThru), () =>
@@ -254,40 +223,39 @@ namespace Maui.Controls.Sample
 				};
 				return (grid, new { Bottom = bottom, Top = top });
 			})
-			.With(t =>
-			{
-				var v = t.ViewContainer.View;
-				var bottom = t.Additional.Bottom;
-				var top = Annotate(t.Additional.Top, v);
-				if (isClickable)
-				{
-					// if the button is clickable, then it should be clickable
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportSuccessEvent();
-				}
-				else if (!isPassThru)
-				{
-					// if one of the parent layouts are NOT transparent, then
-					// the tap should NOT go through to the bottom button
-#if ANDROID
-					// TODO: Android is broken with everything passing through
-					// https://github.com/dotnet/maui/issues/10252
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportSuccessEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-#else
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-#endif
-				}
-				else
-				{
-					// otherwise, the tap should go through
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportSuccessEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-				}
-			});
+			.With(t => WithAssert(isClickable, isPassThru, t.ViewContainer, t.Additional.Bottom, Annotate(t.Additional.Top, t.ViewContainer.View)));
 
-		(ExpectedEventViewContainer<View> ViewContainer, T Additional) Add<T>(Test.InputTransparency test, Func<(View View, T Additional)> func) =>
+        private static void WithAssert(bool isClickable, bool isPassThru, ExpectedEventViewContainer<View> viewContainer, Button bottom, Button top)
+        {
+            if (isClickable)
+            {
+                // if the button is clickable, then it should be clickable
+                bottom.Clicked += (s, e) => viewContainer.ReportFailEvent();
+                top.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
+            }
+            else if (!isPassThru)
+            {
+                // if one of the parent layouts are NOT transparent, then
+                // the tap should NOT go through to the bottom button
+#if ANDROID
+				// TODO: Android is broken with everything passing through
+				// https://github.com/dotnet/maui/issues/10252
+				bottom.Clicked += (s, e) => t.ViewContainer.ReportSuccessEvent();
+				top.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
+#else
+                bottom.Clicked += (s, e) => viewContainer.ReportFailEvent();
+                top.Clicked += (s, e) => viewContainer.ReportFailEvent();
+#endif
+            }
+            else
+            {
+                // otherwise, the tap should go through
+                bottom.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
+                top.Clicked += (s, e) => viewContainer.ReportFailEvent();
+            }
+        }
+
+        (ExpectedEventViewContainer<View> ViewContainer, T Additional) Add<T>(Test.InputTransparency test, Func<(View View, T Additional)> func) =>
 			Add(test.ToString(), func);
 
 		(ExpectedEventViewContainer<View> ViewContainer, T Additional) Add<T>(string test, Func<(View View, T Additional)> func)
