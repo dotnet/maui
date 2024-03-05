@@ -227,32 +227,32 @@ namespace Maui.Controls.Sample
 
 		private static void WithAssert(bool isClickable, bool isPassThru, ExpectedEventViewContainer<View> viewContainer, Button bottom, Button top)
 		{
-			if (isClickable)
-			{
-				// if the button is clickable, then it should be clickable
-				bottom.Clicked += (s, e) => viewContainer.ReportFailEvent();
-				top.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
-			}
-			else if (!isPassThru)
-			{
-				// if one of the parent layouts are NOT transparent, then
-				// the tap should NOT go through to the bottom button
+				if (isClickable)
+				{
+					// if the button is clickable, then it should be clickable
+					bottom.Clicked += (s, e) => viewContainer.ReportFailEvent();
+					top.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
+				}
+				else if (!isPassThru)
+				{
+					// if one of the parent layouts are NOT transparent, then
+					// the tap should NOT go through to the bottom button
 #if ANDROID
-				// TODO: Android is broken with everything passing through
-				// https://github.com/dotnet/maui/issues/10252
-				bottom.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
-				top.Clicked += (s, e) => viewContainer.ReportFailEvent();
+					// TODO: Android is broken with everything passing through
+					// https://github.com/dotnet/maui/issues/10252
+					bottom.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
+					top.Clicked += (s, e) => viewContainer.ReportFailEvent();
 #else
-				bottom.Clicked += (s, e) => viewContainer.ReportFailEvent();
-				top.Clicked += (s, e) => viewContainer.ReportFailEvent();
+					bottom.Clicked += (s, e) => viewContainer.ReportFailEvent();
+					top.Clicked += (s, e) => viewContainer.ReportFailEvent();
 #endif
-			}
-			else
-			{
-				// otherwise, the tap should go through
-				bottom.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
-				top.Clicked += (s, e) => viewContainer.ReportFailEvent();
-			}
+				}
+				else
+				{
+					// otherwise, the tap should go through
+					bottom.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
+					top.Clicked += (s, e) => viewContainer.ReportFailEvent();
+				}
 		}
 
 		(ExpectedEventViewContainer<View> ViewContainer, T Additional) Add<T>(Test.InputTransparency test, Func<(View View, T Additional)> func) =>
