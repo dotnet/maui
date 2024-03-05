@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls
 		/// Flyout items are visible in the flyout by default. However, an item can be hidden in the flyout with the FlyoutItemIsVisible property.
 		/// </summary>
 		/// <param name="obj">The object that sets the visibility of flyout items.</param>
-		/// <param name="isVisible">true to set the flyout items as visible; otherwise, false.</param>
+		/// <param name="isVisible">true to set the flyout item as visible; otherwise, false.</param>
 		public static void SetFlyoutItemIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(FlyoutItemIsVisibleProperty, isVisible);
 
 		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets if the navigation bar is visible when a page is presented. 
 		/// </summary>
 		/// <param name="obj">The object that modify the navigation bar visibility.</param>
-		/// <returns>The navigation bar visibility.</returns>
+		/// <returns>true if the navigation bar is visible; otherwise, false.</returns>
 		public static bool GetNavBarIsVisible(BindableObject obj) => (bool)obj.GetValue(NavBarIsVisibleProperty);
 
 		/// <summary>
@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Controls
 		/// By default the value of the property is <see langword="true"/>.
 		/// </summary>
 		/// <param name="obj">The object that modify the navigation bar visibility.</param>
-		/// <param name="value">Manages the navigation bar visibility.</param>
+		/// <param name="value">true to set the navigation bar as visible; otherwise, false.</param>
 		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, value);
 
 		/// <summary>
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets the tabs visibility in Shell.
 		/// </summary>
 		/// <param name="obj">The object that modify the Shell tabs visibility.</param>
-		/// <returns>The tabs visibility in Shell.</returns>
+		/// <returns>true if the tab bar is visible; otherwise, false.</returns>
 		public static bool GetTabBarIsVisible(BindableObject obj) => (bool)obj.GetValue(TabBarIsVisibleProperty);
 
 		/// <summary>
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls
 		/// While this property can be set on a subclassed Shell object, it's typically set on any ShellContent or ContentPage objects that want to make the tab bar invisible.
 		/// </summary>
 		/// <param name="obj">The object that modify the Shell tabs visibility.</param>
-		/// <param name="value">The tabs visibility in Shell.</param>
+		/// <param name="value">true to set the tab bar as visible; otherwise, false.</param>
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
 
 		/// <summary>
