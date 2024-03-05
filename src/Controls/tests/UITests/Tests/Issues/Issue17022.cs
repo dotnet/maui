@@ -14,7 +14,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		// TODO: Add shell navigation bar tests when we can call shell in UITest
 		[Test]
-        [TestCase("NewNavigationPageButton", false)]
+		[Category(UITestCategories.Navigation)]
+		[TestCase("NewNavigationPageButton", false)]
         [TestCase("NewNavigationPageTransparentButton", false)]
         [TestCase("NewNavigationPageTranslucentButton", false)]
         [TestCase("NewNavigationPageTransparentTranslucentButton", false)]
@@ -44,19 +45,31 @@ namespace Microsoft.Maui.AppiumTests.Issues
             Assert.NotNull(boxView);
 			var rect = boxView.GetRect();
 
-            if (requiresScreenshot)
-            {
-                VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + testButtonID);
-            }
-            else
-            {
-                if (isTopOfScreen)
-                    Assert.AreEqual(rect.Y, 0);
+            try { 
+                if (requiresScreenshot)
+                {
+                    VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + testButtonID);
+                }
                 else
-                    Assert.AreNotEqual(rect.Y, 0);
+                {
+                    if (isTopOfScreen)
+                    {
+                        Assert.AreEqual(rect.Y, 0);
+                    }
+                    else
+                    {
+                        Assert.AreNotEqual(rect.Y, 0);
+                    }
+                }
             }
-
-            App.WaitForElement("PopPageButton").Click();
+            catch 
+            { 
+                Assert.Fail("Failed with exception");
+            }
+            finally
+            {
+                App.WaitForElement("PopPageButton").Click();
+            }
 		}
 	}
 }

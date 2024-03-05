@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <Import Project="../Shared/Common.targets" />
+  <Import Project="../Shared/Maestro.targets" />
 
   <PropertyGroup>
     <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>

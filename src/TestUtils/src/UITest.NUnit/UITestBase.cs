@@ -109,7 +109,9 @@ namespace UITest.Appium.NUnit
 				outcome.Site == ResultState.SetUpFailure.Site)
 			{
 				SaveDeviceDiagnosticInfo();
-				SaveUIDiagnosticInfo();
+
+				if (App.AppState != ApplicationState.NotRunning)
+					SaveUIDiagnosticInfo();
 			}
 
 			FixtureTeardown();
@@ -136,8 +138,11 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		void SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
+		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
 		{
+			if (App.AppState == ApplicationState.NotRunning)
+				return false;
+
 			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
 			if (screenshotPath is not null)
 			{
@@ -153,6 +158,8 @@ namespace UITest.Appium.NUnit
 
 				AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
 			}
+
+			return true;
 		}
 
 		string? GetGeneratedFilePath(string filename, string? note = null)

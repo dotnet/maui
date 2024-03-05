@@ -7,192 +7,14 @@
       "subCapability": "IssueCommentResponder",
       "version": "1.0",
       "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "operator": "not",
-              "operands": [
-                {
-                  "name": "isOpen",
-                  "parameters": {}
-                }
-              ]
-            },
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "created"
-              }
-            },
-            {
-              "name": "hasLabel",
-              "parameters": {
-                "label": "s/no-recent-activity"
-              }
-            },
-            {
-              "operator": "or",
-              "operands": [
-                {
-                  "name": "hasLabel",
-                  "parameters": {
-                    "label": "s/needs-info"
-                  }
-                },
-                {
-                  "name": "hasLabel",
-                  "parameters": {
-                    "label": "s/needs-repro"
-                  }
-                }
-              ]
-            },
-            {
-              "operator": "not",
-              "operands": [
-                {
-                  "name": "noActivitySince",
-                  "parameters": {
-                    "days": 7
-                  }
-                }
-              ]
-            },
-            {
-              "operator": "not",
-              "operands": [
-                {
-                  "name": "isCloseAndComment",
-                  "parameters": {}
-                }
-              ]
-            },
-            {
-              "name": "isActivitySender",
-              "parameters": {
-                "user": {
-                  "type": "author"
-                }
-              }
-            },
-            {
-              "name": "activitySenderHasPermissions",
-              "parameters": {
-                "permissions": "none"
-              }
-            }
-          ]
-        },
-        "eventType": "issue",
-        "eventNames": [
-          "issue_comment"
-        ],
-        "taskName": "[Idle Issue Management] For issues closed due to inactivity, re-open an issue if issue author posts a reply within 7 days.",
-        "actions": [
-          {
-            "name": "reopenIssue",
-            "parameters": {}
-          },
-          {
-            "name": "removeLabel",
-            "parameters": {
-              "label": "s/no-recent-activity"
-            }
-          },
-          {
-            "name": "removeLabel",
-            "parameters": {
-              "label": "s/needs-info"
-            }
-          },
-          {
-            "name": "removeLabel",
-            "parameters": {
-              "label": "s/needs-repro"
-            }
-          },
-          {
-            "name": "addLabel",
-            "parameters": {
-              "label": "s/needs-attention"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "IssueCommentResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "created"
-              }
-            },
-            {
-              "operator": "not",
-              "operands": [
-                {
-                  "name": "isOpen",
-                  "parameters": {}
-                }
-              ]
-            },
-            {
-              "name": "activitySenderHasPermissions",
-              "parameters": {
-                "permissions": "read"
-              }
-            },
-            {
-              "name": "noActivitySince",
-              "parameters": {
-                "days": 7
-              }
-            },
-            {
-              "operator": "not",
-              "operands": [
-                {
-                  "name": "isCloseAndComment",
-                  "parameters": {}
-                }
-              ]
-            }
-          ]
-        },
-        "eventType": "issue",
-        "eventNames": [
-          "issue_comment"
-        ],
-        "taskName": "[Closed Issue Management] For issues closed with no activity over 7 days, ask non-contributor to consider opening a new issue instead.",
-        "actions": [
-          {
-            "name": "addReply",
-            "parameters": {
-              "comment": "Hello lovely human, thank you for your comment on this issue. Because this issue has been closed for a period of time, please strongly consider opening a new issue linking to this issue instead to ensure better visibility of your comment. Thank you!"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "IssueCommentResponder",
-      "version": "1.0",
-      "config": {
         "taskName": "[Idle Issue Management] Replace needs author feedback label with needs attention label when the author comments on an issue",
         "conditions": {
           "operator": "and",
           "operands": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
             {
               "name": "isAction",
               "parameters": {
@@ -327,8 +149,7 @@
         ],
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ]
       }
     },
@@ -342,6 +163,10 @@
         "conditions": {
           "operator": "and",
           "operands": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
             {
               "name": "hasLabel",
               "parameters": {
@@ -1173,8 +998,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "[Infrastructure PRs] Add area-infrastructure label to dependency update Pull Requests",
         "actions": [
@@ -1206,8 +1030,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Comment: Issue moved to Backlog",
         "actions": [
@@ -1240,8 +1063,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Replace `s/needs-info` with `s/pr-needs-author-input` for PRs",
         "actions": [
@@ -1286,8 +1108,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Remove `s/needs-repro` from PRs",
         "actions": [
@@ -1325,8 +1146,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add comment when 's/needs-info' is applied to issue",
         "actions": [
@@ -1358,8 +1178,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add comment when 's/needs-repro' is applied to issue",
         "actions": [
@@ -1523,8 +1342,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add area/controls label when any 'control-X' label is applied to the issue",
         "actions": [
@@ -1689,8 +1507,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add area/controls label when any 'control-X' label is applied to the PR",
         "actions": [
@@ -1835,8 +1652,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add 'partner' label when issue is opened by a partner",
         "actions": [
@@ -1872,8 +1688,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Ask user to use VS Feedback for VS issues",
         "actions": [
@@ -1881,88 +1696,6 @@
             "name": "addReply",
             "parameters": {
               "comment": "Thanks for the issue report @${issueAuthor}! This issue appears to be a problem with Visual Studio, so we ask that you use the VS feedback tool to report the issue. That way it will get to the routed to the team that owns this experience in VS.\n\nIf you encounter a problem with Visual Studio, we want to know about it so that we can diagnose and fix it. By using the Report a Problem tool, you can collect detailed information about the problem, and send it to Microsoft with just a few button clicks.\n\n1. Go to the [Visual Studio for Windows feedback tool](https://docs.microsoft.com/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022) or [Visual Studio for Mac feedback tool](https://learn.microsoft.com/en-us/visualstudio/mac/report-a-problem?view=vsmac-2022) to report the issue\n2. Close this bug, and consider adding a link to the VS Feedback issue so that others can follow its activity there."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "IssueCommentResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isOpen",
-              "parameters": {}
-            },
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "created"
-              }
-            },
-            {
-              "name": "hasLabel",
-              "parameters": {
-                "label": "s/move-to-vs-feedback"
-              }
-            },
-            {
-              "operator": "not",
-              "operands": [
-                {
-                  "name": "noActivitySince",
-                  "parameters": {
-                    "days": 3
-                  }
-                }
-              ]
-            },
-            {
-              "operator": "not",
-              "operands": [
-                {
-                  "name": "isCloseAndComment",
-                  "parameters": {}
-                }
-              ]
-            },
-            {
-              "name": "isActivitySender",
-              "parameters": {
-                "user": {
-                  "type": "author"
-                }
-              }
-            },
-            {
-              "name": "activitySenderHasPermissions",
-              "parameters": {
-                "permissions": "none"
-              }
-            }
-          ]
-        },
-        "eventType": "issue",
-        "eventNames": [
-          "issue_comment"
-        ],
-        "taskName": "For issues labeled with 's/move-to-vs-feedback' mark as 's/needs-attention' if there is activity",
-        "actions": [
-          {
-            "name": "removeLabel",
-            "parameters": {
-              "label": "s/move-to-vs-feedback"
-            }
-          },
-          {
-            "name": "addLabel",
-            "parameters": {
-              "label": "s/needs-attention"
             }
           }
         ]
@@ -2005,8 +1738,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add 'i/great-reporter' when issue is opened by an author we know opens high quality issues",
         "actions": [
@@ -2038,8 +1770,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add comment when 's/try-latest-version' is applied to the issue",
         "actions": [
@@ -2191,8 +1922,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add 'community ✨' label to community contributions",
         "actions": [
@@ -2200,12 +1930,6 @@
             "name": "addLabel",
             "parameters": {
               "label": "community ✨"
-            }
-          },
-          {
-            "name": "addReactionToIssue",
-            "parameters": {
-              "reaction": "heart"
             }
           },
           {
@@ -2542,8 +2266,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Revitalize stale PR and reopen",
         "actions": [
@@ -2586,8 +2309,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Add comment when 's/pr-needs-author-input' is applied to PR",
         "actions": [
@@ -2619,8 +2341,7 @@
         },
         "eventType": "issue",
         "eventNames": [
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Tag Dave Britch when a breaking change is tagged on an issue",
         "actions": [
@@ -2653,8 +2374,7 @@
         "eventType": "pull_request",
         "eventNames": [
           "pull_request",
-          "issues",
-          "project_card"
+          "issues"
         ],
         "taskName": "Tag Dave Britch when a breaking change is tagged on an PR",
         "actions": [
@@ -2676,6 +2396,10 @@
         "conditions": {
           "operator": "and",
           "operands": [
+            {
+              "name": "isIssue",
+              "parameters": {}
+            },
             {
               "name": "hasLabel",
               "parameters": {

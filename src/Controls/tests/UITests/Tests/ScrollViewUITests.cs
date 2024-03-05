@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -27,6 +27,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the start")]
 		public void ScrollToElement1Start()
 		{
@@ -48,6 +49,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the center")]
 		public void ScrollToElement2Center()
 		{
@@ -72,6 +74,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the end")]
 		public void ScrollToElement3End()
 		{
@@ -133,6 +136,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll down the ScrollView using a gesture")]
 		public void ScrollUpAndDownWithGestures()
 		{
