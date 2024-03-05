@@ -344,7 +344,24 @@ Task("uitest")
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_android.log");
 
 	Information("Run UITests project {0}", PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
+
+	AdbLogcat(new AdbLogcatOptions() { Clear = true });
+	AdbShell("pm disable-user --user 0 com.google.android.configupdater");
+	AdbShell("logcat -G 16M");
+	
+	try{
+		RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android"
+		//, filter: "InputTransparencyWhenRootIsTransparentMatrix|InputTransparencySimple|InputTransparencyWhenRootIsNotTransparentMatrix"
+		);
+	}
+	catch(Exception)
+	{
+		WriteLogCat();
+		throw;
+	}
+	finally{
+		AdbShell("pm enable --user 0 com.google.android.configupdater");
+	}
 });
 
 Task("cg-uitest")
@@ -392,7 +409,49 @@ Task("cg-uitest")
 	FailRunOnOnlyInconclusiveTests(System.IO.Path.Combine(nunitSettings.Work.FullPath, "TestResult.xml"));
 });
 
+
+Task("logcat")
+	.Does(() =>
+{
+	WriteLogCat();
+});
+
 RunTarget(TARGET);
+
+void WriteLogCat(string filename = null)
+{
+	if (string.IsNullOrWhiteSpace(filename))
+	{
+		var timeStamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+		filename = $"logcat_{TARGET}_{timeStamp}.txt";
+	}
+		
+	EnsureDirectoryExists(GetLogDirectory());
+	// I tried AdbLogcat here but the pipeline kept reporting "cannot create file"
+	var location = $"{GetLogDirectory()}/{filename}";
+	Information("Writing logcat to {0}", location);
+
+	var processSettings = new ProcessSettings();
+	processSettings.RedirectStandardOutput = true;
+	processSettings.RedirectStandardError = true;
+	var adb = $"{ANDROID_SDK_ROOT}/platform-tools/adb";
+
+	Information("Running: {0} logcat -d", adb);
+	processSettings.Arguments = $"logcat -d";
+    using (var fs = new System.IO.FileStream(location, System.IO.FileMode.Create)) 
+	using (var sw = new StreamWriter(fs))
+	{
+		processSettings.RedirectedStandardOutputHandler = (output) => {
+			sw.WriteLine(output);
+			return output;
+		};
+
+		var process = StartProcess($"{adb}", processSettings); 
+		Information("exit code {0}", process);
+	}
+
+	Information("Logcat written to {0}", location);
+}
 
 void SetupAppPackageNameAndResult()
 {
