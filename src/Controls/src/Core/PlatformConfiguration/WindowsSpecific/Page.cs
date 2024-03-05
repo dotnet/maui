@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// Gets a value that indicates whether toolbar items automatically move to the overflow menu when space is limited.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
-		/// <returns>True if toolbar items automatically move to the overflow menu when space is limited; otherwise, false.</returns>
+		/// <returns><see langword="true"/> if toolbar items automatically move to the overflow menu when space is limited; otherwise, <see langword="false"/>.</returns>
 		public static bool GetToolbarDynamicOverflowEnabled(BindableObject element)
 		{
 			return (bool)element.GetValue(ToolbarDynamicOverflowEnabledProperty);
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// Gets a value that indicates whether toolbar items automatically move to the overflow menu when space is limited.
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-		/// <returns>True if toolbar items automatically move to the overflow menu when space is limited; otherwise, false.</returns>
+		/// <returns><see langword="true"/> if toolbar items automatically move to the overflow menu when space is limited; otherwise, <see langword="false"/>.</returns>
 		public static bool GetToolbarDynamicOverflowEnabled(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (bool)config.Element.GetValue(ToolbarDynamicOverflowEnabledProperty);
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
 		/// <param name="value">A value that indicates whether toolbar items automatically move to the overflow menu when space is limited</param>
-		/// <returns>True if toolbar items automatically move to the overflow menu when space is limited; otherwise, false.</returns>
+		/// <returns><see langword="true"/> if toolbar items automatically move to the overflow menu when space is limited; otherwise, <see langword="false"/>.</returns>
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetToolbarDynamicOverflowEnabled(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{
