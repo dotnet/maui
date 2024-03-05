@@ -57,12 +57,12 @@
       <GitSemVerDashLabel Condition="'$(GitSemVerLabel)' != ''" >-$(GitSemVerLabel)</GitSemVerDashLabel>
     </PropertyGroup>
     <ItemGroup>
-      <VersionMetadata Include="$(GitCommits)" Condition="'$(GitSemVerDashLabel)' == ''" />
+      <VersionMetadata Condition="'$(GitSemVerDashLabel)' == '' and '$(GitCommits)' != ''" Include="$(GitCommits)" />
 
       <VersionMetadata Condition="$(CI) and '$(BUILD_REASON)' == 'PullRequest'"
                        Include="pr.$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)"/>
 
-      <VersionMetadata Include="sha.$(GitCommit)"/>
+      <VersionMetadata Condition="'$(GitCommit)' != ''"  Include="sha.$(GitCommit)"/>
 
       <VersionMetadata Condition="$(CI)"
                        Include="azdo.$(BUILD_BUILDID)"/>

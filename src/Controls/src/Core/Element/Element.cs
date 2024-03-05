@@ -928,6 +928,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Registers the specified <paramref name="effect"/> to this element.
+		/// </summary>
+		/// <param name="effect">The effect to be registered.</param>
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			if (effect is RoutingEffect re && re.Inner != null)
