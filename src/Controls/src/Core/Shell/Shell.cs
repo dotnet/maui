@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 		public Page CurrentPage => GetVisiblePage() as Page;
 
 		/// <summary>
-		/// The back button behavior.
+		/// Controls the behavior of the page's back button
 		/// </summary>
 		public static readonly BindableProperty BackButtonBehaviorProperty =
 			BindableProperty.CreateAttached("BackButtonBehavior", typeof(BackButtonBehavior), typeof(Shell), null, BindingMode.OneTime,
@@ -185,14 +185,14 @@ namespace Microsoft.Maui.Controls
 		public static void SetBackButtonBehavior(BindableObject obj, BackButtonBehavior behavior) => obj.SetValue(BackButtonBehaviorProperty, behavior);
 
 		/// <summary>
-		/// Gets the navigation animation that occurs when a page is navigated to with the GoToAsync method.
+		/// Gets the navigation animation that occurs when a page is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
 		/// </summary>
 		/// <param name="obj">The BindableObject that modify the Shell tabs visibility.</param>
 		/// <returns>The navigation animation that occurs when a page is navigated.</returns>
 		public static PresentationMode GetPresentationMode(BindableObject obj) => (PresentationMode)obj.GetValue(PresentationModeProperty);
 
 		/// <summary>
-		/// Sets the navigation animation that occurs when a page is navigated to with the GoToAsync method.
+		/// Sets the navigation animation that occurs when a page is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
 		/// </summary>
 		/// <remarks>
 		/// <param name="obj">The BindableObject that modify the Shell tabs visibility.</param>
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetPresentationMode(BindableObject obj, PresentationMode presentationMode) => obj.SetValue(PresentationModeProperty, presentationMode);
 
 		/// <summary>
-		/// Gets the navigation animation that occurs when a page is navigated to with the GoToAsync method.
+		/// Gets the navigation animation that occurs when a page is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
 		/// </summary>
 		/// <param name="obj">The BindableObject that modify the Shell tabs visibility.</param>
 		/// <returns>The navigation animation that occurs when a page is navigated.</returns>
@@ -308,14 +308,14 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
 
 		/// <summary>
-		/// Gets any View to be displayed in the navigation bar.
+		/// Gets any <see cref = "View" /> to be displayed in the navigation bar.
 		/// </summary>
 		/// <param name="obj">The BindableObject to which the TitleView is set.</param>
 		/// <returns>The View to be displayed in the navigation bar.</returns>
 		public static View GetTitleView(BindableObject obj) => (View)obj.GetValue(TitleViewProperty);
 
 		/// <summary>
-		/// Sets any View to be displayed in the navigation bar.
+		/// Sets any <see cref = "View" /> to be displayed in the navigation bar.
 		/// </summary>
 		/// <param name="obj">The BindableObject to which the TitleView is set.</param>
 		/// <param name="value">The View to be displayed in the navigation bar.</param>
