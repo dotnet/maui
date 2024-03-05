@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			swipeView.SwipeEnded += (sender, args) =>
 			{
-				result.Text = "Success";
+				result.AutomationId = result.Text = "Success";
 			};
 
 			layout.Children.Add(instructions);
