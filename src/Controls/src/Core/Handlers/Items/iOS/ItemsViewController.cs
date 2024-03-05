@@ -177,6 +177,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			EnsureLayoutInitialized();
 		}
 
+		public override void LoadView()
+		{
+			base.LoadView(); 
+
+			CollectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
+		}
+
 		public override void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
