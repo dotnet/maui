@@ -1,8 +1,10 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Authentication
 {
@@ -16,6 +18,14 @@ namespace Microsoft.Maui.Authentication
 		/// </summary>
 		/// <param name="webAuthenticatorOptions">A <see cref="WebAuthenticatorOptions"/> instance containing additional configuration for this authentication call.</param>
 		/// <returns>A <see cref="WebAuthenticatorResult"/> object with the results of this operation.</returns>
+		/// <exception cref="TaskCanceledException">Windows: Thrown when the user canceled the authentication flow.</exception>
+		/// <exception cref="HttpRequestException">Windows: Thrown when a HTTP Request error occured.</exception>
+		/// <exception cref="Exception">Windows: Thrown when a unexpected HTTP response was received.</exception>
+		/// <exception cref="FeatureNotSupportedException">iOS/macOS: Thrown when iOS version is less than 13 is used or macOS less than 13.1 is used.</exception>
+		/// <exception cref="InvalidOperationException">
+		/// <para>Windows: Thrown when the callback custom URL scheme is not registered in the AppxManifest.xml file.</para>
+		/// <para>Android: Thrown when the no IntentFilter has been created for the callback URL.</para>
+		/// </exception>
 		Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions);
 	}
 

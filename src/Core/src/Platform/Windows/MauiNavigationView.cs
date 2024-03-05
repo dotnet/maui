@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Platform
 	[Microsoft.UI.Xaml.Data.Bindable]
 	public partial class MauiNavigationView : NavigationView
 	{
+		private int _currentFlyoutBehavior = -1;
+
 		internal StackPanel? TopNavArea { get; private set; }
 		internal ItemsRepeater? TopNavMenuItemsHost { get; private set; }
 		internal Grid? PaneContentGrid { get; private set; }
@@ -157,6 +159,35 @@ namespace Microsoft.Maui.Platform
 
 		private protected virtual void OnApplyTemplateCore()
 		{
+		}
+
+		internal void UpdatePaneDisplayModeFromFlyoutBehavior(FlyoutBehavior flyoutBehavior)
+		{
+			if (_currentFlyoutBehavior == (int)flyoutBehavior)
+			{
+				return;
+			}
+
+			_currentFlyoutBehavior = (int)flyoutBehavior;
+			switch (flyoutBehavior)
+			{
+				case FlyoutBehavior.Flyout:
+					IsPaneToggleButtonVisible = true;
+					// Workaround for
+					// https://github.com/microsoft/microsoft-ui-xaml/issues/6493
+					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					break;
+				case FlyoutBehavior.Locked:
+					PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+					IsPaneToggleButtonVisible = false;
+					break;
+				case FlyoutBehavior.Disabled:
+					PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+					IsPaneToggleButtonVisible = false;
+					IsPaneOpen = false;
+					break;
+			}
 		}
 
 		#region Toolbar
