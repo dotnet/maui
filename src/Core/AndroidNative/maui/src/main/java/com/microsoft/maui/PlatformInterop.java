@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -598,13 +599,17 @@ public class PlatformInterop {
      * @return FontMetrics object or null if context or display metrics is null
      */
     public static Paint.FontMetrics getFontMetrics(Context context, double defaultFontSize) {
-        if (context != null && context.getResources().getDisplayMetrics() != null) {
+        if (context == null)
+            return null;
+
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        if (metrics != null) {
             return new Paint() {{
                 setTextSize(
                     TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_SP,
                         (float) defaultFontSize,
-                        context.getResources().getDisplayMetrics()
+                        metrics
                 ));
             }}.getFontMetrics();
         } else {
