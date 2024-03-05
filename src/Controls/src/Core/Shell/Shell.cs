@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 				defaultValueCreator: (b) => DeviceInfo.Platform == DevicePlatform.Android);
 
 		/// <summary>
-		/// Controls the Shell search functionality .
+		/// Controls the <see cref = "Shell" /> search functionality.
 		/// </summary>
 		public static readonly BindableProperty SearchHandlerProperty =
 			BindableProperty.CreateAttached("SearchHandler", typeof(SearchHandler), typeof(Shell), null, BindingMode.OneTime,
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Manages the tabbar visibility.
+		/// Manages the bottom tabbar visibility.
 		/// The tab bar and tabs are visible in Shell applications by default. 
 		/// </summary>
 		public static readonly BindableProperty TabBarIsVisibleProperty =
@@ -155,20 +155,20 @@ namespace Microsoft.Maui.Controls
 		public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
 
 		/// <summary>
-		///  DataTemplate applied to each ShellItem object managed by Shell.
+		///  DataTemplate applied to each FlyoutItem object managed by Shell.
 		/// </summary>
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.CreateAttached(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
 		/// <summary>
-		/// Gets DataTemplate applied to each ShellItem object managed by Shell.
+		/// Gets DataTemplate applied to each FlyoutItem object managed by Shell.
 		/// </summary>
 		/// <param name="obj">The BindableObject that sets the DataTemplate applied to Item objects.</param>
 		/// <returns>The DataTemplate applied to Item objects.</returns>
 		public static DataTemplate GetItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(ItemTemplateProperty);
 
 		/// <summary>
-		/// Sets DataTemplate applied to each ShellItem object managed by Shell.
+		/// Sets DataTemplate applied to each FlyoutItem object managed by Shell.
 		/// </summary>
 		/// <param name="obj">The BindableObject that sets the DataTemplate applied to Item objects.</param>
 		/// <param name="itemTemplate">The DataTemplate applied to Item objects.</param>
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Sets the behavior used to open the flyout.
 		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen. 
-		/// However, this behavior can be changed by setting the Shell.FlyoutBehavior attached property to one of the FlyoutBehavior enumeration members:
+		/// However, this behavior can be changed by setting the Shell. FlyoutBehavior attached property to one of the FlyoutBehavior enumeration members:
 		/// - Disabled - indicates that the flyout can't be opened by the user.
 		/// - Flyout - indicates that the flyout can be opened and closed by the user.This is the default value for the FlyoutBehavior property.
 		/// - Locked - indicates that the flyout can't be closed by the user, and that it doesn't overlap content.
@@ -1021,7 +1021,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// The currently selected ShellItem or FlyoutItem.
+		/// The currently selected ShellItem.
 		/// </summary>
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellItem), typeof(Shell), null, BindingMode.TwoWay,
@@ -1269,7 +1269,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// The currently selected ShellItem or FlyoutItem.
+		/// The currently selected ShellItem.
 		/// </summary>
 		public ShellItem CurrentItem
 		{
