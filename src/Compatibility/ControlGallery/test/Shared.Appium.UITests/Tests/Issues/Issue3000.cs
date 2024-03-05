@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "Horizontal ScrollView breaks scrolling when flowdirection is set to rtl";
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void RtlScrollViewStartsScrollToRight()
 		{
 			App.WaitForElement(Success);

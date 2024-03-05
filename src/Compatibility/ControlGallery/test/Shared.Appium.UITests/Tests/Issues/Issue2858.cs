@@ -16,6 +16,7 @@ namespace UITests
 		public override string Issue => "Transparency Cascading";
 
 		[Test]
+		[Category(UITestCategories.Layout)]
 		public void CascadeInputTransparentGrids()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

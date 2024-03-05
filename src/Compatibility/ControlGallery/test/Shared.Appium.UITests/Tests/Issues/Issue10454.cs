@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "CollectionView ChildAdded";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void ChildAddedShouldFire()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

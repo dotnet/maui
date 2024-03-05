@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "[UWP] with ListView on page, Navigation.PopAsync() throws exception";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void SettingBindingContextToNullBeforingPoppingPageCrashes()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

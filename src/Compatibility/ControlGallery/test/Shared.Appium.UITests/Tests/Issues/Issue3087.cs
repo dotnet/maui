@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[Android] Non appcompat SwitchRenderer regression between 3.0 and 3.1";
 
 		[Test]
+		[Category(UITestCategories.Switch)]
 		public void NonAppCompatBasicSwitchTest()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "Crash measuring empty ScrollView"; 
 		
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void MeasuringEmptyScrollViewDoesNotCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

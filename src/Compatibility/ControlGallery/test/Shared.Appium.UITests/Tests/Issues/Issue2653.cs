@@ -16,6 +16,7 @@ namespace UITests
 		public override string Issue => "[UWP] Grid insert z-order on UWP broken in Forms 3";
 
 		[Test]
+		[Category(UITestCategories.Layout)]
 		public void ZIndexWhenInsertingChildren()
 		{
 			App.WaitForNoElement(ButtonText);

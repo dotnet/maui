@@ -11,6 +11,7 @@ namespace UITests
 		public override string Issue => "[Regression] CollectionView NSRangeException";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewWithFooterShouldNotCrashOnDisplay()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "ListView.ScrollTo crashes app";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void Issue2259Tests()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);

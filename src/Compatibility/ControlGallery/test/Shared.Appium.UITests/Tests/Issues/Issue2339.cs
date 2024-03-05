@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "Picker not shown when .Focus() is called";
 
 		[Test]
+		[Category(UITestCategories.Picker)]
 		public void FocusAndUnFocusMultipleTimes()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows], "Focus Behavior is different");

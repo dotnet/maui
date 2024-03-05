@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "Image reuse"; 
 		
 		[Test]
+		[Category(UITestCategories.Image)]
 		public void Issue1908Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

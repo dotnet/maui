@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "[UWP] ListView with null ItemsSource crashes on 3.0.0.530893";
 	
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void NullItemSourceDoesNotCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Android, TestDevice.Mac]);
@@ -24,6 +25,7 @@ namespace UITests
 		}
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void SettingItemsSourceToNullDoesNotCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Android, TestDevice.Mac]);

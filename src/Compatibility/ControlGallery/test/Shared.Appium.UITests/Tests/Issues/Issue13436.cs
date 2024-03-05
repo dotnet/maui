@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[Bug] Java.Lang.IllegalArgumentException in CarouselView adjusting PeekAreaInsets in OnSizeAllocated using XF 5.0";
 
 		[Test]
+		[Category(UITestCategories.CarouselView)]
 		public void ChangePeekAreaInsetsInOnSizeAllocatedTest()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

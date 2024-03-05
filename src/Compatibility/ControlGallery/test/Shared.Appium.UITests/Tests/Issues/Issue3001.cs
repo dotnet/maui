@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "[macOS] Navigating back from a complex page is highly inefficient";
 
 		[Test]
+		[Category(UITestCategories.Navigation)]
 		public void Issue3001Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Windows]);

@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "[Bug] [iOS][SwipeView] Swipe view not handling tap gesture events until swiped";
 
 		[Test]
+		[Category(UITestCategories.SwipeView)]
 		public void TapSwipeViewAndNavigateTest()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

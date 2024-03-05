@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "ListView.IsGroupingEnabled results ins ArguementOutOfRangeException"; 
 		
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void ListViewIsGroupingEnabledDoesNotCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

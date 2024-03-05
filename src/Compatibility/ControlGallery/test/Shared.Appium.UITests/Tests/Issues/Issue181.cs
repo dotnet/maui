@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "Color not initialized for Label"; 
 		
 		[Test]
+		[Category(UITestCategories.Label)]
 		public void Issue181TestsLabelShouldHaveRedText()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

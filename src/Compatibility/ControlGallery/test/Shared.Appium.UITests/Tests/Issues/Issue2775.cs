@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "ViewCell background conflicts with ListView Semi-Transparent and Transparent backgrounds";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void Issue2775Test()
 		{
 			App.WaitForElement("TestReady");

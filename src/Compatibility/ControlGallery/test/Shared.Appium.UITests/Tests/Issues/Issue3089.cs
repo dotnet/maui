@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "TextCell text doesn't change when using Recycling on ListViews";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void ResettingItemsOnRecycledListViewKeepsOldText()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);

@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "Xamarin.forms 2.5.0.280555 and android circle button issue";
 		
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void Issue1909Test()
 		{
 			App.WaitForElement("TestReady");

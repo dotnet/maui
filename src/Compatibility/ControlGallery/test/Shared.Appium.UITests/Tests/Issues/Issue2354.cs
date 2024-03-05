@@ -12,6 +12,7 @@ namespace UITests.Tests.Issues
 		public override string Issue => "ListView, ImageCell and disabled source cache and same image url";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void TestDoesntCrashWithCachingDisable()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);

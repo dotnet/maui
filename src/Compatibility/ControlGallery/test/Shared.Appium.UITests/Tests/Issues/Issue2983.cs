@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "ListView.Footer can cause NullReferenceException";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void TestDoesNotCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

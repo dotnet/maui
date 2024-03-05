@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "Exception thrown during NavigationPage.Navigation.PopAsync";
 		
 		[Test]
+		[Category(UITestCategories.Navigation)]
 		public void Issue2837Test()
 		{
 			App.WaitForElement(Success);

@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[Bug] After updating XF 5.0.0.1931 getting Java.Lang.IllegalArgumentException: Invalid target position at Java.Interop.JniEnvironment+InstanceMethods.CallVoidMethod";
 
 		[Test]
+		[Category(UITestCategories.CarouselView)]
 		public void Issue13616Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

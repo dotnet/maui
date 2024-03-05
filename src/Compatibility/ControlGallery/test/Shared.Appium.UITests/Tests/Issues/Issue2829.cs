@@ -16,6 +16,7 @@ namespace UITests
 		public override string Issue => "[Android] Renderers associated with ListView cells are occasionaly not being disposed of which causes left over events to propagate to disposed views";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void ViewCellsAllDisposed()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

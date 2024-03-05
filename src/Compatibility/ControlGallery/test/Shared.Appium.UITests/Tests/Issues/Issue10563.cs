@@ -19,6 +19,7 @@ namespace UITests
 		public override string Issue => "[Bug] SwipeView Open methods does not work for RightItems"; 
 		
 		[Test]
+		[Category(UITestCategories.SwipeView)]
 		public void Issue10563OpenSwipeViewTest()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

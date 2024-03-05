@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "Entry clears when upadting text from native with one-way binding"; 
 		
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void EntryOneWayBindingShouldUpdate()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

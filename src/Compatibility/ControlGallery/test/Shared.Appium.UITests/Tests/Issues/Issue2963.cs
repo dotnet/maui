@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace UITests
 {
-    internal class Issue2963 : IssuesUITest
+	public class Issue2963 : IssuesUITest
 	{
 		readonly string EditorId = "DisabledEditor";
 		readonly string FocusedLabelId = "FocusedLabel";

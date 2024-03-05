@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "Exception thrown when `Removing Content Using LayoutCompression"; 
 		
 		[Test]
+		[Category(UITestCategories.Layout)]
 		public void Issue1601Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

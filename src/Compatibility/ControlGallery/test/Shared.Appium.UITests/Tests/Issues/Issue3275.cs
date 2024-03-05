@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "For ListView in Recycle mode ScrollTo causes cell leak and in some cases NRE";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void Issue3275Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

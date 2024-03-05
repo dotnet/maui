@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "[Bug] SwipeView does not work on Android if child has TapGestureRecognizer";
 
 		[Test]
+		[Category(UITestCategories.SwipeView)]
 		public void SwipeWithChildGestureRecognizer()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

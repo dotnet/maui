@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[Android] Xamarin caused by: android.runtime.JavaProxyThrowable: System.ObjectDisposedException: Cannot access a disposed object";
 	
 		[Test]
+		[Category(UITestCategories.Navigation)]
 		public void NoCrashFromDisposedBitmapWhenSwitchingPages()
 		{
 			App.WaitForElement("Success", timeout: TimeSpan.FromSeconds(20));

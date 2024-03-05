@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "Button border not drawn on Android without a BorderRadius"; 
 		
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void Issue1436Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "When add GroupHeaderTemplate in XAML the group header does not show up";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void Issue2777Test()
 		{
 			App.Screenshot("I am at Issue 2965");

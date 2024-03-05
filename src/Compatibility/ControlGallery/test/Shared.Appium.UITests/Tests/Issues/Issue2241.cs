@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "ScrollView content can become stuck on orientation change (iOS)";
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void ChildAddedShouldFire()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "NavigationPage.TitleIcon broken"; 
 		
 		[Test]
+		[Category(UITestCategories.Navigation)]
 		public void Issue1583TitleIconTest()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

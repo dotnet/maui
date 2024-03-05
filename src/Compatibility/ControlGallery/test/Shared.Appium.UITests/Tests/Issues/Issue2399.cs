@@ -16,6 +16,7 @@ namespace UITests
 		public override string Issue => "Label Renderer Dispose never called";
 
 		[Test]
+		[Category(UITestCategories.Label)]
 		public void ChildAddedShouldFire()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);

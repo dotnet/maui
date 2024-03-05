@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[iOS] Entry's TextChanged event is fired on Unfocus even when no text changed";
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void Issue3385Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

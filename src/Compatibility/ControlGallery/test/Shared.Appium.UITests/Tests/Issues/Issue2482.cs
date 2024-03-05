@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "Animating a `View` that is currently animating will throw `System.InvalidOperationException`";
 
 		[Test]
+		[Category(UITestCategories.Animation)]
 		public void AnimationCancel()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

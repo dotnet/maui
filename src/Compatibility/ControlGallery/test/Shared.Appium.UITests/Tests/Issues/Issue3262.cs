@@ -12,6 +12,7 @@ namespace UITests.Tests.Issues
 		public override string Issue => "Adding Cookies ability to a WebView...";
 
 		[Test]
+		[Category(UITestCategories.WebView)]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
 			App.Click("PageWithoutCookies");
@@ -19,6 +20,7 @@ namespace UITests.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.WebView)]
 		public void ChangeDuringNavigating()
 		{
 			App.WaitForElement("Loaded");
@@ -30,6 +32,7 @@ namespace UITests.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.WebView)]
 		public void AddAdditionalCookieToWebView()
 		{
 			App.WaitForElement("Loaded");
@@ -41,6 +44,7 @@ namespace UITests.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.WebView)]
 		public void SetToOneCookie()
 		{
 			App.WaitForElement("Loaded");
@@ -49,6 +53,7 @@ namespace UITests.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.WebView)]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
 			App.WaitForElement("Loaded");
@@ -60,6 +65,7 @@ namespace UITests.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.WebView)]
 		public void RemoveAllTheCookiesIAdded()
 		{
 			App.WaitForElement("Loaded");

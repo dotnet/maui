@@ -16,6 +16,7 @@ namespace UITests
 		public override string Issue => "Xamarin Forms on Android: ScrollView on ListView header crashes app when closing page";
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void ScrollViewInHeaderDisposesProperly()
 		{
 			App.WaitForElement(Go);
@@ -28,6 +29,7 @@ namespace UITests
 		}
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void Test4186()
 		{
 			App.WaitForElement(Go);

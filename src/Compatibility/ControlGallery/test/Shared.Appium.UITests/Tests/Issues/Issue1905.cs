@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "AlertView doesn't scroll when text is to large"; 
 		
 		[Test]
+		[Category(UITestCategories.DisplayAlert)]
 		public void TestIssue1905RefreshShows()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

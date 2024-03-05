@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "Disabled Switch in Button Gallery not rendering on all devices";
 
 		[Test]
+		[Category(UITestCategories.Switch)]
 		public void TestSwitchDisable()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

@@ -16,6 +16,7 @@ namespace UITests.Tests.Issues
 		public override string Issue => "[Enhancement] Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView";
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void Issue2680Test_ScrollDisabled()
 		{
 			App.ScrollDown(ScrollViewMark);
@@ -25,6 +26,7 @@ namespace UITests.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void Issue2680Test_ScrollEnabled()
 		{
 			App.Click(ToggleButtonMark);

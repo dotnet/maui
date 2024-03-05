@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "Error on binding ListView with duplicated items";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public async Task BindingToValuesTypesAndScrollingNoCrash()
 		{
 			await Task.Delay(4000);

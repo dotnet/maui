@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "Image fails loading from long URL";
 
 		[Test]
+		[Category(UITestCategories.Image)]
 		public void LongImageURLsShouldNotCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

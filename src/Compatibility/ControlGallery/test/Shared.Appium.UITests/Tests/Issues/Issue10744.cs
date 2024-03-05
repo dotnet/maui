@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[Android] WebView.Eval crashes on Android with long string\"";
 
 		[Test]
+		[Category(UITestCategories.WebView)]
 		public void WebViewEvalCrashesOnAndroidWithLongString()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

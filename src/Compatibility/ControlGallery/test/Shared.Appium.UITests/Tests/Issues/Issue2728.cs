@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "[macOS] Label FontAttributes Italic is not working";
 
 		[Test]
+		[Category(UITestCategories.Label)]
 		public void Issue2728TestsItalicLabel()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Windows]);

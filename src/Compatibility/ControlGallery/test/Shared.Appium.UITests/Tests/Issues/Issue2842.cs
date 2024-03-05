@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "ViewCell in TableView not adapting to changed size on iOS";
 
 		[Test]
+		[Category(UITestCategories.TabbedPage)]
 		public void Issue2842Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

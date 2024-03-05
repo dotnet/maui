@@ -18,6 +18,7 @@ namespace UITests
 		public override string Issue => "DisplayActionSheet freezes app in iOS custom renderer (iPad only)";
 
 		[Test]
+		[Category(UITestCategories.DisplayAlert)]
 		public async Task Issue3049Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
