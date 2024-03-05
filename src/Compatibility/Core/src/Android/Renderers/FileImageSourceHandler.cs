@@ -25,9 +25,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			string file = ((FileImageSource)imagesource).File;
 			Bitmap bitmap;
 			if (File.Exists(file))
+			{
 				bitmap = !DecodeSynchronously ? (await BitmapFactory.DecodeFileAsync(file).ConfigureAwait(false)) : BitmapFactory.DecodeFile(file);
+			}
 			else
+			{
 				bitmap = !DecodeSynchronously ? (await context.Resources.GetBitmapAsync(file, context).ConfigureAwait(false)) : context.Resources.GetBitmap(file, context);
+			}
 
 			if (bitmap == null)
 			{
@@ -44,17 +48,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var uri = Uri.Parse(file);
 				if (uri != null)
+				{
 					imageView.SetImageURI(uri);
+				}
 				else
+				{
 					Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>().LogWarning("Could not find image or image file was invalid: {imagesource}", imagesource);
+				}
 			}
 			else
 			{
 				var drawable = ResourceManager.GetDrawable(imageView.Context, file);
 				if (drawable != null)
+				{
 					imageView.SetImageDrawable(drawable);
+				}
 				else
+				{
 					Application.Current?.FindMauiContext()?.CreateLogger<FileImageSourceHandler>().LogWarning("Could not find image or image file was invalid: {imagesource}", imagesource);
+				}
 			}
 
 			return Task.FromResult(true);

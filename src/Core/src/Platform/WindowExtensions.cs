@@ -19,10 +19,14 @@ namespace Microsoft.Maui.Platform
 		internal static IReadOnlyList<IWindow> GetWindows()
 		{
 			if (IPlatformApplication.Current is not IPlatformApplication platformApplication)
+			{
 				return new List<IWindow>();
+			}
 
 			if (platformApplication.Application is not IApplication application)
+			{
 				return new List<IWindow>();
+			}
 
 			return application.Windows;
 		}

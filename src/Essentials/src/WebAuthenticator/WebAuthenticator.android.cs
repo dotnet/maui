@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Authentication
 		{
 			// If we aren't waiting on a task, don't handle the url
 			if (tcsResponse?.Task?.IsCompleted ?? true)
+			{
 				return false;
+			}
 
 			if (intent?.Data == null)
 			{
@@ -63,11 +65,15 @@ namespace Microsoft.Maui.Authentication
 
 			// Try to find the activity for the callback intent
 			if (!PlatformUtils.IsIntentSupported(intent, packageName))
+			{
 				throw new InvalidOperationException($"You must subclass the `{nameof(WebAuthenticatorCallbackActivity)}` and create an IntentFilter for it which matches your `{nameof(callbackUrl)}`.");
+			}
 
 			// Cancel any previous task that's still pending
 			if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
+			{
 				tcsResponse.TrySetCanceled();
+			}
 
 			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
 			currentRedirectUri = callbackUrl;

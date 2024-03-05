@@ -100,21 +100,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				builder.SetItems(items, (o, args) => arguments.Result.TrySetResult(items[args.Which]));
 
 				if (arguments.Cancel != null)
+				{
 					builder.SetPositiveButton(arguments.Cancel, (o, args) => arguments.Result.TrySetResult(arguments.Cancel));
+				}
 
 				if (arguments.Destruction != null)
+				{
 					builder.SetNegativeButton(arguments.Destruction, (o, args) => arguments.Result.TrySetResult(arguments.Destruction));
+				}
 
 				var dialog = builder.Create();
 				builder.Dispose();
 				//to match current functionality of renderer we set cancelable on outside
 				//and return null
 				if (arguments.FlowDirection == FlowDirection.MatchParent && sender is IVisualElementController ve)
+				{
 					dialog.Window.DecorView.UpdateFlowDirection(ve);
+				}
 				else if (arguments.FlowDirection == FlowDirection.LeftToRight)
+				{
 					dialog.Window.DecorView.LayoutDirection = LayoutDirection.Ltr;
+				}
 				else if (arguments.FlowDirection == FlowDirection.RightToLeft)
+				{
 					dialog.Window.DecorView.LayoutDirection = LayoutDirection.Rtl;
+				}
 
 				dialog.SetCanceledOnTouchOutside(true);
 				dialog.SetCancelEvent((o, e) => arguments.SetResult(null));
@@ -123,9 +133,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				dialog.GetListView().TextDirection = GetTextDirection(sender, arguments.FlowDirection);
 				LayoutDirection layoutDirection = GetLayoutDirection(sender, arguments.FlowDirection);
 				if (arguments.Cancel != null)
+				{
 					((dialog.GetButton((int)DialogButtonType.Positive).Parent) as global::Android.Views.View).LayoutDirection = layoutDirection;
+				}
+
 				if (arguments.Destruction != null)
+				{
 					((dialog.GetButton((int)DialogButtonType.Negative).Parent) as global::Android.Views.View).LayoutDirection = layoutDirection;
+				}
 			}
 
 			void OnAlertRequested(Page sender, AlertArguments arguments)
@@ -139,16 +154,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				int messageID = 16908299;
 				var alert = new DialogBuilder(Activity).Create();
 				if (arguments.FlowDirection == FlowDirection.MatchParent && sender is IVisualElementController ve)
+				{
 					alert.Window.DecorView.UpdateFlowDirection(ve);
+				}
 				else if (arguments.FlowDirection == FlowDirection.LeftToRight)
+				{
 					alert.Window.DecorView.LayoutDirection = LayoutDirection.Ltr;
+				}
 				else if (arguments.FlowDirection == FlowDirection.RightToLeft)
+				{
 					alert.Window.DecorView.LayoutDirection = LayoutDirection.Rtl;
+				}
 
 				alert.SetTitle(arguments.Title);
 				alert.SetMessage(arguments.Message);
 				if (arguments.Accept != null)
+				{
 					alert.SetButton((int)DialogButtonType.Positive, arguments.Accept, (o, args) => arguments.SetResult(true));
+				}
+
 				alert.SetButton((int)DialogButtonType.Negative, arguments.Cancel, (o, args) => arguments.SetResult(false));
 				alert.SetCancelEvent((o, args) => { arguments.SetResult(false); });
 				alert.Show();
@@ -161,15 +185,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			private LayoutDirection GetLayoutDirection(Page sender, FlowDirection flowDirection)
 			{
 				if (flowDirection == FlowDirection.LeftToRight)
+				{
 					return LayoutDirection.Ltr;
+				}
 				else if (flowDirection == FlowDirection.RightToLeft)
+				{
 					return LayoutDirection.Rtl;
+				}
 				else
 				{
 					if ((sender as IVisualElementController).EffectiveFlowDirection.IsRightToLeft())
+					{
 						return LayoutDirection.Rtl;
+					}
 					else if ((sender as IVisualElementController).EffectiveFlowDirection.IsLeftToRight())
+					{
 						return LayoutDirection.Ltr;
+					}
 				}
 				return LayoutDirection.Ltr;
 			}
@@ -177,15 +209,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			private TextDirection GetTextDirection(Page sender, FlowDirection flowDirection)
 			{
 				if (flowDirection == FlowDirection.LeftToRight)
+				{
 					return TextDirection.Ltr;
+				}
 				else if (flowDirection == FlowDirection.RightToLeft)
+				{
 					return TextDirection.Rtl;
+				}
 				else
 				{
 					if ((sender as IVisualElementController).EffectiveFlowDirection.IsRightToLeft())
+					{
 						return TextDirection.Rtl;
+					}
 					else if ((sender as IVisualElementController).EffectiveFlowDirection.IsLeftToRight())
+					{
 						return TextDirection.Ltr;
+					}
 				}
 				return TextDirection.Ltr;
 			}
@@ -213,10 +253,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				editText.LayoutParameters = layoutParams;
 				editText.InputType = arguments.Keyboard.ToInputType();
 				if (arguments.Keyboard == Keyboard.Numeric)
+				{
 					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
+				}
 
 				if (arguments.MaxLength > -1)
+				{
 					editText.SetFilters(new IInputFilter[] { new InputFilterLengthFilter(arguments.MaxLength) });
+				}
 
 				frameLayout.AddView(editText);
 				alertDialog.SetView(frameLayout);
@@ -233,7 +277,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			void UpdateProgressBarVisibility(bool isBusy)
 			{
 				if (!SupportsProgress)
+				{
 					return;
+				}
 #pragma warning disable 612, 618
 #pragma warning disable CA1416, CA1422 // Validate platform compatibility
 				Activity.SetProgressBarIndeterminate(true);
@@ -253,9 +299,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					int progressCircularId = Activity.Resources.GetIdentifier("progress_circular", "id", "android");
 					if (progressCircularId > 0)
+					{
 						_supportsProgress = Activity.FindViewById(progressCircularId) != null;
+					}
 					else
+					{
 						_supportsProgress = true;
+					}
+
 					return _supportsProgress.Value;
 				}
 			}

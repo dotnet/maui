@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Platform
 			if (DefaultTemplateName != null &&
 				Application.Current.Resources.TryGetValue(DefaultTemplateName, out object defaultTemplate) &&
 				defaultTemplate is DataTemplate defaultDataTemplate)
+			{
 				return defaultDataTemplate;
+			}
 
 			throw new System.InvalidOperationException($"Unable to Find User Template: {UserTemplateName} or Default Template: {DefaultTemplateName}");
 		}

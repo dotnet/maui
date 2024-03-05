@@ -31,7 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element == null || Control == null)
+			{
 				return finalSize;
+			}
 
 			Element.IsInPlatformLayout = true;
 
@@ -51,7 +53,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Element == null)
+			{
 				return new global::Windows.Foundation.Size(0, 0);
+			}
 
 			double width = Math.Max(0, Element.Width);
 			double height = Math.Max(0, Element.Height);
@@ -65,7 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void CleanUp(ScrollView scrollView, ScrollViewer scrollViewer)
 		{
 			if (scrollView != null)
+			{
 				scrollView.ScrollToRequested -= OnScrollToRequested;
+			}
 
 			if (scrollViewer != null)
 			{
@@ -77,7 +83,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			if (_currentView != null)
+			{
 				_currentView.Cleanup();
+			}
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ScrollView> e)
@@ -111,27 +119,45 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == "Content")
+			{
 				UpdateContent();
+			}
+			}
 			else if (e.PropertyName == Layout.PaddingProperty.PropertyName)
+			{
 				UpdateContentMargins();
+			}
+			}
 			else if (e.PropertyName == ScrollView.OrientationProperty.PropertyName)
+			{
 				UpdateOrientation();
+			}
+			}
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateVerticalScrollBarVisibility();
+			}
+			}
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateHorizontalScrollBarVisibility();
+			}
 		}
 
 		protected void OnContentElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == View.MarginProperty.PropertyName)
+			{
 				UpdateContentMargins();
+			}
 		}
 
 		void UpdateContent()
 		{
 			if (_currentView != null)
+			{
 				_currentView.Cleanup();
+			}
 
 			if (Control?.Content is FrameworkElement oldElement)
 			{
@@ -139,23 +165,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				if (oldElement is IVisualElementRenderer oldRenderer
 					&& oldRenderer.Element is View oldContentView)
+				{
 					oldContentView.PropertyChanged -= OnContentElementPropertyChanged;
+				}
 			}
 
 			_currentView = Element.Content;
 
 			IVisualElementRenderer renderer = null;
 			if (_currentView != null)
+			{
 				renderer = _currentView.GetOrCreateRenderer();
+			}
 
 			Control.Content = renderer != null ? renderer.ContainerElement : null;
 
 			UpdateContentMargins();
 			if (renderer?.Element != null)
+			{
 				renderer.Element.PropertyChanged += OnContentElementPropertyChanged;
+			}
 
 			if (renderer?.ContainerElement != null)
+			{
 				renderer.ContainerElement.LayoutUpdated += SetInitialRtlPosition;
+			}
 		}
 
 		async void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
@@ -173,11 +207,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				cycle++;
 
 				if (cycle >= 10)
+				{
 					break;
+				}
 			}
 
 			if (Element == null)
+			{
 				return;
+			}
 
 			double x = e.ScrollX, y = e.ScrollY;
 
@@ -200,10 +238,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void SetInitialRtlPosition(object sender, object e)
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			if (Control.ActualWidth <= 0 || _checkedForRtlScroll || Control.Content == null)
+			{
 				return;
+			}
 
 			if (Element is IVisualElementController controller && controller.EffectiveFlowDirection.IsLeftToRight())
 			{
@@ -213,7 +255,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			var element = (Control.Content as FrameworkElement);
 			if (element.ActualWidth == Control.ActualWidth)
+			{
 				return;
+			}
 
 			ClearRtlScrollCheck();
 			Control.ChangeView(element.ActualWidth, 0, null, true);
@@ -223,7 +267,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			_checkedForRtlScroll = true;
 			if (Control.Content is FrameworkElement element)
+			{
 				element.LayoutUpdated -= SetInitialRtlPosition;
+			}
 		}
 
 		void OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -232,7 +278,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Element.SetScrolledPosition(Control.HorizontalOffset, Control.VerticalOffset);
 
 			if (!e.IsIntermediate)
+			{
 				Element.SendScrollFinished();
+			}
 		}
 
 		Microsoft.UI.Xaml.Thickness AddMargin(Thickness original, double left, double top, double right, double bottom)
@@ -251,7 +299,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!(Control.Content is FrameworkElement element
 				&& element is IVisualElementRenderer renderer
 				&& renderer.Element is View contentView))
+			{
 				return;
+			}
 
 			var margin = contentView.Margin;
 			var padding = Element.Padding;
@@ -276,7 +326,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			//Only update the horizontal scroll bar visibility if the user has not set a desired state.
 			if (Element.HorizontalScrollBarVisibility != ScrollBarVisibility.Default)
+			{
 				return;
+			}
 
 			var orientation = Element.Orientation;
 			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
@@ -321,7 +373,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			var orientation = Element.Orientation;
 			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
+			{
 				Control.HorizontalScrollBarVisibility = ScrollBarVisibilityToUwp(horizontalVisibility);
+			}
 		}
 	}
 }

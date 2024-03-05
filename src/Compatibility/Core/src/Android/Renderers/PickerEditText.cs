@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				PickerManager.Dispose(this);
+			}
 
 			base.Dispose(disposing);
 		}

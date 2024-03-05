@@ -29,14 +29,20 @@ namespace Microsoft.Maui.Controls.StyleSheets
 						reader.Read();
 						var className = reader.ReadIdent();
 						if (className == null)
+						{
 							return Invalid;
+						}
+
 						setCurrentSelector(new And(), new Class(className));
 						break;
 					case '#':
 						reader.Read();
 						var id = reader.ReadName();
 						if (id == null)
+						{
 							return Invalid;
+						}
+
 						setCurrentSelector(new And(), new Id(id));
 						break;
 					case '[':
@@ -65,7 +71,10 @@ namespace Microsoft.Maui.Controls.StyleSheets
 						reader.Read();
 						var element = reader.ReadIdent();
 						if (element == null)
+						{
 							return Invalid;
+						}
+
 						setCurrentSelector(new And(), new Base(element));
 						break;
 					case ' ':
@@ -91,17 +100,25 @@ namespace Microsoft.Maui.Controls.StyleSheets
 							break;
 						}
 						if (!processWs)
+						{
 							break;
+						}
+
 						setCurrentSelector(new Descendent(), All);
 						reader.SkipWhiteSpaces();
 						break;
 					default:
 						if (unchecked((char)p) == stopChar)
+						{
 							return root;
+						}
 
 						var elementName = reader.ReadIdent();
 						if (elementName == null)
+						{
 							return Invalid;
+						}
+
 						setCurrentSelector(new And(), new Element(elementName));
 						break;
 				}
@@ -117,10 +134,14 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			op.Right = sel;
 			workingRoot = op;
 			if (workingRootParent != null)
+			{
 				workingRootParent.Right = workingRoot;
+			}
 
 			if (updateRoot)
+			{
 				root = workingRoot;
+			}
 
 			if (workingRoot is Or)
 			{
@@ -144,6 +165,34 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			public Selector Right { get; set; } = Invalid;
 		}
 
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+		sealed class Sibling : Operator
+		{
+After:
+		sealed class Sibling : UnarySelector
+		{
+			readonly Func<IStyleSelectable, bool> func;
+			public Generic(Func<IStyleSelectable, bool> func)
+			{
+				this.func = func;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+		sealed class Sibling : Operator
+		{
+After:
+		sealed class Sibling : UnarySelector
+		{
+			readonly Func<IStyleSelectable, bool> func;
+			public Generic(Func<IStyleSelectable, bool> func)
+			{
+				this.func = func;
+			}
+*/
 		sealed class Generic : UnarySelector
 		{
 			readonly Func<IStyleSelectable, bool> func;
@@ -211,8 +260,13 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			public override bool Matches(IStyleSelectable styleable)
 			{
 				for (var i = 0; i < styleable.NameAndBases.Length; i++)
+				{
 					if (string.Equals(styleable.NameAndBases[i], ElementName, StringComparison.OrdinalIgnoreCase))
+					{
 						return true;
+					}
+				}
+
 				return false;
 			}
 		}
@@ -228,12 +282,18 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			public override bool Matches(IStyleSelectable styleable)
 			{
 				if (!Right.Matches(styleable))
+				{
 					return false;
+				}
+
 				var parent = styleable.Parent;
 				while (parent != null)
 				{
 					if (Left.Matches(parent))
+					{
 						return true;
+					}
+
 					parent = parent.Parent;
 				}
 				return false;
@@ -245,15 +305,23 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			public override bool Matches(IStyleSelectable styleable)
 			{
 				if (!Right.Matches(styleable))
+				{
 					return false;
+				}
+
 				if (styleable.Parent == null)
+				{
 					return false;
+				}
 
 				IStyleSelectable prev = null;
 				foreach (var elem in styleable.Parent.Children)
 				{
 					if (elem == styleable && prev != null)
+					{
 						return Left.Matches(prev);
+					}
+
 					prev = elem;
 				}
 				return false;
@@ -270,9 +338,14 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			public override bool Matches(IStyleSelectable styleable)
 			{
 				if (!Right.Matches(styleable))
+				{
 					return false;
+				}
+
 				if (styleable.Parent == null)
+				{
 					return false;
+				}
 
 				int selfIndex = 0;
 				bool foundSelfInParent = false;
@@ -287,15 +360,23 @@ namespace Microsoft.Maui.Controls.StyleSheets
 				}
 
 				if (!foundSelfInParent)
+				{
 					return false;
+				}
 
 				int index = 0;
 				foreach (var elem in styleable.Parent.Children)
 				{
 					if (index >= selfIndex)
+					{
 						return false;
+					}
+
 					if (Left.Matches(elem))
+					{
 						return true;
+					}
+
 					++index;
 				}
 

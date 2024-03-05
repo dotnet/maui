@@ -35,7 +35,9 @@ namespace Microsoft.Maui
 		internal static Matrix4x4 GetViewTransform(this CALayer layer)
 		{
 			if (layer == null)
+			{
 				return new Matrix4x4();
+			}
 
 			var superTransform = layer.SuperLayer?.GetChildTransform() ?? CATransform3D.Identity;
 
@@ -66,7 +68,9 @@ namespace Microsoft.Maui
 			var childTransform = layer.SublayerTransform;
 
 			if (childTransform.IsIdentity)
+			{
 				return childTransform;
+			}
 
 			return CATransform3D.Identity
 				.Translate(
@@ -91,7 +95,9 @@ namespace Microsoft.Maui
 
 				current = current.SuperLayer;
 				if (current == null)
+				{
 					break;
+				}
 
 				transform = transform.Concat(current.GetChildTransform());
 			}

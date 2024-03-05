@@ -65,13 +65,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 
 				if (canRecycleLast)
+				{
 					return _lastSizeRequest.Value;
+				}
 			}
 
 			//We need to clear the Hint or else it will interfere with the sizing of the Label
 			var hint = Control.Hint;
 			if (!string.IsNullOrEmpty(hint))
+			{
 				Control.Hint = string.Empty;
+			}
 
 			SizeRequest result = base.GetDesiredSize(widthConstraint, heightConstraint);
 
@@ -124,15 +128,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				UpdateText();
 				if (e.OldElement.LineBreakMode != e.NewElement.LineBreakMode)
+				{
 					UpdateLineBreakMode();
+				}
+
 				if (e.OldElement.HorizontalTextAlignment != e.NewElement.HorizontalTextAlignment || e.OldElement.VerticalTextAlignment != e.NewElement.VerticalTextAlignment)
+				{
 					UpdateGravity();
+				}
+
 				if (e.OldElement.MaxLines != e.NewElement.MaxLines)
+				{
 					UpdateMaxLines();
+				}
+
 				if (e.OldElement.CharacterSpacing != e.NewElement.CharacterSpacing)
+				{
 					UpdateCharacterSpacing();
+				}
+
 				if (e.OldElement.FlowDirection != e.NewElement.FlowDirection)
+				{
 					UpdateFlowDirection();
+				}
 			}
 			UpdateTextDecorations();
 			UpdatePadding();
@@ -149,27 +167,49 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateGravity();
+			}
 			else if (e.IsOneOf(Label.TextColorProperty, Label.TextTransformProperty))
+			{
 				UpdateText();
+			}
 			else if (e.IsOneOf(Label.FontAttributesProperty, Label.FontFamilyProperty, Label.FontSizeProperty))
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == Label.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
+			{
 				UpdateLineBreakMode();
+			}
 			else if (e.PropertyName == Label.TextDecorationsProperty.PropertyName)
+			{
 				UpdateTextDecorations();
+			}
 			else if (e.IsOneOf(Label.TextProperty, Label.FormattedTextProperty, Label.TextTypeProperty))
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
+			{
 				UpdateLineHeight();
+			}
 			else if (e.PropertyName == Label.MaxLinesProperty.PropertyName)
+			{
 				UpdateMaxLines();
+			}
 			else if (e.PropertyName == Label.PaddingProperty.PropertyName)
+			{
 				UpdatePadding();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 		}
 
 		void UpdateFlowDirection()
@@ -182,13 +222,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			Color c = Element.TextColor;
 			if (c == _lastUpdateColor)
+			{
 				return;
+			}
+
 			_lastUpdateColor = c;
 
 			if (c == null)
+			{
 				_view.SetTextColor(_labelTextColorDefault);
+			}
 			else
+			{
 				_view.SetTextColor(c.ToAndroid());
+			}
 		}
 
 		[PortHandler]
@@ -214,19 +261,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateTextDecorations()
 		{
 			if (!Element.IsSet(Label.TextDecorationsProperty))
+			{
 				return;
+			}
 
 			var textDecorations = Element.TextDecorations;
 
 			if ((textDecorations & TextDecorations.Strikethrough) == 0)
+			{
 				_view.PaintFlags &= ~PaintFlags.StrikeThruText;
+			}
 			else
+			{
 				_view.PaintFlags |= PaintFlags.StrikeThruText;
+			}
 
 			if ((textDecorations & TextDecorations.Underline) == 0)
+			{
 				_view.PaintFlags &= ~PaintFlags.UnderlineText;
+			}
 			else
+			{
 				_view.PaintFlags |= PaintFlags.UnderlineText;
+			}
 		}
 
 		[PortHandler]
@@ -257,9 +314,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			_lastSizeRequest = null;
 			if (Element.LineHeight == -1)
+			{
 				_view.SetLineSpacing(_lineSpacingExtraDefault, _lineSpacingMultiplierDefault);
+			}
 			else if (Element.LineHeight >= 0)
+			{
 				_view.SetLineSpacing(0, (float)Element.LineHeight);
+			}
 		}
 
 		void UpdateMaxLines()
@@ -291,10 +352,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					case TextType.Html:
 						if (OperatingSystem.IsAndroidVersionAtLeast(24))
+						{
 							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty, FromHtmlOptions.ModeCompact), TextView.BufferType.Spannable);
+						}
 						else
+						{
 #pragma warning disable CS0618 // Type or member is obsolete
 							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty), TextView.BufferType.Spannable);
+						}
 #pragma warning restore CS0618 // Type or member is obsolete
 						break;
 
@@ -327,7 +392,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			if (base.OnTouchEvent(e))
+			{
 				return true;
+			}
 
 			return _motionEventHelper.HandleMotionEvent(Parent, e);
 		}

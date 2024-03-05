@@ -45,17 +45,24 @@ namespace Microsoft.Maui.ApplicationModel
 			public override void EnsureDeclared()
 			{
 				if (RequiredInfoPlistKeys == null)
+				{
 					return;
+				}
 
 				var plistKeys = RequiredInfoPlistKeys?.Invoke();
 
 				if (plistKeys == null)
+				{
 					return;
+				}
 
 				foreach (var requiredInfoPlistKey in plistKeys)
 				{
 					if (!IsKeyDeclaredInInfoPlist(requiredInfoPlistKey))
+					{
 						throw new PermissionException($"You must set `{requiredInfoPlistKey}` in your Info.plist file to use the Permission: {GetType().Name}.");
+					}
+					}
 				}
 			}
 
@@ -65,7 +72,10 @@ namespace Microsoft.Maui.ApplicationModel
 			internal void EnsureMainThread()
 			{
 				if (!MainThread.IsMainThread)
+				{
+				{
 					throw new PermissionException("Permission request must be invoked on main thread.");
+				}
 			}
 		}
 
@@ -133,7 +143,11 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = GetLocationStatus(true);
 				if (status == PermissionStatus.Granted || status == PermissionStatus.Disabled)
+				{
+				{
 					return status;
+				}
+				}
 
 				EnsureMainThread();
 
@@ -147,7 +161,11 @@ namespace Microsoft.Maui.ApplicationModel
 			internal static PermissionStatus GetLocationStatus(bool whenInUse)
 			{
 				if (!CLLocationManager.LocationServicesEnabled)
+				{
+				{
 					return PermissionStatus.Disabled;
+				}
+				}
 
 #pragma warning disable CA1416 // TODO: CLLocationManager.Status has [UnsupportedOSPlatform("ios14.0")], [UnsupportedOSPlatform("macos11.0")], [UnsupportedOSPlatform("tvos14.0")], [UnsupportedOSPlatform("watchos7.0")]
 #pragma warning disable CA1422 // Validate platform compatibility
@@ -170,7 +188,10 @@ namespace Microsoft.Maui.ApplicationModel
 			internal static Task<PermissionStatus> RequestLocationAsync(bool whenInUse, Action<CLLocationManager> invokeRequest)
 			{
 				if (!CLLocationManager.LocationServicesEnabled)
+				{
+				{
 					return Task.FromResult(PermissionStatus.Disabled);
+				}
 
 				locationManager = new CLLocationManager();
 				var previousState = locationManager.GetAuthorizationStatus();
@@ -188,7 +209,9 @@ namespace Microsoft.Maui.ApplicationModel
 				void LocationAuthCallback(object sender, CLAuthorizationChangedEventArgs e)
 				{
 					if (e.Status == CLAuthorizationStatus.NotDetermined)
+					{
 						return;
+					}
 
 					try
 					{

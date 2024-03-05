@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Platform
 			CALayer? backgroundLayer = platformView.Layer as MauiCALayer;
 
 			if (backgroundLayer == null && borderShape == null)
+			{
 				return;
+			}
 
 			platformView.UpdateMauiCALayer(border);
 		}
@@ -25,7 +27,9 @@ namespace Microsoft.Maui.Platform
 			CALayer? backgroundLayer = platformView.Layer as MauiCALayer;
 
 			if (backgroundLayer == null && borderBrush.IsNullOrEmpty())
+			{
 				return;
+			}
 
 			platformView.UpdateMauiCALayer(border);
 		}
@@ -37,7 +41,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (backgroundLayer == null && !hasBorder)
+			{
 				return;
+			}
 
 			platformView.UpdateMauiCALayer(border);
 		}
@@ -49,7 +55,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (backgroundLayer == null && !hasBorder)
+			{
 				return;
+			}
 
 			platformView.UpdateMauiCALayer(border);
 		}
@@ -62,7 +70,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (backgroundLayer == null && !hasBorder && (strokeDashPattern == null || strokeDashPattern.Length == 0))
+			{
 				return;
+			}
 
 			platformView.UpdateMauiCALayer(border);
 		}
@@ -74,7 +84,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (backgroundLayer == null && !hasBorder)
+			{
 				return;
+			}
 
 			platformView.UpdateMauiCALayer(border);
 		}
@@ -85,7 +97,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (backgroundLayer == null && !hasBorder)
+			{
 				return;
+			}
 
 			platformView.UpdateMauiCALayer(border);
 		}
@@ -96,7 +110,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (backgroundLayer == null && !hasBorder)
+			{
 				return;
+			}
 
 			platformView.UpdateMauiCALayer(border);
 		}
@@ -127,9 +143,32 @@ namespace Microsoft.Maui.Platform
 				backgroundLayer.Frame = platformView.Bounds;
 
 				if (border is IView view)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 					mauiCALayer.SetBackground(view.Background);
-				else
+After:
+				{
+					mauiCALayer.SetBackground(view.Background);
+				}
+*/
+				
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 					mauiCALayer.SetBackground(new SolidPaint(Colors.Transparent));
+
+				mauiCALayer.SetBorderBrush(border?.Stroke);
+After:
+				{
+					mauiCALayer.SetBorderBrush(border?.Stroke);
+*/
+{
+					mauiCALayer.SetBackground(view.Background);
+				}
+				else
+				{
+					mauiCALayer.SetBackground(new SolidPaint(Colors.Transparent));
+				}
 
 				mauiCALayer.SetBorderBrush(border?.Stroke);
 				mauiCALayer.SetBorderWidth(border?.StrokeThickness ?? 0);
@@ -146,13 +185,17 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (platformView is ContentView contentView)
+			{
 				contentView.Clip = border;
+			}
 		}
 
 		internal static void UpdateMauiCALayer(this UIView view)
 		{
 			if (view == null || view.Frame.IsEmpty)
+			{
 				return;
+			}
 
 			var layer = view.Layer;
 
@@ -168,7 +211,10 @@ namespace Microsoft.Maui.Platform
 					UpdateBackgroundLayer(sublayer, bounds);
 
 					if (sublayer.Name == ViewExtensions.BackgroundLayerName && sublayer.Frame != bounds)
+					{
+					{
 						sublayer.Frame = bounds;
+					}
 				}
 			}
 		}

@@ -19,7 +19,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		public FilteredCollectionView(ObservableCollection<T> dataSource, Func<T, TFilterArg, bool> filter, TFilterArg filterArgument, IComparer<T> sort)
 		{
 			if (sort == null)
+			{
 				throw new ArgumentNullException(nameof(sort));
+			}
 
 			this.dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
 			this.filter = filter ?? throw new ArgumentNullException(nameof(filter));

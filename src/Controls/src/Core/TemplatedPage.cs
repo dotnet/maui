@@ -30,9 +30,14 @@ namespace Microsoft.Maui.Controls
 
 			var result = LayoutConstraint.None;
 			if (vOptions.Alignment == LayoutAlignment.Fill)
+			{
 				result |= LayoutConstraint.VerticallyFixed;
+			}
+
 			if (hOptions.Alignment == LayoutAlignment.Fill)
+			{
 				result |= LayoutConstraint.HorizontallyFixed;
+			}
 
 			view.ComputedConstraint = result;
 		}
@@ -40,7 +45,9 @@ namespace Microsoft.Maui.Controls
 		internal override void SetChildInheritedBindingContext(Element child, object context)
 		{
 			if (ControlTemplate == null)
+			{
 				base.SetChildInheritedBindingContext(child, context);
+			}
 		}
 
 		void IControlTemplated.OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue)

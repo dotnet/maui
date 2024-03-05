@@ -24,25 +24,33 @@ namespace Microsoft.Maui.Controls
 		{
 			((TriggerBase.SealedList<Condition>)Conditions).IsReadOnly = true;
 			foreach (Condition condition in Conditions)
+			{
 				condition.ConditionChanged = OnConditionChanged;
+			}
 		}
 
 		internal override void SetUp(BindableObject bindable)
 		{
 			foreach (Condition condition in Conditions)
+			{
 				condition.SetUp(bindable);
+			}
 		}
 
 		internal override void TearDown(BindableObject bindable)
 		{
 			foreach (Condition condition in Conditions)
+			{
 				condition.TearDown(bindable);
+			}
 		}
 
 		void OnAggregatedStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if ((bool)oldValue == (bool)newValue)
+			{
 				return;
+			}
 
 			ConditionChanged?.Invoke(bindable, (bool)oldValue, (bool)newValue);
 		}
@@ -60,7 +68,9 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 			if (newState != oldState)
+			{
 				bindable.SetValue(_aggregatedStateProperty, newState);
+			}
 		}
 	}
 }

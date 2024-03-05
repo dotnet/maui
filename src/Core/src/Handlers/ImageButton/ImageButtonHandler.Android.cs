@@ -66,7 +66,9 @@ namespace Microsoft.Maui.Handlers
 		void OnFocusChange(object? sender, View.FocusChangeEventArgs e)
 		{
 			if (VirtualView != null)
+			{
 				VirtualView.IsFocused = e.HasFocus;
+			}
 		}
 
 		void OnTouch(object? sender, View.TouchEventArgs e)
@@ -95,7 +97,9 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(Drawable? platformImage)
 			{
 				if (Handler?.PlatformView is not ShapeableImageView button)
+				{
 					return;
+				}
 
 				button.SetImageDrawable(platformImage);
 			}

@@ -66,9 +66,13 @@ namespace Microsoft.Maui.DeviceTests
 			Window window;
 
 			if (useShell)
+			{
 				window = new Window(new Shell() { CurrentItem = windowPage });
+			}
 			else
+			{
 				window = new Window(windowPage);
+			}
 
 			int modalAppearing = 0;
 			int modalDisappearing = 0;
@@ -121,9 +125,13 @@ namespace Microsoft.Maui.DeviceTests
 			Window window;
 
 			if (useShell)
+			{
 				window = new Window(new Shell() { CurrentItem = windowPage });
+			}
 			else
+			{
 				window = new Window(windowPage);
+			}
 
 			int modal1Appearing = 0;
 			int modal1Disappearing = 0;
@@ -223,9 +231,13 @@ namespace Microsoft.Maui.DeviceTests
 			Window window;
 
 			if (useShell)
+			{
 				window = new Window(new Shell() { CurrentItem = windowPage });
+			}
 			else
+			{
 				window = new Window(windowPage);
+			}
 
 			await windowPage.Navigation.PushModalAsync(modalPage);
 
@@ -271,10 +283,13 @@ namespace Microsoft.Maui.DeviceTests
 			Window window;
 
 			if (useShell)
+			{
 				window = new Window(new Shell() { CurrentItem = windowPage });
+			}
 			else
+			{
 				window = new Window(new NavigationPage(windowPage));
-
+			}
 
 			bool appearingFired = false;
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
@@ -291,7 +306,9 @@ namespace Microsoft.Maui.DeviceTests
 					contentPage.Appearing += async (_, _) =>
 					{
 						if (appearingFired)
+						{
 							return;
+						}
 
 						appearingFired = true;
 
@@ -335,10 +352,13 @@ namespace Microsoft.Maui.DeviceTests
 			Window window;
 
 			if (useShell)
+			{
 				window = new Window(new Shell() { CurrentItem = windowPage });
+			}
 			else
+			{
 				window = new Window(windowPage);
-
+			}
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
 				async (handler) =>
@@ -541,15 +561,21 @@ namespace Microsoft.Maui.DeviceTests
 					Func<Page> rootPage;
 
 					if (i == 0)
+					{
 						rootPage = () => new NavigationPage(new ContentPage());
+					}
 					else if (i == 1)
+					{
 						rootPage = () => new Shell() { CurrentItem = new ContentPage() };
+					}
 					else
+					{
 						rootPage = () => new FlyoutPage()
 						{
 							Flyout = new ContentPage() { Title = "Flyout" },
 							Detail = new NavigationPage(new ContentPage()) { Title = "Detail" },
 						};
+					}
 
 					yield return new object[] {
 						rootPage(), new NavigationPage(new ContentPage())

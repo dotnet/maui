@@ -9,7 +9,9 @@ namespace Microsoft.Maui.Graphics
 		public static byte[] SaveAsBytes(this IPictureWriter target, IPicture picture)
 		{
 			if (target == null || picture == null)
+			{
 				return null;
+			}
 
 			using (var stream = new MemoryStream())
 			{
@@ -21,7 +23,9 @@ namespace Microsoft.Maui.Graphics
 		public static async Task<byte[]> SaveAsBytesAsync(this IPictureWriter target, IPicture picture)
 		{
 			if (target == null || picture == null)
+			{
 				return null;
+			}
 
 			using (var stream = new MemoryStream())
 			{
@@ -33,7 +37,9 @@ namespace Microsoft.Maui.Graphics
 		public static string SaveAsBase64(this IPictureWriter target, IPicture picture)
 		{
 			if (target == null)
+			{
 				return null;
+			}
 
 			var bytes = target.SaveAsBytes(picture);
 			return Convert.ToBase64String(bytes);
@@ -42,7 +48,9 @@ namespace Microsoft.Maui.Graphics
 		public static Stream SaveAsStream(this IPictureWriter target, IPicture picture)
 		{
 			if (target == null)
+			{
 				return null;
+			}
 
 			var bytes = target.SaveAsBytes(picture);
 			return new MemoryStream(bytes);

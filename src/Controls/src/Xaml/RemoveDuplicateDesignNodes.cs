@@ -22,18 +22,29 @@ namespace Microsoft.Maui.Controls.Xaml
 		public void Visit(ElementNode node, INode parentNode)
 		{
 			if (node.Properties == null || node.Properties.Count == 0)
+			{
 				return;
+			}
+
 			var props = node.Properties.ToList();
 			for (var i = 0; i < props.Count; i++)
 			{
 				var key = props[i].Key;
 				if (key.NamespaceURI != XamlParser.MauiDesignUri)
+				{
 					continue;
+				}
+
 				var k = new XmlName(XamlParser.MauiUri, key.LocalName);
 				if (node.Properties.Remove(k))
+				{
 					continue;
+				}
+
 				if (node.NamespaceResolver.LookupPrefix(XamlParser.MauiUri) == "")
+				{
 					node.Properties.Remove(new XmlName("", k.LocalName));
+				}
 			}
 		}
 

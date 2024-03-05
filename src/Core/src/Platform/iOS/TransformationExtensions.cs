@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTransformation(this UIView platformView, IView? view, CALayer? layer, CGPoint? originalAnchor)
 		{
 			if (view == null)
+			{
 				return;
+			}
 
 			var anchorX = (float)view.AnchorX;
 			var anchorY = (float)view.AnchorY;
@@ -45,7 +47,9 @@ namespace Microsoft.Maui.Platform
 					view.Parent != null;
 
 				if (!shouldUpdate)
+				{
 					return;
+				}
 
 				const double epsilon = 0.001;
 
@@ -53,28 +57,42 @@ namespace Microsoft.Maui.Platform
 
 				// Position is relative to anchor point
 				if (Math.Abs(anchorX - .5) > epsilon)
+				{
 					transform = transform.Translate((anchorX - .5f) * width, 0, 0);
+				}
 
 				if (Math.Abs(anchorY - .5) > epsilon)
+				{
 					transform = transform.Translate(0, (anchorY - .5f) * height, 0);
+				}
 
 				if (Math.Abs(translationX) > epsilon || Math.Abs(translationY) > epsilon)
+				{
 					transform = transform.Translate(translationX, translationY, 0);
+				}
 
 				// Not just an optimization, iOS will not "pixel align" a view which has M34 set
 				if (Math.Abs(rotationY % 180) > epsilon || Math.Abs(rotationX % 180) > epsilon)
+				{
 					transform.M34 = 1.0f / -400f;
+				}
 
 				if (Math.Abs(rotationX % 360) > epsilon)
+				{
 					transform = transform.Rotate(rotationX * (float)Math.PI / 180.0f, 1.0f, 0.0f, 0.0f);
+				}
 
 				if (Math.Abs(rotationY % 360) > epsilon)
+				{
 					transform = transform.Rotate(rotationY * (float)Math.PI / 180.0f, 0.0f, 1.0f, 0.0f);
+				}
 
 				transform = transform.Rotate(rotation * (float)Math.PI / 180.0f, 0.0f, 0.0f, 1.0f);
 
 				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
+				{
 					transform = transform.Scale(scaleX, scaleY, scale);
+				}
 
 				if (Foundation.NSThread.IsMain)
 				{

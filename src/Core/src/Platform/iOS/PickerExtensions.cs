@@ -23,12 +23,16 @@ namespace Microsoft.Maui.Platform
 			var title = picker.Title;
 
 			if (string.IsNullOrEmpty(title))
+			{
 				return;
+			}
 
 			var titleColor = picker.TitleColor;
 
 			if (titleColor == null)
+			{
 				return;
+			}
 
 			platformPicker.UpdateAttributedPlaceholder(new NSAttributedString(title, null, titleColor.ToPlatform()));
 		}
@@ -51,7 +55,9 @@ namespace Microsoft.Maui.Platform
 			pickerView?.ReloadAllComponents();
 
 			if (picker.GetCount() == 0)
+			{
 				return;
+			}
 
 			picker.SelectedIndex = selectedIndex;
 

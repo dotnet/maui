@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int positionInList = GetPositionInList(position);
 
 			if (positionInList < 0)
+			{
 				return ItemViewType.TextItem;
+			}
 
 			return base.GetItemViewType(positionInList);
 		}
@@ -33,7 +35,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int positionInList = GetPositionInList(position);
 
 			if (positionInList < 0)
+			{
 				return;
+			}
 
 			switch (holder)
 			{
@@ -49,12 +53,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int GetPositionInList(int position)
 		{
 			if (CarouselView == null || ItemsSource == null)
+			{
 				return -1;
+			}
 
 			bool hasItems = ItemsSource != null && ItemsSource.Count > 0;
 
 			if (!hasItems)
+			{
 				return -1;
+			}
 
 			return (CarouselView.Loop && hasItems) ? position % ItemsSource.Count : position;
 		}

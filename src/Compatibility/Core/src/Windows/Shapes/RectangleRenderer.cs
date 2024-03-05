@@ -36,9 +36,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			base.OnElementPropertyChanged(sender, args);
 
 			if (args.PropertyName == FormsRectangle.RadiusXProperty.PropertyName)
+			{
 				UpdateRadiusX();
+			}
 			else if (args.PropertyName == FormsRectangle.RadiusYProperty.PropertyName)
+			{
+			{
 				UpdateRadiusY();
+			}
 		}
 
 		void UpdateRadiusX()

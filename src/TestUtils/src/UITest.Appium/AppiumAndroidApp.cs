@@ -23,9 +23,13 @@ namespace UITest.Appium
 			var avdForce = config.GetProperty<bool>("AvdForceInstall");
 
 			if (enableDebugPopup)
+			{
 				Environment.SetEnvironmentVariable("SWIFTSHADER_DISABLE_DEBUGGER_WAIT_DIALOG", "0");
+			}
 			else
+			{
 				Environment.SetEnvironmentVariable("SWIFTSHADER_DISABLE_DEBUGGER_WAIT_DIALOG", "1");
+			}
 
 			//// Will check if AVD with device name already exists first and not reinstall
 			//AndroidEmulator.AvdCreate(device, force: avdForce);

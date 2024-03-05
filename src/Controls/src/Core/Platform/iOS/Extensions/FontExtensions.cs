@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static UIFont ToUIFont(this Font self, IFontManager fontManager)
 		{
 			if (self.IsDefault)
+			{
 				return fontManager.DefaultFont;
+			}
 
 			return fontManager.GetFont(self) ?? fontManager.DefaultFont;
 		}

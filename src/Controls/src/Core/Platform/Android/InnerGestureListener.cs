@@ -75,7 +75,9 @@ namespace Microsoft.Maui.Controls.Platform
 		bool GestureDetector.IOnDoubleTapListener.OnDoubleTap(MotionEvent e)
 		{
 			if (_disposed)
+			{
 				return false;
+			}
 
 			if (HasDoubleTapHandler())
 			{
@@ -133,7 +135,9 @@ namespace Microsoft.Maui.Controls.Platform
 		bool GestureDetector.IOnGestureListener.OnScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
 		{
 			if (e1 == null || e2 == null)
+			{
 				return false;
+			}
 
 			SetStartingPosition(e1);
 
@@ -147,7 +151,9 @@ namespace Microsoft.Maui.Controls.Platform
 		bool GestureDetector.IOnGestureListener.OnSingleTapUp(MotionEvent e)
 		{
 			if (_disposed)
+			{
 				return false;
+			}
 
 			if (HasDoubleTapHandler())
 			{
@@ -164,7 +170,9 @@ namespace Microsoft.Maui.Controls.Platform
 		bool GestureDetector.IOnDoubleTapListener.OnSingleTapConfirmed(MotionEvent e)
 		{
 			if (_disposed)
+			{
 				return false;
+			}
 
 			// The secondary button state only surfaces inside `OnSingleTapConfirmed`
 			// Inside 'OnSingleTap' the e.ButtonState doesn't indicate a secondary click
@@ -222,10 +230,14 @@ namespace Microsoft.Maui.Controls.Platform
 		bool StartScrolling(MotionEvent e2)
 		{
 			if (_scrollDelegate == null)
+			{
 				return false;
+			}
 
 			if (!_isScrolling && _scrollStartedDelegate != null)
+			{
 				_scrollStartedDelegate(e2.PointerCount);
+			}
 
 			_isScrolling = true;
 
@@ -238,10 +250,14 @@ namespace Microsoft.Maui.Controls.Platform
 		internal void EndScrolling()
 		{
 			if (_isScrolling && _scrollCompleteDelegate != null)
+			{
 				_scrollCompleteDelegate();
+			}
 
 			if (_isScrolling && _swipeCompletedDelegate != null)
+			{
 				_swipeCompletedDelegate();
+			}
 
 			_isScrolling = false;
 		}
@@ -249,13 +265,17 @@ namespace Microsoft.Maui.Controls.Platform
 		bool HasSingleTapHandlerWithPrimaryAndSecondary()
 		{
 			if (_tapGestureRecognizers == null)
+			{
 				return false;
+			}
 
 			var check = ButtonsMask.Primary | ButtonsMask.Secondary;
 			foreach (var gesture in _tapGestureRecognizers(1))
 			{
 				if ((gesture.Buttons & check) == check)
+				{
 					return true;
+				}
 			}
 
 			return false;
@@ -264,14 +284,19 @@ namespace Microsoft.Maui.Controls.Platform
 		bool HasDoubleTapHandler()
 		{
 			if (_tapGestureRecognizers == null)
+			{
 				return false;
+			}
+
 			return _tapGestureRecognizers(2).Any();
 		}
 
 		bool HasSingleTapHandler()
 		{
 			if (_tapGestureRecognizers == null)
+			{
 				return false;
+			}
 
 			return _tapGestureRecognizers(1).Any();
 		}

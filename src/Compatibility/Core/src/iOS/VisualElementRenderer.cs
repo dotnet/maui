@@ -87,9 +87,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			set
 			{
 				if (value)
+				{
 					_flags |= VisualElementRendererFlags.AutoPackage;
+				}
 				else
+				{
 					_flags &= ~VisualElementRendererFlags.AutoPackage;
+				}
 			}
 		}
 
@@ -99,9 +103,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			set
 			{
 				if (value)
+				{
 					_flags |= VisualElementRendererFlags.AutoTrack;
+				}
 				else
+				{
 					_flags &= ~VisualElementRendererFlags.AutoTrack;
+				}
 			}
 		}
 
@@ -109,7 +117,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			var platformEffect = effect as PlatformEffect;
 			if (platformEffect == null)
+			{
 				return;
+			}
 
 			platformEffect.Container = container;
 			platformEffect.Control = control;
@@ -121,7 +131,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			get
 			{
 				if (Element != null && Element.IsSet(PlatformConfiguration.iOSSpecific.VisualElement.CanBecomeFirstResponderProperty))
+				{
 					return PlatformConfiguration.iOSSpecific.VisualElement.GetCanBecomeFirstResponder(Element);
+				}
 
 				return base.CanBecomeFirstResponder;
 			}
@@ -132,7 +144,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			var platformEffect = effect as PlatformEffect;
 			if (platformEffect != null)
+			{
 				OnRegisterEffect(platformEffect);
+			}
 		}
 
 		VisualElement IVisualElementRenderer.Element
@@ -180,15 +194,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Performance.Start(out string reference);
 
 			if (oldElement != null)
+			{
 				oldElement.PropertyChanged -= _propertyChangedHandler;
+			}
 
 			if (element != null)
 			{
 				if (element.BackgroundColor != null || (oldElement != null && element.BackgroundColor != oldElement.BackgroundColor))
+				{
 					SetBackgroundColor(element.BackgroundColor);
+				}
 
 				if (element.Background != null && (!element.Background.IsEmpty || (oldElement != null && element.Background != oldElement.Background)))
+				{
 					SetBackground(element.Background);
+				}
 
 				UpdateClipToBounds();
 
@@ -219,15 +239,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, element));
 
 			if (element != null)
+			{
 				SendVisualElementInitialized(element, this);
+			}
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (Element != null && !string.IsNullOrEmpty(Element.AutomationId))
+			{
 				SetAutomationId(Element.AutomationId);
+			}
 
 			if (element != null)
+			{
 				SetAccessibilityLabel();
+			}
 
 			SetAccessibilityHint();
 			SetIsAccessibilityElement();
@@ -250,13 +276,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				_blur.Frame = Frame;
 				if (_blur.Superview == null)
+				{
 					Superview.Add(_blur);
+				}
 			}
 
 			bool hasBackground = Element?.Background != null && !Element.Background.IsEmpty;
 
 			if (hasBackground)
+			{
 				NativeView.UpdateBackgroundLayer();
+			}
 		}
 
 #else
@@ -281,7 +311,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected override void Dispose(bool disposing)
 		{
 			if ((_flags & VisualElementRendererFlags.Disposed) != 0)
+			{
 				return;
+			}
+
 			_flags |= VisualElementRendererFlags.Disposed;
 
 			if (disposing)
@@ -317,35 +350,55 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
 			for (var i = 0; i < _elementChangedHandlers.Count; i++)
+			{
 				_elementChangedHandlers[i](this, args);
+			}
 
 			ElementChanged?.Invoke(this, e);
 #if __MOBILE__
 			if (e.NewElement != null)
+			{
 				SetBlur((BlurEffectStyle)e.NewElement.GetValue(PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty));
+			}
 #endif
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
 				SetBackgroundColor(Element.BackgroundColor);
+			}
 			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				SetBackground(Element.Background);
+			}
 			else if (e.PropertyName == Layout.IsClippedToBoundsProperty.PropertyName)
+			{
 				UpdateClipToBounds();
+			}
 #if __MOBILE__
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty.PropertyName)
+			{
 				SetBlur((BlurEffectStyle)Element.GetValue(PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty));
+			}
 #endif
 			else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+			{
 				SetAccessibilityHint();
+			}
 			else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+			{
 				SetAccessibilityLabel();
+			}
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
+			{
 				SetIsAccessibilityElement();
+			}
 			else if (e.PropertyName == AutomationProperties.ExcludedWithChildrenProperty.PropertyName)
+			{
 				SetAccessibilityElementsHidden();
+			}
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
@@ -385,7 +438,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 				BackgroundColor = _defaultColor;
 			else
+			{
 				BackgroundColor = color.ToPlatform();
+			}
 
 #else
 				Layer.BackgroundColor = _defaultColor.CGColor;
@@ -403,7 +458,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected virtual void SetBlur(BlurEffectStyle blur)
 		{
 			if (_previousBlur == blur)
+			{
 				return;
+			}
 
 			_previousBlur = blur;
 
@@ -455,7 +512,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #if __MOBILE__
 			var clippableLayout = Element as Layout;
 			if (clippableLayout != null)
+			{
 				ClipsToBounds = clippableLayout.IsClippedToBounds;
+			}
 #endif
 		}
 
@@ -463,11 +522,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 
 			if (element.Parent == null)
+			{
 				return false;
+			}
 			else if (element.Parent is ViewCell)
+			{
 				return true;
+			}
 			else
+			{
 				return IsOnViewCell(element.Parent);
+			}
 		}
 	}
 }

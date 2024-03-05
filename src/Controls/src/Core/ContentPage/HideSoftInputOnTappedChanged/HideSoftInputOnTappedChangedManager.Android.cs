@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Controls
 						);
 
 					if (location.Contains(point))
+					{
 						DispatchTouchEvent?.Invoke(this, e);
+					}
 				}
 			}
 		}
@@ -56,10 +58,14 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (aView is null)
+			{
 				return null;
+			}
 
 			if (!FeatureEnabled)
+			{
 				return null;
+			}
 
 			var tracker = new TapWindowTracker(aView, this);
 			return new ActionDisposable(() =>

@@ -16,7 +16,10 @@ namespace Microsoft.Maui.Handlers
 			while (current != null)
 			{
 				if (current is Microsoft.Maui.IMenuFlyout)
+				{
 					return true;
+				}
+
 				current = current.Parent;
 			}
 			return false;
@@ -60,7 +63,9 @@ namespace Microsoft.Maui.Handlers
 		internal static void Reset()
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				return;
+			}
 
 			menus.Clear();
 		}

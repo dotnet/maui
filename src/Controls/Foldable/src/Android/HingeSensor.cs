@@ -63,7 +63,9 @@ namespace Microsoft.Maui.Foldable
 					SensorChangedHandler = se =>
 					{
 						if (se.Sensor == hingeSensor)
+						{
 							OnSensorChanged?.Invoke(hingeSensor, new HingeSensorChangedEventArgs(se));
+						}
 					}
 				};
 
@@ -74,7 +76,9 @@ namespace Microsoft.Maui.Foldable
 		public void StopListening()
 		{
 			if (sensorManager != null && hingeSensor != null)
+			{
 				sensorManager.UnregisterListener(sensorListener, hingeSensor);
+			}
 		}
 
 		class HingeSensorEventListener : Java.Lang.Object, ISensorEventListener

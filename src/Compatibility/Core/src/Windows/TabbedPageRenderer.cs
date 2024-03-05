@@ -61,10 +61,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (_tracker == value)
+				{
 					return;
+				}
 
 				if (_tracker != null)
+				{
 					_tracker.Dispose();
+				}
 
 				_tracker = value;
 			}
@@ -92,7 +96,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (_showTitle == value)
+				{
 					return;
+				}
+
 				_showTitle = value;
 
 				UpdateTitleVisibility();
@@ -106,7 +113,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (Control != null && _showTitle)
+				{
 					Control.Title = value;
+				}
 			}
 		}
 
@@ -154,7 +163,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public void SetElement(VisualElement element)
 		{
 			if (element != null && !(element is TabbedPage))
+			{
 				throw new ArgumentException("Element must be a TabbedPage", "element");
+			}
 
 			TabbedPage oldElement = Element;
 			Element = (TabbedPage)element;
@@ -200,7 +211,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				element.PropertyChanged += OnElementPropertyChanged;
 
 				if (!string.IsNullOrEmpty(element.AutomationId))
+				{
 					Control.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, element.AutomationId);
+				}
 			}
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
@@ -209,7 +222,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!disposing || _disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 			Element?.SendDisappearing();
@@ -232,23 +247,41 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateBarBackground();
 			}
 			else if (e.PropertyName == TabbedPage.BarTextColorProperty.PropertyName)
+			{
 				UpdateBarTextColor();
+			}
 			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
+			{
 				UpdateBarBackgroundColor();
+			}
 			else if (e.PropertyName == TabbedPage.BarBackgroundProperty.PropertyName)
+			{
 				UpdateBarBackground();
+			}
 			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
+			{
 				UpdateToolbarPlacement();
+			}
 			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName)
+			{
 				UpdateToolbarDynamicOverflowEnabled();
+			}
 			else if (e.PropertyName == Specifics.HeaderIconsEnabledProperty.PropertyName)
+			{
 				UpdateBarIcons();
+			}
 			else if (e.PropertyName == Specifics.HeaderIconsSizeProperty.PropertyName)
+			{
 				UpdateBarIcons();
+			}
 			else if (e.PropertyName == PageSpecifics.ToolbarPlacementProperty.PropertyName)
+			{
 				UpdateToolbarPlacement();
+			}
 			else if (e.PropertyName == TabbedPage.SelectedTabColorProperty.PropertyName || e.PropertyName == TabbedPage.UnselectedTabColorProperty.PropertyName)
+			{
 				UpdateSelectedTabColors();
+			}
 		}
 
 		void OnLoaded(object sender, RoutedEventArgs args)
@@ -272,15 +305,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				case NotifyCollectionChangedAction.Remove:
 				case NotifyCollectionChangedAction.Replace:
 					if (e.NewItems != null)
+					{
 						for (int i = 0; i < e.NewItems.Count; i++)
+						{
 							((Page)e.NewItems[i]).PropertyChanged += OnChildPagePropertyChanged;
+						}
+					}
+
 					if (e.OldItems != null)
+					{
 						for (int i = 0; i < e.OldItems.Count; i++)
+						{
 							((Page)e.OldItems[i]).PropertyChanged -= OnChildPagePropertyChanged;
+						}
+					}
+
 					break;
 				case NotifyCollectionChangedAction.Reset:
 					foreach (var page in Element.Children)
+					{
 						page.PropertyChanged += OnChildPagePropertyChanged;
+					}
+
 					break;
 			}
 
@@ -314,19 +360,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					e.PropertyName == VisualElementSpecifics.AccessKeyPlacementProperty.PropertyName ||
 					e.PropertyName == VisualElementSpecifics.AccessKeyHorizontalOffsetProperty.PropertyName ||
 					e.PropertyName == VisualElementSpecifics.AccessKeyVerticalOffsetProperty.PropertyName)
+				{
 					UpdateAccessKeys();
+				}
 			}
 		}
 
 		void OnSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			Page page = e.AddedItems.Count > 0 ? (Page)e.AddedItems[0] : null;
 			Page currentPage = Element.CurrentPage;
 			if (currentPage == page)
+			{
 				return;
+			}
+
 			currentPage?.SendDisappearing();
 			Element.CurrentPage = page;
 
@@ -345,7 +398,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			object defaultColor = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 
 			if (Element.BarBackgroundColor.IsDefault() && defaultColor != null)
+			{
 				return (WBrush)defaultColor;
+			}
+
 			return Element.BarBackgroundColor.ToPlatform();
 		}
 
@@ -353,18 +409,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
 			if (Element.BarTextColor.IsDefault() && defaultColor != null)
+			{
 				return (WBrush)defaultColor;
+			}
+
 			return Element.BarTextColor.ToPlatform();
 		}
 
 		void UpdateBarBackgroundColor()
 		{
 			if (Element == null)
+			{
 				return;
+			}
+
 			var barBackgroundColor = Element.BarBackgroundColor;
 
 			if (barBackgroundColor == _barBackgroundColor)
+			{
 				return;
+			}
+
 			_barBackgroundColor = barBackgroundColor;
 
 			ApplyBarBackgroundColor();
@@ -373,12 +438,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateBarBackground()
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			var barBackground = Element.BarBackground;
 
 			if (barBackground == _barBackground)
+			{
 				return;
+			}
 
 			_barBackground = barBackground;
 
@@ -389,11 +458,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var controlToolbarBackground = Control.ToolbarBackground;
 			if (controlToolbarBackground == null && _barBackgroundColor.IsDefault())
+			{
 				return;
+			}
 
 			var brush = GetBarBackgroundBrush();
 			if (brush == controlToolbarBackground && !force)
+			{
 				return;
+			}
 
 			TitleProvider.BarBackgroundBrush = brush;
 
@@ -409,12 +482,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var barBackground = Element.BarBackground;
 
 			if (Brush.IsNullOrEmpty(barBackground))
+			{
 				return;
+			}
 
 			var brush = barBackground.ToBrush();
 
 			if (brush == controlToolbarBackground)
+			{
 				return;
+			}
 
 			TitleProvider.BarBackgroundBrush = brush;
 
@@ -427,11 +504,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateBarTextColor()
 		{
 			if (Element == null)
+			{
 				return;
+			}
+
 			var barTextColor = Element.BarTextColor;
 
 			if (barTextColor == _barTextColor)
+			{
 				return;
+			}
+
 			_barTextColor = barTextColor;
 
 			ApplyBarTextColor();
@@ -441,11 +524,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var controlToolbarForeground = Control.ToolbarForeground;
 			if (controlToolbarForeground == null && _barTextColor.IsDefault())
+			{
 				return;
+			}
 
 			var brush = GetBarForegroundBrush();
 			if (brush == controlToolbarForeground && !force)
+			{
 				return;
+			}
 
 			TitleProvider.BarForegroundBrush = brush;
 
@@ -471,7 +558,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.ShouldShowToolbar = nav != null;
 
 			if (page == null)
+			{
 				return;
+			}
 
 			Control.SelectedItem = page;
 		}
@@ -479,7 +568,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateBarIcons()
 		{
 			if (Control == null || Element == null)
+			{
 				return;
+			}
 
 			bool headerIconsEnabled = Element.OnThisPlatform().GetHeaderIconsEnabled();
 			bool invalidateMeasure = false;
@@ -551,7 +642,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			// If items have been made visible or collapsed in panel, invalidate current control measures.
 			if (invalidateMeasure)
+			{
 				Control.InvalidateMeasure();
+			}
 		}
 
 		void UpdateToolbarPlacement()
@@ -573,7 +666,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var tab = sender as TextBlock;
 			if (tab != null && tab.DataContext is Page page)
+			{
 				Element.CurrentPage = page;
+			}
 		}
 
 		protected void UpdateAccessKey(TextBlock control)
@@ -616,7 +711,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// Retrieve all tab header textblocks
 			var allTabHeaderTextBlocks = Control.GetDescendantsByName<WTextBlock>(TabBarHeaderTextBlockName).ToArray();
 			if (allTabHeaderTextBlocks.Length != Control.Items.Count)
+			{
 				return;
+			}
 
 			// Loop through all pages in the Pivot control
 			foreach (Page page in Control.Items)
@@ -628,22 +725,34 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (page == Element.CurrentPage)
 				{
 					if (_defaultSelectedColor == null)
+					{
 						_defaultSelectedColor = tabBarTextBlock.Foreground;
+					}
 
 					if (Element.IsSet(TabbedPage.SelectedTabColorProperty) && Element.SelectedTabColor != null)
+					{
 						tabBarTextBlock.Foreground = Element.SelectedTabColor.ToPlatform();
+					}
 					else
+					{
 						tabBarTextBlock.Foreground = _defaultSelectedColor;
+					}
 				}
 				else
 				{
 					if (_defaultUnselectedColor == null)
+					{
 						_defaultUnselectedColor = tabBarTextBlock.Foreground;
+					}
 
 					if (Element.IsSet(TabbedPage.SelectedTabColorProperty) && Element.UnselectedTabColor != null)
+					{
 						tabBarTextBlock.Foreground = Element.UnselectedTabColor.ToPlatform();
+					}
 					else
+					{
 						tabBarTextBlock.Foreground = _defaultUnselectedColor;
+					}
 				}
 			}
 		}

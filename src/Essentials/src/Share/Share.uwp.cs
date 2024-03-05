@@ -48,7 +48,9 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		{
 			var storageFiles = new List<IStorageFile>();
 			foreach (var file in request.Files)
+			{
 				storageFiles.Add(file.File ?? await StorageFile.GetFileFromPathAsync(file.FullPath));
+			}
 
 			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
 			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);

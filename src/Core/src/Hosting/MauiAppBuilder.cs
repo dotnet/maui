@@ -57,14 +57,20 @@ namespace Microsoft.Maui.Hosting
 				// avoid crashing: https://github.com/microsoft/WindowsAppSDK/issues/2451
 				var dispatcher = services.GetRequiredApplicationDispatcher();
 				if (dispatcher.IsDispatchRequired)
+				{
 					dispatcher.Dispatch(() => SetupResources());
+				}
 				else
+				{
 					SetupResources();
+				}
 
 				static void SetupResources()
 				{
 					if (UI.Xaml.Application.Current?.Resources is not UI.Xaml.ResourceDictionary resources)
+					{
 						return;
+					}
 
 					// WinUI
 					resources.AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
@@ -182,11 +188,11 @@ namespace Microsoft.Maui.Hosting
 
 		private sealed class NullLoggerFactory : ILoggerFactory
 		{
-			public void AddProvider(ILoggerProvider provider) { }
+			public static void AddProvider(ILoggerProvider provider) { }
 
 			public ILogger CreateLogger(string categoryName) => NullLogger.Instance;
 
-			public void Dispose() { }
+			public static void Dispose() { }
 		}
 
 		private sealed class NullLogger<T> : ILogger<T>, IDisposable
@@ -195,9 +201,9 @@ namespace Microsoft.Maui.Hosting
 
 			public void Dispose() { }
 
-			public bool IsEnabled(LogLevel logLevel) => false;
+			public static bool IsEnabled(LogLevel logLevel) => false;
 
-			public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+			public static void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
 			{
 			}
 		}

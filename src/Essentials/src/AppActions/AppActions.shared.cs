@@ -132,7 +132,9 @@ namespace Microsoft.Maui.ApplicationModel
 		static IPlatformAppActions AsPlatform(this IAppActions appActions)
 		{
 			if (appActions is not IPlatformAppActions platform)
+			{
 				throw new PlatformNotSupportedException("This implementation of IAppActions does not implement IPlatformAppActions.");
+			}
 
 			return platform;
 		}

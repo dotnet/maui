@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Controls
 		public override bool Equals(object obj)
 		{
 			if (!(obj is GradientStop dest))
+			{
 				return false;
+			}
 
 			return Color == dest.Color && global::System.Math.Abs(Offset - dest.Offset) < 0.00001;
 		}

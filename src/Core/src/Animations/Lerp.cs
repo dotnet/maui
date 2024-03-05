@@ -175,7 +175,9 @@ namespace Microsoft.Maui.Animations
 		{
 			Lerp? lerp;
 			if (Lerps.TryGetValue(type, out lerp))
+			{
 				return lerp;
+			}
 
 			var types = new List<Type> { type };
 			Type? baseType = type?.BaseType;
@@ -188,7 +190,9 @@ namespace Microsoft.Maui.Animations
 			foreach (var t in types)
 			{
 				if (Lerps.TryGetValue(t, out lerp))
+				{
 					return lerp;
+				}
 			}
 			return lerp;
 		}

@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Controls
 		internal void Apply(bool fromTarget = false)
 		{
 			if (_weakSource == null || _weakTarget == null)
+			{
 				return;
+			}
 
 			if (!_weakTarget.TryGetTarget(out BindableObject target))
 			{
@@ -55,7 +57,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (_weakSource.TryGetTarget(out var source) && _targetProperty != null)
+			{
 				ApplyCore(source, target, _targetProperty, fromTarget, _specificity);
+			}
 		}
 
 		/// <summary>
@@ -67,10 +71,14 @@ namespace Microsoft.Maui.Controls
 			_specificity = specificity;
 
 			if (_weakTarget != null && _weakTarget.TryGetTarget(out BindableObject prevTarget) && !ReferenceEquals(prevTarget, target))
+			{
 				throw new InvalidOperationException("Binding instances cannot be reused");
+			}
 
 			if (_weakSource != null && _weakSource.TryGetTarget(out var previousSource) && !ReferenceEquals(previousSource, sourceObject))
+			{
 				throw new InvalidOperationException("Binding instances cannot be reused");
+			}
 
 			_weakSource = new WeakReference<object>(sourceObject);
 			_weakTarget = new WeakReference<BindableObject>(target);
@@ -87,7 +95,9 @@ namespace Microsoft.Maui.Controls
 					BindingExpressionPart part = _parts[i];
 
 					if (!part.IsSelf)
+					{
 						part.TryGetValue(sourceObject, out sourceObject);
+					}
 
 					part.Unsubscribe();
 				}
@@ -106,7 +116,9 @@ namespace Microsoft.Maui.Controls
 		{
 			BindingMode mode = Binding.GetRealizedMode(_targetProperty);
 			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
+			{
 				return;
+			}
 
 			bool needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
 			bool needsSetter = !needsGetter && ((mode == BindingMode.TwoWay && fromTarget) || mode == BindingMode.OneWayToSource);
@@ -123,10 +135,14 @@ namespace Microsoft.Maui.Controls
 					// Allow the object instance itself to provide its own TypeInfo 
 					TypeInfo currentType = current is IReflectableType reflectable ? reflectable.GetTypeInfo() : current.GetType().GetTypeInfo();
 					if (part.LastGetter == null || !part.LastGetter.DeclaringType.GetTypeInfo().IsAssignableFrom(currentType))
+					{
 						SetupPart(currentType, part);
+					}
 
 					if (i < _parts.Count - 1)
+					{
 						part.TryGetValue(current, out current);
+					}
 				}
 
 				if (!part.IsSelf
@@ -140,7 +156,9 @@ namespace Microsoft.Maui.Controls
 
 				if (part.NextPart != null && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay)
 					&& current is INotifyPropertyChanged inpc)
+				{
 					part.Subscribe(inpc);
+				}
 			}
 
 			Debug.Assert(part != null, "There should always be at least the self part in the expression.");
@@ -152,7 +170,9 @@ namespace Microsoft.Maui.Controls
 					value = Binding.GetSourceValue(value, property.ReturnType);
 				}
 				else
+				{
 					value = Binding.FallbackValue ?? property.GetDefaultValue(target);
+				}
 
 				if (!TryConvert(ref value, property, property.ReturnType, true))
 				{
@@ -202,7 +222,9 @@ namespace Microsoft.Maui.Controls
 			if (p[0] == '.')
 			{
 				if (p.Length == 1)
+				{
 					return;
+				}
 
 				p = p.Substring(1);
 			}
@@ -212,7 +234,10 @@ namespace Microsoft.Maui.Controls
 			{
 				string part = pathParts[i].Trim();
 				if (part == string.Empty)
+				{
+				{
 					throw new FormatException("Path contains an empty part");
+				}
 
 				BindingExpressionPart indexer = null;
 
@@ -221,11 +246,15 @@ namespace Microsoft.Maui.Controls
 				{
 					int rbIndex = part.LastIndexOf(']');
 					if (rbIndex == -1)
+					{
 						throw new FormatException("Indexer did not contain closing bracket");
+					}
 
 					int argLength = rbIndex - lbIndex - 1;
 					if (argLength == 0)
+					{
 						throw new FormatException("Indexer did not contain arguments");
+					}
 
 					string argString = part.Substring(lbIndex + 1, argLength);
 					indexer = new BindingExpressionPart(this, argString, true);
@@ -256,11 +285,19 @@ namespace Microsoft.Maui.Controls
 				foreach (var pi in sourceType.DeclaredProperties)
 				{
 					if (pi.Name != indexerName)
+					{
 						continue;
+					}
+
 					if (pi.CanRead && pi.GetMethod.GetParameters()[0].ParameterType == typeof(int))
+					{
 						return pi;
+					}
+
 					if (pi.CanWrite && pi.SetMethod.ReturnType == typeof(int))
+					{
 						return pi;
+					}
 				}
 			}
 
@@ -269,33 +306,53 @@ namespace Microsoft.Maui.Controls
 			foreach (var pi in sourceType.DeclaredProperties)
 			{
 				if (pi.Name != indexerName)
+				{
 					continue;
+				}
+
 				if (pi.CanRead && pi.GetMethod.GetParameters()[0].ParameterType == typeof(string))
+				{
 					return pi;
+				}
+
 				if (pi.CanWrite && pi.SetMethod.ReturnType == typeof(string))
+				{
 					return pi;
+				}
 			}
 
 			//try to fallback to an object indexer
 			foreach (var pi in sourceType.DeclaredProperties)
 			{
 				if (pi.Name != indexerName)
+				{
 					continue;
+				}
+
 				if (pi.CanRead && pi.GetMethod.GetParameters()[0].ParameterType == typeof(object))
+				{
 					return pi;
+				}
+
 				if (pi.CanWrite && pi.SetMethod.ReturnType == typeof(object))
+				{
 					return pi;
+				}
 			}
 
 			//defined on a base class ?
 			if (sourceType.BaseType is Type baseT && GetIndexer(baseT.GetTypeInfo(), indexerName, content) is PropertyInfo p)
+			{
 				return p;
+			}
 
 			//defined on an interface ?
 			foreach (var face in sourceType.ImplementedInterfaces)
 			{
 				if (GetIndexer(face.GetTypeInfo(), indexerName, content) is PropertyInfo pi)
+				{
 					return pi;
+				}
 			}
 
 			return null;
@@ -318,7 +375,9 @@ namespace Microsoft.Maui.Controls
 						BindingDiagnostics.SendBindingFailure(Binding, "Binding", ParseIndexErrorMessage, part.Content, sourceType);
 					}
 					else
+					{
 						part.Arguments = new object[] { index };
+					}
 
 					part.LastGetter = sourceType.GetDeclaredMethod("Get");
 					part.LastSetter = sourceType.GetDeclaredMethod("Set");
@@ -342,7 +401,9 @@ namespace Microsoft.Maui.Controls
 					ParameterInfo[] array = property.GetIndexParameters();
 
 					if (array.Length > 0)
+					{
 						parameter = array[0];
+					}
 
 					if (parameter != null)
 					{
@@ -375,7 +436,10 @@ namespace Microsoft.Maui.Controls
 			if (property != null)
 			{
 				if (property.CanRead && property.GetMethod.IsPublic && !property.GetMethod.IsStatic)
+				{
 					part.LastGetter = property.GetMethod;
+				}
+
 				if (property.CanWrite && property.SetMethod.IsPublic && !property.SetMethod.IsStatic)
 				{
 					part.LastSetter = property.SetMethod;
@@ -431,11 +495,16 @@ namespace Microsoft.Maui.Controls
 		internal static bool TryConvert(ref object value, BindableProperty targetProperty, Type convertTo, bool toTarget)
 		{
 			if (value == null)
+			{
 				return !convertTo.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(convertTo) != null;
+			}
+
 			try
 			{
 				if ((toTarget && targetProperty.TryConvert(ref value)) || (!toTarget && convertTo.IsInstanceOfType(value)))
+				{
 					return true;
+				}
 			}
 			catch (InvalidOperationException)
 			{ //that's what TypeConverters ususally throw
@@ -482,17 +551,26 @@ namespace Microsoft.Maui.Controls
 		{
 			ClearAncestryChangeSubscriptions();
 			if (chain == null)
+			{
 				return;
+			}
+
 			_isBindingContextRelativeSource = includeBindingContext;
 			_ancestryChain = new List<WeakReference<Element>>();
 			for (int i = 0; i < chain.Count; i++)
 			{
 				var elem = chain[i];
 				if (i != chain.Count - 1 || !rootIsSource)
+				{
 					// don't care about a successfully resolved source's parents
 					elem.ParentSet += OnElementParentSet;
+				}
+
 				if (_isBindingContextRelativeSource)
+				{
 					elem.BindingContextChanged += OnElementBindingContextChanged;
+				}
+
 				_ancestryChain.Add(new WeakReference<Element>(elem));
 			}
 		}
@@ -500,7 +578,10 @@ namespace Microsoft.Maui.Controls
 		void ClearAncestryChangeSubscriptions(int beginningWith = 0)
 		{
 			if (_ancestryChain == null || _ancestryChain.Count == 0)
+			{
 				return;
+			}
+
 			int count = _ancestryChain.Count;
 			for (int i = beginningWith; i < count; i++)
 			{
@@ -510,7 +591,9 @@ namespace Microsoft.Maui.Controls
 				{
 					elem.ParentSet -= OnElementParentSet;
 					if (_isBindingContextRelativeSource)
+					{
 						elem.BindingContextChanged -= OnElementBindingContextChanged;
+					}
 				}
 				_ancestryChain.RemoveAt(_ancestryChain.Count - 1);
 			}
@@ -525,9 +608,13 @@ namespace Microsoft.Maui.Controls
 				WeakReference<Element> weak = _ancestryChain[i];
 				Element chainMember = null;
 				if (!weak.TryGetTarget(out chainMember))
+				{
 					return -1;
+				}
 				else if (object.Equals(elem, chainMember))
+				{
 					return i;
+				}
 			}
 			return -1;
 		}
@@ -536,11 +623,15 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!(sender is Element elem) ||
 				!(this.Binding is Binding binding))
+			{
 				return;
+			}
 
 			BindableObject target = null;
 			if (_weakTarget?.TryGetTarget(out target) != true)
+			{
 				return;
+			}
 
 			object currentSource = null;
 			if (_weakSource?.TryGetTarget(out currentSource) == true)
@@ -549,7 +640,9 @@ namespace Microsoft.Maui.Controls
 				// from someone else in the chain about our already-resolved 
 				// binding source
 				if (object.ReferenceEquals(currentSource, elem.BindingContext))
+				{
 					return;
+				}
 			}
 
 			binding.Unapply();
@@ -560,11 +653,15 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!(sender is Element elem) ||
 				!(this.Binding is Binding binding))
+			{
 				return;
+			}
 
 			BindableObject target = null;
 			if (_weakTarget?.TryGetTarget(out target) != true)
+			{
 				return;
+			}
 
 			if (elem.Parent == null)
 			{
@@ -577,7 +674,9 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 				if (index + 1 < _ancestryChain.Count)
+				{
 					ClearAncestryChangeSubscriptions(index + 1);
+				}
 
 				// Force the binding expression to resolve to null
 				// for now, until someone in the chain gets a new
@@ -622,7 +721,9 @@ namespace Microsoft.Maui.Controls
 			{
 				source.PropertyChanged += OnPropertyChanged;
 				if (source is BindableObject bo)
+				{
 					bo.BindingContextChanged += OnBCChanged;
+				}
 
 				base.Subscribe(source, listener);
 			}
@@ -630,9 +731,14 @@ namespace Microsoft.Maui.Controls
 			public override void Unsubscribe()
 			{
 				if (TryGetSource(out var source))
+				{
 					source.PropertyChanged -= OnPropertyChanged;
+				}
+
 				if (source is BindableObject bo)
+				{
 					bo.BindingContextChanged -= OnBCChanged;
+				}
 
 				base.Unsubscribe();
 			}
@@ -640,9 +746,23 @@ namespace Microsoft.Maui.Controls
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (TryGetHandler(out var handler))
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 					handler(sender, e);
+After:
+				{
+					handler(sender, e);
+				}
+*/
+				{
+					handler(sender, e);
+				}
 				else
+				{
+				{
 					Unsubscribe();
+				}
 			}
 
 			void OnBCChanged(object sender, EventArgs e)
@@ -673,8 +793,10 @@ namespace Microsoft.Maui.Controls
 			{
 				INotifyPropertyChanged source;
 				if (_listener != null && _listener.TryGetSource(out source) && ReferenceEquals(handler, source))
+				{
 					// Already subscribed
 					return;
+				}
 
 				// Clear out the old subscription if necessary
 				Unsubscribe();
@@ -727,10 +849,14 @@ namespace Microsoft.Maui.Controls
 						if (name.IndexOf("[", StringComparison.Ordinal) != -1)
 						{
 							if (name != string.Format("{0}[{1}]", part.IndexerName, part.Content))
+							{
 								return;
+							}
 						}
 						else if (name != part.IndexerName)
+						{
 							return;
+						}
 					}
 					else if (name != part.Content)
 					{
@@ -739,9 +865,23 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (_expression._weakTarget is not null && _expression._weakTarget.TryGetTarget(out BindableObject obj))
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 					obj.Dispatcher.DispatchIfRequired(() => _expression.Apply());
+After:
+				{
+					obj.Dispatcher.DispatchIfRequired(() => _expression.Apply());
+				}
+*/
+				{
+					obj.Dispatcher.DispatchIfRequired(() => _expression.Apply());
+				}
 				else
+				{
+				{
 					_expression.Apply();
+				}
 			}
 
 			public bool TryGetValue(object source, out object value)
@@ -764,7 +904,9 @@ namespace Microsoft.Maui.Controls
 								return false;
 							}
 							else
+							{
 								throw ex.InnerException;
+							}
 						}
 						return true;
 					}

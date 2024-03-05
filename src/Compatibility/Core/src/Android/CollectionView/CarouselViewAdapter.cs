@@ -24,12 +24,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.CollectionView
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{
 			if (CarouselView == null || ItemsSource == null)
+			{
 				return;
+			}
 
 			bool hasItems = ItemsSource != null && ItemsSource.Count > 0;
 
 			if (!hasItems)
+			{
 				return;
+			}
 
 			int positionInList = (CarouselView.Loop && hasItems) ? position % ItemsSource.Count : position;
 

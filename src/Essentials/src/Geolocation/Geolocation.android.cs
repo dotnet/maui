@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		public async Task<Location?> GetLastKnownLocationAsync()
 		{
 			if (LocationManager is null)
+			{
 				throw new FeatureNotSupportedException("Android LocationManager is not available");
+			}
 
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
@@ -46,7 +48,9 @@ namespace Microsoft.Maui.Devices.Sensors
 				var location = LocationManager.GetLastKnownLocation(provider);
 
 				if (location is not null && IsBetterLocation(location, bestLocation))
+				{
 					bestLocation = location;
+				}
 			}
 
 			return bestLocation?.ToLocation();
@@ -57,7 +61,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			ArgumentNullException.ThrowIfNull(request);
 
 			if (LocationManager is null)
+			{
 				throw new FeatureNotSupportedException("Android LocationManager is not available");
+			}
 
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
@@ -65,7 +71,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			var hasProviders = enabledProviders.Any(p => !ignoredProviders.Contains(p));
 
 			if (!hasProviders)
+			{
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
+			}
 
 			// get the best possible provider for the requested accuracy
 			var providerInfo = GetBestProvider(LocationManager, request.DesiredAccuracy);
@@ -73,7 +81,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			// if no providers exist, we can't get a location
 			// let's punt and try to get the last known location
 			if (string.IsNullOrEmpty(providerInfo.Provider))
+			{
 				return await GetLastKnownLocationAsync();
+			}
 
 			var tcs = new TaskCompletionSource<AndroidLocation?>();
 
@@ -81,12 +91,19 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			var providers = new List<string>();
 			if (allProviders.Contains(Android.Locations.LocationManager.GpsProvider))
+			{
 				providers.Add(Android.Locations.LocationManager.GpsProvider);
+			}
+
 			if (allProviders.Contains(Android.Locations.LocationManager.NetworkProvider))
+			{
 				providers.Add(Android.Locations.LocationManager.NetworkProvider);
+			}
 
 			if (providers.Count == 0)
+			{
 				providers.Add(providerInfo.Provider);
+			}
 
 			var listener = new SingleLocationListener(LocationManager, providerInfo.Accuracy, providers);
 			listener.LocationHandler = HandleLocation;
@@ -99,12 +116,16 @@ namespace Microsoft.Maui.Devices.Sensors
 			var looper = Looper.MyLooper() ?? Looper.MainLooper;
 
 			foreach (var provider in providers)
+			{
 				LocationManager.RequestLocationUpdates(provider, 0, 0, listener, looper);
+			}
 
 			var androidLocation = await tcs.Task;
 
 			if (androidLocation is null)
+			{
 				return null;
+			}
 
 			return androidLocation.ToLocation();
 
@@ -123,10 +144,14 @@ namespace Microsoft.Maui.Devices.Sensors
 			void RemoveUpdates()
 			{
 				if (LocationManager is null)
+				{
 					return;
+				}
 
 				for (var i = 0; i < providers.Count; i++)
+				{
 					LocationManager.RemoveUpdates(listener);
+				}
 			}
 		}
 
@@ -146,10 +171,14 @@ namespace Microsoft.Maui.Devices.Sensors
 			ArgumentNullException.ThrowIfNull(request);
 
 			if (LocationManager is null)
+			{
 				throw new FeatureNotSupportedException("Android LocationManager is not available");
+			}
 
 			if (IsListeningForeground)
+			{
 				throw new InvalidOperationException("Already listening to location changes.");
+			}
 
 			await Permissions.EnsureGrantedOrRestrictedAsync<Permissions.LocationWhenInUse>();
 
@@ -158,25 +187,36 @@ namespace Microsoft.Maui.Devices.Sensors
 				enabledProviders.Any(p => !ignoredProviders.Contains(p));
 
 			if (!hasProviders)
+			{
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
+			}
 
 			// get the best possible provider for the requested accuracy
 			var providerInfo = GetBestProvider(LocationManager, request.DesiredAccuracy);
 
 			// if no providers exist, we can't listen for locations
 			if (string.IsNullOrEmpty(providerInfo.Provider))
+			{
 				return false;
+			}
 
 			var allProviders = LocationManager.GetProviders(false);
 
 			listeningProviders = new List<string>();
 			if (allProviders.Contains(Android.Locations.LocationManager.GpsProvider))
+			{
 				listeningProviders.Add(Android.Locations.LocationManager.GpsProvider);
+			}
+
 			if (allProviders.Contains(Android.Locations.LocationManager.NetworkProvider))
+			{
 				listeningProviders.Add(Android.Locations.LocationManager.NetworkProvider);
+			}
 
 			if (listeningProviders.Count == 0)
+			{
 				listeningProviders.Add(providerInfo.Provider);
+			}
 
 			var continuousListener = new ContinuousLocationListener(LocationManager, providerInfo.Accuracy, listeningProviders);
 			continuousListener.LocationHandler = HandleLocation;
@@ -189,7 +229,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			var minTimeMilliseconds = (long)request.MinimumTime.TotalMilliseconds;
 
 			foreach (var provider in listeningProviders)
+			{
 				LocationManager.RequestLocationUpdates(provider, minTimeMilliseconds, providerInfo.Accuracy, continuousListener, looper);
+			}
 
 			return true;
 
@@ -213,14 +255,18 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void StopListeningForeground()
 		{
 			if (continuousListener is null)
+			{
 				return;
+			}
 
 			continuousListener.LocationHandler = null;
 			continuousListener.ErrorHandler = null;
 
 			if (listeningProviders is null ||
 				LocationManager is null)
+			{
 				return;
+			}
 
 			for (var i = 0; i < listeningProviders.Count; i++)
 			{
@@ -290,7 +336,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		internal static bool IsBetterLocation(AndroidLocation location, AndroidLocation? bestLocation)
 		{
 			if (bestLocation is null)
+			{
 				return true;
+			}
 
 			var timeDelta = location.Time - bestLocation.Time;
 
@@ -299,10 +347,14 @@ namespace Microsoft.Maui.Devices.Sensors
 			var isNewer = timeDelta > 0;
 
 			if (isSignificantlyNewer)
+			{
 				return true;
+			}
 
 			if (isSignificantlyOlder)
+			{
 				return false;
+			}
 
 			var accuracyDelta = (int)(location.Accuracy - bestLocation.Accuracy);
 			var isLessAccurate = accuracyDelta > 0;
@@ -312,13 +364,19 @@ namespace Microsoft.Maui.Devices.Sensors
 			var isFromSameProvider = location?.Provider?.Equals(bestLocation?.Provider, StringComparison.OrdinalIgnoreCase) ?? false;
 
 			if (isMoreAccurate)
+			{
 				return true;
+			}
 
 			if (isNewer && !isLessAccurate)
+			{
 				return true;
+			}
 
 			if (isNewer && !isSignificantlyLessAccurage && isFromSameProvider)
+			{
 				return true;
+			}
 
 			return false;
 		}
@@ -348,7 +406,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				var location = manager?.GetLastKnownLocation(provider);
 				if (location is not null && GeolocationImplementation.IsBetterLocation(location, BestLocation))
+				{
 					BestLocation = location;
+				}
 			}
 		}
 
@@ -357,7 +417,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (location.Accuracy <= desiredAccuracy)
 			{
 				if (wasRaised)
+				{
 					return;
+				}
 
 				wasRaised = true;
 
@@ -368,26 +430,34 @@ namespace Microsoft.Maui.Devices.Sensors
 			lock (locationSync)
 			{
 				if (GeolocationImplementation.IsBetterLocation(location, BestLocation))
+				{
 					BestLocation = location;
+				}
 			}
 		}
 
 		void ILocationListener.OnProviderDisabled(string provider)
 		{
 			lock (activeProviders)
+			{
 				activeProviders.Remove(provider);
+			}
 		}
 
 		void ILocationListener.OnProviderEnabled(string provider)
 		{
 			lock (activeProviders)
+			{
 				activeProviders.Add(provider);
+			}
 		}
 
 		void ILocationListener.OnStatusChanged(string? provider, Availability status, Bundle? extras)
 		{
 			if (provider is null)
+			{
 				return;
+			}
 
 			switch (status)
 			{
@@ -419,7 +489,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			foreach (var provider in providers)
 			{
 				if (manager is not null && manager.IsProviderEnabled(provider))
+				{
 					activeProviders.Add(provider);
+				}
 			}
 		}
 
@@ -438,20 +510,26 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				if (activeProviders.Remove(provider) &&
 					activeProviders.Count == 0)
+				{
 					ErrorHandler?.Invoke(GeolocationError.PositionUnavailable);
+				}
 			}
 		}
 
 		void ILocationListener.OnProviderEnabled(string provider)
 		{
 			lock (activeProviders)
+			{
 				activeProviders.Add(provider);
+			}
 		}
 
 		void ILocationListener.OnStatusChanged(string? provider, Availability status, Bundle? extras)
 		{
 			if (provider is null)
+			{
 				return;
+			}
 
 			switch (status)
 			{

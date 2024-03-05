@@ -92,34 +92,47 @@ namespace Microsoft.Maui.Controls
 		internal ShellAppearance()
 		{
 			for (int i = 0; i < _brushArray.Length; i++)
+			{
+			{
 				_brushArray[i] = Brush.Default;
+			}
 
 			for (int i = 0; i < _doubleArray.Length; i++)
+			{
 				_doubleArray[i] = -1;
+			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='Equals']/Docs/*" />
 		public override bool Equals(object obj)
 		{
 			if (!(obj is ShellAppearance appearance))
+			{
 				return false;
+			}
 
 			for (int i = 0; i < _colorArray.Length; i++)
 			{
 				if (!EqualityComparer<Color>.Default.Equals(_colorArray[i], appearance._colorArray[i]))
+				{
 					return false;
+				}
 			}
 
 			for (int i = 0; i < _brushArray.Length; i++)
 			{
 				if (!EqualityComparer<Brush>.Default.Equals(_brushArray[i], appearance._brushArray[i]))
+				{
 					return false;
+				}
 			}
 
 			for (int i = 0; i < _doubleArray.Length; i++)
 			{
 				if (!EqualityComparer<double>.Default.Equals(_doubleArray[i], appearance._doubleArray[i]))
+				{
 					return false;
+				}
 			}
 
 			return true;
@@ -130,13 +143,19 @@ namespace Microsoft.Maui.Controls
 		{
 			var hashCode = -1988429770;
 			for (int i = 0; i < _colorArray.Length; i++)
+			{
 				hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(_colorArray[i]);
+			}
 
 			for (int i = 0; i < _brushArray.Length; i++)
+			{
 				hashCode = hashCode * -1521134295 + EqualityComparer<Brush>.Default.GetHashCode(_brushArray[i]);
+			}
 
 			for (int i = 0; i < _doubleArray.Length; i++)
+			{
 				hashCode = hashCode * -1521134295 + EqualityComparer<double>.Default.GetHashCode(_doubleArray[i]);
+			}
 
 			return hashCode;
 		}
@@ -185,7 +204,9 @@ namespace Microsoft.Maui.Controls
 			for (int i = 0; i < s_ingestArray.Length; i++)
 			{
 				if (_colorArray[i] == null)
+				{
 					_colorArray[i] = null;
+				}
 			}
 		}
 

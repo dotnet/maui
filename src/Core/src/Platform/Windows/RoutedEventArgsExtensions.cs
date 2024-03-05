@@ -12,20 +12,30 @@ namespace Microsoft.Maui.Platform
 		public static void SetHandled(this RoutedEventArgs e, bool value)
 		{
 			if (e is RightTappedRoutedEventArgs rt)
+			{
 				rt.Handled = value;
+			}
 			else if (e is TappedRoutedEventArgs t)
+			{
 				t.Handled = value;
+			}
 			else if (e is DoubleTappedRoutedEventArgs dt)
+			{
 				dt.Handled = value;
+			}
 		}
 
 		public static WPoint? GetPositionRelativeToElement(this RoutedEventArgs e, IElement? relativeTo)
 		{
 			if (relativeTo == null)
+			{
 				return GetPositionRelativeToPlatformElement(e, null);
+			}
 
 			if (relativeTo?.Handler?.PlatformView is UIElement element)
+			{
 				return GetPositionRelativeToPlatformElement(e, element);
+			}
 
 			return null;
 		}
@@ -33,15 +43,25 @@ namespace Microsoft.Maui.Platform
 		public static WPoint? GetPositionRelativeToPlatformElement(this RoutedEventArgs e, UIElement? relativeTo)
 		{
 			if (e is RightTappedRoutedEventArgs rt)
+			{
 				return rt.GetPosition(relativeTo);
+			}
 			else if (e is TappedRoutedEventArgs t)
+			{
 				return t.GetPosition(relativeTo);
+			}
 			else if (e is DoubleTappedRoutedEventArgs dt)
+			{
 				return dt.GetPosition(relativeTo);
+			}
 			else if (e is DragStartingEventArgs ds)
+			{
 				return ds.GetPosition(relativeTo);
+			}
 			else if (e is DragEventArgs d)
+			{
 				return d.GetPosition(relativeTo);
+			}
 			else if (e is PointerRoutedEventArgs p)
 			{
 				var point = p.GetCurrentPoint(relativeTo);

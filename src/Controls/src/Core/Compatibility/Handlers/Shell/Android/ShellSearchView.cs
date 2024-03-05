@@ -34,7 +34,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			get
 			{
 				if (_searchButton == null)
+				{
 					throw new InvalidOperationException("LoadView must be called before accessing View");
+				}
+
 				return this;
 			}
 		}
@@ -43,7 +46,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			LoadView(SearchHandler);
 			if (_searchHandlerAppearanceTracker == null)
+			{
 				_searchHandlerAppearanceTracker = CreateSearchHandlerAppearanceTracker();
+			}
 		}
 
 		protected virtual SearchHandlerAppearanceTracker CreateSearchHandlerAppearanceTracker()
@@ -123,7 +128,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -173,11 +180,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var context = Context;
 			_cardView = new CardView(context);
 			using (lp = new LayoutParams(LP.MatchParent, LP.MatchParent))
+			{
 				_cardView.LayoutParameters = lp;
+			}
 
 			var linearLayout = new LinearLayout(context);
 			using (lp = new LP(LP.MatchParent, LP.MatchParent))
+			{
 				linearLayout.LayoutParameters = lp;
+			}
+
 			linearLayout.Orientation = Orientation.Horizontal;
 
 			_cardView.AddView(linearLayout);
@@ -253,7 +265,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			await Task.Delay(200);
 
 			if (_disposed)
+			{
 				return;
+			}
 		}
 
 		protected virtual void OnClearButtonClicked(object sender, EventArgs e)
@@ -317,9 +331,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			result.SetScaleType(ImageView.ScaleType.FitCenter);
 
 			if (bindable.GetValue(property) is ImageSource image)
+			{
 				AutomationPropertiesProvider.SetContentDescription(result, image, null, null);
-
-			((ImageSource)bindable.GetValue(property)).LoadImage(MauiContext, (r) =>
+			} ((ImageSource)bindable.GetValue(property)).LoadImage(MauiContext, (r) =>
 			{
 				result.SetImageDrawable(r?.Value);
 			});
@@ -353,9 +367,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_clearButton.Visibility = ViewStates.Gone;
 				if (SearchHandler.ClearPlaceholderIcon != null && SearchHandler.ClearPlaceholderEnabled)
+				{
 					_clearPlaceholderButton.Visibility = ViewStates.Visible;
+				}
 				else
+				{
 					_clearPlaceholderButton.Visibility = ViewStates.Gone;
+				}
 			}
 			else
 			{

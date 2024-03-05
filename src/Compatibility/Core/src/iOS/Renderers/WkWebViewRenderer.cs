@@ -124,10 +124,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (Element != null && !string.IsNullOrEmpty(Element.AutomationId))
+			{
 				AccessibilityIdentifier = Element.AutomationId;
+			}
 
 			if (element != null)
+			{
 				element.SendViewInitialized(this);
+			}
 		}
 
 		public void SetElementSize(Size size)
@@ -138,7 +142,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public void LoadHtml(string html, string baseUrl)
 		{
 			if (html != null)
+			{
 				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
+			}
 		}
 
 		public override void MovedToWindow()
@@ -242,15 +248,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return false;
+			}
 
 			var myCookieJar = WebView.Cookies;
 			if (myCookieJar == null)
+			{
 				return false;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 			if (cookies == null)
+			{
 				return false;
+			}
 
 			return cookies.Count > 0;
 		}
@@ -267,16 +279,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 			if (Interlocked.Decrement(ref _sharedPoolCount) == 0 && Forms.IsiOS12OrNewer)
+			{
 				_sharedPool = null;
+			}
 
 			if (disposing)
 			{
 				if (IsLoading)
+				{
 					StopLoading();
+				}
 
 				Element.PropertyChanged -= HandlePropertyChanged;
 				WebViewController.EvalRequested -= OnEvalRequested;
@@ -310,17 +328,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		Uri CreateUriForCookies(string url)
 		{
 			if (url == null)
+			{
 				return null;
+			}
 
 			Uri uri;
 
 			if (url.Length > 2000)
+			{
 				url = url.Substring(0, 2000);
+			}
 
 			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
 			{
 				if (String.IsNullOrWhiteSpace(uri.Host))
+				{
 					return null;
+				}
 
 				return uri;
 			}
@@ -347,7 +371,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					var uri = CreateUriForCookies(url);
 
 					foreach (var cookie in cookieString.Split(';'))
+					{
 						extractCookies.SetCookies(uri, cookie);
+					}
 
 					var extracted = extractCookies.GetCookies(uri);
 					_initialCookiesLoaded = new NSHttpCookie[extracted.Count];
@@ -367,7 +393,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// we don't care that much about this being accurate
 				// the cookie container will split the cookies up more correctly
 				if (!cookie.Domain.Contains(domain, StringComparison.Ordinal) && !domain.Contains(cookie.Domain, StringComparison.Ordinal))
+				{
 					continue;
+				}
 
 				existingCookies.Add(cookie);
 			}
@@ -380,19 +408,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var myCookieJar = WebView.Cookies;
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return;
+			}
 
 			if (!_loadedCookies.Add(uri.Host))
+			{
 				return;
+			}
 
 			// pre ios 11 we sync cookies after navigated
 			if (!Forms.IsiOS11OrNewer)
+			{
 				return;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 			var existingCookies = await GetCookiesFromNativeStore(url);
@@ -410,15 +446,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal async Task SyncNativeCookiesToElement(string url)
 		{
 			if (String.IsNullOrWhiteSpace(url))
+			{
 				return;
+			}
 
 			var myCookieJar = WebView.Cookies;
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			var uri = CreateUriForCookies(url);
 			if (uri == null)
+			{
 				return;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 			var retrieveCurrentWebCookies = await GetCookiesFromNativeStore(url);
@@ -447,9 +489,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 
 				if (nSHttpCookie == null)
+				{
 					cookie.Expired = true;
+				}
 				else
+				{
 					cookie.Value = nSHttpCookie.Value;
+				}
 			}
 
 			await SyncNativeCookies(url);
@@ -461,16 +507,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return;
+			}
 
 			var myCookieJar = WebView.Cookies;
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			await InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
 			if (cookies == null)
+			{
 				return;
+			}
 
 			var retrieveCurrentWebCookies = await GetCookiesFromNativeStore(url);
 
@@ -478,7 +530,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			foreach (var cookie in retrieveCurrentWebCookies)
 			{
 				if (cookies[cookie.Name] != null)
+				{
 					continue;
+				}
 
 				deleteCookies.Add(cookie);
 			}
@@ -511,7 +565,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 
 				if (changeCookie)
+				{
 					cookiesToSet.Add(cookie);
+				}
 			}
 
 			await SetCookie(cookiesToSet);
@@ -524,7 +580,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Forms.IsiOS11OrNewer)
 			{
 				foreach (var cookie in cookies)
+				{
 					await Configuration.WebsiteDataStore.HttpCookieStore.SetCookieAsync(new NSHttpCookie(cookie));
+				}
 			}
 			else
 			{
@@ -545,7 +603,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Forms.IsiOS11OrNewer)
 			{
 				foreach (var cookie in cookies)
+				{
 					await Configuration.WebsiteDataStore.HttpCookieStore.DeleteCookieAsync(cookie);
+				}
 			}
 			else
 			{
@@ -581,16 +641,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == WebView.SourceProperty.PropertyName)
+			{
 				Load();
+			}
 		}
 
 		void Load()
 		{
 			if (_ignoreSourceChanges)
+			{
 				return;
+			}
 
 			if (((WebView)Element).Source != null)
+			{
 				((WebView)Element).Source.Load(this);
+			}
 
 			UpdateCanGoBackForward();
 		}
@@ -703,7 +769,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public CustomWebViewNavigationDelegate(WkWebViewRenderer renderer)
 			{
 				if (renderer == null)
+				{
+				{
 					throw new ArgumentNullException("renderer");
+				}
+
 				_renderer = renderer;
 			}
 
@@ -736,11 +806,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public override void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 			{
 				if (webView.IsLoading)
+				{
 					return;
+				}
 
 				var url = GetCurrentUrl();
 				if (url == $"file://{NSBundle.MainBundle.BundlePath}/")
+				{
 					return;
+				}
 
 				_renderer._ignoreSourceChanges = true;
 				WebView.SetValueFromRenderer(WebView.SourceProperty, new UrlWebViewSource { Url = url });
@@ -754,7 +828,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				try
 				{
 					if (_renderer?.WebView?.Cookies != null)
+					{
 						await _renderer.SyncNativeCookiesToElement(url);
+					}
 				}
 				catch (Exception exc)
 				{
@@ -783,7 +859,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						navEvent = WebNavigationEvent.NewPage;
 
 						if (navigationAction.TargetFrame == null)
+						{
 							webView?.LoadRequest(navigationAction.Request);
+						}
 
 						break;
 					case WKNavigationType.FormSubmitted:
@@ -864,7 +942,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// in which case the bundle file name is used.
 
 				if (webView.Url != null && webView.Url.AbsoluteString != $"file://{NSBundle.MainBundle.BundlePath}/")
+				{
 					return $"{webView.Url.Scheme}://{webView.Url.Host}";
+				}
 
 				return new NSString(NSBundle.MainBundle.BundlePath).LastPathComponent;
 			}
@@ -894,13 +974,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var controller = UIAlertController.Create(GetJsAlertTitle(webView), message, UIAlertControllerStyle.Alert);
 
 				if (defaultText != null)
+				{
 					controller.AddTextField((textField) => textField.Text = defaultText);
+				}
 
 				if (okAction != null)
+				{
 					AddOkAction(controller, () => okAction(controller));
+				}
 
 				if (cancelAction != null)
+				{
 					AddCancelAction(controller, () => cancelAction(controller));
+				}
 
 				GetTopViewController(UIApplication.SharedApplication.GetKeyWindow().RootViewController)
 					.PresentViewController(controller, true, null);
@@ -909,13 +995,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			static UIViewController GetTopViewController(UIViewController viewController)
 			{
 				if (viewController is UINavigationController navigationController)
+				{
 					return GetTopViewController(navigationController.VisibleViewController);
+				}
 
 				if (viewController is UITabBarController tabBarController)
+				{
 					return GetTopViewController(tabBarController.SelectedViewController);
+				}
 
 				if (viewController.PresentedViewController != null)
+				{
 					return GetTopViewController(viewController.PresentedViewController);
+				}
 
 				return viewController;
 			}

@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Controls
 				foreach (var page in _contentPages)
 				{
 					if (page.HideSoftInputOnTapped && page.HasNavigatedTo)
+					{
 						return true;
+					}
 				}
 				return false;
 			}

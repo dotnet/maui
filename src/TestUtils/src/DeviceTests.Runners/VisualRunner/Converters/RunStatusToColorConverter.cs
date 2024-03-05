@@ -11,7 +11,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
 			if (value is not RunStatus status || Application.Current == null)
+			{
 				return Colors.Red;
+			}
 
 			return status switch
 			{

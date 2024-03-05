@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public virtual void ResetAppearance(UITabBarController controller)
 		{
 			if (_defaultTint == null)
+			{
 				return;
+			}
 
 			var tabBar = controller.TabBar;
 			tabBar.BarTintColor = _defaultBarTint;
@@ -43,9 +45,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			{
 				UpdateiOS15TabBarAppearance(controller, appearance);
+			}
 			else
+			{
 				UpdateTabBarAppearance(controller, appearance);
+			}
 		}
 
 		public virtual void UpdateLayout(UITabBarController controller)
@@ -99,7 +105,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var tabBar = controller.TabBar;
 
 			if (backgroundColor is not null && backgroundColor.IsNotDefault())
+			{
 				tabBar.BarTintColor = backgroundColor.ToPlatform();
+			}
 
 			if (unselectedColor is not null && unselectedColor.IsNotDefault())
 			{

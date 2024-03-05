@@ -20,14 +20,20 @@ namespace Microsoft.Maui.Controls.Platform
 			resourceIdOpen = 0;
 			resourceIdClose = 0;
 			if (page == null)
+			{
 				return;
+			}
 
 			var automationIdParent = s_defaultDrawerId;
 			var icon = page.Flyout?.IconImageSource;
 			if (icon != null && !icon.IsEmpty)
+			{
 				automationIdParent = page.Flyout.IconImageSource.AutomationId;
+			}
 			else if (!string.IsNullOrEmpty(page.AutomationId))
+			{
 				automationIdParent = page.AutomationId;
+			}
 
 			resourceIdOpen = context.Resources.GetIdentifier($"{automationIdParent}{s_defaultDrawerIdOpenSuffix}", "string", context.ApplicationInfo.PackageName);
 			resourceIdClose = context.Resources.GetIdentifier($"{automationIdParent}{s_defaultDrawerIdCloseSuffix}", "string", context.ApplicationInfo.PackageName);
@@ -42,35 +48,50 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void SetTitleOrContentDescription(this IMenuItem Control, MenuItem Element)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			var elemValue = ConcatenateNameAndHint(Element);
 
 			if (string.IsNullOrWhiteSpace(elemValue))
+			{
 				elemValue = Element.AutomationId;
+			}
 			else if (!String.IsNullOrEmpty(Element.Text))
+			{
 				elemValue = String.Join(". ", Element.Text, elemValue);
+			}
 
 			if (!string.IsNullOrWhiteSpace(elemValue))
+			{
 				AMenuItemCompat.SetContentDescription(Control, elemValue);
-
+			}
 		}
 
 
 		public static string SetNavigationContentDescription(this AToolbar Control, Element Element, string _defaultNavigationContentDescription = null)
 		{
 			if (Element == null)
+			{
 				return _defaultNavigationContentDescription;
+			}
 
 			if (_defaultNavigationContentDescription == null)
+			{
 				_defaultNavigationContentDescription = Control.NavigationContentDescription;
+			}
 
 			var elemValue = ConcatenateNameAndHint(Element);
 
 			if (!string.IsNullOrWhiteSpace(elemValue))
+			{
 				Control.NavigationContentDescription = elemValue;
+			}
 			else
+			{
 				Control.NavigationContentDescription = _defaultNavigationContentDescription;
+			}
 
 			return _defaultNavigationContentDescription;
 		}
@@ -85,9 +106,13 @@ namespace Microsoft.Maui.Controls.Platform
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(hint))
+			{
 				separator = "";
+			}
 			else
+			{
 				separator = ". ";
+			}
 
 			return string.Join(separator, name, hint);
 		}
@@ -122,14 +147,18 @@ namespace Microsoft.Maui.Controls.Platform
 			string defaultContentDescription)
 		{
 			if (bindableObject == null || control == null)
+			{
 				return;
+			}
 
 			string value = ConcatenateNameAndHelpText(bindableObject);
 
 			var contentDescription = !string.IsNullOrWhiteSpace(value) ? value : defaultContentDescription;
 
 			if (String.IsNullOrWhiteSpace(contentDescription) && bindableObject is Element element)
+			{
 				contentDescription = element.AutomationId;
+			}
 
 			control.ContentDescription = contentDescription;
 		}
@@ -141,7 +170,9 @@ namespace Microsoft.Maui.Controls.Platform
 			string defaultHint)
 		{
 			if (element == null || control == null || SetHint(control, element, defaultHint))
+			{
 				return;
+			}
 
 			SetBasicContentDescription(control, element, defaultContentDescription);
 		}
@@ -156,9 +187,13 @@ namespace Microsoft.Maui.Controls.Platform
 			bool? isInAccessibleTree = (bool?)element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
 			bool? excludedWithChildren = (bool?)element.GetValue(AutomationProperties.ExcludedWithChildrenProperty);
 			if (excludedWithChildren == true)
+			{
 				control.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
+			}
 			else if (isInAccessibleTree.HasValue)
+			{
 				control.ImportantForAccessibility = isInAccessibleTree.Value ? ImportantForAccessibility.Yes : ImportantForAccessibility.No;
+			}
 		}
 
 		// TODO MAUI
@@ -166,7 +201,9 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static void SetLabeledBy(AView control, Element element)
 		{
 			if (element == null || control == null)
+			{
 				return;
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			var elemValue = (VisualElement)element.GetValue(AutomationProperties.LabeledByProperty);
@@ -176,7 +213,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var id = control.Id;
 				if (id == AView.NoId)
+				{
 					id = control.Id = AView.GenerateViewId();
+				}
 
 				// TODO MAUI
 				// THIS probably isn't how we're going to set LabeledBy insied Maui
@@ -242,9 +281,14 @@ namespace Microsoft.Maui.Controls.Platform
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			if (string.IsNullOrWhiteSpace(name))
+			{
 				return helpText;
+			}
+
 			if (string.IsNullOrWhiteSpace(helpText))
+			{
 				return name;
+			}
 
 			return $"{name}. {helpText}";
 		}
@@ -258,7 +302,9 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static void SetupDefaults(AView control, ref string defaultContentDescription, ref string defaultHint)
 		{
 			if (defaultContentDescription == null)
+			{
 				defaultContentDescription = control.ContentDescription;
+			}
 
 			if (control is TextView textView && defaultHint == null)
 			{

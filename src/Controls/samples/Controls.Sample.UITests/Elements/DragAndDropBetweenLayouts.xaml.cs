@@ -31,9 +31,13 @@ namespace Maui.Controls.Sample
 			e.Data.Properties.Add("Source", sl);
 
 			if (sl == SLAllColors)
+			{
 				SLRainbow.Background = SolidColorBrush.LightBlue;
+			}
 			else
+			{
 				SLAllColors.Background = SolidColorBrush.LightBlue;
+			}
 
 			AddEvent(nameof(OnDragStarting));
 
@@ -47,9 +51,13 @@ namespace Maui.Controls.Sample
 			var sl = (sender as Element).Parent.Parent as StackLayout;
 
 			if (sl == SLAllColors)
+			{
 				SLRainbow.Background = SolidColorBrush.White;
+			}
 			else
+			{
 				SLAllColors.Background = SolidColorBrush.White;
+			}
 
 			AddEvent(nameof(OnDropCompleted));
 		}
@@ -57,7 +65,9 @@ namespace Maui.Controls.Sample
 		void OnDragOver(object sender, DragEventArgs e)
 		{
 			if (!e.Data.Properties.ContainsKey("Source"))
+			{
 				return;
+			}
 
 			//e.AcceptedOperation = DataPackageOperation.None;
 			var sl = (StackLayout)(sender as Element).Parent;
@@ -83,7 +93,9 @@ namespace Maui.Controls.Sample
 		void OnDragLeave(object sender, DragEventArgs e)
 		{
 			if (!e.Data.Properties.ContainsKey("Source"))
+			{
 				return;
+			}
 
 			var sl = (StackLayout)(sender as Element).Parent;
 			if (e.Data.Properties["Source"] == sl)
@@ -100,7 +112,9 @@ namespace Maui.Controls.Sample
 		void OnDrop(object sender, DropEventArgs e)
 		{
 			if (!e.Data.Properties.ContainsKey("Source"))
+			{
 				return;
+			}
 
 			var sl = (sender as Element).Parent as StackLayout;
 			if (e.Data.Properties["Source"] == sl)

@@ -17,7 +17,9 @@ namespace Microsoft.Maui
 		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IFileImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
+			{
 				return FromResult(null);
+			}
 
 			try
 			{
@@ -31,7 +33,9 @@ namespace Microsoft.Maui
 				var image = cgImageSource?.GetPlatformImage(loadedScale) ?? imageSource.GetPlatformImage();
 
 				if (image is null)
+				{
 					throw new InvalidOperationException("Unable to load image file.");
+				}
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 

@@ -109,10 +109,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnContentChanged(oldContent, newContent);
 
 			if (oldContent != null && _visualElement != null)
+			{
 				_visualElement.MeasureInvalidated -= OnViewMeasureInvalidated;
+			}
 
 			if (newContent != null && _visualElement != null)
+			{
 				_visualElement.MeasureInvalidated += OnViewMeasureInvalidated;
+			}
 		}
 
 		internal void Realize()
@@ -185,7 +189,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var formsElement = _renderer?.Element;
 
 			if (formsElement == null)
+			{
 				return;
+			}
 
 			VisualStateManager.GoToState(formsElement, isSelected
 				? VisualStateManager.CommonStates.Selected

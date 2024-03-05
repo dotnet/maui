@@ -75,7 +75,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var newPage = element as CarouselPage;
 			if (element != null && newPage == null)
+			{
 				throw new ArgumentException("element must be a CarouselPage");
+			}
 
 			CarouselPage oldPage = Element;
 			Element = newPage;
@@ -100,7 +102,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				// which will reset the CurrentPage unless we tell it to ignore.
 				_fromUpdate = true;
 				for (var i = 0; i < newPage.Children.Count; i++)
+				{
 					Items.Add(newPage.Children[i]);
+				}
+
 				_fromUpdate = false;
 
 				((INotifyCollectionChanged)newPage.Children).CollectionChanged += OnChildrenChanged;
@@ -113,13 +118,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			OnElementChanged(new ElementChangedEventArgs<CarouselPage>(oldPage, newPage));
 
 			if (!string.IsNullOrEmpty(Element?.AutomationId))
+			{
 				SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
+			}
 		}
 
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!disposing || _disposed)
+			{
 				return;
+			}
 
 			if (_tracker != null)
 			{
@@ -136,7 +145,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			EventHandler<VisualElementChangedEventArgs> changed = ElementChanged;
 			if (changed != null)
+			{
 				changed(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
+			}
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -160,12 +171,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (_fromUpdate)
+			{
 				return;
+			}
 
 			var page = (ContentPage)SelectedItem;
 			ContentPage currentPage = Element.CurrentPage;
 			if (currentPage == page)
+			{
 				return;
+			}
+
 			currentPage?.SendDisappearing();
 			Element.CurrentPage = page;
 			page?.SendAppearing();

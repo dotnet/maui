@@ -62,12 +62,20 @@ namespace Microsoft.Maui.Controls
 			DeclaredChildren.CollectionChanged += (_, args) =>
 			{
 				if (args.NewItems != null)
+				{
 					foreach (Element element in args.NewItems)
+					{
 						AddLogicalChild(element);
+					}
+				}
 
 				if (args.OldItems != null)
+				{
 					foreach (Element element in args.OldItems)
+					{
 						RemoveLogicalChild(element);
+					}
+				}
 			};
 		}
 
@@ -126,9 +134,13 @@ namespace Microsoft.Maui.Controls
 		internal bool IsPartOfVisibleTree()
 		{
 			if (Parent is IShellController shell)
+			{
 				return shell.GetItems().Contains(this);
+			}
 			else if (Parent is ShellGroupItem sgi)
+			{
 				return sgi.ShellElementCollection.Contains(this);
+			}
 
 			return false;
 		}
@@ -136,7 +148,9 @@ namespace Microsoft.Maui.Controls
 		internal virtual void SendAppearing()
 		{
 			if (_hasAppearing)
+			{
 				return;
+			}
 
 			_hasAppearing = true;
 			OnAppearing();
@@ -146,7 +160,9 @@ namespace Microsoft.Maui.Controls
 		internal virtual void SendDisappearing()
 		{
 			if (!_hasAppearing)
+			{
 				return;
+			}
 
 			_hasAppearing = false;
 			OnDisappearing();
@@ -164,7 +180,9 @@ namespace Microsoft.Maui.Controls
 		internal void OnAppearing(Action action)
 		{
 			if (_hasAppearing)
+			{
 				action();
+			}
 			else
 			{
 				if (Navigation.ModalStack.Count > 0)
@@ -200,7 +218,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (value == _effectiveVisual)
+				{
 					return;
+				}
 
 				_effectiveVisual = value;
 				OnPropertyChanged(VisualElement.VisualProperty.PropertyName);
@@ -213,13 +233,18 @@ namespace Microsoft.Maui.Controls
 		{
 			var shellItem = (BaseShellItem)bindable;
 			if (shellItem.FindParentOfType<Shell>()?.Toolbar is ShellToolbar st)
+			{
+			{
 				st.UpdateTitle();
+			}
 		}
 
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (newValue == null || bindable.IsSet(FlyoutIconProperty))
+			{
 				return;
+			}
 
 			var shellItem = (BaseShellItem)bindable;
 			shellItem.FlyoutIcon = (ImageSource)newValue;
@@ -231,14 +256,19 @@ namespace Microsoft.Maui.Controls
 			if (Parent != null)
 			{
 				if (propertyName == Shell.ItemTemplateProperty.PropertyName || propertyName == nameof(Parent))
+				{
+				{
 					Propagate(Shell.ItemTemplateProperty, this, Parent, true);
+				}
 			}
 		}
 
 		internal static void PropagateFromParent(BindableProperty property, Element me)
 		{
 			if (me == null || me.Parent == null)
+			{
 				return;
+			}
 
 			Propagate(property, me.Parent, me, false);
 		}
@@ -246,16 +276,24 @@ namespace Microsoft.Maui.Controls
 		internal static void Propagate(BindableProperty property, BindableObject from, BindableObject to, bool onlyToImplicit)
 		{
 			if (from == null || to == null)
+			{
 				return;
+			}
 
 			if (onlyToImplicit && Routing.IsImplicit(from))
+			{
 				return;
+			}
 
 			if (to is Shell)
+			{
 				return;
+			}
 
 			if (from.IsSet(property) && !to.IsSet(property))
+			{
 				to.SetValue(property, from.GetValue(property));
+			}
 		}
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
@@ -270,7 +308,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (value == _effectiveFlowDirection)
+				{
 					return;
+				}
 
 				_effectiveFlowDirection = value;
 
@@ -312,8 +352,12 @@ namespace Microsoft.Maui.Controls
 				FlyoutItem.LayoutStyle };
 
 			if (source?.Classes != null)
+			{
 				foreach (var styleClass in source.Classes)
+				{
 					bindableObjectStyle.Add(styleClass);
+				}
+			}
 
 			flyoutItemCell
 				.StyleClass = bindableObjectStyle;
@@ -328,12 +372,16 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (Parent is Shell)
+				{
 					return Parent;
+				}
 
 				var parent = (BaseShellItem)Parent;
 
 				if (!Routing.IsImplicit(parent))
+				{
 					return parent;
+				}
 
 				return parent.NonImplicitParent;
 			}
@@ -349,7 +397,9 @@ namespace Microsoft.Maui.Controls
 				};
 
 				if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				{
 					grid.ColumnSpacing = grid.RowSpacing = 0;
+				}
 
 				grid.Resources = new ResourceDictionary();
 
@@ -407,21 +457,32 @@ namespace Microsoft.Maui.Controls
 				defaultGridClass.Setters.Add(new Setter { Property = VisualStateManager.VisualStateGroupsProperty, Value = groups });
 
 				if (DeviceInfo.Platform == DevicePlatform.Android)
+				{
 					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 50 });
+				}
 				else
+				{
 					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 44 });
-
+				}
 
 				ColumnDefinitionCollection columnDefinitions = new ColumnDefinitionCollection();
 
 				if (DeviceInfo.Platform == DevicePlatform.Android)
+				{
 					columnDefinitions.Add(new ColumnDefinition { Width = 54 });
+				}
 				else if (DeviceInfo.Platform == DevicePlatform.iOS)
+				{
 					columnDefinitions.Add(new ColumnDefinition { Width = 50 });
+				}
 				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				{
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+				}
 				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
+				{
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+				}
 
 				columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 				defaultGridClass.Setters.Add(new Setter { Property = Grid.ColumnDefinitionsProperty, Value = columnDefinitions });
@@ -433,13 +494,21 @@ namespace Microsoft.Maui.Controls
 
 				double sizeRequest = -1;
 				if (DeviceInfo.Platform == DevicePlatform.Android)
+				{
 					sizeRequest = 24;
+				}
 				else if (DeviceInfo.Platform == DevicePlatform.iOS)
+				{
 					sizeRequest = 22;
+				}
 				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				{
 					sizeRequest = 16;
+				}
 				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
+				{
 					sizeRequest = 25;
+				}
 
 				if (sizeRequest > 0)
 				{

@@ -31,9 +31,13 @@ namespace Microsoft.Maui.DeviceTests
 
 
 					if (useColor)
+					{
 						backgroundColorContentPage.BackgroundColor = Colors.Purple.WithAlpha(0.5f);
+					}
 					else
+					{
 						backgroundColorContentPage.Background = new SolidColorBrush(Colors.Purple.WithAlpha(0.5f));
+					}
 
 					await navPage.CurrentPage.Navigation.PushModalAsync(backgroundColorContentPage);
 					await OnLoadedAsync(backgroundColorContentPage);

@@ -224,7 +224,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			if (paint == null)
+			{
 				paint = Colors.White.AsPaint();
+			}
 
 			if (_shader != null)
 			{
@@ -291,7 +293,9 @@ namespace Microsoft.Maui.Graphics.Skia
 				float radius = (float)radialGradientPaint.Radius * Math.Max(rectangle.Height, rectangle.Width);
 
 				if (radius == 0)
+				{
 					radius = GeometryUtil.GetDistance(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+				}
 
 				try
 				{
@@ -403,10 +407,14 @@ namespace Microsoft.Maui.Graphics.Skia
 			bool closed)
 		{
 			while (startAngle < 0)
+			{
 				startAngle += 360;
+			}
 
 			while (endAngle < 0)
+			{
 				endAngle += 360;
+			}
 
 			var rectX = x;
 			var rectY = y;
@@ -419,7 +427,9 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			startAngle *= -1;
 			if (!clockwise)
+			{
 				sweep *= -1;
+			}
 
 			if (closed)
 			{
@@ -452,17 +462,23 @@ namespace Microsoft.Maui.Graphics.Skia
 			bool clockwise)
 		{
 			while (startAngle < 0)
+			{
 				startAngle += 360;
+			}
 
 			while (endAngle < 0)
+			{
 				endAngle += 360;
+			}
 
 			var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
 			var rect = new SKRect(x, y, x + width, y + height);
 
 			startAngle *= -1;
 			if (!clockwise)
+			{
 				sweep *= -1;
+			}
 
 			// todo: delete this after the api is bound
 			var platformPath = new SKPath();
@@ -484,7 +500,9 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			var strokeSize = CurrentState.ScaledStrokeSize;
 			if (strokeSize <= 0)
+			{
 				return;
+			}
 
 			rectX = x;
 			rectY = y;
@@ -620,7 +638,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			HorizontalAlignment horizAlignment)
 		{
 			if (string.IsNullOrEmpty(value))
+			{
 				return;
+			}
 
 			if (horizAlignment == HorizontalAlignment.Left)
 			{
@@ -654,7 +674,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			float lineSpacingAdjustment = 0)
 		{
 			if (string.IsNullOrEmpty(value))
+			{
 				return;
+			}
 
 			var rect = new RectF(x, y, width, height);
 
@@ -763,7 +785,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			//canvas.Scale((float)aXFactor, (float)aYFactor);
 			CurrentState.SetScale(Math.Abs(xFactor), Math.Abs(yFactor));
 			if (xFactor < 0 || yFactor < 0)
+			{
 				_canvas.Scale(xFactor < 0 ? -1 : 1, yFactor < 0 ? -1 : 1);
+			}
 		}
 
 		protected override void PlatformTranslate(

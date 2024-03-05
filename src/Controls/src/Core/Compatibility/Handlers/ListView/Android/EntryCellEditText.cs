@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				EventHandler handler = BackButtonPressed;
 				if (handler != null)
+				{
 					handler(this, EventArgs.Empty);
+				}
 			}
 			return base.OnKeyPreIme(keyCode, e);
 		}
@@ -35,7 +37,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				window.SetSoftInputMode(SoftInput.AdjustPan);
 			}
 			else
+			{
 				window.SetSoftInputMode(_startingMode);
+			}
 
 			base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
 		}

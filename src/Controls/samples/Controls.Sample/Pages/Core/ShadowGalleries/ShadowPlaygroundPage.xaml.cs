@@ -30,7 +30,9 @@ namespace Maui.Controls.Sample.Pages
 		void UpdateShadowOffset()
 		{
 			if (ShadowViewGradient.Shadow == null)
+			{
 				return;
+			}
 
 			var offset = new Point(ShadowOffsetXSlider.Value, ShadowOffsetYSlider.Value);
 			ShadowViewGradient.Shadow.Offset = offset;

@@ -18,7 +18,9 @@ namespace Microsoft.Maui
 		public async Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IFileImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
+			{
 				return null;
+			}
 
 			var filename = imageSource.File;
 
@@ -27,7 +29,9 @@ namespace Microsoft.Maui
 				var image = await GetLocal(filename) ?? GetAppPackage(filename);
 
 				if (image == null)
+				{
 					throw new InvalidOperationException("Unable to load image file.");
+				}
 
 				var result = new ImageSourceServiceResult(image);
 

@@ -27,9 +27,13 @@ namespace Microsoft.Maui.Devices
 		{
 			var window = ActivityStateManager.Default.GetCurrentActivity(true)?.Window;
 			if (keepScreenOn)
+			{
 				window?.AddFlags(WindowManagerFlags.KeepScreenOn);
+			}
 			else
+			{
 				window?.ClearFlags(WindowManagerFlags.KeepScreenOn);
+			}
 		}
 
 		protected override DisplayInfo GetMainDisplayInfo()

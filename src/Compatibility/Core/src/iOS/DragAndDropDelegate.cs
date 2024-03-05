@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public UIDragItem[] GetItemsForBeginningSession(UIDragInteraction interaction, IUIDragSession session)
 		{
 			if (interaction.View is IVisualElementRenderer renderer && renderer.Element is View view)
+			{
 				return HandleDragStarting(view, renderer);
+			}
 
 			return Array.Empty<UIDragItem>();
 		}
@@ -42,7 +44,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public bool CanHandleSession(UIDropInteraction interaction, IUIDropSession session)
 		{
 			if (session.LocalDragSession == null)
+			{
 				return false;
+			}
 
 			if (session.LocalDragSession.Items.Length > 0 &&
 				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData)
@@ -80,7 +84,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UIDropOperation operation = UIDropOperation.Cancel;
 
 			if (session.LocalDragSession == null)
+			{
 				return new UIDropProposal(operation);
+			}
 
 			if (interaction.View is IVisualElementRenderer renderer)
 			{
@@ -106,7 +112,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public void PerformDrop(UIDropInteraction interaction, IUIDropSession session)
 		{
 			if (session.LocalDragSession == null)
+			{
 				return;
+			}
 
 			if (session.LocalDragSession.Items.Length > 0 &&
 				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi &&
@@ -126,12 +134,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				view.GestureRecognizers;
 
 			if (gestures == null)
+			{
 				return;
+			}
 
 			foreach (var gesture in gestures)
 			{
 				if (gesture is TRecognizer recognizer)
+				{
 					func(recognizer);
+				}
 			}
 		}
 
@@ -141,12 +153,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
 				if (!rec.CanDrag)
+				{
 					return;
+				}
 
 				var args = rec.SendDragStarting(element);
 
 				if (args.Cancel)
+				{
 					return;
+				}
 #pragma warning disable CS0618 // Type or member is obsolete
 				if (!args.Handled)
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -159,12 +175,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					{
 						uIImage = iver.GetImage()?.Image;
 						if (uIImage != null)
+						{
 							itemProvider = new NSItemProvider(uIImage);
+						}
 						else
+						{
 							itemProvider = new NSItemProvider(new NSString(""));
+						}
 
 						if (args.Data.Image == null && renderer.Element is IImageElement imageElement)
+						{
 							args.Data.Image = imageElement.Source;
+						}
 					}
 					else
 					{
@@ -210,7 +232,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
 				if (!rec.AllowDrop)
+				{
 					return;
+				}
 
 				rec.SendDragLeave(dragEventArgs);
 				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
@@ -227,7 +251,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
 				if (!rec.AllowDrop)
+				{
 					return;
+				}
 
 				rec.SendDragOver(dragEventArgs);
 				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
@@ -242,7 +268,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
+				{
 					return;
+				}
 
 				try
 				{

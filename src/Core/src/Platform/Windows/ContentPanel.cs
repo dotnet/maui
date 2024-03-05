@@ -58,13 +58,17 @@ namespace Microsoft.Maui.Platform
 		void ContentPanelSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
 		{
 			if (_borderPath is null)
+			{
 				return;
+			}
 
 			var width = e.NewSize.Width;
 			var height = e.NewSize.Height;
 
 			if (width <= 0 || height <= 0)
+			{
 				return;
+			}
 
 			_borderPath.UpdatePath(_borderStroke?.Shape, width, height);
 			UpdateClip(_borderStroke?.Shape, width, height);
@@ -81,7 +85,9 @@ namespace Microsoft.Maui.Platform
 		public void UpdateBackground(Paint? background)
 		{
 			if (_borderPath == null)
+			{
 				return;
+			}
 
 			_borderPath.UpdateBackground(background);
 		}
@@ -95,12 +101,16 @@ namespace Microsoft.Maui.Platform
 		internal void UpdateBorderStroke(IBorderStroke borderStroke)
 		{
 			if (borderStroke is null)
+			{
 				return;
+			}
 
 			_borderStroke = borderStroke;
 
 			if (_borderStroke is null)
+			{
 				return;
+			}
 
 			UpdateBorder(_borderStroke.Shape);
 		}
@@ -108,7 +118,9 @@ namespace Microsoft.Maui.Platform
 		void UpdateBorder(IShape? strokeShape)
 		{
 			if (strokeShape is null || _borderPath is null)
+			{
 				return;
+			}
 
 			_borderPath.UpdateBorderShape(strokeShape, ActualWidth, ActualHeight);
 
@@ -116,7 +128,9 @@ namespace Microsoft.Maui.Platform
 			var height = ActualHeight;
 
 			if (width <= 0 || height <= 0)
+			{
 				return;
+			}
 
 			UpdateClip(strokeShape, width, height);
 		}
@@ -124,24 +138,34 @@ namespace Microsoft.Maui.Platform
 		void AddContent(FrameworkElement? content)
 		{
 			if (content == null)
+			{
 				return;
+			}
 
 			if (!Children.Contains(_content))
+			{
 				Children.Add(_content);
+			}
 		}
 
 		void UpdateClip(IShape? borderShape, double width, double height)
 		{
 			if (Content is null)
+			{
 				return;
+			}
 
 			if (height <= 0 && width <= 0)
+			{
 				return;
+			}
 
 			var clipGeometry = borderShape;
 
 			if (clipGeometry is null)
+			{
 				return;
+			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
 			var compositor = visual.Compositor;

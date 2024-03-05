@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static CGAffineTransform ToCGAffineTransform(this Transform transform)
 		{
 			if (transform == null)
+			{
 				return CGAffineTransform.MakeIdentity();
+			}
 
 			Matrix matrix = transform.Value;
 

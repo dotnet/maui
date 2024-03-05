@@ -23,19 +23,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static void RecalculateSpanPositions(this NativeLabel control, Label element)
 		{
 			if (element == null)
+			{
 				return;
+			}
 
 			if (element.TextType == TextType.Html)
+			{
 				return;
+			}
 
 			if (element?.FormattedText?.Spans == null
 				|| element.FormattedText.Spans.Count == 0)
+			{
 				return;
+			}
 
 			var finalSize = control.Frame;
 
 			if (finalSize.Width <= 0 || finalSize.Height <= 0)
+			{
 				return;
+			}
 
 #if __MOBILE__
 			var inline = control.AttributedText;
@@ -69,7 +77,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				var length = span.Text?.Length ?? 0;
 
 				if (length == 0)
+				{
+				{
 					continue;
+				}
 
 				var startRect = GetCharacterBounds(new NSRange(location, 1), layoutManager, textContainer);
 				var endRect = GetCharacterBounds(new NSRange(location + length, 1), layoutManager, textContainer);
@@ -120,7 +131,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		static double FindDefaultLineHeight(this NativeLabel control, int start, int length)
 		{
 			if (length == 0)
+			{
 				return 0.0;
+			}
 
 			var textStorage = new NSTextStorage();
 #if __MOBILE__

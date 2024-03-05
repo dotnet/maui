@@ -318,7 +318,9 @@ namespace Microsoft.Maui.Controls
 			UpdateEmptyView(layout);
 
 			if (_itemsSource == null)
+			{
 				return;
+			}
 
 			foreach (object item in _itemsSource)
 			{
@@ -329,7 +331,9 @@ namespace Microsoft.Maui.Controls
 		void UpdateEmptyView(IBindableLayout layout)
 		{
 			if (_currentEmptyView == null)
+			{
 				return;
+			}
 
 			if (!_itemsSource?.GetEnumerator().MoveNext() ?? true)
 			{
@@ -395,7 +399,9 @@ namespace Microsoft.Maui.Controls
 
 			// UpdateEmptyView is called from within CreateChildren, therefor skip it for Reset
 			if (e.Action != NotifyCollectionChangedAction.Reset)
+			{
 				UpdateEmptyView(layout);
+			}
 		}
 	}
 }

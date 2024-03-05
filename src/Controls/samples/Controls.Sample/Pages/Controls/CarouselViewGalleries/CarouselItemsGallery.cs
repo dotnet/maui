@@ -25,7 +25,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			_setPositionOnAppering = setPositionOnAppearing;
 
 			if (setPositionOnConstructor)
+			{
 				_viewModel.CarouselPosition = 3;
+			}
 
 			Title = $"CarouselView (Indicators)";
 
@@ -135,10 +137,14 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			removeItemButton.Clicked += (sender, e) =>
 			{
 				if (_viewModel.Items!.Any())
+				{
 					_viewModel.Items!.RemoveAt(_viewModel.Items.Count - 1);
+				}
 
 				if (_viewModel.Items!.Count > 0)
+				{
 					_viewModel.CarouselPosition = _viewModel.Items.Count - 1;
+				}
 			};
 
 			var clearItemsButton = new Button
@@ -174,7 +180,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 		protected override void OnAppearing()
 		{
 			if (_viewModel.CarouselPosition != 3 && _setPositionOnAppering)
+			{
 				_viewModel.CarouselPosition = 3;
+			}
 
 			base.OnAppearing();
 		}
@@ -212,11 +220,18 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 		{
 			var fontFamily = "";
 			if (DeviceInfo.Platform == DevicePlatform.iOS)
+			{
 				fontFamily = "Ionicons";
+			}
 			else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+			{
 				fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
+			}
 			else
+			{
 				fontFamily = "fonts/ionicons.ttf#";
+			}
+
 			return fontFamily;
 		}
 	}

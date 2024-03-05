@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static Typeface ToTypeface(this Font self, IFontManager fontManager)
 		{
 			if (self.IsDefault)
+			{
 				return fontManager.DefaultTypeface;
+			}
 
 			return fontManager.GetTypeface(self) ?? fontManager.DefaultTypeface;
 		}

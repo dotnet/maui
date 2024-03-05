@@ -55,15 +55,22 @@ namespace Microsoft.Maui
 			string rootPath = RootPath;
 			var filePath = Path.Combine(rootPath, font.FontName!);
 			if (File.Exists(filePath))
+			{
 				return filePath;
+			}
 
 			try
 			{
 				if (font.ResourceStream == null)
+				{
+				{
 					throw new InvalidOperationException("ResourceStream was null.");
+				}
 
 				if (!Directory.Exists(rootPath))
+				{
 					Directory.CreateDirectory(rootPath);
+				}
 
 				using (var fileStream = File.Create(filePath))
 				{

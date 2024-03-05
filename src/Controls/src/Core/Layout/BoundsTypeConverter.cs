@@ -45,9 +45,14 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (hasX && hasY && xywh.Length == 2)
+				{
 					return new Rect(x, y, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize);
+				}
+
 				if (hasX && hasY && hasW && hasH && xywh.Length == 4)
+				{
 					return new Rect(x, y, w, h);
+				}
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Rect)}");
@@ -56,7 +61,10 @@ namespace Microsoft.Maui.Controls
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not Rect rect)
+			{
 				throw new NotSupportedException();
+			}
+
 			return $"{rect.X.ToString(CultureInfo.InvariantCulture)}, {rect.Y.ToString(CultureInfo.InvariantCulture)}, {(rect.Width == AbsoluteLayout.AutoSize ? nameof(AbsoluteLayout.AutoSize) : rect.Width.ToString(CultureInfo.InvariantCulture))}, {(rect.Height == AbsoluteLayout.AutoSize ? nameof(AbsoluteLayout.AutoSize) : rect.Height.ToString(CultureInfo.InvariantCulture))}";
 		}
 	}

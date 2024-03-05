@@ -22,9 +22,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var textCell = (TextCell)item;
 
 			if (!(reusableCell is CellTableViewCell tvc))
+			{
 				tvc = new CellTableViewCell(UITableViewCellStyle.Subtitle, item.GetType().FullName);
+			}
 			else
+			{
 				tvc.PropertyChanged -= HandleCellPropertyChanged;
+			}
 
 			SetRealCell(item, tvc);
 
@@ -67,13 +71,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				tvc.DetailTextLabel.SizeToFit();
 			}
 			else if (args.PropertyName == TextCell.TextColorProperty.PropertyName)
+			{
 				tvc.TextLabel.TextColor = textCell.TextColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
+			}
 			else if (args.PropertyName == TextCell.DetailColorProperty.PropertyName)
+			{
 				tvc.DetailTextLabel.TextColor = textCell.DetailColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
+			}
 			else if (args.PropertyName == Cell.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled(tvc, textCell);
+			}
 			else if (args.PropertyName == TextCell.AutomationIdProperty.PropertyName)
+			{
 				UpdateAutomationId(tvc, textCell);
+			}
 #pragma warning restore CA1416, CA1422
 
 			HandlePropertyChanged(tvc, args);

@@ -100,14 +100,20 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 							sets.MakeSet(currentLabel);
 						}
 						else if (l1 > 0 && l2 == 0)
+						{
 							labels[idx] = l1; //Copy label from neighbor
+						}
 						else if (l1 == 0 && l2 > 0)
+						{
 							labels[idx] = l2; //Copy label from neighbor
+						}
 						else
 						{
 							labels[idx] = l1 < l2 ? l1 : l2; // Both neighbors have values. Grab the smallest label
 							if (l1 != l2)
+							{
 								sets.Union(sets.Find(l1), sets.Find(l2)); //store L1 is equivalent to L2
+							}
 						}
 					}
 				}
@@ -239,6 +245,7 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 		{
 			var b = blobs.FirstOrDefault();
 			if (b != null)
+			{
 				foreach (var bl in blobs.Skip(1))
 				{
 					b.MinColumn = Math.Min(bl.MinColumn, b.MinColumn);
@@ -246,6 +253,8 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 					b.MaxColumn = Math.Max(bl.MaxColumn, b.MaxColumn);
 					b.MaxRow = Math.Max(bl.MaxRow, b.MaxRow);
 				}
+			}
+
 			return b;
 		}
 	}

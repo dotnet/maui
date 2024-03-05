@@ -28,14 +28,22 @@ namespace Microsoft.Maui.Networking
 				var reachable = remoteHostReachability.TryGetFlags(out var flags);
 
 				if (!reachable)
+				{
 					return NetworkStatus.NotReachable;
+				}
 
 				if (!IsReachableWithoutRequiringConnection(flags))
+				{
 					return NetworkStatus.NotReachable;
+				}
 
 #if __IOS__
 				if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
+				{
+				{
 					return NetworkStatus.ReachableViaCarrierDataNetwork;
+				}
+				}
 #endif
 
 				return NetworkStatus.ReachableViaWiFiNetwork;
@@ -51,7 +59,9 @@ namespace Microsoft.Maui.Networking
 #if __IOS__
 			// If it's a WWAN connection..
 			if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
+			{
 				status = NetworkStatus.ReachableViaCarrierDataNetwork;
+			}
 #endif
 
 			// If the connection is reachable and no connection is required, then assume it's WiFi
@@ -108,7 +118,11 @@ namespace Microsoft.Maui.Networking
 			using (var defaultRouteReachability = new NetworkReachability(ip))
 			{
 				if (!defaultRouteReachability.TryGetFlags(out flags))
+				{
+				{
 					return false;
+				}
+				}
 
 				return IsReachableWithoutRequiringConnection(flags);
 			}
@@ -126,7 +140,10 @@ namespace Microsoft.Maui.Networking
 			// Since the network stack will automatically try to get the WAN up,
 			// probe that
 			if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
+			{
+			{
 				noConnectionRequired = true;
+			}
 #endif
 
 			return isReachable && noConnectionRequired;

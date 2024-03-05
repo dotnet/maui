@@ -84,7 +84,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public void Close()
 		{
 			if (_scroller == null)
+			{
 				return;
+			}
 
 			_scroller.ContentOffset = new PointF(0, 0);
 		}
@@ -95,7 +97,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			// Leave room for 1px of play because the border is 1 or .5px and must be accounted for.
 			if (_scroller == null || (_scroller.Frame.Width == ContentView.Bounds.Width && Math.Abs(_scroller.Frame.Height - ContentView.Bounds.Height) < 1))
+			{
 				return;
+			}
 
 			Update(_tableView, _cell, ContentCell);
 
@@ -137,9 +141,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_cell != cell && recycling)
 			{
 				if (_cell != null)
+				{
 					((INotifyCollectionChanged)_cell.ContextActions).CollectionChanged -= OnContextItemsChanged;
-
-				((INotifyCollectionChanged)cell.ContextActions).CollectionChanged += OnContextItemsChanged;
+				} ((INotifyCollectionChanged)cell.ContextActions).CollectionChanged += OnContextItemsChanged;
 			}
 
 			var height = Frame.Height + (parentListView != null && parentListView.SeparatorVisibility == SeparatorVisibility.None ? 0.5f : 0f);
@@ -155,14 +159,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_cell != null)
 			{
 				if (!recycling)
+				{
 					_cell.PropertyChanged -= OnCellPropertyChanged;
+				}
+
 				if (_menuItems.Count > 0)
 				{
 					if (!recycling)
+					{
 						((INotifyCollectionChanged)_cell.ContextActions).CollectionChanged -= OnContextItemsChanged;
+					}
 
 					foreach (var item in _menuItems)
+					{
 						item.PropertyChanged -= handler;
+					}
 				}
 
 				_menuItems.Clear();
@@ -250,9 +261,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_scroller.ContentSize = new SizeF(totalWidth, height);
 
 			if (isOpen)
+			{
 				_scroller.SetContentOffset(new PointF(ScrollDelegate.ButtonsWidth, 0), false);
+			}
 			else
+			{
 				_scroller.SetContentOffset(new PointF(0, 0), false);
+			}
 
 			if (ContentCell != null)
 			{
@@ -282,12 +297,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 
 				for (var i = 0; i < _buttons.Count; i++)
+				{
 					_buttons[i].Dispose();
+				}
 
 				var handler = new PropertyChangedEventHandler(OnMenuItemPropertyChanged);
 
 				foreach (var item in _menuItems)
+				{
 					item.PropertyChanged -= handler;
+				}
 
 				_buttons.Clear();
 				_menuItems.Clear();
@@ -295,7 +314,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (_cell != null)
 				{
 					if (_cell.HasContextActions)
+					{
 						((INotifyCollectionChanged)_cell.ContextActions).CollectionChanged -= OnContextItemsChanged;
+					}
+
 					_cell = null;
 				}
 			}
@@ -310,7 +332,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var tag = _buttons[i].Tag;
 				if (tag >= 0)
+				{
 					displayed.Add(tag);
+				}
 			}
 
 			var frame = _moreButton.Frame;
@@ -325,25 +349,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			for (var i = 0; i < _cell.ContextActions.Count; i++)
 			{
 				if (displayed.Contains(i))
+				{
 					continue;
+				}
 
 				var item = _cell.ContextActions[i];
 				var weakItem = new WeakReference<MenuItem>(item);
 				var action = UIAlertAction.Create(item.Text, UIAlertActionStyle.Default, a =>
 				{
 					if (_scroller == null)
+					{
 						return;
+					}
 
 					_scroller.SetContentOffset(new PointF(0, 0), true);
 					if (weakItem.TryGetTarget(out MenuItem mi))
+					{
 						((IMenuItemController)mi).Activate();
+					}
 				});
 				actionSheet.AddAction(action);
 			}
 
 			var controller = GetController();
 			if (controller == null)
+			{
 				throw new InvalidOperationException("No UIViewController found to present.");
+			}
 
 			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
 			{
@@ -369,11 +401,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_buttons.RemoveAt(_buttons.Count - 1);
 
 				if (largestButtonWidth == button.Frame.Width)
+				{
 					largestButtonWidth = GetLargestWidth();
+				}
 			}
 
 			if (needMoreButton && _cell.ContextActions.Count - _buttons.Count == 1)
+			{
 				_buttons.RemoveAt(_buttons.Count - 1);
+			}
 		}
 
 		UIButton GetButton(MenuItem item)
@@ -381,9 +417,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var button = new UIButton(new RectangleF(0, 0, 1, 1));
 
 			if (!item.IsDestructive)
+			{
 				button.SetBackgroundImage(NormalBackground, UIControlState.Normal);
+			}
 			else
+			{
 				button.SetBackgroundImage(DestructiveBackground, UIControlState.Normal);
+			}
 
 			button.SetTitle(item.Text, UIControlState.Normal);
 #pragma warning disable CA1416, CA1422  // TODO: 'UIButton.TitleEdgeInsets.set' is unsupported on: 'ios' 15.0 and later
@@ -402,7 +442,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var renderer = Platform.GetRenderer((VisualElement)e.RealParent);
 				if (renderer.ViewController != null)
+				{
 					return renderer.ViewController;
+				}
 
 				e = e.RealParent;
 			}
@@ -417,7 +459,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var frame = _buttons[i].Frame;
 				if (frame.Width > largestWidth)
+				{
 					largestWidth = frame.Width;
+				}
 			}
 
 			return largestWidth;
@@ -427,7 +471,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var button = (UIButton)sender;
 			if (button.Tag == -1)
+			{
 				ActivateMore();
+			}
 			else
 			{
 				_scroller.SetContentOffset(new PointF(0, 0), true);
@@ -440,13 +486,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (e.PropertyName == "HasContextActions")
 			{
 				if (_cell == null)
+				{
 					return;
+				}
 
 				var recycling = _cell.RealParent is ListView parentListView &&
 					((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
 
 				if (!recycling)
+				{
 					ReloadRow();
+				}
 			}
 		}
 
@@ -456,9 +506,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var recycling = parentListView != null &&
 				((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
 			if (recycling)
+			{
 				Update(_tableView, _cell, ContentCell);
+			}
 			else
+			{
 				ReloadRow();
+			}
 			// TODO: Perhaps make this nicer if it's open while adding
 		}
 
@@ -468,9 +522,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var recycling = parentListView != null &&
 				((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
 			if (recycling)
+			{
 				Update(_tableView, _cell, ContentCell);
+			}
 			else
+			{
 				ReloadRow();
+			}
 		}
 
 		void ReloadRow()
@@ -486,13 +544,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_scroller.SetContentOffset(new PointF(0, 0), true);
 			}
 			else
+			{
 				ReloadRowCore();
+			}
 		}
 
 		void ReloadRowCore()
 		{
 			if (_cell.RealParent == null)
+			{
 				return;
+			}
 
 			var path = _cell.GetIndexPath();
 
@@ -519,32 +581,47 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (_buttons.Count == 3)
 				{
 					if (destructive != null)
+					{
 						break;
+					}
+
 					if (!item.IsDestructive)
+					{
 						continue;
+					}
 
 					_buttons.RemoveAt(_buttons.Count - 1);
 				}
 
 				if (item.IsDestructive)
+				{
 					destructive = item;
+				}
 
 				var button = GetButton(item);
 				button.Tag = i;
 				var buttonWidth = button.TitleLabel.SizeThatFits(new SizeF(width, height)).Width + 30;
 				if (buttonWidth > largestWidth)
+				{
 					largestWidth = buttonWidth;
+				}
 
 				if (destructive == item)
+				{
 					_buttons.Insert(0, button);
+				}
 				else
+				{
 					_buttons.Add(button);
+				}
 			}
 
 			var needMore = _cell.ContextActions.Count > _buttons.Count;
 
 			if (_cell.ContextActions.Count > 2)
+			{
 				CullButtons(acceptableSize, ref needMore, ref largestWidth);
+			}
 
 			var resize = false;
 			if (needMore)
@@ -578,7 +655,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				button.Tag = -1;
 				button.TouchUpInside += OnButtonActivated;
 				if (resize)
+				{
 					button.TitleLabel.AdjustsFontSizeToFitWidth = true;
+				}
 
 				_moreButton = button;
 				_buttons.Add(button);
@@ -600,12 +679,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var x = width - offset + totalWidth;
 				b.Frame = new RectangleF(x, 0, largestWidth, height);
 				if (resize)
+				{
 					b.TitleLabel.AdjustsFontSizeToFitWidth = true;
+				}
 
 				b.SetNeedsLayout();
 
 				if (b != _moreButton)
+				{
 					b.TouchUpInside += OnButtonActivated;
+				}
 			}
 
 			return null;
@@ -614,13 +697,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal static void SetupSelection(UITableView table)
 		{
 			if (table.GestureRecognizers == null)
+			{
 				return;
+			}
 
 			for (var i = 0; i < table.GestureRecognizers.Length; i++)
 			{
 				var r = table.GestureRecognizers[i] as SelectGestureRecognizer;
 				if (r != null)
+				{
 					return;
+				}
 			}
 
 			table.AddGestureRecognizer(new SelectGestureRecognizer());
@@ -639,7 +726,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					_lastPath = table.IndexPathForRowAtPoint(pos);
 					if (_lastPath == null)
+					{
 						return false;
+					}
 
 					var cell = table.CellAt(_lastPath) as ContextActionsCell;
 
@@ -652,11 +741,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var selector = (SelectGestureRecognizer)recognizer;
 
 				if (selector._lastPath == null)
+				{
 					return;
+				}
 
 				var table = (UITableView)recognizer.View;
 				if (!selector._lastPath.Equals(table.IndexPathForSelectedRow))
+				{
 					table.SelectRow(selector._lastPath, false, UITableViewScrollPosition.None);
+				}
+
 				table.Source.RowSelected(table, selector._lastPath);
 			}
 		}

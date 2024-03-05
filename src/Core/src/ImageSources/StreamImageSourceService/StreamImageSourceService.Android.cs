@@ -41,7 +41,9 @@ namespace Microsoft.Maui
 				finally
 				{
 					if (stream != null)
+					{
 						GC.KeepAlive(stream);
+					}
 				}
 			}
 
@@ -78,7 +80,9 @@ namespace Microsoft.Maui
 				finally
 				{
 					if (stream != null)
+					{
 						GC.KeepAlive(stream);
+					}
 				}
 			}
 

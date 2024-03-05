@@ -19,9 +19,24 @@ namespace Microsoft.Maui.Controls.Platform
 
 				default:
 					if (label.FormattedText != null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 						platformLabel.AttributedText = label.ToNSAttributedString();
+After:
+					{
+						platformLabel.AttributedText = label.ToNSAttributedString();
+					}
+*/
+					{
+						platformLabel.AttributedText = label.ToNSAttributedString();
+					}
 					else
+					{
+					{
 						platformLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					}
+
 					break;
 			}
 		}

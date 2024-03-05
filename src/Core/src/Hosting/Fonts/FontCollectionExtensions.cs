@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Hosting
 		{
 			_ = filename ?? throw new ArgumentNullException(nameof(filename));
 			if (string.IsNullOrWhiteSpace(filename))
+			{
 				throw new ArgumentException("Filename was not a valid file name.", nameof(filename));
+			}
 
 			fontCollection.Add(new FontDescriptor(filename, alias, null));
 			return fontCollection;
@@ -40,7 +42,9 @@ namespace Microsoft.Maui.Hosting
 			_ = assembly ?? throw new ArgumentNullException(nameof(assembly));
 			_ = filename ?? throw new ArgumentNullException(nameof(filename));
 			if (string.IsNullOrWhiteSpace(filename))
+			{
 				throw new ArgumentException("Filename was not a valid file name.", nameof(filename));
+			}
 
 			fontCollection.Add(new FontDescriptor(filename, alias, assembly));
 			return fontCollection;

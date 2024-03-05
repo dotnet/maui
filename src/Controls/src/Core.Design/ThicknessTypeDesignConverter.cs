@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Design
 			// MUST MATCH ThicknessTypeConverter.ConvertFrom
 			string strValue = value?.ToString()?.Trim();
 			if (string.IsNullOrEmpty(strValue))
+			{
 				return false;
+			}
 
 			if (strValue.IndexOf(",", StringComparison.Ordinal) != -1)
 			{

@@ -39,9 +39,13 @@ namespace Microsoft.Maui.Platform
 			_currentPageShape = null;
 
 			if ((_indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null)
+			{
 				UpdateShapes();
+			}
 			else
+			{
 				UpdateIndicatorTemplate((_indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride);
+			}
 
 			UpdatePosition();
 		}
@@ -54,17 +58,24 @@ namespace Microsoft.Maui.Platform
 			{
 				ImageView? view = GetChildAt(i) as ImageView;
 				if (view == null)
+				{
 					continue;
+				}
+
 				var drawableToUse = index == i ? _currentPageShape : _pageShape;
 				if (drawableToUse != view.Drawable)
+				{
 					view.SetImageDrawable(drawableToUse);
+				}
 			}
 		}
 
 		public void UpdateIndicatorCount()
 		{
 			if (_indicatorView == null || Context == null)
+			{
 				return;
+			}
 
 			var index = GetIndexFromPosition();
 
@@ -80,9 +91,13 @@ namespace Microsoft.Maui.Platform
 				};
 
 				if (Orientation == Orientation.Horizontal)
+				{
 					imageView.SetPadding((int)Context.ToPixels(DefaultPadding), 0, (int)Context.ToPixels(DefaultPadding), 0);
+				}
 				else
+				{
 					imageView.SetPadding(0, (int)Context.ToPixels(DefaultPadding), 0, (int)Context.ToPixels(DefaultPadding));
+				}
 
 				imageView.SetImageDrawable(index == i ? _currentPageShape : _pageShape);
 
@@ -104,7 +119,9 @@ namespace Microsoft.Maui.Platform
 		void UpdateIndicatorTemplate(ILayout? layout)
 		{
 			if (layout == null || _indicatorView?.Handler?.MauiContext == null)
+			{
 				return;
+			}
 
 			AView? handler = layout.ToPlatform(_indicatorView.Handler.MauiContext);
 
@@ -115,35 +132,46 @@ namespace Microsoft.Maui.Platform
 		void UpdateShapes()
 		{
 			if (_currentPageShape != null || _indicatorView == null)
+			{
 				return;
+			}
 
 			var indicatorColor = _indicatorView.IndicatorColor;
 
 			if (indicatorColor is SolidPaint indicatorPaint)
 			{
 				if (indicatorPaint.Color is Color c)
+				{
 					_pageShape = GetShape(c.ToPlatform());
-
+				}
 			}
 			var indicatorPositionColor = _indicatorView.SelectedIndicatorColor;
 			if (indicatorPositionColor is SolidPaint indicatorPositionPaint)
 			{
 				if (indicatorPositionPaint.Color is Color c)
+				{
 					_currentPageShape = GetShape(c.ToPlatform());
+				}
 			}
 		}
 
 		AShapeDrawable? GetShape(AColor color)
 		{
 			if (_indicatorView == null || Context == null)
+			{
 				return null;
+			}
 
 			AShapeDrawable shape;
 
 			if (_indicatorView.IsCircleShape())
+			{
 				shape = new AShapeDrawable(new AShapes.OvalShape());
+			}
 			else
+			{
 				shape = new AShapeDrawable(new AShapes.RectShape());
+			}
 
 			var indicatorSize = _indicatorView.IndicatorSize;
 
@@ -151,8 +179,10 @@ namespace Microsoft.Maui.Platform
 			shape.SetIntrinsicWidth((int)Context.ToPixels(indicatorSize));
 
 			if (shape.Paint != null)
+			{
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 				shape.Paint.Color = color;
+			}
 #pragma warning restore CA1416
 
 			return shape;
@@ -161,7 +191,9 @@ namespace Microsoft.Maui.Platform
 		int GetIndexFromPosition()
 		{
 			if (_indicatorView == null)
+			{
 				return 0;
+			}
 
 			var maxVisible = _indicatorView.GetMaximumVisible();
 			var position = _indicatorView.Position;

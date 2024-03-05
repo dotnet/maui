@@ -18,7 +18,9 @@ namespace Maui.Controls.Sample.Pages
 		void OnGestureEnabledCheckChanged(object sender, CheckedChangedEventArgs e)
 		{
 			if (FlyoutPage == null)
+			{
 				return;
+			}
 
 			FlyoutPage.IsGestureEnabled = (sender as CheckBox)!.IsChecked;
 		}
@@ -26,7 +28,9 @@ namespace Maui.Controls.Sample.Pages
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
 			if (FlyoutPage == null)
+			{
 				return;
+			}
 
 			base.OnNavigatedTo(args);
 			UpdatePresentedLabel();
@@ -41,7 +45,9 @@ namespace Maui.Controls.Sample.Pages
 		protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 		{
 			if (FlyoutPage == null)
+			{
 				return;
+			}
 
 			base.OnNavigatedFrom(args);
 			FlyoutPage.IsPresentedChanged -= OnPresentedChanged;
@@ -50,14 +56,20 @@ namespace Maui.Controls.Sample.Pages
 		void UpdatePresentedLabel()
 		{
 			if (FlyoutPage == null)
+			{
 				return;
+			}
+
 			lblPresented.Text = $"Flyout Is Currently: {FlyoutPage.IsPresented}";
 		}
 
 		void OnFlyoutBehaviorPickerSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			if (FlyoutPage == null)
+			{
 				return;
+			}
+
 			var behavior = Enum.Parse(typeof(FlyoutLayoutBehavior), $"{flyoutBehaviorPicker.SelectedItem}");
 			FlyoutPage.FlyoutLayoutBehavior = (FlyoutLayoutBehavior)behavior;
 		}
@@ -65,14 +77,20 @@ namespace Maui.Controls.Sample.Pages
 		void ShowFlyout(object sender, EventArgs e)
 		{
 			if (FlyoutPage == null)
+			{
 				return;
+			}
+
 			FlyoutPage.IsPresented = true;
 		}
 
 		void CloseFlyout(object sender, EventArgs e)
 		{
 			if (FlyoutPage == null)
+			{
 				return;
+			}
+
 			FlyoutPage.IsPresented = false;
 		}
 	}

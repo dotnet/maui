@@ -26,17 +26,55 @@ namespace Microsoft.Maui.Devices.Sensors
 			added.Next = null;
 
 			if (newest != null)
+			{
 				newest.Next = added;
+			}
 
 			newest = added;
 
 			if (oldest == null)
+			{
 				oldest = added;
+			}
 
 			sampleCount++;
 
 			if (accelerating)
+			{
 				acceleratingCount++;
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+		}
+After:
+			}
+		}
+*/
+		
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+					acceleratingCount--;
+
+				sampleCount--;
+				oldest = removed.Next;
+After:
+				{
+					acceleratingCount--;
+				}
+
+				sampleCount--;
+				oldest = removed.Next;
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+					newest = null;
+After:
+				{
+					newest = null;
+				}
+*/
+	}
 		}
 
 		internal void Clear()
@@ -60,13 +98,17 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				var removed = oldest;
 				if (removed.IsAccelerating)
+				{
 					acceleratingCount--;
+				}
 
 				sampleCount--;
 				oldest = removed.Next;
 
 				if (oldest == null)
+				{
 					newest = null;
+				}
 
 				pool.Release(removed);
 			}
@@ -95,9 +137,23 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				var aquired = head;
 				if (aquired == null)
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
 					aquired = new AccelerometerSample();
+After:
+				{
+					aquired = new AccelerometerSample();
+				}
+*/
+				{
+					aquired = new AccelerometerSample();
+				}
 				else
+				{
+				{
 					head = aquired.Next;
+				}
 
 				return aquired;
 			}

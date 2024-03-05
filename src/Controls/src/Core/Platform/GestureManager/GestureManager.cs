@@ -74,7 +74,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// The connected Gesture Manager is already setup and watching the correct view
 			if (GesturePlatformManager != null)
+			{
 				return;
+			}
 
 			GesturePlatformManager = new GesturePlatformManager(handler);
 			_handler = handler;

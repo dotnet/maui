@@ -18,7 +18,9 @@ namespace Maui.Controls.Sample.Pages
 			ImageButton01.PropertyChanged += (s, e) =>
 			{
 				if (e.PropertyName == ImageButton.IsLoadingProperty.PropertyName)
+				{
 					Debug.WriteLine($"{e.PropertyName}: {ImageButton01.IsLoading}");
+				}
 			};
 		}
 

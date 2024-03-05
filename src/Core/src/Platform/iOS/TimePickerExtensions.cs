@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTime(this UIDatePicker picker, ITimePicker timePicker)
 		{
 			if (picker != null)
+			{
 				picker.Date = new DateTime(1, 1, 1).Add(timePicker.Time).ToNSDate();
+			}
 		}
 
 		public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, UIDatePicker? picker)
@@ -44,7 +46,9 @@ namespace Microsoft.Maui.Platform
 				NSLocale locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
 
 				if (picker != null)
+				{
 					picker.Locale = locale;
+				}
 			}
 
 			var time = timePicker.Time;
@@ -60,7 +64,9 @@ namespace Microsoft.Maui.Platform
 					NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
 
 					if (picker != null)
+					{
 						picker.Locale = locale;
+					}
 				}
 				else if (format.Contains('h', StringComparison.Ordinal))
 				{
@@ -68,7 +74,9 @@ namespace Microsoft.Maui.Platform
 					NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
 
 					if (picker != null)
+					{
 						picker.Locale = locale;
+					}
 				}
 			}
 

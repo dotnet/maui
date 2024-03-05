@@ -1,9 +1,9 @@
+using System;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using System;
+using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Platform;
 
 namespace Maui.Controls.Sample.Issues;
 

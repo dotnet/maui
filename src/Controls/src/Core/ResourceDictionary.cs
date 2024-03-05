@@ -32,7 +32,10 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_source == value)
+				{
 					return;
+				}
+
 				throw new InvalidOperationException("Source can only be set from XAML."); //through the RDSourceTypeConverter
 			}
 		}
@@ -47,9 +50,14 @@ namespace Microsoft.Maui.Controls
 			//this will return a type if the RD as an x:Class element, and codebehind
 			var type = XamlResourceIdAttribute.GetTypeForPath(assembly, resourcePath);
 			if (type != null)
+			{
 				_mergedInstance = s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type));
+			}
 			else
+			{
 				_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateFromResource<ResourceDictionary>(resourcePath, assembly, lineInfo);
+			}
+
 			OnValuesChanged(_mergedInstance.ToArray());
 		}
 
@@ -86,14 +94,18 @@ namespace Microsoft.Maui.Controls
 		{
 			// Move() isn't exposed by ICollection
 			if (e.Action == NotifyCollectionChangedAction.Move)
+			{
 				return;
+			}
 
 			_collectionTrack = _collectionTrack ?? new List<ResourceDictionary>();
 			// Collection has been cleared
 			if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
 				foreach (var dictionary in _collectionTrack)
+				{
 					dictionary.ValuesChanged -= Item_ValuesChanged;
+				}
 
 				_collectionTrack.Clear();
 				return;
@@ -171,7 +183,10 @@ namespace Microsoft.Maui.Controls
 		public void Add(string key, object value)
 		{
 			if (ContainsKey(key))
+			{
 				throw new ArgumentException($"A resource with the key '{key}' is already present in the ResourceDictionary.");
+			}
+
 			_innerDictionary.Add(key, value);
 			OnValueChanged(key, value);
 		}
@@ -191,13 +206,26 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (_innerDictionary.ContainsKey(index))
+				{
 					return _innerDictionary[index];
+				}
+
 				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
+				{
 					return _mergedInstance[index];
+				}
+
 				if (_mergedDictionaries != null)
+				{
 					foreach (var dict in MergedDictionaries.Reverse())
+					{
 						if (dict.ContainsKey(index))
+						{
 							return dict[index];
+						}
+					}
+				}
+
 				throw new KeyNotFoundException($"The resource '{index}' is not present in the dictionary.");
 			}
 			set
@@ -213,9 +241,15 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (_mergedInstance is null)
+				{
 					return _innerDictionary.Keys;
+				}
+
 				if (_innerDictionary.Count == 0)
+				{
 					return _mergedInstance.Keys;
+				}
+
 				return new ReadOnlyCollection<string>(_innerDictionary.Keys.Concat(_mergedInstance.Keys).ToList());
 			}
 		}
@@ -232,9 +266,15 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (_mergedInstance is null)
+				{
 					return _innerDictionary.Values;
+				}
+
 				if (_innerDictionary.Count == 0)
+				{
 					return _mergedInstance.Values;
+				}
+
 				return new ReadOnlyCollection<object>(_innerDictionary.Values.Concat(_mergedInstance.Values).ToList());
 			}
 		}
@@ -260,15 +300,24 @@ namespace Microsoft.Maui.Controls
 					{
 						ResourceDictionary r = _mergedDictionaries[i];
 						foreach (var x in r.MergedResources)
+						{
 							yield return x;
+						}
 					}
 				}
 
 				if (_mergedInstance != null)
+				{
 					foreach (var r in _mergedInstance.MergedResources)
+					{
 						yield return r;
+					}
+				}
+
 				foreach (var r in _innerDictionary)
+				{
 					yield return r;
+				}
 			}
 		}
 
@@ -287,11 +336,13 @@ namespace Microsoft.Maui.Controls
 		bool TryGetMergedDictionaryValue(string key, out object value, out ResourceDictionary source)
 		{
 			foreach (var dictionary in MergedDictionaries.Reverse())
+			{
 				if (dictionary.TryGetValue(key, out value))
 				{
 					source = dictionary;
 					return true;
 				}
+			}
 
 			value = null;
 			source = null;
@@ -308,13 +359,18 @@ namespace Microsoft.Maui.Controls
 		public void Add(Style style)
 		{
 			if (string.IsNullOrEmpty(style.Class))
+			{
 				Add(style.TargetType.FullName, style);
+			}
 			else
 			{
 				IList<Style> classes;
 				object outclasses;
 				if (!TryGetValue(Style.StyleClassPrefix + style.Class, out outclasses) || (classes = outclasses as IList<Style>) == null)
+				{
 					classes = new List<Style>();
+				}
+
 				classes.Add(style);
 				this[Style.StyleClassPrefix + style.Class] = classes;
 			}
@@ -342,14 +398,19 @@ namespace Microsoft.Maui.Controls
 		void OnValuesChanged(params KeyValuePair<string, object>[] values)
 		{
 			if (values == null || values.Length == 0)
+			{
 				return;
+			}
+
 			ValuesChanged?.Invoke(this, new ResourcesChangedEventArgs(values));
 		}
 
 		internal void Reload()
 		{
 			foreach (var mr in MergedResources)
+			{
 				OnValuesChanged(mr);
+			}
 		}
 
 		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
@@ -369,14 +430,21 @@ namespace Microsoft.Maui.Controls
 			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 			{
 				if (serviceProvider == null)
+				{
+				{
 					throw new ArgumentNullException(nameof(serviceProvider));
+				}
 
 				if (!((serviceProvider.GetService(typeof(Xaml.IProvideValueTarget)) as Xaml.IProvideValueTarget)?.TargetObject is ResourceDictionary targetRD))
+				{
 					return null;
+				}
 
 				var rootObjectType = (serviceProvider.GetService(typeof(Xaml.IRootObjectProvider)) as Xaml.IRootObjectProvider)?.RootObject.GetType();
 				if (rootObjectType == null)
+				{
 					return null;
+				}
 
 				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
 				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
@@ -418,7 +486,11 @@ namespace Microsoft.Maui.Controls
 			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 			{
 				if (value is not Uri uri)
+				{
+				{
 					throw new NotSupportedException();
+				}
+
 				return uri.ToString();
 			}
 		}

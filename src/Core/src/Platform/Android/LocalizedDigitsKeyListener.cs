@@ -20,8 +20,9 @@ namespace Microsoft.Maui.Platform
 		static char GetDecimalSeparator()
 		{
 			if (!(NumberFormat.Instance is DecimalFormat format))
+			{
 				return '.';
-
+			}
 
 			DecimalFormatSymbols? sym = format.DecimalFormatSymbols;
 
@@ -58,7 +59,9 @@ namespace Microsoft.Maui.Platform
 		public static LocalizedDigitsKeyListener GetInstance(InputTypes inputTypes, char decimalSeparator)
 		{
 			if (SignedCache == null)
+			{
 				SignedCache = new Dictionary<char, LocalizedDigitsKeyListener>();
+			}
 
 			if ((inputTypes & InputTypes.NumberFlagSigned) != 0)
 			{
@@ -66,7 +69,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (UnsignedCache == null)
+			{
 				UnsignedCache = new Dictionary<char, LocalizedDigitsKeyListener>();
+			}
 
 			return GetInstance(inputTypes, decimalSeparator, ref UnsignedCache);
 		}

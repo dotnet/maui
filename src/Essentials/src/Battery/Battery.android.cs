@@ -79,13 +79,17 @@ namespace Microsoft.Maui.Devices
 				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter))
 				{
 					if (battery is null)
+					{
 						return -1; // Unknown
+					}
 
 					var level = battery.GetIntExtra(BatteryManager.ExtraLevel, -1);
 					var scale = battery.GetIntExtra(BatteryManager.ExtraScale, -1);
 
 					if (scale <= 0)
+					{
 						return 1.0;
+					}
 
 					return (double)level / (double)scale;
 				}
@@ -102,7 +106,9 @@ namespace Microsoft.Maui.Devices
 				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter))
 				{
 					if (battery is null)
+					{
 						return BatteryState.Unknown;
+					}
 
 					var status = battery.GetIntExtra(BatteryManager.ExtraStatus, -1);
 					switch (status)
@@ -132,18 +138,26 @@ namespace Microsoft.Maui.Devices
 				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter))
 				{
 					if (battery is null)
+					{
 						return BatteryPowerSource.Unknown;
+					}
 
 					var chargePlug = battery.GetIntExtra(BatteryManager.ExtraPlugged, -1);
 
 					if (chargePlug == (int)BatteryPlugged.Usb)
+					{
 						return BatteryPowerSource.Usb;
+					}
 
 					if (chargePlug == (int)BatteryPlugged.Ac)
+					{
 						return BatteryPowerSource.AC;
+					}
 
 					if (chargePlug == (int)BatteryPlugged.Wireless)
+					{
 						return BatteryPowerSource.Wireless;
+					}
 
 					return BatteryPowerSource.Battery;
 				}

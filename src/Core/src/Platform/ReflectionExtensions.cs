@@ -46,7 +46,10 @@ namespace Microsoft.Maui.Platform
 			{
 				TypeInfo ti = t.GetTypeInfo();
 				foreach (T f in selector(ti))
+				{
 					yield return f;
+				}
+
 				t = ti.BaseType;
 			}
 		}

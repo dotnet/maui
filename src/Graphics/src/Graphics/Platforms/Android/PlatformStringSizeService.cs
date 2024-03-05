@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		public SizeF GetStringSize(string value, IFont font, float fontSize)
 		{
 			if (value == null)
+			{
 				return new SizeF();
+			}
 
 			var textPaint = new TextPaint { TextSize = fontSize };
 			textPaint.SetTypeface(font?.ToTypeface() ?? Typeface.Default);
@@ -22,7 +24,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		public SizeF GetStringSize(string aString, IFont font, float aFontSize, HorizontalAlignment aHorizontalAlignment, VerticalAlignment aVerticalAlignment)
 		{
 			if (aString == null)
+			{
 				return new SizeF();
+			}
 
 			var vTextPaint = new TextPaint { TextSize = aFontSize };
 			vTextPaint.SetTypeface(font?.ToTypeface() ?? Typeface.Default);

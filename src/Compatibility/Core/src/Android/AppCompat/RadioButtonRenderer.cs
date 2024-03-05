@@ -154,7 +154,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (Element != null)
 				{
 					if (Platform.GetRenderer(Element) == this)
+					{
 						Element.ClearValue(Platform.RendererProperty);
+					}
 				}
 			}
 
@@ -164,7 +166,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			if (!Enabled || (_inputTransparent && Enabled))
+			{
 				return false;
+			}
 
 			return base.OnTouchEvent(e);
 		}
@@ -276,9 +280,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				Typeface = font.ToTypeface(Element.RequireFontManager());
 				if (font.AutoScalingEnabled)
+				{
 					SetTextSize(ComplexUnitType.Sp, (float)font.Size);
+				}
 				else
+				{
 					SetTextSize(ComplexUnitType.Dip, (float)font.Size);
+				}
 			}
 		}
 
@@ -305,7 +313,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateIsChecked()
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
 
 			Checked = ((RadioButton)Element).IsChecked;
 		}
@@ -335,7 +345,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		IPlatformElementConfiguration<PlatformConfiguration.Android, RadioButton> OnThisPlatform()
 		{
 			if (_platformElementConfiguration == null)
+			{
 				_platformElementConfiguration = Element.OnThisPlatform();
+			}
 
 			return _platformElementConfiguration;
 		}

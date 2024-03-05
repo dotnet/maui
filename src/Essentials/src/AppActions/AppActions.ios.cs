@@ -16,7 +16,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public Task<IEnumerable<AppAction>> GetAsync()
 		{
 			if (!IsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			return Task.FromResult(UIApplication.SharedApplication.ShortcutItems.Select(s => s.ToAppAction()));
 		}
@@ -24,7 +26,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public Task SetAsync(IEnumerable<AppAction> actions)
 		{
 			if (!IsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			UIApplication.SharedApplication.ShortcutItems = actions.Select(a => a.ToShortcutItem()).ToArray();
 
@@ -50,11 +54,15 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			string id = null;
 			if (shortcutItem.UserInfo.TryGetValue((NSString)"id", out var idObj))
+			{
 				id = idObj?.ToString();
+			}
 
 			string icon = null;
 			if (shortcutItem.UserInfo.TryGetValue((NSString)"icon", out var iconObj))
+			{
 				icon = iconObj?.ToString();
+			}
 
 			return new AppAction(id, shortcutItem.LocalizedTitle, shortcutItem.LocalizedSubtitle, icon);
 		}

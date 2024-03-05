@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (bindable is IView view)
 				{
 					if (view.Handler == null && newvalue is IVisualElementRenderer ver)
+					{
 						view.Handler = new RendererToHandlerShim(ver);
+					}
 				}
 			});
 
@@ -48,7 +50,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
 			if (element == null)
+			{
 				throw new ArgumentNullException(nameof(element));
+			}
 
 			IVisualElementRenderer renderer = null;
 
@@ -96,7 +100,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					}
 				}
 				else if (handler is IVisualElementRenderer ver)
+				{
 					renderer = ver;
+				}
 				else if (handler is IPlatformViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
@@ -122,7 +128,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		internal Platform(Microsoft.UI.Xaml.Window page)
 		{
 			if (page == null)
+			{
 				throw new ArgumentNullException(nameof(page));
+			}
 
 			_page = page;
 
@@ -152,7 +160,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.window.current?view=winui-3.0
 			// The currently activated window for UWP apps. Null for Desktop apps.
 			if (Microsoft.UI.Xaml.Window.Current != null)
+			{
 				SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
+			}
 
 			// TODO WINUI: This event is only available on UWP
 			// Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
@@ -173,7 +183,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		internal void SetPage(Page newRoot)
 		{
 			if (newRoot == null)
+			{
 				throw new ArgumentNullException(nameof(newRoot));
+			}
 
 			_navModel.Clear();
 
@@ -247,7 +259,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		Task INavigation.PushModalAsync(Page page, bool animated)
 		{
 			if (page == null)
+			{
 				throw new ArgumentNullException(nameof(page));
+			}
 
 			var tcs = new TaskCompletionSource<bool>();
 			_navModel.PushModal(page);
@@ -272,7 +286,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				IVisualElementRenderer elementRenderer = GetRenderer(element);
 				if (elementRenderer != null)
+				{
+				{
 					return elementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
+				}
+				}
 
 				if (element is IView iView)
 				{
@@ -295,7 +313,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var bounds = ContainerBounds;
 			if (bounds.IsEmpty)
+			{
 				return;
+			}
+
 			foreach (Page root in _navModel.Roots)
 			{
 				root.Layout(bounds);
@@ -342,7 +363,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Page lastRoot = _navModel.Roots.LastOrDefault();
 
 			if (lastRoot == null)
+			{
 				return false;
+			}
 
 			bool handled = lastRoot.SendBackButtonPressed();
 
@@ -370,14 +393,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			try
 			{
 				if (newPage == _currentPage)
+				{
 					return;
+				}
 
 				if (_currentPage != null)
 				{
 					Page previousPage = _currentPage;
 
 					if (modal && !popping && !newPage.BackgroundColor.IsDefault())
+					{
 						_modalBackgroundPage = previousPage;
+					}
 					else
 					{
 						RemovePage(previousPage);
@@ -419,8 +446,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				//window or a different thread, except on the Main thread. 
 				//HEX 0x8001010E 
 				if (error.HResult == -2147417842)
+				{
 					throw new InvalidOperationException("Changing the current page is only allowed if it's being called from the same UI thread." +
 						"Please ensure that the new page is in the same UI thread as the current page.");
+				}
+
 				throw;
 			}
 		}
@@ -428,31 +458,41 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void RemovePage(Page page)
 		{
 			if (_container == null || page == null)
+			{
 				return;
+			}
 
 			if (_modalBackgroundPage != null)
+			{
 				_modalBackgroundPage.GetCurrentPage()?.SendAppearing();
+			}
 
 			IVisualElementRenderer pageRenderer = GetRenderer(page);
 
 			if (_container.Children.Contains(pageRenderer.ContainerElement))
+			{
 				_container.Children.Remove(pageRenderer.ContainerElement);
+			}
 		}
 
 		void AddPage(Page page)
 		{
 			if (_container == null || page == null)
+			{
 				return;
+			}
 
 			if (_modalBackgroundPage != null)
+			{
 				_modalBackgroundPage.GetCurrentPage()?.SendDisappearing();
-
-
+			}
 
 			IVisualElementRenderer pageRenderer = page.GetOrCreateRenderer();
 
 			if (!_container.Children.Contains(pageRenderer.ContainerElement))
+			{
 				_container.Children.Add(pageRenderer.ContainerElement);
+			}
 
 			pageRenderer.ContainerElement.Width = _container.ActualWidth;
 			pageRenderer.ContainerElement.Height = _container.ActualHeight;
@@ -467,7 +507,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Page last = _navModel.Roots.Last();
 			if (last != null)
+			{
 				_toolbarTracker.Target = last;
+			}
 		}
 
 		void UpdateBounds()
@@ -598,7 +640,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				provider = GetRenderer(element) as IToolbarProvider;
 				if (provider != null)
+				{
 					break;
+				}
 
 				var pageContainer = element as IPageContainer<Page>;
 				element = pageContainer?.CurrentPage;
@@ -648,7 +692,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			actionSheet.Closed += (s, e) =>
 			{
 				if (!userDidSelect)
+				{
 					options.SetResult(null);
+				}
 			};
 
 			try
@@ -658,7 +704,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			catch (ArgumentException) // if the page is not in the visual tree
 			{
 				if (Forms.MainWindow.Content is FrameworkElement mainPage)
+				{
 					actionSheet.ShowAt(mainPage);
+				}
 			}
 		}
 
@@ -675,10 +723,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			};
 
 			if (options.Cancel != null)
+			{
 				promptDialog.SecondaryButtonText = options.Cancel;
+			}
 
 			if (options.Accept != null)
+			{
 				promptDialog.PrimaryButtonText = options.Accept;
+			}
 
 			var currentAlert = s_currentPrompt;
 			while (currentAlert != null)
@@ -697,7 +749,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			ContentDialogResult result = await prompt.ShowAsync();
 
 			if (result == ContentDialogResult.Primary)
+			{
 				return prompt.Input;
+			}
+
 			return null;
 		}
 
@@ -734,10 +789,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			if (options.Cancel != null)
+			{
 				alertDialog.SecondaryButtonText = options.Cancel;
+			}
 
 			if (options.Accept != null)
+			{
 				alertDialog.PrimaryButtonText = options.Accept;
+			}
 
 			var currentAlert = s_currentAlert;
 			while (currentAlert != null)
@@ -763,7 +822,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Application app = Application.Current;
 			Page page = app?.MainPage;
 			if (page == null)
+			{
 				return;
+			}
+
 			e.Handled = BackButtonPressed();
 		}
 	}

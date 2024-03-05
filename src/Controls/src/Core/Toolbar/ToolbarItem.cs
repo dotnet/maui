@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls
 		public ToolbarItem(string name, string icon, Action activated, ToolbarItemOrder order = ToolbarItemOrder.Default, int priority = 0)
 		{
 			if (activated == null)
+			{
 				throw new ArgumentNullException("activated");
+			}
 
 			Text = name;
 			IconImageSource = icon;

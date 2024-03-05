@@ -254,7 +254,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool IsHeader(int position)
 		{
 			if (Header == null && HeaderTemplate == null)
+			{
 				return false;
+			}
 
 			return position == 0;
 		}
@@ -262,7 +264,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool IsFooter(int position)
 		{
 			if (Footer == null && FooterTemplate == null)
+			{
 				return false;
+			}
 
 			return position == ItemCount - 1;
 		}
@@ -270,7 +274,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool IsEmpty(int position)
 		{
 			if (EmptyView == null && EmptyViewTemplate == null)
+			{
 				return false;
+			}
 
 			return (Header == null && HeaderTemplate == null) ? position == 0 : position == 1;
 		}
@@ -280,7 +286,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int height = (int)RecyclerViewHeight;
 
 			if (height <= 0)
+			{
 				height = parent.MeasuredHeight;
+			}
 
 			var headerFooterHeight = parent.Context.ToPixels(_headerHeight + _footerHeight);
 			return Math.Abs((int)(height - headerFooterHeight));
@@ -291,7 +299,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int width = (int)RecyclerViewWidth;
 
 			if (width <= 0)
+			{
 				width = parent.MeasuredWidth;
+			}
 
 			return width;
 		}
@@ -299,7 +309,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateHeaderFooterHeight(object item, bool isHeader)
 		{
 			if (item == null)
+			{
 				return;
+			}
 
 			var size = Size.Zero;
 
@@ -322,9 +334,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemHeight = size.Height;
 
 			if (isHeader)
+			{
 				_headerHeight = itemHeight;
+			}
 			else
+			{
 				_footerHeight = itemHeight;
+			}
 		}
 	}
 }

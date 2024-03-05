@@ -128,7 +128,7 @@ namespace Microsoft.Maui.DeviceTests
 					currentView.Frame.Height - safeAreaInsets.Top)
 			};
 
-			attachedView.AddSubview(view);	
+			attachedView.AddSubview(view);
 			currentView.AddSubview(attachedView);
 
 			// Give the UI time to refresh
@@ -167,7 +167,10 @@ namespace Microsoft.Maui.DeviceTests
 			while (viewController.PresentedViewController is not null)
 			{
 				if (viewController is ModalWrapper || viewController.PresentedViewController is ModalWrapper)
+				{
+				{
 					throw new InvalidOperationException("Modal Window Is Still Present");
+				}
 
 				viewController = viewController.PresentedViewController;
 			}
@@ -207,8 +210,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<UIImage> ToBitmap(this UIView view, IMauiContext mauiContext)
 		{
 			if (view.Superview is WrapperView wrapper)
+			{
 				view = wrapper;
-
+			}
 
 			var imageRect = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
 
@@ -284,7 +288,10 @@ namespace Microsoft.Maui.DeviceTests
 			var cap = bitmap.ColorAtPoint(x, y);
 
 			if (!ColorComparison.ARGBEquivalent(cap, expectedColor, tolerance))
+			{
+			{
 				throw new XunitException(CreateColorAtPointError(bitmap, expectedColor, x, y));
+			}
 
 			return bitmap;
 		}
@@ -389,7 +396,9 @@ namespace Microsoft.Maui.DeviceTests
 			var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
 
 			if (withinRectModifier is not null)
+			{
 				imageRect = withinRectModifier.Invoke(imageRect);
+			}
 
 			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 			{
@@ -410,7 +419,9 @@ namespace Microsoft.Maui.DeviceTests
 			var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
 
 			if (withinRectModifier is not null)
+			{
 				imageRect = withinRectModifier.Invoke(imageRect);
+			}
 
 			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 			{
@@ -448,7 +459,10 @@ namespace Microsoft.Maui.DeviceTests
 						var second = other.ColorAtPoint(x, y);
 
 						if (!ColorComparison.ARGBEquivalent(first, second))
+						{
 							return false;
+						}
+						}
 					}
 				}
 				return true;
@@ -459,9 +473,33 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
 			if (ex is null)
+
+/* Unmerged change from project 'TestUtils.DeviceTests(net8.0-maccatalyst)'
+Before:
 				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error."));
 			else
+After:
+			{
+*/
+			{
+				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error."));
+			}
+			else
+			{
+				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error."));
+
+/* Unmerged change from project 'TestUtils.DeviceTests(net8.0-maccatalyst)'
+Before:
+		}
+After:
+			}
+			else
+			{
 				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error: " + ex.Message), ex);
+			}
+		}
+*/
+			}
 		}
 
 		public static UILineBreakMode ToPlatform(this LineBreakMode mode) =>
@@ -479,14 +517,20 @@ namespace Microsoft.Maui.DeviceTests
 		public static double GetCharacterSpacing(this NSAttributedString text)
 		{
 			if (text == null)
+			{
 				return 0;
+			}
 
 			if (text.Length == 0)
+			{
 				return 0;
+			}
 
 			var value = text.GetAttribute(UIStringAttributeKey.KerningAdjustment, 0, out var range);
 			if (value == null)
+			{
 				return 0;
+			}
 
 			Assert.Equal(0, range.Location);
 			Assert.Equal(text.Length, range.Length);
@@ -499,14 +543,20 @@ namespace Microsoft.Maui.DeviceTests
 		public static double GetLineHeight(this NSAttributedString text)
 		{
 			if (text == null)
+			{
 				return 0;
+			}
 
 			if (text.Length == 0)
+			{
 				return 0;
+			}
 
 			var value = text.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out var range);
 			if (value == null)
+			{
 				return 0;
+			}
 
 			Assert.Equal(0, range.Location);
 			Assert.Equal(text.Length, range.Length);
@@ -521,10 +571,14 @@ namespace Microsoft.Maui.DeviceTests
 			var textDecorations = TextDecorations.None;
 
 			if (text == null)
+			{
 				return textDecorations;
+			}
 
 			if (text.Length == 0)
+			{
 				return textDecorations;
+			}
 
 			var valueUnderline = text.GetAttribute(UIStringAttributeKey.UnderlineStyle, 0, out var rangeUnderline);
 			var valueStrikethrough = text.GetAttribute(UIStringAttributeKey.StrikethroughStyle, 0, out var rangeStrikethrough);
@@ -535,6 +589,62 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, rangeStrikethrough.Location);
 			Assert.Equal(text.Length, rangeStrikethrough.Length);
 
+
+/* Unmerged change from project 'TestUtils.DeviceTests(net8.0-maccatalyst)'
+Before:
+		static async Task AssertTabItemTextColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var tabBarItemView = GetTabItemView(navigationView, tabText).FindDescendantView<UILabel>();
+			if (tabBarItemView is null)
+				throw new Exception($"Unable to locate Tab Item Icon Container: {tabText}");
+
+			if (hasColor)
+			{
+				await tabBarItemView.AssertContainsColor(expectedColor, mauiContext, 0.1);
+			}
+			else
+			{
+				await tabBarItemView.AssertDoesNotContainColor(expectedColor, mauiContext);
+			}
+		}
+
+		static async Task AssertTabItemIconColor(
+			this UITabBar navigationView, string tabText, Color expectedColor, bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var tabBarItemView = GetTabItemView(navigationView, tabText).FindDescendantView<UIImageView>();
+			if (tabBarItemView is null)
+				throw new Exception($"Unable to locate Tab Item Icon Container: {tabText}");
+
+			if (hasColor)
+			{
+				await tabBarItemView.AssertContainsColor(expectedColor, mauiContext);
+			}
+			else
+			{
+				await tabBarItemView.AssertDoesNotContainColor(expectedColor, mauiContext);
+			}
+		}
+
+		static public Task AssertTabItemIconDoesNotContainColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemIconContainsColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, true, mauiContext);
+
+		static UIView GetTabItemView(this UITabBar tabBar, string tabText)
+After:
 			if (NSNumber.FromInt32((int)NSUnderlineStyle.Single) == (NSNumber)valueUnderline)
 			{
 				textDecorations = TextDecorations.Underline;
@@ -560,12 +670,16 @@ namespace Microsoft.Maui.DeviceTests
 		public static UIColor GetForegroundColor(this NSAttributedString text)
 		{
 			if (text == null)
+			{
 				return UIColor.Clear;
+			}
 
 			var value = text.GetAttribute(UIStringAttributeKey.ForegroundColor, 0, out var range);
 
 			if (value == null)
+			{
 				return UIColor.Clear;
+			}
 
 			Assert.Equal(0, range.Location);
 			Assert.Equal(text.Length, range.Length);
@@ -631,7 +745,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var window = windows[i];
 				if (window.IsKeyWindow)
+				{
 					return window;
+				}
 			}
 
 			return null;
@@ -653,7 +769,182 @@ namespace Microsoft.Maui.DeviceTests
 				// iOS sets it to not be important for accessibility
 				// most likely because the children elements need to be reachable
 				if (platformView is UIStepper || platformView is UIPageControl)
+				{
 					return;
+				}
+
+				// UILabel will only be an accessibility element if it has text
+				if (platformView is UILabel label && !String.IsNullOrWhiteSpace(label.Text))
+				{
+					platformView.IsAccessibilityElement = true;
+					return;
+				}
+
+				// AFAICT on iOS when you read IsAccessibilityElement it's always false
+				// unless you have VoiceOver turned on.
+				// So, though not ideal, the main think we test on iOS is that elements
+				// that should stay false remain false. 
+				// According to the Apple docs anything that inherits from UIControl
+				// has isAccessibilityElement set to true by default so we're just
+				// validating that everything that doesn't inherit from UIControl isn't
+				// getting set to true
+				if (platformView is UIControl)
+				{
+					platformView.IsAccessibilityElement = true;
+					return;
+				}
+
+				// These are UIViews that don't inherit from UIControl but
+				// iOS will mark them as Accessibility Elements
+				// I tested each of these controls inside Xcode away from any MAUI tampering
+				if (platformView is UITextView || platformView is UIProgressView)
+				{
+					platformView.IsAccessibilityElement = true;
+					return;
+				}
+			}
+		}
+
+		public static bool IsAccessibilityElement(this UIView platformView)
+		{
+			platformView = platformView.GetAccessiblePlatformView();
+			return platformView.IsAccessibilityElement;
+		}
+
+		public static bool IsExcludedWithChildren(this UIView platformView)
+		{
+			return platformView.AccessibilityElementsHidden;
+		}
+
+		public static UIView GetAccessiblePlatformView(this UITabBar tabBar, string tabText)
+*/
+			if (NSNumber.FromInt32((int)NSUnderlineStyle.Single) == (NSNumber)valueUnderline)
+			{
+				textDecorations = TextDecorations.Underline;
+			}
+			else if (NSNumber.FromInt32((int)NSUnderlineStyle.Single) == (NSNumber)valueStrikethrough)
+			{
+				textDecorations = TextDecorations.Strikethrough;
+			}
+
+			return textDecorations;
+		}
+
+		public static void AssertHasUnderline(this NSAttributedString attributedString)
+		{
+			var value = attributedString.GetAttribute(UIStringAttributeKey.UnderlineStyle, 0, out var range);
+
+			if (value == null)
+			{
+				throw new XunitException("Label does not have the UnderlineStyle attribute");
+			}
+		}
+
+		public static UIColor GetForegroundColor(this NSAttributedString text)
+		{
+			if (text == null)
+			{
+				return UIColor.Clear;
+			}
+
+			var value = text.GetAttribute(UIStringAttributeKey.ForegroundColor, 0, out var range);
+
+			if (value == null)
+			{
+				return UIColor.Clear;
+			}
+
+			Assert.Equal(0, range.Location);
+			Assert.Equal(text.Length, range.Length);
+
+			var kerning = Assert.IsType<UIColor>(value);
+
+			return kerning;
+		}
+
+		public static void AssertEqual(this CATransform3D expected, CATransform3D actual, int precision = 4)
+		{
+			Assert.Equal((double)expected.M11, (double)actual.M11, precision);
+			Assert.Equal((double)expected.M12, (double)actual.M12, precision);
+			Assert.Equal((double)expected.M13, (double)actual.M13, precision);
+			Assert.Equal((double)expected.M14, (double)actual.M14, precision);
+			Assert.Equal((double)expected.M21, (double)actual.M21, precision);
+			Assert.Equal((double)expected.M22, (double)actual.M22, precision);
+			Assert.Equal((double)expected.M23, (double)actual.M23, precision);
+			Assert.Equal((double)expected.M24, (double)actual.M24, precision);
+			Assert.Equal((double)expected.M31, (double)actual.M31, precision);
+			Assert.Equal((double)expected.M32, (double)actual.M32, precision);
+			Assert.Equal((double)expected.M33, (double)actual.M33, precision);
+			Assert.Equal((double)expected.M34, (double)actual.M34, precision);
+			Assert.Equal((double)expected.M41, (double)actual.M41, precision);
+			Assert.Equal((double)expected.M42, (double)actual.M42, precision);
+			Assert.Equal((double)expected.M43, (double)actual.M43, precision);
+			Assert.Equal((double)expected.M44, (double)actual.M44, precision);
+		}
+
+		static UIWindow? GetKeyWindow(UIApplication application)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				foreach (var scene in application.ConnectedScenes)
+				{
+					if (scene is UIWindowScene windowScene
+						&& windowScene.ActivationState == UISceneActivationState.ForegroundActive)
+					{
+						foreach (var window in windowScene.Windows)
+						{
+#if MACCATALYST
+							// When running headless (on CI or local) Mac Catalyst has trouble finding the window through the method below.
+							// Added an env variable to accommodate for this and just return the first window found.
+							if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("headlessrunner")))
+							{	
+								return window;
+							}
+#endif
+							if (window.IsKeyWindow)
+							{
+								return window;
+							}
+						}
+					}
+				}
+
+				return null;
+			}
+
+			var windows = application.Windows;
+
+			for (int i = 0; i < windows.Length; i++)
+			{
+				var window = windows[i];
+				if (window.IsKeyWindow)
+				{
+					return window;
+				}
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// If VoiceOver is off iOS just leaves IsAccessibilityElement set to false
+		/// This applies the default value to each control type so we can have some level
+		/// of testing inside simulators and when the VO is turned off.
+		/// These default values were all validated inside Xcode
+		/// </summary>
+		/// <param name="platformView"></param>
+		public static void SetupAccessibilityExpectationIfVoiceOverIsOff(this UIView platformView)
+		{
+			if (!UIAccessibility.IsVoiceOverRunning)
+			{
+				platformView = platformView.GetAccessiblePlatformView();
+				// even though UIStepper/UIPageControl inherits from UIControl
+				// iOS sets it to not be important for accessibility
+				// most likely because the children elements need to be reachable
+				if (platformView is UIStepper || platformView is UIPageControl)
+				{
+					return;
+				}
 
 				// UILabel will only be an accessibility element if it has text
 				if (platformView is UILabel label && !String.IsNullOrWhiteSpace(label.Text))
@@ -701,7 +992,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static UIView GetAccessiblePlatformView(this UIView platformView)
 		{
 			if (platformView is UISearchBar searchBar)
+			{
 				platformView = searchBar.GetSearchTextField()!;
+			}
 
 			if (platformView is WrapperView wrapperView)
 			{
@@ -801,7 +1094,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var tabBarItemView = GetTabItemView(navigationView, tabText).FindDescendantView<UILabel>();
 			if (tabBarItemView is null)
+			{
 				throw new Exception($"Unable to locate Tab Item Icon Container: {tabText}");
+			}
 
 			if (hasColor)
 			{
@@ -819,7 +1114,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var tabBarItemView = GetTabItemView(navigationView, tabText).FindDescendantView<UIImageView>();
 			if (tabBarItemView is null)
+			{
 				throw new Exception($"Unable to locate Tab Item Icon Container: {tabText}");
+			}
 
 			if (hasColor)
 			{
@@ -848,12 +1145,16 @@ namespace Microsoft.Maui.DeviceTests
 			var tabBarItem = tabBar.Items?.Single(t => string.Equals(t.Title, tabText, StringComparison.OrdinalIgnoreCase));
 
 			if (tabBarItem is null)
+			{
 				throw new Exception($"Unable to find tab bar item: {tabText}");
+			}
 
 			var tabBarItemView = tabBarItem.ValueForKey(new Foundation.NSString("view")) as UIView;
 
 			if (tabBarItemView is null)
+			{
 				throw new Exception($"Unable to find tab bar item: {tabText}");
+			}
 
 			return tabBarItemView;
 		}

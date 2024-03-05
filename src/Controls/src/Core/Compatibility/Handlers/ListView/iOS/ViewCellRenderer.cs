@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var cell = reusableCell as ViewTableCell;
 			if (cell == null)
+			{
 				cell = new ViewTableCell(item.GetType().FullName);
+			}
 
 			cell.ViewCell = viewCell;
 
@@ -61,7 +63,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				set
 				{
 					if (_viewCell == value)
+					{
 						return;
+					}
 
 					_viewCell?.Handler?.DisconnectHandler();
 					UpdateCell(value);
@@ -82,7 +86,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var realCell = (ViewTableCell)GetRealCell(viewCell);
 
 				if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
+				{
 					UpdateIsEnabled(_viewCell.IsEnabled);
+				}
 			}
 
 			public override void LayoutSubviews()
@@ -100,7 +106,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				if (_rendererRef == null)
+				{
 					return;
+				}
 
 				if (_rendererRef.TryGetTarget(out IPlatformViewHandler handler))
 				{
@@ -116,16 +124,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Performance.Start(out string reference);
 
 				if (!_rendererRef.TryGetTarget(out IPlatformViewHandler handler))
+				{
 					return base.SizeThatFits(size);
+				}
 
 				if (handler.VirtualView == null)
+				{
 					return SizeF.Empty;
+				}
 
 				double width = size.Width;
 				var height = size.Height > 0 ? size.Height : double.PositiveInfinity;
 				var result = handler.MeasureVirtualView(new SizeF(width, height));
 				if (result == null)
+				{
 					return base.SizeThatFits(size);
+				}
 
 				// make sure to add in the separator if needed
 				var finalheight = (float)result.Value.Height + (SupressSeparator ? 0f : 1f) / UIScreen.MainScreen.Scale;
@@ -138,7 +152,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
+				{
 					return;
+				}
 
 				if (disposing)
 				{
@@ -166,7 +182,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			IPlatformViewHandler GetNewRenderer()
 			{
 				if (_viewCell.View == null)
+				{
 					throw new InvalidOperationException($"ViewCell must have a {nameof(_viewCell.View)}");
+				}
 
 				var newRenderer = _viewCell.View.ToHandler(_viewCell.View.FindMauiContext());
 				_rendererRef = new WeakReference<IPlatformViewHandler>(newRenderer);
@@ -201,7 +219,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				IPlatformViewHandler renderer;
 				if (_rendererRef == null || !_rendererRef.TryGetTarget(out renderer))
+				{
 					renderer = GetNewRenderer();
+				}
 				else
 				{
 					var viewHandlerType = MauiContext.Handlers.GetHandlerType(_viewCell.View.GetType());
@@ -209,7 +229,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (renderer != null ? renderer.GetType() : typeof(System.Object));
 
 					if (rendererType == viewHandlerType/* || (renderer is Platform.DefaultRenderer && type == null)*/)
+					{
 						renderer.SetVirtualView(this._viewCell.View);
+					}
 					else
 					{
 						//when cells are getting reused the element could be already set to another cell

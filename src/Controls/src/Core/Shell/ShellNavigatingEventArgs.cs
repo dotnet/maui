@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Controls
 		public bool Cancel()
 		{
 			if (!CanCancel)
+			{
 				return false;
+			}
 
 			Cancelled = true;
 			return true;
@@ -55,10 +57,14 @@ namespace Microsoft.Maui.Controls
 		public ShellNavigatingDeferral GetDeferral()
 		{
 			if (_deferralCompleted)
+			{
 				throw new InvalidOperationException("Deferral has already been completed");
+			}
 
 			if (!CanCancel)
+			{
 				return null;
+			}
 
 			DeferredEventArgs = true;
 			var currentCount = Interlocked.Increment(ref _deferralCount);

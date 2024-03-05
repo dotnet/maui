@@ -71,7 +71,10 @@ namespace Microsoft.Maui
 		public override bool Equals(object? obj)
 		{
 			if (obj is null)
+			{
 				return false;
+			}
+
 			return obj is Thickness && Equals((Thickness)obj);
 		}
 

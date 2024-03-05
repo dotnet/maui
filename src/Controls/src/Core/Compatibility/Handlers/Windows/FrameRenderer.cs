@@ -52,7 +52,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.NewElement != null)
 			{
 				if (Control == null)
+				{
 					SetNativeControl(new WBorder());
+				}
 
 				PackChild();
 				UpdateBorder();
@@ -90,7 +92,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Control?.Measure(availableSize);
 
 			if (Control?.DesiredSize is not null)
+			{
 				return Control.DesiredSize;
+			}
 
 			return MinimumSize().ToPlatform();
 		}
@@ -108,10 +112,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Control != null)
 			{
 				if (Brush.IsNullOrEmpty(background))
+				{
 					Control.Background = backgroundColor.IsDefault() ?
 						new Microsoft.UI.Xaml.Media.SolidColorBrush((global::Windows.UI.Color)Resources["SystemAltHighColor"]) : backgroundColor.ToPlatform();
+				}
 				else
+				{
 					Control.Background = background.ToBrush();
+				}
 			}
 		}
 
@@ -153,7 +161,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			float cornerRadius = Element.CornerRadius;
 
 			if (cornerRadius == -1f)
+			{
 				cornerRadius = 5f; // default corner radius
+			}
 
 			Control.CornerRadius = WinUIHelpers.CreateCornerRadius(cornerRadius);
 		}

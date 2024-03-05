@@ -33,10 +33,14 @@ namespace Microsoft.Maui.ApplicationModel
 			tabsBuilder.SetShowTitle(true);
 #pragma warning disable CS0618 // Type or member is obsolete
 			if (options.PreferredToolbarColor != null)
+			{
 				tabsBuilder.SetToolbarColor(options.PreferredToolbarColor.ToInt());
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 			if (options.TitleMode != BrowserTitleMode.Default)
+			{
 				tabsBuilder.SetShowTitle(options.TitleMode == BrowserTitleMode.Show);
+			}
 
 			var tabsIntent = tabsBuilder.Build();
 			ActivityFlags? tabsFlags = null;
@@ -57,19 +61,27 @@ namespace Microsoft.Maui.ApplicationModel
 				if (options.HasFlag(BrowserLaunchFlags.LaunchAdjacent))
 				{
 					if (tabsFlags.HasValue)
+					{
 						tabsFlags |= ActivityFlags.LaunchAdjacent | ActivityFlags.NewTask;
+					}
 					else
+					{
 						tabsFlags = ActivityFlags.LaunchAdjacent | ActivityFlags.NewTask;
+					}
 				}
 			}
 #endif
 
 			// Check if there's flags specified to use
 			if (tabsFlags.HasValue)
+			{
 				tabsIntent.Intent.SetFlags(tabsFlags.Value);
+			}
 
 			if (nativeUri != null)
+			{
 				tabsIntent.LaunchUrl(context, nativeUri);
+			}
 		}
 
 		static void LaunchExternalBrowser(BrowserLaunchOptions options, AndroidUri? nativeUri)
@@ -81,13 +93,17 @@ namespace Microsoft.Maui.ApplicationModel
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 			{
 				if (options.HasFlag(BrowserLaunchFlags.LaunchAdjacent))
+				{
 					flags |= ActivityFlags.LaunchAdjacent;
+				}
 			}
 #endif
 			intent.SetFlags(flags);
 
 			if (!PlatformUtils.IsIntentSupported(intent))
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			Application.Context.StartActivity(intent);
 		}

@@ -77,10 +77,14 @@ namespace Microsoft.Maui.Media
 			var locale = options?.Locale?.Language ?? SpeechSynthesizer.DefaultVoice.Language;
 
 			if (options?.Volume.HasValue ?? false)
+			{
 				volume = (options.Volume.Value * 100f).ToString(CultureInfo.InvariantCulture);
+			}
 
 			if (options?.Pitch.HasValue ?? false)
+			{
 				pitch = ProsodyPitch(options.Pitch);
+			}
 
 			// SSML generation
 			var ssml = new StringBuilder();
@@ -94,18 +98,30 @@ namespace Microsoft.Maui.Media
 		static string ProsodyPitch(float? pitch)
 		{
 			if (!pitch.HasValue)
+			{
 				return "default";
+			}
 
 			if (pitch.Value <= 0.25f)
+			{
 				return "x-low";
+			}
 			else if (pitch.Value > 0.25f && pitch.Value <= 0.75f)
+			{
 				return "low";
+			}
 			else if (pitch.Value > 0.75f && pitch.Value <= 1.25f)
+			{
 				return "medium";
+			}
 			else if (pitch.Value > 1.25f && pitch.Value <= 1.75f)
+			{
 				return "high";
+			}
 			else if (pitch.Value > 1.75f)
+			{
 				return "x-high";
+			}
 
 			return "default";
 		}

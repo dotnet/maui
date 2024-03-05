@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Platform
 			if (textColor != null)
 			{
 				if (PlatformInterop.CreateEditTextColorStateList(platformDatePicker.TextColors, textColor.ToPlatform()) is ColorStateList c)
+				{
 					platformDatePicker.SetTextColor(c);
+				}
 			}
 		}
 

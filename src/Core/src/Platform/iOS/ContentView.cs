@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Platform
 		public ContentView()
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+			{
 				Layer.CornerCurve = CACornerCurve.Continuous; // Available from iOS 13. More info: https://developer.apple.com/documentation/quartzcore/calayercornercurve/3152600-continuous
+			}
 		}
 
 		public override void LayoutSubviews()
@@ -130,9 +132,13 @@ namespace Microsoft.Maui.Platform
 			PathF? path;
 
 			if (clipShape is IRoundRectangle roundRectangle)
+			{
 				path = roundRectangle.InnerPathForBounds(bounds, strokeThickness);
+			}
 			else
+			{
 				path = clipShape?.PathForBounds(bounds);
+			}
 
 			return path?.AsCGPath();
 		}

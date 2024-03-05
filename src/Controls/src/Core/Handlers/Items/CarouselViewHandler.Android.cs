@@ -57,10 +57,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_heightConstraint = heightConstraint;
 
 			if (!double.IsInfinity(_widthConstraint))
+			{
 				_widthConstraint = Context.ToPixels(_widthConstraint);
+			}
 
 			if (!double.IsInfinity(_heightConstraint))
+			{
 				_heightConstraint = Context.ToPixels(_heightConstraint);
+			}
 
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
@@ -82,7 +86,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var width = (PlatformView.MeasuredWidth == 0) ? _widthConstraint : PlatformView.MeasuredWidth;
 
 				if (double.IsInfinity(width))
+				{
 					return width;
+				}
 
 				itemWidth = (int)(width - Context?.ToPixels(VirtualView.PeekAreaInsets.Left) - Context?.ToPixels(VirtualView.PeekAreaInsets.Right) - Context?.ToPixels(listItemsLayout.ItemSpacing));
 			}
@@ -99,7 +105,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var height = (PlatformView.MeasuredHeight == 0) ? _heightConstraint : PlatformView.MeasuredHeight;
 
 				if (double.IsInfinity(height))
+				{
 					return height;
+				}
 
 				itemHeight = (int)(height - Context?.ToPixels(VirtualView.PeekAreaInsets.Top) - Context?.ToPixels(VirtualView.PeekAreaInsets.Bottom) - Context?.ToPixels(listItemsLayout.ItemSpacing));
 			}

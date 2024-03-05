@@ -184,7 +184,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdateIsReadOnly();
 
 			if (_cursorPositionChangePending || _selectionLengthChangePending)
+			{
 				UpdateCursorSelection();
+			}
 
 			UpdateClearBtnOnElementChanged();
 		}
@@ -224,7 +226,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void UpdatePlaceHolderText()
 		{
 			if (EditText.Hint == Element.Placeholder)
+			{
 				return;
+			}
 
 			EditText.Hint = Element.Placeholder;
 			if (EditText.IsFocused)
@@ -241,49 +245,94 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (e.PropertyName == Entry.PlaceholderProperty.PropertyName)
+			{
 				UpdatePlaceHolderText();
+			}
 			else if (e.PropertyName == Entry.IsPasswordProperty.PropertyName)
+			{
 				UpdateInputType();
+			}
 			else if (e.IsOneOf(Entry.TextProperty, Entry.TextTransformProperty))
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == Entry.TextColorProperty.PropertyName)
+			{
 				UpdateColor();
+			}
 			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
+			{
 				UpdateInputType();
+			}
 			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
 				UpdateInputType();
+			}
 			else if (e.PropertyName == Entry.IsTextPredictionEnabledProperty.PropertyName)
+			{
 				UpdateInputType();
+			}
 			else if (e.PropertyName == Entry.HorizontalTextAlignmentProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == Entry.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateVerticalTextAlignment();
+			}
 			else if (e.PropertyName == Entry.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == Entry.FontAttributesProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Entry.FontFamilyProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Entry.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Entry.PlaceholderColorProperty.PropertyName)
+			{
 				UpdatePlaceholderColor();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+			{
 				UpdateMaxLength();
+			}
 			else if (e.PropertyName == PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName)
+			{
 				UpdateImeOptions();
+			}
 			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
+			{
 				UpdateReturnType();
+			}
 			else if (e.PropertyName == Entry.SelectionLengthProperty.PropertyName)
+			{
 				UpdateCursorSelection();
+			}
 			else if (e.PropertyName == Entry.CursorPositionProperty.PropertyName)
+			{
 				UpdateCursorSelection();
+			}
 			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
+			{
 				UpdateIsReadOnly();
+			}
+
 			if (e.PropertyName == Entry.ClearButtonVisibilityProperty.PropertyName)
+			{
 				UpdateClearBtnOnPropertyChanged();
+			}
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -300,7 +349,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void UpdateImeOptions()
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
+
 			var imeOptions = Element.OnThisPlatform().ImeOptions();
 			_currentInputImeFlag = imeOptions.ToAndroidImeOptions();
 			EditText.ImeOptions = _currentInputImeFlag;
@@ -343,7 +395,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if ((EditText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
 					{
 						if (!model.IsSpellCheckEnabled)
+						{
 							EditText.InputType = EditText.InputType | InputTypes.TextFlagNoSuggestions;
+						}
 					}
 				}
 				if (model.IsSet(Entry.IsTextPredictionEnabledProperty))
@@ -351,7 +405,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if ((EditText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
 					{
 						if (!model.IsTextPredictionEnabled)
+						{
 							EditText.InputType = EditText.InputType | InputTypes.TextFlagNoSuggestions;
+						}
 					}
 				}
 			}
@@ -362,9 +418,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (model.IsPassword && ((EditText.InputType & InputTypes.ClassText) == InputTypes.ClassText))
+			{
 				EditText.InputType = EditText.InputType | InputTypes.TextVariationPassword;
+			}
+
 			if (model.IsPassword && ((EditText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
+			{
 				EditText.InputType = EditText.InputType | InputTypes.NumberVariationPassword;
+			}
 
 			UpdateFont();
 		}
@@ -397,7 +458,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var currentControlText = EditText?.Text;
 
 			if (currentControlText.Length > Element.MaxLength)
+			{
 				EditText.Text = currentControlText.Substring(0, Element.MaxLength);
+			}
 		}
 
 		[PortHandler]
@@ -410,7 +473,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateReturnType()
 		{
 			if (Control == null || Element == null)
+			{
 				return;
+			}
 
 			EditText.ImeOptions = Element.ReturnType.ToAndroidImeAction();
 			_currentInputImeFlag = EditText.ImeOptions;
@@ -419,7 +484,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
+			{
 				return;
+			}
 
 			int cursorPosition = Element.CursorPosition;
 			int selectionStart = EditText.SelectionStart;
@@ -429,7 +496,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var start = cursorPosition;
 
 				if (selectionStart != start)
+				{
 					SetCursorPositionFromRenderer(selectionStart);
+				}
 			}
 
 			if (!_selectionLengthChangePending)
@@ -438,14 +507,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				var controlSelectionLength = EditText.SelectionEnd - selectionStart;
 				if (controlSelectionLength != elementSelectionLength)
+				{
 					SetSelectionLengthFromRenderer(controlSelectionLength);
+				}
 			}
 		}
 
 		void UpdateCursorSelection()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null || EditText == null)
+			{
 				return;
+			}
 
 			if (!Element.IsReadOnly && EditText.RequestFocus())
 			{
@@ -473,11 +546,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			int selectionLength = Element.SelectionLength;
 
 			if (Element.IsSet(Entry.SelectionLengthProperty))
+			{
 				end = System.Math.Max(start, System.Math.Min(EditText.Length(), start + selectionLength));
+			}
 
 			int newSelectionLength = System.Math.Max(0, end - start);
 			if (newSelectionLength != selectionLength)
+			{
 				SetSelectionLengthFromRenderer(newSelectionLength);
+			}
 
 			return end;
 		}
@@ -488,10 +565,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			int cursorPosition = Element.CursorPosition;
 
 			if (Element.IsSet(Entry.CursorPositionProperty))
+			{
 				start = System.Math.Min(EditText.Text.Length, cursorPosition);
+			}
 
 			if (start != cursorPosition)
+			{
 				SetCursorPositionFromRenderer(start);
+			}
 
 			return start;
 		}
@@ -545,7 +626,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 
 			if (EditText.Text == text)
+			{
 				return;
+			}
 
 			EditText.Text = text;
 			if (EditText.IsFocused)
@@ -570,7 +653,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void OnAfterTextChanged(IEditable s)
 		{
 			if (Control.IsFocused)
+			{
 				UpdateClearBtnOnTyping();
+			}
 		}
 
 		void EditTextTouched(object sender, TouchEventArgs e)
@@ -620,7 +705,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdateClearBtn(showClearBtn);
 
 				if (!showClearBtn && isFocused)
+				{
 					ListenForCloseBtnTouch(false);
+				}
 			}
 		}
 
@@ -636,7 +723,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateClearBtnOnTyping()
 		{
 			if (Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
+			{
 				UpdateClearBtn(true);
+			}
 		}
 
 		void UpdateClearBtn(bool showClearButton)
@@ -659,9 +748,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void ListenForCloseBtnTouch(bool listen)
 		{
 			if (listen)
+			{
 				EditText.Touch += EditTextTouched;
+			}
 			else
+			{
 				EditText.Touch -= EditTextTouched;
+			}
 		}
 	}
 }

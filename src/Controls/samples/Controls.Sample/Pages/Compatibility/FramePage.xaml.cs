@@ -30,7 +30,9 @@ namespace Maui.Controls.Sample.Pages
 		void OnReplaceContentButtonClicked(object sender, EventArgs e)
 		{
 			if (ContentFrame.Content == null)
+			{
 				return;
+			}
 
 			ContentFrame.Content = new Label
 			{

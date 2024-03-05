@@ -43,7 +43,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
 			if (_platformView != null)
+			{
 				Disconnect();
+			}
 		}
 
 		// This will only ever fire once. This is purely waiting
@@ -58,7 +60,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_disconnected)
 			{
 				if (sender is Page page)
+				{
 					page.HandlerChanged -= OnHandlerChanged;
+				}
 
 				return;
 			}
@@ -71,7 +75,9 @@ namespace Microsoft.Maui.Controls.Platform
 			_platformView = _page.Handler?.PlatformView;
 
 			if (_platformView != null)
+			{
 				_page.HandlerChanged -= OnHandlerChanged;
+			}
 		}
 	}
 }

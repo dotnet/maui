@@ -11,7 +11,9 @@ namespace Microsoft.Maui
 			var resolvedFilename = ResolveFileSystemFont(filename);
 
 			if (!string.IsNullOrEmpty(resolvedFilename))
+			{
 				return LoadFileSystemFont(font, resolvedFilename, alias);
+			}
 
 			return LoadEmbeddedFont(font, filename, alias, GetNativeFontStream(filename, alias));
 		}
@@ -27,19 +29,27 @@ namespace Microsoft.Maui
 
 			var fontBundlePath = Path.Combine(mainBundlePath, filename);
 			if (File.Exists(fontBundlePath))
+			{
 				return fontBundlePath;
+			}
 
 			fontBundlePath = Path.Combine(mainBundlePath, "Resources", filename);
 			if (File.Exists(fontBundlePath))
+			{
 				return fontBundlePath;
+			}
 
 			fontBundlePath = Path.Combine(mainBundlePath, "Fonts", filename);
 			if (File.Exists(fontBundlePath))
+			{
 				return fontBundlePath;
+			}
 
 			fontBundlePath = Path.Combine(mainBundlePath, "Resources", "Fonts", filename);
 			if (File.Exists(fontBundlePath))
+			{
 				return fontBundlePath;
+			}
 
 			// TODO: check other folders as well
 

@@ -19,28 +19,38 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static partial void ProcessAutoPackage(Maui.IElement element)
 		{
 			if (element?.Handler?.PlatformView is not AViewGroup viewGroup)
+			{
 				return;
+			}
 
 			viewGroup.RemoveAllViews();
 
 			if (element is not IVisualTreeElement vte)
+			{
 				return;
+			}
 
 			var mauiContext = element?.Handler?.MauiContext;
 			if (mauiContext == null)
+			{
 				return;
+			}
 
 			foreach (var child in vte.GetVisualChildren())
 			{
 				if (child is Maui.IElement childElement)
+				{
 					viewGroup.AddView(childElement.ToPlatform(mauiContext));
+				}
 			}
 		}
 
 		public void UpdateLayout()
 		{
 			if (Element != null)
+			{
 				this.InvalidateMeasure(Element);
+			}
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)

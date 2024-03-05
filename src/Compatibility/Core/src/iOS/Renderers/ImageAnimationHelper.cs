@@ -27,7 +27,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public ImageDataHelper(nint imageCount)
 			{
 				if (imageCount <= 0)
+				{
+				{
 					throw new ArgumentException();
+				}
 
 				_keyFrames = new NSObject[imageCount];
 				_keyTimes = new NSNumber[imageCount + 1];
@@ -43,7 +46,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public void AddFrameData(int index, CGImageSource imageSource)
 			{
 				if (index < 0 || index >= _imageCount || index >= imageSource.ImageCount)
+				{
+				{
 					throw new ArgumentException();
+				}
 
 				double delayTime = 0.1f;
 
@@ -53,13 +59,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				using (var delayTimeValue = gifImageProperties?.ValueForKey(ImageIO.CGImageProperties.GIFDelayTime))
 				{
 					if (unclampedDelayTimeValue != null)
+					{
 						double.TryParse(unclampedDelayTimeValue.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out delayTime);
+					}
 					else if (delayTimeValue != null)
+					{
 						double.TryParse(delayTimeValue.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out delayTime);
+					}
 
 					// Frame delay compability adjustment.
 					if (delayTime <= 0.02f)
+					{
 						delayTime = 0.1f;
+					}
 
 					using (var image = imageSource.CreateImage(index, null))
 					{
@@ -82,7 +94,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public FormsCAKeyFrameAnimation CreateKeyFrameAnimation()
 			{
 				if (_totalAnimationTime <= 0.0f)
+				{
 					return null;
+				}
 
 				double currentTime = 0.0f;
 				for (int i = 0; i < _imageCount; i++)
@@ -110,7 +124,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			protected virtual void Dispose(bool disposing)
 			{
 				if (_disposed)
+				{
 					return;
+				}
 
 				for (int i = 0; i < _imageCount; i++)
 				{
@@ -140,7 +156,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var imageCount = imageSource.ImageCount;
 
 			if (imageCount <= 0)
+			{
 				return null;
+			}
 
 			using (var imageData = new ImageDataHelper(imageCount))
 			{
@@ -151,12 +169,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					using (var repeatCountValue = gifImageProperties?.ValueForKey(ImageIO.CGImageProperties.GIFLoopCount))
 					{
 						if (repeatCountValue != null)
+						{
 							float.TryParse(repeatCountValue.ToString(), out repeatCount);
+						}
 						else
+						{
 							repeatCount = 1;
+						}
 
 						if (repeatCount == 0)
+						{
 							repeatCount = float.MaxValue;
+						}
 					}
 				}
 

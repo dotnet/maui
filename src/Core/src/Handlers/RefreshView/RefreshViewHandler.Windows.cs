@@ -53,12 +53,18 @@ namespace Microsoft.Maui.Handlers
 		void UpdateIsRefreshing()
 		{
 			if (!_isLoaded)
+			{
 				return;
+			}
 
 			if (!VirtualView?.IsRefreshing ?? false)
+			{
 				CompleteRefresh();
+			}
 			else if (_refreshCompletionDeferral == null)
+			{
 				PlatformView?.RequestRefresh();
+			}
 		}
 
 		static void UpdateContent(IRefreshViewHandler handler)
@@ -70,7 +76,9 @@ namespace Microsoft.Maui.Handlers
 		static void UpdateRefreshColor(IRefreshViewHandler handler)
 		{
 			if (handler.VirtualView == null || handler.PlatformView?.Visualizer == null)
+			{
 				return;
+			}
 
 			handler.PlatformView.Visualizer.Foreground = handler.VirtualView.RefreshColor != null
 				? handler.VirtualView.RefreshColor.ToPlatform()
@@ -80,10 +88,14 @@ namespace Microsoft.Maui.Handlers
 		static void UpdateBackground(IRefreshViewHandler handler)
 		{
 			if (handler.PlatformView?.Visualizer == null)
+			{
 				return;
+			}
 
 			if (handler.VirtualView.Background != null)
+			{
 				handler.PlatformView.Visualizer.Background = handler.VirtualView.Background.ToPlatform();
+			}
 		}
 
 		// Telling the refresh to start before the control has been sized
@@ -93,7 +105,9 @@ namespace Microsoft.Maui.Handlers
 			var refreshControl = sender as RefreshContainer;
 
 			if (refreshControl == null || MauiContext == null)
+			{
 				return;
+			}
 
 			refreshControl.Loaded -= OnLoaded;
 			MauiContext.Services
@@ -111,7 +125,9 @@ namespace Microsoft.Maui.Handlers
 			_refreshCompletionDeferral = args.GetDeferral();
 
 			if (VirtualView != null)
+			{
 				VirtualView.IsRefreshing = true;
+			}
 		}
 
 		void CompleteRefresh()

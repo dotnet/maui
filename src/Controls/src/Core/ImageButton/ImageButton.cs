@@ -248,9 +248,13 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanged(propertyName);
 
 			if (propertyName == BorderWidthProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IImageButton.StrokeThickness));
+			}
 			else if (propertyName == BorderColorProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IImageButton.StrokeColor));
+			}
 		}
 
 		void IImageSourcePart.UpdateIsLoading(bool isLoading)

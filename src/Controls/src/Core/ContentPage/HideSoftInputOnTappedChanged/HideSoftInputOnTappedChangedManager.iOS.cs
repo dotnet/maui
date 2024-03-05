@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls
 		internal IDisposable? SetupHideSoftInputOnTapped(UIView uIView)
 		{
 			if (!FeatureEnabled || uIView.Window is null)
+			{
 				return null;
+			}
 
 			if (uIView is UISearchBar searchBar &&
 				searchBar.GetSearchTextField() is UIView textField)
@@ -19,7 +21,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (uIView is null)
+			{
 				return null;
+			}
 
 			return ResignFirstResponderTouchGestureRecognizer
 					.Update(uIView);

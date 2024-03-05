@@ -37,21 +37,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateScrim(appearance.FlyoutBackdrop);
 
 				if (appearance.FlyoutHeight != -1)
+				{
 					_flyoutHeight = Context.ToPixels(appearance.FlyoutHeight);
+				}
 				else
+				{
 					_flyoutHeight = LP.MatchParent;
+				}
 
 				if (appearance.FlyoutWidth != -1)
+				{
 					_flyoutWidth = Context.ToPixels(appearance.FlyoutWidth);
+				}
 				else
+				{
 					_flyoutWidth = -1;
+				}
 			}
 
 			if (previousFlyoutWidth != FlyoutWidth || previousFlyoutHeight != FlyoutHeight)
 			{
 				UpdateFlyoutSize();
 				if (_content != null)
+				{
 					UpdateDrawerLockMode(_behavior);
+				}
 			}
 		}
 		#endregion IAppearanceObserver
@@ -72,7 +82,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnDrawerStateChanged(object sender, DrawerStateChangedEventArgs e)
 		{
 			if (_flyoutContent?.AndroidView == null)
+			{
 				return;
+			}
 
 			if (DrawerLayout.StateIdle == e.NewState)
 			{
@@ -106,14 +118,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AddFlyoutContentToLayoutIfNeeded(behavior);
 
 			if (_flyoutContent?.AndroidView == null)
+			{
 				return;
+			}
 
 			bool closeAfterUpdate = (behavior == FlyoutBehavior.Flyout && _behavior == FlyoutBehavior.Locked);
 			_behavior = behavior;
 			UpdateDrawerLockMode(behavior);
 
 			if (closeAfterUpdate)
+			{
 				CloseDrawer(_flyoutContent.AndroidView, false);
+			}
 		}
 
 		#endregion IFlyoutBehaviorObserver
@@ -161,7 +177,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			bool result = base.OnInterceptTouchEvent(ev);
 
 			if (_flyoutContent != null && GetDrawerLockMode(_flyoutContent.AndroidView) == LockModeLockedOpen)
+			{
 				return false;
+			}
 
 			return result;
 		}
@@ -187,7 +205,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				// If the AndroidView property which is the DrawerLayout is initialized at this point, the Flyout first draw pass finished.
 				if (_flyoutContent?.AndroidView is not null)
+				{
 					FlyoutFirstDrawPassFinished = true;
+				}
 
 				if (this.IsDrawerOpen(_flyoutContent.AndroidView) != _shellContext.Shell.FlyoutIsPresented)
 				{
@@ -230,9 +250,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AddView(content);
 
 			if (context.Shell is IFlyoutView view)
+			{
 				AddFlyoutContentToLayoutIfNeeded(view.FlyoutBehavior);
-
-			((IShellController)context.Shell).AddFlyoutBehaviorObserver(this);
+			} ((IShellController)context.Shell).AddFlyoutBehaviorObserver(this);
 
 
 			if (Shell.FlyoutIsPresented && _flyoutContent != null)
@@ -244,7 +264,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void AddFlyoutContentToLayoutIfNeeded(FlyoutBehavior behavior)
 		{
 			if (behavior == FlyoutBehavior.Disabled)
+			{
 				return;
+			}
 
 			if (_flyoutContent == null && ChildCount > 0)
 			{
@@ -259,7 +281,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_flyoutContent == null)
+			{
 				return;
+			}
 
 			if (e.PropertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
 			{
@@ -282,7 +306,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (presented)
 			{
 				if (!IsDrawerOpen(_flyoutContent.AndroidView))
+				{
 					OpenDrawer(_flyoutContent.AndroidView, true);
+				}
 			}
 			else
 			{
@@ -294,7 +320,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			UpdateFlyoutSize();
 			if (_content != null)
+			{
 				UpdateDrawerLockMode(_behavior);
+			}
 		}
 
 		protected virtual void UpdateDrawerLockMode(FlyoutBehavior behavior)
@@ -335,7 +363,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateFlyoutSize()
 		{
 			if (_flyoutContent?.AndroidView == null)
+			{
 				return;
+			}
 
 			UpdateFlyoutSize(_flyoutContent.AndroidView);
 
@@ -343,7 +373,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// without this the flyout will just be empty once you change
 			// the width
 			if (Shell.FlyoutIsPresented)
+			{
 				OpenDrawer(_flyoutContent.AndroidView, false);
+			}
 		}
 
 		protected virtual void UpdateFlyoutSize(AView flyoutView)
@@ -382,7 +414,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						}
 					}
 					else
+					{
 						SetScrimColor(backdropColor.ToPlatform());
+					}
 				}
 				else
 				{
@@ -398,7 +432,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellController?.RemoveAppearanceObserver(this);
 
 			if (Shell != null)
+			{
 				Shell.PropertyChanged -= OnShellPropertyChanged;
+			}
 
 			if (this.IsAlive())
 			{
@@ -421,7 +457,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -432,7 +470,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				RemoveView(_content);
 
 				if (_flyoutContent != null)
+				{
 					RemoveView(_flyoutContent.AndroidView);
+				}
 
 				_flyoutContent?.Dispose();
 			}

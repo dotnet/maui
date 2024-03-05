@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Platform
 			var items = GetSwipeItemsByDirection(swipeView, swipeDirection);
 			double threshold = swipeView.Threshold;
 			if (items == null)
+			{
 				return Size.Zero;
+			}
 
 			var contentHeight = contentView.Frame.Height;
 			var contentWidth = contentView.Frame.Width;
@@ -30,9 +32,13 @@ namespace Microsoft.Maui.Platform
 					double swipeItemWidth;
 
 					if (swipeItemViewSizeRequest.Width > 0)
+					{
 						swipeItemWidth = threshold > swipeItemViewSizeRequest.Width ? threshold : swipeItemViewSizeRequest.Width;
+					}
 					else
+					{
 						swipeItemWidth = threshold > SwipeItemWidth ? threshold : SwipeItemWidth;
+					}
 
 					return new Size(swipeItemWidth, contentHeight);
 				}
@@ -52,9 +58,13 @@ namespace Microsoft.Maui.Platform
 					double swipeItemHeight;
 
 					if (swipeItemViewSizeRequest.Width > 0)
+					{
 						swipeItemHeight = threshold > swipeItemViewSizeRequest.Height ? threshold : (float)swipeItemViewSizeRequest.Height;
+					}
 					else
+					{
 						swipeItemHeight = threshold > contentHeight ? threshold : contentHeight;
+					}
 
 					return new Size(contentWidth / items.Count, swipeItemHeight);
 				}
@@ -84,7 +94,9 @@ namespace Microsoft.Maui.Platform
 								var swipeItemViewSizeRequest = swipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 								if (swipeItemViewSizeRequest.Height > itemHeight)
+								{
 									itemHeight = swipeItemViewSizeRequest.Height;
+								}
 							}
 						}
 

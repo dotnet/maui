@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Storage
 		{
 			// If we specifically want the internal storage, no extra checks are needed, we have permission
 			if (TemporaryLocation == FileProviderLocation.Internal)
+			{
 				return Application.Context.CacheDir;
+			}
 
 			// If we explicitly want only external locations we need to do some permissions checking
 			var externalOnly = TemporaryLocation == FileProviderLocation.External;
@@ -42,11 +44,15 @@ namespace Microsoft.Maui.Storage
 
 			// undo all the work if we have requested a fail (mainly for testing)
 			if (AlwaysFailExternalMediaAccess)
+			{
 				hasExternalMedia = false;
+			}
 
 			// fail if we need the external storage, but there is none
 			if (externalOnly && !hasExternalMedia)
+			{
 				throw new InvalidOperationException("Unable to access the external storage, the media is not mounted.");
+			}
 
 			// based on permssions, return the correct directory
 			// if permission were required, then it would have already thrown
@@ -80,12 +86,17 @@ namespace Microsoft.Maui.Storage
 
 			// the internal cache path is available only by file provider in N+
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
 				publicLocations.Add(Application.Context?.CacheDir?.CanonicalPath);
+			}
 
 			foreach (var location in publicLocations)
 			{
 				if (string.IsNullOrWhiteSpace(location))
+				{
+				{
 					continue;
+				}
 
 				// make sure we have a trailing slash
 				var suffixedPath = filename.EndsWith(Java.IO.File.Separator)
@@ -94,7 +105,9 @@ namespace Microsoft.Maui.Storage
 
 				// check if the requested file is in a folder
 				if (suffixedPath.StartsWith(location, StringComparison.OrdinalIgnoreCase))
+				{
 					return true;
+				}
 			}
 
 			return false;

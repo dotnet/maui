@@ -97,7 +97,11 @@ namespace Microsoft.Maui.Controls.Foldable
 			get
 			{
 				if (_layoutWidth == -1)
+				{
+				{
 					return TwoPaneViewMode.SinglePane;
+				}
+				}
 
 				var mode = GetTwoPaneViewMode(_layoutWidth, _layoutHeight, _hinge);
 				return mode;
@@ -171,7 +175,11 @@ namespace Microsoft.Maui.Controls.Foldable
 			{
 				var locationOnScreen = DualScreenService.GetLocationOnScreen(_layout);
 				if (!locationOnScreen.HasValue)
+				{
+				{
 					return Rect.Zero;
+				}
+				}
 
 				containerArea = new Rect(locationOnScreen.Value, new Size(width, height));
 			}
@@ -186,7 +194,9 @@ namespace Microsoft.Maui.Controls.Foldable
 		void UpdateLayouts()
 		{
 			if (_layoutWidth > 0 && _layoutHeight > 0)
+			{
 				UpdateLayouts(_layoutWidth, _layoutHeight);
+			}
 		}
 
 		internal void UpdateLayouts(double width, double height)
@@ -206,7 +216,9 @@ namespace Microsoft.Maui.Controls.Foldable
 			Rect _newPane2 = Pane2;
 			var locationOnScreen = GetScreenRelativeBounds(width, height);
 			if (locationOnScreen == Rect.Zero && Hinge == Rect.Zero)
+			{
 				locationOnScreen = containerArea;
+			}
 
 			bool isSpanned = IsInMultipleRegions(locationOnScreen);
 			bool hingeIsVertical = Hinge.Height > Hinge.Width;
@@ -253,7 +265,9 @@ namespace Microsoft.Maui.Controls.Foldable
 						_newPane1 = new Rect(amountObscured, 0, locationOnScreen.Width - amountObscured, locationOnScreen.Height);
 					}
 					else
+					{
 						_newPane1 = new Rect(0, 0, locationOnScreen.Width, locationOnScreen.Height);
+					}
 
 					_newPane2 = Rect.Zero;
 				}
@@ -275,17 +289,23 @@ namespace Microsoft.Maui.Controls.Foldable
 						_newPane1 = new Rect(0, amountObscured, locationOnScreen.Width, locationOnScreen.Height - amountObscured);
 					}
 					else
+					{
 						_newPane1 = new Rect(0, 0, locationOnScreen.Width, locationOnScreen.Height);
+					}
 
 					_newPane2 = Rect.Zero;
 				}
 			}
 
 			if (_newPane2.Height < 0 || _newPane2.Width < 0)
+			{
 				_newPane2 = Rect.Zero;
+			}
 
 			if (_newPane1.Height < 0 || _newPane1.Width < 0)
+			{
 				_newPane1 = Rect.Zero;
+			}
 
 			Pane1 = _newPane1;
 			Pane2 = _newPane2;
@@ -354,7 +374,9 @@ namespace Microsoft.Maui.Controls.Foldable
 		{
 			// TODO: ideally this would also return SinglePane if isSeparating were false to mimic Samsung Flex Mode
 			if (!IsInMultipleRegions(GetScreenRelativeBounds(width, height)))
+			{
 				return TwoPaneViewMode.SinglePane;
+			}
 
 			// Hinge/fold orientation determines the direction to stack the views,
 			// NOT the portrait/landscape orientation of the screen's outer dimensions
@@ -390,7 +412,9 @@ namespace Microsoft.Maui.Controls.Foldable
 			Action onChanged = null)
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))
+			{
 				return false;
+			}
 
 			backingStore = value;
 			onChanged?.Invoke();

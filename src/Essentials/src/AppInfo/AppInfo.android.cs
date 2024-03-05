@@ -46,7 +46,9 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var config = Application.Context.Resources?.Configuration;
 			if (config == null)
+			{
 				return AppTheme.Unspecified;
+			}
 
 			return (config.UiMode & UiMode.NightMask) switch
 			{
@@ -64,7 +66,9 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var config = Application.Context.Resources?.Configuration;
 			if (config == null)
+			{
 				return LayoutDirection.Unknown;
+			}
 
 			return (config.LayoutDirection == Android.Views.LayoutDirection.Rtl)
 				? LayoutDirection.RightToLeft

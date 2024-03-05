@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls
 			};
 
 			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			{
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+			}
 
 			return clone;
 		}
@@ -67,15 +69,21 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (dispatch)
+			{
 				target.Dispatcher.DispatchIfRequired(Set);
+			}
 			else
+			{
 				Set();
+			}
 
 			void Set()
 			{
 				var value = GetValue();
 				if (value is DynamicResource dynamicResource)
+				{
 					target.SetDynamicResource(_targetProperty, dynamicResource.Key, specificity);
+				}
 				else
 				{
 					if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
@@ -137,9 +145,13 @@ namespace Microsoft.Maui.Controls
 
 			AppTheme appTheme;
 			if (app == null)
+			{
 				appTheme = AppInfo.RequestedTheme;
+			}
 			else
+			{
 				appTheme = app.RequestedTheme;
+			}
 
 			return appTheme switch
 			{

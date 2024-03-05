@@ -91,11 +91,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool SelectDrawable(int index)
 		{
 			if (!_isRunning)
+			{
 				return base.SelectDrawable(0);
+			}
 
 			// Hitting last frame?
 			if (index != 0 && index == _frameCount - 1)
+			{
 				_repeatCounter++;
+			}
 
 			// Restarted animation, reached max number of repeats?
 			if (_repeatCounter >= RepeatCount)
@@ -106,7 +110,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				new Handler(Looper.MainLooper).Post(() =>
 				{
 					if (this.IsRunning)
+					{
 						this.Stop();
+					}
 				});
 
 				// Until stopped, show first image.
@@ -191,14 +197,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (drawableIdentifier != 0)
 			{
 				if (!FileImageSourceHandler.DecodeSynchronously)
+				{
 					await BitmapFactory.DecodeResourceAsync(context.Resources, drawableIdentifier, options);
+				}
 				else
+				{
 					BitmapFactory.DecodeResource(context.Resources, drawableIdentifier, options);
+				}
 
 				animation = await GetFormsAnimationDrawableFromResource(drawableIdentifier, context, options);
 			}
 			else
+			{
 				animation = await GetFormsAnimationDrawableFromFile(file, context, options);
+			}
 
 			if (animation == null)
 			{
@@ -227,9 +239,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						try
 						{
 							if (!FileImageSourceHandler.DecodeSynchronously)
+							{
 								await decoder.ParseAsync(stream).ConfigureAwait(false);
+							}
 							else
+							{
 								decoder.ParseAsync(stream).Wait();
+							}
 
 							animation = decoder.Animation;
 						}
@@ -255,7 +271,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			FormsAnimationDrawable animation = null;
 
 			using (var stream = context.Resources.OpenRawResource(resourceId))
+			{
 				animation = await GetFormsAnimationDrawableFromStream(stream, context, options);
+			}
 
 			return animation;
 		}
@@ -265,7 +283,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			FormsAnimationDrawable animation = null;
 
 			using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize, true))
+			{
 				animation = await GetFormsAnimationDrawableFromStream(stream, context, options);
+			}
 
 			return animation;
 		}
@@ -279,9 +299,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				try
 				{
 					if (!FileImageSourceHandler.DecodeSynchronously)
+					{
 						await decoder.ParseAsync(stream).ConfigureAwait(false);
+					}
 					else
+					{
 						decoder.ParseAsync(stream).Wait();
+					}
 
 					animation = decoder.Animation;
 				}
@@ -334,7 +358,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_sourceDensity < _targetDensity)
 				{
 					if (_currentBitmap == null)
+					{
 						_currentBitmap = Bitmap.CreateBitmap(header.Width, header.Height, Bitmap.Config.Argb8888);
+					}
 
 					System.Diagnostics.Debug.Assert(_currentBitmap.Width == header.Width);
 					System.Diagnostics.Debug.Assert(_currentBitmap.Height == header.Height);
@@ -357,12 +383,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				// Frame delay compability adjustment in milliseconds.
 				int delay = gifBitmap.Delay;
 				if (delay <= 20)
+				{
 					delay = 100;
+				}
 
 				Animation.AddFrame(new BitmapDrawable(_context.Resources, bitmap), delay);
 
 				if (gifBitmap.LoopCount != 0)
+				{
 					Animation.RepeatCount = gifBitmap.LoopCount;
+				}
 			}
 		}
 
@@ -381,10 +411,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (!disposing)
+			{
 				return;
+			}
 
 			if (_currentBitmap != null)
 			{

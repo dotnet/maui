@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var page = new ContentPage();
 			if (item != null)
+			{
 				page.Title = item.ToString();
+			}
 
 			return page;
 		}

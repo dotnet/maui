@@ -170,7 +170,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action, IMauiContext mauiContext)
 		{
 			if (view.Parent is Border wrapper)
+			{
 				view = wrapper;
+			}
 
 			// If the view has a parent, it's already attached to the UI
 			if (view.Parent != null)
@@ -182,7 +184,10 @@ namespace Microsoft.Maui.DeviceTests
 					"Content on Window has not been set. Most likely the window under test isn't being registered against the test service being used. Check if you're passing the right MauiContext in");
 
 				if (window.Content.XamlRoot != view.XamlRoot)
+				{
+				{
 					throw new Exception("The window retrieved from the service is different than the window this view is attached to");
+				}
 
 				return await Run(() => action(window));
 			}
@@ -203,7 +208,10 @@ namespace Microsoft.Maui.DeviceTests
 				var window = (Window)mauiContext!.Services!.GetService(typeof(Window))!;
 
 				if (window.Content is not null)
+				{
+				{
 					throw new Exception("The window retrieved from the service is already attached to existing content");
+				}
 
 				window.Content = new Grid
 				{
@@ -274,7 +282,9 @@ namespace Microsoft.Maui.DeviceTests
 			view.AttachAndRun(async (window) =>
 			{
 				if (view.Parent is Border wrapper)
+				{
 					view = wrapper;
+				}
 
 				var device = CanvasDevice.GetSharedDevice();
 
@@ -302,7 +312,9 @@ namespace Microsoft.Maui.DeviceTests
 			var actualColor = bitmap.ColorAtPoint(x, y);
 
 			if (!actualColor.IsEquivalent(expectedColor))
+			{
 				Assert.Equal(expectedColor, actualColor);
+			}
 
 			return bitmap;
 		}
@@ -330,7 +342,9 @@ namespace Microsoft.Maui.DeviceTests
 			var imageRect = new Graphics.RectF(0, 0, bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height);
 
 			if (withinRectModifier is not null)
+			{
 				imageRect = withinRectModifier.Invoke(imageRect);
+			}
 
 			if (imageRect.Width == 0 || imageRect.Height == 0)
 			{
@@ -370,7 +384,9 @@ namespace Microsoft.Maui.DeviceTests
 			var imageRect = new Graphics.RectF(0, 0, bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height);
 
 			if (withinRectModifier is not null)
+			{
 				imageRect = withinRectModifier.Invoke(imageRect);
+			}
 
 			if (imageRect.Width == 0 || imageRect.Height == 0)
 			{
@@ -465,7 +481,9 @@ namespace Microsoft.Maui.DeviceTests
 				for (int i = 0; i < first.Length; i++)
 				{
 					if (first[i] != second[i])
+					{
 						return false;
+					}
 				}
 				return true;
 			}
@@ -475,9 +493,13 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
 			if (ex is null)
+			{
 				throw new XunitException(await CreateScreenshotError(bitmap, message ?? "There was an error."));
+			}
 			else
+			{
 				throw new XunitException(await CreateScreenshotError(bitmap, message ?? "There was an error: " + ex.Message), ex);
+			}
 		}
 
 		public static TextTrimming ToPlatform(this LineBreakMode mode) =>
@@ -506,12 +528,19 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			StackPanel? topNavArea;
 			if (navigationView is MauiNavigationView mauiNavView)
+			{
 				topNavArea = mauiNavView.TopNavArea;
+			}
 			else
+			{
+			{
 				topNavArea = navigationView.FindName("TopNavArea") as StackPanel;
+			}
 
 			if (topNavArea is null)
+			{
 				throw new Exception("Unable to find Top Nav Area");
+			}
 
 			return topNavArea.GetChildren<NavigationViewItem>().ToList();
 		}
@@ -542,12 +571,18 @@ namespace Microsoft.Maui.DeviceTests
 				?.GetDescendantByName<UI.Xaml.Controls.ContentPresenter>("ContentPresenter");
 
 			if (platformItem is null)
+			{
 				throw new Exception("Unable to locate Tab Item Text Container");
+			}
 
 			if (hasColor)
+			{
 				await AssertContainsColor(platformItem, expectedColor, mauiContext);
+			}
 			else
+			{
 				await AssertDoesNotContainColor(platformItem, expectedColor, mauiContext);
+			}
 		}
 
 		static async Task AssertTabItemIconColor(
@@ -560,12 +595,18 @@ namespace Microsoft.Maui.DeviceTests
 				?.GetDescendantByName<UI.Xaml.Controls.ContentPresenter>("Icon");
 
 			if (platformItem is null)
+			{
 				throw new Exception("Unable to locate Tab Item Icon Container");
+			}
 
 			if (hasColor)
+			{
 				await AssertContainsColor(platformItem, expectedColor, mauiContext);
+			}
 			else
+			{
 				await AssertDoesNotContainColor(platformItem, expectedColor, mauiContext);
+			}
 		}
 
 		static public Task AssertTabItemIconDoesNotContainColor(

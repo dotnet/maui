@@ -7,7 +7,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static ImagePaint AsPaint(this NSImage target)
 		{
 			if (target == null)
+			{
 				return null;
+			}
 
 			var image = new PlatformImage(target);
 			var paint = new ImagePaint { Image = image };

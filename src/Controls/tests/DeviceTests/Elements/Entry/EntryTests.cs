@@ -160,9 +160,13 @@ namespace Microsoft.Maui.DeviceTests
 					InvokeOnMainThreadAsync(() =>
 					{
 						if (!entry.IsFocused)
+						{
 							entry.Focus();
+						}
 						else
+						{
 							_focused.Set();
+						}
 					});
 
 					_focused.WaitOne();

@@ -50,13 +50,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.OnDestroy();
 			if (Context.IsDestroyed())
+			{
 				Page?.Handler?.DisconnectHandler();
+			}
 		}
 
 		public override void OnResume()
 		{
 			if (_pageContainer == null)
+			{
 				return;
+			}
 
 			_parent = (_pageContainer.Parent as ViewGroup) ?? _parent;
 			if (_pageContainer.Parent == null && _parent != null)

@@ -52,7 +52,10 @@ namespace Microsoft.Maui.Controls
 				var resourceProvider = parent as IResourcesProvider;
 				var vpSheets = resourceProvider?.GetStyleSheets();
 				if (vpSheets != null)
+				{
 					sheets.AddRange(vpSheets);
+				}
+
 				parent = parent.Parent;
 			}
 
@@ -64,8 +67,10 @@ namespace Microsoft.Maui.Controls
 			for (var i = (sheets?.Count ?? 0) - 1; i >= 0; i--)
 			{
 				if (element is BindableObject bo)
+				{
 					//FIXME: is it ok to ignore specificty here ?
 					((IStyle)sheets[i]).Apply(bo, new SetterSpecificity());
+				}
 			}
 
 			foreach (var child in element.GetVisualChildren())

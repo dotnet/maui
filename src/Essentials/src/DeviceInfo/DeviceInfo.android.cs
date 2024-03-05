@@ -23,7 +23,10 @@ namespace Microsoft.Maui.Devices
 				// https://developer.android.com/reference/android/provider/Settings.Global#DEVICE_NAME
 				var name = GetSystemSetting("device_name", true);
 				if (string.IsNullOrWhiteSpace(name))
+				{
 					name = Model;
+				}
+
 				return name;
 			}
 		}
@@ -84,13 +87,21 @@ namespace Microsoft.Maui.Devices
 		static DeviceIdiom DetectIdiom(UiMode uiMode)
 		{
 			if (uiMode == UiMode.TypeNormal)
+			{
 				return DeviceIdiom.Unknown;
+			}
 			else if (uiMode == UiMode.TypeTelevision)
+			{
 				return DeviceIdiom.TV;
+			}
 			else if (uiMode == UiMode.TypeDesk)
+			{
 				return DeviceIdiom.Desktop;
+			}
 			else if (uiMode == UiMode.TypeWatch)
+			{
 				return DeviceIdiom.Watch;
+			}
 
 			return DeviceIdiom.Unknown;
 		}
@@ -119,7 +130,9 @@ namespace Microsoft.Maui.Devices
 					Build.Product.Contains("vbox86p", StringComparison.Ordinal);
 
 				if (isEmulator)
+				{
 					return DeviceType.Virtual;
+				}
 
 				return DeviceType.Physical;
 			}
@@ -128,9 +141,13 @@ namespace Microsoft.Maui.Devices
 		static string GetSystemSetting(string name, bool isGlobal = false)
 		{
 			if (isGlobal && OperatingSystem.IsAndroidVersionAtLeast(25))
+			{
 				return Settings.Global.GetString(Application.Context.ContentResolver, name);
+			}
 			else
+			{
 				return Settings.System.GetString(Application.Context.ContentResolver, name);
+			}
 		}
 	}
 }

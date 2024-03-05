@@ -375,7 +375,9 @@ namespace Microsoft.Maui.Controls
 		{
 			ImageSource image = ImageSource;
 			if (image != null)
+			{
 				SetInheritedBindingContext(image, BindingContext);
+			}
 
 			base.OnBindingContextChanged();
 		}
@@ -472,11 +474,17 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanged(propertyName);
 
 			if (propertyName == BorderColorProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IButtonStroke.StrokeColor));
+			}
 			else if (propertyName == BorderWidthProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IButtonStroke.StrokeThickness));
+			}
 			else if (propertyName == ImageSourceProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IImage.Source));
+			}
 		}
 
 		void IButton.Clicked()
@@ -497,7 +505,9 @@ namespace Microsoft.Maui.Controls
 		void IImageSourcePart.UpdateIsLoading(bool isLoading)
 		{
 			if (!isLoading && _wasImageLoading)
+			{
 				Handler?.UpdateValue(nameof(ContentLayout));
+			}
 
 			_wasImageLoading = isLoading;
 		}
@@ -580,12 +590,89 @@ namespace Microsoft.Maui.Controls
 				// IMPORTANT! Update ButtonContentDesignTypeConverter.IsValid if making changes here
 				var strValue = value?.ToString();
 				if (strValue == null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
 					throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");
+After:
+				{
+					throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+					throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");
+After:
+				{
+					throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");
+				}
+*/
+				{
+				{
+					throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				double spacing = DefaultSpacing;
+				var position = ButtonContentLayout.ImagePosition.Left;
+
+				var spacingFirst = char.IsDigit(parts[0][0]);
+After:
+				}
+
+				double spacing = DefaultSpacing;
+				var position = ButtonContentLayout.ImagePosition.Left;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				double spacing = DefaultSpacing;
+				var position = ButtonContentLayout.ImagePosition.Left;
+
+				var spacingFirst = char.IsDigit(parts[0][0]);
+After:
+				}
+
+				double spacing = DefaultSpacing;
+				var position = ButtonContentLayout.ImagePosition.Left;
+*/
+				}
 
 				string[] parts = strValue.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-				if (parts.Length != 1 && parts.Length != 2)
+				
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				int positionIndex = spacingFirst ? (parts.Length == 2 ? 1 : -1) : 0;
+				int spacingIndex = spacingFirst ? 0 : (parts.Length == 2 ? 1 : -1);
+
+				if (spacingIndex > -1)
+					spacing = double.Parse(parts[spacingIndex]);
+After:
+				var spacingFirst = char.IsDigit(parts[0][0]);
+
+				int positionIndex = spacingFirst ? (parts.Length == 2 ? 1 : -1) : 0;
+				int spacingIndex = spacingFirst ? 0 : (parts.Length == 2 ? 1 : -1);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				int positionIndex = spacingFirst ? (parts.Length == 2 ? 1 : -1) : 0;
+				int spacingIndex = spacingFirst ? 0 : (parts.Length == 2 ? 1 : -1);
+
+				if (spacingIndex > -1)
+					spacing = double.Parse(parts[spacingIndex]);
+After:
+				var spacingFirst = char.IsDigit(parts[0][0]);
+
+				int positionIndex = spacingFirst ? (parts.Length == 2 ? 1 : -1) : 0;
+				int spacingIndex = spacingFirst ? 0 : (parts.Length == 2 ? 1 : -1);
+*/
+if (parts.Length != 1 && parts.Length != 2)
+				{
 					throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(ButtonContentLayout)}");
+				}
 
 				double spacing = DefaultSpacing;
 				var position = ButtonContentLayout.ImagePosition.Left;
@@ -596,10 +683,14 @@ namespace Microsoft.Maui.Controls
 				int spacingIndex = spacingFirst ? 0 : (parts.Length == 2 ? 1 : -1);
 
 				if (spacingIndex > -1)
+				{
 					spacing = double.Parse(parts[spacingIndex]);
+				}
 
 				if (positionIndex > -1)
+				{
 					position = (ButtonContentLayout.ImagePosition)Enum.Parse(typeof(ButtonContentLayout.ImagePosition), parts[positionIndex], true);
+				}
 
 				return new ButtonContentLayout(position, spacing);
 			}

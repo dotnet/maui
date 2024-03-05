@@ -58,7 +58,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_intent == value)
+				{
 					return;
+				}
 
 				OnPropertyChanging();
 				_intent = value;
@@ -120,13 +122,17 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 			if (Root != null)
+			{
 				SetInheritedBindingContext(Root, BindingContext);
+			}
 		}
 
 		protected virtual void OnModelChanged()
 		{
 			foreach (Cell cell in Root.SelectMany(r => r))
+			{
 				cell.Parent = this;
+			}
 
 			ModelChanged?.Invoke(this, EventArgs.Empty);
 		}
@@ -164,7 +170,9 @@ namespace Microsoft.Maui.Controls
 		void OnTableModelRootPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == TableSectionBase.TitleProperty.PropertyName)
+			{
 				OnModelChanged();
+			}
 		}
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => new List<Maui.IVisualTreeElement>() { this.Root };
@@ -188,7 +196,9 @@ namespace Microsoft.Maui.Controls
 				set
 				{
 					if (_root == value)
+					{
 						return;
+					}
 
 					RemoveEvents(_root);
 					_root = value;
@@ -238,7 +248,10 @@ namespace Microsoft.Maui.Controls
 			internal static Tuple<int, int> GetPath(Cell item)
 			{
 				if (item == null)
+				{
+				{
 					throw new ArgumentNullException("item");
+				}
 
 				return (Tuple<int, int>)item.GetValue(PathProperty);
 			}
@@ -252,7 +265,9 @@ namespace Microsoft.Maui.Controls
 			void RemoveEvents(TableRoot tableRoot)
 			{
 				if (tableRoot == null)
+				{
 					return;
+				}
 
 				tableRoot.CollectionChanged -= _parent.CollectionChanged;
 				tableRoot.SectionCollectionChanged -= _parent.OnSectionCollectionChanged;
@@ -261,7 +276,9 @@ namespace Microsoft.Maui.Controls
 			static void SetPath(Cell item, Tuple<int, int> index)
 			{
 				if (item == null)
+				{
 					return;
+				}
 
 				item.SetValue(PathProperty, index);
 			}

@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Platform
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
 		{
 			if (_handler != null)
+			{
 				_handler.CurrentNavigationEvent = WebNavigationEvent.NewPage;
+			}
 
 			LoadDataWithBaseURL(baseUrl ?? AssetBaseUrl, html ?? string.Empty, "text/html", "UTF-8", null);
 		}

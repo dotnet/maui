@@ -76,7 +76,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					// except if your not running iOS 7... then it fails...
 					if (_fitSize.Width <= 0 || _fitSize.Height <= 0)
+					{
 						_fitSize = new SizeF(22, 22); // Per the glorious documentation known as the SDK docs
+					}
 
 					Control.AddTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
 					Control.AddTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
@@ -113,9 +115,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Element != null)
 			{
 				if (Element.MinimumTrackColor == null)
+				{
 					Control.MinimumTrackTintColor = defaultmintrackcolor;
+				}
 				else
+				{
 					Control.MinimumTrackTintColor = Element.MinimumTrackColor.ToPlatform();
+				}
 			}
 		}
 
@@ -125,9 +131,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Element != null)
 			{
 				if (Element.MaximumTrackColor == null)
+				{
 					Control.MaximumTrackTintColor = defaultmaxtrackcolor;
+				}
 				else
+				{
 					Control.MaximumTrackTintColor = Element.MaximumTrackColor.ToPlatform();
+				}
 			}
 		}
 
@@ -137,9 +147,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Element != null)
 			{
 				if (Element.ThumbColor == null)
+				{
 					Control.ThumbTintColor = defaultthumbcolor;
+				}
 				else
+				{
 					Control.ThumbTintColor = Element.ThumbColor.ToPlatform();
+				}
 			}
 		}
 
@@ -158,21 +172,38 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Slider.MaximumProperty.PropertyName)
+			{
 				UpdateMaximum();
+			}
 			else if (e.PropertyName == Slider.MinimumProperty.PropertyName)
+			{
 				UpdateMinimum();
+			}
 			else if (e.PropertyName == Slider.ValueProperty.PropertyName)
+			{
 				UpdateValue();
+			}
 			else if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
+			{
+			{
 				UpdateMinimumTrackColor();
+			}
 			else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
+			{
 				UpdateMaximumTrackColor();
+			}
 			else if (e.PropertyName == Slider.ThumbImageSourceProperty.PropertyName)
+			{
 				UpdateThumbImage();
+			}
 			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+			{
 				UpdateThumbColor();
+			}
 			else if (e.PropertyName == Specifics.UpdateOnTapProperty.PropertyName)
+			{
 				UpdateTapRecognizer();
+			}
 		}
 
 		[PortHandler]
@@ -242,7 +273,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateValue()
 		{
 			if ((float)Element.Value != Control.Value)
+			{
 				Control.Value = (float)Element.Value;
+			}
 		}
 	}
 }

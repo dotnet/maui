@@ -19,12 +19,46 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasBattery)
+			{
 				return;
+			}
 
 			if (Battery.State == BatteryState.Unknown || Battery.State == BatteryState.NotPresent)
+
+/* Unmerged change from project 'Essentials.DeviceTests(net8.0-maccatalyst)'
+Before:
 				Assert.Equal(-1.0, Battery.ChargeLevel);
+After:
+			{
+				Assert.Equal(-1.0, Battery.ChargeLevel);
+			}
+*/
+
+/* Unmerged change from project 'Essentials.DeviceTests(net8.0-windows10.0.19041.0)'
+Before:
+				Assert.Equal(-1.0, Battery.ChargeLevel);
+After:
+			{
+				Assert.Equal(-1.0, Battery.ChargeLevel);
+			}
+*/
+
+/* Unmerged change from project 'Essentials.DeviceTests(net8.0-windows10.0.20348.0)'
+Before:
+				Assert.Equal(-1.0, Battery.ChargeLevel);
+After:
+			{
+				Assert.Equal(-1.0, Battery.ChargeLevel);
+			}
+*/
+			{
+				Assert.Equal(-1.0, Battery.ChargeLevel);
+			}
 			else
+			{
+			{
 				Assert.InRange(Battery.ChargeLevel, 0, 1.0);
+			}
 		}
 
 		[Fact]
@@ -33,7 +67,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasBattery)
+			{
 				return;
+			}
 
 			Assert.NotEqual(BatteryState.Unknown, Battery.State);
 		}
@@ -44,7 +80,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasBattery)
+			{
 				return;
+			}
 
 			Assert.NotEqual(BatteryPowerSource.Unknown, Battery.PowerSource);
 		}
@@ -60,7 +98,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasBattery)
+			{
 				return;
+			}
 
 			Battery.BatteryInfoChanged -= (sender, args) => { };
 		}

@@ -29,7 +29,10 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			public void Dispose()
 			{
 				if (toRelease != null)
+				{
+				{
 					toRelease.semaphore.Release();
+				}
 			}
 		}
 

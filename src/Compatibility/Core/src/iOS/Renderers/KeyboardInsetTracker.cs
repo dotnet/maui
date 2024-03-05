@@ -41,7 +41,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public void Dispose()
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -54,7 +56,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			//being called from LayoutSubviews but keyboard wasn't shown yet
 			if (_lastKeyboardRect.IsEmpty)
+			{
 				return;
+			}
 
 			var window = _fetchWindow();
 			// Code left verbose to make its operation more obvious
@@ -88,7 +92,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var fieldBottom = fieldPosition.Y + field.Frame.Height;
 				var offset = fieldBottom - keyboardTop;
 				if (offset > 0)
+				{
 					_setContentOffset(new PointF(0, offset));
+				}
 			}
 		}
 

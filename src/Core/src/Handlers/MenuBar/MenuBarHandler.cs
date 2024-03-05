@@ -79,7 +79,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.OnDisconnectHandler(platformView);
 			foreach (var item in VirtualView)
+			{
+			{
 				item?.Handler?.DisconnectHandler();
+			}
 		}
 	}
 }

@@ -56,7 +56,9 @@ namespace Microsoft.Maui.Storage
 			{
 				var appDataContainer = GetApplicationDataContainer(sharedName);
 				if (appDataContainer.Values.ContainsKey(key))
+				{
 					appDataContainer.Values.Remove(key);
+				}
 			}
 		}
 
@@ -80,7 +82,10 @@ namespace Microsoft.Maui.Storage
 				if (value == null)
 				{
 					if (appDataContainer.Values.ContainsKey(key))
+					{
 						appDataContainer.Values.Remove(key);
+					}
+
 					return;
 				}
 
@@ -124,10 +129,14 @@ namespace Microsoft.Maui.Storage
 		{
 			var localSettings = ApplicationData.Current.LocalSettings;
 			if (string.IsNullOrWhiteSpace(sharedName))
+			{
 				return localSettings;
+			}
 
 			if (!localSettings.Containers.ContainsKey(sharedName))
+			{
 				localSettings.CreateContainer(sharedName, ApplicationDataCreateDisposition.Always);
+			}
 
 			return localSettings.Containers[sharedName];
 		}
@@ -181,9 +190,13 @@ namespace Microsoft.Maui.Storage
 			var prefs = _preferences.GetOrAdd(CleanSharedName(sharedName), _ => new ShareNameDictionary());
 
 			if (value is null)
+			{
 				prefs.TryRemove(key, out _);
+			}
 			else
+			{
 				prefs[key] = string.Format(CultureInfo.InvariantCulture, "{0}", value);
+			}
 
 			Save();
 		}
@@ -211,7 +224,9 @@ namespace Microsoft.Maui.Storage
 		void Load()
 		{
 			if (!File.Exists(AppPreferencesPath))
+			{
 				return;
+			}
 
 			try
 			{
@@ -225,7 +240,9 @@ namespace Microsoft.Maui.Storage
 				{
 					_preferences.Clear();
 					foreach (var pair in readPreferences)
+					{
 						_preferences.TryAdd(pair.Key, pair.Value);
+					}
 				}
 			}
 			catch (JsonException)

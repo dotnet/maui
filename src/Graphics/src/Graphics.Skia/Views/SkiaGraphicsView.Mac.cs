@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 		private void Invalidate()
 		{
 			if (Handle == IntPtr.Zero)
+			{
 				return;
+			}
 
 			NeedsDisplay = true;
 		}
@@ -40,7 +42,9 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 		protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
 		{
 			if (_drawable == null)
+			{
 				return;
+			}
 
 			var skiaCanvas = e.Surface.Canvas;
 			skiaCanvas.Clear();

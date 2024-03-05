@@ -29,9 +29,15 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_property == value)
+				{
 					return;
+				}
+
 				if (IsSealed)
+				{
 					throw new InvalidOperationException("Cannot change Property once the Trigger has been applied.");
+				}
+
 				_property = value;
 
 				//convert the value
@@ -60,9 +66,14 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_triggerValue == value)
+				{
 					return;
+				}
+
 				if (IsSealed)
+				{
 					throw new InvalidOperationException("Cannot change Value once the Trigger has been applied.");
+				}
 
 				//convert the value
 				if (_property != null && s_valueConverter != null)
@@ -117,19 +128,29 @@ namespace Microsoft.Maui.Controls
 			var oldState = (bool)bindable.GetValue(_stateProperty);
 
 			if (Property == null)
+			{
 				return;
+			}
+
 			if (e.PropertyName != Property.PropertyName)
+			{
 				return;
+			}
+
 			object newvalue = bindable.GetValue(Property);
 			bool newstate = (newvalue == Value) || (newvalue != null && newvalue.Equals(Value));
 			if (oldState != newstate)
+			{
 				bindable.SetValue(_stateProperty, newstate);
+			}
 		}
 
 		void OnStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if ((bool)oldValue == (bool)newValue)
+			{
 				return;
+			}
 
 			ConditionChanged?.Invoke(bindable, (bool)oldValue, (bool)newValue);
 		}

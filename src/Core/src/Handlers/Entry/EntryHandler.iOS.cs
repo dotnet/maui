@@ -140,7 +140,9 @@ namespace Microsoft.Maui.Handlers
 				platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
 
 				if (_set)
+				{
 					platformView.SelectionChanged -= OnSelectionChanged;
+				}
 
 				_set = false;
 			}
@@ -148,7 +150,10 @@ namespace Microsoft.Maui.Handlers
 			public void SetVirtualView(MauiTextField platformView)
 			{
 				if (!_set)
+				{
 					platformView.SelectionChanged += OnSelectionChanged;
+				}
+
 				_set = true;
 			}
 
@@ -206,10 +211,14 @@ namespace Microsoft.Maui.Handlers
 					var selectedTextLength = platformView.GetSelectedTextLength();
 
 					if (virtualView.CursorPosition != cursorPosition)
+					{
 						virtualView.CursorPosition = cursorPosition;
+					}
 
 					if (virtualView.SelectionLength != selectedTextLength)
+					{
 						virtualView.SelectionLength = selectedTextLength;
+					}
 				}
 			}
 		}

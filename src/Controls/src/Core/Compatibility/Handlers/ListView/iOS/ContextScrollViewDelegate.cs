@@ -75,19 +75,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
 			if (ShouldIgnoreScrolling(scrollView))
+			{
 				return;
+			}
 
 			s_scrollViewBeingScrolled = new WeakReference<UIScrollView>(scrollView);
 
 			if (!IsOpen)
+			{
 				SetButtonsShowing(true);
+			}
 
 			var cell = GetContextCell(scrollView);
 			if (!cell.Selected)
+			{
 				return;
+			}
 
 			if (!IsOpen)
+			{
 				RemoveHighlight(scrollView);
+			}
 		}
 
 		public void PrepareForDeselect(UIScrollView scrollView)
@@ -98,14 +106,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void Scrolled(UIScrollView scrollView)
 		{
 			if (ShouldIgnoreScrolling(scrollView))
+			{
 				return;
+			}
 
 			var width = _finalButtonSize;
 			var count = _buttons.Count;
 			var ioffset = scrollView.ContentOffset.X / (float)count;
 
 			if (ioffset > width)
+			{
 				width = ioffset + 1;
+			}
 
 			for (var i = count - 1; i >= 0; i--)
 			{
@@ -135,7 +147,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void WillEndDragging(UIScrollView scrollView, PointF velocity, ref PointF targetContentOffset)
 		{
 			if (ShouldIgnoreScrolling(scrollView))
+			{
 				return;
+			}
 
 			var width = ButtonsWidth;
 			var x = targetContentOffset.X;
@@ -191,13 +205,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static bool ShouldIgnoreScrolling(UIScrollView scrollView)
 		{
 			if (s_scrollViewBeingScrolled == null)
+			{
 				return false;
+			}
 
 			UIScrollView scrollViewBeingScrolled;
 			if (!s_scrollViewBeingScrolled.TryGetTarget(out scrollViewBeingScrolled)
 				|| ReferenceEquals(scrollViewBeingScrolled, scrollView)
 				|| !ReferenceEquals(((ContextScrollViewDelegate)scrollViewBeingScrolled.Delegate)?._table, ((ContextScrollViewDelegate)scrollView.Delegate)?._table))
+			{
 				return false;
+			}
 
 			scrollView.SetContentOffset(new PointF(0, 0), false);
 			return true;
@@ -206,7 +224,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
@@ -228,7 +248,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void ClearCloserRecognizer(ContextActionsCell cell)
 		{
 			if (_globalCloser == null || _globalCloser.State == UIGestureRecognizerState.Cancelled)
+			{
 				return;
+			}
 
 			cell?.ContentCell?.RemoveGestureRecognizer(_closer);
 			_closer.Dispose();
@@ -248,7 +270,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				cell = view as ContextActionsCell;
 				if (cell != null)
+				{
 					break;
+				}
 
 				view = view.Superview;
 			}
@@ -265,11 +289,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var s = subviews[i];
 				if (s.Frame.Height > 1)
+				{
 					count++;
+				}
 			}
 
 			if (count <= 1)
+			{
 				return;
+			}
 
 			_backgroundView = subviews[0];
 			_backgroundView.RemoveFromSuperview();
@@ -281,7 +309,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void RestoreHighlight(UIScrollView scrollView)
 		{
 			if (_backgroundView == null)
+			{
 				return;
+			}
 
 			var cell = GetContextCell(scrollView);
 			cell.SelectionStyle = UITableViewCellSelectionStyle.Default;
@@ -294,7 +324,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void SetButtonsShowing(bool show)
 		{
 			for (var i = 0; i < _buttons.Count; i++)
+			{
 				_buttons[i].Hidden = !show;
+			}
 		}
 	}
 }

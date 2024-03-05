@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Platform
 		public static void SetShadow(this UIView platformView, IShadow? shadow)
 		{
 			if (shadow == null || shadow.Paint == null)
+			{
 				return;
+			}
 
 			var layer = platformView.Layer;
 			layer?.SetShadow(shadow);
@@ -20,7 +22,9 @@ namespace Microsoft.Maui.Platform
 		public static void SetShadow(this CALayer layer, IShadow? shadow)
 		{
 			if (shadow == null || shadow.Paint?.ToColor() == null)
+			{
 				return;
+			}
 
 			var radius = shadow.Radius;
 			var opacity = shadow.Opacity;

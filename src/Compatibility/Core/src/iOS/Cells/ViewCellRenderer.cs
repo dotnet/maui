@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var cell = reusableCell as ViewTableCell;
 			if (cell == null)
+			{
 				cell = new ViewTableCell(item.GetType().FullName);
+			}
 
 			cell.ViewCell = viewCell;
 
@@ -59,7 +61,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				set
 				{
 					if (_viewCell == value)
+					{
 						return;
+					}
+
 					UpdateCell(value);
 				}
 			}
@@ -78,7 +83,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var realCell = (ViewTableCell)GetRealCell(viewCell);
 
 				if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
+				{
 					UpdateIsEnabled(_viewCell.IsEnabled);
+				}
 			}
 
 			public override void LayoutSubviews()
@@ -101,11 +108,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Layout.LayoutChildIntoBoundingRegion(view, contentFrame.ToRectangle());
 
 				if (_rendererRef == null)
+				{
 					return;
+				}
 
 				IVisualElementRenderer renderer;
 				if (_rendererRef.TryGetTarget(out renderer))
+				{
 					renderer.NativeView.Frame = view.Bounds.ToRectangleF();
+				}
 
 				Performance.Stop(reference);
 			}
@@ -116,10 +127,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				IVisualElementRenderer renderer;
 				if (!_rendererRef.TryGetTarget(out renderer))
+				{
 					return base.SizeThatFits(size);
+				}
 
 				if (renderer.Element == null)
+				{
 					return SizeF.Empty;
+				}
 
 				double width = size.Width;
 				var height = size.Height > 0 ? size.Height : double.PositiveInfinity;
@@ -136,7 +151,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
+				{
 					return;
+				}
 
 				if (disposing)
 				{
@@ -164,7 +181,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			IVisualElementRenderer GetNewRenderer()
 			{
 				if (_viewCell.View == null)
+				{
 					throw new InvalidOperationException($"ViewCell must have a {nameof(_viewCell.View)}");
+				}
 
 				var newRenderer = Platform.CreateRenderer(_viewCell.View);
 				_rendererRef = new WeakReference<IVisualElementRenderer>(newRenderer);
@@ -190,17 +209,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				IVisualElementRenderer renderer;
 				if (_rendererRef == null || !_rendererRef.TryGetTarget(out renderer))
+				{
 					renderer = GetNewRenderer();
+				}
 				else
 				{
 					if (renderer.Element != null && renderer == Platform.GetRenderer(renderer.Element))
+					{
 						renderer.Element.ClearValue(Platform.RendererProperty);
+					}
 
 					var type = Microsoft.Maui.Controls.Internals.Registrar.Registered.GetHandlerTypeForObject(this._viewCell.View);
 					var reflectableType = renderer as System.Reflection.IReflectableType;
 					var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : renderer.GetType();
 					if (rendererType == type || (renderer is Platform.DefaultRenderer && type == null))
+					{
 						renderer.SetElement(this._viewCell.View);
+					}
 					else
 					{
 						//when cells are getting reused the element could be already set to another cell

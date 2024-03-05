@@ -185,6 +185,8 @@ namespace Microsoft.Maui.DeviceTests
 				var result = (ControlsPageTypesTestCase)Enum.Parse(typeof(ControlsPageTypesTestCase), name);
 
 				if (!createdPages.ContainsKey(result))
+				{
+				{
 					createdPages[result] = ControlsPageTypesTestCases.CreatePageType(result, new ContentPage()
 					{
 						Title = "Page Title",
@@ -196,6 +198,7 @@ namespace Microsoft.Maui.DeviceTests
 							}
 						}
 					});
+				}
 
 				return createdPages[result];
 			}

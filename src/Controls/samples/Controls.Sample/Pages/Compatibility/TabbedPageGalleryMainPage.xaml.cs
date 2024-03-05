@@ -61,33 +61,49 @@ namespace Maui.Controls.Sample.Pages
 		void OnToggleTabBar(object sender, EventArgs e)
 		{
 			if ((GetTabbedPage().BarBackground as SolidColorBrush)?.Color == SolidColorBrush.Purple.Color)
+			{
 				GetTabbedPage().BarBackground = null;
+			}
 			else
+			{
 				GetTabbedPage().BarBackground = SolidColorBrush.Purple;
+			}
 		}
 
 		void OnToggleTabBarTextColor(object sender, EventArgs e)
 		{
 			if (GetTabbedPage().BarTextColor == Colors.Green)
+			{
 				GetTabbedPage().BarTextColor = null;
+			}
 			else
+			{
 				GetTabbedPage().BarTextColor = Colors.Green;
+			}
 		}
 
 		void OnToggleTabItemUnSelectedColor(object sender, EventArgs e)
 		{
 			if (GetTabbedPage().UnselectedTabColor == Colors.Blue)
+			{
 				GetTabbedPage().UnselectedTabColor = null;
+			}
 			else
+			{
 				GetTabbedPage().UnselectedTabColor = Colors.Blue;
+			}
 		}
 
 		void OnToggleTabItemSelectedColor(object sender, EventArgs e)
 		{
 			if (GetTabbedPage().SelectedTabColor == Colors.Pink)
+			{
 				GetTabbedPage().SelectedTabColor = null;
+			}
 			else
+			{
 				GetTabbedPage().SelectedTabColor = Colors.Pink;
+			}
 		}
 
 		void OnRemoveTab(object sender, EventArgs e)

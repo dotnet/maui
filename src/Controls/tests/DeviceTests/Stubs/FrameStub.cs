@@ -36,9 +36,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			set
 			{
 				if (value == Visibility.Visible)
+				{
 					base.IsVisible = true;
+				}
 				else
+				{
 					base.IsVisible = false;
+				}
 			}
 		}
 
@@ -85,7 +89,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			set
 			{
 				if (value is Element e)
+				{
 					base.Parent = e;
+				}
 
 				_parent = value;
 			}

@@ -19,7 +19,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		public int IndexOf(T item)
 		{
 			if (Count == 0)
+			{
 				return ~0;
+			}
 
 			return _list.BinarySearch(item, _comparer);
 		}

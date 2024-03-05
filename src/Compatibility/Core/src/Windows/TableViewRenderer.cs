@@ -87,14 +87,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					if (item is Cell cell)
 					{
 						if (cell.IsEnabled)
+						{
 							Element.Model.RowSelected(cell);
+						}
+
 						break;
 					}
 				}
 			}
 
 			if (Control == null)
+			{
 				return;
+			}
 
 			Control.SelectedItem = null;
 		}

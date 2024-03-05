@@ -12,9 +12,13 @@ namespace Microsoft.Maui.Handlers
 			MauiActivityIndicator platformView;
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				platformView = new MauiActivityIndicator(CGRect.Empty, VirtualView) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Medium };
+			}
 			else
+			{
 				platformView = new MauiActivityIndicator(CGRect.Empty, VirtualView) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray };
+			}
 
 			return platformView;
 		}

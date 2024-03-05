@@ -49,7 +49,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (disposing && Control != null)
 			{
@@ -67,9 +69,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ImageButton.SourceProperty.PropertyName)
+			{
 				await ImageElementManager.SetImage(this, Element).ConfigureAwait(false);
+			}
 			else if (e.PropertyName == ImageButton.PaddingProperty.PropertyName)
+			{
 				UpdatePadding();
+			}
 		}
 
 		protected async override void OnElementChanged(ElementChangedEventArgs<ImageButton> e)
@@ -97,7 +103,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var uiElement = button ?? Control;
 			if (uiElement == null)
+			{
 				return;
+			}
 
 #pragma warning disable CA1416, CA1422 // TOOO:  UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later
 			uiElement.ContentEdgeInsets = new UIEdgeInsets(
@@ -135,7 +143,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var elemValue = (string)Element?.GetValue(AutomationProperties.NameProperty);
 			if (string.IsNullOrWhiteSpace(elemValue) && Control?.AccessibilityLabel == Control?.Title(UIControlState.Normal))
+			{
 				return;
+			}
 
 			base.SetAccessibilityLabel();
 		}

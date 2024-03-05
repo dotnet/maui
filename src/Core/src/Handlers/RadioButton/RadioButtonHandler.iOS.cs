@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.ClearSubviews();
 
 			if (handler.VirtualView.PresentedContent is IView view)
+			{
 				handler.PlatformView.AddSubview(view.ToPlatform(handler.MauiContext));
+			}
 		}
 
 		public static void MapContent(IRadioButtonHandler handler, IContentView page)
@@ -43,9 +45,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
 			if (radioButton.IsChecked)
+			{
 				handler.PlatformView.AccessibilityValue = "1";
+			}
 			else
+			{
 				handler.PlatformView.AccessibilityValue = "0";
+			}
 		}
 
 		[MissingMapper]

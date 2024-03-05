@@ -127,12 +127,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (visibility == AndroidTitleBarVisibility.Never)
 			{
 				if (!activity.Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
+				{
 					activity.Window.AddFlags(WindowManagerFlags.Fullscreen);
+				}
 			}
 			else
 			{
 				if (activity.Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
+				{
 					activity.Window.ClearFlags(WindowManagerFlags.Fullscreen);
+				}
 			}
 		}
 
@@ -142,7 +146,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			EventHandler<ViewInitializedEventArgs> viewInitialized = ViewInitialized;
 			if (viewInitialized != null)
+			{
 				viewInitialized(self, new ViewInitializedEventArgs { View = self, NativeView = nativeView });
+			}
 		}
 
 		[Obsolete]
@@ -238,12 +244,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FramePartition("RegisterAll");
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
+			{
 				RegisterCompatRenderers(context, maybeOptions);
+			}
 
 			Profile.FramePartition("Epilog");
 
 			if (ExpressionSearch.Default == null)
+			{
 				ExpressionSearch.Default = new AndroidExpressionSearch();
+			}
 
 			IsInitialized = true;
 			Profile.FrameEnd();
@@ -314,7 +324,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 					object value = ((FieldInfo)node.Member).GetValue(container);
 
 					if (_targetType.IsInstanceOfType(value))
+					{
 						_results.Add(value);
+					}
 				}
 				return base.VisitMember(node);
 			}

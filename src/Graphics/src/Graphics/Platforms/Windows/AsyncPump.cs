@@ -27,7 +27,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static void Run(Func<Task> func)
 		{
 			if (func == null)
+			{
+			{
 				throw new ArgumentNullException("func");
+			}
 
 			var prevCtx = SynchronizationContext.Current;
 			try
@@ -39,7 +42,11 @@ namespace Microsoft.Maui.Graphics.Platform
 				// Invoke the function and alert the context to when it completes
 				var t = func();
 				if (t == null)
+				{
+				{
 					throw new InvalidOperationException("No task provided.");
+				}
+
 				t.ContinueWith(delegate
 				{ syncCtx.Complete(); }, TaskScheduler.Default);
 
@@ -58,7 +65,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static T Run<T>(Func<Task<T>> asyncMethod)
 		{
 			if (asyncMethod == null)
+			{
+			{
 				throw new ArgumentNullException("asyncMethod");
+			}
 
 			var prevCtx = SynchronizationContext.Current;
 			try
@@ -70,7 +80,11 @@ namespace Microsoft.Maui.Graphics.Platform
 				// Invoke the function and alert the context to when it completes
 				var t = asyncMethod();
 				if (t == null)
+				{
+				{
 					throw new InvalidOperationException("No task provided.");
+				}
+
 				t.ContinueWith(delegate
 				{ syncCtx.Complete(); }, TaskScheduler.Default);
 
@@ -99,7 +113,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			public override void Post(SendOrPostCallback d, object state)
 			{
 				if (d == null)
+				{
+				{
 					throw new ArgumentNullException("d");
+				}
+
 				_mQueue.Add(new KeyValuePair<SendOrPostCallback, object>(d, state));
 			}
 
@@ -113,7 +131,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			public void RunOnCurrentThread()
 			{
 				foreach (var workItem in _mQueue.GetConsumingEnumerable())
+				{
+				{
 					workItem.Key(workItem.Value);
+				}
+				}
 			}
 
 			/// <summary>Notifies the context that no more work will arrive.</summary>

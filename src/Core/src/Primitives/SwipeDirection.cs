@@ -35,13 +35,19 @@ namespace Microsoft.Maui
 		internal static SwipeDirection GetSwipeDirectionFromAngle(double angle)
 		{
 			if (IsAngleInRange(angle, 45, 135))
+			{
 				return SwipeDirection.Up;
+			}
 
 			if (IsAngleInRange(angle, 0, 45) || IsAngleInRange(angle, 315, 360))
+			{
 				return SwipeDirection.Right;
+			}
 
 			if (IsAngleInRange(angle, 225, 315))
+			{
 				return SwipeDirection.Down;
+			}
 
 			return SwipeDirection.Left;
 		}

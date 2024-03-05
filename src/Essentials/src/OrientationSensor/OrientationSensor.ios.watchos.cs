@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		void DataUpdated(CMDeviceMotion data, NSError error)
 		{
 			if (data == null)
+			{
 				return;
+			}
 
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var field = data.Attitude.Quaternion;

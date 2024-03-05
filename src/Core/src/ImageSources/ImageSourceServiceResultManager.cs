@@ -57,7 +57,9 @@ namespace Microsoft.Maui
 		public bool RequiresReload(PlatformView uiContext)
 		{
 			if (!IsResolutionDependent)
+			{
 				return false;
+			}
 
 #if IOS || MACCATALYST || WINDOWS
 			if (uiContext is not null)

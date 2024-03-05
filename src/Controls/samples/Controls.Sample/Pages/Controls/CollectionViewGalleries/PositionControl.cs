@@ -78,7 +78,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		public void UpdatePositionCount(int itemsCount)
 		{
 			if (itemsCount > 0)
+			{
 				_slider.Maximum = itemsCount - 1;
+			}
 		}
 
 		public void UpdatePosition(int position)

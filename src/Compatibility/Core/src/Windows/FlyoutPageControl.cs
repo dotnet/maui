@@ -102,14 +102,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				double width = ActualWidth;
 
 				if (_commandBar != null)
+				{
 					height -= _commandBar.ActualHeight;
+				}
 
 				if (ShouldShowSplitMode && IsPaneOpen)
 				{
 					if (_split != null)
+					{
 						width -= _split.OpenPaneLength;
+					}
 					else if (_detailPresenter != null)
+					{
 						width -= _flyoutPresenter.ActualWidth;
+					}
 				}
 
 				return new global::Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
@@ -174,9 +180,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 
 				if (_split != null)
+				{
 					width = _split.OpenPaneLength;
+				}
 				else if (_flyoutPresenter != null)
+				{
 					width = _flyoutPresenter.ActualWidth;
+				}
 
 				return new global::Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
 			}
@@ -265,7 +275,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		Task<CommandBar> IToolbarProvider.GetCommandBarAsync()
 		{
 			if (_commandBar != null)
+			{
 				return Task.FromResult(_commandBar);
+			}
 
 			_commandBarTcs = new TaskCompletionSource<CommandBar>();
 			ApplyTemplate();
@@ -282,15 +294,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			_split = GetTemplateChild("SplitView") as SplitView;
 			if (_split == null)
+			{
 				return;
+			}
 
 			var paneToggle = GetTemplateChild("PaneTogglePane") as Microsoft.UI.Xaml.Controls.Button;
 			if (paneToggle != null)
+			{
 				paneToggle.Click += OnToggleClicked;
+			}
 
 			var contentToggle = GetTemplateChild("ContentTogglePane") as Microsoft.UI.Xaml.Controls.Button;
 			if (contentToggle != null)
+			{
 				contentToggle.Click += OnToggleClicked;
+			}
 
 			_flyoutPresenter = GetTemplateChild(FlyoutPresenterTemplateName) as FrameworkElement;
 			_detailPresenter = GetTemplateChild("DetailPresenter") as FrameworkElement;
@@ -303,7 +321,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateMode();
 
 			if (_commandBarTcs != null)
+			{
 				_commandBarTcs.SetResult(_commandBar);
+			}
 
 			_titleViewManager = new TitleViewManager(this);
 		}
@@ -360,10 +380,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				: WVisibility.Collapsed;
 
 			if (ContentTogglePaneButtonVisibility == WVisibility.Visible)
+			{
 				DetailTitleVisibility = WVisibility.Visible;
+			}
 
 			if (DetailTitleVisibility == WVisibility.Visible && !ShouldShowNavigationBar)
+			{
 				DetailTitleVisibility = WVisibility.Collapsed;
+			}
 
 			_firstLoad = true;
 		}

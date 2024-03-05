@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var elevation = iec?.On<PlatformConfiguration.Android>().GetElevation();
 
 			if (elevation == null)
+			{
 				return elevation;
+			}
 
 			return context.ToPixels(elevation.Value);
 		}

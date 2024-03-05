@@ -57,7 +57,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStop()
 		{
 			if (locationManager == null)
+			{
 				return;
+			}
 
 			locationManager.ShouldDisplayHeadingCalibration -= LocationManagerShouldDisplayHeadingCalibration;
 			locationManager.UpdatedHeading -= LocationManagerUpdatedHeading;

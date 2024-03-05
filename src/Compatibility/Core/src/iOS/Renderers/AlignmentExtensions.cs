@@ -15,14 +15,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					return UITextAlignment.Center;
 				case TextAlignment.End:
 					if (isLtr)
+					{
 						return UITextAlignment.Right;
+					}
 					else
+					{
 						return UITextAlignment.Left;
+					}
+
 				default:
 					if (isLtr)
+					{
 						return UITextAlignment.Left;
+					}
 					else
+					{
 						return UITextAlignment.Right;
+					}
 			}
 		}
 

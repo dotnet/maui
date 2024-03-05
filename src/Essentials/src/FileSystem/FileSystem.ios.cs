@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Storage
 		public static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
 		{
 			if (urls == null || urls.Length == 0)
+			{
 				return Array.Empty<FileResult>();
+			}
 
 			var opts = NSFileCoordinatorReadingOptions.WithoutChanges;
 			var intents = urls.Select(x => NSFileAccessIntent.CreateReadingIntent(x, opts)).ToArray();
@@ -61,7 +63,10 @@ namespace Microsoft.Maui.Storage
 
 				var newBookmark = url.CreateBookmarkData(0, Array.Empty<string>(), null, out var bookmarkError);
 				if (bookmarkError != null)
+				{
+				{
 					throw new NSErrorException(bookmarkError);
+				}
 
 				UpdateBookmark(url, newBookmark);
 			}
@@ -85,7 +90,9 @@ namespace Microsoft.Maui.Storage
 			var url = NSUrl.FromBookmarkData(bookmark, 0, null, out var isStale, out var error);
 
 			if (error != null)
+			{
 				throw new NSErrorException(error);
+			}
 
 			url.StartAccessingSecurityScopedResource();
 
@@ -93,7 +100,10 @@ namespace Microsoft.Maui.Storage
 			{
 				var newBookmark = url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, Array.Empty<string>(), null, out error);
 				if (error != null)
+				{
+				{
 					throw new NSErrorException(error);
+				}
 
 				UpdateBookmark(url, newBookmark);
 			}

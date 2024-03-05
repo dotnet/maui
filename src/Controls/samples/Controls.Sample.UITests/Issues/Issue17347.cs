@@ -36,11 +36,7 @@ namespace Maui.Controls.Sample.Issues
 						AutomationId = "PopMeButton",
 						Command = new Command(async () =>
 						{
-							if (Navigation.NavigationStack.Count == 1)
-								await Navigation.PopModalAsync();
-							else
-								await Navigation.PopAsync();
-						}),
+							if (Navigation.NavigationStack.Count == 1) { await Navigation.PopModalAsync(); } else { await Navigation.PopAsync(); } }),
 						Text = "Click to Pop This Page If Needed"
 					}
 				};

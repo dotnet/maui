@@ -55,7 +55,11 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var n = GetNativeText(h);
 					if (string.IsNullOrEmpty(n))
+					{
+					{
 						n = null; // native platforms may not upport null text
+					}
+
 					return n;
 				},
 				setValue,
@@ -177,7 +181,11 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var n = GetNativePlaceholderText(h);
 					if (string.IsNullOrEmpty(n))
+					{
+					{
 						n = null; // native platforms may not support null text
+					}
+
 					return n;
 				},
 				setValue,

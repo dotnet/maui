@@ -78,8 +78,10 @@ namespace Microsoft.Maui.Controls.Platform
 			base.OnDraw(shape, canvas, paint);
 
 			if (_backgroundColor != null)
+			{
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 				paint.Color = _backgroundColor.Value;
+			}
 #pragma warning restore CA1416
 
 			shape.Draw(canvas, _strokePaint);
@@ -147,12 +149,16 @@ namespace Microsoft.Maui.Controls.Platform
 			public override Shader Resize(int width, int height)
 			{
 				if (width == 0 && height == 0)
+				{
 					return null;
+				}
 
 				if (_gradientShader is LinearGradientShader linearGradientShader)
 				{
 					if (linearGradientShader.Colors.Length < 2)
+					{
 						return null;
+					}
 
 					return new LinearGradient(
 						width * linearGradientShader.X1,
@@ -167,7 +173,9 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_gradientShader is RadialGradientShader radialGradientShader)
 				{
 					if (radialGradientShader.Colors.Length < 2)
+					{
 						return null;
+					}
 
 					return new RadialGradient(
 						width * radialGradientShader.CenterX,

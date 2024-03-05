@@ -33,7 +33,9 @@ namespace Microsoft.Maui.DeviceTests
 					if (windowHandler is WindowHandlerStub windowHandlerStub)
 					{
 						if (windowHandlerStub.IsDisconnected)
+						{
 							await windowHandlerStub.FinishedDisconnecting;
+						}
 					}
 
 					if (windowHandler is not null)
@@ -56,12 +58,16 @@ namespace Microsoft.Maui.DeviceTests
 					if (windowHandler is WindowHandlerStub whs)
 					{
 						if (!whs.IsDisconnected)
+						{
 							window.Handler.DisconnectHandler();
+						}
 
 						await whs.FinishedDisconnecting;
 					}
 					else
+					{
 						window.Handler?.DisconnectHandler();
+					}
 
 					var vc =
 						(window.Content?.Handler as IPlatformViewHandler)?
@@ -125,20 +131,28 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			if (handler.VirtualView is Page page)
+			{
 				handler = page.GetCurrentPage()?.Handler;
+			}
 
 			if (handler is null)
+			{
 				return Array.Empty<UIViewController>();
+			}
 
 			var navControllerResponder = (handler.PlatformView as UIView).FindResponder<UINavigationController>();
 
 			if (navControllerResponder?.ChildViewControllers is not null)
+			{
 				return navControllerResponder.ChildViewControllers;
+			}
 
 			var contentResponder = (handler.PlatformView as UIView).FindResponder<ContainerViewController>();
 
 			if (contentResponder?.NavigationController is not null)
+			{
 				return contentResponder.NavigationController.ChildViewControllers;
+			}
 
 			return Array.Empty<UIViewController>();
 		}
@@ -147,7 +161,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var vcs = GetActiveChildViewControllers(handler);
 			if (vcs.Length == 0)
+			{
 				return null;
+			}
 
 			return vcs[vcs.Length - 1];
 		}
@@ -157,15 +173,21 @@ namespace Microsoft.Maui.DeviceTests
 			var visibleController = GetVisibleViewController(handler);
 
 			if (visibleController is null)
+			{
 				return null;
+			}
 
 			if (visibleController is UINavigationController nc)
+			{
 				return nc.NavigationBar;
+			}
 
 			var navController = visibleController.NavigationController;
 
 			if (navController?.NavigationBar is UINavigationBar bar)
+			{
 				return bar;
+			}
 
 			return null;
 		}

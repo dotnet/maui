@@ -271,7 +271,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (CollectionView.NumberOfSections() == 0)
+			{
 				return false;
+			}
 
 			var itemCount = CollectionView.NumberOfItemsInSection(section);
 

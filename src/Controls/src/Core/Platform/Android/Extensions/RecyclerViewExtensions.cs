@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Controls.Platform
 			//TODO: on NET8 implement a ISelectableItemsViewAdapter interface on the adapter
 			var adapter = recyclerView.GetAdapter() as ReorderableItemsViewAdapter<ReorderableItemsView, IGroupableItemsViewSource>;
 			if (adapter == null)
+			{
 				return;
+			}
 
 			adapter.ClearPlatformSelection();
 

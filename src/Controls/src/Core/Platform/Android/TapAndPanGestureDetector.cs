@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public void UpdateLongPressSettings()
 		{
 			if (_listener == null)
+			{
 				return;
+			}
 
 			// Right now this just disables long press, since we don't support a long press gesture
 			// in Forms. If we ever do, we'll need to selectively enable it, probably by hooking into the 
@@ -34,10 +36,14 @@ namespace Microsoft.Maui.Controls.Platform
 		public override bool OnTouchEvent(MotionEvent ev)
 		{
 			if (base.OnTouchEvent(ev))
+			{
 				return true;
+			}
 
 			if (_listener != null && ev?.Action == MotionEventActions.Up)
+			{
 				_listener.EndScrolling();
+			}
 
 			return false;
 		}

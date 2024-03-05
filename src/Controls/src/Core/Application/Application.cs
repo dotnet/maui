@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Controls
 		internal Application(bool setCurrentApplication)
 		{
 			if (setCurrentApplication)
+			{
 				SetCurrentApplication(this);
+			}
 
 #pragma warning disable CS0612 // Type or member is obsolete
 			_systemResources = new Lazy<IResourceDictionary>(() =>
@@ -66,9 +68,15 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (_appIndexProvider == null)
+				{
 					throw new ArgumentException("No IAppIndexingProvider was provided");
+				}
+
 				if (_appIndexProvider.AppLinks == null)
+				{
 					throw new ArgumentException("No AppLinks implementation was found, if in Android make sure you installed the Microsoft.Maui.Controls.AppLinks");
+				}
+
 				return _appIndexProvider.AppLinks;
 			}
 		}
@@ -88,14 +96,19 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (Windows.Count == 0)
+				{
 					return _singleWindowMainPage;
+				}
 
 				return Windows[0].Page;
 			}
 			set
 			{
 				if (MainPage == value)
+				{
+				{
 					return;
+				}
 
 				OnPropertyChanging();
 
@@ -132,7 +145,9 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (_resources != null)
+				{
 					return _resources;
+				}
 
 				_resources = new ResourceDictionary();
 				((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
@@ -141,14 +156,24 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_resources == value)
+				{
+				{
 					return;
+				}
+
 				OnPropertyChanging();
 				if (_resources != null)
+				{
 					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
+				}
+
 				_resources = value;
 				OnResourcesChanged(value);
 				if (_resources != null)
+				{
 					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
+				}
+
 				OnPropertyChanged();
 			}
 		}
@@ -160,7 +185,10 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_userAppTheme == value)
+				{
+				{
 					return;
+				}
 
 				_userAppTheme = value;
 
@@ -174,7 +202,9 @@ namespace Microsoft.Maui.Controls
 			private set
 			{
 				if (_platformAppTheme == value)
+				{
 					return;
+				}
 
 				_platformAppTheme = value;
 
@@ -208,7 +238,9 @@ namespace Microsoft.Maui.Controls
 			return null;
 #elif ANDROID
 			if (Current?.Windows?.Count > 0)
+			{
 				return Current.Windows[0].MauiContext.Context?.GetAccentColor();
+			}
 
 			return null;
 #elif IOS
@@ -236,7 +268,10 @@ namespace Microsoft.Maui.Controls
 			// On iOS the event is triggered more than once.
 			// To minimize that for us, we only do it when the theme actually changes and it's not currently firing
 			if (_themeChangedFiring || newTheme == _lastAppTheme)
+			{
+			{
 				return;
+			}
 
 			try
 			{
@@ -330,11 +365,16 @@ namespace Microsoft.Maui.Controls
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
 			var changedResources = new List<KeyValuePair<string, object>>();
 			foreach (KeyValuePair<string, object> c in Resources)
+			{
 				innerKeys.Add(c.Key);
+			}
+
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				if (innerKeys.Add(value.Key))
+				{
 					changedResources.Add(value);
+				}
 			}
 			OnResourcesChanged(changedResources);
 		}
@@ -349,7 +389,9 @@ namespace Microsoft.Maui.Controls
 		internal void SendResume()
 		{
 			if (Current is null)
+			{
 				Current = this;
+			}
 
 			OnResume();
 		}
@@ -362,7 +404,10 @@ namespace Microsoft.Maui.Controls
 		internal void SendStart()
 		{
 			if (_isStarted)
+			{
+			{
 				return;
+			}
 
 			_isStarted = true;
 			OnStart();
@@ -428,12 +473,18 @@ namespace Microsoft.Maui.Controls
 				window = CreateWindow(activationState);
 
 				if (_singleWindowMainPage != null && window.Page != null && window.Page != _singleWindowMainPage)
+				{
+				{
 					throw new InvalidOperationException($"Both {nameof(MainPage)} was set and {nameof(Application.CreateWindow)} was overridden to provide a page.");
+				}
 			}
 
 			// make sure it is added to the windows list
 			if (!_windows.Contains(window))
+			{
+			{
 				AddWindow(window);
+			}
 
 			return window;
 		}
@@ -441,7 +492,10 @@ namespace Microsoft.Maui.Controls
 		void IApplication.OpenWindow(IWindow window)
 		{
 			if (window is Window cwindow)
+			{
+			{
 				OpenWindow(cwindow);
+			}
 		}
 
 		void IApplication.CloseWindow(IWindow window)
@@ -453,14 +507,20 @@ namespace Microsoft.Maui.Controls
 		{
 			// Do not attempt to close the "MainPage" window
 			if (_singleWindowMainPage != null && window.Page == _singleWindowMainPage)
+			{
 				return;
+			}
 
 			// Window was closed, stop tracking it
 			if (window is null)
+			{
 				return;
+			}
 
 			if (window is NavigableElement ne)
+			{
 				ne.NavigationProxy.Inner = null;
+			}
 
 			if (window is Element windowElement)
 			{
@@ -498,16 +558,24 @@ namespace Microsoft.Maui.Controls
 			var windowCreator = activationState?.Context.Services.GetService<IWindowCreator>();
 			var window = windowCreator?.CreateWindow(this, activationState);
 			if (window is not null)
+			{
 				return window;
+			}
 
 			if (Windows.Count > 1)
+			{
 				throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
+			}
 
 			if (Windows.Count > 0)
+			{
 				return Windows[0];
+			}
 
 			if (_singleWindowMainPage is not null)
+			{
 				return new Window(_singleWindowMainPage);
+			}
 
 			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 		}
@@ -522,7 +590,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (window is NavigableElement ne)
+			{
 				ne.NavigationProxy.Inner = NavigationProxy;
+			}
 
 			// Once the window has been attached to the application. 
 			// The window will finish propagating events like `Appearing`.

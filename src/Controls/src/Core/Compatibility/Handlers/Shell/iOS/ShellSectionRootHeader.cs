@@ -22,9 +22,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
 			if (appearance == null)
+			{
 				ResetAppearance();
+			}
 			else
+			{
 				SetAppearance(appearance);
+			}
 		}
 
 		protected virtual void ResetAppearance()
@@ -49,7 +53,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_unselectedColor = unselectedColor;
 
 			if (reloadData)
+			{
 				ReloadData();
+			}
 		}
 
 		#endregion IAppearanceObserver
@@ -92,7 +98,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var headerCell = reusedCell as ShellSectionHeaderCell;
 
 			if (headerCell == null)
+			{
 				return reusedCell;
+			}
 
 			var selectedItems = collectionView.GetIndexPathsForSelectedItems();
 
@@ -104,9 +112,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			headerCell.UnSelectedColor = _unselectedColor.ToPlatform();
 
 			if (selectedItems.Length > 0 && selectedItems[0].Row == indexPath.Row)
+			{
 				headerCell.Selected = true;
+			}
 			else
+			{
 				headerCell.Selected = false;
+			}
 
 			headerCell.SetAccessibilityProperties(shellContent);
 			return headerCell;
@@ -120,7 +132,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
 			if (CollectionView.CellForItem(indexPath) is ShellSectionHeaderCell cell)
+			{
 				cell.Label.TextColor = _unselectedColor.ToPlatform();
+			}
 		}
 
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
@@ -130,10 +144,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var item = ShellSectionController.GetItems()[row];
 
 			if (item != ShellSection.CurrentItem)
+			{
 				ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, item);
+			}
 
 			if (CollectionView.CellForItem(indexPath) is ShellSectionHeaderCell cell)
+			{
 				cell.Label.TextColor = _selectedColor.ToPlatform();
+			}
 		}
 
 		public override nint NumberOfSections(UICollectionView collectionView)
@@ -148,14 +166,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			IShellController shellController = _shellContext.Shell;
 
 			if (item == ShellSection.CurrentItem)
+			{
 				return true;
+			}
+
 			return shellController.ProposeNavigation(ShellNavigationSource.ShellContentChanged, (ShellItem)ShellSection.Parent, ShellSection, item, ShellSection.Stack, true);
 		}
 
 		public override void ViewDidLayoutSubviews()
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			base.ViewDidLayoutSubviews();
 
@@ -167,7 +190,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ViewDidLoad()
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			base.ViewDidLoad();
 
@@ -210,7 +235,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -232,15 +259,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected void LayoutBar()
 		{
 			if (SelectedIndex < 0)
+			{
 				return;
+			}
 
 			if (ShellSectionController.GetItems().IndexOf(ShellSection.CurrentItem) != SelectedIndex)
+			{
 				return;
+			}
 
 			var layout = CollectionView.GetLayoutAttributesForItem(NSIndexPath.FromItemSection((int)SelectedIndex, 0));
 
 			if (layout == null)
+			{
 				return;
+			}
 
 			var frame = layout.Frame;
 
@@ -265,12 +298,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void UpdateSelectedIndex(bool animated = false)
 		{
 			if (ShellSection.CurrentItem == null)
+			{
 				return;
+			}
 
 			SelectedIndex = ShellSectionController.GetItems().IndexOf(ShellSection.CurrentItem);
 
 			if (SelectedIndex < 0)
+			{
 				return;
+			}
 
 			LayoutBar();
 
@@ -285,7 +322,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void ReloadData()
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();

@@ -24,7 +24,10 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 				}
 
 				if (s_services is null)
+				{
+				{
 					throw new InvalidOperationException($"Test app could not find services.");
+				}
 
 				return s_services;
 			}

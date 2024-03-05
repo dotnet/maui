@@ -56,17 +56,23 @@ namespace Microsoft.Maui.Storage
 		{
 			// if this is a file, use that
 			if (uri.Scheme.Equals(UriSchemeFile, StringComparison.OrdinalIgnoreCase))
+			{
 				return uri.Path;
+			}
 
 			// try resolve using the content provider
 			var absolute = ResolvePhysicalPath(uri, requireExtendedAccess);
 			if (!string.IsNullOrWhiteSpace(absolute) && Path.IsPathRooted(absolute))
+			{
 				return absolute;
+			}
 
 			// fall back to just copying it
 			var cached = CacheContentFile(uri);
 			if (!string.IsNullOrWhiteSpace(cached) && Path.IsPathRooted(cached))
+			{
 				return cached;
+			}
 
 			throw new FileNotFoundException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
 		}
@@ -79,7 +85,9 @@ namespace Microsoft.Maui.Storage
 
 				var resolved = uri.Path;
 				if (File.Exists(resolved))
+				{
 					return resolved;
+				}
 			}
 			else if (!requireExtendedAccess || !OperatingSystem.IsAndroidVersionAtLeast(29))
 			{
@@ -89,13 +97,17 @@ namespace Microsoft.Maui.Storage
 				{
 					var resolved = ResolveDocumentPath(uri);
 					if (File.Exists(resolved))
+					{
 						return resolved;
+					}
 				}
 				else if (uri.Scheme.Equals(UriSchemeContent, StringComparison.OrdinalIgnoreCase))
 				{
 					var resolved = ResolveContentPath(uri);
 					if (File.Exists(resolved))
+					{
 						return resolved;
+					}
 				}
 			}
 
@@ -110,7 +122,9 @@ namespace Microsoft.Maui.Storage
 
 			var docIdParts = docId?.Split(':');
 			if (docIdParts == null || docIdParts.Length == 0)
+			{
 				return null;
+			}
 
 			if (uri.Authority.Equals(UriAuthorityExternalStorage, StringComparison.OrdinalIgnoreCase))
 			{
@@ -146,7 +160,9 @@ namespace Microsoft.Maui.Storage
 					var uriPath = docIdParts[1];
 
 					if (storageType.Equals(storageTypeRaw, StringComparison.OrdinalIgnoreCase))
+					{
 						return uriPath;
+					}
 				}
 
 				// ID could be "###" or "msf:###"
@@ -160,7 +176,9 @@ namespace Microsoft.Maui.Storage
 					var contentUri = AndroidUri.Parse(uriString);
 
 					if (GetDataFilePath(contentUri) is string filePath)
+					{
 						return filePath;
+					}
 				}
 			}
 			else if (uri.Authority.Equals(UriAuthorityMedia, StringComparison.OrdinalIgnoreCase))
@@ -174,14 +192,22 @@ namespace Microsoft.Maui.Storage
 
 					AndroidUri contentUri = null;
 					if (storageType.Equals(storageTypeImage, StringComparison.OrdinalIgnoreCase))
+					{
 						contentUri = MediaStore.Images.Media.ExternalContentUri;
+					}
 					else if (storageType.Equals(storageTypeVideo, StringComparison.OrdinalIgnoreCase))
+					{
 						contentUri = MediaStore.Video.Media.ExternalContentUri;
+					}
 					else if (storageType.Equals(storageTypeAudio, StringComparison.OrdinalIgnoreCase))
+					{
 						contentUri = MediaStore.Audio.Media.ExternalContentUri;
+					}
 #pragma warning disable CS0618
 					if (contentUri != null && GetDataFilePath(contentUri, $"{MediaStore.MediaColumns.Id}=?", new[] { uriPath }) is string filePath)
+					{
 						return filePath;
+					}
 #pragma warning restore CS0618
 				}
 			}
@@ -196,7 +222,9 @@ namespace Microsoft.Maui.Storage
 			Debug.WriteLine($"Trying to resolve content URI: '{uri}'");
 
 			if (GetDataFilePath(uri) is string filePath)
+			{
 				return filePath;
+			}
 
 			// TODO: support some additional things, like Google Photos if that is possible
 
@@ -208,14 +236,18 @@ namespace Microsoft.Maui.Storage
 		static string CacheContentFile(AndroidUri uri)
 		{
 			if (!uri.Scheme.Equals(UriSchemeContent, StringComparison.OrdinalIgnoreCase))
+			{
 				return null;
+			}
 
 			Debug.WriteLine($"Copying content URI to local cache: '{uri}'");
 
 			// open the source stream
 			using var srcStream = OpenContentStream(uri, out var extension);
 			if (srcStream == null)
+			{
 				return null;
+			}
 
 			// resolve or generate a valid destination path
 #pragma warning disable CS0618
@@ -223,7 +255,9 @@ namespace Microsoft.Maui.Storage
 #pragma warning restore CS0618
 
 			if (!Path.HasExtension(filename) && !string.IsNullOrEmpty(extension))
+			{
 				filename = Path.ChangeExtension(filename, extension);
+			}
 
 			// create a temporary file
 			var hasPermission = Permissions.IsDeclaredInManifest(global::Android.Manifest.Permission.WriteExternalStorage);
@@ -255,7 +289,9 @@ namespace Microsoft.Maui.Storage
 		static bool IsVirtualFile(AndroidUri uri)
 		{
 			if (!DocumentsContract.IsDocumentUri(Application.Context, uri))
+			{
 				return false;
+			}
 
 			var value = GetColumnValue(uri, DocumentsContract.Document.ColumnFlags);
 			if (!string.IsNullOrEmpty(value) && int.TryParse(value, out var flagsInt))
@@ -295,7 +331,9 @@ namespace Microsoft.Maui.Storage
 			{
 				var value = QueryContentResolverColumn(contentUri, column, selection, selectionArgs);
 				if (!string.IsNullOrEmpty(value))
+				{
 					return value;
+				}
 			}
 			catch
 			{
@@ -318,7 +356,9 @@ namespace Microsoft.Maui.Storage
 			// ask the content provider for the data column, which may contain the actual file path
 			var path = GetColumnValue(contentUri, column, selection, selectionArgs);
 			if (!string.IsNullOrEmpty(path) && Path.IsPathRooted(path))
+			{
 				return path;
+			}
 
 			return null;
 		}
@@ -342,7 +382,9 @@ namespace Microsoft.Maui.Storage
 			{
 				var columnIndex = cursor.GetColumnIndex(columnName);
 				if (columnIndex != -1)
+				{
 					text = cursor.GetString(columnIndex);
+				}
 			}
 
 			return text;

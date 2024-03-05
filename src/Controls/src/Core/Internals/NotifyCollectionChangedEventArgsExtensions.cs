@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				to.Clear();
 				for (var i = 0; i < from.Count; i++)
+				{
 					to.Add(from[i]);
+				}
 			});
 		}
 
@@ -25,52 +27,82 @@ namespace Microsoft.Maui.Controls.Internals
 		public static NotifyCollectionChangedAction Apply(this NotifyCollectionChangedEventArgs self, Action<object, int, bool> insert, Action<object, int> removeAt, Action reset)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException("self");
+			}
+
 			if (reset == null)
+			{
 				throw new ArgumentNullException("reset");
+			}
+
 			if (insert == null)
+			{
 				throw new ArgumentNullException("insert");
+			}
+
 			if (removeAt == null)
+			{
 				throw new ArgumentNullException("removeAt");
+			}
 
 			switch (self.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
 					if (self.NewStartingIndex < 0)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					for (var i = 0; i < self.NewItems.Count; i++)
+					{
 						insert(self.NewItems[i], i + self.NewStartingIndex, true);
+					}
 
 					break;
 
 				case NotifyCollectionChangedAction.Move:
 					if (self.NewStartingIndex < 0 || self.OldStartingIndex < 0)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					for (var i = 0; i < self.OldItems.Count; i++)
+					{
 						removeAt(self.OldItems[i], self.OldStartingIndex);
+					}
 
 					int insertIndex = self.NewStartingIndex;
 					if (self.OldStartingIndex < self.NewStartingIndex)
+					{
 						insertIndex -= self.OldItems.Count - 1;
+					}
 
 					for (var i = 0; i < self.OldItems.Count; i++)
+					{
 						insert(self.OldItems[i], insertIndex + i, false);
+					}
 
 					break;
 
 				case NotifyCollectionChangedAction.Remove:
 					if (self.OldStartingIndex < 0)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					for (var i = 0; i < self.OldItems.Count; i++)
+					{
 						removeAt(self.OldItems[i], self.OldStartingIndex);
+					}
+
 					break;
 
 				case NotifyCollectionChangedAction.Replace:
 					if (self.OldStartingIndex < 0 || self.OldItems.Count != self.NewItems.Count)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					for (var i = 0; i < self.OldItems.Count; i++)
 					{

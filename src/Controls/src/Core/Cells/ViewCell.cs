@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_view == value)
+				{
 					return;
+				}
 
 				OnPropertyChanging();
 

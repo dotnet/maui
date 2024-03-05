@@ -70,7 +70,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					var listProxy = (INotifyCollectionChanged)SearchController.ListProxy;
 					if (listProxy != null)
+					{
 						listProxy.CollectionChanged -= OnProxyCollectionChanged;
+					}
+
 					SearchController.ListProxyChanged -= OnListProxyChanged;
 				}
 
@@ -88,7 +91,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var template = SearchHandler.ItemTemplate;
 
 			if (template == null)
+			{
 				template = DefaultTemplate;
+			}
 
 			var cellId = ((IDataTemplateController)template.SelectDataTemplate(context, _context.Shell)).IdString;
 
@@ -123,7 +128,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override nint RowsInSection(UITableView tableView, nint section)
 		{
 			if (SearchController.ListProxy == null)
+			{
 				return 0;
+			}
+
 			return SearchController.ListProxy.Count;
 		}
 
@@ -131,7 +139,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var paths = new NSIndexPath[count];
 			for (var i = 0; i < paths.Length; i++)
+			{
 				paths[i] = NSIndexPath.FromRowSection(index + i, section);
+			}
 
 			return paths;
 		}
@@ -159,7 +169,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				case NotifyCollectionChangedAction.Add:
 
 					if (e.NewStartingIndex == -1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					TableView.BeginUpdates();
 					TableView.InsertRows(GetPaths(section, e.NewStartingIndex, e.NewItems.Count), InsertRowsAnimation);
@@ -169,7 +181,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				case NotifyCollectionChangedAction.Remove:
 					if (e.OldStartingIndex == -1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
+
 					TableView.BeginUpdates();
 					TableView.DeleteRows(GetPaths(section, e.OldStartingIndex, e.OldItems.Count), DeleteRowsAnimation);
 
@@ -178,7 +193,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				case NotifyCollectionChangedAction.Move:
 					if (e.OldStartingIndex == -1 || e.NewStartingIndex == -1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
+
 					TableView.BeginUpdates();
 					for (var i = 0; i < e.OldItems.Count; i++)
 					{
@@ -198,7 +216,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				case NotifyCollectionChangedAction.Replace:
 					if (e.OldStartingIndex == -1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
+
 					TableView.BeginUpdates();
 					TableView.ReloadRows(GetPaths(section, e.OldStartingIndex, e.OldItems.Count), ReloadRowsAnimation);
 					TableView.EndUpdates();

@@ -133,7 +133,9 @@ namespace Microsoft.Maui.Platform
 				// There's only one page on the stack then we trigger back button visibility logic
 				// so that it can add a back button if it needs to
 				if (previousNavigationStackCount == 1 || newPageStack.Count == 1)
+				{
 					TriggerBackButtonVisibleUpdate();
+				}
 
 				return;
 			}
@@ -193,7 +195,10 @@ namespace Microsoft.Maui.Platform
 			navController.IterateBackStack(nvd =>
 			{
 				if (startId == -1)
+				{
 					startId = nvd.Id;
+				}
+
 				fragmentNavDestinations.Remove(nvd);
 			});
 
@@ -205,7 +210,9 @@ namespace Microsoft.Maui.Platform
 			// If we end up removing the destination that was initially the StartDestination
 			// The Navigation Graph can get really confused
 			if (NavGraph.StartDestination != startId)
+			{
 				NavGraph.StartDestination = startId;
+			}
 
 			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
 			// point in time that we can setup toolbar colors for the incoming page
@@ -226,7 +233,9 @@ namespace Microsoft.Maui.Platform
 			var canonicalName = Java.Lang.Class.FromType(typeof(NavigationViewFragment)).CanonicalName;
 
 			if (canonicalName != null)
+			{
 				destination.SetClassName(canonicalName);
+			}
 
 			destination.Id = AView.GenerateViewId();
 			NavGraph.AddDestination(destination);
@@ -267,7 +276,9 @@ namespace Microsoft.Maui.Platform
 			// set this to one because when the graph is first attached to the controller
 			// it will add the graph and the first destination
 			if (PlatformNavigationStackCount < 0)
+			{
 				PlatformNavigationStackCount = 1;
+			}
 
 			for (var i = PlatformNavigationStackCount; i < pages.Count; i++)
 			{
@@ -288,7 +299,9 @@ namespace Microsoft.Maui.Platform
 		public virtual void Disconnect()
 		{
 			if (IsNavigating)
+			{
 				NavigationFinished(NavigationView);
+			}
 
 			if (_fragmentContainerView is not null)
 			{
@@ -321,7 +334,9 @@ namespace Microsoft.Maui.Platform
 			SetNavHost(navHostFragment as NavHostFragment);
 
 			if (_navHost == null)
+			{
 				throw new InvalidOperationException($"No NavHostFragment found");
+			}
 
 			if (_fragmentContainerView is not null)
 			{
@@ -340,7 +355,9 @@ namespace Microsoft.Maui.Platform
 				var fragmentManager = MauiContext.GetFragmentManager();
 
 				if (fragmentManager.IsDestroyed(MauiContext.Context))
+				{
 					return;
+				}
 
 				var navHostFragment = new MauiNavHostFragment()
 				{
@@ -366,7 +383,9 @@ namespace Microsoft.Maui.Platform
 		internal void CheckForFragmentChange()
 		{
 			if (_fragmentContainerView?.Fragment is null)
+			{
 				return;
+			}
 
 			var fragmentManager = MauiContext.GetFragmentManager();
 			var navHostFragment = _fragmentContainerView?.Fragment;
@@ -386,7 +405,9 @@ namespace Microsoft.Maui.Platform
 				SetNavHost(navHostFragment as NavHostFragment);
 
 				if (_navHost == null)
+				{
 					throw new InvalidOperationException($"No NavHostFragment found");
+				}
 
 				_fragmentNavigator =
 					(FragmentNavigator)NavController
@@ -401,7 +422,9 @@ namespace Microsoft.Maui.Platform
 		public virtual void RequestNavigation(NavigationRequest e)
 		{
 			if (MauiContext == null)
+			{
 				return;
+			}
 
 			CheckForFragmentChange();
 
@@ -475,13 +498,19 @@ namespace Microsoft.Maui.Platform
 		void SetNavHost(NavHostFragment? navHost)
 		{
 			if (_navHost == navHost)
+			{
 				return;
+			}
 
 			if (_navHost is MauiNavHostFragment oldHost)
+			{
 				oldHost.StackNavigationManager = null;
+			}
 
 			if (navHost is MauiNavHostFragment newHost)
+			{
 				newHost.StackNavigationManager = this;
+			}
 
 			_navHost = navHost;
 
@@ -538,7 +567,9 @@ namespace Microsoft.Maui.Platform
 			public override void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f)
 			{
 				if (_stackNavigationManager?.VirtualView == null)
+				{
 					return;
+				}
 
 				if (_stackNavigationManager.OnResumeRequestedArgs is not null)
 				{
@@ -547,7 +578,9 @@ namespace Microsoft.Maui.Platform
 				}
 
 				if (f is NavigationViewFragment pf)
+				{
 					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);
+				}
 
 				AToolbar? platformToolbar = null;
 				IToolbar? toolbar = null;
@@ -578,10 +611,14 @@ namespace Microsoft.Maui.Platform
 				AndroidX.Fragment.App.Fragment f)
 			{
 				if (_stackNavigationManager?.VirtualView == null)
+				{
 					return;
+				}
 
 				if (f is NavigationViewFragment pf)
+				{
 					_stackNavigationManager.OnNavigationViewFragmentDestroyed(fm, pf);
+				}
 
 				base.OnFragmentViewDestroyed(fm, f);
 			}
@@ -589,7 +626,9 @@ namespace Microsoft.Maui.Platform
 			public override void OnFragmentCreated(FragmentManager fm, Fragment f, Bundle? savedInstanceState)
 			{
 				if (f is NavigationViewFragment pf && _stackNavigationManager != null)
+				{
 					pf.NavigationManager = _stackNavigationManager;
+				}
 
 				base.OnFragmentCreated(fm, f, savedInstanceState);
 			}
@@ -597,7 +636,9 @@ namespace Microsoft.Maui.Platform
 			public override void OnFragmentPreCreated(FragmentManager fm, Fragment f, Bundle? savedInstanceState)
 			{
 				if (f is NavigationViewFragment pf && _stackNavigationManager != null)
+				{
 					pf.NavigationManager = _stackNavigationManager;
+				}
 
 				base.OnFragmentPreCreated(fm, f, savedInstanceState);
 			}
@@ -634,7 +675,9 @@ namespace Microsoft.Maui.Platform
 				_stackNavigationManager = null;
 
 				if (_navController != null && _navController.IsAlive())
+				{
 					_navController.RemoveOnDestinationChangedListener(this);
+				}
 
 				_childFragmentManager?.UnregisterFragmentLifecycleCallbacks(this);
 			}

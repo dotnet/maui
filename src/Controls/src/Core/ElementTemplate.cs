@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls
 			: this()
 		{
 			if (type == null)
+			{
 				throw new ArgumentNullException("type");
+			}
 
 			_canRecycle = true;
 			_type = type;
@@ -53,15 +55,15 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_parent == value)
+				{
 					return;
-				if (_parent != null)
-					((IElementDefinition)_parent).RemoveResourcesChangedListener(OnResourcesChanged);
-				_parent = value;
-				if (_parent != null)
-					((IElementDefinition)_parent).AddResourcesChangedListener(OnResourcesChanged);
-			}
-		}
+				}
 
+				if (_parent != null)
+				{
+					((IElementDefinition)_parent).
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
 		void IElementDefinition.RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
 			if (_changeHandlers == null)
@@ -88,6 +90,171 @@ namespace Microsoft.Maui.Controls
 
 			if (item is Element elem)
 				elem.IsTemplateRoot = true;
+After:
+		void IElementDefinition.RemoveResourcesChangedListener(OnResourcesChanged);
+				}
+
+				_parent = value;
+				if (_parent != null)
+				{
+					((IElementDefinition)_parent).AddResourcesChangedListener(OnResourcesChanged);
+				}
+			}
+		}
+
+		void IElementDefinition.RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
+		{
+			if (_changeHandlers == null)
+			{
+				return;
+			}
+
+			_changeHandlers.Remove(onchanged);
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='CreateContent']/Docs/*" />
+		public object CreateContent()
+		{
+			if (LoadTemplate == null)
+			{
+				// Returning a Label here instead of throwing an exception because HotReload may temporarily be in state
+				// where the user is creating a template; this keeps everything else (which expects a result from CreateContent)
+				// from crashing during that time. 
+				return new Label();
+			}
+
+			if (this is DataTemplateSelector)
+			{
+				throw new InvalidOperationException("Cannot call CreateContent directly on a DataTemplateSelector");
+			}
+
+			object item = LoadTemplate();
+			SetupContent(item);
+
+			if (item is Element elem)
+			{
+				elem.IsTemplateRoot = true;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+		void IElementDefinition.RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
+		{
+			if (_changeHandlers == null)
+				return;
+			_changeHandlers.Remove(onchanged);
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='CreateContent']/Docs/*" />
+		public object CreateContent()
+		{
+			if (LoadTemplate == null)
+			{
+				// Returning a Label here instead of throwing an exception because HotReload may temporarily be in state
+				// where the user is creating a template; this keeps everything else (which expects a result from CreateContent)
+				// from crashing during that time. 
+				return new Label();
+			}
+
+			if (this is DataTemplateSelector)
+				throw new InvalidOperationException("Cannot call CreateContent directly on a DataTemplateSelector");
+
+			object item = LoadTemplate();
+			SetupContent(item);
+
+			if (item is Element elem)
+				elem.IsTemplateRoot = true;
+After:
+		void IElementDefinition.RemoveResourcesChangedListener(OnResourcesChanged);
+				}
+
+				_parent = value;
+				if (_parent != null)
+				{
+					((IElementDefinition)_parent).AddResourcesChangedListener(OnResourcesChanged);
+				}
+			}
+		}
+
+		void IElementDefinition.RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
+		{
+			if (_changeHandlers == null)
+			{
+				return;
+			}
+
+			_changeHandlers.Remove(onchanged);
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='CreateContent']/Docs/*" />
+		public object CreateContent()
+		{
+			if (LoadTemplate == null)
+			{
+				// Returning a Label here instead of throwing an exception because HotReload may temporarily be in state
+				// where the user is creating a template; this keeps everything else (which expects a result from CreateContent)
+				// from crashing during that time. 
+				return new Label();
+			}
+
+			if (this is DataTemplateSelector)
+			{
+				throw new InvalidOperationException("Cannot call CreateContent directly on a DataTemplateSelector");
+			}
+
+			object item = LoadTemplate();
+			SetupContent(item);
+
+			if (item is Element elem)
+			{
+				elem.IsTemplateRoot = true;
+			}
+*/
+RemoveResourcesChangedListener(OnResourcesChanged);
+				}
+
+				_parent = value;
+				if (_parent != null)
+				{
+					((IElementDefinition)_parent).AddResourcesChangedListener(OnResourcesChanged);
+				}
+			}
+		}
+
+		void IElementDefinition.RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
+		{
+			if (_changeHandlers == null)
+			{
+				return;
+			}
+
+			_changeHandlers.Remove(onchanged);
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/ElementTemplate.xml" path="//Member[@MemberName='CreateContent']/Docs/*" />
+		public object CreateContent()
+		{
+			if (LoadTemplate == null)
+			{
+				// Returning a Label here instead of throwing an exception because HotReload may temporarily be in state
+				// where the user is creating a template; this keeps everything else (which expects a result from CreateContent)
+				// from crashing during that time. 
+				return new Label();
+			}
+
+			if (this is DataTemplateSelector)
+			{
+				throw new InvalidOperationException("Cannot call CreateContent directly on a DataTemplateSelector");
+			}
+
+			object item = LoadTemplate();
+			SetupContent(item);
+
+			if (item is Element elem)
+			{
+				elem.IsTemplateRoot = true;
+			}
 
 			return item;
 		}
@@ -99,9 +266,14 @@ namespace Microsoft.Maui.Controls
 		void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
 		{
 			if (_changeHandlers == null)
+			{
 				return;
+			}
+
 			foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers)
+			{
 				handler(this, e);
+			}
 		}
 	}
 }

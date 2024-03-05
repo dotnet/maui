@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Controls
 		public void OnInvoked()
 		{
 			if (Command != null && Command.CanExecute(CommandParameter))
+			{
 				Command.Execute(CommandParameter);
+			}
 
 			Invoked?.Invoke(this, EventArgs.Empty);
 		}
@@ -49,7 +51,9 @@ namespace Microsoft.Maui.Controls
 			IsEnabled = Command?.CanExecute(CommandParameter) ?? true;
 
 			if (Command == null)
+			{
 				return;
+			}
 
 			Command.CanExecuteChanged += OnCommandCanExecuteChanged;
 		}
@@ -57,7 +61,9 @@ namespace Microsoft.Maui.Controls
 		void OnCommandChanging()
 		{
 			if (Command == null)
+			{
 				return;
+			}
 
 			Command.CanExecuteChanged -= OnCommandCanExecuteChanged;
 		}
@@ -65,7 +71,9 @@ namespace Microsoft.Maui.Controls
 		void OnCommandParameterChanged()
 		{
 			if (Command == null)
+			{
 				return;
+			}
 
 			IsEnabled = Command.CanExecute(CommandParameter);
 		}

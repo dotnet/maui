@@ -75,7 +75,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void Disconnect(VisualElement oldElement)
 		{
 			if (oldElement == null)
+			{
 				return;
+			}
 
 			oldElement.PropertyChanged -= _propertyChangedHandler;
 			oldElement.SizeChanged -= _sizeChangedEventHandler;
@@ -85,7 +87,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -150,7 +154,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void OnRendererElementChanged(object s, VisualElementChangedEventArgs e)
 		{
 			if (_element == e.NewElement)
+			{
 				return;
+			}
 
 			SetElement(_element, e.NewElement);
 		}
@@ -161,7 +167,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var uiview = Renderer.NativeView;
 
 			if (view == null || view.Batched)
+			{
 				return;
+			}
 
 			bool shouldInteract;
 
@@ -218,97 +226,60 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			void update()
 			{
 				if (updateTarget != _updateCount)
+				{
 					return;
+				}
 #if __MOBILE__
 				var visualElement = view;
 #endif
 				var parent = view.RealParent;
 
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+				if (isVisible && caLayer.Hidden)
+After:
 				var shouldRelayoutSublayers = false;
 				if (isVisible && caLayer.Hidden)
-				{
-#if !__MOBILE__
-					uiview.Hidden = false;
-#endif
-					caLayer.Hidden = false;
-					if (!caLayer.Frame.IsEmpty)
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 						shouldRelayoutSublayers = true;
-				}
+After:
+					{
+						shouldRelayoutSublayers = true;
+					}
+*/
 
-				if (!isVisible && !caLayer.Hidden)
-				{
-#if !__MOBILE__
-					uiview.Hidden = true;
-#endif
-					caLayer.Hidden = true;
-					shouldRelayoutSublayers = true;
-				}
-
-				// ripe for optimization
-				var transform = CATransform3D.Identity;
-
-#if __MOBILE__
-				bool shouldUpdate = (!(visualElement is Page) || visualElement is ContentPage) && width > 0 && height > 0 && parent != null && boundsChanged;
-#else
-				// We don't care if it's a page or not since bounds of the window can change
-				// TODO: Find why it doesn't work to check if the parentsBounds changed  and remove true;
-				parentBoundsChanged = true;
-				bool shouldUpdate = width > 0 && height > 0 && parent != null && (boundsChanged || parentBoundsChanged);
-#endif
-				// Dont ever attempt to actually change the layout of a Page unless it is a ContentPage
-				// iOS is a really big fan of you not actually modifying the View's of the UIViewControllers
-				if (shouldUpdate && TrackFrame)
-				{
-#if __MOBILE__
-					var target = new RectF(x, y, width, height);
-#else
-					var visualParent = parent as VisualElement;
-					float newY = visualParent == null ? y : Math.Max(0, (float)(visualParent.Height - y - view.Height));
-					var target = new RectF(x, newY, width, height);
-#endif
-
-					// must reset transform prior to setting frame...
-					if (caLayer.AnchorPoint != _originalAnchor)
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 						caLayer.AnchorPoint = _originalAnchor;
 
 					caLayer.Transform = transform;
 					uiview.Frame = target;
-					if (shouldRelayoutSublayers)
+After:
+					{
+						caLayer.AnchorPoint = _originalAnchor;
+					}
+
+					caLayer.Transform = transform;
+					uiview.Frame = target;
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 						caLayer.LayoutSublayers();
-				}
-				else if (width <= 0 || height <= 0)
-				{
-					//TODO: FInd why it doesn't work
-#if __MOBILE__
-					caLayer.Hidden = true;
-#endif
-					return;
-				}
-#if !__MOBILE__
-				// Y-axe on macos is inverted				
-				translationY = -translationY;
-				anchorY = 1 - anchorY;
+After:
+					{
+						caLayer.LayoutSublayers();
+					}
+*/
 
-				// rotation direction on macos also inverted
-				rotationX = -rotationX;
-				rotationY = -rotationY;
-				rotation = -rotation;
+				var shouldRelayoutSublayers = false;
+				if (isVisible && caLayer.Hidden)
 
-				//otherwise scaled/rotated image clipped by parent bounds
-				caLayer.MasksToBounds = false;
-#endif
-				caLayer.AnchorPoint = new PointF(anchorX, anchorY);
-				caLayer.Opacity = opacity;
-				const double epsilon = 0.001;
-
-#if !__MOBILE__
-				// fix position, position in macos is also relative to anchor point
-				// but it's (0,0) by default, so we don't need to substract 0.5
-				transform = transform.Translate(anchorX * width, 0, 0);
-				transform = transform.Translate(0, anchorY * height, 0);
-#else
-				// position is relative to anchor point
-				if (Math.Abs(anchorX - .5) > epsilon)
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 					transform = transform.Translate((anchorX - .5f) * width, 0, 0);
 				if (Math.Abs(anchorY - .5) > epsilon)
 					transform = transform.Translate(0, (anchorY - .5f) * height, 0);
@@ -352,62 +323,144 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 
 			_lastBounds = view.Bounds;
-#if !__MOBILE__
-			_lastParentBounds = viewParent?.Bounds ?? Rectangle.Zero;
+After:
+				{
+					transform = transform.Translate((anchorX - .5f) * width, 0, 0);
+				}
+
+				if (Math.Abs(anchorY - .5) > epsilon)
+				{
+					transform = transform.Translate(0, (anchorY - .5f) * height, 0);
+				}
 #endif
-		}
 
-		void SetElement(VisualElement oldElement, VisualElement newElement)
-		{
-			if (oldElement != null)
-			{
-				Disconnect(oldElement);
-			}
+				if (Math.Abs(translationX) > epsilon || Math.Abs(translationY) > epsilon)
+				{
+					transform = transform.Translate(translationX, translationY, 0);
+				}
 
-			_element = newElement;
+				// not just an optimization, iOS will not "pixel align" a view which has M34 set
+				if (Math.Abs(rotationY % 180) > epsilon || Math.Abs(rotationX % 180) > epsilon)
+				{
+					transform.M34 = 1.0f / -400f;
+				}
 
-			if (newElement != null)
-			{
-				newElement.BatchCommitted += _batchCommittedHandler;
-				newElement.SizeChanged += _sizeChangedEventHandler;
-				newElement.PropertyChanged += _propertyChangedHandler;
+				if (Math.Abs(rotationX % 360) > epsilon)
+				{
+					transform = transform.Rotate(rotationX * (float)Math.PI / 180.0f, 1.0f, 0.0f, 0.0f);
+				}
 
-				UpdateNativeControl();
-			}
-		}
+				if (Math.Abs(rotationY % 360) > epsilon)
+				{
+					transform = transform.Rotate(rotationY * (float)Math.PI / 180.0f, 0.0f, 1.0f, 0.0f);
+				}
 
-		[PortHandler("Partially ported")]
-		void UpdateNativeControl()
-		{
-			Performance.Start(out string reference);
-
-			if (_disposed)
-				return;
-
-			if (_layer == null)
-			{
+				transform = transform.Rotate(rotation * (float)Math.PI / 180.0f, 0.0f, 0.0f, 1.0f);
+*/
+				{
 #if !__MOBILE__
-				Renderer.NativeView.WantsLayer = true;
+					uiview.Hidden = false;
 #endif
-				_layer = Renderer.NativeView.Layer;
+					caLayer.Hidden = false;
+					if (!caLayer.Frame.IsEmpty)
+					{
+						shouldRelayoutSublayers = true;
+					}
+				}
+
+				if (!isVisible && !caLayer.Hidden)
+				{
+#if !__MOBILE__
+					uiview.Hidden = true;
+#endif
+					caLayer.Hidden = true;
+					shouldRelayoutSublayers = true;
+				}
+
+				// ripe for optimization
+				var transform = CATransform3D.Identity;
+
 #if __MOBILE__
-				_isInteractive = Renderer.NativeView.UserInteractionEnabled;
+				bool shouldUpdate = (!(visualElement is Page) || visualElement is ContentPage) && width > 0 && height > 0 && parent != null && boundsChanged;
+#else
+				// We don't care if it's a page or not since bounds of the window can change
+				// TODO: Find why it doesn't work to check if the parentsBounds changed  and remove true;
+				parentBoundsChanged = true;
+				bool shouldUpdate = width > 0 && height > 0 && parent != null && (boundsChanged || parentBoundsChanged);
+#endif
+				// Dont ever attempt to actually change the layout of a Page unless it is a ContentPage
+				// iOS is a really big fan of you not actually modifying the View's of the UIViewControllers
+				if (shouldUpdate && TrackFrame)
+				{
+#if __MOBILE__
+					var target = new RectF(x, y, width, height);
+#else
+					var visualParent = parent as VisualElement;
+					float newY = visualParent == null ? y : Math.Max(0, (float)(visualParent.Height - y - view.Height));
+					var target = new RectF(x, newY, width, height);
 #endif
 
-				_originalAnchor = _layer.AnchorPoint;
+					// must reset transform prior to setting frame...
+					if (caLayer.AnchorPoint != _originalAnchor)
+					{
+						caLayer.AnchorPoint = _originalAnchor;
+					}
+
+					caLayer.Transform = transform;
+					uiview.Frame = target;
+					if (shouldRelayoutSublayers)
+					{
+						caLayer.LayoutSublayers();
+					}
+				}
+				else if (width <= 0 || height <= 0)
+				{
+					//TODO: FInd why it doesn't work
+#if __MOBILE__
+					caLayer.Hidden = true;
+
+				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
+				{
+					transform = transform.Scale(scaleX, scaleY, scale);
+				}
+
+				if (Foundation.NSThread.IsMain)
+				{
+					caLayer.Transform = transform;
+					return;
+				}
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+				{
+					caLayer.Transform = transform;
+				});
 			}
 
-			OnUpdateNativeControl(_layer);
+#if __MOBILE__
+			if (thread)
+			{
+				view.Dispatcher.DispatchIfRequired(update);
+			}
+			else
+			{
+				update();
+			}
+#else
+			update();
+#endif
 
-			UpdateClip();
+			_lastBounds = view.Bounds;
+#
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
 
-			NativeControlUpdated?.Invoke(this, EventArgs.Empty);
-			Performance.Stop(reference);
-		}
-
-		void UpdateClip()
-		{
-			if (!ShouldUpdateClip())
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				return;
 
 			var element = Renderer.Element;
@@ -423,43 +476,54 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				FillRule = nativeGeometry.IsNonzeroFillRule ? CAShapeLayer.FillRuleNonZero : CAShapeLayer.FillRuleEvenOdd
 			};
 #if __MOBILE__
-			if (Forms.IsiOS11OrNewer)
+After:
 			{
-				if (formsGeometry != null)
+				return;
+			}
+
+			var element = Renderer.Element;
+			var uiview = Renderer.NativeView;
+
+			var formsGeometry = element.Clip;
+			var nativeGeometry = formsGeometry.ToCGPath();
+
+			var maskLayer = new CAShapeLayer
+			{
+				Name = ClipShapeLayer,
+				Path = nativeGeometry.Data,
+				FillRule = nativeGeometry.IsNonzeroFillRule ? CAShapeLayer.FillRuleNonZero : CAShapeLayer.FillRuleEvenOdd
+			};
+#if __MOBILE__
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 					uiview.Layer.Mask = maskLayer;
 				else
 					uiview.Layer.Mask = null;
-			}
-			else
-			{
-				if (formsGeometry != null)
+After:
 				{
-					var maskView = new UIView
-					{
-						Frame = uiview.Frame,
-						BackgroundColor = UIColor.Black
-					};
-
-					maskView.Layer.Mask = maskLayer;
-					uiview.MaskView = maskView;
+					uiview.Layer.Mask = maskLayer;
 				}
 				else
+				{
+					uiview.Layer.Mask = null;
+				}
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 					uiview.MaskView = null;
 			}
-#else
-			if (formsGeometry != null)
-				uiview.Layer.Mask = maskLayer;
-			else
-				uiview.Layer.Mask = null;
-#endif
-		}
+After:
+				{
+					uiview.MaskView = null;
+				}
+			}
+*/
 
-		bool ShouldUpdateClip()
-		{
-			var element = Renderer?.Element;
-			var uiview = Renderer?.NativeView;
-
-			if (element == null || uiview == null)
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				return false;
 
 			bool hasClipShapeLayer = false;
@@ -490,6 +554,297 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			if (formsGeometry == null && hasClipShapeLayer)
 				return true;
+
+			return false;
+After:
+			{
+				return false;
+*/
+endif
+					return;
+				}
+#if !__MOBILE__
+				// Y-axe on macos is inverted				
+				translationY = -translationY;
+				anchorY = 1 - anchorY;
+
+				// rotation direction on macos also inverted
+				rotationX = -rotationX;
+				rotationY = -rotationY;
+				rotation = -rotation;
+
+				//otherwise scaled/rotated image clipped by parent bounds
+				caLayer.MasksToBounds = false;
+#endif
+				caLayer.AnchorPoint = new PointF(anchorX, anchorY);
+				caLayer.Opacity = opacity;
+				const double epsilon = 0.001;
+
+#if !__MOBILE__
+				// fix position, position in macos is also relative to anchor point
+				// but it's (0,0) by default, so we don't need to substract 0.5
+				transform = transform.Translate(anchorX * width, 0, 0);
+				transform = transform.Translate(0, anchorY * height, 0);
+#else
+				// position is relative to anchor point
+				if (Math.Abs(anchorX - .5) > epsilon)
+				{
+					transform = transform.Translate((anchorX - .5f) * width, 0, 0);
+				}
+
+				if (Math.Abs(anchorY - .5) > epsilon)
+				{
+					transform = transform.Translate(0, (anchorY - .5f) * height, 0);
+				}
+#endif
+
+				if (Math.Abs(translationX) > epsilon || Math.Abs(translationY) > epsilon)
+				{
+					transform = transform.Translate(translationX, translationY, 0);
+				}
+
+				// not just an optimization, iOS will not "pixel align" a view which has M34 set
+				if (Math.Abs(rotationY % 180) > epsilon || Math.Abs(rotationX % 180) > epsilon)
+				{
+					transform.M34 = 1.0f / -400f;
+				}
+
+				if (Math.Abs(rotationX % 360) > epsilon)
+				{
+					transform = transform.Rotate(rotationX * (float)Math.PI / 180.0f, 1.0f, 0.0f, 0.0f);
+				}
+
+				if (Math.Abs(rotationY % 360) > epsilon)
+				{
+					transform = transform.Rotate(rotationY * (float)Math.PI / 180.0f, 0.0f, 1.0f, 0.0f);
+				}
+
+				transform = transform.Rotate(rotation * (float)Math.PI / 180.0f, 0.0f, 0.0f, 1.0f);
+
+				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
+				{
+					transform = transform.Scale(scaleX, scaleY, scale);
+				}
+
+				if (Foundation.NSThread.IsMain)
+				{
+					caLayer.Transform = transform;
+					return;
+				}
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+				{
+					caLayer.Transform = transform;
+				});
+			}
+
+#if __MOBILE__
+			if (thread)
+			{
+				view.Dispatcher.DispatchIfRequired(update);
+			}
+			else
+			{
+				update();
+			}
+#else
+			update();
+#endif
+
+			_lastBounds = view.Bounds;
+#if !__MOBILE__
+			_lastParentBounds = viewParent?.Bounds ?? Rectangle.Zero;
+#endif
+		}
+
+		void SetElement(VisualElement oldElement, VisualElement newElement)
+		{
+			if (oldElement != null)
+			{
+				Disconnect(oldElement);
+			}
+
+			_element = newElement;
+
+			if (newElement != null)
+			{
+				newElement.BatchCommitted += _batchCommittedHandler;
+				newElement.SizeChanged += _sizeChangedEventHandler;
+				newElement.PropertyChanged += _propertyChangedHandler;
+
+				UpdateNativeControl();
+			}
+		}
+
+		[PortHandler("Partially ported")]
+		void UpdateNativeControl()
+		{
+			Performance.Start(out string reference);
+
+			if (_disposed)
+			{
+				return;
+			}
+
+			if (_layer == null)
+			{
+#if !__MOBILE__
+				Renderer.NativeView.WantsLayer = true;
+#endif
+				_layer = Renderer.NativeView.Layer;
+#if __MOBILE__
+				_isInteractive = Renderer.NativeView.UserInteractionEnabled;
+#endif
+
+				_originalAnchor = _layer.AnchorPoint;
+			}
+
+			OnUpdateNativeControl(_layer);
+
+			UpdateClip();
+
+			NativeControlUpdated?.Invoke(this, EventArgs.Empty);
+			Performance.Stop(reference);
+		}
+
+		void UpdateClip()
+		{
+			if (!ShouldUpdateClip())
+			{
+				return;
+			}
+
+			var element = Renderer.Element;
+			var uiview = Renderer.NativeView;
+
+			var formsGeometry = element.Clip;
+			var nativeGeometry = formsGeometry.ToCGPath();
+
+			var maskLayer = new CAShapeLayer
+			{
+				Name = ClipShapeLayer,
+				Path = nativeGeometry.Data,
+				FillRule = nativeGeometry.IsNonzeroFillRule ? CAShapeLayer.FillRuleNonZero : CAShapeLayer.FillRuleEvenOdd
+			};
+#if __MOBILE__
+			if (Forms.IsiOS11OrNewer)
+			{
+				if (formsGeometry != null)
+				{
+					uiview.Layer.Mask = maskLayer;
+				}
+				else
+				{
+					uiview.Layer.Mask = null;
+				}
+			}
+			else
+			{
+				if (formsGeometry != null)
+				{
+					var maskView = new UIView
+					{
+						Frame = uiview.Frame,
+						BackgroundColor = UIColor.Black
+					};
+
+					maskView.Layer.Mask = maskLayer;
+					uiview.MaskView = maskView;
+				}
+				else
+				{
+					uiview.MaskView = null;
+				}
+			}
+#else
+			if (formsGeometry != null)
+				uiview.Layer.Mask = maskLayer;
+			else
+				uiview.Layer.Mask = null;
+#endif
+		}
+
+		bool ShouldUpdateClip()
+		{
+			var element = Renderer?.Element;
+			var uiview = Renderer?.NativeView;
+
+			if (element == null || uiview == null)
+			{
+				return false;
+			}
+
+			bool hasClipShapeLayer = false;
+#if __MOBILE__
+			if (Forms.IsiOS11OrNewer)
+			{
+				hasClipShapeLayer =
+					uiview.Layer != null &&
+					uiview.Layer.Mask != null &&
+					uiview.Layer.Mask?.Name == ClipShapeLayer;
+			}
+			else
+			{
+				hasClipShapeLayer =
+					uiview.MaskView != null &&
+					uiview.MaskView.Layer.Mask != null &&
+					uiview.MaskView.Layer.Mask?.Name == ClipShapeLayer;
+			}
+#else
+			hasClipShapeLayer =
+				uiview.Layer != null &&
+				uiview.Layer.Mask != null &&
+				uiview.Layer.Mask?.Name == ClipShapeLayer;
+#endif
+
+			var formsGeometry = element.Clip;
+
+			if (formsGeometry != null)
+			{
+				return true;
+			}
+
+			if (formsGeometry == null && hasClipShapeLayer)
+			{
+				return true;
+			}
+
+			return false;
+			}
+
+			bool hasClipShapeLayer = false;
+#if __MOBILE__
+			if (Forms.IsiOS11OrNewer)
+			{
+				hasClipShapeLayer =
+					uiview.Layer != null &&
+					uiview.Layer.Mask != null &&
+					uiview.Layer.Mask?.Name == ClipShapeLayer;
+			}
+			else
+			{
+				hasClipShapeLayer =
+					uiview.MaskView != null &&
+					uiview.MaskView.Layer.Mask != null &&
+					uiview.MaskView.Layer.Mask?.Name == ClipShapeLayer;
+			}
+#else
+			hasClipShapeLayer =
+				uiview.Layer != null &&
+				uiview.Layer.Mask != null &&
+				uiview.Layer.Mask?.Name == ClipShapeLayer;
+#endif
+
+			var formsGeometry = element.Clip;
+
+			if (formsGeometry != null)
+			{
+				return true;
+			}
+
+			if (formsGeometry == null && hasClipShapeLayer)
+			{
+				return true;
+			}
 
 			return false;
 		}

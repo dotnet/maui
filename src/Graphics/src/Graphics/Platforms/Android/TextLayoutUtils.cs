@@ -9,7 +9,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			int finalWidth = int.MaxValue;
 			if (boundedWidth > 0)
+			{
 				finalWidth = (int)boundedWidth;
+			}
 
 #pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
@@ -31,7 +33,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			int finalWidth = int.MaxValue;
 			if (boundedWidth > 0)
+			{
 				finalWidth = (int)boundedWidth;
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CA1416 // Validate platform compatibility
@@ -63,7 +67,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			// We need to know if the static layout was created with a bounded width, as this is what
 			// StaticLayout.Width returns.
 			if (hasBoundedWidth)
+			{
 				return new SizeF(target.Width, target.Height);
+			}
 
 			float vMaxWidth = 0;
 			int vLineCount = target.LineCount;
@@ -72,7 +78,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				float vLineWidth = target.GetLineWidth(i);
 				if (vLineWidth > vMaxWidth)
+				{
 					vMaxWidth = vLineWidth;
+				}
 			}
 
 			return new SizeF(vMaxWidth, target.Height);

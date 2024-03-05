@@ -44,7 +44,9 @@ namespace Microsoft.Maui.Platform
 			if (textColor != null)
 			{
 				if (PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
+				{
 					editText.SetTextColor(c);
+				}
 			}
 		}
 
@@ -91,18 +93,26 @@ namespace Microsoft.Maui.Platform
 			// TextFlagAutoCorrect should not be confused with TextFlagAutocomplete
 			// Autocomplete property pertains to fields that will "self-fill" - like an "Address" input box that fills with your saved data
 			if (textInput.IsTextPredictionEnabled)
+			{
 				editText.InputType |= InputTypes.TextFlagAutoCorrect;
+			}
 			else
+			{
 				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
+			}
 		}
 
 		private static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
 		{
 			// TextFlagNoSuggestions disables spellchecking (the red squiggly lines)
 			if (!textInput.IsSpellCheckEnabled)
+			{
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+			}
 			else
+			{
 				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
+			}
 		}
 
 		public static void UpdateMaxLength(this EditText editText, IEntry entry) =>
@@ -120,7 +130,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdatePlaceholder(this EditText editText, IPlaceholder textInput)
 		{
 			if (editText.Hint == textInput.Placeholder)
+			{
 				return;
+			}
 
 			editText.Hint = textInput.Placeholder;
 		}
@@ -135,7 +147,9 @@ namespace Microsoft.Maui.Platform
 			if (placeholderTextColor != null)
 			{
 				if (PlatformInterop.CreateEditTextColorStateList(editText.HintTextColors, placeholderTextColor.ToPlatform()) is ColorStateList c)
+				{
 					editText.SetHintTextColor(c);
+				}
 			}
 		}
 
@@ -215,13 +229,17 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateCursorPosition(this EditText editText, ITextInput entry)
 		{
 			if (editText.SelectionStart != entry.CursorPosition)
+			{
 				UpdateCursorSelection(editText, entry);
+			}
 		}
 
 		public static void UpdateSelectionLength(this EditText editText, ITextInput entry)
 		{
 			if ((editText.SelectionEnd - editText.SelectionStart) != entry.SelectionLength)
+			{
 				UpdateCursorSelection(editText, entry);
+			}
 		}
 
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
@@ -264,7 +282,10 @@ namespace Microsoft.Maui.Platform
 			int newSelectionLength = System.Math.Max(0, end - start);
 			// Updating this property results in UpdateSelectionLength being called again messing things up
 			if (newSelectionLength != selectionLength)
+			{
 				entry.SelectionLength = newSelectionLength;
+			}
+
 			return end;
 		}
 
@@ -296,20 +317,29 @@ namespace Microsoft.Maui.Platform
 			if (textInput is IEntry entry && entry.IsPassword)
 			{
 				if (editText.InputType.HasFlag(InputTypes.ClassText))
+				{
 					editText.InputType |= InputTypes.TextVariationPassword;
+				}
+
 				if (editText.InputType.HasFlag(InputTypes.ClassNumber))
+				{
 					editText.InputType |= InputTypes.NumberVariationPassword;
+				}
 			}
 
 			if (textInput is IEditor)
+			{
 				editText.InputType |= InputTypes.TextFlagMultiLine;
+			}
 
 			if (textInput is IElement element)
 			{
 				var services = element.Handler?.MauiContext?.Services;
 
 				if (services == null)
+				{
 					return;
+				}
 
 				var fontManager = services.GetRequiredService<IFontManager>();
 				editText.UpdateFont(textInput, fontManager);
@@ -346,14 +376,20 @@ namespace Microsoft.Maui.Platform
 		internal static bool HandleClearButtonTouched(this EditText? platformView, TouchEventArgs? touchEvent, Func<Drawable?>? getClearButtonDrawable)
 		{
 			if (platformView is null)
+			{
 				return false;
+			}
 
 			var motionEvent = touchEvent?.Event;
 			if (motionEvent is null)
+			{
 				return false;
+			}
 
 			if (motionEvent.Action != MotionEventActions.Up)
+			{
 				return false;
+			}
 
 			var rBounds = getClearButtonDrawable?.Invoke()?.Bounds;
 

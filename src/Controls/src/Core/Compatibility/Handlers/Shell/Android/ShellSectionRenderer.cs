@@ -32,11 +32,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateCurrentItem(ShellContent content)
 		{
 			if (_toolbarTracker == null)
+			{
 				return;
+			}
 
 			var page = ((IShellContentController)content).GetOrCreateContent();
 			if (page == null)
+			{
 				throw new ArgumentNullException(nameof(page), "Shell Content Page is Null");
+			}
 
 			ShellSection.SetValueFromRenderer(ShellSection.CurrentItemProperty, content);
 			_toolbarTracker.Page = page;
@@ -49,9 +53,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
 			if (appearance == null)
+			{
 				ResetAppearance();
+			}
 			else
+			{
 				SetAppearance(appearance);
+			}
 		}
 
 		#endregion IAppearanceObserver
@@ -92,10 +100,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var shellSection = ShellSection;
 			if (shellSection == null)
+			{
 				return null;
+			}
 
 			if (shellSection.CurrentItem == null)
+			{
 				throw new InvalidOperationException($"Content not found for active {shellSection}. Title: {shellSection.Title}. Route: {shellSection.Route}.");
+			}
 
 			var context = Context;
 			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
@@ -125,7 +137,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				// current item hasn't changed
 				if (currentItem == shellSection.CurrentItem)
+				{
 					currentIndex = items.IndexOf(currentItem);
+				}
 			}
 
 			_toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
@@ -152,18 +166,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnTabLayoutChange(object sender, AView.LayoutChangeEventArgs e)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			var items = SectionController.GetItems();
 			for (int i = 0; i < _tablayout.TabCount; i++)
 			{
 				if (items.Count <= i)
+				{
 					break;
+				}
 
 				var tab = _tablayout.GetTabAt(i);
 
 				if (tab.View != null)
+				{
 					AutomationPropertiesProvider.AccessibilitySettingsChanged(tab.View, items[i]);
+				}
 			}
 		}
 
@@ -210,7 +230,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -239,10 +261,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void SafeNotifyDataSetChanged(int iteration = 0)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (!_viewPager.IsAlive())
+			{
 				return;
+			}
 
 			if (iteration >= 10)
 			{
@@ -292,7 +318,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_rootView == null)
+			{
 				return;
+			}
 
 			if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
 			{
@@ -339,7 +367,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnPageSelected(int position)
 		{
 			if (_selecting)
+			{
 				return;
+			}
 
 			var shellSection = ShellSection;
 			var visibleItems = SectionController.GetItems();
@@ -348,12 +378,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// vanish. Android calls `OnPageSelected` with position zero even though the view pager is
 			// empty
 			if (position >= visibleItems.Count)
+			{
 				return;
+			}
 
 			var shellContent = visibleItems[position];
 
 			if (shellContent == shellSection.CurrentItem)
+			{
 				return;
+			}
 
 			var stack = shellSection.Stack.ToList();
 			bool result = ShellController.ProposeNavigation(ShellNavigationSource.ShellContentChanged,

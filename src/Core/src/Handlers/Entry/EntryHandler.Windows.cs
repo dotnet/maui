@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 		protected override TextBox CreatePlatformView() =>
 			new MauiPasswordTextBox()
 			{
-				IsObfuscationDelayed = s_shouldBeDelayed
+				MauiPasswordTextBox.IsObfuscationDelayed = s_shouldBeDelayed
 			};
 
 		public override void SetVirtualView(IView view)
@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 
 			if (!_set)
+			{
 				PlatformView.SelectionChanged += OnPlatformSelectionChanged;
+			}
 
 			_set = true;
 		}
@@ -44,7 +46,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.TextChanged -= OnPlatformTextChanged;
 
 			if (_set)
+			{
 				platformView.SelectionChanged -= OnPlatformSelectionChanged;
+			}
 
 			_set = false;
 		}
@@ -109,15 +113,21 @@ namespace Microsoft.Maui.Handlers
 		void OnPlatformTextChanged(object sender, TextChangedEventArgs args)
 		{
 			if (PlatformView is MauiPasswordTextBox passwordBox)
-				VirtualView?.UpdateText(passwordBox.Password);
+			{
+				VirtualView?.UpdateText(MauiPasswordTextBox.Password);
+			}
 			else
+			{
 				VirtualView?.UpdateText(PlatformView.Text);
+			}
 		}
 
 		void OnPlatformKeyUp(object? sender, KeyRoutedEventArgs args)
 		{
 			if (args?.Key != VirtualKey.Enter)
+			{
 				return;
+			}
 
 			if (VirtualView?.ReturnType == ReturnType.Next)
 			{
@@ -133,10 +143,14 @@ namespace Microsoft.Maui.Handlers
 			var selectedTextLength = PlatformView.SelectionLength;
 
 			if (VirtualView.CursorPosition != cursorPosition)
+			{
 				VirtualView.CursorPosition = cursorPosition;
+			}
 
 			if (VirtualView.SelectionLength != selectedTextLength)
+			{
 				VirtualView.SelectionLength = selectedTextLength;
+			}
 		}
 
 		void OnPlatformViewSizeChanged(object sender, SizeChangedEventArgs e) =>

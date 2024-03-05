@@ -106,7 +106,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == SearchBar.PlaceholderProperty.PropertyName || e.PropertyName == SearchBar.PlaceholderColorProperty.PropertyName)
+			{
 				UpdatePlaceholder();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 			{
 				UpdateIsEnabled();
@@ -114,7 +116,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdatePlaceholder();
 			}
 			else if (e.PropertyName == SearchBar.TextColorProperty.PropertyName)
+			{
+			{
 				UpdateTextColor();
+			}
 			else if (e.IsOneOf(SearchBar.TextProperty, SearchBar.TextTransformProperty,
 				SearchBar.CharacterSpacingProperty))
 			{
@@ -122,29 +127,51 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateCharacterSpacing();
 			}
 			else if (e.PropertyName == SearchBar.CancelButtonColorProperty.PropertyName)
+			{
 				UpdateCancelButton();
+			}
 			else if (e.PropertyName == SearchBar.FontAttributesProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == SearchBar.FontFamilyProperty.PropertyName)
 			{
 				UpdateFont();
 			}
 			else if (e.PropertyName == SearchBar.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == SearchBar.HorizontalTextAlignmentProperty.PropertyName)
+			{
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == SearchBar.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateVerticalTextAlignment();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.InputView.MaxLengthProperty.PropertyName)
+			{
 				UpdateMaxLength();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.InputView.KeyboardProperty.PropertyName)
+			{
 				UpdateKeyboard();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
 				UpdateKeyboard();
+			}
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.SearchBar.SearchBarStyleProperty.PropertyName)
+			{
 				UpdateSearchBarStyle();
+			}
 		}
 
 		protected override void SetBackgroundColor(Color color)
@@ -152,7 +179,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.SetBackgroundColor(color);
 
 			if (Control == null)
+			{
 				return;
+			}
 
 			if (_defaultTintColor == null)
 			{
@@ -173,21 +202,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.SetBackground(brush);
 
 			if (Control == null)
+			{
 				return;
+			}
 
 			if (brush is SolidColorBrush solidColorBrush)
+			{
 				Control.BarTintColor = solidColorBrush.Color.ToPlatform(_defaultTintColor);
+			}
 		}
 
 		public override CoreGraphics.CGSize SizeThatFits(CoreGraphics.CGSize size)
 		{
 			if (nfloat.IsInfinity(size.Width))
+			{
 				size.Width = (nfloat)(Element?.Parent is VisualElement parent ? parent.Width : DeviceDisplay.MainDisplayInfo.GetScaledScreenSize().Width);
+			}
 
 			var sizeThatFits = Control.SizeThatFits(size);
 
 			if (Forms.IsiOS11OrNewer)
+			{
 				return sizeThatFits;
+			}
 
 			////iOS10 hack because SizeThatFits always returns a width of 0
 			sizeThatFits.Width = (nfloat)Math.Max(sizeThatFits.Width, size.Width);
@@ -202,7 +239,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #pragma warning restore CA1422 // Validate platform compatibility	
 			// Make sure the control adheres to changes in UI theme
 			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			{
+			{
 				UpdateTextColor();
+			}
 		}
 
 		void OnCancelClicked(object sender, EventArgs args)
@@ -241,7 +281,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();
 			if (_textField == null)
+			{
 				return;
+			}
 
 			_textField.AttributedText = _textField.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 			_textField.AttributedPlaceholder = _textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
@@ -253,7 +295,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();
 
 			if (_textField == null)
+			{
 				return;
+			}
 
 			_textField.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
@@ -264,7 +308,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();
 
 			if (_textField == null)
+			{
 				return;
+			}
 
 			_textField.VerticalAlignment = Element.VerticalTextAlignment.ToPlatformTextAlignment();
 		}
@@ -278,7 +324,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var cancelButton = Control.FindDescendantView<UIButton>();
 
 			if (cancelButton == null)
+			{
 				return;
+			}
 
 			if (Element.CancelButtonColor == null)
 			{
@@ -308,7 +356,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_textField = _textField ?? Control.FindDescendantView<UITextField>();
 
 			if (_textField == null)
+			{
 				return;
+			}
 
 			_textField.Font = Element.ToUIFont();
 		}
@@ -323,7 +373,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdatePlaceholder()
 		{
 			if (_textField == null)
+			{
 				return;
+			}
 
 			var formatted = (FormattedString)Element.Placeholder ?? string.Empty;
 			var targetColor = Element.PlaceholderColor;
@@ -357,7 +409,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// when typing, so by keeping track of whether or not text was typed, we can respect
 			// other changes to Element.Text.
 			if (!_textWasTyped)
+			{
 				Control.Text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
+			}
 
 			UpdateCancelButton();
 		}
@@ -371,7 +425,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateTextColor()
 		{
 			if (_textField == null)
+			{
 				return;
+			}
 
 			_defaultTextColor = _defaultTextColor ?? _textField.TextColor;
 			var targetColor = Element.TextColor;
@@ -392,7 +448,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var currentControlText = Control.Text;
 
 			if (currentControlText.Length > Element.MaxLength)
+			{
 				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+			}
 		}
 
 		bool ShouldChangeText(UISearchBar searchBar, NSRange range, string text)

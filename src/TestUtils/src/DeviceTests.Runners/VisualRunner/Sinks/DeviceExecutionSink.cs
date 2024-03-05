@@ -54,7 +54,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				testCase = _testCases.FirstOrDefault(kvp => kvp.Key.UniqueID?.Equals(testResult.TestCase.UniqueID, StringComparison.Ordinal) ?? false).Value;
 
 				if (testCase == null)
+				{
 					return;
+				}
 			}
 
 			// Create the result VM on the UI thread as it updates properties

@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls
 			{
 				var source = oldvalue as WebViewSource;
 				if (source != null)
+				{
 					source.SourceChanged -= ((WebView)bindable).OnSourceChanged;
+				}
 			}, propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
 				var source = newvalue as WebViewSource;
@@ -117,7 +119,9 @@ namespace Microsoft.Maui.Controls
 		public async Task<string> EvaluateJavaScriptAsync(string script)
 		{
 			if (script == null)
+			{
 				return null;
+			}
 
 			// Make all the platforms mimic Android's implementation, which is by far the most complete.
 			if (DeviceInfo.Platform != DevicePlatform.Android)
@@ -130,7 +134,9 @@ namespace Microsoft.Maui.Controls
 					script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
 				}
 				else
+				{
 					script = "try{eval('" + script + "')}catch(e){'null'};";
+				}
 			}
 
 			string result;
@@ -150,12 +156,16 @@ namespace Microsoft.Maui.Controls
 
 			//if the js function errored or returned null/undefined treat it as null
 			if (result == "null")
+			{
 				result = null;
+			}
 
 			//JSON.stringify wraps the result in literal quotes, we just want the actual returned result
 			//note that if the js function returns the string "null" we will get here and not above
 			else if (result != null)
+			{
 				result = result.Trim('"');
+			}
 
 			return result;
 		}
@@ -210,7 +220,9 @@ namespace Microsoft.Maui.Controls
 			{
 				WebViewSource source = Source;
 				if (source != null)
+				{
 					SetInheritedBindingContext(source, BindingContext);
+				}
 			}
 
 			base.OnPropertyChanged(propertyName);
@@ -285,10 +297,14 @@ namespace Microsoft.Maui.Controls
 		static string EscapeJsString(string js)
 		{
 			if (js == null)
+			{
 				return null;
+			}
 
 			if (js.IndexOf("'", StringComparison.Ordinal) == -1)
+			{
 				return js;
+			}
 
 			//get every quote in the string along with all the backslashes preceding it
 			var singleQuotes = Regex.Matches(js, @"(\\*?)'");

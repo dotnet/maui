@@ -105,7 +105,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_usingItemTemplate)
 			{
 				if (_itemTemplateSelector is null)
+				{
 					return ItemViewType.TemplatedItem;
+				}
 
 				var item = ItemsSource?.GetItem(position);
 
@@ -114,7 +116,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				// Cache the data template for future use
 				if (!_viewTypeDataTemplates.ContainsKey(id))
+				{
 					_viewTypeDataTemplates.Add(id, template);
+				}
 
 				return id;
 			}

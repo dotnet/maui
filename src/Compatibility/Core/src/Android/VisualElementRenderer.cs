@@ -69,9 +69,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			set
 			{
 				if (value)
+				{
 					_flags |= VisualElementRendererFlags.AutoPackage;
+				}
 				else
+				{
 					_flags &= ~VisualElementRendererFlags.AutoPackage;
+				}
 			}
 		}
 
@@ -81,9 +85,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			set
 			{
 				if (value)
+				{
 					_flags |= VisualElementRendererFlags.AutoTrack;
+				}
 				else
+				{
 					_flags &= ~VisualElementRendererFlags.AutoTrack;
+				}
 			}
 		}
 
@@ -93,7 +101,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var platformEffect = effect as PlatformEffect;
 			if (platformEffect != null)
+			{
 				OnRegisterEffect(platformEffect);
+			}
 		}
 
 		VisualElement IVisualElementRenderer.Element => Element;
@@ -113,7 +123,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void IVisualElementRenderer.SetElement(VisualElement element)
 		{
 			if (!(element is TElement))
+			{
 				throw new ArgumentException("element is not of type " + typeof(TElement), nameof(element));
+			}
 
 			SetElement((TElement)element);
 		}
@@ -147,13 +159,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Color currentColor = oldElement?.BackgroundColor ?? null;
 
 			if (element.BackgroundColor != currentColor)
+			{
 				UpdateBackgroundColor();
+			}
 
 			if (element.Background != null)
+			{
 				UpdateBackground();
+			}
 
 			if (_propertyChangeHandler == null)
+			{
 				_propertyChangeHandler = OnElementPropertyChanged;
+			}
 
 			element.PropertyChanged += _propertyChangeHandler;
 
@@ -165,21 +183,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, element));
 
 			if (AutoPackage && _packager == null)
+			{
 				SetPackager(new VisualElementPackager(this));
+			}
 
 			if (AutoTrack && Tracker == null)
+			{
 				SetTracker(new VisualElementTracker(this));
+			}
 
 			if (oldElement != null)
+			{
 				Tracker?.UpdateLayout();
+			}
 
 			if (element != null)
+			{
 				SendVisualElementInitialized(element, this);
+			}
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (!string.IsNullOrEmpty(element.AutomationId))
+			{
 				SetAutomationId(element.AutomationId);
+			}
 
 			SetContentDescription();
 			SetImportantForAccessibility();
@@ -201,7 +229,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (CheckFlagsForDisposed())
+			{
 				return;
+			}
 
 			_flags |= VisualElementRendererFlags.Disposed;
 
@@ -242,7 +272,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (Element != null)
 				{
 					if (Platform.GetRenderer(Element) == this)
+					{
 						Platform.SetRenderer(Element, null);
+					}
 
 					Element = null;
 				}
@@ -271,7 +303,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// To avoid an exception, a copy of the handlers is called.
 			var handlers = _elementChangedHandlers.ToArray();
 			foreach (var handler in handlers)
+			{
 				handler(this, args);
+			}
 
 			ElementChanged?.Invoke(this, e);
 
@@ -281,19 +315,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
 				UpdateBackgroundColor();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+			{
 				SetContentDescription();
+			}
 			else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+			{
 				SetContentDescription();
+			}
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
+			{
 				SetImportantForAccessibility();
+			}
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
+			{
 				UpdateInputTransparent();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparentProperty.PropertyName)
+			{
 				UpdateInputTransparentInherited();
+			}
 
 			ElementPropertyChanged?.Invoke(this, e);
 		}
@@ -319,11 +367,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var visualElement = element as VisualElement;
 				if (visualElement == null)
+				{
 					continue;
+				}
 
 				IVisualElementRenderer renderer = Platform.GetRenderer(visualElement);
 				if (renderer == null && CompressedLayout.GetIsHeadless(visualElement))
+				{
 					UpdateLayout(((IElementController)visualElement).LogicalChildren);
+				}
 
 				renderer?.UpdateLayout();
 			}

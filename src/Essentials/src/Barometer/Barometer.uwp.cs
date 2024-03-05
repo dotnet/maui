@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStop()
 		{
 			if (sensor == null)
+			{
 				return;
+			}
 
 			sensor.ReadingChanged -= BarometerReportedInterval;
 			sensor.ReportInterval = 0;

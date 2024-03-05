@@ -120,7 +120,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				SetNativeControl(edit);
 				EditText.AddTextChangedListener(this);
 				if (EditText is IFormsEditText formsEditText)
+				{
 					formsEditText.OnKeyboardBackPressed += OnKeyboardBackPressed;
+				}
 			}
 
 			EditText.SetSingleLine(false);
@@ -147,31 +149,57 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (e.PropertyName == Editor.TextProperty.PropertyName || e.PropertyName == Editor.TextTransformProperty.PropertyName)
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
+			{
 				UpdateInputType();
+			}
 			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
 				UpdateInputType();
+			}
 			else if (e.PropertyName == Editor.IsTextPredictionEnabledProperty.PropertyName)
+			{
 				UpdateInputType();
+			}
 			else if (e.PropertyName == Editor.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == Editor.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == Editor.FontAttributesProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Editor.FontFamilyProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+			{
 				UpdateMaxLength();
+			}
 			else if (e.PropertyName == Editor.PlaceholderProperty.PropertyName)
+			{
 				UpdatePlaceholderText();
+			}
 			else if (e.PropertyName == Editor.PlaceholderColorProperty.PropertyName)
+			{
 				UpdatePlaceholderColor();
+			}
 			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
+			{
 				UpdateIsReadOnly();
+			}
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -212,7 +240,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		internal override void OnNativeFocusChanged(bool hasFocus)
 		{
 			if (Element.IsFocused && !hasFocus) // Editor has requested an unfocus, fire completed event
+			{
 				ElementController.SendCompleted();
+			}
 		}
 
 		[PortHandler]
@@ -235,12 +265,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (model.IsSet(InputView.IsSpellCheckEnabledProperty))
 				{
 					if (!model.IsSpellCheckEnabled)
+					{
 						edit.InputType = edit.InputType | InputTypes.TextFlagNoSuggestions;
+					}
 				}
 				if (model.IsSet(Editor.IsTextPredictionEnabledProperty))
 				{
 					if (!model.IsTextPredictionEnabled)
+					{
 						edit.InputType = edit.InputType | InputTypes.TextFlagNoSuggestions;
+					}
 				}
 			}
 
@@ -262,7 +296,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			string newText = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 
 			if (EditText.Text == newText)
+			{
 				return;
+			}
 
 			newText = TrimToMaxLength(newText);
 			EditText.Text = newText;
@@ -275,7 +311,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void UpdatePlaceholderText()
 		{
 			if (EditText.Hint == Element.Placeholder)
+			{
 				return;
+			}
 
 			EditText.Hint = Element.Placeholder;
 		}
@@ -307,7 +345,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			currentFilters.Add(new InputFilterLengthFilter(Element.MaxLength));
 
 			if (EditText == null)
+			{
 				return;
+			}
 
 			EditText.SetFilters(currentFilters.ToArray());
 			EditText.Text = TrimToMaxLength(EditText.Text);
@@ -316,7 +356,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		string TrimToMaxLength(string currentText)
 		{
 			if (currentText == null || currentText.Length <= Element.MaxLength)
+			{
 				return currentText;
+			}
 
 			return currentText.Substring(0, Element.MaxLength);
 		}

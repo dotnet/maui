@@ -23,9 +23,9 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 #if IOS || MACCATALYST
-			await ValidatePropertyInitValue(searchBar, () => 
-				(searchBar.Background as SolidPaint).Color, 
-				GetNativeBackgroundColor, 
+			await ValidatePropertyInitValue(searchBar, () =>
+				(searchBar.Background as SolidPaint).Color,
+				GetNativeBackgroundColor,
 				(searchBar.Background as SolidPaint).Color);
 #else
 			await ValidateHasColor(searchBar, expected);
@@ -77,7 +77,11 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var n = GetNativeText(h);
 					if (string.IsNullOrEmpty(n))
+					{
+					{
 						n = null; // Native platforms may not support null text
+					}
+
 					return n;
 				},
 				setValue,

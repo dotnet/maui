@@ -64,7 +64,9 @@ namespace Microsoft.Maui.Foldable
 							as FoldableService);
 
 						if (activity != null && foldableService != null)
+						{
 							foldableService.OnCreate(activity);
+						}
 					})
 					.OnResume((activity) =>
 					{

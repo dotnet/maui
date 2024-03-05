@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var tvc = reusableCell as EntryCellTableViewCell;
 			if (tvc == null)
+			{
 				tvc = new EntryCellTableViewCell(item.GetType().FullName);
+			}
 			else
 			{
 				tvc.PropertyChanged -= HandlePropertyChanged;
@@ -65,21 +67,37 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var realCell = (EntryCellTableViewCell)GetRealCell(entryCell);
 
 			if (e.PropertyName == EntryCell.LabelProperty.PropertyName)
+			{
 				UpdateLabel(realCell, entryCell);
+			}
 			else if (e.PropertyName == EntryCell.TextProperty.PropertyName)
+			{
 				UpdateText(realCell, entryCell);
+			}
 			else if (e.PropertyName == EntryCell.PlaceholderProperty.PropertyName)
+			{
 				UpdatePlaceholder(realCell, entryCell);
+			}
 			else if (e.PropertyName == EntryCell.KeyboardProperty.PropertyName)
+			{
 				UpdateKeyboard(realCell, entryCell);
+			}
 			else if (e.PropertyName == EntryCell.LabelColorProperty.PropertyName)
+			{
 				UpdateLabelColor(realCell, entryCell);
+			}
 			else if (e.PropertyName == EntryCell.HorizontalTextAlignmentProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment(realCell, entryCell);
+			}
 			else if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled(realCell, entryCell);
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment(realCell, entryCell);
+			}
 		}
 
 		static void OnKeyBoardDoneButtonPressed(object sender, EventArgs e)
@@ -141,7 +159,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static void UpdateText(EntryCellTableViewCell cell, EntryCell entryCell)
 		{
 			if (cell.TextField.Text == entryCell.Text)
+			{
 				return;
+			}
 			// double sets side effect on iOS, YAY
 			cell.TextField.Text = entryCell.Text;
 		}
@@ -182,7 +202,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var realCell = GetRealCell<EntryCellTableViewCell>(view);
 				var handler = realCell?.KeyboardDoneButtonPressed;
 				if (handler != null)
+				{
 					handler(realCell, EventArgs.Empty);
+				}
 
 				KeyboardAutoManager.GoToNextResponderOrResign(view);
 				return true;
@@ -193,7 +215,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var realCell = GetRealCell<EntryCellTableViewCell>(sender as UIView);
 				var handler = realCell?.TextFieldTextChanged;
 				if (handler != null)
+				{
 					handler(realCell, EventArgs.Empty);
+				}
 			}
 
 			static T GetRealCell<T>(UIView view) where T : UIView

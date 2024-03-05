@@ -22,7 +22,9 @@ namespace Microsoft.Maui
 		public static void SetSemanticFocus(this IView element)
 		{
 			if (element?.Handler?.PlatformView is not PlatformView platformView)
+			{
 				throw new NullReferenceException("Can't access view from a null handler");
+			}
 
 #if __ANDROID__
 			platformView.SendAccessibilityEvent(EventTypes.ViewHoverEnter);

@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (application is IApplication app)
 			{
 				foreach (var window in app.Windows)
+				{
 					window?.Handler?.UpdateValue(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName);
+				}
 			}
 		}
 

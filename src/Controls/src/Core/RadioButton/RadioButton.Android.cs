@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls
 					vg.RemoveAllViews();
 
 					if (handler.VirtualView.PresentedContent is IView view)
+					{
 						vg.AddView(view.ToPlatform(handler.MauiContext));
+					}
 				}
 
 				return;
@@ -30,7 +32,9 @@ namespace Microsoft.Maui.Controls
 		{
 			// If someone is using a completely different type for IRadioButton
 			if (radioButton.VirtualView is not RadioButton rb)
+			{
 				return null;
+			}
 
 			if (rb.ResolveControlTemplate() == null)
 			{

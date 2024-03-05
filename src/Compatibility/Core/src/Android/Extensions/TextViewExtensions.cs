@@ -75,18 +75,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public static void RecalculateSpanPositions(this TextView textView, Label element, SpannableString spannableString, SizeRequest finalSize)
 		{
 			if (element?.FormattedText?.Spans == null || element.FormattedText.Spans.Count == 0)
+			{
 				return;
+			}
 
 			var labelWidth = finalSize.Request.Width;
 			if (labelWidth <= 0 || finalSize.Request.Height <= 0)
+			{
 				return;
+			}
 
 			if (spannableString == null || spannableString.IsDisposed())
+			{
 				return;
+			}
 
 			var layout = textView.Layout;
 			if (layout == null)
+			{
 				return;
+			}
 
 			int next = 0;
 			int count = 0;
@@ -102,7 +110,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				count++;
 
 				if (string.IsNullOrEmpty(span.Text))
+				{
 					continue;
+				}
 
 				// find the next span
 				next = spannableString.NextSpanTransition(i, spannableString.Length(), type);
@@ -124,7 +134,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				//If this is true, endSpanOffset has the value for another line that belong to the next span and not it self. 
 				//So it should be rearranged to value not pass the lineEnd.
 				if (endSpanOffset > (lineEnd - lineStart))
+				{
 					endSpanOffset = lineEnd;
+				}
 
 				var startX = layout.GetPrimaryHorizontal(startSpanOffset);
 				var endX = layout.GetPrimaryHorizontal(endSpanOffset);
@@ -141,16 +153,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					lineHeights[lineCount - startLine] = lineHeight;
 
 					if (totalLineHeights.Count <= lineCount)
+					{
 						totalLineHeights.Add(lineHeight);
+					}
 				}
 
 				var yaxis = 0.0;
 
 
 				for (var line = startLine; line > 0; line--)
+				{
 					yaxis += totalLineHeights[line];
-
-				((ISpatialElement)span).Region = Region.FromLines(lineHeights, labelWidth, startX, endX, yaxis).Inflate(10);
+				} ((ISpatialElement)span).Region = Region.FromLines(lineHeights, labelWidth, startX, endX, yaxis).Inflate(10);
 			}
 		}
 	}

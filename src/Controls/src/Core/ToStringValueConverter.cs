@@ -9,10 +9,14 @@ namespace Microsoft.Maui.Controls
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			if (value == null)
+			{
 				return null;
+			}
 
 			if (value is IFormattable formattable)
+			{
 				return formattable.ToString(parameter?.ToString(), culture);
+			}
 
 			return value.ToString();
 		}

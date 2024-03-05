@@ -70,7 +70,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 
 				if (_loaded)
+				{
 					e.NewElement.SendAppearing();
+				}
 			}
 		}
 

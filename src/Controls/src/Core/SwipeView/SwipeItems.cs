@@ -18,11 +18,13 @@ namespace Microsoft.Maui.Controls
 		public SwipeItems(IEnumerable<ISwipeItem> swipeItems)
 		{
 			foreach (var item in swipeItems)
+			{
 				if (item is Element e)
 				{
 					CheckParent(e);
 					AddLogicalChild(e);
 				}
+			}
 
 			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
@@ -77,8 +79,12 @@ namespace Microsoft.Maui.Controls
 		public void Clear()
 		{
 			foreach (var item in _swipeItems)
+			{
 				if (item is Element e)
+				{
 					RemoveLogicalChild(e);
+				}
+			}
 
 			_swipeItems.Clear();
 		}
@@ -99,7 +105,9 @@ namespace Microsoft.Maui.Controls
 		public IEnumerator<ISwipeItem> GetEnumerator()
 		{
 			foreach (ISwipeItem item in _swipeItems)
+			{
 				yield return item;
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='IndexOf']/Docs/*" />
@@ -131,18 +139,24 @@ namespace Microsoft.Maui.Controls
 			if (notifyCollectionChangedEventArgs.NewItems is not null)
 			{
 				foreach (var item in notifyCollectionChangedEventArgs.NewItems)
+				{
 					if (item is Element e)
 					{
 						CheckParent(e);
 						AddLogicalChild(e);
 					}
+				}
 			}
 
 			if (notifyCollectionChangedEventArgs.OldItems is not null)
 			{
 				foreach (var item in notifyCollectionChangedEventArgs.OldItems)
+				{
 					if (item is Element e)
+					{
 						RemoveLogicalChild(e);
+					}
+				}
 			}
 
 			CollectionChanged?.Invoke(this, notifyCollectionChangedEventArgs);

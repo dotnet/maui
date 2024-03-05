@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Animations
 		public virtual void Start()
 		{
 			if (_timer != null)
+			{
 				return;
+			}
 
 			_timer = new Timer
 			{
@@ -56,7 +58,9 @@ namespace Microsoft.Maui.Animations
 		public virtual void Stop()
 		{
 			if (_timer == null)
+			{
 				return;
+			}
 
 			_timer.AutoReset = false;
 			_timer.Stop();

@@ -52,7 +52,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			((IView)element).Handler = ViewHandler;
 
 			if (ViewHandler.VirtualView != element)
+			{
 				ViewHandler.SetVirtualView((IView)element);
+			}
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
 		}

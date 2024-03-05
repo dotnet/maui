@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Storage
 
 			var allowedTypes = options?.FileTypes?.Value?.ToArray();
 			if (allowedTypes?.Length > 0)
+			{
 				intent.PutExtra(Intent.ExtraMimeTypes, allowedTypes);
+			}
 
 			var pickerIntent = Intent.CreateChooser(intent, options?.PickerTitle ?? "Select file");
 

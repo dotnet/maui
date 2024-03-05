@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Platform
 		public static AColorFilter? GetColorFilter(this ADrawable drawable)
 		{
 			if (drawable == null)
+			{
 				return null;
+			}
 
 			return ADrawableCompat.GetColorFilter(drawable);
 		}
@@ -36,27 +38,39 @@ namespace Microsoft.Maui.Platform
 		public static void SetColorFilter(this ADrawable drawable, AColorFilter? colorFilter)
 		{
 			if (drawable == null)
+			{
 				return;
+			}
 
 			if (colorFilter == null)
+			{
 				ADrawableCompat.ClearColorFilter(drawable);
+			}
 			else
+			{
 				drawable.SetColorFilter(colorFilter);
+			}
 		}
 
 		public static void SetColorFilter(this ADrawable drawable, Graphics.Color color, FilterMode mode)
 		{
 			if (drawable == null)
+			{
 				return;
+			}
 
 			if (color != null)
+			{
 				drawable.SetColorFilter(color.ToPlatform(), mode);
+			}
 		}
 
 		public static void SetColorFilter(this ADrawable drawable, AColor color, FilterMode mode)
 		{
 			if (drawable is not null)
+			{
 				PlatformInterop.SetColorFilter(drawable, color, (int)mode);
+			}
 		}
 	}
 }

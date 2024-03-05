@@ -19,10 +19,14 @@ namespace Microsoft.Maui.Controls
 			var strValue = value?.ToString();
 
 			if (strValue == "HorizontalList")
+			{
 				return LinearItemsLayout.CarouselDefault;
+			}
 
 			if (strValue == "VerticalList")
+			{
 				return LinearItemsLayout.CarouselVertical;
+			}
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LinearItemsLayout)}");
 		}
@@ -30,13 +34,19 @@ namespace Microsoft.Maui.Controls
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not LinearItemsLayout lil)
+			{
 				throw new NotSupportedException();
+			}
 
 			if (lil == LinearItemsLayout.CarouselDefault)
+			{
 				return "HorizontalList";
+			}
 
 			if (lil == LinearItemsLayout.CarouselVertical)
+			{
 				return "VerticalList";
+			}
 
 			throw new NotSupportedException();
 		}

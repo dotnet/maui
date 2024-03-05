@@ -114,18 +114,28 @@ namespace Samples.ViewModel
 		async void OpenUri()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
 
 			IsBusy = true;
 			try
 			{
 				var flags = BrowserLaunchFlags.None;
 				if (PresentAsPageSheet)
+				{
 					flags |= BrowserLaunchFlags.PresentAsPageSheet;
+				}
+
 				if (PresentAsFormSheet)
+				{
 					flags |= BrowserLaunchFlags.PresentAsFormSheet;
+				}
+
 				if (LaunchAdjacent)
+				{
 					flags |= BrowserLaunchFlags.LaunchAdjacent;
+				}
 
 				await Browser.OpenAsync(uri, new BrowserLaunchOptions
 				{

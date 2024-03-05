@@ -27,7 +27,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (Control != null && disposing)
 			{
@@ -81,7 +83,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						(_, __) =>
 						{
 							if (refreshControl?.Visualizer == null)
+							{
 								return;
+							}
 
 							UpdateColors();
 							refreshControl.UnregisterPropertyChangedCallback(RefreshContainer.VisualizerProperty, callbackToken);
@@ -105,32 +109,55 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ContentView.ContentProperty.PropertyName)
+			{
 				UpdateContent();
+			}
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled();
+			}
+			}
 			else if (e.PropertyName == RefreshView.IsRefreshingProperty.PropertyName)
+			{
 				UpdateIsRefreshing();
+			}
+			}
 			else if (e.PropertyName == RefreshView.RefreshColorProperty.PropertyName)
+			{
 				UpdateColors();
+			}
+			}
 			else if (e.PropertyName == Specifics.RefreshPullDirectionProperty.PropertyName)
+			{
+			{
 				UpdateRefreshPullDirection();
+			}
 		}
 
 		protected override void UpdateBackgroundColor()
 		{
 			if (Element == null || Control?.Visualizer == null)
+			{
 				return;
+			}
 
 			if (Element.BackgroundColor.IsNotDefault())
+			{
 				Control.Visualizer.Background = Element.BackgroundColor.ToPlatform();
+			}
 			else
+			{
 				Control.Visualizer.Background = Colors.White.ToPlatform();
+			}
 		}
 
 		void UpdateContent()
 		{
 			if (Element.Content == null)
+			{
 				return;
+			}
 
 			IVisualElementRenderer renderer = Element.Content.GetOrCreateRenderer();
 			Control.Content = renderer.ContainerElement;
@@ -144,7 +171,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateIsRefreshing()
 		{
 			if (!_isLoaded)
+			{
 				return;
+			}
 
 			if (!Element?.IsRefreshing ?? false)
 			{
@@ -159,7 +188,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateColors()
 		{
 			if (Control?.Visualizer == null)
+			{
 				return;
+			}
 
 			Control.Visualizer.Foreground = Element.RefreshColor.IsNotDefault()
 				? Element.RefreshColor.ToPlatform()

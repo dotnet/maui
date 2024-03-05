@@ -65,10 +65,14 @@ namespace Microsoft.Maui.Devices
 		DevicePlatform(string devicePlatform)
 		{
 			if (devicePlatform == null)
+			{
 				throw new ArgumentNullException(nameof(devicePlatform));
+			}
 
 			if (devicePlatform.Length == 0)
+			{
 				throw new ArgumentException(nameof(devicePlatform));
+			}
 
 			this.devicePlatform = devicePlatform;
 		}

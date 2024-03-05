@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Handlers
 		void SetVirtualViewTime()
 		{
 			if (VirtualView == null || PlatformView == null)
+			{
 				return;
+			}
 
 			var datetime = PlatformView.Date.ToDateTime();
 			VirtualView.Time = new TimeSpan(datetime.Hour, datetime.Minute, 0);
@@ -103,19 +105,25 @@ namespace Microsoft.Maui.Handlers
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is not null)
+				{
 					VirtualView.IsFocused = true;
+				}
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is not null)
+				{
 					VirtualView.IsFocused = false;
+				}
 			}
 
 			void OnValueChanged(object? sender, EventArgs e)
 			{
 				if (_handler is not null && _handler.TryGetTarget(out var handler) && handler.UpdateImmediately)  // Platform Specific
+				{
 					handler.SetVirtualViewTime();
+				}
 			}
 
 			public void OnDateSelected()

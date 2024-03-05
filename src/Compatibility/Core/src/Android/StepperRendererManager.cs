@@ -47,7 +47,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			where TButton : AButton
 		{
 			if (!(renderer?.Element is Stepper stepper))
+			{
 				return;
+			}
 
 			// NOTE: a value of `null` means that we are forcing an update
 			if (e == null ||
@@ -65,16 +67,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			public void OnClick(AView v)
 			{
 				if (!(v?.Tag is IStepperRenderer renderer))
+				{
 					return;
+				}
 
 				if (!(renderer?.Element is Stepper stepper))
+				{
 					return;
+				}
 
 				var increment = stepper.Increment;
 				if (v == renderer.DownButton)
+				{
 					increment = -increment;
-
-				((IElementController)stepper).SetValueFromRenderer(Stepper.ValueProperty, stepper.Value + increment);
+				} ((IElementController)stepper).SetValueFromRenderer(Stepper.ValueProperty, stepper.Value + increment);
 			}
 		}
 	}

@@ -63,7 +63,11 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = AVPermissions.CheckPermissionsStatus(AVAuthorizationMediaType.Video);
 				if (status == PermissionStatus.Granted)
+				{
+				{
 					return status;
+				}
+				}
 
 				EnsureMainThread();
 
@@ -92,7 +96,11 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = GetAddressBookPermissionStatus();
 				if (status == PermissionStatus.Granted)
+				{
+				{
 					return Task.FromResult(status);
+				}
+				}
 
 				EnsureMainThread();
 
@@ -117,7 +125,11 @@ namespace Microsoft.Maui.ApplicationModel
 				var result = await contactStore.RequestAccessAsync(global::Contacts.CNEntityType.Contacts);
 
 				if (result.Item2 != null)
+				{
+				{
 					return PermissionStatus.Denied;
+				}
+				}
 
 				return result.Item1 ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}
@@ -144,7 +156,11 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = ContactsRead.GetAddressBookPermissionStatus();
 				if (status == PermissionStatus.Granted)
+				{
+				{
 					return Task.FromResult(status);
+				}
+				}
 
 				EnsureMainThread();
 
@@ -173,7 +189,11 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = GetMediaPermissionStatus();
 				if (status == PermissionStatus.Granted)
+				{
+				{
 					return Task.FromResult(status);
+				}
+				}
 
 				EnsureMainThread();
 
@@ -240,7 +260,11 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = AVPermissions.CheckPermissionsStatus(AVAuthorizationMediaType.Audio);
 				if (status == PermissionStatus.Granted)
+				{
+				{
 					return Task.FromResult(status);
+				}
+				}
 
 				EnsureMainThread();
 
@@ -269,7 +293,11 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = GetSpeechPermissionStatus();
 				if (status == PermissionStatus.Granted)
+				{
+				{
 					return Task.FromResult(status);
+				}
+				}
 
 				EnsureMainThread();
 

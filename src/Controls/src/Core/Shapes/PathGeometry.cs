@@ -74,23 +74,39 @@ namespace Microsoft.Maui.Controls.Shapes
 				foreach (var segment in figure.Segments)
 				{
 					if (segment is ArcSegment arcSegment)
+					{
 						AddArc(path, arcSegment);
+					}
 					else if (segment is BezierSegment bezierSegment)
+					{
 						AddBezier(path, bezierSegment);
+					}
 					else if (segment is LineSegment lineSegment)
+					{
 						AddLine(path, lineSegment);
+					}
 					else if (segment is PolyBezierSegment polyBezierSegment)
+					{
 						AddPolyBezier(path, polyBezierSegment);
+					}
 					else if (segment is PolyLineSegment polyLineSegment)
+					{
 						AddPolyLine(path, polyLineSegment);
+					}
 					else if (segment is PolyQuadraticBezierSegment polyQuadraticBezierSegment)
+					{
 						AddPolyQuad(path, polyQuadraticBezierSegment);
+					}
 					else if (segment is QuadraticBezierSegment quadraticBezierSegment)
+					{
 						AddQuad(path, quadraticBezierSegment);
+					}
 				}
 
 				if (figure.IsClosed)
+				{
 					path.Close();
+				}
 			}
 		}
 
@@ -127,9 +143,11 @@ namespace Microsoft.Maui.Controls.Shapes
 		void AddPolyLine(PathF path, PolyLineSegment polyLineSegment)
 		{
 			foreach (var p in polyLineSegment.Points)
+			{
 				path.LineTo(
 					(float)(p.X),
 					(float)(p.Y));
+			}
 		}
 
 		void AddBezier(PathF path, BezierSegment bezierSegment)
@@ -145,7 +163,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			for (int bez = 0; bez < polyBezierSegment.Points.Count; bez += 3)
 			{
 				if (bez + 2 > polyBezierSegment.Points.Count - 1)
+				{
 					break;
+				}
 
 				var pt1 = new PointF((float)(polyBezierSegment.Points[bez].X), (float)(polyBezierSegment.Points[bez].Y));
 				var pt2 = new PointF((float)(polyBezierSegment.Points[bez + 1].X), (float)(polyBezierSegment.Points[bez + 1].Y));
@@ -171,7 +191,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				for (int i = 0; i < polyQuadraticBezierSegment.Points.Count; i += 2)
 				{
 					if (i + 1 > polyQuadraticBezierSegment.Points.Count - 1)
+					{
 						break;
+					}
 
 					var pt1 = new PointF((float)(points[i].X), (float)(points[i].Y));
 					var pt2 = new PointF((float)(points[i + 1].X), (float)(points[i + 1].Y));
@@ -195,7 +217,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 
 			if (newCollection == null)
+			{
 				return;
+			}
 
 			newCollection.CollectionChanged += OnPathFigureCollectionChanged;
 
@@ -213,9 +237,17 @@ namespace Microsoft.Maui.Controls.Shapes
 				foreach (var oldItem in e.OldItems)
 				{
 					if (!(oldItem is PathFigure oldPathFigure))
+					{
 						continue;
+					}
 
-					oldPathFigure.PropertyChanged -= OnPathFigurePropertyChanged;
+					oldPathFigure.PropertyChanged -= 
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+		void OnPathFigurePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+After:
+		void OnPathFigurePropertyChanged;
 					oldPathFigure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
 				}
 			}
@@ -225,13 +257,64 @@ namespace Microsoft.Maui.Controls.Shapes
 				foreach (var newItem in e.NewItems)
 				{
 					if (!(newItem is PathFigure newPathFigure))
+					{
 						continue;
+					}
+
+					newPathFigure.PropertyChanged += OnPathFigurePropertyChanged;
+					newPathFigure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+		void OnPathFigurePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+After:
+		void OnPathFigurePropertyChanged;
+					oldPathFigure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+				}
+			}
+
+			if (e.NewItems != null)
+			{
+				foreach (var newItem in e.NewItems)
+				{
+					if (!(newItem is PathFigure newPathFigure))
+					{
+						continue;
+					}
+
+					newPathFigure.PropertyChanged += OnPathFigurePropertyChanged;
+					newPathFigure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
+				}
+			}
+*/
+OnPathFigurePropertyChanged;
+					oldPathFigure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+				}
+			}
+
+			if (e.NewItems != null)
+			{
+				foreach (var newItem in e.NewItems)
+				{
+					if (!(newItem is PathFigure newPathFigure))
+					{
+						continue;
+					}
 
 					newPathFigure.PropertyChanged += OnPathFigurePropertyChanged;
 					newPathFigure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
 				}
 			}
 
+			Invalidate();
+		}
+
+		void OnPathFigurePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
 			Invalidate();
 		}
 

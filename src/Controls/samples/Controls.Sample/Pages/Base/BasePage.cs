@@ -17,16 +17,22 @@ namespace Maui.Controls.Sample.Pages.Base
 			Application.Current!.Resources.TryGetValue("DarkBackgroundColor", out object darkBackgroundResource);
 
 			if (lightBackgroundResource is Color lightBackgroundColor && darkBackgroundResource is Color darkBackgroundColor)
+			{
 				this.SetAppThemeColor(BackgroundColorProperty, lightBackgroundColor, darkBackgroundColor);
+			}
 
 			NavigateCommand = new Command(async () =>
 			{
 				if (SelectedItem != null)
 				{
 					if (Application.Current.MainPage is FlyoutPage fp)
+					{
 						await fp.Detail.Navigation.PushAsync(PreparePage(SelectedItem));
+					}
 					else
+					{
 						await Navigation.PushAsync(PreparePage(SelectedItem));
+					}
 
 					SelectedItem = null;
 				}

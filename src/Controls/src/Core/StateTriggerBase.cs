@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls
 			private set
 			{
 				if (_isActive == value)
+				{
 					return;
+				}
 
 				_isActive = value;
 				IsActiveChanged?.Invoke(this, EventArgs.Empty);
@@ -54,7 +56,10 @@ namespace Microsoft.Maui.Controls
 		internal void SendAttached()
 		{
 			if (IsAttached)
+			{
 				return;
+			}
+
 			OnAttached();
 			IsAttached = true;
 		}
@@ -62,7 +67,10 @@ namespace Microsoft.Maui.Controls
 		internal void SendDetached()
 		{
 			if (!IsAttached)
+			{
 				return;
+			}
+
 			OnDetached();
 			IsAttached = false;
 		}

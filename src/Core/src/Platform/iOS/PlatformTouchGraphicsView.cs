@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Platform
 			_graphicsView = new(graphicsView);
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				AddGestureRecognizer(_hoverGesture = new UIHoverGestureRecognizer(_proxy.OnHover));
+			}
 		}
 
 		public void Disconnect()
@@ -47,9 +49,15 @@ namespace Microsoft.Maui.Platform
 		public override void TouchesBegan(NSSet touches, UIEvent? evt)
 		{
 			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+			{
 				return;
+			}
+
 			if (!IsFirstResponder)
+			{
 				BecomeFirstResponder();
+			}
+
 			var viewPoints = this.GetPointsInView(evt);
 			graphicsView.StartInteraction(viewPoints);
 			_pressedContained = true;
@@ -58,7 +66,10 @@ namespace Microsoft.Maui.Platform
 		public override void TouchesMoved(NSSet touches, UIEvent? evt)
 		{
 			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+			{
 				return;
+			}
+
 			var viewPoints = this.GetPointsInView(evt);
 			_pressedContained = _rect.ContainsAny(viewPoints);
 			graphicsView.DragInteraction(viewPoints);
@@ -67,14 +78,20 @@ namespace Microsoft.Maui.Platform
 		public override void TouchesEnded(NSSet touches, UIEvent? evt)
 		{
 			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+			{
 				return;
+			}
+
 			graphicsView.EndInteraction(this.GetPointsInView(evt), _pressedContained);
 		}
 
 		public override void TouchesCancelled(NSSet touches, UIEvent? evt)
 		{
 			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+			{
 				return;
+			}
+
 			_pressedContained = false;
 			graphicsView.CancelInteraction();
 		}
@@ -88,10 +105,14 @@ namespace Microsoft.Maui.Platform
 			public void OnHover()
 			{
 				if (!_platformView.TryGetTarget(out var platformView))
+				{
 					return;
+				}
 
 				if (platformView._graphicsView is null || !platformView._graphicsView.TryGetTarget(out var graphicsView))
+				{
 					return;
+				}
 
 				var hoverGesture = platformView._hoverGesture;
 				if (hoverGesture!.State == UIGestureRecognizerState.Began)
@@ -105,7 +126,9 @@ namespace Microsoft.Maui.Platform
 					graphicsView.MoveHoverInteraction(new[] { (PointF)touch.ToPoint() });
 				}
 				else
+				{
 					graphicsView.EndHoverInteraction();
+				}
 			}
 		}
 	}

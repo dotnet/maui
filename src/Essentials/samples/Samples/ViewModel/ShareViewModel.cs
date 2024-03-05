@@ -135,7 +135,9 @@ namespace Samples.ViewModel
 		async void OnFileRequest(Microsoft.Maui.Controls.View element)
 		{
 			if (string.IsNullOrWhiteSpace(ShareFileAttachmentContents))
+			{
 				return;
+			}
 
 			var file = CreateFile(ShareFileAttachmentName, ShareFileAttachmentContents, "Attachment.txt");
 
@@ -151,7 +153,9 @@ namespace Samples.ViewModel
 		{
 			if (string.IsNullOrWhiteSpace(ShareFile1AttachmentContents) ||
 				string.IsNullOrWhiteSpace(ShareFile2AttachmentContents))
+			{
 				return;
+			}
 
 			var file1 = CreateFile(ShareFile1AttachmentName, ShareFile1AttachmentContents, "Attachment1.txt");
 			var file2 = CreateFile(ShareFile2AttachmentName, ShareFile2AttachmentContents, "Attachment2.txt");

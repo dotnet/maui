@@ -50,12 +50,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.IsOneOf(IndicatorView.IndicatorColorProperty, IndicatorView.SelectedIndicatorColorProperty, IndicatorView.PositionProperty))
+			{
 				UpdateIndicatorsColor();
+			}
 
 			if (e.IsOneOf(IndicatorView.CountProperty,
 						  IndicatorView.ItemsSourceProperty,
 						  IndicatorView.IndicatorsShapeProperty))
+			{
 				CreateIndicators();
+			}
 		}
 
 		void UpdateControl()
@@ -80,7 +84,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateIndicatorsColor()
 		{
 			if (!(Control is ItemsControl))
+			{
 				return;
+			}
 
 			_fillColor = new WSolidColorBrush(Element.IndicatorColor.ToWindowsColor());
 			_selectedColor = new WSolidColorBrush(Element.SelectedIndicatorColor.ToWindowsColor());
@@ -107,7 +113,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void CreateIndicators()
 		{
 			if (!Element.IsVisible || !(Control is ItemsControl))
+			{
 				return;
+			}
 
 			var position = Element.Position;
 			var indicators = new List<WShape>();

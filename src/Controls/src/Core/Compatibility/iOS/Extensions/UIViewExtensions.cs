@@ -19,7 +19,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static IEnumerable<UIView> Descendants(this UIView self)
 		{
 			if (self.Subviews == null)
+			{
 				return Enumerable.Empty<UIView>();
+			}
+
 			return self.Subviews.Concat(self.Subviews.SelectMany(s => s.Descendants()));
 		}
 
@@ -112,13 +115,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		internal static UIView FindFirstResponder(this UIView view)
 		{
 			if (view.IsFirstResponder)
+			{
 				return view;
+			}
 
 			foreach (var subView in view.Subviews)
 			{
 				var firstResponder = subView.FindFirstResponder();
 				if (firstResponder != null)
+				{
 					return firstResponder;
+				}
 			}
 
 			return null;

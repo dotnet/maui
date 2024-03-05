@@ -62,7 +62,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var baseResult = base.GetDesiredSize(widthConstraint, heightConstraint);
 
 			if (Forms.IsiOS11OrNewer)
+			{
 				return baseResult;
+			}
 
 			NSString testString = new NSString("Tj");
 			var testSize = testString.GetSizeUsingAttributes(new UIStringAttributes { Font = Control.Font });
@@ -77,7 +79,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -106,7 +110,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementChanged(e);
 
 			if (e.NewElement == null)
+			{
 				return;
+			}
 
 			if (Control == null)
 			{
@@ -148,69 +154,115 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateReturnType();
 
 			if (_cursorPositionChangePending || _selectionLengthChangePending)
+			{
 				UpdateCursorSelection();
+			}
 
 			UpdateCursorColor();
 			UpdateIsReadOnly();
 
 			if (Element.ClearButtonVisibility != ClearButtonVisibility.Never)
+			{
 				UpdateClearButtonVisibility();
+			}
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Entry.PlaceholderProperty.PropertyName || e.PropertyName == Entry.PlaceholderColorProperty.PropertyName)
+			{
 				UpdatePlaceholder();
+			}
 			else if (e.PropertyName == Entry.IsPasswordProperty.PropertyName)
+			{
 				UpdatePassword();
+			}
 			else if (e.IsOneOf(Entry.TextProperty, Entry.TextTransformProperty))
 			{
 				UpdateText();
 				UpdateCharacterSpacing();
 			}
 			else if (e.PropertyName == Entry.TextColorProperty.PropertyName)
+			{
 				UpdateColor();
+			}
 			else if (e.PropertyName == Entry.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.InputView.KeyboardProperty.PropertyName)
+			{
 				UpdateKeyboard();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
 				UpdateKeyboard();
+			}
 			else if (e.PropertyName == Entry.IsTextPredictionEnabledProperty.PropertyName)
+			{
 				UpdateKeyboard();
+			}
 			else if (e.PropertyName == Entry.HorizontalTextAlignmentProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == Entry.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateVerticalTextAlignment();
+			}
 			else if (e.PropertyName == Entry.FontAttributesProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Entry.FontFamilyProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Entry.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 			{
 				UpdateColor();
 				UpdatePlaceholder();
 			}
 			else if (e.PropertyName == Specifics.AdjustsFontSizeToFitWidthProperty.PropertyName)
+			{
 				UpdateAdjustsFontSizeToFitWidth();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.InputView.MaxLengthProperty.PropertyName)
+			{
 				UpdateMaxLength();
+			}
 			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
+			{
 				UpdateReturnType();
+			}
 			else if (e.PropertyName == Entry.CursorPositionProperty.PropertyName)
+			{
 				UpdateCursorSelection();
+			}
 			else if (e.PropertyName == Entry.SelectionLengthProperty.PropertyName)
+			{
 				UpdateCursorSelection();
+			}
 			else if (e.PropertyName == Specifics.CursorColorProperty.PropertyName)
+			{
 				UpdateCursorColor();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.InputView.IsReadOnlyProperty.PropertyName)
+			{
 				UpdateIsReadOnly();
+			}
 			else if (e.PropertyName == Entry.ClearButtonVisibilityProperty.PropertyName)
+			{
 				UpdateClearButtonVisibility();
+			}
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -219,9 +271,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void OnEditingBegan(object sender, EventArgs e)
 		{
 			if (!_cursorPositionChangePending && !_selectionLengthChangePending)
+			{
 				UpdateCursorFromControl(null);
+			}
 			else
+			{
 				UpdateCursorSelection();
+			}
 
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
@@ -341,7 +397,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.BecomeFirstResponder();
 			}
 			else
+			{
 				Control.SecureTextEntry = Element.IsPassword;
+			}
 		}
 
 		[PortHandler]
@@ -350,7 +408,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var formatted = (FormattedString)Element.Placeholder;
 
 			if (formatted == null)
+			{
 				return;
+			}
 
 			var targetColor = Element.PlaceholderColor;
 
@@ -378,7 +438,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 			// ReSharper disable once RedundantCheckBeforeAssignment
 			if (Control.Text != text)
+			{
 				Control.Text = text;
+			}
 		}
 
 		[PortHandler("Partially ported ...")]
@@ -387,12 +449,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (textAttr != null)
+			{
 				Control.AttributedText = textAttr;
+			}
 
 			var placeHolder = Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (placeHolder != null)
+			{
 				UpdateAttributedPlaceholder(placeHolder);
+			}
 		}
 
 		[PortHandler]
@@ -401,7 +467,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var currentControlText = Control.Text;
 
 			if (currentControlText.Length > Element.MaxLength)
+			{
 				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+			}
 		}
 
 		[PortHandler]
@@ -415,14 +483,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateReturnType()
 		{
 			if (Control == null || Element == null)
+			{
 				return;
+			}
+
 			Control.ReturnKeyType = Element.ReturnType.ToUIReturnKeyType();
 		}
 
 		void UpdateCursorFromControl(NSObservedChange obj)
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
+			{
 				return;
+			}
 
 			var currentSelection = Control.SelectedTextRange;
 			if (currentSelection != null)
@@ -431,7 +504,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					int newCursorPosition = (int)Control.GetOffsetFromPosition(Control.BeginningOfDocument, currentSelection.Start);
 					if (newCursorPosition != Element.CursorPosition)
+					{
 						SetCursorPositionFromRenderer(newCursorPosition);
+					}
 				}
 
 				if (!_selectionLengthChangePending)
@@ -439,7 +514,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					int selectionLength = (int)Control.GetOffsetFromPosition(currentSelection.Start, currentSelection.End);
 
 					if (selectionLength != Element.SelectionLength)
+					{
 						SetSelectionLengthFromRenderer(selectionLength);
+					}
 				}
 			}
 		}
@@ -447,7 +524,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateCursorSelection()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
+			{
 				return;
+			}
 
 			_cursorPositionChangePending = _selectionLengthChangePending = true;
 
@@ -490,7 +569,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			int newSelectionLength = Math.Max(0, endOffset - startOffset);
 			if (newSelectionLength != selectionLength)
+			{
 				SetSelectionLengthFromRenderer(newSelectionLength);
+			}
 
 			return end;
 		}
@@ -507,7 +588,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (startOffset != cursorPosition)
+			{
 				SetCursorPositionFromRenderer(startOffset);
+			}
 
 			return start;
 		}
@@ -517,15 +600,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var control = Control;
 			if (control == null || Element == null)
+			{
 				return;
+			}
 
 			if (Element.IsSet(Specifics.CursorColorProperty))
 			{
 				var color = Element.OnThisPlatform().GetCursorColor();
 				if (color == null)
+				{
 					control.TintColor = _defaultCursorColor;
+				}
 				else
+				{
 					control.TintColor = color.ToPlatform();
+				}
 			}
 		}
 

@@ -26,11 +26,15 @@ namespace Microsoft.Maui.Controls.Platform
 			View view = GetView();
 
 			if (view == null)
+			{
 				return false;
+			}
 
 			IPinchGestureController pinchGesture = PinchGesture;
 			if (pinchGesture == null)
+			{
 				return true;
+			}
 
 			var scalePointTransformed = new Point(scalePoint.X / view.Width, scalePoint.Y / view.Height);
 			pinchGesture.SendPinch(view, 1 + (scale - 1) * _pinchStartingScale, scalePointTransformed);
@@ -43,7 +47,9 @@ namespace Microsoft.Maui.Controls.Platform
 			View view = GetView();
 
 			if (view == null)
+			{
 				return;
+			}
 
 			IPinchGestureController pinchGesture = PinchGesture;
 			pinchGesture?.SendPinchEnded(view);
@@ -54,11 +60,15 @@ namespace Microsoft.Maui.Controls.Platform
 			View view = GetView();
 
 			if (view == null)
+			{
 				return false;
+			}
 
 			IPinchGestureController pinchGesture = PinchGesture;
 			if (pinchGesture == null)
+			{
 				return false;
+			}
 
 			_pinchStartingScale = view.Scale;
 

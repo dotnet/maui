@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				LayoutChanging = null;
+			}
 
 			base.Dispose(disposing);
 		}

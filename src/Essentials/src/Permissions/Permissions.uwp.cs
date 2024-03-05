@@ -63,7 +63,9 @@ namespace Microsoft.Maui.ApplicationModel
 				foreach (var d in RequiredDeclarations())
 				{
 					if (!IsCapabilityDeclared(d))
+					{
 						throw new PermissionException($"You need to declare the capability `{d}` in your AppxManifest.xml file");
+					}
 				}
 			}
 
@@ -100,7 +102,11 @@ namespace Microsoft.Maui.ApplicationModel
 				var accessStatus = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AppContactsReadWrite);
 
 				if (accessStatus == null)
+				{
+				{
 					return PermissionStatus.Denied;
+				}
+				}
 
 				return PermissionStatus.Granted;
 			}
@@ -115,7 +121,11 @@ namespace Microsoft.Maui.ApplicationModel
 				var accessStatus = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AppContactsReadWrite);
 
 				if (accessStatus == null)
+				{
+				{
 					return PermissionStatus.Denied;
+				}
+				}
 
 				return PermissionStatus.Granted;
 			}
@@ -141,7 +151,10 @@ namespace Microsoft.Maui.ApplicationModel
 			internal static async Task<PermissionStatus> RequestLocationPermissionAsync()
 			{
 				if (!MainThread.IsMainThread)
+				{
+				{
 					throw new PermissionException("Permission request must be invoked on main thread.");
+				}
 
 				var accessStatus = await Geolocator.RequestAccessAsync();
 				return accessStatus switch

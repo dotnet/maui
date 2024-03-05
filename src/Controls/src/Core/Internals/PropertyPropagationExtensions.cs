@@ -9,24 +9,36 @@ namespace Microsoft.Maui.Controls.Internals
 		internal static void PropagatePropertyChanged(string propertyName, Element element, IEnumerable children)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				SetFlowDirectionFromParent(element);
+			}
 
 			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
+			{
 				SetVisualFromParent(element);
+			}
 
 			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
+			{
 				SetWindowFromParent(element);
+			}
 
 			if (propertyName == null || propertyName == Shell.NavBarHasShadowProperty.PropertyName)
+			{
 				BaseShellItem.PropagateFromParent(Shell.NavBarHasShadowProperty, element);
+			}
 
 			if (propertyName == null || propertyName == Shell.TabBarIsVisibleProperty.PropertyName)
+			{
 				BaseShellItem.PropagateFromParent(Shell.TabBarIsVisibleProperty, element);
+			}
 
 			foreach (var child in children)
 			{
 				if (child is IPropertyPropagationController view)
+				{
 					view.PropagatePropertyChanged(propertyName);
+				}
 			}
 		}
 
@@ -34,18 +46,9 @@ namespace Microsoft.Maui.Controls.Internals
 		public static void PropagatePropertyChanged(string propertyName, Element target, Element source)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				PropagateFlowDirection(target, source);
-
-			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
-				PropagateVisual(target, source);
-
-			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
-				PropagateWindow(target, source);
-
-			if (target is IPropertyPropagationController view)
-				view.PropagatePropertyChanged(propertyName);
-		}
-
+			
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
 		internal static void PropagateFlowDirection(Element target, Element source)
 		{
 			IFlowDirectionController controller = target as IFlowDirectionController;
@@ -55,6 +58,267 @@ namespace Microsoft.Maui.Controls.Internals
 			var sourceController = source as IFlowDirectionController;
 			if (sourceController == null)
 				return;
+After:
+		internal static void PropagateFlowDirection(Element target, source);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+		internal static void PropagateFlowDirection(Element target, Element source)
+		{
+			IFlowDirectionController controller = target as IFlowDirectionController;
+			if (controller == null)
+				return;
+
+			var sourceController = source as IFlowDirectionController;
+			if (sourceController == null)
+				return;
+After:
+		internal static void PropagateFlowDirection(Element target, source);
+			}
+*/
+{
+				PropagateFlowDirection(target, 
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			if (controller.EffectiveFlowDirection.IsImplicit())
+After:
+			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			if (controller.EffectiveFlowDirection.IsImplicit())
+After:
+			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				var flowDirection = sourceController.EffectiveFlowDirection.ToFlowDirection();
+
+				if (flowDirection != controller.EffectiveFlowDirection.ToFlowDirection())
+				{
+					controller.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection();
+				}
+			}
+
+			controller.EffectiveFlowDirection = controller.EffectiveFlowDirection;
+		}
+After:
+				PropagateVisual(target, source);
+			}
+
+			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
+			{
+				PropagateWindow(target, source);
+			}
+
+			if (target is IPropertyPropagationController view)
+			{
+				view.PropagatePropertyChanged(propertyName);
+			}
+		}
+
+		internal static void PropagateFlowDirection(Element target, Element source)
+		{
+			IFlowDirectionController controller = target as IFlowDirectionController;
+			if (controller == null)
+			{
+				return;
+			}
+
+			var sourceController = source as IFlowDirectionController;
+			if (sourceController == null)
+			{
+				return;
+			}
+
+			if (controller.EffectiveFlowDirection.IsImplicit())
+			{
+				var flowDirection = sourceController.EffectiveFlowDirection.ToFlowDirection();
+
+				if (flowDirection != controller.EffectiveFlowDirection.ToFlowDirection())
+				{
+					controller.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection();
+				}
+			}
+
+			controller.EffectiveFlowDirection = controller.EffectiveFlowDirection;
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				var flowDirection = sourceController.EffectiveFlowDirection.ToFlowDirection();
+
+				if (flowDirection != controller.EffectiveFlowDirection.ToFlowDirection())
+				{
+					controller.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection();
+				}
+			}
+
+			controller.EffectiveFlowDirection = controller.EffectiveFlowDirection;
+		}
+After:
+				PropagateVisual(target, source);
+			}
+
+			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
+			{
+				PropagateWindow(target, source);
+			}
+
+			if (target is IPropertyPropagationController view)
+			{
+				view.PropagatePropertyChanged(propertyName);
+			}
+		}
+
+		internal static void PropagateFlowDirection(Element target, Element source)
+		{
+			IFlowDirectionController controller = target as IFlowDirectionController;
+			if (controller == null)
+			{
+				return;
+			}
+
+			var sourceController = source as IFlowDirectionController;
+			if (sourceController == null)
+			{
+				return;
+			}
+
+			if (controller.EffectiveFlowDirection.IsImplicit())
+			{
+				var flowDirection = sourceController.EffectiveFlowDirection.ToFlowDirection();
+
+				if (flowDirection != controller.EffectiveFlowDirection.ToFlowDirection())
+				{
+					controller.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection();
+				}
+			}
+
+			controller.EffectiveFlowDirection = controller.EffectiveFlowDirection;
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return;
+
+			if (targetController.Visual != VisualMarker.MatchParent)
+			{
+				targetController.EffectiveVisual = targetController.Visual;
+				return;
+			}
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return;
+
+			if (targetController.Visual != VisualMarker.MatchParent)
+			{
+				targetController.EffectiveVisual = targetController.Visual;
+				return;
+			}
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			if (source is IVisualController sourceController)
+				targetController.EffectiveVisual = sourceController.EffectiveVisual;
+		}
+After:
+			if (targetController.Visual != VisualMarker.MatchParent)
+			{
+				targetController.EffectiveVisual = targetController.Visual;
+				return;
+			}
+
+			if (source is IVisualController sourceController)
+			{
+				targetController.EffectiveVisual = sourceController.EffectiveVisual;
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			if (source is IVisualController sourceController)
+				targetController.EffectiveVisual = sourceController.EffectiveVisual;
+		}
+After:
+			if (targetController.Visual != VisualMarker.MatchParent)
+			{
+				targetController.EffectiveVisual = targetController.Visual;
+				return;
+			}
+
+			if (source is IVisualController sourceController)
+			{
+				targetController.EffectiveVisual = sourceController.EffectiveVisual;
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return;
+After:
+			{
+				return;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return;
+After:
+			{
+				return;
+*/
+source);
+			}
+
+			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
+			{
+				PropagateVisual(target, source);
+			}
+
+			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
+			{
+				PropagateWindow(target, source);
+			}
+
+			if (target is IPropertyPropagationController view)
+			{
+				view.PropagatePropertyChanged(propertyName);
+			}
+		}
+
+		internal static void PropagateFlowDirection(Element target, Element source)
+		{
+			IFlowDirectionController controller = target as IFlowDirectionController;
+			if (controller == null)
+			{
+				return;
+			}
+
+			var sourceController = source as IFlowDirectionController;
+			if (sourceController == null)
+			{
+				return;
+			}
 
 			if (controller.EffectiveFlowDirection.IsImplicit())
 			{
@@ -78,7 +342,9 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			IVisualController targetController = target as IVisualController;
 			if (targetController == null)
+			{
 				return;
+			}
 
 			if (targetController.Visual != VisualMarker.MatchParent)
 			{
@@ -87,7 +353,9 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 
 			if (source is IVisualController sourceController)
+			{
 				targetController.EffectiveVisual = sourceController.EffectiveVisual;
+			}
 		}
 
 		internal static void SetVisualFromParent(Element child)
@@ -99,7 +367,10 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			var controller = target as IWindowController;
 			if (controller == null)
+			{
 				return;
+			}
+			}
 
 			var sourceController = source as IWindowController;
 

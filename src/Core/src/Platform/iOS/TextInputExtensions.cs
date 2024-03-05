@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Platform
 			var selectedTextRange = platformView.SelectedTextRange;
 
 			if (selectedTextRange == null)
+			{
 				return 0;
+			}
 
 			return (int)platformView.GetOffsetFromPosition(selectedTextRange.Start, selectedTextRange.End);
 		}

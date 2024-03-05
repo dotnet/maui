@@ -115,7 +115,9 @@ namespace Microsoft.Maui.Controls
 		void OnCommandParameterChanged()
 		{
 			if (Command != null)
+			{
 				IsEnabledCore = Command.CanExecute(CommandParameter);
+			}
 		}
 	}
 }

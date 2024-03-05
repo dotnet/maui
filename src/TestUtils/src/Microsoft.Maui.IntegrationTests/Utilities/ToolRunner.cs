@@ -12,7 +12,9 @@ namespace Microsoft.Maui.IntegrationTests
 			var info = new ProcessStartInfo(tool, args);
 
 			if (Directory.Exists(workingDirectory))
+			{
 				info.WorkingDirectory = workingDirectory;
+			}
 
 			return Run(info, out exitCode, timeoutInSeconds);
 		}
@@ -34,7 +36,9 @@ namespace Microsoft.Maui.IntegrationTests
 					if (!string.IsNullOrEmpty(o?.Data))
 					{
 						lock (procOutput)
+						{
 							procOutput.AppendLine(o.Data);
+						}
 					}
 				};
 				p.ErrorDataReceived += (sender, e) =>
@@ -42,7 +46,9 @@ namespace Microsoft.Maui.IntegrationTests
 					if (!string.IsNullOrEmpty(e?.Data))
 					{
 						lock (procOutput)
+						{
 							procOutput.AppendLine(e.Data);
+						}
 					}
 				};
 

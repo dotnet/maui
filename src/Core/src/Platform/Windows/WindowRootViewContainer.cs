@@ -16,10 +16,14 @@ namespace Microsoft.Maui.Platform
 			var height = availableSize.Height;
 
 			if (double.IsInfinity(width))
+			{
 				width = XamlRoot.Size.Width;
+			}
 
 			if (double.IsInfinity(height))
+			{
 				height = XamlRoot.Size.Height;
+			}
 
 			var size = new Size(width, height);
 
@@ -48,7 +52,9 @@ namespace Microsoft.Maui.Platform
 			{
 				int indexOFTopPage = 0;
 				if (_topPage != null)
+				{
 					indexOFTopPage = Children.IndexOf(_topPage) + 1;
+				}
 
 				Children.Insert(indexOFTopPage, pageView);
 				_topPage = pageView;
@@ -59,23 +65,31 @@ namespace Microsoft.Maui.Platform
 		{
 			int indexOFTopPage = -1;
 			if (_topPage != null)
+			{
 				indexOFTopPage = Children.IndexOf(_topPage) - 1;
+			}
 
 			Children.Remove(pageView);
 
 			if (indexOFTopPage >= 0)
+			{
 				_topPage = (FrameworkElement)Children[indexOFTopPage];
+			}
 			else
+			{
 				_topPage = null;
+			}
 		}
 
 		internal void AddOverlay(FrameworkElement overlayView)
 		{
 			if (!Children.Contains(overlayView))
+			{
 				Children.Add(overlayView);
+			}
 		}
 
-		internal void RemoveOverlay(FrameworkElement overlayView)
+		internal static void RemoveOverlay(FrameworkElement overlayView)
 		{
 			Children.Remove(overlayView);
 		}

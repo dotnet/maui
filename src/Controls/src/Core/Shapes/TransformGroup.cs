@@ -44,16 +44,20 @@ namespace Microsoft.Maui.Controls.Shapes
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
 			if (args.NewItems != null)
+			{
 				foreach (INotifyPropertyChanged item in args.NewItems)
 				{
 					item.PropertyChanged += OnTransformPropertyChanged;
 				}
+			}
 
 			if (args.OldItems != null)
+			{
 				foreach (INotifyPropertyChanged item in args.OldItems)
 				{
 					item.PropertyChanged -= OnTransformPropertyChanged;
 				}
+			}
 
 			UpdateTransformMatrix();
 		}
@@ -68,7 +72,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			var matrix = new Matrix();
 
 			foreach (Transform child in Children)
+			{
 				matrix = Matrix.Multiply(matrix, child.Value);
+			}
 
 			Value = matrix;
 		}

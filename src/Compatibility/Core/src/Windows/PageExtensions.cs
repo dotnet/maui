@@ -96,7 +96,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			FormsEmbeddedPageWrapper.Pages.Add(id, page);
 			if (infoOverride != null)
+			{
 				return frame.Navigate(typeof(FormsEmbeddedPageWrapper), id, infoOverride);
+			}
 
 			return frame.Navigate(typeof(FormsEmbeddedPageWrapper), id);
 		}
@@ -104,11 +106,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		internal static Page GetCurrentPage(this Page currentPage)
 		{
 			if (currentPage is FlyoutPage fp)
+			{
 				return GetCurrentPage(fp.Detail);
+			}
 			else if (currentPage is IPageContainer<Page> pc)
+			{
 				return GetCurrentPage(pc.CurrentPage);
+			}
 			else
+			{
 				return currentPage;
+			}
 		}
 	}
 }

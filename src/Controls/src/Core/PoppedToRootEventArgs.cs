@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls
 		public PoppedToRootEventArgs(Page page, IEnumerable<Page> poppedPages) : base(page)
 		{
 			if (poppedPages == null)
+			{
 				throw new ArgumentNullException(nameof(poppedPages));
+			}
 
 			PoppedPages = poppedPages;
 		}

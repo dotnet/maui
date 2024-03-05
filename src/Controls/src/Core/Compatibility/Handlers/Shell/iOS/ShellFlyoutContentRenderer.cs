@@ -52,9 +52,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Shell.FlyoutBackgroundProperty,
 				Shell.FlyoutBackgroundImageProperty,
 				Shell.FlyoutBackgroundImageAspectProperty))
+			{
 				UpdateBackground();
+			}
 			else if (e.Is(VisualElement.FlowDirectionProperty))
+			{
 				UpdateFlowDirection();
+			}
 			else if (e.IsOneOf(
 				Shell.FlyoutHeaderProperty,
 				Shell.FlyoutHeaderTemplateProperty))
@@ -86,7 +90,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var header = ((IShellController)_shellContext.Shell).FlyoutHeader;
 
 			if (header == _headerView?.View)
+			{
 				return;
+			}
 
 			int previousIndex = GetPreviousIndex(_headerView);
 			if (_headerView is not null)
@@ -97,9 +103,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (header is not null)
+			{
 				_headerView = new ShellFlyoutHeaderContainer(((IShellController)_shellContext.Shell).FlyoutHeader);
+			}
 			else
+			{
 				_headerView = null;
+			}
 
 			_uIViews[HeaderIndex] = _headerView;
 			AddViewInCorrectOrder(_headerView, previousIndex);
@@ -114,7 +124,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateFlyoutFooter(View view)
 		{
 			if (_footer == view)
+			{
 				return;
+			}
 
 			int previousIndex = GetPreviousIndex(_footerView);
 			if (_footer is not null)
@@ -150,7 +162,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		int GetPreviousIndex(UIView oldView)
 		{
 			if (oldView is null)
+			{
 				return -1;
+			}
 
 			return Array.IndexOf(View.Subviews, oldView);
 		}
@@ -158,10 +172,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void AddViewInCorrectOrder(UIView newView, int previousIndex)
 		{
 			if (newView is null)
+			{
 				return;
+			}
 
 			if (Array.IndexOf(View.Subviews, newView) >= 0)
+			{
 				return;
+			}
 
 			if (previousIndex >= 0 && View.Subviews.Length <= previousIndex)
 			{
@@ -174,7 +192,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var topView = _uIViews[i];
 				if (topView is null)
+				{
 					continue;
+				}
 
 				if (Array.IndexOf(View.Subviews, topView) >= 0)
 				{
@@ -195,24 +215,34 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var size = _footerView?.SizeThatFits(new CGSize(View.Frame.Width, double.PositiveInfinity));
 			if (size is not null)
+			{
 				UpdateFooterPosition(size.Value.Height);
+			}
 		}
 
 		void UpdateFooterPosition()
 		{
 			if (_footerView is null)
+			{
 				return;
+			}
 
 			if (double.IsNaN(_footerView.MeasuredHeight))
+			{
 				ReMeasureFooter();
+			}
 			else
+			{
 				UpdateFooterPosition((nfloat)_footerView.MeasuredHeight);
+			}
 		}
 
 		void UpdateFooterPosition(nfloat footerHeight)
 		{
 			if (_footerView is null && !nfloat.IsNaN(footerHeight))
+			{
 				return;
+			}
 
 			var footerWidth = View.Frame.Width;
 
@@ -243,7 +273,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				if (_blurView.Superview is not null)
+				{
 					_blurView.RemoveFromSuperview();
+				}
 			}
 
 			UpdateFlyoutBgImageAsync();
@@ -263,14 +295,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var mauiContext = _shellContext.Shell.FindMauiContext();
 			if (mauiContext is null)
+			{
 				return;
+			}
 
 			imageSource.LoadImage(mauiContext, result =>
 			{
 				var nativeImage = result?.Value;
 
 				if (View is null || nativeImage is null)
+				{
 					return;
+				}
 
 				int previousIndex = GetPreviousIndex(_bgImage);
 				if (nativeImage is null ||

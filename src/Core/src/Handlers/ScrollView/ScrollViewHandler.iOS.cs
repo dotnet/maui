@@ -52,7 +52,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			if (handler.PlatformView == null || handler.MauiContext == null)
+			{
 				return;
+			}
 
 			if (handler is not ICrossPlatformLayout crossPlatformLayout)
 			{

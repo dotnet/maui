@@ -35,7 +35,10 @@ namespace Microsoft.Maui.Platform
 		internal static double FromPixels(this View view, double pixels)
 		{
 			if (s_displayDensity != float.MinValue)
+			{
 				return pixels / s_displayDensity;
+			}
+
 			return view.Context.FromPixels(pixels);
 		}
 
@@ -81,20 +84,27 @@ namespace Microsoft.Maui.Platform
 		{
 			// Service may be null in the context of the Android Designer
 			if (self.GetSystemService(Context.InputMethodService) is InputMethodManager service)
+			{
 				service.HideSoftInputFromWindow(view.WindowToken, HideSoftInputFlags.None);
+			}
 		}
 
 		public static void ShowKeyboard(this Context self, global::Android.Views.View view)
 		{
 			// Can happen in the context of the Android Designer
 			if (self.GetSystemService(Context.InputMethodService) is InputMethodManager service)
+			{
 				service.ShowSoftInput(view, ShowFlags.Implicit);
+			}
 		}
 
 		internal static float ToPixels(this View view, double dp)
 		{
 			if (s_displayDensity != float.MinValue)
+			{
 				return (float)Math.Ceiling(dp * s_displayDensity);
+			}
+
 			return view.Context.ToPixels(dp);
 		}
 
@@ -128,7 +138,9 @@ namespace Microsoft.Maui.Platform
 		public static bool HasRtlSupport(this Context self)
 		{
 			if (self == null)
+			{
 				return false;
+			}
 
 			return (self.ApplicationInfo?.Flags & AApplicationInfoFlags.SupportsRtl) == AApplicationInfoFlags.SupportsRtl;
 		}
@@ -143,10 +155,14 @@ namespace Microsoft.Maui.Platform
 			using (var value = new TypedValue())
 			{
 				if (self == null || self.Theme == null)
+				{
 					return -1;
+				}
 
 				if (!self.Theme.ResolveAttribute(resource, value, true))
+				{
 					return -1;
+				}
 
 				var pixels = (double)TypedValue.ComplexToDimension(value.Data, self.Resources?.DisplayMetrics);
 
@@ -159,10 +175,14 @@ namespace Microsoft.Maui.Platform
 			using (var value = new TypedValue())
 			{
 				if (self == null || self.Theme == null)
+				{
 					return -1;
+				}
 
 				if (!self.Theme.ResolveAttribute(resource, value, true))
+				{
 					return -1;
+				}
 
 				return (double)TypedValue.ComplexToDimension(value.Data, self.Resources?.DisplayMetrics);
 			}
@@ -171,7 +191,9 @@ namespace Microsoft.Maui.Platform
 		internal static int GetDisabledThemeAttrColor(this Context context, int attr)
 		{
 			if (context.Theme == null)
+			{
 				return 0;
+			}
 
 			using (var value = new TypedValue())
 			{
@@ -205,10 +227,14 @@ namespace Microsoft.Maui.Platform
 						if (context.Resources != null)
 						{
 							if (OperatingSystem.IsAndroidVersionAtLeast(23))
+							{
 								return context.Resources.GetColor(mTypedValue.ResourceId, context.Theme);
+							}
 							else
+							{
 #pragma warning disable CS0618 // Type or member is obsolete
 								return context.Resources.GetColor(mTypedValue.ResourceId);
+							}
 #pragma warning restore CS0618 // Type or member is obsolete
 						}
 					}
@@ -229,24 +255,34 @@ namespace Microsoft.Maui.Platform
 		static void EnsureMetrics(Context? context)
 		{
 			if (s_displayDensity != float.MinValue)
+			{
 				return;
+			}
 
 			context ??= Android.App.Application.Context;
 
 			using (DisplayMetrics? metrics = context.Resources?.DisplayMetrics)
+			{
 				s_displayDensity = metrics != null ? metrics.Density : 1;
+			}
 		}
 
 		public static AActivity? GetActivity(this Context context)
 		{
 			if (context == null)
+			{
 				return null;
+			}
 
 			if (context is AActivity activity)
+			{
 				return activity;
+			}
 
 			if (context is ContextWrapper contextWrapper)
+			{
 				return contextWrapper.BaseContext?.GetActivity();
+			}
 
 			return null;
 		}
@@ -254,13 +290,19 @@ namespace Microsoft.Maui.Platform
 		internal static Context? GetThemedContext(this Context context)
 		{
 			if (context == null)
+			{
 				return null;
+			}
 
 			if (context is AppCompatActivity activity)
+			{
 				return activity.SupportActionBar?.ThemedContext ?? context;
+			}
 
 			if (context is ContextWrapper contextWrapper)
+			{
 				return contextWrapper.BaseContext?.GetThemedContext();
+			}
 
 			return null;
 		}
@@ -268,12 +310,16 @@ namespace Microsoft.Maui.Platform
 		public static FragmentManager? GetFragmentManager(this Context context)
 		{
 			if (context == null)
+			{
 				return null;
+			}
 
 			var activity = context.GetActivity();
 
 			if (activity is FragmentActivity fa)
+			{
 				return fa.SupportFragmentManager;
+			}
 
 			return null;
 		}
@@ -281,7 +327,9 @@ namespace Microsoft.Maui.Platform
 		public static int GetDrawableId(this Context context, string name)
 		{
 			if (context.Resources == null || context.PackageName == null)
+			{
 				return 0;
+			}
 
 			return context.Resources.GetDrawableId(context.PackageName, name);
 		}
@@ -289,7 +337,9 @@ namespace Microsoft.Maui.Platform
 		public static int GetDrawableId(this Resources resources, string packageName, string name)
 		{
 			if (string.IsNullOrWhiteSpace(name))
+			{
 				return 0;
+			}
 
 			var title = Path.GetFileNameWithoutExtension(name);
 
@@ -302,7 +352,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var platformWindow = context.GetActivity();
 			if (platformWindow is null)
+			{
 				return null;
+			}
 
 			var windows = WindowExtensions.GetWindows();
 			foreach (var window in windows)
@@ -310,7 +362,9 @@ namespace Microsoft.Maui.Platform
 				if (window.Handler?.PlatformView is Android.App.Activity activity)
 				{
 					if (activity == platformWindow)
+					{
 						return window;
+					}
 				}
 			}
 
@@ -343,12 +397,16 @@ namespace Microsoft.Maui.Platform
 		internal static int GetStatusBarHeight(this Context context)
 		{
 			if (_statusBarHeight != null)
+			{
 				return _statusBarHeight.Value;
+			}
 
 			var resources = context.Resources;
 
 			if (resources == null)
+			{
 				return 0;
+			}
 
 			int resourceId = resources.GetIdentifier("status_bar_height", "dimen", "android");
 			if (resourceId > 0)
@@ -362,12 +420,16 @@ namespace Microsoft.Maui.Platform
 		internal static int GetNavigationBarHeight(this Context context)
 		{
 			if (_navigationBarHeight != null)
+			{
 				return _navigationBarHeight.Value;
+			}
 
 			var resources = context.Resources;
 
 			if (resources == null)
+			{
 				return 0;
+			}
 
 			int resourceId = resources.GetIdentifier("navigation_bar_height", "dimen", "android");
 			if (resourceId > 0)
@@ -423,12 +485,16 @@ namespace Microsoft.Maui.Platform
 		internal static bool IsDestroyed(this Context? context)
 		{
 			if (context == null)
+			{
 				return true;
+			}
 
 			if (context.GetActivity() is FragmentActivity fa)
 			{
 				if (fa.IsDisposed())
+				{
 					return true;
+				}
 
 				var stateCheck = AndroidX.Lifecycle.Lifecycle.State.Destroyed;
 
@@ -439,7 +505,9 @@ namespace Microsoft.Maui.Platform
 				}
 
 				if (fa.IsDestroyed)
+				{
 					return true;
+				}
 			}
 
 			return context.IsDisposed();

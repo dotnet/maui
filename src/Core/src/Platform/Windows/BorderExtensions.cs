@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdatePath(this Path borderPath, IShape? borderShape, double width, double height)
 		{
 			if (borderShape is null || width <= 0 || height <= 0)
+			{
 				return;
+			}
 
 			var strokeThickness = borderPath?.StrokeThickness ?? 0;
 			var pathSize = new Graphics.Rect(0, 0, width - strokeThickness, height - strokeThickness);
@@ -34,7 +36,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackground(this Path borderPath, Paint? background)
 		{
 			if (borderPath == null)
+			{
 				return;
+			}
 
 			borderPath.Fill = background?.ToPlatform();
 		}
@@ -42,7 +46,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateStroke(this Path borderPath, Paint? borderBrush)
 		{
 			if (borderPath == null)
+			{
 				return;
+			}
 
 			borderPath.Stroke = borderBrush?.ToPlatform();
 		}
@@ -50,7 +56,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateStrokeThickness(this Path borderPath, double borderWidth)
 		{
 			if (borderPath == null)
+			{
 				return;
+			}
 
 			borderPath.StrokeThickness = borderWidth;
 		}
@@ -58,15 +66,21 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateStrokeDashPattern(this Path borderPath, float[]? borderDashArray)
 		{
 			if (borderPath == null)
+			{
 				return;
+			}
 
 			if (borderPath.StrokeDashArray != null)
+			{
 				borderPath.StrokeDashArray.Clear();
+			}
 
 			if (borderDashArray != null && borderDashArray.Length > 0)
 			{
 				if (borderPath.StrokeDashArray == null)
+				{
 					borderPath.StrokeDashArray = new WDoubleCollection();
+				}
 
 				double[] array = new double[borderDashArray.Length];
 				borderDashArray.CopyTo(array, 0);
@@ -81,7 +95,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBorderDashOffset(this Path borderPath, double borderDashOffset)
 		{
 			if (borderPath == null)
+			{
 				return;
+			}
 
 			borderPath.StrokeDashOffset = borderDashOffset;
 		}
@@ -89,7 +105,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateStrokeMiterLimit(this Path borderPath, double strokeMiterLimit)
 		{
 			if (borderPath == null)
+			{
 				return;
+			}
 
 			borderPath.StrokeMiterLimit = strokeMiterLimit;
 		}
@@ -97,7 +115,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateStrokeLineCap(this Path borderPath, LineCap strokeLineCap)
 		{
 			if (borderPath == null)
+			{
 				return;
+			}
 
 			WPenLineCap wLineCap = WPenLineCap.Flat;
 
@@ -120,7 +140,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateStrokeLineJoin(this Path borderPath, LineJoin strokeLineJoin)
 		{
 			if (borderPath == null)
+			{
 				return;
+			}
 
 			WPenLineJoin wLineJoin = WPenLineJoin.Miter;
 

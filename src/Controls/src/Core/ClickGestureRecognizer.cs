@@ -63,7 +63,9 @@ namespace Microsoft.Maui.Controls
 			ICommand cmd = Command;
 			object parameter = CommandParameter;
 			if (cmd != null && cmd.CanExecute(parameter))
+			{
 				cmd.Execute(parameter);
+			}
 
 			Clicked?.Invoke(sender, new ClickedEventArgs(buttons, parameter));
 

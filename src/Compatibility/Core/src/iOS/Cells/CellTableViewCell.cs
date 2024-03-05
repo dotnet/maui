@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			set
 			{
 				if (_cell == value)
+				{
 					return;
+				}
 
 				if (_cell != null)
 				{
@@ -67,11 +69,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					reusableCell = contextCell.ContentCell;
 
 					if (reusableCell.ReuseIdentifier.ToString() != id)
+					{
 						reusableCell = null;
+					}
 				}
 			}
 			else
+			{
 				reusableCell = tableView.DequeueReusableCell(id);
+			}
 
 			var nativeCell = renderer.GetCell(cell, reusableCell, tableView);
 
@@ -80,20 +86,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// Sometimes iOS for returns a dequeued cell whose Layer is hidden. 
 			// This prevents it from showing up, so lets turn it back on!
 			if (cellWithContent.Layer.Hidden)
+			{
 				cellWithContent.Layer.Hidden = false;
+			}
 
 			if (contextCell != null)
 			{
 				contextCell.Update(tableView, cell, nativeCell);
 				var viewTableCell = contextCell.ContentCell as ViewCellRenderer.ViewTableCell;
 				if (viewTableCell != null)
+				{
 					viewTableCell.SupressSeparator = tableView.SeparatorStyle == UITableViewCellSeparatorStyle.None;
+				}
+
 				nativeCell = contextCell;
 			}
 
 			// Because the layer was hidden we need to layout the cell by hand
 			if (cellWithContent != null)
+			{
 				cellWithContent.LayoutSubviews();
+			}
 
 			return nativeCell;
 		}
@@ -101,7 +114,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{

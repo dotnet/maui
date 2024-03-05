@@ -66,9 +66,13 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		public Task ComposeAsync(SmsMessage? message)
 		{
 			if (!IsComposeSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			message ??= new SmsMessage();
+
+			message.Recipients ??= new List<string>();
 
 			message.Recipients ??= new List<string>();
 
@@ -97,7 +101,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		{
 			Body = body;
 			if (!string.IsNullOrWhiteSpace(recipient))
+			{
 				Recipients.Add(recipient!);
+			}
 		}
 
 		/// <summary>

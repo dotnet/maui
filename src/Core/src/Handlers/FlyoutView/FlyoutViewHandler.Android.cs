@@ -41,9 +41,13 @@ namespace Microsoft.Maui.Handlers
 			{
 				var width = VirtualView.FlyoutWidth;
 				if (width == -1)
+				{
 					width = LinearLayoutCompat.LayoutParams.MatchParent;
+				}
 				else
+				{
 					width = Context.ToPixels(width);
+				}
 
 				return width;
 			}
@@ -66,10 +70,14 @@ namespace Microsoft.Maui.Handlers
 
 			var context = MauiContext.Context;
 			if (context is null)
+			{
 				return;
+			}
 
 			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
+			{
 				pvh.DisconnectHandler();
+			}
 
 			var fragmentManager = MauiContext.GetFragmentManager();
 
@@ -132,14 +140,20 @@ namespace Microsoft.Maui.Handlers
 
 			var newFlyoutView = VirtualView.Flyout.ToPlatform();
 			if (_flyoutView == newFlyoutView)
+			{
 				return;
+			}
 
 			if (_flyoutView != null)
+			{
 				_flyoutView.RemoveFromParent();
+			}
 
 			_flyoutView = newFlyoutView;
 			if (_flyoutView == null)
+			{
 				return;
+			}
 
 			if (VirtualView.Flyout.Background == null && Context?.Theme != null)
 			{
@@ -153,19 +167,27 @@ namespace Microsoft.Maui.Handlers
 		void LayoutViews()
 		{
 			if (_flyoutView == null)
+			{
 				return;
+			}
 
 			if (VirtualView.FlyoutBehavior == FlyoutBehavior.Locked)
+			{
 				LayoutSideBySide();
+			}
 			else
+			{
 				LayoutAsFlyout();
+			}
 		}
 
 		void LayoutSideBySide()
 		{
 			var flyoutView = _flyoutView;
 			if (MauiContext == null || _navigationRoot == null || flyoutView == null)
+			{
 				return;
+			}
 
 			if (_sideBySideView == null)
 			{
@@ -208,19 +230,27 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			if (_sideBySideView.Parent != PlatformView)
+			{
 				DrawerLayout.AddView(_sideBySideView);
+			}
 			else
+			{
 				UpdateDetailsFragmentView();
+			}
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
+			{
 				th.SetupWithDrawerLayout(null);
+			}
 		}
 
 		void LayoutAsFlyout()
 		{
 			var flyoutView = _flyoutView;
 			if (MauiContext == null || _navigationRoot == null || flyoutView == null)
+			{
 				return;
+			}
 
 			_sideBySideView?.RemoveAllViews();
 			_sideBySideView?.RemoveFromParent();
@@ -258,7 +288,9 @@ namespace Microsoft.Maui.Handlers
 			DrawerLayout.CloseDrawer(flyoutView);
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
+			{
 				th.SetupWithDrawerLayout(DrawerLayout);
+			}
 		}
 
 		void UpdateIsPresented()
@@ -266,9 +298,13 @@ namespace Microsoft.Maui.Handlers
 			if (_flyoutView?.Parent == DrawerLayout)
 			{
 				if (VirtualView.IsPresented)
+				{
 					DrawerLayout.OpenDrawer(_flyoutView);
+				}
 				else
+				{
 					DrawerLayout.CloseDrawer(_flyoutView);
+				}
 			}
 		}
 
@@ -276,7 +312,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			var behavior = VirtualView.FlyoutBehavior;
 			if (_detailViewFragment?.DetailView?.Handler?.PlatformView == null)
+			{
 				return;
+			}
 
 			switch (behavior)
 			{
@@ -319,31 +357,41 @@ namespace Microsoft.Maui.Handlers
 		void OnDrawerStateChanged(object? sender, DrawerLayout.DrawerStateChangedEventArgs e)
 		{
 			if (e.NewState == DrawerLayout.StateIdle && VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && _flyoutView != null)
+			{
 				VirtualView.IsPresented = DrawerLayout.IsDrawerVisible(_flyoutView);
+			}
 		}
 
 		public static void MapDetail(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			if (handler is FlyoutViewHandler platformHandler)
+			{
 				platformHandler.UpdateDetail();
+			}
 		}
 
 		public static void MapFlyout(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			if (handler is FlyoutViewHandler platformHandler)
+			{
 				platformHandler.UpdateFlyout();
+			}
 		}
 
 		public static void MapFlyoutBehavior(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			if (handler is FlyoutViewHandler platformHandler)
+			{
 				platformHandler.UpdateFlyoutBehavior();
+			}
 		}
 
 		public static void MapIsPresented(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			if (handler is FlyoutViewHandler platformHandler)
+			{
 				platformHandler.UpdateIsPresented();
+			}
 		}
 
 		public static void MapFlyoutWidth(IFlyoutViewHandler handler, IFlyoutView flyoutView)
@@ -352,7 +400,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				var nativeFlyoutView = platformHandler._flyoutView;
 				if (nativeFlyoutView?.LayoutParameters == null)
+				{
 					return;
+				}
 
 				nativeFlyoutView.LayoutParameters.Width = (int)platformHandler.FlyoutWidth;
 			}
@@ -374,7 +424,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsGestureEnabled(IFlyoutViewHandler handler, IFlyoutView view)
 		{
 			if (handler is FlyoutViewHandler platformHandler)
+			{
 				platformHandler.UpdateFlyoutBehavior();
+			}
 		}
 	}
 }

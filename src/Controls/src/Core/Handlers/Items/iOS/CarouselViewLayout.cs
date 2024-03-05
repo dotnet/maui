@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void ConstrainTo(CGSize size)
 		{
 			if (!_carouselView.TryGetTarget(out var carouselView))
+			{
 				return;
+			}
 
 			// TODO: Should we scale the items 
 			var width = size.Width != 0 ? size.Width - carouselView.PeekAreaInsets.Left - carouselView.PeekAreaInsets.Right : 0;
@@ -39,7 +41,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
 			if (_itemsLayout is LinearItemsLayout linearItemsLayout)
+			{
 				return (nfloat)linearItemsLayout.ItemSpacing;
+			}
 
 			return base.GetMinimumInteritemSpacingForSection(collectionView, layout, section);
 		}
@@ -47,7 +51,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
 			if (!_carouselView.TryGetTarget(out var carouselView))
+			{
 				return default;
+			}
 
 			var insets = base.GetInsetForSection(collectionView, layout, section);
 			var left = insets.Left + (float)carouselView.PeekAreaInsets.Left;
@@ -63,7 +69,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.PrepareForCollectionViewUpdates(updateItems);
 
 			if (!_carouselView.TryGetTarget(out var carouselView))
+			{
 				return;
+			}
 
 			// Determine whether the change is a removal 
 			if (updateItems.Length == 0 || updateItems[0].UpdateAction != UICollectionUpdateAction.Delete)
@@ -81,9 +89,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// the now mising item. Calculate what the new offset will be and store that.
 			var currentOffset = CollectionView.ContentOffset;
 			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+			{
 				_pendingOffset = new CGPoint(currentOffset.X - ItemSize.Width, currentOffset.Y);
+			}
 			else
+			{
 				_pendingOffset = new CGPoint(currentOffset.X, currentOffset.Y - ItemSize.Height);
+			}
 		}
 
 		public override void FinalizeCollectionViewUpdates()

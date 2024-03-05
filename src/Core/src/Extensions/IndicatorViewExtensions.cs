@@ -17,7 +17,9 @@ namespace Microsoft.Maui
 			bool hideSingle = indicatorView.HideSingle;
 
 			if (maximumVisible == 1 && hideSingle)
+			{
 				maximumVisible = 0;
+			}
 
 			return maximumVisible;
 		}

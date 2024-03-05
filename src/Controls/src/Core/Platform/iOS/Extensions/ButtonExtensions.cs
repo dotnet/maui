@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var padding = button.Padding;
 			if (padding.IsNaN)
+			{
 				padding = ButtonHandler.DefaultPadding;
+			}
 
 			padding += new Thickness(spacingHorizontal / 2, spacingVertical / 2);
 
@@ -176,9 +178,13 @@ namespace Microsoft.Maui.Controls.Platform
 			// bounds of the UIButton. We could set the UIButton to clip bounds
 			// but that feels like it might cause confusing side effects
 			if (contentMode == UIViewContentMode.Center)
+			{
 				platformButton.TitleLabel.Layer.Hidden = false;
+			}
 			else
+			{
 				platformButton.TitleLabel.Layer.Hidden = true;
+			}
 
 			platformButton.UpdatePadding(button);
 

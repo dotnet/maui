@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (_view == value)
+				{
 					return;
+				}
 
 				_view = value;
 				OnViewSet(value);
@@ -81,7 +83,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal void SetParentTopPadding(int v)
 		{
 			if (_parentTopPadding == v)
+			{
 				return;
+			}
 
 			_parentTopPadding = v;
 			this.MaybeRequestLayout();
@@ -126,7 +130,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var size = _shellContentView.Measure(measureWidth, measureHeight, null, (int?)maxHeight);
 
 			if (size.Height < this.MinimumHeight)
+			{
 				size = new Graphics.Size(size.Width, this.MinimumHeight);
+			}
 
 			DesiredSize = size;
 			var newHeight = size.Height;
@@ -144,7 +150,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var minHeightMeasureSpec = 1;
 
 				if (MinimumHeight > 0)
+				{
 					minHeightMeasureSpec = MinimumHeight;
+				}
 
 				if (newHeight <= 0)
 				{
@@ -178,12 +186,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnViewSet(View view)
 		{
 			if (_shellContentView == null)
+			{
 				_shellContentView = new ShellViewRenderer(this.Context, view, _mauiContext);
+			}
 			else
+			{
 				_shellContentView.OnViewSet(view);
+			}
 
 			if (_shellContentView.PlatformView != null)
+			{
 				AddView(_shellContentView.PlatformView);
+			}
 		}
 	}
 }

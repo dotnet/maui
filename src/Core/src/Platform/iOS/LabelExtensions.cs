@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Platform
 			var textAttr = platformLabel.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
 
 			if (textAttr != null)
+			{
 				platformLabel.AttributedText = textAttr;
+			}
 		}
 
 		public static void UpdateFont(this UILabel platformLabel, ITextStyle textStyle, IFontManager fontManager) =>
@@ -40,7 +42,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateVerticalTextAlignment(this UILabel platformLabel, ILabel label)
 		{
 			if (!platformLabel.Bounds.IsEmpty)
+			{
 				platformLabel.InvalidateMeasure(label);
+			}
 		}
 
 		internal static void UpdateVerticalTextAlignment(this MauiLabel platformLabel, ILabel label)
@@ -62,7 +66,9 @@ namespace Microsoft.Maui.Platform
 			var modAttrText = platformLabel.AttributedText?.WithDecorations(label.TextDecorations);
 
 			if (modAttrText != null)
+			{
 				platformLabel.AttributedText = modAttrText;
+			}
 		}
 
 		public static void UpdateLineHeight(this UILabel platformLabel, ILabel label)
@@ -70,7 +76,9 @@ namespace Microsoft.Maui.Platform
 			var modAttrText = platformLabel.AttributedText?.WithLineHeight(label.LineHeight);
 
 			if (modAttrText != null)
+			{
 				platformLabel.AttributedText = modAttrText;
+			}
 		}
 
 		internal static void UpdateTextHtml(this UILabel platformLabel, ILabel label)

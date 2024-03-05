@@ -151,13 +151,17 @@ namespace Microsoft.Maui.Handlers
 		void OnNativeViewFocusChange(object? sender, AView.FocusChangeEventArgs e)
 		{
 			if (VirtualView != null)
+			{
 				VirtualView.IsFocused = e.HasFocus;
+			}
 		}
 
 		void OnPlatformViewLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 		{
 			if (sender is MaterialButton platformView && VirtualView != null)
+			{
 				platformView.UpdateBackground(VirtualView);
+			}
 		}
 
 		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
@@ -183,7 +187,9 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(Drawable? platformImage)
 			{
 				if (Handler?.PlatformView is not MaterialButton button)
+				{
 					return;
+				}
 
 				button.Icon = platformImage;
 			}

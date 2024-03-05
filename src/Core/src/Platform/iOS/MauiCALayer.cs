@@ -43,7 +43,9 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSublayers();
 
 			if (Bounds.Equals(_bounds))
+			{
 				return;
+			}
 
 			_bounds = new CGRect(Bounds.Location, Bounds.Size);
 		}
@@ -55,7 +57,9 @@ namespace Microsoft.Maui.Platform
 			var clipPath = GetClipPath();
 
 			if (clipPath! != null!)
+			{
 				ctx.AddPath(clipPath);
+			}
 
 			ctx.Clip();
 
@@ -73,25 +77,41 @@ namespace Microsoft.Maui.Platform
 		public void SetBackground(Paint? paint)
 		{
 			if (paint is SolidPaint solidPaint)
+			{
 				SetBackground(solidPaint);
+			}
 			else if (paint is LinearGradientPaint linearGradientPaint)
+			{
 				SetBackground(linearGradientPaint);
+			}
 			else if (paint is RadialGradientPaint radialGradientPaint)
+			{
 				SetBackground(radialGradientPaint);
+			}
 			else if (paint is ImagePaint imagePaint)
+			{
 				SetBackground(imagePaint);
+			}
 			else if (paint is PatternPaint patternPaint)
+			{
 				SetBackground(patternPaint);
+			}
 			else
+			{
 				SetDefaultBackgroundColor();
+			}
 		}
 
 		public void SetBackground(SolidPaint solidPaint)
 		{
 			if (solidPaint.Color == null)
+			{
 				SetDefaultBackgroundColor();
+			}
 			else
+			{
 				_backgroundColor = solidPaint.Color.ToPlatform();
+			}
 
 			_background = null;
 
@@ -127,19 +147,29 @@ namespace Microsoft.Maui.Platform
 		public void SetBorderBrush(Paint? paint)
 		{
 			if (paint is SolidPaint solidPaint)
+			{
 				SetBorderBrush(solidPaint);
+			}
 
 			if (paint is LinearGradientPaint linearGradientPaint)
+			{
 				SetBorderBrush(linearGradientPaint);
+			}
 
 			if (paint is RadialGradientPaint radialGradientPaint)
+			{
 				SetBorderBrush(radialGradientPaint);
+			}
 
 			if (paint is ImagePaint imagePaint)
+			{
 				SetBorderBrush(imagePaint);
+			}
 
 			if (paint is PatternPaint patternPaint)
+			{
 				SetBorderBrush(patternPaint);
+			}
 		}
 
 		public void SetBorderBrush(SolidPaint solidPaint)
@@ -212,7 +242,9 @@ namespace Microsoft.Maui.Platform
 				double thickness = _strokeThickness;
 
 				for (int i = 0; i < array.Length; i++)
+				{
 					dashArray[i] = new nfloat(thickness * array[i]);
+				}
 
 				_strokeDash = dashArray;
 			}
@@ -291,14 +323,18 @@ namespace Microsoft.Maui.Platform
 		void DrawBackground(CGContext ctx)
 		{
 			if (_background != null)
+			{
 				DrawGradientPaint(ctx, _background);
+			}
 			else if (_backgroundColor != null)
 			{
 				ctx.SetFillColor(_backgroundColor.CGColor);
 				var clipPath = GetClipPath();
 
 				if (clipPath! != null!)
+				{
 					ctx.AddPath(clipPath);
+				}
 
 				ctx.DrawPath(CGPathDrawingMode.Fill);
 			}
@@ -307,10 +343,14 @@ namespace Microsoft.Maui.Platform
 		void DrawBorder(CGContext ctx)
 		{
 			if (_strokeThickness == 0)
+			{
 				return;
+			}
 
 			if (IsBorderDashed())
+			{
 				ctx.SetLineDash(_strokeDashOffset * _strokeThickness, _strokeDash);
+			}
 
 			// The Stroke is inner and we are clipping the outer, for that reason, we use the double to get the correct value.
 			ctx.SetLineWidth(2 * _strokeThickness);
@@ -322,7 +362,9 @@ namespace Microsoft.Maui.Platform
 			var clipPath = GetClipPath();
 
 			if (clipPath! != null!)
+			{
 				ctx.AddPath(clipPath);
+			}
 
 			if (_stroke != null)
 			{
@@ -341,7 +383,9 @@ namespace Microsoft.Maui.Platform
 		void DrawGradientPaint(CGContext graphics, Paint paint)
 		{
 			if (paint == null)
+			{
 				return;
+			}
 
 			if (paint is GradientPaint gradientPaint)
 			{

@@ -62,7 +62,9 @@ namespace Microsoft.Maui.Graphics.Platform
 						memoryStream2.Seek(0);
 						var newImage = FromStream(memoryStream2.AsStreamForRead());
 						if (disposeOriginal)
+						{
 							_bitmap.Dispose();
+						}
 
 						return newImage;
 					}
@@ -90,7 +92,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
+			{
+			{
 				throw new ArgumentOutOfRangeException(nameof(quality), "quality must be in the range of 0..1");
+			}
 
 			switch (format)
 			{
@@ -106,7 +111,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
+			{
+			{
 				throw new ArgumentOutOfRangeException(nameof(quality), "quality must be in the range of 0..1");
+			}
 
 			switch (format)
 			{
@@ -142,7 +150,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var creator = PlatformGraphicsService.Creator;
 			if (creator == null)
+			{
+			{
 				throw new Exception("No resource creator has been registered globally or for this thread.");
+			}
 
 			var bitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream()));
 			return new PlatformImage(creator, bitmap);

@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnWindowPropertyChanging(object sender, PropertyChangingEventArgs e)
 		{
 			if (e.PropertyName != Window.PageProperty.PropertyName)
+			{
 				return;
+			}
 
 			if (_currentPage is not null &&
 				_currentPage.Handler is IPlatformViewHandler pvh &&
@@ -108,7 +110,9 @@ namespace Microsoft.Maui.Controls.Platform
 			_platformModalPages.Add(modal);
 
 			if (_window?.Page?.Handler is not null)
+			{
 				return PresentModal(modal, animated && _window.IsActivated);
+			}
 
 			return Task.CompletedTask;
 		}
@@ -154,7 +158,9 @@ namespace Microsoft.Maui.Controls.Platform
 				_waitForModalToFinish = false;
 
 				if (!failed)
+				{
 					SyncModalStackWhenPlatformIsReady();
+				}
 			}
 
 		}

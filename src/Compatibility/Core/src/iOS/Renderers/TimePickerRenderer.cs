@@ -50,7 +50,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -149,14 +151,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateCharacterSpacing();
 			}
 			else if (e.PropertyName == TimePicker.TextColorProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == TimePicker.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == TimePicker.FontAttributesProperty.PropertyName ||
 					 e.PropertyName == TimePicker.FontFamilyProperty.PropertyName || e.PropertyName == TimePicker.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
+			{
 				UpdateFlowDirection();
+			}
 		}
 
 		[PortHandler]
@@ -197,9 +209,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var textColor = Element.TextColor;
 
 			if (textColor == null || (!Element.IsEnabled && _useLegacyColorManagement))
+			{
 				Control.TextColor = _defaultTextColor;
+			}
 			else
+			{
 				Control.TextColor = textColor.ToPlatform();
+			}
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			Control.Text = Control.Text;
@@ -211,7 +227,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (textAttr != null)
+			{
 				Control.AttributedText = textAttr;
+			}
 		}
 
 		[PortHandler]
@@ -222,7 +240,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var cultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures)
 							  .Where(c => c.Name.EndsWith("-" + iOSLocale)).FirstOrDefault();
 			if (cultureInfos == null)
+			{
 				cultureInfos = CultureInfo.InvariantCulture;
+			}
 
 			if (String.IsNullOrEmpty(Element.Format))
 			{

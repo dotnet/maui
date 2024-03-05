@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Controls
 		internal override void SendOnElementPropertyChanged(PropertyChangedEventArgs args)
 		{
 			if (IsAttached)
+			{
 				OnElementPropertyChanged(args);
+			}
 		}
 	}
 }

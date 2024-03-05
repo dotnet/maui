@@ -50,10 +50,14 @@ namespace Microsoft.Maui.Controls
 		{
 			// check for any pending navigations that need to complete
 			if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
+			{
 				await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
+			}
 
 			if (shellNavigationParameters.PagePushing != null && navigationRequest == null)
+			{
 				Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
+			}
 
 			var state = shellNavigationParameters.TargetState ?? new ShellNavigationState(Routing.GetRoute(shellNavigationParameters.PagePushing), false);
 			bool? animate = shellNavigationParameters.Animated;
@@ -79,10 +83,14 @@ namespace Microsoft.Maui.Controls
 				{
 					bool accept = !navigatingArgs.NavigationDelayedOrCancelled;
 					if (navigatingArgs.DeferredTask != null)
+					{
 						accept = await navigatingArgs.DeferredTask;
+					}
 
 					if (!accept)
+					{
 						return;
+					}
 				}
 			}
 
@@ -105,7 +113,9 @@ namespace Microsoft.Maui.Controls
 
 			// check for any pending navigations that need to complete
 			if (currentShellSection?.PendingNavigationTask != null)
+			{
 				await (currentShellSection?.PendingNavigationTask ?? Task.CompletedTask);
+			}
 
 			// If we're replacing the whole stack and there are global routes then build the navigation stack before setting the shell section visible
 			if (navigationRequest.Request.GlobalRoutes.Count > 0 &&
@@ -152,7 +162,9 @@ namespace Microsoft.Maui.Controls
 				// Setting the current item isn't an async operation but it triggers an async
 				// navigation path. So this waits until that's finished before returning from GotoAsync
 				if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
+				{
 					await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
+				}
 
 				if (!modalStackPreBuilt && currentShellSection?.Navigation.ModalStack.Count > 0)
 				{
@@ -165,7 +177,9 @@ namespace Microsoft.Maui.Controls
 						if (navigationRequest.Request.GlobalRoutes.Count == 0)
 						{
 							for (int i = currentShellSection.Stack.Count - 1; i >= 1; i--)
+							{
 								currentShellSection.Navigation.RemovePage(currentShellSection.Stack[i]);
+							}
 						}
 
 						await currentShellSection.PopModalStackToPage(null, animate);
@@ -199,14 +213,16 @@ namespace Microsoft.Maui.Controls
 			// Setting the current item isn't an async operation but it triggers an async
 			// navigation path. So this waits until that's finished before returning from GotoAsync
 			if (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask != null)
+			{
 				await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
-
-			(_shell as IShellController).UpdateCurrentState(source);
+			} (_shell as IShellController).UpdateCurrentState(source);
 			_accumulateNavigatedEvents = false;
 
 			// this can be null in the event that no navigation actually took place!
 			if (_accumulatedEvent != null)
+			{
 				HandleNavigated(_accumulatedEvent);
+			}
 		}
 
 		ActionDisposable _waitingForWindow;
@@ -222,13 +238,17 @@ namespace Microsoft.Maui.Controls
 				var shellContent = _shell?.CurrentItem?.CurrentItem?.CurrentItem;
 
 				if (shellContent != null)
+				{
 					shellContent.ChildAdded += WaitForWindowToSet;
+				}
 
 				_waitingForWindow = new ActionDisposable(() =>
 				{
 					_shell.PropertyChanged -= WaitForWindowToSet;
 					if (shellContent != null)
+					{
 						shellContent.ChildAdded -= WaitForWindowToSet;
+					}
 				});
 
 				void WaitForWindowToSet(object sender, EventArgs e)
@@ -250,7 +270,9 @@ namespace Microsoft.Maui.Controls
 			if (AccumulateNavigatedEvents)
 			{
 				if (_accumulatedEvent == null)
+				{
 					_accumulatedEvent = args;
+				}
 			}
 			else
 			{
@@ -286,7 +308,10 @@ namespace Microsoft.Maui.Controls
 			{
 				var route = Routing.GetRoute(element);
 				if (string.IsNullOrEmpty(route) || Routing.IsImplicit(route))
+				{
 					return;
+				}
+
 				prefix = route + ".";
 			}
 
@@ -294,41 +319,61 @@ namespace Microsoft.Maui.Controls
 			if (isLastItem)
 			{
 				if (element is IShellItemController shellitem && shellitem.GetItems().FirstOrDefault() is ShellSection section)
+				{
 					element = section;
+				}
+
 				if (element is IShellSectionController shellsection && shellsection.GetItems().FirstOrDefault() is ShellContent content)
+				{
 					element = content;
+				}
+
 				if (element is ShellContent shellcontent && shellcontent.Content is Element e)
+				{
 					element = e;
+				}
 			}
 
 			if (!(element is BaseShellItem baseShellItem))
+			{
 				baseShellItem = element?.Parent as BaseShellItem;
+			}
 
 			//filter the query to only apply the keys with matching prefix
 			var filteredQuery = new ShellRouteParameters(query, prefix);
 
 
 			if (baseShellItem is ShellContent)
+			{
 				baseShellItem.ApplyQueryAttributes(MergeData(element, filteredQuery, isPopping));
+			}
 			else if (isLastItem)
+			{
 				element.SetValue(ShellContent.QueryAttributesProperty, MergeData(element, query, isPopping));
+			}
 
 			ShellRouteParameters MergeData(Element shellElement, ShellRouteParameters data, bool isPopping)
 			{
 				if (!isPopping)
+				{
 					return data;
+				}
 
 				var returnValue = new ShellRouteParameters(data);
 
 				var existing = (ShellRouteParameters)shellElement.GetValue(ShellContent.QueryAttributesProperty);
 
 				if (existing == null)
+				{
 					return data;
+				}
 
 				foreach (var datum in existing)
 				{
 					if (!returnValue.ContainsKey(datum.Key))
+					{
 						returnValue[datum.Key] = datum.Value;
+					}
 				}
 
 				return returnValue;
@@ -348,7 +393,9 @@ namespace Microsoft.Maui.Controls
 			bool isAnimated)
 		{
 			if (AccumulateNavigatedEvents)
+			{
 				return true;
+			}
 
 			var proposedState = GetNavigationState(shellItem, shellSection, shellContent, stack, shellSection.Navigation.ModalStack);
 			var navArgs = ProposeNavigation(source, proposedState, canCancel, isAnimated);
@@ -380,7 +427,9 @@ namespace Microsoft.Maui.Controls
 			bool isAnimated)
 		{
 			if (AccumulateNavigatedEvents)
+			{
 				return null;
+			}
 
 			var navArgs = new ShellNavigatingEventArgs(_shell.CurrentState, proposedState, source, canCancel)
 			{
@@ -407,10 +456,14 @@ namespace Microsoft.Maui.Controls
 		public static ShellNavigationSource CalculateNavigationSource(Shell shell, ShellNavigationState current, ShellNavigationRequest request)
 		{
 			if (request.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.PushToIt)
+			{
 				return ShellNavigationSource.Push;
+			}
 
 			if (current == null)
+			{
 				return ShellNavigationSource.ShellItemChanged;
+			}
 
 			var targetUri = ShellUriHandler.ConvertToStandardFormat(shell, request.Request.FullUri);
 			var currentUri = ShellUriHandler.ConvertToStandardFormat(shell, current.FullLocation);
@@ -422,17 +475,29 @@ namespace Microsoft.Maui.Controls
 			var currentPathsLength = currentPaths.Length;
 
 			if (targetPathsLength < 4 || currentPathsLength < 4)
+			{
 				return ShellNavigationSource.Unknown;
+			}
 
 			if (targetPaths[1] != currentPaths[1])
+			{
 				return ShellNavigationSource.ShellItemChanged;
+			}
+
 			if (targetPaths[2] != currentPaths[2])
+			{
 				return ShellNavigationSource.ShellSectionChanged;
+			}
+
 			if (targetPaths[3] != currentPaths[3])
+			{
 				return ShellNavigationSource.ShellContentChanged;
+			}
 
 			if (targetPathsLength == currentPathsLength)
+			{
 				return ShellNavigationSource.Unknown;
+			}
 
 			if (targetPathsLength < currentPathsLength)
 			{
@@ -440,22 +505,30 @@ namespace Microsoft.Maui.Controls
 				{
 					var targetPath = targetPaths[i];
 					if (targetPath != currentPaths[i])
+					{
 						break;
+					}
 
 					if (i == targetPathsLength - 1)
 					{
 						if (targetPathsLength == 4)
+						{
 							return ShellNavigationSource.PopToRoot;
+						}
 
 						return ShellNavigationSource.Pop;
 					}
 				}
 
 				if (targetPaths[targetPathsLength - 1] == currentPaths[currentPathsLength - 1])
+				{
 					return ShellNavigationSource.Remove;
+				}
 
 				if (targetPathsLength == 4)
+				{
 					return ShellNavigationSource.PopToRoot;
+				}
 
 				return ShellNavigationSource.Pop;
 			}
@@ -464,15 +537,21 @@ namespace Microsoft.Maui.Controls
 				for (var i = 0; i < currentPathsLength; i++)
 				{
 					if (targetPaths[i] != currentPaths[i])
+					{
 						break;
+					}
 
 					if (i == targetPathsLength - 1)
+					{
 						return ShellNavigationSource.Push;
+					}
 				}
 			}
 
 			if (targetPaths[targetPathsLength - 1] == currentPaths[currentPathsLength - 1])
+			{
 				return ShellNavigationSource.Insert;
+			}
 
 			return ShellNavigationSource.Push;
 		}
@@ -567,7 +646,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (routeStack.Count > 0)
+			{
 				routeStack.Insert(0, "/");
+			}
 
 			return new ShellNavigationState(String.Join("/", routeStack), true);
 		}
@@ -582,7 +663,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var returnValue = startingList.ToList();
 			if (modalStack == null)
+			{
 				return returnValue;
+			}
 
 			for (int i = 0; i < modalStack.Count; i++)
 			{

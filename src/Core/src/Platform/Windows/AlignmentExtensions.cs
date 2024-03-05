@@ -38,14 +38,23 @@ namespace Microsoft.Maui.Platform
 					return UI.Xaml.TextAlignment.Center;
 				case TextAlignment.End:
 					if (isLtr)
+					{
 						return UI.Xaml.TextAlignment.Right;
+					}
 					else
+					{
 						return UI.Xaml.TextAlignment.Left;
+					}
+
 				default:
 					if (isLtr)
+					{
 						return UI.Xaml.TextAlignment.Left;
+					}
 					else
+					{
 						return UI.Xaml.TextAlignment.Right;
+					}
 			}
 		}
 	}

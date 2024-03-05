@@ -78,7 +78,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public void Init(Activity activity, Bundle? bundle)
 		{
 			if (activity.Application is not Application application)
+			{
 				throw new InvalidOperationException("Activity was not attached to an application.");
+			}
 
 			Init(application);
 			lifecycleListener!.Activity = activity;
@@ -87,7 +89,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public async Task<Activity> WaitForActivityAsync(CancellationToken cancelToken = default)
 		{
 			if (GetCurrentActivity() is Activity activity)
+			{
 				return activity;
+			}
 
 			var tcs = new TaskCompletionSource<Activity>();
 
@@ -107,7 +111,9 @@ namespace Microsoft.Maui.ApplicationModel
 			void handler(object? sender, ActivityStateChangedEventArgs e)
 			{
 				if (e.State == ActivityState.Created || e.State == ActivityState.Resumed)
+				{
 					tcs.TrySetResult(e.Activity);
+				}
 			}
 		}
 
@@ -127,7 +133,9 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var activity = manager.GetCurrentActivity();
 			if (throwOnNull && activity == null)
+			{
 				throw new NullReferenceException("The current Activity can not be detected. Ensure that you have called Init in your Activity or Application class.");
+			}
 
 			return activity;
 		}

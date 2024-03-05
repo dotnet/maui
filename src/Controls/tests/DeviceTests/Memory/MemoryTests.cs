@@ -96,7 +96,9 @@ public class MemoryTests : ControlsHandlerTestBase
 #if IOS
 		// NOTE: skip certain controls on older iOS devices
 		if (type == typeof(WebView) && !OperatingSystem.IsIOSVersionAtLeast(16))
+		{
 			return;
+		}
 #endif
 
 		WeakReference viewReference = null;

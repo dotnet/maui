@@ -53,13 +53,17 @@ namespace Microsoft.Maui.Platform
 #endif
 		{
 			if (view is T t)
+			{
 				return t;
+			}
 
 			while (view != null)
 			{
 				T? parent = view?.GetParent() as T;
 				if (parent != null)
+				{
 					return parent;
+				}
 
 				view = view?.GetParent() as ParentView;
 			}
@@ -74,7 +78,9 @@ namespace Microsoft.Maui.Platform
 			if (view?.Parent is ParentView pv)
 			{
 				if (searchExpression(pv))
+				{
 					return pv;
+				}
 
 				return pv.FindParent(searchExpression);
 			}
@@ -90,7 +96,9 @@ namespace Microsoft.Maui.Platform
 			{
 				var parent = view?.GetParent() as ParentView;
 				if (searchExpression(parent))
+				{
 					return parent;
+				}
 
 				view = view?.GetParent() as ParentView;
 			}
@@ -109,7 +117,9 @@ namespace Microsoft.Maui.Platform
 #endif
 		{
 			if (view is T t)
+			{
 				return t;
+			}
 
 			return view.GetParent()?.GetParentOfType<T>();
 		}
@@ -134,7 +144,9 @@ namespace Microsoft.Maui.Platform
 			{
 #if IOS
 				if (platformViewHandler.ContainerView is IUIViewLifeCycleEvents)
+				{
 					return platformViewHandler.ContainerView.OnUnloaded(action);
+				}
 #endif
 				return platformViewHandler.PlatformView.OnUnloaded(action);
 			}
@@ -153,7 +165,9 @@ namespace Microsoft.Maui.Platform
 			{
 #if IOS
 				if (platformViewHandler.ContainerView is IUIViewLifeCycleEvents)
+				{
 					return platformViewHandler.ContainerView.OnLoaded(action);
+				}
 #endif
 				return platformViewHandler.PlatformView.OnLoaded(action);
 			}
@@ -197,7 +211,9 @@ namespace Microsoft.Maui.Platform
 		internal static bool IsLoadedOnPlatform(this IElement element)
 		{
 			if (element.Handler is not IPlatformViewHandler pvh)
+			{
 				return false;
+			}
 
 #if PLATFORM
 			return pvh.PlatformView?.IsLoaded() == true;
@@ -219,7 +235,9 @@ namespace Microsoft.Maui.Platform
 				var descendantView = queue.Dequeue();
 
 				if (descendantView is T result && predicate.Invoke(result))
+				{
 					return result;
+				}
 
 				int i = 0;
 				PlatformView? child;

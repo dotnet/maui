@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
 			{
 				if (xria.Type == type)
+				{
 					return xria.ResourceId;
+				}
 			}
 			return null;
 		}
@@ -46,7 +48,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
 			{
 				if (xria.Type == type)
+				{
 					return xria.Path;
+				}
 			}
 			return null;
 		}
@@ -56,7 +60,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
 			{
 				if (xria.Path == path)
+				{
 					return xria.ResourceId;
+				}
 			}
 			return null;
 		}
@@ -67,7 +73,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
 			{
 				if (xria.ResourceId == resourceId)
+				{
 					return xria.Type;
+				}
 			}
 			return null;
 		}
@@ -78,7 +86,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
 			{
 				if (xria.Path == path)
+				{
 					return xria.Type;
+				}
 			}
 			return null;
 		}

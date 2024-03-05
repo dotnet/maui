@@ -18,7 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 			var foreground = platformLabel.Foreground;
 
 			if (foreground is SolidColorBrush solidColorBrush)
+			{
 				return solidColorBrush.Color.ToColor();
+			}
 
 			return null;
 		}

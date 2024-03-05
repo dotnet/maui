@@ -36,9 +36,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			base.OnElementPropertyChanged(sender, args);
 
 			if (args.PropertyName == Path.DataProperty.PropertyName)
+			{
 				UpdateData();
+			}
 			else if (args.PropertyName == Path.RenderTransformProperty.PropertyName)
+			{
 				UpdateRenderTransform();
+			}
 		}
 
 		void UpdateData()
@@ -49,7 +53,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 		void UpdateRenderTransform()
 		{
 			if (Element.RenderTransform != null)
+			{
 				Control.RenderTransform = Element.RenderTransform.ToWindows();
+			}
 		}
 	}
 }

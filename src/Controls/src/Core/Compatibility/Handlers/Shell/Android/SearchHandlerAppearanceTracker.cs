@@ -132,7 +132,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateBackgroundColor()
 		{
 			if (_searchHandler.BackgroundColor == null)
+			{
 				return;
+			}
 
 			var linearLayout = (_control as ViewGroup).GetChildrenOfType<LinearLayout>().FirstOrDefault();
 			linearLayout.SetBackgroundColor(_searchHandler.BackgroundColor.ToPlatform());
@@ -168,9 +170,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (image != null && image.Drawable != null)
 			{
 				if (toColor != null)
+				{
 					image.Drawable.SetColorFilter(toColor, FilterMode.SrcIn);
+				}
 				else
+				{
 					image.Drawable.ClearColorFilter();
+				}
 			}
 		}
 
@@ -189,7 +195,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if ((_inputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
 					{
 						if (!isSpellCheckEnable)
+						{
 							_inputType = _inputType | InputTypes.TextFlagNoSuggestions;
+						}
 					}
 				}
 			}
@@ -212,7 +220,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 

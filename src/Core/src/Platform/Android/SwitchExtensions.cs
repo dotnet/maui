@@ -15,10 +15,14 @@ namespace Microsoft.Maui.Platform
 			if (aSwitch.Checked)
 			{
 				if (trackColor != null)
+				{
 					aSwitch.TrackDrawable?.SetColorFilter(trackColor, FilterMode.SrcAtop);
+				}
 			}
 			else
+			{
 				aSwitch.TrackDrawable?.ClearColorFilter();
+			}
 		}
 
 		public static void UpdateThumbColor(this ASwitch aSwitch, ISwitch view)
@@ -26,7 +30,9 @@ namespace Microsoft.Maui.Platform
 			var thumbColor = view.ThumbColor;
 
 			if (thumbColor != null)
+			{
 				aSwitch.ThumbDrawable?.SetColorFilter(thumbColor, FilterMode.SrcAtop);
+			}
 		}
 
 		public static Drawable? GetDefaultSwitchTrackDrawable(this ASwitch aSwitch) =>

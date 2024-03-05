@@ -150,12 +150,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public virtual void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == ScrollBarVisibility.Default)
+			{
 				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+			}
 
 			var newVerticalScrollVisibility = ItemsView.VerticalScrollBarVisibility;
 
 			if (newVerticalScrollVisibility == ScrollBarVisibility.Default)
+			{
 				newVerticalScrollVisibility = _defaultVerticalScrollVisibility;
+			}
 
 			VerticalScrollBarEnabled = newVerticalScrollVisibility == ScrollBarVisibility.Always;
 		}
@@ -163,13 +167,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public virtual void UpdateHorizontalScrollBarVisibility()
 		{
 			if (_defaultHorizontalScrollVisibility == ScrollBarVisibility.Default)
+			{
 				_defaultHorizontalScrollVisibility =
 					HorizontalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+			}
 
 			var newHorizontalScrollVisiblility = ItemsView.HorizontalScrollBarVisibility;
 
 			if (newHorizontalScrollVisiblility == ScrollBarVisibility.Default)
+			{
 				newHorizontalScrollVisiblility = _defaultHorizontalScrollVisibility;
+			}
 
 			HorizontalScrollBarEnabled = newHorizontalScrollVisiblility == ScrollBarVisibility.Always;
 		}
@@ -318,7 +326,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual SnapManager GetSnapManager()
 		{
 			if (_snapManager == null)
+			{
 				_snapManager = new SnapManager(this);
+			}
+
 			return _snapManager;
 		}
 
@@ -326,12 +337,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual void UpdateBackgroundColor(Color color = null)
 		{
 			if (ItemsView == null)
+			{
 				return;
+			}
 
 			var backgroundColor = color ?? ItemsView.BackgroundColor;
 
 			if (backgroundColor == null)
+			{
 				return;
+			}
 
 			SetBackgroundColor(backgroundColor.ToPlatform());
 		}
@@ -339,10 +354,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual void UpdateBackground(Brush brush = null)
 		{
 			if (ItemsView == null)
+			{
 				return;
+			}
 
 			if (!(this is RecyclerView recyclerView))
+			{
 				return;
+			}
 
 			Brush background = ItemsView.Background;
 
@@ -374,7 +393,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual void UpdateItemsUpdatingScrollMode()
 		{
 			if (ItemsViewAdapter == null || ItemsView == null)
+			{
 				return;
+			}
 
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
@@ -390,7 +411,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public virtual void ScrollTo(ScrollToRequestEventArgs args)
 		{
 			if (ItemsView == null)
+			{
 				return;
+			}
 
 			var position = DetermineTargetPosition(args);
 
@@ -538,9 +561,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView is StructuredItemsView itemsView)
 			{
 				if (itemsView.Header != null || itemsView.HeaderTemplate != null)
+				{
 					itemCount++;
+				}
+
 				if (itemsView.Footer != null || itemsView.FooterTemplate != null)
+				{
 					itemCount++;
+				}
 			}
 
 			var showEmptyView = ItemsView?.EmptyView != null && ItemsViewAdapter.ItemCount == itemCount;
@@ -599,7 +627,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void RemoveScrollListener()
 		{
 			if (RecyclerViewScrollListener == null)
+			{
 				return;
+			}
 
 			RecyclerViewScrollListener.Dispose();
 			ClearOnScrollListeners();

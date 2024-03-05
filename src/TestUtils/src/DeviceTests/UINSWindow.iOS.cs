@@ -14,7 +14,10 @@ public static class UIWindowExtensions
 	{
 		var nsWindow = UINSWindow.From(window);
 		if (nsWindow is null)
+		{
+		{
 			throw new InvalidOperationException("Unable to update frame of non-existant window.");
+		}
 
 		nsWindow.SetFrame(frame, display, animate);
 	}
@@ -76,7 +79,9 @@ public static class UIWindowExtensions
 		{
 			var nsapp = Runtime.GetNSObject(NSApplicationHandle);
 			if (nsapp is null)
+			{
 				return null;
+			}
 
 			var sharedApp = nsapp.PerformSelector(SharedApplicationSelector);
 			var windows = sharedApp.PerformSelector(WindowsSelector) as NSArray;
@@ -92,7 +97,9 @@ public static class UIWindowExtensions
 					var uiwin = uiwindows.GetItem<UIWindow>(j);
 
 					if (uiwin.Handle == uiWindow.Handle)
+					{
 						return new UINSWindow(nswin.Handle, uiWindow);
+					}
 				}
 			}
 

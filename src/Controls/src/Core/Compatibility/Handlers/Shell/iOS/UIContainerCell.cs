@@ -35,9 +35,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			BindingContext = context;
 
 			if (BindingContext is BaseShellItem bsi)
+			{
 				bsi.AddLogicalChild(View);
+			}
 			else if (shell != null)
+			{
 				shell.AddLogicalChild(View);
+			}
 		}
 
 		public UIContainerCell(string cellId, View view) : this(cellId, view, null, null)
@@ -47,7 +51,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void MeasureInvalidated(object sender, System.EventArgs e)
 		{
 			if (View == null || TableView == null)
+			{
 				return;
+			}
 
 			ViewMeasureInvalidated?.Invoke(this);
 		}
@@ -62,18 +68,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ViewMeasureInvalidated = null;
 			View.MeasureInvalidated -= MeasureInvalidated;
 			if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
+			{
 				baseShell.PropertyChanged -= OnElementPropertyChanged;
+			}
 
 			if (View.Parent is BaseShellItem bsi)
+			{
 				bsi.RemoveLogicalChild(View);
+			}
 			else if (shell != null)
+			{
 				shell.RemoveLogicalChild(View);
+			}
 
 			_bindingContext = null;
 
 			if (!keepRenderer)
+			{
 				View.Handler = null;
-
+			}
 
 			View = null;
 			TableView = null;
@@ -87,10 +100,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (value == _bindingContext)
+				{
 					return;
+				}
 
 				if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
+				{
 					baseShell.PropertyChanged -= OnElementPropertyChanged;
+				}
 
 				_bindingContext = value;
 				View.BindingContext = value;
@@ -118,9 +135,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
 			{
 				if (baseShellItem.IsChecked)
+				{
 					VisualStateManager.GoToState(View, "Selected");
+				}
 				else
+				{
 					VisualStateManager.GoToState(View, "Normal");
+				}
 			}
 		}
 

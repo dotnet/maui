@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var platformView = view.ToPlatform(context);
 			if (view?.Handler is IPlatformViewHandler nvh && nvh.ViewController != null)
+			{
 				return nvh.ViewController;
+			}
 
 			return new ContainerViewController { CurrentView = view, Context = context };
 		}

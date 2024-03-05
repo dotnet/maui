@@ -59,7 +59,9 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var vc = manager.GetCurrentUIViewController();
 			if (throwOnNull && vc == null)
+			{
 				throw new NullReferenceException("The current view controller can not be detected.");
+			}
 
 			return vc;
 		}
@@ -75,7 +77,9 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var window = manager.GetCurrentUIWindow();
 			if (throwOnNull && window == null)
+			{
 				throw new NullReferenceException("The current window can not be detected.");
+			}
 
 			return window;
 		}
@@ -93,6 +97,9 @@ namespace Microsoft.Maui.ApplicationModel
 			var viewController = getCurrentController?.Invoke();
 
 			if (viewController != null)
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
 				return viewController;
 
 			var window = GetKeyWindow();
@@ -111,6 +118,56 @@ namespace Microsoft.Maui.ApplicationModel
 
 			while (viewController?.PresentedViewController != null)
 				viewController = viewController.PresentedViewController;
+After:
+			{
+				return viewController;
+			}
+
+			var window = GetKeyWindow();
+
+			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
+			{
+				viewController = window.RootViewController;
+			}
+
+			if (viewController == null)
+			{
+				window = GetWindows()?
+					.OrderByDescending(w => w.WindowLevel)
+					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
+
+				viewController = window?.RootViewController;
+			}
+
+			while (viewController?.PresentedViewController != null)
+			{
+				viewController = viewController.PresentedViewController;
+			}
+*/
+			{
+				return viewController;
+			}
+
+			var window = GetKeyWindow();
+
+			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
+			{
+				viewController = window.RootViewController;
+			}
+
+			if (viewController == null)
+			{
+				window = GetWindows()?
+					.OrderByDescending(w => w.WindowLevel)
+					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
+
+				viewController = window?.RootViewController;
+			}
+
+			while (viewController?.PresentedViewController != null)
+			{
+				viewController = viewController.PresentedViewController;
+			}
 
 			return viewController;
 		}
@@ -120,7 +177,9 @@ namespace Microsoft.Maui.ApplicationModel
 			var window = GetKeyWindow();
 
 			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
+			{
 				return window;
+			}
 
 			if (window == null)
 			{

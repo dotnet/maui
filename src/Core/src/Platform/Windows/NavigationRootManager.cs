@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Platform
 		void WindowRootViewOnWindowTitleBarContentSizeChanged(object? sender, EventArgs e)
 		{
 			if (_disconnected)
+			{
 				return;
+			}
 
 			_platformWindow?
 				.GetWindow()?
@@ -126,7 +128,9 @@ namespace Microsoft.Maui.Platform
 			SetToolbar(null);
 
 			if (_rootView.Content is RootNavigationView navView)
+			{
 				navView.Content = null;
+			}
 
 			_rootView.Content = null;
 			_disconnected = true;
@@ -144,12 +148,12 @@ namespace Microsoft.Maui.Platform
 
 		internal string? WindowTitle
 		{
-			get => _rootView.WindowTitle;
-			set => _rootView.WindowTitle = value;
+			get => WindowRootView.WindowTitle;
+			set => WindowRootView.WindowTitle = value;
 		}
 
 		internal void SetTitle(string? title) =>
-			_rootView.WindowTitle = title;
+			WindowRootView.WindowTitle = title;
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)
 		{
@@ -158,11 +162,11 @@ namespace Microsoft.Maui.Platform
 
 			if (e.WindowActivationState == WindowActivationState.Deactivated)
 			{
-				_rootView.WindowTitleForeground = inactiveForegroundBrush;
+				WindowRootView.WindowTitleForeground = inactiveForegroundBrush;
 			}
 			else
 			{
-				_rootView.WindowTitleForeground = defaultForegroundBrush;
+				WindowRootView.WindowTitleForeground = defaultForegroundBrush;
 			}
 		}
 	}

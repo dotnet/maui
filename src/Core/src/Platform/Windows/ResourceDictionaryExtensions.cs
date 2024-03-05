@@ -11,18 +11,25 @@ namespace Microsoft.Maui.Platform
 		public static T? TryGet<T>(this UI.Xaml.ResourceDictionary? resources, string key)
 		{
 			if (resources?.ContainsKey(key) == true && resources[key] is T typed)
+			{
 				return typed;
+			}
+
 			return default;
 		}
 
 		public static void AddLibraryResources(this UI.Xaml.ResourceDictionary? resources, string key, string uri)
 		{
 			if (resources == null)
+			{
 				return;
+			}
 
 			var dictionaries = resources.MergedDictionaries;
 			if (dictionaries == null)
+			{
 				return;
+			}
 
 			if (!resources.ContainsKey(key))
 			{
@@ -38,7 +45,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var dictionaries = resources?.MergedDictionaries;
 			if (dictionaries == null)
+			{
 				return;
+			}
 
 			var found = false;
 			foreach (var dic in dictionaries)

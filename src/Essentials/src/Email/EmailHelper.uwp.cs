@@ -84,17 +84,27 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			var recipCount = message.To.Count + message.CC.Count + message.Bcc.Count;
 
 			if (recipCount == 0)
+			{
 				return null;
+			}
 
 			var recipients = new MapiRecipDesc[recipCount];
 
 			var idx = 0;
 			foreach (var to in message.To)
+			{
 				recipients[idx++] = Create(to, RecipientClass.MAPI_TO);
+			}
+
 			foreach (var cc in message.CC)
+			{
 				recipients[idx++] = Create(cc, RecipientClass.MAPI_CC);
+			}
+
 			foreach (var bcc in message.Bcc)
+			{
 				recipients[idx++] = Create(bcc, RecipientClass.MAPI_BCC);
+			}
 
 			return recipients;
 
@@ -113,13 +123,17 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			var attachCount = message.Attachments.Count;
 
 			if (attachCount == 0)
+			{
 				return null;
+			}
 
 			var attachments = new MapiFileDesc[attachCount];
 
 			var idx = 0;
 			foreach (var file in message.Attachments)
+			{
 				attachments[idx++] = Create(file);
+			}
 
 			return attachments;
 

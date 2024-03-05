@@ -36,6 +36,29 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			// so you'll get confusing behavior if you do.
 
 			if (serviceType == typeof(IAnimationManager))
+
+/* Unmerged change from project 'Core.DeviceTests.Shared(net8.0-android)'
+Before:
+				return _manager ??= _services.GetRequiredService<IAnimationManager>();
+#if ANDROID
+			if (serviceType == typeof(IFontManager))
+				return _fontManager ??= _services.GetRequiredService<IFontManager>();
+
+			if (serviceType == typeof(Android.Content.Context))
+				return MauiProgramDefaults.DefaultContext;
+After:
+			{
+				return _manager ??= _services.GetRequiredService<IAnimationManager>();
+			}
+#if ANDROID
+			if (serviceType == typeof(IFontManager))
+			{
+				return _fontManager ??= _services.GetRequiredService<IFontManager>();
+			}
+*/
+
+/* Unmerged change from project 'Core.DeviceTests.Shared(net8.0-windows10.0.19041.0)'
+Before:
 				return _manager ??= _services.GetRequiredService<IAnimationManager>();
 #if ANDROID
 			if (serviceType == typeof(IFontManager))
@@ -69,6 +92,231 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 #endif
 			if (serviceType == typeof(IDispatcher))
 				return _services.GetService(serviceType) ?? TestDispatcher.Current;
+After:
+			{
+				return _manager ??= _services.GetRequiredService<IAnimationManager>();
+			}
+#if ANDROID
+			if (serviceType == typeof(IFontManager))
+				return _fontManager ??= _services.GetRequiredService<IFontManager>();
+
+			if (serviceType == typeof(Android.Content.Context))
+				return MauiProgramDefaults.DefaultContext;
+
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager(this);
+#elif IOS || MACCATALYST
+			if (serviceType == typeof(UIKit.UIWindow))
+				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
+#elif WINDOWS
+			if (serviceType == typeof(NavigationRootManager))
+			{
+				return _windowManager ??= new NavigationRootManager((UI.Xaml.Window)this.GetService(typeof(UI.Xaml.Window)));
+			}
+
+			if (serviceType == typeof(UI.Xaml.Window))
+			{
+				if (_window is not null)
+				{
+					return _window;
+				}
+
+				_window = (_services.GetService<UI.Xaml.Window>() ?? new UI.Xaml.Window());
+
+				// If a single test needs to open multiple windows then we need to clear the window
+				// once it's closed. This way, the next request will get a new window instead of
+				// trying to reuse a closed window and crashing.
+				_window.Closed += OnWindowClosed;
+				return _window;
+			}
+#endif
+			if (serviceType == typeof(IDispatcher))
+			{
+				return _services.GetService(serviceType) ?? TestDispatcher.Current;
+			}
+*/
+
+/* Unmerged change from project 'Core.DeviceTests.Shared(net8.0-windows10.0.20348.0)'
+Before:
+				return _manager ??= _services.GetRequiredService<IAnimationManager>();
+#if ANDROID
+			if (serviceType == typeof(IFontManager))
+				return _fontManager ??= _services.GetRequiredService<IFontManager>();
+
+			if (serviceType == typeof(Android.Content.Context))
+				return MauiProgramDefaults.DefaultContext;
+
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager(this);
+#elif IOS || MACCATALYST
+			if (serviceType == typeof(UIKit.UIWindow))
+				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
+#elif WINDOWS
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager((UI.Xaml.Window)this.GetService(typeof(UI.Xaml.Window)));
+
+			if (serviceType == typeof(UI.Xaml.Window))
+			{
+				if (_window is not null)
+					return _window;
+
+				_window = (_services.GetService<UI.Xaml.Window>() ?? new UI.Xaml.Window());
+
+				// If a single test needs to open multiple windows then we need to clear the window
+				// once it's closed. This way, the next request will get a new window instead of
+				// trying to reuse a closed window and crashing.
+				_window.Closed += OnWindowClosed;
+				return _window;
+			}
+#endif
+			if (serviceType == typeof(IDispatcher))
+				return _services.GetService(serviceType) ?? TestDispatcher.Current;
+After:
+			{
+				return _manager ??= _services.GetRequiredService<IAnimationManager>();
+			}
+#if ANDROID
+			if (serviceType == typeof(IFontManager))
+				return _fontManager ??= _services.GetRequiredService<IFontManager>();
+
+			if (serviceType == typeof(Android.Content.Context))
+				return MauiProgramDefaults.DefaultContext;
+
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager(this);
+#elif IOS || MACCATALYST
+			if (serviceType == typeof(UIKit.UIWindow))
+				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
+#elif WINDOWS
+			if (serviceType == typeof(NavigationRootManager))
+			{
+				return _windowManager ??= new NavigationRootManager((UI.Xaml.Window)this.GetService(typeof(UI.Xaml.Window)));
+			}
+
+			if (serviceType == typeof(UI.Xaml.Window))
+			{
+				if (_window is not null)
+				{
+					return _window;
+				}
+
+				_window = (_services.GetService<UI.Xaml.Window>() ?? new UI.Xaml.Window());
+
+				// If a single test needs to open multiple windows then we need to clear the window
+				// once it's closed. This way, the next request will get a new window instead of
+				// trying to reuse a closed window and crashing.
+				_window.Closed += OnWindowClosed;
+				return _window;
+			}
+#endif
+			if (serviceType == typeof(IDispatcher))
+			{
+				return _services.GetService(serviceType) ?? TestDispatcher.Current;
+			}
+*/
+			
+/* Unmerged change from project 'Core.DeviceTests.Shared(net8.0-android)'
+Before:
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager(this);
+#elif IOS || MACCATALYST
+			if (serviceType == typeof(UIKit.UIWindow))
+				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
+#elif WINDOWS
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager((UI.Xaml.Window)this.GetService(typeof(UI.Xaml.Window)));
+
+			if (serviceType == typeof(UI.Xaml.Window))
+			{
+				if (_window is not null)
+					return _window;
+
+				_window = (_services.GetService<UI.Xaml.Window>() ?? new UI.Xaml.Window());
+
+				// If a single test needs to open multiple windows then we need to clear the window
+				// once it's closed. This way, the next request will get a new window instead of
+				// trying to reuse a closed window and crashing.
+				_window.Closed += OnWindowClosed;
+				return _window;
+			}
+#endif
+			if (serviceType == typeof(IDispatcher))
+				return _services.GetService(serviceType) ?? TestDispatcher.Current;
+After:
+			if (serviceType == typeof(Android.Content.Context))
+			{
+				return MauiProgramDefaults.DefaultContext;
+			}
+
+			if (serviceType == typeof(NavigationRootManager))
+			{
+				return _windowManager ??= new NavigationRootManager(this);
+*/
+{
+				return _manager ??= _services.GetRequiredService<IAnimationManager>();
+			}
+#if ANDROID
+			if (serviceType == typeof(IFontManager))
+				return _fontManager ??= _services.GetRequiredService<IFontManager>();
+
+			if (serviceType == typeof(Android.Content.Context))
+				return MauiProgramDefaults.DefaultContext;
+
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager(this);
+#elif IOS || MACCATALYST
+			if (serviceType == typeof(UIKit.UIWindow))
+			{
+				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
+			}
+#elif WINDOWS
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager((UI.Xaml.Window)this.GetService(typeof(UI.Xaml.Window)));
+
+			if (serviceType == typeof(UI.Xaml.Window))
+			{
+				if (_window is not null)
+					return _window;
+
+				_window = (_services.GetService<UI.Xaml.Window>() ?? new UI.Xaml.Window());
+
+				// If a single test needs to open multiple windows then we need to clear the window
+				// once it's closed. This way, the next request will get a new window instead of
+				// trying to reuse a closed window and crashing.
+				_window.Closed += OnWindowClosed;
+				return _window;
+			}
+#endif
+			if (serviceType == typeof(IDispatcher))
+			{
+				return _services.GetService(serviceType) ?? TestDispatcher.Current;
+			}
+			}
+#elif IOS || MACCATALYST
+			if (serviceType == typeof(UIKit.UIWindow))
+				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
+#elif WINDOWS
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager((UI.Xaml.Window)this.GetService(typeof(UI.Xaml.Window)));
+
+			if (serviceType == typeof(UI.Xaml.Window))
+			{
+				if (_window is not null)
+					return _window;
+
+				_window = (_services.GetService<UI.Xaml.Window>() ?? new UI.Xaml.Window());
+
+				// If a single test needs to open multiple windows then we need to clear the window
+				// once it's closed. This way, the next request will get a new window instead of
+				// trying to reuse a closed window and crashing.
+				_window.Closed += OnWindowClosed;
+				return _window;
+			}
+#endif
+			if (serviceType == typeof(IDispatcher))
+			{
+				return _services.GetService(serviceType) ?? TestDispatcher.Current;
+			}
 
 			return _services.GetService(serviceType);
 		}
@@ -77,7 +325,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		void OnWindowClosed(object sender, UI.Xaml.WindowEventArgs args)
 		{
 			if (sender is UI.Xaml.Window w)
+			{
 				w.Closed -= OnWindowClosed;
+			}
 
 			_window = null;
 		}

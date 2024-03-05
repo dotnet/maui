@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_refreshing = value;
 
 				if (RefreshView != null && RefreshView.IsRefreshing != _refreshing)
+				{
 					RefreshView.SetValueFromRenderer(RefreshView.IsRefreshingProperty, _refreshing);
+				}
 
 				base.Refreshing = _refreshing;
 			}
@@ -70,7 +72,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var refreshViewContent = RefreshView?.Content;
 
 			if (refreshViewContent == null)
+			{
 				return;
+			}
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(refreshViewContent);
 			renderer?.UpdateLayout();
@@ -81,7 +85,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var oldElement = Element;
 
 			if (oldElement != null)
+			{
 				oldElement.PropertyChanged -= HandlePropertyChanged;
+			}
 
 			Element = element;
 
@@ -122,22 +128,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Platform.SetRenderer(RefreshView.Content, _renderer);
 
 				if (_renderer.View.Parent != null)
+				{
 					_renderer.View.RemoveFromParent();
+				}
 
 				using (var layoutParams = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent))
+				{
 					SwipeRefreshLayout.AddView(_renderer.View, layoutParams);
+				}
 			}
 		}
 
 		void UpdateColors()
 		{
 			if (RefreshView == null)
+			{
 				return;
+			}
 
 			if (RefreshView.RefreshColor != null)
+			{
 				SetColorSchemeColors(RefreshView.RefreshColor.ToAndroid());
+			}
+
 			if (RefreshView.BackgroundColor != null)
+			{
 				SetProgressBackgroundColorSchemeColor(RefreshView.BackgroundColor.ToAndroid());
+			}
 		}
 
 		void UpdateIsRefreshing() => Refreshing = RefreshView.IsRefreshing;
@@ -147,17 +164,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool CanScrollUp(AView view)
 		{
 			if (!(view is ViewGroup viewGroup))
+			{
 				return base.CanChildScrollUp();
+			}
 
 			if (!CanScrollUpViewByType(view))
+			{
 				return false;
+			}
 
 			for (int i = 0; i < viewGroup.ChildCount; i++)
 			{
 				var child = viewGroup.GetChildAt(i);
 
 				if (!CanScrollUpViewByType(child))
+				{
 					return false;
+				}
 
 				if (child is SwipeRefreshLayout)
 				{
@@ -183,13 +206,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (view is RecyclerView recyclerView)
+			{
 				return recyclerView.ComputeVerticalScrollOffset() > 0;
+			}
 
 			if (view is NestedScrollView nestedScrollView)
+			{
 				return nestedScrollView.ComputeVerticalScrollOffset() > 0;
+			}
 
 			if (view is AWebView webView)
+			{
 				return webView.ScrollY > 0;
+			}
 
 			return true;
 		}
@@ -202,13 +231,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == ContentView.ContentProperty.PropertyName)
+			{
 				UpdateContent();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled();
+			}
 			else if (e.PropertyName == RefreshView.IsRefreshingProperty.PropertyName)
+			{
 				UpdateIsRefreshing();
+			}
 			else if (e.IsOneOf(RefreshView.RefreshColorProperty, VisualElement.BackgroundColorProperty, VisualElement.BackgroundProperty))
+			{
 				UpdateColors();
+			}
 
 			ElementPropertyChanged?.Invoke(sender, e);
 
@@ -226,7 +263,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -265,7 +304,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			if (effect is PlatformEffect platformEffect)
+			{
 				OnRegisterEffect(platformEffect);
+			}
 		}
 
 		void OnRegisterEffect(PlatformEffect effect)

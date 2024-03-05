@@ -40,10 +40,14 @@ namespace Microsoft.Maui.Platform
 				var childButton = linearLayout.GetChildAt(i) as AButton;
 
 				if (childButton?.Text == "－")
+				{
 					downButton = childButton;
+				}
 
 				if (childButton?.Text == "＋")
+				{
 					upButton = childButton;
+				}
 			}
 
 			StepperHandlerManager.UpdateButtons(stepper, downButton, upButton);

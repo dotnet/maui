@@ -82,11 +82,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
 			if (_plus != null)
+			{
 				_plus.Click += OnPlusClicked;
+			}
 
 			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
 			if (_minus != null)
+			{
 				_minus.Click += OnMinusClicked;
+			}
 
 			UpdateEnabled(Value);
 			UpdateButtonBackgroundColor(ButtonBackgroundColor);
@@ -133,13 +137,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			EventHandler changed = stepper.ValueChanged;
 			if (changed != null)
+			{
 				changed(d, EventArgs.Empty);
+			}
 		}
 
 		VisualStateCache PseudoDisable(Control control)
 		{
 			if (VisualTreeHelper.GetChildrenCount(control) == 0)
+			{
 				control.ApplyTemplate();
+			}
 
 			WVisualStateManager.GoToState(control, "Disabled", true);
 
@@ -152,34 +160,56 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			foreach (var group in groups)
 			{
 				if (group.Name == "CommonStates")
+				{
 					common = group;
+				}
 				else if (group.Name == "FocusStates")
+				{
 					cache.FocusStates = group;
+				}
 				else if (cache.FocusStates != null && common != null)
+				{
 					break;
+				}
 			}
 
 			if (cache.FocusStates != null)
+			{
 				groups.Remove(cache.FocusStates);
+			}
 
 			if (common != null)
 			{
 				foreach (WVisualState state in common.States)
 				{
 					if (state.Name == "Normal")
+					{
 						cache.Normal = state;
+					}
 					else if (state.Name == "Pressed")
+					{
 						cache.Pressed = state;
+					}
 					else if (state.Name == "PointerOver")
+					{
 						cache.PointerOver = state;
+					}
 				}
 
 				if (cache.Normal != null)
+				{
 					common.States.Remove(cache.Normal);
+				}
+
 				if (cache.Pressed != null)
+				{
 					common.States.Remove(cache.Pressed);
+				}
+
 				if (cache.PointerOver != null)
+				{
 					common.States.Remove(cache.PointerOver);
+				}
 			}
 
 			return cache;
@@ -199,25 +229,39 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void PsuedoEnable(Control control, ref VisualStateCache cache)
 		{
 			if (cache == null || VisualTreeHelper.GetChildrenCount(control) == 0)
+			{
 				return;
+			}
 
 			var rootElement = (FrameworkElement)VisualTreeHelper.GetChild(control, 0);
 
 			IList<WVisualStateGroup> groups = WVisualStateManager.GetVisualStateGroups(rootElement);
 
 			if (cache.FocusStates != null)
+			{
 				groups.Add(cache.FocusStates);
+			}
 
 			var commonStates = groups.FirstOrDefault(g => g.Name == "CommonStates");
 			if (commonStates == null)
+			{
 				return;
+			}
 
 			if (cache.Normal != null)
+			{
 				commonStates.States.Insert(0, cache.Normal); // defensive
+			}
+
 			if (cache.Pressed != null)
+			{
 				commonStates.States.Add(cache.Pressed);
+			}
+
 			if (cache.PointerOver != null)
+			{
 				commonStates.States.Add(cache.PointerOver);
+			}
 
 			WVisualStateManager.GoToState(control, "Normal", true);
 
@@ -235,9 +279,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
 			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
 			if (_minus != null)
+			{
 				_minus.Background = brush;
+			}
+
 			if (_plus != null)
+			{
 				_plus.Background = brush;
+			}
 		}
 
 		void UpdateButtonBackground(Brush value)
@@ -251,9 +300,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_minus = GetTemplateChild("Minus") as Microsoft.UI.Xaml.Controls.Button;
 			_plus = GetTemplateChild("Plus") as Microsoft.UI.Xaml.Controls.Button;
 			if (_minus != null)
+			{
 				_minus.Background = brush;
+			}
+
 			if (_plus != null)
+			{
 				_plus.Background = brush;
+			}
 		}
 
 		void UpdateEnabled(double value)
@@ -262,17 +316,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_plus != null)
 			{
 				if (value + increment > Maximum && _plusStateCache is null)
+				{
 					_plusStateCache = PseudoDisable(_plus);
+				}
 				else if (value + increment <= Maximum)
+				{
 					PsuedoEnable(_plus, ref _plusStateCache);
+				}
 			}
 
 			if (_minus != null)
 			{
 				if (value - increment < Minimum && _minusStateCache is null)
+				{
 					_minusStateCache = PseudoDisable(_minus);
+				}
 				else if (value - increment >= Minimum)
+				{
 					PsuedoEnable(_minus, ref _minusStateCache);
+				}
 			}
 		}
 
@@ -280,7 +342,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			double newValue = Value + delta;
 			if (newValue > Maximum || newValue < Minimum)
+			{
 				return;
+			}
 
 			Value = newValue;
 		}

@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Controls
 
 				// support bound properties
 				if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
+				{
 					binding.Apply(false);
+				}
 			}
 			else
 			{
@@ -33,7 +35,9 @@ namespace Microsoft.Maui.Controls
 		internal static void PropagateBindingContext<T>(this BindableObject self, IEnumerable<T> children, Action<BindableObject, object> setChildBindingContext)
 		{
 			if (children == null)
+			{
 				return;
+			}
 
 			var bc = self.BindingContext;
 
@@ -41,7 +45,9 @@ namespace Microsoft.Maui.Controls
 			{
 				var bo = child as BindableObject;
 				if (bo == null)
+				{
 					continue;
+				}
 
 				setChildBindingContext(bo, bc);
 			}
@@ -52,9 +58,14 @@ namespace Microsoft.Maui.Controls
 									  string stringFormat = null)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException(nameof(self));
+			}
+
 			if (targetProperty == null)
+			{
 				throw new ArgumentNullException(nameof(targetProperty));
+			}
 
 			var binding = new Binding(path, mode, converter, stringFormat: stringFormat);
 			self.SetBinding(targetProperty, binding);
@@ -63,10 +74,27 @@ namespace Microsoft.Maui.Controls
 		public static T GetPropertyIfSet<T>(this BindableObject bindableObject, BindableProperty bindableProperty, T returnIfNotSet)
 		{
 			if (bindableObject == null)
+			{
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return (T)bindableObject.GetValue(bindableProperty);
+After:
 				return returnIfNotSet;
+			}
 
 			if (bindableObject.IsSet(bindableProperty))
+			{
 				return (T)bindableObject.GetValue(bindableProperty);
+			}
+*/
+				return returnIfNotSet;
+			}
+
+			if (bindableObject.IsSet(bindableProperty))
+			{
+				return (T)bindableObject.GetValue(bindableProperty);
+			}
 
 			return returnIfNotSet;
 		}
@@ -89,13 +117,19 @@ namespace Microsoft.Maui.Controls
 		internal static void AddRemoveLogicalChildren(this BindableObject bindable, object oldValue, object newValue)
 		{
 			if (!(bindable is Element owner))
+			{
 				return;
+			}
 
 			if (oldValue is Element oldView)
+			{
 				owner.RemoveLogicalChild(oldView);
+			}
 
 			if (newValue is Element newView)
+			{
 				owner.AddLogicalChild(newView);
+			}
 		}
 
 		internal static bool TrySetAppTheme(

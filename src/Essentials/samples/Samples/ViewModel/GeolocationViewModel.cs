@@ -72,7 +72,9 @@ namespace Samples.ViewModel
 		async void OnGetLastLocation()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
 
 			IsBusy = true;
 			try
@@ -90,7 +92,9 @@ namespace Samples.ViewModel
 		async void OnGetCurrentLocation()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
 
 			IsBusy = true;
 			try
@@ -185,7 +189,9 @@ namespace Samples.ViewModel
 			if (IsBusy)
 			{
 				if (cts != null && !cts.IsCancellationRequested)
+				{
 					cts.Cancel();
+				}
 			}
 
 			OnStopListening();

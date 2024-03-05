@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_itemsSource = new List<object>();
 
 			if (enumerable == null)
+			{
 				return;
+			}
 
 			foreach (object item in enumerable)
 			{

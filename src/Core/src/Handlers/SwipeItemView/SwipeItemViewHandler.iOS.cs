@@ -32,20 +32,26 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.ClearSubviews();
 
 			if (VirtualView.PresentedContent is IView view)
+			{
 				PlatformView.AddSubview(view.ToPlatform(MauiContext));
+			}
 		}
 
 		public static void MapContent(ISwipeItemViewHandler handler, ISwipeItemView page)
 		{
 			if (handler is SwipeItemViewHandler platformHandler)
+			{
 				platformHandler.UpdateContent();
+			}
 		}
 
 		public static void MapVisibility(ISwipeItemViewHandler handler, ISwipeItemView view)
 		{
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)
+			{
 				swipeView.UpdateIsVisibleSwipeItem(view);
+			}
 
 			handler.PlatformView.UpdateVisibility(view.Visibility);
 		}

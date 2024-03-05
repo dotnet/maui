@@ -59,7 +59,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			var values = e?.Values ?? Array.Empty<float>();
 			if (values.Count < 1)
+			{
 				return;
+			}
 
 			ChangeHandler?.Invoke(new BarometerData(values[0]));
 		}

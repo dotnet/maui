@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Controls
 		{
 			EventHandler eh = SourceChanged;
 			if (eh != null)
+			{
 				eh(this, EventArgs.Empty);
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/WebViewSource.xml" path="//Member[@MemberName='Load']/Docs/*" />

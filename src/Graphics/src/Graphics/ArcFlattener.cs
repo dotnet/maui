@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Graphics
 
 			_sweep = Math.Abs(endAngle - startAngle);
 			if (clockwise)
+			{
 				_sweep *= -1;
+			}
 
 			_startPoint = GetPointOnArc(0);
 		}
@@ -46,7 +48,9 @@ namespace Microsoft.Maui.Graphics
 			var angle = _startAngle + (_sweep * percentage);
 
 			while (angle >= 360)
+			{
 				angle -= 360;
+			}
 
 			angle *= -1;
 
@@ -87,7 +91,36 @@ namespace Microsoft.Maui.Graphics
 				var candidate = 1f / (float)n;
 				var midPointOnArc = GetPointOnArc(candidate / 2);
 				if (endPoint == null)
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
 					endPoint = GetPointOnArc(candidate);
+				var midPointOnLine = GetCenter(_startPoint, (PointF)endPoint);
+				if (GeometryUtil.GetDistance(midPointOnArc.X, midPointOnArc.Y, midPointOnLine.X, midPointOnLine.Y) <= flatness)
+				{
+After:
+				{
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					endPoint = GetPointOnArc(candidate);
+				var midPointOnLine = GetCenter(_startPoint, (PointF)endPoint);
+				if (GeometryUtil.GetDistance(midPointOnArc.X, midPointOnArc.Y, midPointOnLine.X, midPointOnLine.Y) <= flatness)
+				{
+After:
+				{
+*/
+				{
+					endPoint = GetPointOnArc(candidate);
+				}
+
+				var midPointOnLine = GetCenter(_startPoint, (PointF)endPoint);
+				if (GeometryUtil.GetDistance(midPointOnArc.X, midPointOnArc.Y, midPointOnLine.X, midPointOnLine.Y) <= flatness)
+				{
+					endPoint = GetPointOnArc(candidate);
+				}
+
 				var midPointOnLine = GetCenter(_startPoint, (PointF)endPoint);
 				if (GeometryUtil.GetDistance(midPointOnArc.X, midPointOnArc.Y, midPointOnLine.X, midPointOnLine.Y) <= flatness)
 				{

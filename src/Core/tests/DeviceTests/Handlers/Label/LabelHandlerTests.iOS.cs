@@ -210,12 +210,16 @@ namespace Microsoft.Maui.DeviceTests
 			var attrText = GetPlatformLabel(labelHandler).AttributedText;
 
 			if (attrText == null)
+			{
 				return new nfloat(-1.0f);
+			}
 
 			var paragraphStyle = (NSParagraphStyle)attrText.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out _);
 
 			if (paragraphStyle == null)
+			{
 				return new nfloat(-1.0f);
+			}
 
 			return paragraphStyle.LineHeightMultiple;
 		}

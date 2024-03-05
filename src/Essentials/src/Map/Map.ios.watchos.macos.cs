@@ -20,12 +20,19 @@ namespace Microsoft.Maui.ApplicationModel
 		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
+			{
+			{
 				throw new ArgumentNullException(nameof(options));
+			}
 
 			if (string.IsNullOrWhiteSpace(options.Name))
+			{
+			{
 				options.Name = string.Empty;
+			}
 
 			NSDictionary dictionary = null;
+			var placemark = new MKPlacemark(new CLLocationCoordinate2D(latitude, longitude), dictionary);
 			var placemark = new MKPlacemark(new CLLocationCoordinate2D(latitude, longitude), dictionary);
 			return OpenPlacemark(placemark, options);
 		}
@@ -40,10 +47,33 @@ namespace Microsoft.Maui.ApplicationModel
 		public async Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
 			if (placemark == null)
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
 				throw new ArgumentNullException(nameof(placemark));
 
 			if (options == null)
+After:
+			{
+*/
+			{
+				throw new ArgumentNullException(nameof(placemark));
+			}
+
+			if (options == null)
+			{
+				throw new ArgumentNullException(nameof(placemark));
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Added:
+			}
+
+			if (options == null)
+			{
 				throw new ArgumentNullException(nameof(options));
+			}
+*/
+			}
 
 #if __IOS__
 			var address = new MKPlacemarkAddress

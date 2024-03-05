@@ -175,7 +175,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == null)
+			{
 				_defaultVerticalScrollVisibility = Controller.CollectionView.ShowsVerticalScrollIndicator;
+			}
 
 			switch (Element.VerticalScrollBarVisibility)
 			{
@@ -194,7 +196,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateHorizontalScrollBarVisibility()
 		{
 			if (_defaultHorizontalScrollVisibility == null)
+			{
 				_defaultHorizontalScrollVisibility = Controller.CollectionView.ShowsHorizontalScrollIndicator;
+			}
 
 			switch (Element.HorizontalScrollBarVisibility)
 			{

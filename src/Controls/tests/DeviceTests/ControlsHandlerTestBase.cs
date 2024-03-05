@@ -90,11 +90,17 @@ namespace Microsoft.Maui.DeviceTests
 			IWindow window;
 
 			if (view is IWindow w)
+			{
 				window = w;
+			}
 			else if (view is Page page)
+			{
 				window = new Controls.Window(page);
+			}
 			else
+			{
 				window = new Controls.Window(new ContentPage() { Content = (View)view });
+			}
 
 			return window;
 		}
@@ -142,9 +148,13 @@ namespace Microsoft.Maui.DeviceTests
 			mauiContext ??= MauiContext;
 
 			if (System.Diagnostics.Debugger.IsAttached)
+			{
 				timeOut ??= TimeSpan.FromHours(1);
+			}
 			else
+			{
 				timeOut ??= TimeSpan.FromSeconds(15);
+			}
 
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -169,6 +179,9 @@ namespace Microsoft.Maui.DeviceTests
 						IView content = window.Content;
 
 						if (content is FlyoutPage fp)
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-maccatalyst)'
+Before:
 							content = fp.Detail;
 
 						if (window is Window w && w.Navigation.ModalStack.Count > 0)
@@ -255,10 +268,451 @@ namespace Microsoft.Maui.DeviceTests
 #if !WINDOWS
 						bool isActivated = controlsWindow?.IsActivated ?? false;
 						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
+After:
+						{
+							content = fp.Detail;
+						}
+*/
 
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.19041.0)'
+Before:
+							content = fp.Detail;
+
+						if (window is Window w && w.Navigation.ModalStack.Count > 0)
+							content = w.Navigation.ModalStack.Last();
+
+						if (content is IPageContainer<Page> pc)
+						{
+							content = pc.CurrentPage;
+							if (content is null)
+							{
+								// This is mainly a timing issue with Shell.
+								// Basically the `CurrentPage` on Shell isn't initialized until it's
+								// actually navigated to because it's a DataTemplate.
+								// The CurrentPage doesn't come into existence until the platform requests it.
+								// The initial `Navigated` events on Shell all fire a bit too early as well.
+								// Ideally I'd just use that instead of having to add a delay.
+								await Task.Delay(100);
+								content = pc.CurrentPage;
+							}
+
+							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
+						}
+
+						if (content is VisualElement vc)
+						{
+							await OnLoadedAsync(vc);
+
+							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+							{
+								var batchTcs = new TaskCompletionSource();
+								vc.BatchCommitted += OnBatchCommitted;
+								await batchTcs.Task.WaitAsync(timeOut.Value);
+								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+								{
+									Assert.Fail($"{content} Failed to layout");
+								}
+
+								void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+								{
+									vc.BatchCommitted -= OnBatchCommitted;
+									batchTcs.SetResult();
+								}
+							}
+						}
+
+						// Gives time for the measure/layout pass to settle
+						await Task.Yield();
+						if (view is VisualElement veBeingTested)
+							await OnLoadedAsync(veBeingTested);
+
+#if !WINDOWS
+						if (window is Window controlsWindow)
+						{
+							if (!controlsWindow.IsActivated)
+								window.Activated();
+						}
+						else
+						{
+							controlsWindow = null;
+							window.Activated();
+						}
+#endif
+
+#if WINDOWS
+						await Task.Delay(10);
+#endif
+
+						THandler handler;
+After:
+						{
+							content = fp.Detail;
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.20348.0)'
+Before:
+							content = fp.Detail;
+
+						if (window is Window w && w.Navigation.ModalStack.Count > 0)
+							content = w.Navigation.ModalStack.Last();
+
+						if (content is IPageContainer<Page> pc)
+						{
+							content = pc.CurrentPage;
+							if (content is null)
+							{
+								// This is mainly a timing issue with Shell.
+								// Basically the `CurrentPage` on Shell isn't initialized until it's
+								// actually navigated to because it's a DataTemplate.
+								// The CurrentPage doesn't come into existence until the platform requests it.
+								// The initial `Navigated` events on Shell all fire a bit too early as well.
+								// Ideally I'd just use that instead of having to add a delay.
+								await Task.Delay(100);
+								content = pc.CurrentPage;
+							}
+
+							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
+						}
+
+						if (content is VisualElement vc)
+						{
+							await OnLoadedAsync(vc);
+
+							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+							{
+								var batchTcs = new TaskCompletionSource();
+								vc.BatchCommitted += OnBatchCommitted;
+								await batchTcs.Task.WaitAsync(timeOut.Value);
+								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+								{
+									Assert.Fail($"{content} Failed to layout");
+								}
+
+								void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+								{
+									vc.BatchCommitted -= OnBatchCommitted;
+									batchTcs.SetResult();
+								}
+							}
+						}
+
+						// Gives time for the measure/layout pass to settle
+						await Task.Yield();
+						if (view is VisualElement veBeingTested)
+							await OnLoadedAsync(veBeingTested);
+
+#if !WINDOWS
+						if (window is Window controlsWindow)
+						{
+							if (!controlsWindow.IsActivated)
+								window.Activated();
+						}
+						else
+						{
+							controlsWindow = null;
+							window.Activated();
+						}
+#endif
+
+#if WINDOWS
+						await Task.Delay(10);
+#endif
+
+						THandler handler;
+After:
+						{
+							content = fp.Detail;
+*/
+						{
+							content = fp.Detail;
+						}
+						}
+
+						if (window is Window w && w.Navigation.ModalStack.Count > 0)
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.19041.0)'
+Before:
+							handler = (THandler)window.Handler;
+						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
+							handler = (THandler)window.Content.Handler;
+						else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+							handler = (THandler)cp.Content.Handler;
+						else if (typeof(THandler).IsAssignableFrom(typeof(WindowHandler)))
+							throw new Exception($"Use IWindowHandler instead of WindowHandler for CreateHandlerAndAddToWindow");
+						else
+							throw new Exception($"I can't work with {typeof(THandler)}");
+
+						await action(handler).WaitAsync(timeOut.Value);
+After:
+						{
+							content = w.Navigation.ModalStack.Last();
+						}
+
+						if (content is IPageContainer<Page> pc)
+						{
+							content = pc.CurrentPage;
+							if (content is null)
+							{
+								// This is mainly a timing issue with Shell.
+								// Basically the `CurrentPage` on Shell isn't initialized until it's
+								// actually navigated to because it's a DataTemplate.
+								// The CurrentPage doesn't come into existence until the platform requests it.
+								// The initial `Navigated` events on Shell all fire a bit too early as well.
+								// Ideally I'd just use that instead of having to add a delay.
+								await Task.Delay(100);
+								content = pc.CurrentPage;
+							}
+
+							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
+						}
+
+						if (content is VisualElement vc)
+						{
+							await OnLoadedAsync(vc);
+
+							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+							{
+								var batchTcs = new TaskCompletionSource();
+								vc.BatchCommitted += OnBatchCommitted;
+								await batchTcs.Task.WaitAsync(timeOut.Value);
+								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+								{
+									Assert.Fail($"{content} Failed to layout");
+								}
+
+								void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+								{
+									vc.BatchCommitted -= OnBatchCommitted;
+									batchTcs.SetResult();
+								}
+							}
+						}
+
+						// Gives time for the measure/layout pass to settle
+						await Task.Yield();
+						if (view is VisualElement veBeingTested)
+						{
+							await OnLoadedAsync(veBeingTested);
+						}
+
+#if !WINDOWS
+						if (window is Window controlsWindow)
+						{
+							if (!controlsWindow.IsActivated)
+								window.Activated();
+						}
+						else
+						{
+							controlsWindow = null;
+							window.Activated();
+						}
+#endif
+
+#if WINDOWS
+						await Task.Delay(10);
+#endif
+
+						THandler handler;
+
+						if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
+						{
+							handler = (THandler)window.Handler;
+						}
+						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
+						{
+							handler = (THandler)window.Content.Handler;
+						}
+						else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+						{
+							handler = (THandler)cp.Content.Handler;
+						}
+						else if (typeof(THandler).IsAssignableFrom(typeof(WindowHandler)))
+						{
+							throw new Exception($"Use IWindowHandler instead of WindowHandler for CreateHandlerAndAddToWindow");
+						}
+						else
+						{
+							throw new Exception($"I can't work with {typeof(THandler)}");
+						}
+
+						await action(handler).WaitAsync(timeOut.Value);
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.20348.0)'
+Before:
+							handler = (THandler)window.Handler;
+						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
+							handler = (THandler)window.Content.Handler;
+						else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+							handler = (THandler)cp.Content.Handler;
+						else if (typeof(THandler).IsAssignableFrom(typeof(WindowHandler)))
+							throw new Exception($"Use IWindowHandler instead of WindowHandler for CreateHandlerAndAddToWindow");
+						else
+							throw new Exception($"I can't work with {typeof(THandler)}");
+
+						await action(handler).WaitAsync(timeOut.Value);
+After:
+						{
+							content = w.Navigation.ModalStack.Last();
+						}
+
+						if (content is IPageContainer<Page> pc)
+						{
+							content = pc.CurrentPage;
+							if (content is null)
+							{
+								// This is mainly a timing issue with Shell.
+								// Basically the `CurrentPage` on Shell isn't initialized until it's
+								// actually navigated to because it's a DataTemplate.
+								// The CurrentPage doesn't come into existence until the platform requests it.
+								// The initial `Navigated` events on Shell all fire a bit too early as well.
+								// Ideally I'd just use that instead of having to add a delay.
+								await Task.Delay(100);
+								content = pc.CurrentPage;
+							}
+
+							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
+						}
+
+						if (content is VisualElement vc)
+						{
+							await OnLoadedAsync(vc);
+
+							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+							{
+								var batchTcs = new TaskCompletionSource();
+								vc.BatchCommitted += OnBatchCommitted;
+								await batchTcs.Task.WaitAsync(timeOut.Value);
+								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+								{
+									Assert.Fail($"{content} Failed to layout");
+								}
+
+								void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+								{
+									vc.BatchCommitted -= OnBatchCommitted;
+									batchTcs.SetResult();
+								}
+							}
+						}
+
+						// Gives time for the measure/layout pass to settle
+						await Task.Yield();
+						if (view is VisualElement veBeingTested)
+						{
+							await OnLoadedAsync(veBeingTested);
+						}
+
+#if !WINDOWS
+						if (window is Window controlsWindow)
+						{
+							if (!controlsWindow.IsActivated)
+								window.Activated();
+						}
+						else
+						{
+							controlsWindow = null;
+							window.Activated();
+						}
+#endif
+
+#if WINDOWS
+						await Task.Delay(10);
+#endif
+
+						THandler handler;
+
+						if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
+						{
+							handler = (THandler)window.Handler;
+						}
+						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
+						{
+							handler = (THandler)window.Content.Handler;
+						}
+						else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+						{
+							handler = (THandler)cp.Content.Handler;
+						}
+						else if (typeof(THandler).IsAssignableFrom(typeof(WindowHandler)))
+						{
+							throw new Exception($"Use IWindowHandler instead of WindowHandler for CreateHandlerAndAddToWindow");
+						}
+						else
+						{
+							throw new Exception($"I can't work with {typeof(THandler)}");
+						}
+
+						await action(handler).WaitAsync(timeOut.Value);
+*/
+						{
+							content = w.Navigation.ModalStack.Last();
+						}
+
+						if (content is IPageContainer<Page> pc)
+						{
+							content = pc.CurrentPage;
+							if (content is null)
+							{
+								// This is mainly a timing issue with Shell.
+								// Basically the `CurrentPage` on Shell isn't initialized until it's
+								// actually navigated to because it's a DataTemplate.
+								// The CurrentPage doesn't come into existence until the platform requests it.
+								// The initial `Navigated` events on Shell all fire a bit too early as well.
+								// Ideally I'd just use that instead of having to add a delay.
+								await Task.Delay(100);
+								content = pc.CurrentPage;
+							}
+
+							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
+						}
+
+						if (content is VisualElement vc)
+						{
+							await OnLoadedAsync(vc);
+
+							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+							{
+								var batchTcs = new TaskCompletionSource();
+								vc.BatchCommitted += OnBatchCommitted;
+								await batchTcs.Task.WaitAsync(timeOut.Value);
+								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+								{
+									Assert.Fail($"{content} Failed to layout");
+								}
+
+								void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+								{
+									vc.BatchCommitted -= OnBatchCommitted;
+									batchTcs.SetResult();
+								}
+							}
+						}
+
+						// Gives time for the measure/layout pass to settle
+						await Task.Yield();
+						if (view is VisualElement veBeingTested)
+						{
+							await OnLoadedAsync(veBeingTested);
+						}
+
+#if !WINDOWS
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-maccatalyst)'
+Before:
 						if (isActivated)
 							window.Deactivated();
-
+After:
+						if (window is Window w && w.Navigation.ModalStack.Count > 0)
+						{
+							content = w.Navigation.ModalStack.Last();
+						}
+*/
+						if (window is Window controlsWindow)
+						{
+	
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-maccatalyst)'
+Before:
 						if (!isDestroyed)
 							window.Destroying();
 #endif
@@ -601,6 +1055,982 @@ namespace Microsoft.Maui.DeviceTests
 #if IOS || MACCATALYST
 			if (UIKit.UIAccessibility.IsVoiceOverRunning)
 				return;
+After:
+						if (content is IPageContainer<Page> pc)
+						{
+							content = pc.CurrentPage;
+							if (content is null)
+							{
+								// This is mainly a timing issue with Shell.
+								// Basically the `CurrentPage` on Shell isn't initialized until it's
+								// actually navigated to because it's a DataTemplate.
+								// The CurrentPage doesn't come into existence until the platform requests it.
+								// The initial `Navigated` events on Shell all fire a bit too early as well.
+								// Ideally I'd just use that instead of having to add a delay.
+								await Task.Delay(100);
+								content = pc.CurrentPage;
+							}
+
+							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
+						}
+
+						if (content is VisualElement vc)
+						{
+							await OnLoadedAsync(vc);
+
+							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+							{
+								var batchTcs = new TaskCompletionSource();
+								vc.BatchCommitted += OnBatchCommitted;
+								await batchTcs.Task.WaitAsync(timeOut.Value);
+								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+								{
+									Assert.Fail($"{content} Failed to layout");
+								}
+
+								void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+								{
+									vc.BatchCommitted -= OnBatchCommitted;
+									batchTcs.SetResult();
+								}
+							}
+						}
+
+						// Gives time for the measure/layout pass to settle
+						await Task.Yield();
+						if (view is VisualElement veBeingTested)
+						{
+							await OnLoadedAsync(veBeingTested);
+						}
+
+#if !WINDOWS
+						if (window is Window controlsWindow)
+						{
+							if (!controlsWindow.IsActivated)
+							{
+								window.Activated();
+							}
+						}
+						else
+						{
+							controlsWindow = null;
+							window.Activated();
+						}
+#endif
+
+#if WINDOWS
+						await Task.Delay(10);
+#endif
+
+						THandler handler;
+
+						if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
+						{
+							handler = (THandler)window.Handler;
+						}
+						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
+						{
+							handler = (THandler)window.Content.Handler;
+						}
+						else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+						{
+							handler = (THandler)cp.Content.Handler;
+						}
+						else if (typeof(THandler).IsAssignableFrom(typeof(WindowHandler)))
+						{
+							throw new Exception($"Use IWindowHandler instead of WindowHandler for CreateHandlerAndAddToWindow");
+						}
+						else
+						{
+							throw new Exception($"I can't work with {typeof(THandler)}");
+						}
+
+						await action(handler).WaitAsync(timeOut.Value);
+
+
+#if !WINDOWS
+						bool isActivated = controlsWindow?.IsActivated ?? false;
+						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
+
+						if (isActivated)
+						{
+							window.Deactivated();
+						}
+
+						if (!isDestroyed)
+						{
+							window.Destroying();
+						}
+#endif
+
+					}, mauiContext);
+				}
+				finally
+				{
+					_takeOverMainContentSempahore.Release();
+				}
+			});
+		}
+
+		/// <summary>
+		/// This is more complicated as we have different logic depending on the view being focused or not.
+		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
+		/// </summary>
+		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Action<THandler> action)
+			where TType : IView, new()
+			where THandler : class, IPlatformViewHandler, IElementHandler, new()
+		{
+			Func<THandler, Task> boop = (handler) =>
+			{
+				action.Invoke(handler);
+				return Task.CompletedTask;
+			};
+
+			await AttachAndRunFocusAffectedControl<TType, THandler>(control, boop);
+		}
+
+		/// <summary>
+		/// This is more complicated as we have different logic depending on the view being focused or not.
+		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
+		/// </summary>
+		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Func<THandler, Task> action)
+			where TType : IView, new()
+			where THandler : class, IPlatformViewHandler, IElementHandler, new()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handler.AddHandler<TType, THandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayout
+			{
+				WidthRequest = 200,
+				HeightRequest = 200,
+			};
+
+			var placeholder = new TType();
+			layout.Add(placeholder);
+			layout.Add(control);
+
+			await AttachAndRun(layout, handler => action(control.Handler as THandler));
+		}
+
+		async protected Task ValidatePropertyInitValue<TValue, THandler>(
+			IView view,
+			Func<TValue> GetValue,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedValue)
+			where THandler : IElementHandler, new()
+		{
+			var values = await GetValueAsync(view, (THandler handler) =>
+			{
+				return new
+				{
+					ViewValue = GetValue(),
+					PlatformViewValue = GetPlatformValue(handler)
+				};
+			});
+
+			Assert.Equal(expectedValue, values.ViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesValue<TValue, THandler>(
+			IView view,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+			where THandler : IElementHandler, new()
+		{
+			var propInfo = view.GetType().GetProperty(property);
+
+			// set initial values
+
+			propInfo.SetValue(view, expectedSetValue);
+
+			var (handler, viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				return (handler, (TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
+
+			await ValidatePropertyUpdatesAfterInitValue(handler, property, GetPlatformValue, expectedSetValue, expectedUnsetValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesAfterInitValue<TValue, THandler>(
+			THandler handler,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+			where THandler : IElementHandler
+		{
+			var view = handler.VirtualView;
+			var propInfo = handler.VirtualView.GetType().GetProperty(property);
+
+			// confirm can update
+
+			var (viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				propInfo.SetValue(view, expectedUnsetValue);
+				handler.UpdateValue(property);
+
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedUnsetValue, viewVal);
+			Assert.Equal(expectedUnsetValue, nativeVal);
+
+			// confirm can revert
+
+			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				propInfo.SetValue(view, expectedSetValue);
+				handler.UpdateValue(property);
+
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
+		}
+
+		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			var source = new TaskCompletionSource();
+			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
+			{
+				await Task.Delay(50);
+				source.TrySetResult();
+			}
+			else
+			{
+				EventHandler loaded = null;
+
+				loaded = async (_, __) =>
+				{
+					if (loaded is not null)
+					{
+						frameworkElement.Loaded -= loaded;
+					}
+
+					try
+					{
+						await Task.Yield();
+						source.TrySetResult();
+					}
+					catch (Exception e)
+					{
+						source.SetException(e);
+					}
+				};
+
+				frameworkElement.Loaded += loaded;
+			}
+
+			await HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform());
+		}
+
+		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			var source = new TaskCompletionSource();
+			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
+			{
+				await Task.Delay(50);
+				source.TrySetResult();
+			}
+			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
+			// This will happen before the the control has been unloaded at the platform level.
+			// This is most likely a bug.
+			else if (frameworkElement.IsLoadedOnPlatform())
+			{
+				frameworkElement.OnUnloaded(async () =>
+				{
+					try
+					{
+						await Task.Yield();
+						source.TrySetResult();
+					}
+					catch (Exception e)
+					{
+						source.SetException(e);
+					}
+				});
+			}
+			else
+			{
+				EventHandler unloaded = null;
+
+				unloaded = async (_, __) =>
+				{
+					if (unloaded is not null)
+					{
+						frameworkElement.Unloaded -= unloaded;
+					}
+
+					try
+					{
+						await Task.Yield();
+						source.TrySetResult();
+					}
+					catch (Exception e)
+					{
+						source.SetException(e);
+					}
+				};
+
+				frameworkElement.Unloaded += unloaded;
+			}
+
+			await HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => !frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform());
+		}
+
+		// Modal Page's appear to currently not fire loaded/unloaded
+		async Task HandleLoadedUnloadedIssue(Task task, TimeSpan timeOut, Func<bool> isConditionValid)
+		{
+			try
+			{
+				await task.WaitAsync(timeOut);
+			}
+			catch (TimeoutException)
+			{
+				if (isConditionValid())
+				{
+					return;
+				}
+				else
+				{
+					throw;
+				}
+			}
+		}
+
+		protected async Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)
+		{
+			await OnLoadedAsync(page, timeOut);
+
+			if (page.HasNavigatedTo)
+			{
+				// TabbedPage fires OnNavigated earlier than it should
+				if (page.Parent is TabbedPage)
+				{
+					await Task.Delay(10);
+				}
+
+				if (page is IPageContainer<Page> pc)
+				{
+					await OnNavigatedToAsync(pc.CurrentPage);
+				}
+
+				await Task.Yield();
+
+				return;
+			}
+
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			page.NavigatedTo += NavigatedTo;
+
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			// TabbedPage fires OnNavigated earlier than it should
+			if (page.Parent is TabbedPage)
+			{
+				await Task.Delay(10);
+			}
+
+			await Task.Yield();
+
+			void NavigatedTo(object sender, NavigatedToEventArgs e)
+			{
+				taskCompletionSource.SetResult(true);
+				page.NavigatedTo -= NavigatedTo;
+			}
+		}
+
+		protected async Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			if (frameworkElement.Frame.Height > 0 &&
+				frameworkElement.Frame.Width > 0)
+			{
+				return;
+			}
+
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			frameworkElement.BatchCommitted += OnBatchCommitted;
+
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			// Wait for the layout to propagate to the platform
+			await AssertEventually(
+				() =>
+				{
+					var size = frameworkElement.GetBoundingBox().Size;
+					return size.Height > 0 && size.Width > 0;
+				});
+
+			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+			{
+				if (frameworkElement.Frame.Height <= 0 ||
+					frameworkElement.Frame.Width <= 0)
+				{
+					return;
+				}
+
+				frameworkElement.BatchCommitted -= OnBatchCommitted;
+				taskCompletionSource.SetResult(true);
+			}
+		}
+
+
+		protected IToolbar GetToolbar(IElementHandler handler)
+		{
+			return (handler.VirtualView as IWindowController)
+						.Window
+						.GetVisualTreeDescendants()
+						.OfType<IToolbarElement>()
+						.SingleOrDefault(x => x.Toolbar is not null)
+						?.Toolbar;
+		}
+
+		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action);
+
+		protected static void MockAccessibilityExpectations(View view)
+		{
+#if IOS || MACCATALYST
+			if (UIKit.UIAccessibility.IsVoiceOverRunning)
+			{
+				return;
+			}
+*/
+						if (!controlsWindow.IsActivated)
+							{
+								window.Activated();
+							}
+						}
+						else
+						{
+							controlsWindow = null;
+							window.Activated();
+						}
+#endif
+
+#if WINDOWS
+						await Task.Delay(10);
+#endif
+
+						THandler handler;
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.19041.0)'
+Before:
+						frameworkElement.Loaded -= loaded;
+After:
+					{
+						frameworkElement.Loaded -= loaded;
+					}
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.20348.0)'
+Before:
+						frameworkElement.Loaded -= loaded;
+After:
+					{
+						frameworkElement.Loaded -= loaded;
+					}
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.19041.0)'
+Before:
+						frameworkElement.Unloaded -= unloaded;
+After:
+					{
+						frameworkElement.Unloaded -= unloaded;
+					}
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.20348.0)'
+Before:
+						frameworkElement.Unloaded -= unloaded;
+After:
+					{
+						frameworkElement.Unloaded -= unloaded;
+					}
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.19041.0)'
+Before:
+					await Task.Delay(10);
+After:
+				{
+					await Task.Delay(10);
+				}
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.20348.0)'
+Before:
+					await Task.Delay(10);
+After:
+				{
+					await Task.Delay(10);
+				}
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.19041.0)'
+Before:
+					await OnNavigatedToAsync(pc.CurrentPage);
+
+				await Task.Yield();
+After:
+				{
+					await OnNavigatedToAsync(pc.CurrentPage);
+				}
+
+				await Task.Yield();
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.20348.0)'
+Before:
+					await OnNavigatedToAsync(pc.CurrentPage);
+
+				await Task.Yield();
+After:
+				{
+					await OnNavigatedToAsync(pc.CurrentPage);
+				}
+
+				await Task.Yield();
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.19041.0)'
+Before:
+				await Task.Delay(10);
+
+			await Task.Yield();
+After:
+			{
+				await Task.Delay(10);
+			}
+
+			await Task.Yield();
+*/
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-windows10.0.20348.0)'
+Before:
+				await Task.Delay(10);
+
+			await Task.Yield();
+After:
+			{
+				await Task.Delay(10);
+			}
+
+			await Task.Yield();
+*/
+
+						if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
+						{
+							handler = (THandler)window.Handler;
+						}
+						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
+						{
+							handler = (THandler)window.Content.Handler;
+						}
+						else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
+						{
+							handler = (THandler)cp.Content.Handler;
+						}
+						else if (typeof(THandler).IsAssignableFrom(typeof(WindowHandler)))
+						{
+							throw new Exception($"Use IWindowHandler instead of WindowHandler for CreateHandlerAndAddToWindow");
+						}
+						else
+						{
+							throw new Exception($"I can't work with {typeof(THandler)}");
+						}
+
+						await action(handler).WaitAsync(timeOut.Value);
+
+
+#if !WINDOWS
+						bool isActivated = controlsWindow?.IsActivated ?? false;
+						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
+
+						if (isActivated)
+						{
+							window.Deactivated();
+						}
+
+						if (!isDestroyed)
+						{
+							window.Destroying();
+						}
+#endif
+
+					}, mauiContext);
+				}
+				finally
+				{
+					_takeOverMainContentSempahore.Release();
+				}
+			});
+		}
+
+		/// <summary>
+		/// This is more complicated as we have different logic depending on the view being focused or not.
+		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
+		/// </summary>
+		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Action<THandler> action)
+			where TType : IView, new()
+			where THandler : class, IPlatformViewHandler, IElementHandler, new()
+		{
+			Func<THandler, Task> boop = (handler) =>
+			{
+				action.Invoke(handler);
+				return Task.CompletedTask;
+			};
+
+			await AttachAndRunFocusAffectedControl<TType, THandler>(control, boop);
+		}
+
+		/// <summary>
+		/// This is more complicated as we have different logic depending on the view being focused or not.
+		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
+		/// </summary>
+		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Func<THandler, Task> action)
+			where TType : IView, new()
+			where THandler : class, IPlatformViewHandler, IElementHandler, new()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handler.AddHandler<TType, THandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayout
+			{
+				WidthRequest = 200,
+				HeightRequest = 200,
+			};
+
+			var placeholder = new TType();
+			layout.Add(placeholder);
+			layout.Add(control);
+
+			await AttachAndRun(layout, handler => action(control.Handler as THandler));
+		}
+
+		async protected Task ValidatePropertyInitValue<TValue, THandler>(
+			IView view,
+			Func<TValue> GetValue,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedValue)
+			where THandler : IElementHandler, new()
+		{
+			var values = await GetValueAsync(view, (THandler handler) =>
+			{
+				return new
+				{
+					ViewValue = GetValue(),
+					PlatformViewValue = GetPlatformValue(handler)
+				};
+			});
+
+			Assert.Equal(expectedValue, values.ViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesValue<TValue, THandler>(
+			IView view,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+			where THandler : IElementHandler, new()
+		{
+			var propInfo = view.GetType().GetProperty(property);
+
+			// set initial values
+
+			propInfo.SetValue(view, expectedSetValue);
+
+			var (handler, viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<THandler>(view);
+				return (handler, (TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
+
+			await ValidatePropertyUpdatesAfterInitValue(handler, property, GetPlatformValue, expectedSetValue, expectedUnsetValue);
+		}
+
+		async protected Task ValidatePropertyUpdatesAfterInitValue<TValue, THandler>(
+			THandler handler,
+			string property,
+			Func<THandler, TValue> GetPlatformValue,
+			TValue expectedSetValue,
+			TValue expectedUnsetValue)
+			where THandler : IElementHandler
+		{
+			var view = handler.VirtualView;
+			var propInfo = handler.VirtualView.GetType().GetProperty(property);
+
+			// confirm can update
+
+			var (viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				propInfo.SetValue(view, expectedUnsetValue);
+				handler.UpdateValue(property);
+
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedUnsetValue, viewVal);
+			Assert.Equal(expectedUnsetValue, nativeVal);
+
+			// confirm can revert
+
+			(viewVal, nativeVal) = await InvokeOnMainThreadAsync(() =>
+			{
+				propInfo.SetValue(view, expectedSetValue);
+				handler.UpdateValue(property);
+
+				return ((TValue)propInfo.GetValue(view), GetPlatformValue(handler));
+			});
+
+			Assert.Equal(expectedSetValue, viewVal);
+			Assert.Equal(expectedSetValue, nativeVal);
+		}
+
+		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			var source = new TaskCompletionSource();
+			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
+			{
+				await Task.Delay(50);
+				source.TrySetResult();
+			}
+			else
+			{
+				EventHandler loaded = null;
+
+				loaded = async (_, __) =>
+				{
+					if (loaded is not null)
+					{
+						frameworkElement.Loaded -= loaded;
+					}
+
+					try
+					{
+						await Task.Yield();
+						source.TrySetResult();
+					}
+					catch (Exception e)
+					{
+						source.SetException(e);
+					}
+				};
+
+				frameworkElement.Loaded += loaded;
+			}
+
+			await HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform());
+		}
+
+		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			var source = new TaskCompletionSource();
+			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
+			{
+				await Task.Delay(50);
+				source.TrySetResult();
+			}
+			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
+			// This will happen before the the control has been unloaded at the platform level.
+			// This is most likely a bug.
+			else if (frameworkElement.IsLoadedOnPlatform())
+			{
+				frameworkElement.OnUnloaded(async () =>
+				{
+					try
+					{
+						await Task.Yield();
+						source.TrySetResult();
+					}
+					catch (Exception e)
+					{
+						source.SetException(e);
+					}
+				});
+			}
+			else
+			{
+				EventHandler unloaded = null;
+
+				unloaded = async (_, __) =>
+				{
+					if (unloaded is not null)
+					{
+						frameworkElement.Unloaded -= unloaded;
+					}
+
+					try
+					{
+						await Task.Yield();
+						source.TrySetResult();
+					}
+					catch (Exception e)
+					{
+						source.SetException(e);
+					}
+				};
+
+				frameworkElement.Unloaded += unloaded;
+			}
+
+			await HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => !frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform());
+		}
+
+		// Modal Page's appear to currently not fire loaded/unloaded
+		async Task HandleLoadedUnloadedIssue(Task task, TimeSpan timeOut, Func<bool> isConditionValid)
+		{
+			try
+			{
+				await task.WaitAsync(timeOut);
+			}
+			catch (TimeoutException)
+			{
+				if (isConditionValid())
+				{
+					return;
+				}
+				else
+				{
+					throw;
+				}
+			}
+		}
+
+		protected async Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)
+		{
+			await OnLoadedAsync(page, timeOut);
+
+			if (page.HasNavigatedTo)
+			{
+				// TabbedPage fires OnNavigated earlier than it should
+				if (page.Parent is TabbedPage)
+				{
+					await Task.Delay(10);
+				}
+
+				if (page is IPageContainer<Page> pc)
+				{
+					await OnNavigatedToAsync(pc.CurrentPage);
+				}
+
+				await Task.Yield();
+
+				return;
+			}
+
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+			page.NavigatedTo += NavigatedTo;
+
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			// TabbedPage fires OnNavigated earlier than it should
+			if (page.Parent is TabbedPage)
+			{
+				await Task.Delay(10);
+			}
+
+			await Task.Yield();
+
+			void NavigatedTo(object sender, NavigatedToEventArgs e)
+			{
+				taskCompletionSource.SetResult(true);
+				page.NavigatedTo -= NavigatedTo;
+			}
+		}
+
+		protected async Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		{
+			if (frameworkElement.Frame.Height > 0 &&
+				frameworkElement.Frame.Width > 0)
+			{
+				return;
+			}
+
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+			frameworkElement.BatchCommitted += OnBatchCommitted;
+
+			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
+
+			// Wait for the layout to propagate to the platform
+			await AssertEventually(
+				() =>
+				{
+					var size = frameworkElement.GetBoundingBox().Size;
+					return size.Height > 0 && size.Width > 0;
+				});
+
+			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+			{
+				if (frameworkElement.Frame.Height <= 0 ||
+					frameworkElement.Frame.Width <= 0)
+				{
+					return;
+				}
+
+				frameworkElement.BatchCommitted -= OnBatchCommitted;
+				taskCompletionSource.SetResult(true);
+			}
+		}
+
+
+		protected IToolbar GetToolbar(IElementHandler handler)
+		{
+			return (handler.VirtualView as IWindowController)
+						.Window
+						.GetVisualTreeDescendants()
+						.OfType<IToolbarElement>()
+						.SingleOrDefault(x => x.Toolbar is not null)
+						?.Toolbar;
+		}
+
+		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action);
+
+		protected static void MockAccessibilityExpectations(View view)
+		{
+#if IOS || MACCATALYST
+			if (UIKit.UIAccessibility.IsVoiceOverRunning)
+			{
+				return;
+			}
 
 			var mapperOverride = view.GetRendererOverrides<IView>();
 

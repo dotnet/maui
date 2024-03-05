@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		public void Visit(ValueNode node, INode parentNode)
 		{
 			if (!IsXNameProperty(node, parentNode))
+			{
 				return;
+			}
 
 			try
 			{
@@ -33,7 +35,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			catch (ArgumentException ae)
 			{
 				if (ae.ParamName != "name")
+				{
+				{
 					throw ae;
+				}
+
+				}
+
 				var xpe = new XamlParseException($"An element with the name \"{(string)node.Value}\" already exists in this NameScope", node);
 				if (Context.ExceptionHandler != null)
 				{
@@ -53,7 +61,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			if (Values[parentNode] is Element element)
+			{
 				element.StyleId = element.StyleId ?? (string)node.Value;
+			}
 		}
 
 		public void Visit(MarkupNode node, INode parentNode)

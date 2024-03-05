@@ -72,23 +72,41 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdateSize();
 			}
 			else if (args.PropertyName == Shape.AspectProperty.PropertyName)
+			{
 				UpdateAspect();
+			}
 			else if (args.PropertyName == Shape.FillProperty.PropertyName)
+			{
 				UpdateFill();
+			}
 			else if (args.PropertyName == Shape.StrokeProperty.PropertyName)
+			{
 				UpdateStroke();
+			}
 			else if (args.PropertyName == Shape.StrokeThicknessProperty.PropertyName)
+			{
 				UpdateStrokeThickness();
+			}
 			else if (args.PropertyName == Shape.StrokeDashArrayProperty.PropertyName)
+			{
 				UpdateStrokeDashArray();
+			}
 			else if (args.PropertyName == Shape.StrokeDashOffsetProperty.PropertyName)
+			{
 				UpdateStrokeDashOffset();
+			}
 			else if (args.PropertyName == Shape.StrokeLineCapProperty.PropertyName)
+			{
 				UpdateStrokeLineCap();
+			}
 			else if (args.PropertyName == Shape.StrokeLineJoinProperty.PropertyName)
+			{
 				UpdateStrokeLineJoin();
+			}
 			else if (args.PropertyName == Shape.StrokeMiterLimitProperty.PropertyName)
+			{
 				UpdateStrokeMiterLimit();
+			}
 		}
 
 		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
@@ -225,7 +243,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnDraw(canvas);
 
 			if (_path == null)
+			{
 				return;
+			}
 
 			AMatrix transformMatrix = CreateMatrix();
 
@@ -240,10 +260,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_fill is GradientBrush fillGradientBrush)
 				{
 					if (fillGradientBrush is LinearGradientBrush linearGradientBrush)
+					{
 						_fillShader = CreateLinearGradient(linearGradientBrush, _pathFillBounds);
+					}
 
 					if (fillGradientBrush is RadialGradientBrush radialGradientBrush)
+					{
 						_fillShader = CreateRadialGradient(radialGradientBrush, _pathFillBounds);
+					}
 
 					_drawable.Paint.SetShader(_fillShader);
 				}
@@ -252,7 +276,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					AColor fillColor = Colors.Transparent.ToAndroid();
 
 					if (_fill is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
+					{
 						fillColor = solidColorBrush.Color.ToAndroid();
+					}
 
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					_drawable.Paint.Color = fillColor;
@@ -272,10 +298,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					UpdatePathStrokeBounds();
 
 					if (strokeGradientBrush is LinearGradientBrush linearGradientBrush)
+					{
 						_strokeShader = CreateLinearGradient(linearGradientBrush, _pathStrokeBounds);
+					}
 
 					if (strokeGradientBrush is RadialGradientBrush radialGradientBrush)
+					{
 						_strokeShader = CreateRadialGradient(radialGradientBrush, _pathStrokeBounds);
+					}
 
 					_drawable.Paint.SetShader(_strokeShader);
 				}
@@ -284,7 +314,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					AColor strokeColor = Graphics.Colors.Transparent.ToAndroid();
 
 					if (_stroke is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
+					{
 						strokeColor = solidColorBrush.Color.ToAndroid();
+					}
 
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					_drawable.Paint.Color = strokeColor;
@@ -375,12 +407,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				float[] strokeDash = new float[_strokeDash.Length];
 
 				for (int i = 0; i < _strokeDash.Length; i++)
+				{
 					strokeDash[i] = _strokeDash[i] * _strokeWidth;
+				}
 
 				_drawable.Paint.SetPathEffect(new DashPathEffect(strokeDash, _strokeDashOffset * _strokeWidth));
 			}
 			else
+			{
 				_drawable.Paint.SetPathEffect(null);
+			}
 
 			UpdatePathStrokeBounds();
 		}
@@ -412,9 +448,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected void UpdatePathShape()
 		{
 			if (_path != null && !_drawable.Bounds.IsEmpty)
+			{
 				_drawable.Shape = new PathShape(_path, _drawable.Bounds.Width(), _drawable.Bounds.Height());
+			}
 			else
+			{
 				_drawable.Shape = null;
+			}
 
 			if (_path != null)
 			{
@@ -495,7 +535,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		LinearGradient CreateLinearGradient(LinearGradientBrush linearGradientBrush, global::Android.Graphics.RectF pathBounds)
 		{
 			if (_path == null)
+			{
 				return null;
+			}
 
 			int[] colors = new int[linearGradientBrush.GradientStops.Count];
 			float[] offsets = new float[linearGradientBrush.GradientStops.Count];
@@ -525,7 +567,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		RadialGradient CreateRadialGradient(RadialGradientBrush radialGradientBrush, global::Android.Graphics.RectF pathBounds)
 		{
 			if (_path == null)
+			{
 				return null;
+			}
 
 			int gradientStopsCount = radialGradientBrush.GradientStops.Count;
 			AColor centerColor = gradientStopsCount > 0 ? radialGradientBrush.GradientStops[0].Color.ToAndroid() : Colors.Transparent.ToAndroid();
@@ -534,7 +578,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			float[] offsets = new float[radialGradientBrush.GradientStops.Count];
 
 			for (int index = 0; index < radialGradientBrush.GradientStops.Count; index++)
+			{
 				offsets[index] = radialGradientBrush.GradientStops[index].Offset;
+			}
 
 			Shader.TileMode tilemode = Shader.TileMode.Clamp;
 

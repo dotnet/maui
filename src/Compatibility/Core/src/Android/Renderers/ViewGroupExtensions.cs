@@ -13,13 +13,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				AView child = self.GetChildAt(i);
 				var typedChild = child as T;
 				if (typedChild != null)
+				{
 					yield return typedChild;
+				}
 
 				if (child is AViewGroup)
 				{
 					IEnumerable<T> myChildren = (child as AViewGroup).GetChildrenOfType<T>();
 					foreach (T nextChild in myChildren)
+					{
 						yield return nextChild;
+					}
 				}
 			}
 		}

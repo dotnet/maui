@@ -54,7 +54,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 		{
 			var changed = PropertyChanged;
 			if (changed == null)
+			{
 				return;
+			}
 
 			changed.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}

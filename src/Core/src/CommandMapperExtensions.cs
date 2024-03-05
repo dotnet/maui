@@ -56,9 +56,31 @@ namespace Microsoft.Maui
 			void newMethod(IElementHandler handler, IElement view, object? args)
 			{
 				if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 					method((TViewHandler)handler!, v, args, previousMethod);
-				else
+After:
+				{
+					method((TViewHandler)handler!, v, args, previousMethod);
+				}
+*/
+				
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 					previousMethod?.Invoke(handler!, view, args);
+After:
+				{
+					previousMethod?.Invoke(handler!, view, args);
+				}
+*/
+{
+					method((TViewHandler)handler!, v, args, previousMethod);
+				}
+				else
+				{
+					previousMethod?.Invoke(handler!, view, args);
+				}
 			}
 
 			commandMapper.Add(key, newMethod);
@@ -128,7 +150,9 @@ namespace Microsoft.Maui
 				action?.Invoke(handler, view, args);
 
 				if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
+				{
 					method((TViewHandler)handler!, v, args);
+				}
 			});
 		}
 
@@ -179,7 +203,9 @@ namespace Microsoft.Maui
 			commandMapper.ModifyMapping(key, (handler, view, args, action) =>
 			{
 				if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
+				{
 					method((TViewHandler)handler!, v, args);
+				}
 
 				action?.Invoke(handler!, view, args);
 			});

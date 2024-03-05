@@ -115,10 +115,14 @@ namespace Microsoft.Maui.Controls
 		static void OnInternalItemsLayoutPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is BindableObject boOld)
+			{
 				SetInheritedBindingContext(boOld, null);
+			}
 
 			if (newValue is BindableObject boNew)
+			{
 				SetInheritedBindingContext(boNew, bindable.BindingContext);
+			}
 		}
 
 		protected IItemsLayout InternalItemsLayout
@@ -170,7 +174,9 @@ namespace Microsoft.Maui.Controls
 			RemainingItemsThresholdReached?.Invoke(this, EventArgs.Empty);
 
 			if (RemainingItemsThresholdReachedCommand?.CanExecute(RemainingItemsThresholdReachedCommandParameter) == true)
+			{
 				RemainingItemsThresholdReachedCommand?.Execute(RemainingItemsThresholdReachedCommandParameter);
+			}
 
 			OnRemainingItemsThresholdReached();
 		}
@@ -222,7 +228,9 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 			if (InternalItemsLayout is BindableObject bo)
+			{
 				SetInheritedBindingContext(bo, BindingContext);
+			}
 		}
 	}
 }

@@ -245,7 +245,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == null)
+			{
 				_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
+			}
 
 			switch (Element.VerticalScrollBarVisibility)
 			{
@@ -264,7 +266,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateHorizontalScrollBarVisibility()
 		{
 			if (_defaultHorizontalScrollVisibility == null)
+			{
 				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(Control);
+			}
 
 			switch (Element.HorizontalScrollBarVisibility)
 			{
@@ -407,7 +411,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected virtual void UpdateItemsLayout()
 		{
 			if (_scrollViewer != null)
+			{
 				_scrollViewer.ViewChanged -= OnScrollViewChanged;
+			}
 
 			if (ListViewBase != null)
 			{
@@ -466,10 +472,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (_formsEmptyView != null)
 				{
 					if (_emptyViewDisplayed)
+					{
 						ItemsView.RemoveLogicalChild(_formsEmptyView);
+					}
 
 					if (ItemsView.EmptyViewTemplate == null)
+					{
 						ItemsView.AddLogicalChild(_formsEmptyView);
+					}
 				}
 
 				if (_emptyView != null && ListViewBase is IEmptyView emptyView)
@@ -477,7 +487,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					emptyView.EmptyViewVisibility = WVisibility.Visible;
 
 					if (ActualWidth >= 0 && ActualHeight >= 0)
+					{
 						_formsEmptyView?.Layout(new Rect(0, 0, ActualWidth, ActualHeight));
+					}
 				}
 
 				_emptyViewDisplayed = true;
@@ -487,7 +499,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (_emptyViewDisplayed)
 				{
 					if (_emptyView != null && ListViewBase is IEmptyView emptyView)
+					{
 						emptyView.EmptyViewVisibility = WVisibility.Collapsed;
+					}
 
 					ItemsView.RemoveLogicalChild(_formsEmptyView);
 				}
@@ -563,7 +577,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						if (IsElementVisibleInContainer(presenter, _scrollViewer, itemsLayoutOrientation))
 						{
 							if (firstVisibleItemIndex == -1)
+							{
 								firstVisibleItemIndex = count;
+							}
 
 							lastVisibleItemIndex = count;
 						}
@@ -582,10 +598,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		bool IsElementVisibleInContainer(FrameworkElement element, FrameworkElement container, ItemsLayoutOrientation itemsLayoutOrientation)
 		{
 			if (element == null || container == null)
+			{
 				return false;
+			}
 
 			if (element.Visibility != WVisibility.Visible)
+			{
 				return false;
+			}
 
 			var elementBounds = element.TransformToVisual(container).TransformBounds(new WRect(0, 0, element.ActualWidth, element.ActualHeight));
 			var containerBounds = new WRect(0, 0, container.ActualWidth, container.ActualHeight);

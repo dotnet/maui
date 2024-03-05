@@ -31,7 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void SeekBar.IOnSeekBarChangeListener.OnProgressChanged(SeekBar seekBar, int progress, bool fromUser)
 		{
 			if (fromUser)
+			{
 				((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Value);
+			}
 		}
 
 		[PortHandler]
@@ -98,18 +100,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					break;
 				case "Value":
 					if (Value != view.Value)
+					{
 						Value = view.Value;
+					}
+
 					break;
 			}
 
 			if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
+			{
 				UpdateMinimumTrackColor();
+			}
 			else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
+			{
 				UpdateMaximumTrackColor();
+			}
 			else if (e.PropertyName == Slider.ThumbImageSourceProperty.PropertyName)
+			{
 				UpdateThumbImage();
+			}
 			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+			{
 				UpdateThumbColor();
+			}
 		}
 
 		private void UpdateSliderColors()
@@ -164,7 +177,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			this.ApplyDrawableAsync(Slider.ThumbImageSourceProperty, Context, drawable =>
 			{
 				if (drawable != null)
+				{
 					Control.SetThumb(drawable);
+				}
 			});
 		}
 
@@ -175,7 +190,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// Thumb only supported JellyBean and higher
 
 			if (Control == null)
+			{
 				return;
+			}
 
 			SeekBar seekbar = Control;
 
@@ -188,7 +205,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 

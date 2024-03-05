@@ -102,7 +102,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			// so we just ignore this and eventually when shell knows
 			// the next current item it will request to sync again
 			if (VirtualView.CurrentItem == null || MauiContext is null)
+			{
 				return;
+			}
 
 			// This is used to assign the ShellContentHandler to ShellContent
 			_ = VirtualView.CurrentItem.ToPlatform(MauiContext);

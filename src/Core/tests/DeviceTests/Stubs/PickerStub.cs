@@ -24,12 +24,16 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		void OnItemsSourceChanged(IList oldValue, IList newValue)
 		{
 			if (ItemsSource == null)
+			{
 				return;
+			}
 
 			Items.Clear();
 
 			foreach (object item in ItemsSource)
+			{
 				Items.Add(item.ToString());
+			}
 		}
 
 		public int SelectedIndex { get; set; } = -1;
@@ -51,11 +55,20 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		string IItemDelegate<string>.GetItem(int index)
 		{
 			if (index < 0)
+			{
 				return "";
+			}
+
 			if (index < Items?.Count)
+			{
 				return Items[index];
+			}
+
 			if (index < ItemsSource?.Count)
+			{
 				return ItemsSource[index]?.ToString() ?? "";
+			}
+
 			return "";
 		}
 	}

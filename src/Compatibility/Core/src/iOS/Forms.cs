@@ -60,7 +60,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS11OrNewer.HasValue)
+				{
 					s_isiOS11OrNewer = OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsTvOSVersionAtLeast(11, 0);
+				}
+
 				return s_isiOS11OrNewer.Value;
 			}
 		}
@@ -70,7 +73,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS12OrNewer.HasValue)
+				{
+				{
 					s_isiOS12OrNewer = OperatingSystem.IsIOSVersionAtLeast(12, 0) || OperatingSystem.IsTvOSVersionAtLeast(12, 0);
+				}
+
 				return s_isiOS12OrNewer.Value;
 			}
 		}
@@ -82,7 +89,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS13OrNewer.HasValue)
+				{
 					s_isiOS13OrNewer = OperatingSystem.IsIOSVersionAtLeast(13, 0) || OperatingSystem.IsTvOSVersionAtLeast(13, 0);
+				}
+
 				return s_isiOS13OrNewer.Value;
 			}
 		}
@@ -94,7 +104,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS14OrNewer.HasValue)
+				{
+				{
 					s_isiOS14OrNewer = OperatingSystem.IsIOSVersionAtLeast(14, 0) || OperatingSystem.IsTvOSVersionAtLeast(14, 0);
+				}
+
 				return s_isiOS14OrNewer.Value;
 			}
 		}
@@ -106,7 +120,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (!s_isiOS15OrNewer.HasValue)
+				{
+				{
 					s_isiOS15OrNewer = OperatingSystem.IsIOSVersionAtLeast(15, 0) || OperatingSystem.IsTvOSVersionAtLeast(15, 0);
+				}
+
 				return s_isiOS15OrNewer.Value;
 			}
 		}
@@ -154,7 +172,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.DefaultRendererAssembly = typeof(Forms).Assembly;
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
+			{
 				RegisterCompatRenderers(context);
+			}
 
 			ExpressionSearch.Default = new iOSExpressionSearch();
 
@@ -207,7 +227,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 					var value = ((FieldInfo)node.Member).GetValue(container);
 
 					if (_targetType.IsInstanceOfType(value))
+					{
+					{
 						_results.Add(value);
+					}
 				}
 				return base.VisitMember(node);
 			}

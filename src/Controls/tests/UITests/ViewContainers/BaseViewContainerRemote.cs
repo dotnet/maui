@@ -75,9 +75,13 @@ namespace Microsoft.Maui.AppiumTests
 				T? newValue = GetPropertyFromBindableProperty<T>(formProperty);
 
 				if (newValue == null || newValue.Equals(returnValue))
+				{
 					break;
+				}
 				else
+				{
 					returnValue = newValue;
+				}
 
 				loopCount++;
 			}

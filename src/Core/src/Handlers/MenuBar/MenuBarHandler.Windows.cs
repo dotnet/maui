@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Handlers
 		public void Remove(IMenuBarItem view)
 		{
 			if (view.Handler != null)
+			{
 				PlatformView.Items.Remove((MenuBarItem)view.ToPlatform());
+			}
 		}
 
 		public void Clear()

@@ -36,7 +36,9 @@ namespace Maui.Controls.Sample.Issues
 			var uIWindow = new UIWindow();
 			var keyWindow = (this.Window.Handler.PlatformView as UIWindow);
 			if (keyWindow?.WindowLevel == UIWindowLevel.Normal)
+			{
 				keyWindow.WindowLevel = -1;
+			}
 
 			var page = new ContentPage();
 			this.AddLogicalChild(page);

@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
 			if ((View = convertView as TextCellView) == null)
+			{
 				View = new TextCellView(context, item);
+			}
 
 			UpdateMainText();
 			UpdateDetailText();
@@ -35,17 +37,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			if (args.PropertyName == TextCell.TextProperty.PropertyName || args.PropertyName == TextCell.TextColorProperty.PropertyName)
+			{
 				UpdateMainText();
+			}
 			else if (args.PropertyName == TextCell.DetailProperty.PropertyName || args.PropertyName == TextCell.DetailColorProperty.PropertyName)
+			{
 				UpdateDetailText();
+			}
 			else if (args.PropertyName == Cell.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled();
+			}
 			else if (args.PropertyName == "RenderHeight")
+			{
 				UpdateHeight();
+			}
 			else if (args.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 			else if (args.PropertyName == VisualElement.AutomationIdProperty.PropertyName)
+			{
 				UpdateAutomationId();
+			}
 		}
 
 		void UpdateAutomationId()
@@ -82,9 +96,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			View.MainText = cell.Text;
 
 			if (!cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
+			{
 				View.SetDefaultMainTextColor(Application.AccentColor);
+			}
 			else
+			{
 				View.SetDefaultMainTextColor(null);
+			}
 
 			View.SetMainTextColor(cell.TextColor);
 

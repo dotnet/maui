@@ -135,19 +135,28 @@ namespace Microsoft.Maui.Controls
 						foreach (IElementDefinition item in _gestureRecognizers.OfType<IElementDefinition>())
 						{
 							if (!_gestureRecognizers.Contains((IGestureRecognizer)item))
+							{
 								add.Add(item);
+							}
+
 							item.Parent = this;
 						}
 
 						foreach (IElementDefinition item in GestureController.CompositeGestureRecognizers.OfType<IElementDefinition>())
 						{
 							if (item == _recognizerForPointerOverState)
+							{
 								continue;
+							}
 
 							if (_gestureRecognizers.Contains((IGestureRecognizer)item))
+							{
 								item.Parent = this;
+							}
 							else
+							{
 								remove.Add(item);
+							}
 						}
 
 						AddItems(add);
@@ -191,7 +200,9 @@ namespace Microsoft.Maui.Controls
 			CheckPointerOver();
 
 			if (_recognizerForPointerOverState == null && IsPointerOver)
+			{
 				SetPointerOver(false, false);
+			}
 
 			base.ChangeVisualState();
 		}
@@ -263,9 +274,14 @@ namespace Microsoft.Maui.Controls
 		void ValidateGesture(IGestureRecognizer gesture)
 		{
 			if (gesture == null)
+			{
 				return;
+			}
+
 			if (gesture is PinchGestureRecognizer && _gestureRecognizers.GetGesturesFor<PinchGestureRecognizer>().Count() > 1)
+			{
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
+			}
 		}
 
 #nullable enable
@@ -309,7 +325,9 @@ namespace Microsoft.Maui.Controls
 		{
 			//TODO: LEt you hot reload the the ViewModel
 			if (newView is View v)
+			{
 				v.BindingContext = BindingContext;
+			}
 		}
 
 		void IHotReloadableView.Reload()

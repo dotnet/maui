@@ -60,13 +60,19 @@ namespace Microsoft.Maui.Platform
 		public static bool IsDestroyed(this FragmentManager? obj, Context? context)
 		{
 			if (obj == null || obj.IsDisposed())
+			{
 				return true;
+			}
 
 			if (context == null)
+			{
 				return true;
+			}
 
 			if (obj.IsDestroyed)
+			{
 				return true;
+			}
 
 			return context.IsDestroyed();
 		}
@@ -74,7 +80,9 @@ namespace Microsoft.Maui.Platform
 		public static IDisposable? RunOrWaitForResume(this FragmentManager obj, Context context, Action<FragmentManager> onResume)
 		{
 			if (obj.IsDestroyed(context))
+			{
 				return null;
+			}
 
 			if (obj.IsStateSaved)
 			{

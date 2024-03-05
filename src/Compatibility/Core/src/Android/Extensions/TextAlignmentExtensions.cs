@@ -10,9 +10,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		internal static void UpdateHorizontalAlignment(this EditText view, TextAlignment alignment, bool hasRtlSupport, AGravityFlags orMask = AGravityFlags.NoGravity)
 		{
 			if (!hasRtlSupport)
+			{
 				view.Gravity = alignment.ToHorizontalGravityFlags() | orMask;
+			}
 			else
+			{
 				view.TextAlignment = alignment.ToTextAlignment();
+			}
 		}
 
 		internal static void UpdateVerticalAlignment(this EditText view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)

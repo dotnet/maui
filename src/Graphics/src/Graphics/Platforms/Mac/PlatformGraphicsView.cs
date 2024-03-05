@@ -90,13 +90,17 @@ namespace Microsoft.Maui.Graphics.Platform
 		public override void DrawRect(CGRect dirtyRect)
 		{
 			if (_drawable == null)
+			{
 				return;
+			}
 
 			var nsGraphicsContext = NSGraphicsContext.CurrentContext;
 			var coreGraphics = nsGraphicsContext.GraphicsPort;
 
 			if (_colorSpace == null)
+			{
 				_colorSpace = NSColorSpace.DeviceRGBColorSpace.ColorSpace;
+			}
 
 			coreGraphics.SetFillColorSpace(_colorSpace);
 			coreGraphics.SetStrokeColorSpace(_colorSpace);

@@ -51,7 +51,9 @@ namespace Microsoft.Maui.Controls
 		static FrameworkElement? OnCreatePlatformView(ViewHandler<ITabbedView, FrameworkElement> arg)
 		{
 			if (arg.VirtualView is TabbedPage tabbedPage)
+			{
 				return tabbedPage.CreatePlatformView();
+			}
 
 			return null;
 		}
@@ -61,27 +63,27 @@ namespace Microsoft.Maui.Controls
 			base.OnHandlerChangedCore();
 
 			if (Handler != null)
+			{
 				OnHandlerConnected();
+			}
 		}
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
 		{
 			if (args?.OldHandler?.PlatformView is FrameworkElement fe)
+			{
 				OnHandlerDisconnected(fe);
+			}
 		}
 
 		void OnHandlerConnected()
 		{
 			if (_connectedToHandler)
+			{
 				return;
 
-			_connectedToHandler = true;
-
-			if (this.HasAppeared)
-				OnTabbedPageAppearing(this, EventArgs.Empty);
-
-			Appearing += OnTabbedPageAppearing;
-			Disappearing += OnTabbedPageDisappearing;
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
 			NavigationFrame.Navigated += OnNavigated;
 
 			// If CreatePlatformView didn't set the NavigationView then that means we are using the
@@ -267,6 +269,474 @@ namespace Microsoft.Maui.Controls
 		{
 			if (e.Content is WPage page)
 				UpdateCurrentPageContent(page);
+		}
+
+		internal static void MapBarBackground(ITabbedViewHandler handler, TabbedPage view)
+After:
+			NavigationFrame.Navigated += OnTabbedPageAppearing;
+			Disappearing += OnTabbedPageDisappearing;
+			NavigationFrame.Navigated += OnNavigated;
+
+			// If CreatePlatformView didn't set the NavigationView then that means we are using the
+			// WindowRootView for our tabs
+			if (_navigationView == null)
+			{
+				SetupNavigationLocals();
+			}
+			else
+			{
+				SetupNavigationView();
+			}
+
+			if (_navigationView == null && _navigationRootManager?.RootView is WindowRootView wrv)
+			{
+				wrv.ContentChanged += OnContentChanged;
+
+				void OnContentChanged(object? sender, EventArgs e)
+				{
+					SetupNavigationLocals();
+
+					if (_navigationView != null)
+					{
+						wrv.ContentChanged -= OnContentChanged;
+					}
+				}
+			}
+
+			void SetupNavigationLocals()
+			{
+				_navigationRootManager = MauiContext?.GetNavigationRootManager();
+				_navigationView = (_navigationRootManager?.RootView as WindowRootView)?.NavigationViewControl;
+				SetupNavigationView();
+			}
+		}
+
+		void OnHandlerDisconnected(FrameworkElement? platformView)
+*/
+			}
+
+			_connectedToHandler = true;
+
+			if (this.HasAppeared)
+			{
+				OnTabbedPageAppearing(this, EventArgs.Empty);
+			}
+
+			Appearing += On
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			view._navigationView?.UpdateTopNavAreaBackground(view.BarBackground ?? view.BarBackgroundColor?.AsPaint());
+		}
+After:
+			if (!_connectedToHandler)
+			{
+				return;
+			}
+
+			_connectedToHandler = false;
+			if (_navigationView != null)
+			{
+				_navigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
+			}
+
+			if (platformView is WFrame wFrame)
+			{
+				wFrame.Navigated -= OnNavigated;
+			}
+
+			Appearing -= OnTabbedPageAppearing;
+			Disappearing -= OnTabbedPageDisappearing;
+			if (_navigationView != null)
+			{
+				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
+			}
+
+			OnTabbedPageDisappearing(this, EventArgs.Empty);
+
+			_navigationView = null;
+			_navigationRootManager = null;
+			_navigationFrame = null;
+		}
+
+		void OnTabbedPageAppearing(object? sender, EventArgs e)
+		{
+			if (_navigationView != null)
+			{
+				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			}
+		}
+
+		void OnTabbedPageDisappearing(object? sender, EventArgs e)
+		{
+			if (_navigationView != null)
+			{
+				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+			}
+		}
+
+		void OnApplyTemplateFinished(object? sender, EventArgs e)
+		{
+			UpdateValuesWaitingForNavigationView();
+			if (sender is MauiNavigationView mnv)
+			{
+				mnv.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+			}
+		}
+
+		void OnNavigationViewSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			if (_navigationView != null)
+			{
+				this.Arrange(_navigationView);
+			}
+		}
+
+		void SetupNavigationView()
+		{
+			if (_navigationView == null)
+			{
+				return;
+			}
+
+			if (_navigationView.PaneDisplayMode != NavigationViewPaneDisplayMode.Top)
+			{
+				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			}
+
+			_navigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
+
+			if (_navigationView.TopNavArea != null)
+			{
+				UpdateValuesWaitingForNavigationView();
+			}
+			else
+			{
+				_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
+				_navigationView.SizeChanged += OnNavigationViewSizeChanged;
+			}
+		}
+
+		void UpdateValuesWaitingForNavigationView()
+		{
+			if (_navigationView == null)
+			{
+				return;
+			}
+
+			Handler?.UpdateValue(nameof(TabbedPage.BarBackground));
+			Handler?.UpdateValue(nameof(TabbedPage.ItemsSource));
+			Handler?.UpdateValue(nameof(TabbedPage.BarTextColor));
+			Handler?.UpdateValue(nameof(TabbedPage.SelectedTabColor));
+			Handler?.UpdateValue(nameof(TabbedPage.UnselectedTabColor));
+
+			_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
+
+			if (_navigationView.SelectedItem is NavigationViewItemViewModel vm && vm.Data != CurrentPage)
+			{
+				Handler?.UpdateValue(nameof(TabbedPage.CurrentPage));
+			}
+			else
+			{
+				NavigateToPage(CurrentPage);
+			}
+		}
+
+		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+		{
+			if (args.SelectedItem is NavigationViewItemViewModel itemViewModel &&
+				itemViewModel.Data is Page page)
+			{
+				NavigateToPage(page);
+			}
+		}
+
+		void NavigateToPage(Page page)
+		{
+			FrameNavigationOptions navOptions = new FrameNavigationOptions();
+			CurrentPage = page;
+			navOptions.IsNavigationStackEnabled = false;
+			NavigationFrame.NavigateToType(typeof(WPage), null, navOptions);
+		}
+
+
+		void UpdateCurrentPageContent()
+		{
+			if (NavigationFrame.Content is WPage page)
+			{
+				UpdateCurrentPageContent(page);
+			}
+		}
+
+		void UpdateCurrentPageContent(WPage page)
+		{
+			if (MauiContext == null)
+			{
+				return;
+			}
+
+			WContentPresenter? presenter;
+			IView _currentPage = CurrentPage;
+
+			if (page.Content == null)
+			{
+				presenter = new WContentPresenter()
+				{
+					HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch,
+					VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
+				};
+
+				page.Content = presenter;
+			}
+			else
+			{
+				presenter = page.Content as WContentPresenter;
+			}
+
+			// At this point if the Content isn't a ContentPresenter the user has replaced
+			// the conent so we just let them take control
+			if (presenter == null || _currentPage == null)
+			{
+				return;
+			}
+
+			presenter.Content = _currentPage.ToPlatform(MauiContext);
+		}
+
+		void OnNavigated(object sender, UI.Xaml.Navigation.NavigationEventArgs e)
+		{
+			if (e.Content is WPage page)
+			{
+				UpdateCurrentPageContent(page);
+			}
+		}
+
+		internal static void MapBarBackground(ITabbedViewHandler handler, TabbedPage view)
+		{
+			view._navigationView?.UpdateTopNavAreaBackground(view.BarBackground ?? view.BarBackgroundColor?.AsPaint());
+		}
+*/
+TabbedPageAppearing;
+			Disappearing += OnTabbedPageDisappearing;
+			NavigationFrame.Navigated += OnNavigated;
+
+			// If CreatePlatformView didn't set the NavigationView then that means we are using the
+			// WindowRootView for our tabs
+			if (_navigationView == null)
+			{
+				SetupNavigationLocals();
+			}
+			else
+			{
+				SetupNavigationView();
+			}
+
+			if (_navigationView == null && _navigationRootManager?.RootView is WindowRootView wrv)
+			{
+				wrv.ContentChanged += OnContentChanged;
+
+				void OnContentChanged(object? sender, EventArgs e)
+				{
+					SetupNavigationLocals();
+
+					if (_navigationView != null)
+					{
+						wrv.ContentChanged -= OnContentChanged;
+					}
+				}
+			}
+
+			void SetupNavigationLocals()
+			{
+				_navigationRootManager = MauiContext?.GetNavigationRootManager();
+				_navigationView = (_navigationRootManager?.RootView as WindowRootView)?.NavigationViewControl;
+				SetupNavigationView();
+			}
+		}
+
+		void OnHandlerDisconnected(FrameworkElement? platformView)
+		{
+			if (!_connectedToHandler)
+			{
+				return;
+			}
+
+			_connectedToHandler = false;
+			if (_navigationView != null)
+			{
+				_navigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
+			}
+
+			if (platformView is WFrame wFrame)
+			{
+				wFrame.Navigated -= OnNavigated;
+			}
+
+			Appearing -= OnTabbedPageAppearing;
+			Disappearing -= OnTabbedPageDisappearing;
+			if (_navigationView != null)
+			{
+				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
+			}
+
+			OnTabbedPageDisappearing(this, EventArgs.Empty);
+
+			_navigationView = null;
+			_navigationRootManager = null;
+			_navigationFrame = null;
+		}
+
+		void OnTabbedPageAppearing(object? sender, EventArgs e)
+		{
+			if (_navigationView != null)
+			{
+				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			}
+		}
+
+		void OnTabbedPageDisappearing(object? sender, EventArgs e)
+		{
+			if (_navigationView != null)
+			{
+				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+			}
+		}
+
+		void OnApplyTemplateFinished(object? sender, EventArgs e)
+		{
+			UpdateValuesWaitingForNavigationView();
+			if (sender is MauiNavigationView mnv)
+			{
+				mnv.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+			}
+		}
+
+		void OnNavigationViewSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			if (_navigationView != null)
+			{
+				this.Arrange(_navigationView);
+			}
+		}
+
+		void SetupNavigationView()
+		{
+			if (_navigationView == null)
+			{
+				return;
+			}
+
+			if (_navigationView.PaneDisplayMode != NavigationViewPaneDisplayMode.Top)
+			{
+				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			}
+
+			_navigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
+
+			if (_navigationView.TopNavArea != null)
+			{
+				UpdateValuesWaitingForNavigationView();
+			}
+			else
+			{
+				_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
+				_navigationView.SizeChanged += OnNavigationViewSizeChanged;
+			}
+		}
+
+		void UpdateValuesWaitingForNavigationView()
+		{
+			if (_navigationView == null)
+			{
+				return;
+			}
+
+			Handler?.UpdateValue(nameof(TabbedPage.BarBackground));
+			Handler?.UpdateValue(nameof(TabbedPage.ItemsSource));
+			Handler?.UpdateValue(nameof(TabbedPage.BarTextColor));
+			Handler?.UpdateValue(nameof(TabbedPage.SelectedTabColor));
+			Handler?.UpdateValue(nameof(TabbedPage.UnselectedTabColor));
+
+			_navigationView.SelectionChanged += OnSelectedMenuItemChanged;
+
+			if (_navigationView.SelectedItem is NavigationViewItemViewModel vm && vm.Data != CurrentPage)
+			{
+				Handler?.UpdateValue(nameof(TabbedPage.CurrentPage));
+			}
+			else
+			{
+				NavigateToPage(CurrentPage);
+			}
+		}
+
+		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+		{
+			if (args.SelectedItem is NavigationViewItemViewModel itemViewModel &&
+				itemViewModel.Data is Page page)
+			{
+				NavigateToPage(page);
+			}
+		}
+
+		void NavigateToPage(Page page)
+		{
+			FrameNavigationOptions navOptions = new FrameNavigationOptions();
+			CurrentPage = page;
+			navOptions.IsNavigationStackEnabled = false;
+			NavigationFrame.NavigateToType(typeof(WPage), null, navOptions);
+		}
+
+
+		void UpdateCurrentPageContent()
+		{
+			if (NavigationFrame.Content is WPage page)
+			{
+				UpdateCurrentPageContent(page);
+			}
+		}
+
+		void UpdateCurrentPageContent(WPage page)
+		{
+			if (MauiContext == null)
+			{
+				return;
+			}
+
+			WContentPresenter? presenter;
+			IView _currentPage = CurrentPage;
+
+			if (page.Content == null)
+			{
+				presenter = new WContentPresenter()
+				{
+					HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch,
+					VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
+				};
+
+				page.Content = presenter;
+			}
+			else
+			{
+				presenter = page.Content as WContentPresenter;
+			}
+
+			// At this point if the Content isn't a ContentPresenter the user has replaced
+			// the conent so we just let them take control
+			if (presenter == null || _currentPage == null)
+			{
+				return;
+			}
+
+			presenter.Content = _currentPage.ToPlatform(MauiContext);
+		}
+
+		void OnNavigated(object sender, UI.Xaml.Navigation.NavigationEventArgs e)
+		{
+			if (e.Content is WPage page)
+			{
+				UpdateCurrentPageContent(page);
+			}
 		}
 
 		internal static void MapBarBackground(ITabbedViewHandler handler, TabbedPage view)

@@ -15,10 +15,14 @@ namespace Microsoft.Maui.Authentication
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options)
 		{
 			if (OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			var provider = new ASAuthorizationAppleIdProvider();
 			var req = provider.CreateRequest();
@@ -28,9 +32,14 @@ namespace Microsoft.Maui.Authentication
 			var scopes = new List<ASAuthorizationScope>();
 
 			if (options.IncludeFullNameScope)
+			{
 				scopes.Add(ASAuthorizationScope.FullName);
+			}
+
 			if (options.IncludeEmailScope)
+			{
 				scopes.Add(ASAuthorizationScope.Email);
+			}
 
 			req.RequestedScopes = scopes.ToArray();
 			var controller = new ASAuthorizationController(new[] { req });
@@ -43,7 +52,9 @@ namespace Microsoft.Maui.Authentication
 			var creds = await authManager.GetCredentialsAsync();
 
 			if (creds == null)
+			{
 				return null;
+			}
 
 			var idToken = new NSString(creds.IdentityToken, NSStringEncoding.UTF8).ToString();
 			var authCode = new NSString(creds.AuthorizationCode, NSStringEncoding.UTF8).ToString();

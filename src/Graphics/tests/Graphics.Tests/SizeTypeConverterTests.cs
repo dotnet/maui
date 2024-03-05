@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Graphics.Tests
 			Assert.Equal(expectedSuccess, ok);
 
 			if (expectedSuccess)
+			{
 				Assert.Equal(expectedResult, p);
+			}
 		}
 
 		[Theory]
@@ -30,7 +32,9 @@ namespace Microsoft.Maui.Graphics.Tests
 			Assert.Equal(expectedSuccess, ok);
 
 			if (expectedSuccess)
+			{
 				Assert.Equal(expectedResult, p);
+			}
 		}
 
 		// 0, 0

@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		protected override void AddPageImpl(float width, float height)
 		{
 			if (_closed)
+			{
 				throw new Exception("Unable to add a page because the PDFContext is already closed.");
+			}
 
 			if (_tempFilePath == null)
 			{
@@ -91,7 +93,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			try
 			{
 				if (File.Exists(_tempFilePath))
+				{
 					File.Delete(_tempFilePath);
+				}
 			}
 			catch (Exception exc)
 			{

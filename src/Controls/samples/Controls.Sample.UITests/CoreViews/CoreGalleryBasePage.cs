@@ -50,11 +50,7 @@ namespace Maui.Controls.Sample
 						Text = "Dismiss Page",
 						Command = new Command(async () =>
 						{
-							if (_picker.SelectedIndex == 0)
-								await Navigation.PopAsync();
-							else
-								_picker.SelectedIndex--;
-						})
+							if (_picker.SelectedIndex == 0) { await Navigation.PopAsync(); } else { _picker.SelectedIndex--; } })
 					},
 					BuildLayout(),
 				}
@@ -145,11 +141,15 @@ namespace Maui.Controls.Sample
 		void GoClicked()
 		{
 			if (!_viewContainers.Any())
+			{
 				return;
+			}
 
 			var target = _targetEntry.Text;
 			if (string.IsNullOrEmpty(target))
+			{
 				return;
+			}
 
 			_targetEntry.Text = "";
 
@@ -163,7 +163,9 @@ namespace Maui.Controls.Sample
 				}
 			}
 			if (index < 0)
+			{
 				return;
+			}
 
 			var targetContainer = _viewContainers[index];
 

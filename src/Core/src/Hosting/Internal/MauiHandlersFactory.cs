@@ -36,10 +36,14 @@ namespace Microsoft.Maui.Hosting.Internal
 		public Type? GetHandlerType(Type iview)
 		{
 			if (!TryGetServiceDescriptors(ref iview, out var single, out var enumerable))
+			{
 				return default;
+			}
 
 			if (single != null)
+			{
 				return single.ImplementationType;
+			}
 
 			if (enumerable != null)
 			{

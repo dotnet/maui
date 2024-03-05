@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Platform
 		public static void ParseText(XElement? element, InlineCollection inlines, ILabel label)
 		{
 			if (element == null)
+			{
 				return;
+			}
 
 			var currentInlines = inlines;
 			var elementName = element.Name.ToString().ToUpperInvariant();
@@ -91,7 +93,9 @@ namespace Microsoft.Maui.Platform
 		static bool AddLineBreakIfNeeded(InlineCollection inlines)
 		{
 			if (inlines.Count <= 0)
+			{
 				return false;
+			}
 
 			var lastInline = inlines[inlines.Count - 1];
 			while ((lastInline is Span))
@@ -104,7 +108,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (lastInline is LineBreak)
+			{
 				return false;
+			}
 
 			inlines.Add(new LineBreak());
 			return true;

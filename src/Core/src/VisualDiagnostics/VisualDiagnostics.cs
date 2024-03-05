@@ -20,7 +20,10 @@ namespace Microsoft.Maui
 		{
 #if !NETSTANDARD2_0
 			if (target != null && DebuggerHelper.DebuggerIsAttached)
+			{
+			{
 				sourceInfos.AddOrUpdate(target, new SourceInfo(uri, lineNumber, linePosition));
+			}
 #else
 			if (target != null && DebuggerHelper.DebuggerIsAttached)
 			{
@@ -39,10 +42,14 @@ namespace Microsoft.Maui
 		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
+			{
 				return;
+			}
 
 			if (child is null)
+			{
 				return;
+			}
 
 			var index = parent?.GetVisualChildren().IndexOf(child) ?? -1;
 
@@ -52,10 +59,14 @@ namespace Microsoft.Maui
 		public static void OnChildAdded(IVisualTreeElement? parent, IVisualTreeElement child, int newLogicalIndex)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
+			{
 				return;
+			}
 
 			if (child is null)
+			{
 				return;
+			}
 
 			OnVisualTreeChanged(new VisualTreeChangeEventArgs(parent, child, newLogicalIndex, VisualTreeChangeType.Add));
 		}
@@ -63,7 +74,10 @@ namespace Microsoft.Maui
 		public static void OnChildRemoved(IVisualTreeElement parent, IVisualTreeElement child, int oldLogicalIndex)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
+			{
+			{
 				return;
+			}
 
 			OnVisualTreeChanged(new VisualTreeChangeEventArgs(parent, child, oldLogicalIndex, VisualTreeChangeType.Remove));
 		}
@@ -102,7 +116,9 @@ namespace Microsoft.Maui
 		static async Task<byte[]?> ScreenshotResultToArray(IScreenshotResult? result, ScreenshotFormat format, int quality)
 		{
 			if (result is null)
+			{
 				return null;
+			}
 
 			using var ms = new MemoryStream();
 			await result.CopyToAsync(ms, format, quality);

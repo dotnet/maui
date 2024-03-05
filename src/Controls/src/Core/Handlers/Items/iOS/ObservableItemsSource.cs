@@ -126,12 +126,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			if (!_collectionViewController.TryGetTarget(out var controller))
+			{
 				return;
+			}
 
 			// Force UICollectionView to get the internal accounting straight
 			var collectionView = controller.CollectionView;
 			if (!collectionView.Hidden)
+			{
 				collectionView.NumberOfItemsInSection(_section);
+			}
 
 			switch (args.Action)
 			{
@@ -158,7 +162,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void Reload()
 		{
 			if (!_collectionViewController.TryGetTarget(out var controller))
+			{
 				return;
+			}
 
 			var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 
@@ -249,24 +255,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal int ItemsCount()
 		{
 			if (_itemsSource is IList list)
+			{
 				return list.Count;
+			}
 
 			int count = 0;
 			foreach (var item in _itemsSource)
+			{
 				count++;
+			}
+
 			return count;
 		}
 
 		internal object ElementAt(int index)
 		{
 			if (_itemsSource is IList list)
+			{
 				return list[index];
+			}
 
 			int count = 0;
 			foreach (var item in _itemsSource)
 			{
 				if (count == index)
+				{
 					return item;
+				}
+
 				count++;
 			}
 
@@ -276,13 +292,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal int IndexOf(object item)
 		{
 			if (_itemsSource is IList list)
+			{
 				return list.IndexOf(item);
+			}
 
 			int count = 0;
 			foreach (var i in _itemsSource)
 			{
 				if (Equals(i, item))
+				{
 					return count;
+				}
+
 				count++;
 			}
 
@@ -292,7 +313,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void Update(Action<UICollectionView> update, NotifyCollectionChangedEventArgs args)
 		{
 			if (!_collectionViewController.TryGetTarget(out var controller))
+			{
 				return;
+			}
 
 			var collectionView = controller.CollectionView;
 			if (collectionView.Hidden)

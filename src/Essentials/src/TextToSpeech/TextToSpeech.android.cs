@@ -34,11 +34,15 @@ namespace Microsoft.Maui.Media
 		{
 			var textToSpeech = GetTextToSpeech();
 			if (textToSpeech == null)
+			{
 				throw new PlatformNotSupportedException("Unable to start text-to-speech engine, not supported on device.");
+			}
 
 			var max = maxSpeechInputLengthDefault;
 			if (OperatingSystem.IsAndroidVersionAtLeast(18))
+			{
 				max = AndroidTextToSpeech.MaxSpeechInputLength;
+			}
 
 			return textToSpeech.SpeakAsync(text, max, options, cancelToken);
 		}
@@ -47,7 +51,9 @@ namespace Microsoft.Maui.Media
 		{
 			var textToSpeech = GetTextToSpeech();
 			if (textToSpeech == null)
+			{
 				throw new PlatformNotSupportedException("Unable to start text-to-speech engine, not supported on device.");
+			}
 
 			return textToSpeech.GetLocalesAsync();
 		}
@@ -65,7 +71,9 @@ namespace Microsoft.Maui.Media
 		Task<bool> Initialize()
 		{
 			if (tcsInitialize != null && tts != null)
+			{
 				return tcsInitialize.Task;
+			}
 
 			tcsInitialize = new TaskCompletionSource<bool>();
 			try
@@ -106,7 +114,9 @@ namespace Microsoft.Maui.Media
 
 			// Wait for any previous calls to finish up
 			if (tcsUtterances?.Task != null)
+			{
 				await tcsUtterances.Task;
+			}
 
 			tcsUtterances = new TaskCompletionSource<bool>();
 
@@ -130,9 +140,13 @@ namespace Microsoft.Maui.Media
 			{
 				JavaLocale locale = null;
 				if (!string.IsNullOrWhiteSpace(options?.Locale.Country))
+				{
 					locale = new JavaLocale(options.Locale.Language, options.Locale.Country);
+				}
 				else
+				{
 					locale = new JavaLocale(options.Locale.Language);
+				}
 
 				tts.SetLanguage(locale);
 			}
@@ -142,9 +156,13 @@ namespace Microsoft.Maui.Media
 			}
 
 			if (options?.Pitch.HasValue ?? false)
+			{
 				tts.SetPitch(options.Pitch.Value);
+			}
 			else
+			{
 				tts.SetPitch(TextToSpeechImplementation.PitchDefault);
+			}
 
 			tts.SetSpeechRate(1.0f);
 
@@ -163,7 +181,9 @@ namespace Microsoft.Maui.Media
 				};
 
 				if (options != null && options.Volume.HasValue)
+				{
 					map.Add(AndroidTextToSpeech.Engine.KeyParamVolume, options.Volume.Value.ToString(CultureInfo.InvariantCulture));
+				}
 
 				// We use an obsolete overload here so it works on older API levels at runtime
 				// Flush on first entry and add (to not flush our own previous) subsequent entries
@@ -178,9 +198,13 @@ namespace Microsoft.Maui.Media
 		public void OnInit(OperationResult status)
 		{
 			if (status == OperationResult.Success)
+			{
 				tcsInitialize.TrySetResult(true);
+			}
 			else
+			{
 				tcsInitialize.TrySetException(new ArgumentException("Failed to initialize Text to Speech engine."));
+			}
 		}
 
 		public async Task<IEnumerable<Locale>> GetLocalesAsync()
@@ -224,7 +248,9 @@ namespace Microsoft.Maui.Media
 		{
 			numCompletedUtterances++;
 			if (numCompletedUtterances >= numExpectedUtterances)
+			{
 				tcsUtterances?.TrySetResult(true);
+			}
 		}
 
 #pragma warning disable 0618
@@ -233,14 +259,20 @@ namespace Microsoft.Maui.Media
 			try
 			{
 				if (tts.DefaultLanguage == null && tts.Language != null)
+				{
 					tts.SetLanguage(tts.Language);
+				}
 				else if (tts.DefaultLanguage != null)
+				{
 					tts.SetLanguage(tts.DefaultLanguage);
+				}
 			}
 			catch
 			{
 				if (tts.Language != null)
+				{
 					tts.SetLanguage(tts.Language);
+				}
 			}
 		}
 #pragma warning restore 0618

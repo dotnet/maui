@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Handlers
 
 
 			if (handler.VirtualView.PresentedContent is not IView presentedView)
+			{
 				return;
+			}
 
 			handler.PlatformView.Content = presentedView.ToPlatform(handler.MauiContext);
 		}
@@ -63,7 +65,9 @@ namespace Microsoft.Maui.Handlers
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
 			if (!PlatformView.IsLoaded)
+			{
 				return;
+			}
 
 			// Setting the Left/Right Items before the view has loaded causes the Swipe Control
 			// to crash on the first layout pass. So we wait until the control has been loaded
@@ -76,7 +80,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapLeftItems(ISwipeViewHandler handler, ISwipeView view)
 		{
 			if (!handler.PlatformView.IsLoaded)
+			{
 				return;
+			}
 
 			UpdateSwipeItems(SwipeDirection.Left, handler, view, (items) => handler.PlatformView.LeftItems = items, view.LeftItems, handler.PlatformView.LeftItems);
 		}
@@ -89,7 +95,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapRightItems(ISwipeViewHandler handler, ISwipeView view)
 		{
 			if (!handler.PlatformView.IsLoaded)
+			{
 				return;
+			}
 
 			UpdateSwipeItems(SwipeDirection.Right, handler, view, (items) => handler.PlatformView.RightItems = items, view.RightItems, handler.PlatformView.RightItems);
 		}
@@ -112,7 +120,9 @@ namespace Microsoft.Maui.Handlers
 			try
 			{
 				if (wSwipeItems != null || items.Count > 0)
+				{
 					setSwipeItems(items);
+				}
 			}
 			catch
 			{
@@ -128,7 +138,9 @@ namespace Microsoft.Maui.Handlers
 			var windowsSwipeItems = GetWindowsSwipeItems(swipeItems, swipeView, swipeControl);
 
 			if (windowsSwipeItems != null)
+			{
 				windowsSwipeItems.Mode = swipeItems.Mode.ToPlatform();
+			}
 		}
 
 		static void UpdateSwipeBehaviorOnInvoked(ISwipeItems swipeItems, ISwipeView swipeView, WSwipeControl swipeControl)
@@ -136,8 +148,12 @@ namespace Microsoft.Maui.Handlers
 			var windowsSwipeItems = GetWindowsSwipeItems(swipeItems, swipeView, swipeControl);
 
 			if (windowsSwipeItems != null)
+			{
 				foreach (var windowSwipeItem in windowsSwipeItems.ToList())
+				{
 					windowSwipeItem.BehaviorOnInvoked = swipeItems.SwipeBehaviorOnInvoked.ToPlatform();
+				}
+			}
 		}
 
 		static bool IsValidSwipeItems(ISwipeItems? swipeItems)
@@ -169,7 +185,9 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			if (items == null)
+			{
 				return swipeItems;
+			}
 
 			swipeItems.Mode = items.Mode.ToPlatform();
 
@@ -190,7 +208,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			// On Windows, the SwipeItems can only contain one single SwipeItem using the Execute mode.
 			if (swipeItems.Mode == UI.Xaml.Controls.SwipeMode.Execute && swipeItems.Count > 0)
+			{
 				return false;
+			}
 
 			return true;
 		}
@@ -198,16 +218,24 @@ namespace Microsoft.Maui.Handlers
 		static WSwipeItems? GetWindowsSwipeItems(ISwipeItems swipeItems, ISwipeView swipeView, WSwipeControl swipeControl)
 		{
 			if (swipeItems == swipeView.LeftItems)
+			{
 				return swipeControl.LeftItems;
+			}
 
 			if (swipeItems == swipeView.RightItems)
+			{
 				return swipeControl.RightItems;
+			}
 
 			if (swipeItems == swipeView.TopItems)
+			{
 				return swipeControl.TopItems;
+			}
 
 			if (swipeItems == swipeView.BottomItems)
+			{
 				return swipeControl.BottomItems;
+			}
 
 			return null;
 		}

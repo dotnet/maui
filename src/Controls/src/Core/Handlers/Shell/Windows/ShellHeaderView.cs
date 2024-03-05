@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnShellHeaderViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			if (Element is Controls.Compatibility.Layout layout)
+			{
 				layout.ForceLayout();
+			}
 		}
 
 		internal VisualElement Element { get; set; }
@@ -28,7 +30,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public void SetElement(Shell shell)
 		{
 			if (_shell != null)
+			{
 				_shell.PropertyChanged -= OnShellPropertyChanged;
+			}
 
 			if (shell != null)
 			{
@@ -41,7 +45,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.IsOneOf(Shell.FlyoutHeaderProperty, Shell.FlyoutHeaderTemplateProperty))
+			{
 				UpdateHeader();
+			}
 		}
 
 		void UpdateHeader()
@@ -60,7 +66,9 @@ namespace Microsoft.Maui.Controls.Platform
 			object header = null;
 
 			if (_shell is IShellController controller)
+			{
 				header = controller.FlyoutHeader;
+			}
 
 			if (header is View visualElement)
 			{

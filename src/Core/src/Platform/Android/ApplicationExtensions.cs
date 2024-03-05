@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Platform
 		public static void RequestNewWindow(this Application platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
+			{
 				return;
+			}
 
 			var state = args?.State;
 			var bundle = state.ToBundle();
@@ -24,7 +26,10 @@ namespace Microsoft.Maui.Platform
 			intent.AddFlags(ActivityFlags.NewTask);
 			intent.AddFlags(ActivityFlags.MultipleTask);
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
 				intent.AddFlags(ActivityFlags.LaunchAdjacent);
+			}
+
 			intent.PutExtras(bundle);
 
 			platformApplication.StartActivity(intent);
@@ -33,7 +38,9 @@ namespace Microsoft.Maui.Platform
 		public static void CreatePlatformWindow(this Activity activity, IApplication application, Bundle? savedInstanceState = null)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
+			{
 				return;
+			}
 
 			savedInstanceState ??= activity.Intent?.Extras;
 
@@ -66,7 +73,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateNightMode(this IApplication application)
 		{
 			if (application is null)
+			{
 				return;
+			}
 
 			switch (application.UserAppTheme)
 			{

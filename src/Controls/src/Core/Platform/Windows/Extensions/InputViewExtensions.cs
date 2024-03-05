@@ -11,13 +11,17 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateDetectReadingOrderFromContent(this TextBox platformControl, Entry entry)
 		{
 			if (entry.IsSet(Specifics.DetectReadingOrderFromContentProperty))
+			{
 				platformControl.SetTextReadingOrder(entry.OnThisPlatform().GetDetectReadingOrderFromContent());
+			}
 		}
 
 		public static void UpdateDetectReadingOrderFromContent(this TextBox platformControl, Editor editor)
 		{
 			if (editor.IsSet(Specifics.DetectReadingOrderFromContentProperty))
+			{
 				platformControl.SetTextReadingOrder(editor.OnThisPlatform().GetDetectReadingOrderFromContent());
+			}
 		}
 
 		internal static void SetTextReadingOrder(this TextBox platformControl, bool detectReadingOrderFromContent) =>

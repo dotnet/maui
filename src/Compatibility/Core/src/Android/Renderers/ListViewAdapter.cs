@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_prototypicalCellByTypeOrDataTemplate = new Dictionary<object, Cell>();
 
 			if (listView.SelectedItem != null)
+			{
 				SelectItem(listView.SelectedItem);
+			}
 
 			var templatedItems = ((ITemplatedItemsView<Cell>)listView).TemplatedItems;
 			templatedItems.CollectionChanged += OnCollectionChanged;
@@ -82,7 +84,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if (_listView.IsGroupingEnabled)
 					{
 						for (var i = 0; i < templatedItems.Count; i++)
+						{
 							count += templatedItems.GetGroup(i).Count;
+						}
 					}
 
 					_listCount = count;
@@ -143,7 +147,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var row = 0;
 			DataTemplate itemTemplate;
 			if (!_listView.IsGroupingEnabled)
+			{
 				itemTemplate = _listView.ItemTemplate;
+			}
 			else
 			{
 				group = TemplatedItemsView.TemplatedItems.GetGroupIndexFromGlobal(position, out row);
@@ -152,7 +158,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					itemTemplate = _listView.GroupHeaderTemplate;
 					if (itemTemplate == null)
+					{
 						return DefaultGroupHeaderTemplateId;
+					}
 				}
 				else
 				{
@@ -162,7 +170,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (itemTemplate == null)
+			{
 				return DefaultItemTemplateId;
+			}
 
 			if (itemTemplate is DataTemplateSelector selector)
 			{
@@ -171,12 +181,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_listView.IsGroupingEnabled)
 				{
 					if (TemplatedItemsView.TemplatedItems.GetGroup(group).ListProxy.Count > 0)
+					{
 						item = TemplatedItemsView.TemplatedItems.GetGroup(group).ListProxy[row];
+					}
 				}
 				else
 				{
 					if (TemplatedItemsView.TemplatedItems.ListProxy.Count > 0)
+					{
 						item = TemplatedItemsView.TemplatedItems.ListProxy[position];
+					}
 				}
 
 				itemTemplate = selector.SelectTemplate(item, _listView);
@@ -184,7 +198,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			// check again to guard against DataTemplateSelectors that return null
 			if (itemTemplate == null)
+			{
 				return DefaultItemTemplateId;
+			}
 
 			if (!_templateToId.TryGetValue(itemTemplate, out int key))
 			{
@@ -216,10 +232,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					List<Cell> cells = GetCellsFromPosition(position, 2);
 					if (cells.Count > 0)
+					{
 						cell = cells[0];
+					}
 
 					if (cells.Count == 2)
+					{
 						nextCellIsHeader = cells[1].GetIsGroupHeader<ItemsView<Cell>, Cell>();
+					}
 				}
 
 				if (cell == null)
@@ -264,19 +284,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var group = 0;
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				if (_listView.IsGroupingEnabled)
+				{
 					group = templatedItems.GetGroupIndexFromGlobal(position, out row);
+				}
 
 				var templatedList = templatedItems.GetGroup(group);
 
 				if (_listView.IsGroupingEnabled)
 				{
 					if (row == 0)
+					{
 						templatedList.UpdateHeader(cell, group);
+					}
 					else
+					{
 						templatedList.UpdateContent(cell, row - 1);
+					}
 				}
 				else
+				{
 					templatedList.UpdateContent(cell, row);
+				}
 
 				cellController.SendAppearing();
 
@@ -287,11 +315,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 
 				if (ReferenceEquals(_listView.SelectedItem, cell.BindingContext))
+				{
 					Select(_listView.IsGroupingEnabled ? row - 1 : row, layout);
+				}
 				else if (cell.BindingContext == ActionModeObject)
+				{
 					SetSelectedBackground(layout, true);
+				}
 				else
+				{
 					UnsetSelectedBackground(layout);
+				}
 
 				Performance.Stop(reference);
 				return layout;
@@ -310,7 +344,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 			}
 			else
+			{
 				layout.AddView(view, 0);
+			}
 
 			Performance.Stop(reference, "AddView");
 
@@ -332,9 +368,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if ((bool)cell.GetValue(IsSelectedProperty))
+			{
 				Select(position, layout);
+			}
 			else
+			{
 				UnsetSelectedBackground(layout);
+			}
 
 			layout.ApplyTouchListenersToSpecialCells(cell);
 
@@ -352,7 +392,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			if (_listView.IsGroupingEnabled)
+			{
 				templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath];
+			}
 
 			return templatedItems;
 		}
@@ -384,16 +426,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var cachingStrategy = _listView.CachingStrategy;
 			if (cachingStrategy == ListViewCachingStrategy.RecycleElement)
+			{
 				itemTypeOrDataTemplate = GetDataTemplateForPath(indexPath);
-
+			}
 			else if (cachingStrategy == ListViewCachingStrategy.RecycleElementAndDataTemplate)
+			{
 				itemTypeOrDataTemplate = GetItemTypeForPath(indexPath);
-
+			}
 			else // ListViewCachingStrategy.RetainElement
+			{
 				return GetCellForPosition(indexPath);
+			}
 
 			if (itemTypeOrDataTemplate == null)
+			{
 				itemTypeOrDataTemplate = DefaultItemTypeOrDataTemplate;
+			}
 
 			Cell protoCell;
 			if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out protoCell))
@@ -473,7 +521,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				AView cellOwner = view;
 				var layout = cellOwner as Handlers.Compatibility.ConditionalFocusLayout;
 				if (layout != null)
+				{
 					cellOwner = layout.GetChildAt(0);
+				}
+
 				cell = (Cell)(cellOwner as INativeElementView)?.Element;
 			}
 
@@ -481,12 +532,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			position--;
 
 			if (position < 0 || position >= Count)
+			{
 				return;
+			}
 
 			if (_lastSelected != view)
+			{
 				_fromNative = true;
+			}
+
 			if (_listView.SelectionMode != ListViewSelectionMode.None)
+			{
 				Select(position, view);
+			}
+
 			Controller.NotifyRowTapped(position, cell);
 		}
 
@@ -499,7 +558,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var layout = _layoutsCreated[i];
 
 				if (layout.IsDisposed())
+				{
 					continue;
+				}
 
 				DisposeOfConditionalFocusLayout(layout);
 			}
@@ -519,7 +580,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var renderer = Platform.GetRenderer(view);
 
 				if (renderer == renderedView)
+				{
 					element.ClearValue(Platform.RendererProperty);
+				}
 
 				renderer?.Dispose();
 				renderer = null;
@@ -535,7 +598,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var cells = new List<Cell>(take);
 			if (position < 0)
+			{
 				return cells;
+			}
 
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			var templatedItemsCount = templatedItems.Count;
@@ -544,7 +609,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				for (var x = 0; x < take; x++)
 				{
 					if (position + x >= templatedItemsCount)
+					{
 						return cells;
+					}
 
 					cells.Add(templatedItems[x + position]);
 				}
@@ -566,7 +633,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					cells.Add(headerCell);
 
 					if (cells.Count == take)
+					{
 						return cells;
+					}
 				}
 
 				global++;
@@ -583,7 +652,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					{
 						cells.Add(group[g]);
 						if (cells.Count == take)
+						{
 							return cells;
+						}
 					}
 
 					global++;
@@ -602,10 +673,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			InvalidateCount();
 			if (ActionModeContext != null && !TemplatedItemsView.TemplatedItems.Contains(ActionModeContext))
+			{
 				CloseContextActions();
+			}
 
 			if (IsAttachedToWindow)
+			{
 				NotifyDataSetChanged();
+			}
 			else
 			{
 				// In a TabbedPage page with two pages, Page A and Page B with ListView, if A changes B's ListView,
@@ -614,7 +689,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				// they will be DOUBLE added to the ViewGround (the ListView) causing indexes to be off by one. 
 
 				if (_realListView.IsDisposed())
+				{
 					return;
+				}
 
 				_realListView.RemoveHeaderView(HeaderView);
 				_realListView.RemoveFooterView(FooterView);
@@ -647,31 +724,41 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UnsetSelectedBackground(_lastSelected);
 				Cell previousCell;
 				if (_selectedCell.TryGetTarget(out previousCell))
+				{
 					previousCell.SetValue(IsSelectedProperty, false);
+				}
 			}
 
 			_lastSelected = view;
 
 			if (index == -1)
+			{
 				return;
+			}
 
 			Cell cell = GetCellForPosition(index);
 			cell.SetValue(IsSelectedProperty, true);
 			_selectedCell = new WeakReference<Cell>(cell);
 
 			if (view != null)
+			{
 				SetSelectedBackground(view);
+			}
 		}
 
 		void SelectItem(object item)
 		{
 			if (_listView == null)
+			{
 				return;
+			}
 
 			int position = TemplatedItemsView.TemplatedItems.GetGlobalIndexOfItem(item);
 			AView view = null;
 			if (position != -1)
+			{
 				view = _realListView.GetChildAt(position + 1 - _realListView.FirstVisiblePosition);
+			}
 
 			Select(position, view);
 		}
@@ -699,12 +786,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateSeparatorColor(bool isHeader, AView bline)
 		{
 			if (bline == null)
+			{
 				return;
+			}
 
 			Color separatorColor = _listView.SeparatorColor;
 
 			if (isHeader || separatorColor != null)
+			{
 				bline.SetBackgroundColor(separatorColor.ToAndroid(Application.AccentColor));
+			}
 			else
 			{
 				if (s_dividerHorizontalDarkId == int.MinValue)
@@ -713,9 +804,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					{
 						int id = global::Android.Resource.Drawable.DividerHorizontalDark;
 						if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ListDivider, value, true))
+						{
 							id = value.ResourceId;
+						}
 						else if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.Divider, value, true))
+						{
 							id = value.ResourceId;
+						}
 
 						s_dividerHorizontalDarkId = id;
 					}

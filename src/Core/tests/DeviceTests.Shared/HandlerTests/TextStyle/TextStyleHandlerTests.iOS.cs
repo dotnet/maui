@@ -18,7 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var view = new TStub();
 			if (view is not ITextStyle)
+			{
 				return;
+			}
 
 			view.GetType().GetProperty("Font").SetValue(view, Font.OfSize(family, 10));
 
@@ -31,9 +33,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
 			if (string.IsNullOrEmpty(family))
+			{
 				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+			}
 			else
+			{
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+			}
 		}
 
 		protected bool GetNativeIsBold(THandler handler) =>
@@ -58,13 +64,17 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Device doesn't have larger fonts enabled
 				if (scale == 1)
+				{
 					return returnValue;
+				}
 
 				var fontScaling = returnValue / scale;
 
 				// Just see if it scaled close-ish
 				if (Math.Abs(font.Size - fontScaling) <= 1.5)
+				{
 					return font.Size;
+				}
 			}
 
 			return returnValue;

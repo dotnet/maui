@@ -13,26 +13,37 @@ namespace Microsoft.Maui.Controls
 		BindableProperty IStylable.GetProperty(string key, bool inheriting)
 		{
 			if (!Internals.Registrar.StyleProperties.TryGetValue(key, out var attrList))
+			{
 				return null;
+			}
 
 			StylePropertyAttribute styleAttribute = null;
 			for (int i = 0; i < attrList.Count; i++)
 			{
 				styleAttribute = attrList[i];
 				if (styleAttribute.TargetType.IsAssignableFrom(GetType()))
+				{
 					break;
+				}
+
 				styleAttribute = null;
 			}
 
 			if (styleAttribute == null)
+			{
 				return null;
+			}
 
 			//do not inherit non-inherited properties
 			if (inheriting && !styleAttribute.Inherited)
+			{
 				return null;
+			}
 
 			if (styleAttribute.BindableProperty != null)
+			{
 				return styleAttribute.BindableProperty;
+			}
 
 			var propertyOwnerType = styleAttribute.PropertyOwnerType ?? GetType();
 			var bpField = propertyOwnerType.GetField(styleAttribute.BindablePropertyName,
@@ -41,7 +52,9 @@ namespace Microsoft.Maui.Controls
 															| BindingFlags.Static
 															| BindingFlags.FlattenHierarchy);
 			if (bpField == null)
+			{
 				return null;
+			}
 
 			return (styleAttribute.BindableProperty = bpField.GetValue(null) as BindableProperty);
 		}

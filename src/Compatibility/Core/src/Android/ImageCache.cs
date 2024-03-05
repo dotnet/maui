@@ -41,15 +41,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					var cacheEntry = _lruCache.Get(cacheKey) as CacheEntry;
 
 					if (cacheEntry?.TimeToLive < DateTimeOffset.UtcNow || cacheEntry?.IsDisposed == true)
+					{
 						cacheEntry = null;
+					}
 
 					if (cacheEntry == null && createMethod != null)
 					{
 						innerCacheObject = await createMethod().ConfigureAwait(false);
 						if (innerCacheObject is global::Android.Graphics.Bitmap bm)
+						{
 							Put(cacheKey, cacheValidity, bm);
+						}
 						else if (innerCacheObject is global::Android.Graphics.Drawables.BitmapDrawable bitmap)
+						{
 							Put(cacheKey, cacheValidity, bitmap.Bitmap);
+						}
 					}
 					else
 					{
@@ -86,10 +92,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				get
 				{
 					if (Data == null)
+					{
 						return true;
+					}
 
 					if (this.IsDisposed() || Data.IsDisposed())
+					{
 						return true;
+					}
 
 					return false;
 				}
@@ -132,7 +142,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			protected override int SizeOf(Java.Lang.Object key, Java.Lang.Object value)
 			{
 				if (value != null && value is global::Android.Graphics.Bitmap bitmap)
+				{
 					return bitmap.ByteCount / 1024;
+				}
 
 				return base.SizeOf(key, value);
 			}

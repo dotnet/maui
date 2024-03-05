@@ -50,7 +50,9 @@ namespace Microsoft.Maui.Handlers
 		void OnValueChanged(object sender, EventArgs e)
 		{
 			if (VirtualView == null || PlatformView == null)
+			{
 				return;
+			}
 
 			VirtualView.Value = PlatformView.Value;
 		}

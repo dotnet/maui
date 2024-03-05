@@ -56,7 +56,9 @@ namespace UITest.Appium
 			var element = GetAppiumElement(value);
 
 			if (element is null)
+			{
 				return CommandResponse.FailedEmptyResponse;
+			}
 
 			ScrollStrategy strategy = (ScrollStrategy)parameters["strategy"];
 			double swipePercentage = (double)parameters["swipePercentage"];
@@ -74,7 +76,9 @@ namespace UITest.Appium
 			var element = GetAppiumElement(value);
 
 			if (element is null)
+			{
 				return CommandResponse.FailedEmptyResponse;
+			}
 
 			ScrollStrategy strategy = (ScrollStrategy)parameters["strategy"];
 			double swipePercentage = (double)parameters["swipePercentage"];
@@ -92,7 +96,9 @@ namespace UITest.Appium
 			var element = GetAppiumElement(value);
 
 			if (element is null)
+			{
 				return CommandResponse.FailedEmptyResponse;
+			}
 
 			ScrollStrategy strategy = (ScrollStrategy)parameters["strategy"];
 			double swipePercentage = (double)parameters["swipePercentage"];
@@ -110,7 +116,9 @@ namespace UITest.Appium
 			var element = GetAppiumElement(value);
 
 			if (element is null)
+			{
 				return CommandResponse.FailedEmptyResponse;
+			}
 
 			ScrollStrategy strategy = (ScrollStrategy)parameters["strategy"];
 			double swipePercentage = (double)parameters["swipePercentage"];

@@ -272,7 +272,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (pattern == null || pattern.Length == 0)
 			{
 				if (_needsStrokeStyle == false)
+				{
 					return;
+				}
+
 				_dashes = null;
 			}
 			else
@@ -482,7 +485,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		public void ClipPath(PathF path, WindingMode windingMode)
 		{
 			if (_layerMask != null)
+			{
+			{
 				throw new Exception("Only one clip operation currently supported.");
+			}
 
 
 			/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
@@ -511,7 +517,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		public void SubtractFromClip(float x, float y, float width, float height)
 		{
 			if (_layerMask != null)
+			{
+			{
 				throw new Exception("Only one subtraction currently supported.");
+			}
 
 
 			/* Unmerged change from project 'Microsoft.Maui.Graphics.Win2D.WinUI.Desktop'
@@ -554,9 +563,15 @@ namespace Microsoft.Maui.Graphics.Platform
 			get
 			{
 				if (_fontBrush == null || (!_fontBrushValid && _parentState != null && _fontBrush == _parentState._fontBrush))
+				{
+				{
 					_fontBrush = new CanvasSolidColorBrush(_owner.Session, _sourceFontColor.AsColor(Colors.Black, _alpha));
+				}
 				else if (!_fontBrushValid)
+				{
+				{
 					_fontBrush.Color = _sourceFontColor.AsColor(Colors.Black, _alpha);
+				}
 
 				return _fontBrush;
 			}

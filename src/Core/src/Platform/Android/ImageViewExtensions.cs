@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Platform
 		{
 			// stop the animation
 			if (imageView.Drawable is IAnimatable animatable)
+			{
 				animatable.Stop();
+			}
 
 			// clear the view and release any bitmaps
 			imageView.SetImageResource(global::Android.Resource.Color.Transparent);
@@ -34,12 +36,16 @@ namespace Microsoft.Maui.Platform
 				if (image.IsAnimationPlaying)
 				{
 					if (!animatable.IsRunning)
+					{
 						animatable.Start();
+					}
 				}
 				else
 				{
 					if (animatable.IsRunning)
+					{
 						animatable.Stop();
+					}
 				}
 			}
 		}

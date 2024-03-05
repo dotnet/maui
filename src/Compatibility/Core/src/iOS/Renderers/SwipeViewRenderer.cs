@@ -145,10 +145,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.LayoutSubviews();
 
 			if (Bounds.X < 0 || Bounds.Y < 0)
+			{
 				Bounds = new CGRect(0, 0, Bounds.Width, Bounds.Height);
+			}
 
 			if (_contentView != null && _contentView.Frame.IsEmpty)
+			{
 				_contentView.Frame = Bounds;
+			}
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -156,19 +160,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ContentView.ContentProperty.PropertyName)
+			{
 				UpdateContent();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsSwipeEnabled();
+			}
 			else if (e.PropertyName == Specifics.SwipeTransitionModeProperty.PropertyName)
+			{
 				UpdateSwipeTransitionMode();
+			}
 		}
 
 		protected override void SetBackgroundColor(Color color)
 		{
 			if (Element.BackgroundColor != null)
+			{
 				BackgroundColor = Element.BackgroundColor.ToPlatform();
+			}
 			else
+			{
 				BackgroundColor = ColorExtensions.BackgroundColor;
+			}
 		}
 
 		protected override void SetBackground(Brush brush)
@@ -176,10 +190,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Brush background = Element.Background;
 
 			if (Brush.IsNullOrEmpty(background))
+			{
 				return;
+			}
 
 			if (Control != null)
+			{
 				Control.UpdateBackground(background);
+			}
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent evt)
@@ -198,7 +216,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var navigationController = GetUINavigationController(GetViewController());
 
 			if (navigationController != null)
+			{
 				navigationController.InteractivePopGestureRecognizer.Enabled = true;
+			}
 
 			if (touches.AnyObject is UITouch anyObject)
 			{
@@ -212,7 +232,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -222,19 +244,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					Element.CloseRequested -= OnCloseRequested;
 
 					if (Element.Content != null)
+					{
 						Element.Content.PropertyChanged -= OnContentPropertyChanged;
+					}
 				}
 
 				if (_scrollParent != null)
 				{
 					if (_scrollParent is ScrollView scrollView)
+					{
 						scrollView.Scrolled -= OnParentScrolled;
+					}
 
 					if (_scrollParent is ListView listView)
+					{
 						listView.Scrolled -= OnParentScrolled;
+					}
 
 					if (_scrollParent is CollectionView collectionView)
+					{
 						collectionView.Scrolled -= OnParentScrolled;
+					}
 				}
 
 				if (_tapGestureRecognizer != null)
@@ -278,7 +308,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override UIView HitTest(CGPoint point, UIEvent uievent)
 		{
 			if (!UserInteractionEnabled || Hidden)
+			{
 				return null;
+			}
 
 			foreach (var subview in Subviews)
 			{
@@ -287,7 +319,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					var view = HitTest(subview, point, uievent);
 
 					if (view != null)
+					{
 						return view;
+					}
 				}
 			}
 
@@ -297,7 +331,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		UIView HitTest(UIView view, CGPoint point, UIEvent uievent)
 		{
 			if (view.Subviews == null)
+			{
 				return null;
+			}
 
 			foreach (var subview in view.Subviews)
 			{
@@ -335,42 +371,58 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Element.Content.PropertyChanged += OnContentPropertyChanged;
 
 				if (Subviews.Length > 0)
+				{
 					_contentView = Subviews[0];
+				}
 			}
 
 			if (_contentView != null)
+			{
 				BringSubviewToFront(_contentView);
+			}
 		}
 
 		void OnContentPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsSwipeEnabled();
+			}
 		}
 
 		void HandleTap()
 		{
 			if (_tapGestureRecognizer == null)
+			{
 				return;
+			}
 
 			if (_isSwiping)
+			{
 				return;
+			}
 
 			var state = _tapGestureRecognizer.State;
 
 			if (state != UIGestureRecognizerState.Cancelled)
 			{
 				if (_contentView == null)
+				{
 					return;
+				}
 
 				var point = _tapGestureRecognizer.LocationInView(this);
 
 				if (_isOpen)
 				{
 					if (!TouchInsideContent(point))
+					{
 						ProcessTouchSwipeItems(point);
+					}
 					else
+					{
 						ResetSwipe();
+					}
 				}
 			}
 		}
@@ -386,7 +438,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					case UIGestureRecognizerState.Began:
 						if (navigationController != null)
+						{
 							navigationController.InteractivePopGestureRecognizer.Enabled = false;
+						}
 
 						HandleTouchInteractions(GestureStatus.Started, point);
 						break;
@@ -395,13 +449,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						break;
 					case UIGestureRecognizerState.Ended:
 						if (navigationController != null)
+						{
 							navigationController.InteractivePopGestureRecognizer.Enabled = true;
+						}
 
 						HandleTouchInteractions(GestureStatus.Completed, point);
 						break;
 					case UIGestureRecognizerState.Cancelled:
 						if (navigationController != null)
+						{
 							navigationController.InteractivePopGestureRecognizer.Enabled = true;
+						}
 
 						HandleTouchInteractions(GestureStatus.Canceled, point);
 						break;
@@ -441,21 +499,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateSwipeItems()
 		{
 			if (_contentView == null || _actionView != null)
+			{
 				return;
+			}
 
 			SwipeItems items = GetSwipeItemsByDirection();
 
 			if (items == null || items.Count == 0)
+			{
 				return;
+			}
 
 			_swipeItemsRect = new List<CGRect>();
 
 			double swipeItemsWidth;
 
 			if (_swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Right)
+			{
 				swipeItemsWidth = (items != null ? items.Count : 0) * SwipeItemWidth;
+			}
 			else
+			{
 				swipeItemsWidth = _contentView.Frame.Width;
+			}
 
 			_actionView = new UIStackView
 			{
@@ -493,17 +559,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void LayoutSwipeItems(List<UIView> childs)
 		{
 			if (_actionView == null || childs == null)
+			{
 				return;
+			}
 
 			_swipeItemsRect.Clear();
 
 			var items = GetSwipeItemsByDirection();
 
 			if (items == null || items.Count == 0)
+			{
 				return;
+			}
 
 			if (_originalBounds == CGRect.Empty)
+			{
 				_originalBounds = _contentView.Frame;
+			}
 
 			int i = 0;
 			float previousWidth = 0;
@@ -553,7 +625,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var swipeItems = new List<UIView>();
 
 			foreach (var view in _actionView.Subviews)
+			{
 				swipeItems.Add(view);
+			}
 
 			return swipeItems;
 		}
@@ -571,7 +645,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateIsVisibleSwipeItem(ISwipeItem item)
 		{
 			if (!_isOpen)
+			{
 				return;
+			}
 
 			_swipeItems.TryGetValue(item, out object view);
 
@@ -580,10 +656,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				bool hidden = false;
 
 				if (item is SwipeItem swipeItem)
+				{
 					hidden = !swipeItem.IsVisible;
+				}
 
 				if (item is SwipeItemView swipeItemView)
+				{
 					hidden = !swipeItemView.IsVisible;
+				}
 
 				_swipeThreshold = 0;
 				nativeView.Hidden = hidden;
@@ -601,10 +681,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			};
 
 			if (!string.IsNullOrEmpty(formsSwipeItem.Text))
+			{
 				swipeItem.RestorationIdentifier = formsSwipeItem.Text;
+			}
 
 			if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
+			{
 				swipeItem.AccessibilityIdentifier = formsSwipeItem.AutomationId;
+			}
 
 			swipeItem.SetTitle(formsSwipeItem.Text, UIControlState.Normal);
 
@@ -614,7 +698,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			swipeItem.Hidden = !formsSwipeItem.IsVisible;
 
 			if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
+			{
 				swipeItem.AccessibilityIdentifier = formsSwipeItem.AutomationId;
+			}
 
 			return swipeItem;
 		}
@@ -628,7 +714,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var swipeItemView = renderer?.NativeView;
 
 			if (swipeItemView != null)
+			{
 				swipeItemView.Hidden = !formsSwipeItemView.IsVisible;
+			}
 
 			return swipeItemView;
 		}
@@ -643,844 +731,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateSwipeTransitionMode()
 		{
 			if (Element.IsSet(Specifics.SwipeTransitionModeProperty))
-				_swipeTransitionMode = Element.OnThisPlatform().GetSwipeTransitionMode();
-			else
-				_swipeTransitionMode = SwipeTransitionMode.Reveal;
-		}
 
-		void UpdateSwipeItemInsets(UIButton button, float spacing = 0.0f)
-		{
-			if (button.ImageView?.Image == null)
-				return;
-
-			button.ContentMode = UIViewContentMode.Center;
-			button.ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
-
-			var imageSize = button.ImageView.Image.Size;
-
-			var titleEdgeInsets = new UIEdgeInsets(spacing, -imageSize.Width, -imageSize.Height, 0.0f);
-#pragma warning disable CA1416, CA1422 // TODO: TitleEdgeInsets, StringSize(...), ImageEdgeInsets unsupported on: 'ios' 15.0 and later
-			button.TitleEdgeInsets = titleEdgeInsets;
-
-			var labelString = button.TitleLabel.Text ?? string.Empty;
-
-#pragma warning disable BI1234 // Type or member is obsolete
-			var titleSize = !string.IsNullOrEmpty(labelString) ? labelString.StringSize(button.TitleLabel.Font) : CGSize.Empty;
-#pragma warning restore BI1234 // Type or member is obsolete
-			var imageEdgeInsets = new UIEdgeInsets(-(titleSize.Height + spacing), 0.0f, 0.0f, -titleSize.Width);
-			button.ImageEdgeInsets = imageEdgeInsets;
-#pragma warning restore CA1416, CA1422
-		}
-
-		Color GetSwipeItemColor(Color backgroundColor)
-		{
-			var luminosity = 0.2126 * backgroundColor.Red + 0.7152 * backgroundColor.Green + 0.0722 * backgroundColor.Blue;
-
-			return luminosity < 0.75 ? Colors.White : Colors.Black;
-		}
-
-		async void UpdateSwipeItemIconImage(UIButton swipeButton, SwipeItem swipeItem)
-		{
-			if (swipeButton == null)
-				return;
-
-			if (swipeItem.IconImageSource == null || swipeItem.IconImageSource.IsEmpty)
-			{
-				swipeButton.SetImage(null, UIControlState.Normal);
-			}
-			else
-			{
-				var image = await swipeItem.IconImageSource.GetNativeImageAsync();
-
-				var maxWidth = swipeButton.Frame.Width * 0.5f;
-				var maxHeight = swipeButton.Frame.Height * 0.5f;
-
-				var resizedImage = MaxResizeSwipeItemIconImage(image, maxWidth, maxHeight);
-
-				try
-				{
-					swipeButton.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
-					var tintColor = GetSwipeItemColor(swipeItem.BackgroundColor);
-					swipeButton.TintColor = tintColor.ToPlatform();
-				}
-				catch (Exception)
-				{
-					// UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
-					Forms.MauiContext?.CreateLogger<SwipeViewRenderer>()?.LogWarning("Can not load SwipeItem Icon");
-				}
-			}
-		}
-
-		UIImage MaxResizeSwipeItemIconImage(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
-		{
-			if (sourceImage == null)
-				return null;
-
-			var sourceSize = sourceImage.Size;
-			var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
-
-			if (maxResizeFactor > 1)
-				return sourceImage;
-
-			var width = maxResizeFactor * sourceSize.Width;
-			var height = maxResizeFactor * sourceSize.Height;
-			UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
-			sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
-			var resultImage = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			return resultImage;
-		}
-
-		void HandleTouchInteractions(GestureStatus status, CGPoint point)
-		{
-			switch (status)
-			{
-				case GestureStatus.Started:
-					ProcessTouchDown(point);
-					break;
-				case GestureStatus.Running:
-					ProcessTouchMove(point);
-					break;
-				case GestureStatus.Canceled:
-				case GestureStatus.Completed:
-					ProcessTouchUp();
-					break;
-			}
-
-			_isTouchDown = false;
-		}
-
-		void ProcessTouchDown(CGPoint point)
-		{
-			if (_isSwiping || _isTouchDown || _contentView == null)
-				return;
-
-			if (TouchInsideContent(point) && _isOpen)
-				ResetSwipe();
-
-			_initialPoint = point;
-			_isTouchDown = true;
-		}
-
-		void ProcessTouchMove(CGPoint point)
-		{
-			if (_contentView == null || !TouchInsideContent(point))
-				return;
-
-			if (!_isOpen)
-			{
-				ResetSwipeToInitialPosition();
-
-				_swipeDirection = SwipeDirectionHelper.GetSwipeDirection(new Point(_initialPoint.X, _initialPoint.Y), new Point(point.X, point.Y));
-
-				UpdateSwipeItems();
-			}
-
-			if (!_isSwiping)
-			{
-				RaiseSwipeStarted();
-				_isSwiping = true;
-			}
-
-			if (!ValidateSwipeDirection() || _isResettingSwipe)
-				return;
-
-			_swipeOffset = GetSwipeOffset(_initialPoint, point);
-			UpdateIsOpen(_swipeOffset != 0);
-
-			if (Math.Abs(_swipeOffset) > double.Epsilon)
-			{
-				IsParentScrollEnabled(false);
-				Swipe();
-			}
-
-			RaiseSwipeChanging();
-		}
-
-		void ProcessTouchUp()
-		{
-			_isTouchDown = false;
-
-			if (!_isSwiping)
-				return;
-
-			_isSwiping = false;
-			IsParentScrollEnabled(true);
-
-			RaiseSwipeEnded();
-
-			if (_isResettingSwipe || !ValidateSwipeDirection())
-				return;
-
-			ValidateSwipeThreshold();
-		}
-
-		void IsParentScrollEnabled(bool scrollEnabled)
-		{
-			var swipeThresholdPercent = MinimumOpenSwipeThresholdPercentage * GetSwipeThreshold();
-
-			if (Math.Abs(_swipeOffset) < swipeThresholdPercent)
-				return;
-
-			if (scrollEnabled == _isScrollEnabled)
-				return;
-
-			_isScrollEnabled = scrollEnabled;
-
-			var parent = this.GetParentOfType<UIScrollView>();
-
-			if (parent != null)
-				parent.ScrollEnabled = _isScrollEnabled;
-		}
-
-		bool TouchInsideContent(CGPoint point)
-		{
-			if (_contentView == null)
-				return false;
-
-			bool touchContent = TouchInsideContent(_contentView.Frame.Left, _contentView.Frame.Top, _contentView.Frame.Width, _contentView.Frame.Height, point.X, point.Y);
-
-			return touchContent;
-		}
-
-		bool TouchInsideContent(double x1, double y1, double x2, double y2, double x, double y)
-		{
-			if (x > x1 && x < (x1 + x2) && y > y1 && y < (y1 + y2))
-				return true;
-
-			return false;
-		}
-
-		SwipeItems GetSwipeItemsByDirection()
-		{
-			if (_swipeDirection.HasValue)
-				return GetSwipeItemsByDirection(_swipeDirection.Value);
-
-			return null;
-		}
-
-		SwipeItems GetSwipeItemsByDirection(SwipeDirection swipeDirection)
-		{
-			SwipeItems swipeItems = null;
-
-			switch (swipeDirection)
-			{
-				case SwipeDirection.Left:
-					swipeItems = Element.RightItems;
-					break;
-				case SwipeDirection.Right:
-					swipeItems = Element.LeftItems;
-					break;
-				case SwipeDirection.Up:
-					swipeItems = Element.BottomItems;
-					break;
-				case SwipeDirection.Down:
-					swipeItems = Element.TopItems;
-					break;
-			}
-
-			return swipeItems;
-		}
-
-		void Swipe(bool animated = false)
-		{
-			if (_contentView == null)
-				return;
-
-			var offset = ValidateSwipeOffset(_swipeOffset);
-			_isOpen = offset != 0;
-			var swipeAnimationDuration = animated ? SwipeAnimationDuration : 0;
-
-			if (_swipeTransitionMode == SwipeTransitionMode.Reveal)
-			{
-				Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
-				{
-					switch (_swipeDirection)
-					{
-						case SwipeDirection.Left:
-							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-							break;
-						case SwipeDirection.Right:
-							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-							break;
-						case SwipeDirection.Up:
-							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
-							break;
-						case SwipeDirection.Down:
-							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
-							break;
-					}
-				}, null);
-			}
-
-			if (_swipeTransitionMode == SwipeTransitionMode.Drag)
-			{
-				var actionBounds = _actionView.Bounds;
-				double actionSize;
-
-				Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
-				{
-					switch (_swipeDirection)
-					{
-						case SwipeDirection.Left:
-							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-							actionSize = Element.RightItems.Count * SwipeItemWidth;
-							_actionView.Frame = new CGRect(actionSize + offset, actionBounds.Y, actionBounds.Width, actionBounds.Height);
-							break;
-						case SwipeDirection.Right:
-							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-							actionSize = Element.LeftItems.Count * SwipeItemWidth;
-							_actionView.Frame = new CGRect(-actionSize + offset, actionBounds.Y, actionBounds.Width, actionBounds.Height);
-							break;
-						case SwipeDirection.Up:
-							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
-							actionSize = _contentView.Frame.Height;
-							_actionView.Frame = new CGRect(actionBounds.X, actionSize - Math.Abs(offset), actionBounds.Width, actionBounds.Height);
-							break;
-						case SwipeDirection.Down:
-							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
-							actionSize = _contentView.Frame.Height;
-							_actionView.Frame = new CGRect(actionBounds.X, -actionSize + Math.Abs(offset), actionBounds.Width, actionBounds.Height);
-							break;
-					}
-				}, null);
-			}
-		}
-
-		double ValidateSwipeOffset(double offset)
-		{
-			var swipeThreshold = GetSwipeThreshold();
-
-			switch (_swipeDirection)
-			{
-				case SwipeDirection.Left:
-					if (offset > 0)
-						offset = 0;
-
-					if (_isResettingSwipe && offset < 0)
-						offset = 0;
-
-					if (Math.Abs(offset) > swipeThreshold)
-						return -swipeThreshold;
-					break;
-				case SwipeDirection.Right:
-					if (offset < 0)
-						offset = 0;
-
-					if (_isResettingSwipe && offset > 0)
-						offset = 0;
-
-					if (Math.Abs(offset) > swipeThreshold)
-						return swipeThreshold;
-					break;
-				case SwipeDirection.Up:
-					if (offset > 0)
-						offset = 0;
-
-					if (_isResettingSwipe && offset < 0)
-						offset = 0;
-
-					if (Math.Abs(offset) > swipeThreshold)
-						return -swipeThreshold;
-					break;
-				case SwipeDirection.Down:
-					if (offset < 0)
-						offset = 0;
-
-					if (_isResettingSwipe && offset > 0)
-						offset = 0;
-
-					if (Math.Abs(offset) > swipeThreshold)
-						return swipeThreshold;
-					break;
-			}
-
-			return offset;
-		}
-
-		void UnsubscribeSwipeItemEvents()
-		{
-			var items = GetSwipeItemsByDirection();
-
-			if (items == null)
-				return;
-
-			foreach (var item in items)
-			{
-				if (item is SwipeItem formsSwipeItem)
-					formsSwipeItem.PropertyChanged -= OnSwipeItemPropertyChanged;
-
-				if (item is SwipeItemView formsSwipeItemView)
-					formsSwipeItemView.PropertyChanged -= OnSwipeItemPropertyChanged;
-			}
-		}
-
-		void DisposeSwipeItems()
-		{
-			_isOpen = false;
-			UnsubscribeSwipeItemEvents();
-			_swipeItems.Clear();
-			_swipeThreshold = 0;
-			_swipeOffset = 0;
-			_originalBounds = CGRect.Empty;
-
-			if (_actionView != null)
-			{
-				_actionView.RemoveFromSuperview();
-				_actionView.Dispose();
-				_actionView = null;
-			}
-
-			if (_swipeItemsRect != null)
-			{
-				_swipeItemsRect.Clear();
-				_swipeItemsRect = null;
-			}
-
-			UpdateIsOpen(false);
-		}
-
-		void ResetSwipeToInitialPosition()
-		{
-			_isResettingSwipe = false;
-			_isSwiping = false;
-			_swipeThreshold = 0;
-			_swipeDirection = null;
-			DisposeSwipeItems();
-		}
-
-		void ResetSwipe(bool animated = true)
-		{
-			if (_swipeItemsRect == null || _contentView == null)
-				return;
-
-			_isResettingSwipe = true;
-			_isSwiping = false;
-			_swipeThreshold = 0;
-			_swipeDirection = null;
-
-			if (animated)
-			{
-				Animate(SwipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
-				{
-					if (_originalBounds != CGRect.Empty)
-						_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-				},
-				() =>
-				{
-					DisposeSwipeItems();
-					_isResettingSwipe = false;
-				});
-			}
-			else
-			{
-				if (_originalBounds != CGRect.Empty)
-					_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-
-				DisposeSwipeItems();
-				_isResettingSwipe = false;
-			}
-		}
-
-		void ValidateSwipeThreshold()
-		{
-			if (_swipeDirection == null)
-				return;
-
-			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
-
-			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
-			{
-				var swipeItems = GetSwipeItemsByDirection();
-
-				if (swipeItems == null)
-					return;
-
-				if (swipeItems.Mode == SwipeMode.Execute)
-				{
-					foreach (var swipeItem in swipeItems)
-					{
-						if (swipeItem.IsVisible)
-							ExecuteSwipeItem(swipeItem);
-					}
-
-					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
-						ResetSwipe();
-				}
-				else
-					SwipeToThreshold();
-			}
-			else
-				ResetSwipe();
-		}
-
-		void SwipeToThreshold(bool animated = true)
-		{
-			var completeAnimationDuration = animated ? SwipeAnimationDuration : 0;
-
-			if (_swipeTransitionMode == SwipeTransitionMode.Reveal)
-			{
-				Animate(completeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseIn,
-					() =>
-					{
-						_swipeOffset = GetSwipeThreshold();
-						double swipeThreshold = _swipeOffset;
-
-						switch (_swipeDirection)
-						{
-							case SwipeDirection.Left:
-								_contentView.Frame = new CGRect(_originalBounds.X - swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-								break;
-							case SwipeDirection.Right:
-								_contentView.Frame = new CGRect(_originalBounds.X + swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-								break;
-							case SwipeDirection.Up:
-								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y - swipeThreshold, _originalBounds.Width, _originalBounds.Height);
-								break;
-							case SwipeDirection.Down:
-								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + swipeThreshold, _originalBounds.Width, _originalBounds.Height);
-								break;
-						}
-					},
-				   () =>
-				   {
-					   _isSwiping = false;
-				   });
-			}
-
-			if (_swipeTransitionMode == SwipeTransitionMode.Drag)
-			{
-				Animate(completeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseIn,
-					() =>
-					{
-						_swipeOffset = GetSwipeThreshold();
-						double swipeThreshold = _swipeOffset;
-						var actionBounds = _actionView.Bounds;
-						double actionSize;
-
-						switch (_swipeDirection)
-						{
-							case SwipeDirection.Left:
-								_contentView.Frame = new CGRect(_originalBounds.X - swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-								actionSize = Element.RightItems.Count * SwipeItemWidth;
-								_actionView.Frame = new CGRect(actionSize - swipeThreshold, actionBounds.Y, actionBounds.Width, actionBounds.Height);
-								break;
-							case SwipeDirection.Right:
-								_contentView.Frame = new CGRect(_originalBounds.X + swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-								actionSize = Element.LeftItems.Count * SwipeItemWidth;
-								_actionView.Frame = new CGRect(-actionSize + swipeThreshold, actionBounds.Y, actionBounds.Width, actionBounds.Height);
-								break;
-							case SwipeDirection.Up:
-								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y - swipeThreshold, _originalBounds.Width, _originalBounds.Height);
-								actionSize = _contentView.Frame.Height;
-								_actionView.Frame = new CGRect(actionBounds.X, actionSize - Math.Abs(swipeThreshold), actionBounds.Width, actionBounds.Height);
-								break;
-							case SwipeDirection.Down:
-								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + swipeThreshold, _originalBounds.Width, _originalBounds.Height);
-								actionSize = _contentView.Frame.Height;
-								_actionView.Frame = new CGRect(actionBounds.X, -actionSize + Math.Abs(swipeThreshold), actionBounds.Width, actionBounds.Height);
-								break;
-						}
-					},
-				   () =>
-				   {
-					   _isSwiping = false;
-				   });
-			}
-
-		}
-
-		double GetSwipeThreshold()
-		{
-			if (Math.Abs(_swipeThreshold) > double.Epsilon)
-				return _swipeThreshold;
-
-			var swipeItems = GetSwipeItemsByDirection();
-
-			if (swipeItems == null)
-				return 0;
-
-			_swipeThreshold = GetSwipeThreshold(swipeItems);
-
-			return _swipeThreshold;
-		}
-
-		double GetSwipeThreshold(SwipeItems swipeItems)
-		{
-			var threshold = Element?.Threshold;
-
-			if (threshold.HasValue && threshold.Value > 0)
-				return threshold.Value;
-
-			double swipeThreshold = 0;
-			bool isHorizontal = IsHorizontalSwipe();
-
-			if (swipeItems.Mode == SwipeMode.Reveal)
-			{
-				if (isHorizontal)
-				{
-					foreach (var swipeItem in swipeItems)
-					{
-						if (swipeItem.IsVisible)
-						{
-							var swipeItemSize = GetSwipeItemSize(swipeItem);
-							swipeThreshold += swipeItemSize.Width;
-						}
-					}
-				}
-				else
-					swipeThreshold = GetSwipeItemHeight();
-			}
-			else
-				swipeThreshold = CalculateSwipeThreshold();
-
-			return ValidateSwipeThreshold(swipeThreshold);
-		}
-
-		double CalculateSwipeThreshold()
-		{
-			var swipeItems = GetSwipeItemsByDirection();
-
-			float swipeItemsHeight = 0;
-			float swipeItemsWidth = 0;
-			bool useSwipeItemsSize = false;
-
-			foreach (var swipeItem in swipeItems)
-			{
-				if (swipeItem is SwipeItemView)
-					useSwipeItemsSize = true;
-
-				if (swipeItem.IsVisible)
-				{
-					var swipeItemSize = GetSwipeItemSize(swipeItem);
-					swipeItemsHeight += (float)swipeItemSize.Height;
-					swipeItemsWidth += (float)swipeItemSize.Width;
-				}
-			}
-
-			if (useSwipeItemsSize)
-			{
-				var isHorizontalSwipe = IsHorizontalSwipe();
-
-				return isHorizontalSwipe ? swipeItemsWidth : swipeItemsHeight;
-			}
-			else
-			{
-				if (_contentView != null)
-				{
-					var contentWidth = _contentView.Frame.Width;
-					var contentWidthSwipeThreshold = contentWidth * 0.8f;
-
-					return contentWidthSwipeThreshold;
-				}
-			}
-
-			return SwipeThreshold;
-		}
-
-		double ValidateSwipeThreshold(double swipeThreshold)
-		{
-			var swipeFrame = _contentView != null ? _contentView.Frame : Frame;
-
-			if (IsHorizontalSwipe())
-			{
-				if (swipeThreshold > swipeFrame.Width)
-					swipeThreshold = swipeFrame.Width;
-
-				return swipeThreshold;
-			}
-
-			if (swipeThreshold > swipeFrame.Height)
-				swipeThreshold = swipeFrame.Height;
-
-			return swipeThreshold;
-		}
-
-		Size GetSwipeItemSize(ISwipeItem swipeItem)
-		{
-			var items = GetSwipeItemsByDirection();
-
-			double threshold = Element.Threshold;
-			var contentHeight = _contentView.Frame.Height;
-			var contentWidth = _contentView.Frame.Width;
-
-			if (IsHorizontalSwipe())
-			{
-				if (swipeItem is SwipeItem)
-				{
-					return new Size(items.Mode == SwipeMode.Execute ? (threshold > 0 ? threshold : contentWidth) / items.Count : (threshold < SwipeItemWidth ? SwipeItemWidth : threshold), contentHeight);
-				}
-
-				if (swipeItem is SwipeItemView horizontalSwipeItemView)
-				{
-					var swipeItemViewSizeRequest = horizontalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-
-					double swipeItemWidth;
-
-					if (swipeItemViewSizeRequest.Request.Width > 0)
-						swipeItemWidth = threshold > swipeItemViewSizeRequest.Request.Width ? threshold : swipeItemViewSizeRequest.Request.Width;
-					else
-						swipeItemWidth = threshold > SwipeItemWidth ? threshold : SwipeItemWidth;
-
-					return new Size(swipeItemWidth, contentHeight);
-				}
-			}
-			else
-			{
-				if (swipeItem is SwipeItem)
-				{
-					var swipeItemHeight = GetSwipeItemHeight();
-					return new Size(contentWidth / items.Count, (threshold > 0 && threshold < swipeItemHeight) ? threshold : swipeItemHeight);
-				}
-
-				if (swipeItem is SwipeItemView verticalSwipeItemView)
-				{
-					var swipeItemViewSizeRequest = verticalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-
-					double swipeItemHeight;
-
-					if (swipeItemViewSizeRequest.Request.Width > 0)
-						swipeItemHeight = threshold > swipeItemViewSizeRequest.Request.Height ? threshold : (float)swipeItemViewSizeRequest.Request.Height;
-					else
-						swipeItemHeight = threshold > contentHeight ? threshold : contentHeight;
-
-					return new Size(contentWidth / items.Count, swipeItemHeight);
-				}
-			}
-
-			return Size.Zero;
-		}
-
-		double GetSwipeItemHeight()
-		{
-			var items = GetSwipeItemsByDirection();
-
-			if (items.Any(s => s is SwipeItemView))
-			{
-				var itemsHeight = new List<double>();
-
-				foreach (var swipeItem in items)
-				{
-					if (swipeItem is SwipeItemView swipeItemView)
-					{
-						var swipeItemViewSizeRequest = swipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-						itemsHeight.Add(swipeItemViewSizeRequest.Request.Height);
-					}
-				}
-
-				return itemsHeight.Max();
-			}
-
-			return _contentView.Frame.Height;
-		}
-
-		bool ValidateSwipeDirection()
-		{
-			if (_swipeDirection == null)
-				return false;
-
-			var swipeItems = GetSwipeItemsByDirection();
-			return IsValidSwipeItems(swipeItems);
-		}
-
-		double GetSwipeOffset(CGPoint initialPoint, CGPoint endPoint)
-		{
-			double swipeOffset = 0;
-
-			switch (_swipeDirection)
-			{
-				case SwipeDirection.Left:
-				case SwipeDirection.Right:
-					swipeOffset = endPoint.X - initialPoint.X;
-					break;
-				case SwipeDirection.Up:
-				case SwipeDirection.Down:
-					swipeOffset = endPoint.Y - initialPoint.Y;
-					break;
-			}
-
-			return swipeOffset;
-		}
-
-		void ProcessTouchSwipeItems(CGPoint point)
-		{
-			if (_isResettingSwipe)
-				return;
-
-			var swipeItems = GetSwipeItemsByDirection();
-
-			if (swipeItems == null || _swipeItemsRect == null)
-				return;
-
-			int i = 0;
-
-			foreach (var swipeItemRect in _swipeItemsRect)
-			{
-				var swipeItem = swipeItems[i];
-
-				if (swipeItem.IsVisible)
-				{
-					var swipeItemX = swipeItemRect.Left;
-					var swipeItemY = swipeItemRect.Top;
-
-					if (TouchInsideContent(swipeItemX, swipeItemY, swipeItemRect.Width, swipeItemRect.Height, point.X, point.Y))
-					{
-						ExecuteSwipeItem(swipeItem);
-
-						if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
-							ResetSwipe();
-
-						break;
-					}
-				}
-
-				i++;
-			}
-		}
-
-		UIViewController GetViewController()
-		{
-			var window = UIApplication.SharedApplication.GetKeyWindow();
-			var viewController = window.RootViewController;
-
-			while (viewController.PresentedViewController != null)
-				viewController = viewController.PresentedViewController;
-
-			return viewController;
-		}
-
-		UINavigationController GetUINavigationController(UIViewController controller)
-		{
-			if (controller != null)
-			{
-				if (controller is UINavigationController)
-				{
-					return (controller as UINavigationController);
-				}
-
-				if (controller.ChildViewControllers.Any())
-				{
-					var childs = controller.ChildViewControllers.Count();
-
-					for (int i = 0; i < childs; i++)
-					{
-						var child = GetUINavigationController(controller.ChildViewControllers[i]);
-
-						if (child is UINavigationController)
-						{
-							return (child as UINavigationController);
-						}
-					}
-				}
-			}
-
-			return null;
-		}
-
-		void ExecuteSwipeItem(ISwipeItem item)
-		{
-			if (item == null)
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				return;
 
 			bool isEnabled = true;
@@ -1594,32 +847,170 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		void OnCloseRequested(object sender, CloseRequestedEventArgs e)
+After:
+			{
+				_swipeTransitionMode = Element.OnThisPlatform().GetSwipeTransitionMode();
+			}
+			else
+			{
+				_swipeTransitionMode = SwipeTransitionMode.Reveal;
+			}
+		}
+
+		void UpdateSwipeItemInsets(UIButton button, float spacing = 0.0f)
 		{
+			if (button.ImageView?.Image == null)
+			{
+				return;
+			}
+
+			button.ContentMode = UIViewContentMode.Center;
+			button.ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
+
+			var imageSize = button.ImageView.Image.Size;
+
+			var titleEdgeInsets = new UIEdgeInsets(spacing, -imageSize.Width, -imageSize.Height, 0.0f);
+#pragma warning disable CA1416, CA1422 // TODO: TitleEdgeInsets, StringSize(...), ImageEdgeInsets unsupported on: 'ios' 15.0 and later
+			button.TitleEdgeInsets = titleEdgeInsets;
+
+			var labelString = button.TitleLabel.Text ?? string.Empty;
+
+#pragma warning disable BI1234 // Type or member is obsolete
+			var titleSize = !string.IsNullOrEmpty(labelString) ? labelString.StringSize(button.TitleLabel.Font) : CGSize.Empty;
+#pragma warning restore BI1234 // Type or member is obsolete
+			var imageEdgeInsets = new UIEdgeInsets(-(titleSize.Height + spacing), 0.0f, 0.0f, -titleSize.Width);
+			button.ImageEdgeInsets = imageEdgeInsets;
+#pragma warning restore CA1416, CA1422
+		}
+
+		Color GetSwipeItemColor(Color backgroundColor)
+		{
+			var luminosity = 0.2126 * backgroundColor.Red + 0.7152 * backgroundColor.Green + 0.0722 * backgroundColor.Blue;
+
+			return luminosity < 0.75 ? Colors.White : Colors.Black;
+		}
+
+		async void UpdateSwipeItemIconImage(UIButton swipeButton, SwipeItem swipeItem)
+*/
+			
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 			var animated = e.Animated;
 
 			ResetSwipe(animated);
 		}
 
 		void RaiseSwipeStarted()
-		{
+After:
+			if (swipeButton == null)
+			{
+				return;
+			}
+
+			if (swipeItem.IconImageSource == null || swipeItem.IconImageSource.IsEmpty)
+			{
+				swipeButton.SetImage(null, UIControlState.Normal);
+			}
+			else
+			{
+				var image = await swipeItem.IconImageSource.GetNativeImageAsync();
+
+				var maxWidth = swipeButton.Frame.Width * 0.5f;
+				var maxHeight = swipeButton.Frame.Height * 0.5f;
+
+				var resizedImage = MaxResizeSwipeItemIconImage(image, maxWidth, maxHeight);
+
+				try
+				{
+					swipeButton.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+					var tintColor = GetSwipeItemColor(swipeItem.BackgroundColor);
+					swipeButton.TintColor = tintColor.ToPlatform();
+				}
+				catch (Exception)
+				{
+					// UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
+					Forms.MauiContext?.CreateLogger<SwipeViewRenderer>()?.LogWarning("Can not load SwipeItem Icon");
+				}
+			}
+		}
+
+		UIImage MaxResizeSwipeItemIconImage(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 			if (_swipeDirection == null || !ValidateSwipeDirection())
 				return;
+After:
+			if (sourceImage == null)
+			{
+				return null;
+			}
+*/
 
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 			var swipeStartedEventArgs = new SwipeStartedEventArgs(_swipeDirection.Value);
 			((ISwipeViewController)Element).SendSwipeStarted(swipeStartedEventArgs);
 		}
 
 		void RaiseSwipeChanging()
-		{
+After:
+			var sourceSize = sourceImage.Size;
+			var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+
+			if (maxResizeFactor > 1)
+			{
+				return sourceImage;
+			}
+
+			var width = maxResizeFactor * sourceSize.Width;
+			var height = maxResizeFactor * sourceSize.Height;
+			UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
+			sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
+			var resultImage = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return resultImage;
+		}
+
+		void HandleTouchInteractions(GestureStatus status, CGPoint point)
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 			if (_swipeDirection == null)
 				return;
 
 			var swipeChangingEventArgs = new SwipeChangingEventArgs(_swipeDirection.Value, _swipeOffset);
 			((ISwipeViewController)Element).SendSwipeChanging(swipeChangingEventArgs);
-		}
+After:
+			switch (status)
+			{
+				case GestureStatus.Started:
+					ProcessTouchDown(point);
+					break;
+				case GestureStatus.Running:
+					ProcessTouchMove(point);
+					break;
+				case GestureStatus.Canceled:
+				case GestureStatus.Completed:
+					ProcessTouchUp();
+					break;
+			}
 
+			_isTouchDown = false;
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 		void RaiseSwipeEnded()
-		{
+After:
+		void ProcessTouchDown(CGPoint point)
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 			if (_swipeDirection == null || !ValidateSwipeDirection())
 				return;
 
@@ -1629,6 +1020,2158 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
 				isOpen = true;
+After:
+			if (_isSwiping || _isTouchDown || _contentView == null)
+			{
+				return;
+			}
+
+			if (TouchInsideContent(point) && _isOpen)
+			{
+				ResetSwipe();
+			}
+
+			_initialPoint = point;
+			_isTouchDown = true;
+		}
+
+		void ProcessTouchMove(CGPoint point)
+		{
+			if (_contentView == null || !TouchInsideContent(point))
+			{
+				return;
+			}
+
+			if (!_isOpen)
+			{
+				ResetSwipeToInitialPosition();
+
+				_swipeDirection = SwipeDirectionHelper.GetSwipeDirection(new Point(_initialPoint.X, _initialPoint.Y), new Point(point.X, point.Y));
+
+				UpdateSwipeItems();
+			}
+
+			if (!_isSwiping)
+			{
+				RaiseSwipeStarted();
+				_isSwiping = true;
+			}
+
+			if (!ValidateSwipeDirection() || _isResettingSwipe)
+			{
+				return;
+			}
+
+			_swipeOffset = GetSwipeOffset(_initialPoint, point);
+			UpdateIsOpen(_swipeOffset != 0);
+
+			if (Math.Abs(_swipeOffset) > double.Epsilon)
+			{
+				IsParentScrollEnabled(false);
+				Swipe();
+			}
+
+			RaiseSwipeChanging();
+		}
+
+		void ProcessTouchUp()
+		{
+			_isTouchDown = false;
+
+			if (!_isSwiping)
+			{
+				return;
+			}
+
+			_isSwiping = false;
+			IsParentScrollEnabled(true);
+
+			RaiseSwipeEnded();
+
+			if (_isResettingSwipe || !ValidateSwipeDirection())
+			{
+				return;
+			}
+
+			ValidateSwipeThreshold();
+		}
+
+		void IsParentScrollEnabled(bool scrollEnabled)
+		{
+			var swipeThresholdPercent = MinimumOpenSwipeThresholdPercentage * GetSwipeThreshold();
+
+			if (Math.Abs(_swipeOffset) < swipeThresholdPercent)
+			{
+				return;
+			}
+
+			if (scrollEnabled == _isScrollEnabled)
+			{
+				return;
+			}
+
+			_isScrollEnabled = scrollEnabled;
+
+			var parent = this.GetParentOfType<UIScrollView>();
+
+			if (parent != null)
+			{
+				parent.ScrollEnabled = _isScrollEnabled;
+			}
+		}
+
+		bool TouchInsideContent(CGPoint point)
+		{
+			if (_contentView == null)
+			{
+				return false;
+			}
+
+			bool touchContent = TouchInsideContent(_contentView.Frame.Left, _contentView.Frame.Top, _contentView.Frame.Width, _contentView.Frame.Height, point.X, point.Y);
+
+			return touchContent;
+		}
+
+		bool TouchInsideContent(double x1, double y1, double x2, double y2, double x, double y)
+		{
+			if (x > x1 && x < (x1 + x2) && y > y1 && y < (y1 + y2))
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		SwipeItems GetSwipeItemsByDirection()
+		{
+			if (_swipeDirection.HasValue)
+			{
+				return GetSwipeItemsByDirection(_swipeDirection.Value);
+			}
+
+			return null;
+		}
+
+		SwipeItems GetSwipeItemsByDirection(SwipeDirection swipeDirection)
+		{
+			SwipeItems swipeItems = null;
+
+			switch (swipeDirection)
+			{
+				case SwipeDirection.Left:
+					swipeItems = Element.RightItems;
+					break;
+				case SwipeDirection.Right:
+					swipeItems = Element.LeftItems;
+					break;
+				case SwipeDirection.Up:
+					swipeItems = Element.BottomItems;
+					break;
+				case SwipeDirection.Down:
+					swipeItems = Element.TopItems;
+					break;
+			}
+
+			return swipeItems;
+		}
+
+		void Swipe(bool animated = false)
+		{
+			if (_contentView == null)
+			{
+				return;
+			}
+
+			var offset = ValidateSwipeOffset(_swipeOffset);
+			_isOpen = offset != 0;
+			var swipeAnimationDuration = animated ? SwipeAnimationDuration : 0;
+
+			if (_swipeTransitionMode == SwipeTransitionMode.Reveal)
+			{
+				Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
+				{
+					switch (_swipeDirection)
+					{
+						case SwipeDirection.Left:
+							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+							break;
+						case SwipeDirection.Right:
+							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+							break;
+						case SwipeDirection.Up:
+							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
+							break;
+						case SwipeDirection.Down:
+							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
+							break;
+					}
+				}, null);
+			}
+
+			if (_swipeTransitionMode == SwipeTransitionMode.Drag)
+			{
+				var actionBounds = _actionView.Bounds;
+				double actionSize;
+
+				Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
+				{
+					switch (_swipeDirection)
+					{
+						case SwipeDirection.Left:
+							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+							actionSize = Element.RightItems.Count * SwipeItemWidth;
+							_actionView.Frame = new CGRect(actionSize + offset, actionBounds.Y, actionBounds.Width, actionBounds.Height);
+							break;
+						case SwipeDirection.Right:
+							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+							actionSize = Element.LeftItems.Count * SwipeItemWidth;
+							_actionView.Frame = new CGRect(-actionSize + offset, actionBounds.Y, actionBounds.Width, actionBounds.Height);
+							break;
+						case SwipeDirection.Up:
+							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
+							actionSize = _contentView.Frame.Height;
+							_actionView.Frame = new CGRect(actionBounds.X, actionSize - Math.Abs(offset), actionBounds.Width, actionBounds.Height);
+							break;
+						case SwipeDirection.Down:
+							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
+							actionSize = _contentView.Frame.Height;
+							_actionView.Frame = new CGRect(actionBounds.X, -actionSize + Math.Abs(offset), actionBounds.Width, actionBounds.Height);
+							break;
+					}
+				}, null);
+			}
+		}
+
+		double ValidateSwipeOffset(double offset)
+		{
+			var swipeThreshold = GetSwipeThreshold();
+
+			switch (_swipeDirection)
+			{
+				case SwipeDirection.Left:
+					if (offset > 0)
+					{
+						offset = 0;
+					}
+
+					if (_isResettingSwipe && offset < 0)
+					{
+						offset = 0;
+					}
+
+					if (Math.Abs(offset) > swipeThreshold)
+					{
+						return -swipeThreshold;
+					}
+
+					break;
+				case SwipeDirection.Right:
+					if (offset < 0)
+					{
+						offset = 0;
+					}
+
+					if (_isResettingSwipe && offset > 0)
+					{
+						offset = 0;
+					}
+
+					if (Math.Abs(offset) > swipeThreshold)
+					{
+						return swipeThreshold;
+					}
+
+					break;
+				case SwipeDirection.Up:
+					if (offset > 0)
+					{
+						offset = 0;
+					}
+
+					if (_isResettingSwipe && offset < 0)
+					{
+						offset = 0;
+					}
+
+					if (Math.Abs(offset) > swipeThreshold)
+					{
+						return -swipeThreshold;
+					}
+
+					break;
+				case SwipeDirection.Down:
+					if (offset < 0)
+					{
+						offset = 0;
+					}
+
+					if (_isResettingSwipe && offset > 0)
+					{
+						offset = 0;
+					}
+
+					if (Math.Abs(offset) > swipeThreshold)
+					{
+						return swipeThreshold;
+					}
+
+					break;
+			}
+
+			return offset;
+		}
+
+		void UnsubscribeSwipeItemEvents()
+		{
+			var items = GetSwipeItemsByDirection();
+
+			if (items == null)
+			{
+				return;
+			}
+
+			foreach (var item in items)
+			{
+				if (item is SwipeItem formsSwipeItem)
+				{
+					formsSwipeItem.PropertyChanged -= OnSwipeItemPropertyChanged;
+				}
+
+				if (item is SwipeItemView formsSwipeItemView)
+				{
+					formsSwipeItemView.PropertyChanged -= OnSwipeItemPropertyChanged;
+				}
+			}
+		}
+
+		void DisposeSwipeItems()
+		{
+			_isOpen = false;
+			UnsubscribeSwipeItemEvents();
+			_swipeItems.Clear();
+			_swipeThreshold = 0;
+			_swipeOffset = 0;
+			_originalBounds = CGRect.Empty;
+
+			if (_actionView != null)
+			{
+				_actionView.RemoveFromSuperview();
+				_actionView.Dispose();
+				_actionView = null;
+			}
+
+			if (_swipeItemsRect != null)
+			{
+				_swipeItemsRect.Clear();
+				_swipeItemsRect = null;
+			}
+
+			UpdateIsOpen(false);
+		}
+
+		void ResetSwipeToInitialPosition()
+		{
+			_isResettingSwipe = false;
+			_isSwiping = false;
+			_swipeThreshold = 0;
+			_swipeDirection = null;
+			DisposeSwipeItems();
+		}
+
+		void ResetSwipe(bool animated = true)
+		{
+			if (_swipeItemsRect == null || _contentView == null)
+			{
+				return;
+			}
+
+			_isResettingSwipe = true;
+			_isSwiping = false;
+			_swipeThreshold = 0;
+			_swipeDirection = null;
+
+			if (animated)
+			{
+				Animate(SwipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
+				{
+					if (_originalBounds != CGRect.Empty)
+					{
+						_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+					}
+				},
+				() =>
+				{
+					DisposeSwipeItems();
+					_isResettingSwipe = false;
+				});
+			}
+			else
+			{
+				if (_originalBounds != CGRect.Empty)
+				{
+					_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+				}
+
+				DisposeSwipeItems();
+				_isResettingSwipe = false;
+			}
+		}
+
+		void ValidateSwipeThreshold()
+		{
+			if (_swipeDirection == null)
+			{
+				return;
+			}
+
+			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
+
+			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
+			{
+				var swipeItems = GetSwipeItemsByDirection();
+
+				if (swipeItems == null)
+				{
+					return;
+				}
+
+				if (swipeItems.Mode == SwipeMode.Execute)
+				{
+					foreach (var swipeItem in swipeItems)
+					{
+						if (swipeItem.IsVisible)
+						{
+							ExecuteSwipeItem(swipeItem);
+						}
+					}
+
+					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
+					{
+						ResetSwipe();
+					}
+				}
+				else
+				{
+					SwipeToThreshold();
+				}
+			}
+			else
+			{
+				ResetSwipe();
+			}
+		}
+
+		void SwipeToThreshold(bool animated = true)
+		{
+			var completeAnimationDuration = animated ? SwipeAnimationDuration : 0;
+
+			if (_swipeTransitionMode == SwipeTransitionMode.Reveal)
+			{
+				Animate(completeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseIn,
+					() =>
+					{
+						_swipeOffset = GetSwipeThreshold();
+						double swipeThreshold = _swipeOffset;
+
+						switch (_swipeDirection)
+						{
+							case SwipeDirection.Left:
+								_contentView.Frame = new CGRect(_originalBounds.X - swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+								break;
+							case SwipeDirection.Right:
+								_contentView.Frame = new CGRect(_originalBounds.X + swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+								break;
+							case SwipeDirection.Up:
+								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y - swipeThreshold, _originalBounds.Width, _originalBounds.Height);
+								break;
+							case SwipeDirection.Down:
+								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + swipeThreshold, _originalBounds.Width, _originalBounds.Height);
+								break;
+						}
+					},
+				   () =>
+				   {
+					   _isSwiping = false;
+				   });
+			}
+
+			if (_swipeTransitionMode == SwipeTransitionMode.Drag)
+			{
+				Animate(completeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseIn,
+					() =>
+					{
+						_swipeOffset = GetSwipeThreshold();
+						double swipeThreshold = _swipeOffset;
+						var actionBounds = _actionView.Bounds;
+						double actionSize;
+
+						switch (_swipeDirection)
+						{
+							case SwipeDirection.Left:
+								_contentView.Frame = new CGRect(_originalBounds.X - swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+								actionSize = Element.RightItems.Count * SwipeItemWidth;
+								_actionView.Frame = new CGRect(actionSize - swipeThreshold, actionBounds.Y, actionBounds.Width, actionBounds.Height);
+								break;
+							case SwipeDirection.Right:
+								_contentView.Frame = new CGRect(_originalBounds.X + swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+								actionSize = Element.LeftItems.Count * SwipeItemWidth;
+								_actionView.Frame = new CGRect(-actionSize + swipeThreshold, actionBounds.Y, actionBounds.Width, actionBounds.Height);
+								break;
+							case SwipeDirection.Up:
+								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y - swipeThreshold, _originalBounds.Width, _originalBounds.Height);
+								actionSize = _contentView.Frame.Height;
+								_actionView.Frame = new CGRect(actionBounds.X, actionSize - Math.Abs(swipeThreshold), actionBounds.Width, actionBounds.Height);
+								break;
+							case SwipeDirection.Down:
+								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + swipeThreshold, _originalBounds.Width, _originalBounds.Height);
+								actionSize = _contentView.Frame.Height;
+								_actionView.Frame = new CGRect(actionBounds.X, -actionSize + Math.Abs(swipeThreshold), actionBounds.Width, actionBounds.Height);
+								break;
+						}
+					},
+				   () =>
+				   {
+					   _isSwiping = false;
+				   });
+			}
+
+		}
+
+		double GetSwipeThreshold()
+		{
+			if (Math.Abs(_swipeThreshold) > double.Epsilon)
+			{
+				return _swipeThreshold;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems == null)
+			{
+				return 0;
+			}
+
+			_swipeThreshold = GetSwipeThreshold(swipeItems);
+
+			return _swipeThreshold;
+		}
+
+		double GetSwipeThreshold(SwipeItems swipeItems)
+		{
+			var threshold = Element?.Threshold;
+
+			if (threshold.HasValue && threshold.Value > 0)
+			{
+				return threshold.Value;
+			}
+
+			double swipeThreshold = 0;
+			bool isHorizontal = IsHorizontalSwipe();
+
+			if (swipeItems.Mode == SwipeMode.Reveal)
+			{
+				if (isHorizontal)
+				{
+					foreach (var swipeItem in swipeItems)
+					{
+						if (swipeItem.IsVisible)
+						{
+							var swipeItemSize = GetSwipeItemSize(swipeItem);
+							swipeThreshold += swipeItemSize.Width;
+						}
+					}
+				}
+				else
+				{
+					swipeThreshold = GetSwipeItemHeight();
+				}
+			}
+			else
+			{
+				swipeThreshold = CalculateSwipeThreshold();
+			}
+
+			return ValidateSwipeThreshold(swipeThreshold);
+		}
+
+		double CalculateSwipeThreshold()
+		{
+			var swipeItems = GetSwipeItemsByDirection();
+
+			float swipeItemsHeight = 0;
+			float swipeItemsWidth = 0;
+			bool useSwipeItemsSize = false;
+
+			foreach (var swipeItem in swipeItems)
+			{
+				if (swipeItem is SwipeItemView)
+				{
+					useSwipeItemsSize = true;
+				}
+
+				if (swipeItem.IsVisible)
+				{
+					var swipeItemSize = GetSwipeItemSize(swipeItem);
+					swipeItemsHeight += (float)swipeItemSize.Height;
+					swipeItemsWidth += (float)swipeItemSize.Width;
+				}
+			}
+
+			if (useSwipeItemsSize)
+			{
+				var isHorizontalSwipe = IsHorizontalSwipe();
+
+				return isHorizontalSwipe ? swipeItemsWidth : swipeItemsHeight;
+			}
+			else
+			{
+				if (_contentView != null)
+				{
+					var contentWidth = _contentView.Frame.Width;
+					var contentWidthSwipeThreshold = contentWidth * 0.8f;
+
+					return contentWidthSwipeThreshold;
+				}
+			}
+
+			return SwipeThreshold;
+		}
+
+		double ValidateSwipeThreshold(double swipeThreshold)
+		{
+			var swipeFrame = _contentView != null ? _contentView.Frame : Frame;
+
+			if (IsHorizontalSwipe())
+			{
+				if (swipeThreshold > swipeFrame.Width)
+				{
+					swipeThreshold = swipeFrame.Width;
+				}
+
+				return swipeThreshold;
+			}
+
+			if (swipeThreshold > swipeFrame.Height)
+			{
+				swipeThreshold = swipeFrame.Height;
+			}
+
+			return swipeThreshold;
+		}
+
+		Size GetSwipeItemSize(ISwipeItem swipeItem)
+		{
+			var items = GetSwipeItemsByDirection();
+
+			double threshold = Element.Threshold;
+			var contentHeight = _contentView.Frame.Height;
+			var contentWidth = _contentView.Frame.Width;
+
+			if (IsHorizontalSwipe())
+			{
+				if (swipeItem is SwipeItem)
+				{
+					return new Size(items.Mode == SwipeMode.Execute ? (threshold > 0 ? threshold : contentWidth) / items.Count : (threshold < SwipeItemWidth ? SwipeItemWidth : threshold), contentHeight);
+				}
+
+				if (swipeItem is SwipeItemView horizontalSwipeItemView)
+				{
+					var swipeItemViewSizeRequest = horizontalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+
+					double swipeItemWidth;
+
+					if (swipeItemViewSizeRequest.Request.Width > 0)
+					{
+						swipeItemWidth = threshold > swipeItemViewSizeRequest.Request.Width ? threshold : swipeItemViewSizeRequest.Request.Width;
+					}
+					else
+					{
+						swipeItemWidth = threshold > SwipeItemWidth ? threshold : SwipeItemWidth;
+					}
+
+					return new Size(swipeItemWidth, contentHeight);
+				}
+			}
+			else
+			{
+				if (swipeItem is SwipeItem)
+				{
+					var swipeItemHeight = GetSwipeItemHeight();
+					return new Size(contentWidth / items.Count, (threshold > 0 && threshold < swipeItemHeight) ? threshold : swipeItemHeight);
+				}
+
+				if (swipeItem is SwipeItemView verticalSwipeItemView)
+				{
+					var swipeItemViewSizeRequest = verticalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+
+					double swipeItemHeight;
+
+					if (swipeItemViewSizeRequest.Request.Width > 0)
+					{
+						swipeItemHeight = threshold > swipeItemViewSizeRequest.Request.Height ? threshold : (float)swipeItemViewSizeRequest.Request.Height;
+					}
+					else
+					{
+						swipeItemHeight = threshold > contentHeight ? threshold : contentHeight;
+					}
+
+					return new Size(contentWidth / items.Count, swipeItemHeight);
+				}
+			}
+
+			return Size.Zero;
+		}
+
+		double GetSwipeItemHeight()
+		{
+			var items = GetSwipeItemsByDirection();
+
+			if (items.Any(s => s is SwipeItemView))
+			{
+				var itemsHeight = new List<double>();
+
+				foreach (var swipeItem in items)
+				{
+					if (swipeItem is SwipeItemView swipeItemView)
+					{
+						var swipeItemViewSizeRequest = swipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+						itemsHeight.Add(swipeItemViewSizeRequest.Request.Height);
+					}
+				}
+
+				return itemsHeight.Max();
+			}
+
+			return _contentView.Frame.Height;
+		}
+
+		bool ValidateSwipeDirection()
+		{
+			if (_swipeDirection == null)
+			{
+				return false;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection();
+			return IsValidSwipeItems(swipeItems);
+		}
+
+		double GetSwipeOffset(CGPoint initialPoint, CGPoint endPoint)
+		{
+			double swipeOffset = 0;
+
+			switch (_swipeDirection)
+			{
+				case SwipeDirection.Left:
+				case SwipeDirection.Right:
+					swipeOffset = endPoint.X - initialPoint.X;
+					break;
+				case SwipeDirection.Up:
+				case SwipeDirection.Down:
+					swipeOffset = endPoint.Y - initialPoint.Y;
+					break;
+			}
+
+			return swipeOffset;
+		}
+
+		void ProcessTouchSwipeItems(CGPoint point)
+		{
+			if (_isResettingSwipe)
+			{
+				return;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems == null || _swipeItemsRect == null)
+			{
+				return;
+			}
+
+			int i = 0;
+
+			foreach (var swipeItemRect in _swipeItemsRect)
+			{
+				var swipeItem = swipeItems[i];
+
+				if (swipeItem.IsVisible)
+				{
+					var swipeItemX = swipeItemRect.Left;
+					var swipeItemY = swipeItemRect.Top;
+
+					if (TouchInsideContent(swipeItemX, swipeItemY, swipeItemRect.Width, swipeItemRect.Height, point.X, point.Y))
+					{
+						ExecuteSwipeItem(swipeItem);
+
+						if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
+						{
+							ResetSwipe();
+						}
+
+						break;
+					}
+				}
+
+				i++;
+			}
+		}
+
+		UIViewController GetViewController()
+		{
+			var window = UIApplication.SharedApplication.GetKeyWindow();
+			var viewController = window.RootViewController;
+
+			while (viewController.PresentedViewController != null)
+			{
+				viewController = viewController.PresentedViewController;
+			}
+
+			return viewController;
+		}
+
+		UINavigationController GetUINavigationController(UIViewController controller)
+		{
+			if (controller != null)
+			{
+				if (controller is UINavigationController)
+				{
+					return (controller as UINavigationController);
+				}
+
+				if (controller.ChildViewControllers.Any())
+				{
+					var childs = controller.ChildViewControllers.Count();
+
+					for (int i = 0; i < childs; i++)
+					{
+						var child = GetUINavigationController(controller.ChildViewControllers[i]);
+
+						if (child is UINavigationController)
+						{
+							return (child as UINavigationController);
+						}
+					}
+				}
+			}
+
+			return null;
+		}
+
+		void ExecuteSwipeItem(ISwipeItem item)
+		{
+			if (item == null)
+			{
+				return;
+			}
+
+			bool isEnabled = true;
+
+			if (item is SwipeItem swipeItem)
+			{
+				isEnabled = swipeItem.IsEnabled;
+			}
+
+			if (item is SwipeItemView swipeItemView)
+			{
+				isEnabled = swipeItemView.IsEnabled;
+			}
+
+			if (isEnabled)
+			{
+				item.OnInvoked();
+			}
+		}
+
+		void UpdateIsOpen(bool isOpen)
+		{
+			if (Element == null)
+			{
+				return;
+			} ((ISwipeViewController)Element).IsOpen = isOpen;
+		}
+
+		void OnParentScrolled(object sender, ScrolledEventArgs e)
+		{
+			var horizontalDelta = e.ScrollX - _previousScrollX;
+			var verticalDelta = e.ScrollY - _previousScrollY;
+
+			if (horizontalDelta >= SwipeMinimumDelta || verticalDelta >= SwipeMinimumDelta)
+			{
+				ResetSwipe();
+			}
+
+			_previousScrollX = e.ScrollX;
+			_previousScrollY = e.ScrollY;
+		}
+
+		void OnParentScrolled(object sender, ItemsViewScrolledEventArgs e)
+		{
+			var firstVisibleIndexDelta = e.FirstVisibleItemIndex - _previousFirstVisibleIndex;
+
+			if (firstVisibleIndexDelta != 0)
+			{
+				ResetSwipe();
+			}
+
+			_previousFirstVisibleIndex = e.FirstVisibleItemIndex;
+		}
+
+		void OnOpenRequested(object sender, OpenRequestedEventArgs e)
+		{
+			if (_contentView == null)
+			{
+				return;
+			}
+
+			var openSwipeItem = e.OpenSwipeItem;
+			var animated = e.Animated;
+
+			ProgrammaticallyOpenSwipeItem(openSwipeItem, animated);
+		}
+
+		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem, bool animated)
+		{
+			if (_isOpen)
+			{
+				if (_previousOpenSwipeItem == openSwipeItem)
+				{
+					return;
+				}
+
+				ResetSwipe(false);
+			}
+
+			_previousOpenSwipeItem = openSwipeItem;
+
+			switch (openSwipeItem)
+			{
+				case OpenSwipeItem.BottomItems:
+					_swipeDirection = SwipeDirection.Up;
+					break;
+				case OpenSwipeItem.LeftItems:
+					_swipeDirection = SwipeDirection.Right;
+					break;
+				case OpenSwipeItem.RightItems:
+					_swipeDirection = SwipeDirection.Left;
+					break;
+				case OpenSwipeItem.TopItems:
+					_swipeDirection = SwipeDirection.Down;
+					break;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems.Where(s => s.IsVisible).Count() == 0)
+			{
+				return;
+			}
+
+			var swipeThreshold = GetSwipeThreshold();
+			UpdateOffset(swipeThreshold);
+
+			UpdateSwipeItems();
+			Swipe(animated);
+
+			_swipeOffset = Math.Abs(_swipeOffset);
+		}
+
+		void UpdateOffset(double swipeOffset)
+		{
+			switch (_swipeDirection)
+			{
+				case SwipeDirection.Right:
+				case SwipeDirection.Down:
+					_swipeOffset = swipeOffset;
+					break;
+				case SwipeDirection.Left:
+				case SwipeDirection.Up:
+					_swipeOffset = -swipeOffset;
+					break;
+			}
+		}
+
+		void OnCloseRequested(object sender, CloseRequestedEventArgs e)
+		{
+			var animated = e.Animated;
+
+			ResetSwipe(animated);
+		}
+
+		void RaiseSwipeStarted()
+		{
+			if (_swipeDirection == null || !ValidateSwipeDirection())
+			{
+				return;
+			}
+
+			var swipeStartedEventArgs = new SwipeStartedEventArgs(_swipeDirection.Value);
+			((ISwipeViewController)Element).SendSwipeStarted(swipeStartedEventArgs);
+		}
+
+		void RaiseSwipeChanging()
+		{
+			if (_swipeDirection == null)
+			{
+				return;
+			}
+
+			var swipeChangingEventArgs = new SwipeChangingEventArgs(_swipeDirection.Value, _swipeOffset);
+			((ISwipeViewController)Element).SendSwipeChanging(swipeChangingEventArgs);
+		}
+
+		void RaiseSwipeEnded()
+		{
+			if (_swipeDirection == null || !ValidateSwipeDirection())
+			{
+				return;
+			}
+
+			bool isOpen = false;
+
+			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
+
+			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
+			{
+				isOpen = true;
+			}
+*/
+{
+				_swipeTransitionMode = Element.OnThisPlatform().GetSwipeTransitionMode();
+			}
+			else
+			{
+				_swipeTransitionMode = SwipeTransitionMode.Reveal;
+			}
+		}
+
+		void UpdateSwipeItemInsets(UIButton button, float spacing = 0.0f)
+		{
+			if (button.ImageView?.Image == null)
+			{
+				return;
+			}
+
+			button.ContentMode = UIViewContentMode.Center;
+			button.ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
+
+			var imageSize = button.ImageView.Image.Size;
+
+			var titleEdgeInsets = new UIEdgeInsets(spacing, -imageSize.Width, -imageSize.Height, 0.0f);
+#pragma warning disable CA1416, CA1422 // TODO: TitleEdgeInsets, StringSize(...), ImageEdgeInsets unsupported on: 'ios' 15.0 and later
+			button.TitleEdgeInsets = titleEdgeInsets;
+
+			var labelString = button.TitleLabel.Text ?? string.Empty;
+
+#pragma warning disable BI1234 // Type or member is obsolete
+			var titleSize = !string.IsNullOrEmpty(labelString) ? labelString.StringSize(button.TitleLabel.Font) : CGSize.Empty;
+#pragma warning restore BI1234 // Type or member is obsolete
+			var imageEdgeInsets = new UIEdgeInsets(-(titleSize.Height + spacing), 0.0f, 0.0f, -titleSize.Width);
+			button.ImageEdgeInsets = imageEdgeInsets;
+#pragma warning restore CA1416, CA1422
+		}
+
+		Color GetSwipeItemColor(Color backgroundColor)
+		{
+			var luminosity = 0.2126 * backgroundColor.Red + 0.7152 * backgroundColor.Green + 0.0722 * backgroundColor.Blue;
+
+			return luminosity < 0.75 ? Colors.White : Colors.Black;
+		}
+
+		async void UpdateSwipeItemIconImage(UIButton swipeButton, SwipeItem swipeItem)
+		{
+			if (swipeButton == null)
+			{
+				return;
+			}
+
+			if (swipeItem.IconImageSource == null || swipeItem.IconImageSource.IsEmpty)
+			{
+				swipeButton.SetImage(null, UIControlState.Normal);
+			}
+			else
+			{
+				var image = await swipeItem.IconImageSource.GetNativeImageAsync();
+
+				var maxWidth = swipeButton.Frame.Width * 0.5f;
+				var maxHeight = swipeButton.Frame.Height * 0.5f;
+
+				var resizedImage = MaxResizeSwipeItemIconImage(image, maxWidth, maxHeight);
+
+				try
+				{
+					swipeButton.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+					var tintColor = GetSwipeItemColor(swipeItem.BackgroundColor);
+					swipeButton.TintColor = tintColor.ToPlatform();
+				}
+				catch (Exception)
+				{
+					// UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
+					Forms.MauiContext?.CreateLogger<SwipeViewRenderer>()?.LogWarning("Can not load SwipeItem Icon");
+				}
+			}
+		}
+
+		UIImage MaxResizeSwipeItemIconImage(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
+		{
+			if (sourceImage == null)
+			{
+				return null;
+			}
+
+			var sourceSize = sourceImage.Size;
+			var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+
+			if (maxResizeFactor > 1)
+			{
+				return sourceImage;
+			}
+
+			var width = maxResizeFactor * sourceSize.Width;
+			var height = maxResizeFactor * sourceSize.Height;
+			UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
+			sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
+			var resultImage = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return resultImage;
+		}
+
+		void HandleTouchInteractions(GestureStatus status, CGPoint point)
+		{
+			switch (status)
+			{
+				case GestureStatus.Started:
+					ProcessTouchDown(point);
+					break;
+				case GestureStatus.Running:
+					ProcessTouchMove(point);
+					break;
+				case GestureStatus.Canceled:
+				case GestureStatus.Completed:
+					ProcessTouchUp();
+					break;
+			}
+
+			_isTouchDown = false;
+		}
+
+		void ProcessTouchDown(CGPoint point)
+		{
+			if (_isSwiping || _isTouchDown || _contentView == null)
+			{
+				return;
+			}
+
+			if (TouchInsideContent(point) && _isOpen)
+			{
+				ResetSwipe();
+			}
+
+			_initialPoint = point;
+			_isTouchDown = true;
+		}
+
+		void ProcessTouchMove(CGPoint point)
+		{
+			if (_contentView == null || !TouchInsideContent(point))
+			{
+				return;
+			}
+
+			if (!_isOpen)
+			{
+				ResetSwipeToInitialPosition();
+
+				_swipeDirection = SwipeDirectionHelper.GetSwipeDirection(new Point(_initialPoint.X, _initialPoint.Y), new Point(point.X, point.Y));
+
+				UpdateSwipeItems();
+			}
+
+			if (!_isSwiping)
+			{
+				RaiseSwipeStarted();
+				_isSwiping = true;
+			}
+
+			if (!ValidateSwipeDirection() || _isResettingSwipe)
+			{
+				return;
+			}
+
+			_swipeOffset = GetSwipeOffset(_initialPoint, point);
+			UpdateIsOpen(_swipeOffset != 0);
+
+			if (Math.Abs(_swipeOffset) > double.Epsilon)
+			{
+				IsParentScrollEnabled(false);
+				Swipe();
+			}
+
+			RaiseSwipeChanging();
+		}
+
+		void ProcessTouchUp()
+		{
+			_isTouchDown = false;
+
+			if (!_isSwiping)
+			{
+				return;
+			}
+
+			_isSwiping = false;
+			IsParentScrollEnabled(true);
+
+			RaiseSwipeEnded();
+
+			if (_isResettingSwipe || !ValidateSwipeDirection())
+			{
+				return;
+			}
+
+			ValidateSwipeThreshold();
+		}
+
+		void IsParentScrollEnabled(bool scrollEnabled)
+		{
+			var swipeThresholdPercent = MinimumOpenSwipeThresholdPercentage * GetSwipeThreshold();
+
+			if (Math.Abs(_swipeOffset) < swipeThresholdPercent)
+			{
+				return;
+			}
+
+			if (scrollEnabled == _isScrollEnabled)
+			{
+				return;
+			}
+
+			_isScrollEnabled = scrollEnabled;
+
+			var parent = this.GetParentOfType<UIScrollView>();
+
+			if (parent != null)
+			{
+				parent.ScrollEnabled = _isScrollEnabled;
+			}
+		}
+
+		bool TouchInsideContent(CGPoint point)
+		{
+			if (_contentView == null)
+			{
+				return false;
+			}
+
+			bool touchContent = TouchInsideContent(_contentView.Frame.Left, _contentView.Frame.Top, _contentView.Frame.Width, _contentView.Frame.Height, point.X, point.Y);
+
+			return touchContent;
+		}
+
+		bool TouchInsideContent(double x1, double y1, double x2, double y2, double x, double y)
+		{
+			if (x > x1 && x < (x1 + x2) && y > y1 && y < (y1 + y2))
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		SwipeItems GetSwipeItemsByDirection()
+		{
+			if (_swipeDirection.HasValue)
+			{
+				return GetSwipeItemsByDirection(_swipeDirection.Value);
+			}
+
+			return null;
+		}
+
+		SwipeItems GetSwipeItemsByDirection(SwipeDirection swipeDirection)
+		{
+			SwipeItems swipeItems = null;
+
+			switch (swipeDirection)
+			{
+				case SwipeDirection.Left:
+					swipeItems = Element.RightItems;
+					break;
+				case SwipeDirection.Right:
+					swipeItems = Element.LeftItems;
+					break;
+				case SwipeDirection.Up:
+					swipeItems = Element.BottomItems;
+					break;
+				case SwipeDirection.Down:
+					swipeItems = Element.TopItems;
+					break;
+			}
+
+			return swipeItems;
+		}
+
+		void Swipe(bool animated = false)
+		{
+			if (_contentView == null)
+			{
+				return;
+			}
+
+			var offset = ValidateSwipeOffset(_swipeOffset);
+			_isOpen = offset != 0;
+			var swipeAnimationDuration = animated ? SwipeAnimationDuration : 0;
+
+			if (_swipeTransitionMode == SwipeTransitionMode.Reveal)
+			{
+				Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
+				{
+					switch (_swipeDirection)
+					{
+						case SwipeDirection.Left:
+							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+							break;
+						case SwipeDirection.Right:
+							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+							break;
+						case SwipeDirection.Up:
+							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
+							break;
+						case SwipeDirection.Down:
+							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
+							break;
+					}
+				}, null);
+			}
+
+			if (_swipeTransitionMode == SwipeTransitionMode.Drag)
+			{
+				var actionBounds = _actionView.Bounds;
+				double actionSize;
+
+				Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
+				{
+					switch (_swipeDirection)
+					{
+						case SwipeDirection.Left:
+							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+							actionSize = Element.RightItems.Count * SwipeItemWidth;
+							_actionView.Frame = new CGRect(actionSize + offset, actionBounds.Y, actionBounds.Width, actionBounds.Height);
+							break;
+						case SwipeDirection.Right:
+							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+							actionSize = Element.LeftItems.Count * SwipeItemWidth;
+							_actionView.Frame = new CGRect(-actionSize + offset, actionBounds.Y, actionBounds.Width, actionBounds.Height);
+							break;
+						case SwipeDirection.Up:
+							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
+							actionSize = _contentView.Frame.Height;
+							_actionView.Frame = new CGRect(actionBounds.X, actionSize - Math.Abs(offset), actionBounds.Width, actionBounds.Height);
+							break;
+						case SwipeDirection.Down:
+							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
+							actionSize = _contentView.Frame.Height;
+							_actionView.Frame = new CGRect(actionBounds.X, -actionSize + Math.Abs(offset), actionBounds.Width, actionBounds.Height);
+							break;
+					}
+				}, null);
+			}
+		}
+
+		double ValidateSwipeOffset(double offset)
+		{
+			var swipeThreshold = GetSwipeThreshold();
+
+			switch (_swipeDirection)
+			{
+				case SwipeDirection.Left:
+					if (offset > 0)
+					{
+						offset = 0;
+					}
+
+					if (_isResettingSwipe && offset < 0)
+					{
+						offset = 0;
+					}
+
+					if (Math.Abs(offset) > swipeThreshold)
+					{
+						return -swipeThreshold;
+					}
+
+					break;
+				case SwipeDirection.Right:
+					if (offset < 0)
+					{
+						offset = 0;
+					}
+
+					if (_isResettingSwipe && offset > 0)
+					{
+						offset = 0;
+					}
+
+					if (Math.Abs(offset) > swipeThreshold)
+					{
+						return swipeThreshold;
+					}
+
+					break;
+				case SwipeDirection.Up:
+					if (offset > 0)
+					{
+						offset = 0;
+					}
+
+					if (_isResettingSwipe && offset < 0)
+					{
+						offset = 0;
+					}
+
+					if (Math.Abs(offset) > swipeThreshold)
+					{
+						return -swipeThreshold;
+					}
+
+					break;
+				case SwipeDirection.Down:
+					if (offset < 0)
+					{
+						offset = 0;
+					}
+
+					if (_isResettingSwipe && offset > 0)
+					{
+						offset = 0;
+					}
+
+					if (Math.Abs(offset) > swipeThreshold)
+					{
+						return swipeThreshold;
+					}
+
+					break;
+			}
+
+			return offset;
+		}
+
+		void UnsubscribeSwipeItemEvents()
+		{
+			var items = GetSwipeItemsByDirection();
+
+			if (items == null)
+			{
+				return;
+			}
+
+			foreach (var item in items)
+			{
+				if (item is SwipeItem formsSwipeItem)
+				{
+					formsSwipeItem.PropertyChanged -= OnSwipeItemPropertyChanged;
+				}
+
+				if (item is SwipeItemView formsSwipeItemView)
+				{
+					formsSwipeItemView.PropertyChanged -= OnSwipeItemPropertyChanged;
+				}
+			}
+		}
+
+		void DisposeSwipeItems()
+		{
+			_isOpen = false;
+			UnsubscribeSwipeItemEvents();
+			_swipeItems.Clear();
+			_swipeThreshold = 0;
+			_swipeOffset = 0;
+			_originalBounds = CGRect.Empty;
+
+			if (_actionView != null)
+			{
+				_actionView.RemoveFromSuperview();
+				_actionView.Dispose();
+				_actionView = null;
+			}
+
+			if (_swipeItemsRect != null)
+			{
+				_swipeItemsRect.Clear();
+				_swipeItemsRect = null;
+			}
+
+			UpdateIsOpen(false);
+		}
+
+		void ResetSwipeToInitialPosition()
+		{
+			_isResettingSwipe = false;
+			_isSwiping = false;
+			_swipeThreshold = 0;
+			_swipeDirection = null;
+			DisposeSwipeItems();
+		}
+
+		void ResetSwipe(bool animated = true)
+		{
+			if (_swipeItemsRect == null || _contentView == null)
+			{
+				return;
+			}
+
+			_isResettingSwipe = true;
+			_isSwiping = false;
+			_swipeThreshold = 0;
+			_swipeDirection = null;
+
+			if (animated)
+			{
+				Animate(SwipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, () =>
+				{
+					if (_originalBounds != CGRect.Empty)
+					{
+						_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+					}
+				},
+				() =>
+				{
+					DisposeSwipeItems();
+					_isResettingSwipe = false;
+				});
+			}
+			else
+			{
+				if (_originalBounds != CGRect.Empty)
+				{
+					_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+				}
+
+				DisposeSwipeItems();
+				_isResettingSwipe = false;
+			}
+		}
+
+		void ValidateSwipeThreshold()
+		{
+			if (_swipeDirection == null)
+			{
+				return;
+			}
+
+			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
+
+			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
+			{
+				var swipeItems = GetSwipeItemsByDirection();
+
+				if (swipeItems == null)
+				{
+					return;
+				}
+
+				if (swipeItems.Mode == SwipeMode.Execute)
+				{
+					foreach (var swipeItem in swipeItems)
+					{
+						if (swipeItem.IsVisible)
+						{
+							ExecuteSwipeItem(swipeItem);
+						}
+					}
+
+					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
+					{
+						ResetSwipe();
+					}
+				}
+				else
+				{
+					SwipeToThreshold();
+				}
+			}
+			else
+			{
+				ResetSwipe();
+			}
+		}
+
+		void SwipeToThreshold(bool animated = true)
+		{
+			var completeAnimationDuration = animated ? SwipeAnimationDuration : 0;
+
+			if (_swipeTransitionMode == SwipeTransitionMode.Reveal)
+			{
+				Animate(completeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseIn,
+					() =>
+					{
+						_swipeOffset = GetSwipeThreshold();
+						double swipeThreshold = _swipeOffset;
+
+						switch (_swipeDirection)
+						{
+							case SwipeDirection.Left:
+								_contentView.Frame = new CGRect(_originalBounds.X - swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+								break;
+							case SwipeDirection.Right:
+								_contentView.Frame = new CGRect(_originalBounds.X + swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+								break;
+							case SwipeDirection.Up:
+								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y - swipeThreshold, _originalBounds.Width, _originalBounds.Height);
+								break;
+							case SwipeDirection.Down:
+								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + swipeThreshold, _originalBounds.Width, _originalBounds.Height);
+								break;
+						}
+					},
+				   () =>
+				   {
+					   _isSwiping = false;
+				   });
+			}
+
+			if (_swipeTransitionMode == SwipeTransitionMode.Drag)
+			{
+				Animate(completeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseIn,
+					() =>
+					{
+						_swipeOffset = GetSwipeThreshold();
+						double swipeThreshold = _swipeOffset;
+						var actionBounds = _actionView.Bounds;
+						double actionSize;
+
+						switch (_swipeDirection)
+						{
+							case SwipeDirection.Left:
+								_contentView.Frame = new CGRect(_originalBounds.X - swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+								actionSize = Element.RightItems.Count * SwipeItemWidth;
+								_actionView.Frame = new CGRect(actionSize - swipeThreshold, actionBounds.Y, actionBounds.Width, actionBounds.Height);
+								break;
+							case SwipeDirection.Right:
+								_contentView.Frame = new CGRect(_originalBounds.X + swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
+								actionSize = Element.LeftItems.Count * SwipeItemWidth;
+								_actionView.Frame = new CGRect(-actionSize + swipeThreshold, actionBounds.Y, actionBounds.Width, actionBounds.Height);
+								break;
+							case SwipeDirection.Up:
+								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y - swipeThreshold, _originalBounds.Width, _originalBounds.Height);
+								actionSize = _contentView.Frame.Height;
+								_actionView.Frame = new CGRect(actionBounds.X, actionSize - Math.Abs(swipeThreshold), actionBounds.Width, actionBounds.Height);
+								break;
+							case SwipeDirection.Down:
+								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + swipeThreshold, _originalBounds.Width, _originalBounds.Height);
+								actionSize = _contentView.Frame.Height;
+								_actionView.Frame = new CGRect(actionBounds.X, -actionSize + Math.Abs(swipeThreshold), actionBounds.Width, actionBounds.Height);
+								break;
+						}
+					},
+				   () =>
+				   {
+					   _isSwiping = false;
+				   });
+			}
+
+		}
+
+		double GetSwipeThreshold()
+		{
+			if (Math.Abs(_swipeThreshold) > double.Epsilon)
+			{
+				return _swipeThreshold;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems == null)
+			{
+				return 0;
+			}
+
+			_swipeThreshold = GetSwipeThreshold(swipeItems);
+
+			return _swipeThreshold;
+		}
+
+		double GetSwipeThreshold(SwipeItems swipeItems)
+		{
+			var threshold = Element?.Threshold;
+
+			if (threshold.HasValue && threshold.Value > 0)
+			{
+				return threshold.Value;
+			}
+
+			double swipeThreshold = 0;
+			bool isHorizontal = IsHorizontalSwipe();
+
+			if (swipeItems.Mode == SwipeMode.Reveal)
+			{
+				if (isHorizontal)
+				{
+					foreach (var swipeItem in swipeItems)
+					{
+						if (swipeItem.IsVisible)
+						{
+							var swipeItemSize = GetSwipeItemSize(swipeItem);
+							swipeThreshold += swipeItemSize.Width;
+						}
+					}
+				}
+				else
+				{
+					swipeThreshold = GetSwipeItemHeight();
+				}
+			}
+			else
+			{
+				swipeThreshold = CalculateSwipeThreshold();
+			}
+
+			return ValidateSwipeThreshold(swipeThreshold);
+		}
+
+		double CalculateSwipeThreshold()
+		{
+			var swipeItems = GetSwipeItemsByDirection();
+
+			float swipeItemsHeight = 0;
+			float swipeItemsWidth = 0;
+			bool useSwipeItemsSize = false;
+
+			foreach (var swipeItem in swipeItems)
+			{
+				if (swipeItem is SwipeItemView)
+				{
+					useSwipeItemsSize = true;
+				}
+
+				if (swipeItem.IsVisible)
+				{
+					var swipeItemSize = GetSwipeItemSize(swipeItem);
+					swipeItemsHeight += (float)swipeItemSize.Height;
+					swipeItemsWidth += (float)swipeItemSize.Width;
+				}
+			}
+
+			if (useSwipeItemsSize)
+			{
+				var isHorizontalSwipe = IsHorizontalSwipe();
+
+				return isHorizontalSwipe ? swipeItemsWidth : swipeItemsHeight;
+			}
+			else
+			{
+				if (_contentView != null)
+				{
+					var contentWidth = _contentView.Frame.Width;
+					var contentWidthSwipeThreshold = contentWidth * 0.8f;
+
+					return contentWidthSwipeThreshold;
+				}
+			}
+
+			return SwipeThreshold;
+		}
+
+		double ValidateSwipeThreshold(double swipeThreshold)
+		{
+			var swipeFrame = _contentView != null ? _contentView.Frame : Frame;
+
+			if (IsHorizontalSwipe())
+			{
+				if (swipeThreshold > swipeFrame.Width)
+				{
+					swipeThreshold = swipeFrame.Width;
+				}
+
+				return swipeThreshold;
+			}
+
+			if (swipeThreshold > swipeFrame.Height)
+			{
+				swipeThreshold = swipeFrame.Height;
+			}
+
+			return swipeThreshold;
+		}
+
+		Size GetSwipeItemSize(ISwipeItem swipeItem)
+		{
+			var items = GetSwipeItemsByDirection();
+
+			double threshold = Element.Threshold;
+			var contentHeight = _contentView.Frame.Height;
+			var contentWidth = _contentView.Frame.Width;
+
+			if (IsHorizontalSwipe())
+			{
+				if (swipeItem is SwipeItem)
+				{
+					return new Size(items.Mode == SwipeMode.Execute ? (threshold > 0 ? threshold : contentWidth) / items.Count : (threshold < SwipeItemWidth ? SwipeItemWidth : threshold), contentHeight);
+				}
+
+				if (swipeItem is SwipeItemView horizontalSwipeItemView)
+				{
+					var swipeItemViewSizeRequest = horizontalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+
+					double swipeItemWidth;
+
+					if (swipeItemViewSizeRequest.Request.Width > 0)
+					{
+						swipeItemWidth = threshold > swipeItemViewSizeRequest.Request.Width ? threshold : swipeItemViewSizeRequest.Request.Width;
+					}
+					else
+					{
+						swipeItemWidth = threshold > SwipeItemWidth ? threshold : SwipeItemWidth;
+					}
+
+					return new Size(swipeItemWidth, contentHeight);
+				}
+			}
+			else
+			{
+				if (swipeItem is SwipeItem)
+				{
+					var swipeItemHeight = GetSwipeItemHeight();
+					return new Size(contentWidth / items.Count, (threshold > 0 && threshold < swipeItemHeight) ? threshold : swipeItemHeight);
+				}
+
+				if (swipeItem is SwipeItemView verticalSwipeItemView)
+				{
+					var swipeItemViewSizeRequest = verticalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+
+					double swipeItemHeight;
+
+					if (swipeItemViewSizeRequest.Request.Width > 0)
+					{
+						swipeItemHeight = threshold > swipeItemViewSizeRequest.Request.Height ? threshold : (float)swipeItemViewSizeRequest.Request.Height;
+					}
+					else
+					{
+						swipeItemHeight = threshold > contentHeight ? threshold : contentHeight;
+					}
+
+					return new Size(contentWidth / items.Count, swipeItemHeight);
+				}
+			}
+
+			return Size.Zero;
+		}
+
+		double GetSwipeItemHeight()
+		{
+			var items = GetSwipeItemsByDirection();
+
+			if (items.Any(s => s is SwipeItemView))
+			{
+				var itemsHeight = new List<double>();
+
+				foreach (var swipeItem in items)
+				{
+					if (swipeItem is SwipeItemView swipeItemView)
+					{
+						var swipeItemViewSizeRequest = swipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+						itemsHeight.Add(swipeItemViewSizeRequest.Request.Height);
+					}
+				}
+
+				return itemsHeight.Max();
+			}
+
+			return _contentView.Frame.Height;
+		}
+
+		bool ValidateSwipeDirection()
+		{
+			if (_swipeDirection == null)
+			{
+				return false;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection();
+			return IsValidSwipeItems(swipeItems);
+		}
+
+		double GetSwipeOffset(CGPoint initialPoint, CGPoint endPoint)
+		{
+			double swipeOffset = 0;
+
+			switch (_swipeDirection)
+			{
+				case SwipeDirection.Left:
+				case SwipeDirection.Right:
+					swipeOffset = endPoint.X - initialPoint.X;
+					break;
+				case SwipeDirection.Up:
+				case SwipeDirection.Down:
+					swipeOffset = endPoint.Y - initialPoint.Y;
+					break;
+			}
+
+			return swipeOffset;
+		}
+
+		void ProcessTouchSwipeItems(CGPoint point)
+		{
+			if (_isResettingSwipe)
+			{
+				return;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems == null || _swipeItemsRect == null)
+			{
+				return;
+			}
+
+			int i = 0;
+
+			foreach (var swipeItemRect in _swipeItemsRect)
+			{
+				var swipeItem = swipeItems[i];
+
+				if (swipeItem.IsVisible)
+				{
+					var swipeItemX = swipeItemRect.Left;
+					var swipeItemY = swipeItemRect.Top;
+
+					if (TouchInsideContent(swipeItemX, swipeItemY, swipeItemRect.Width, swipeItemRect.Height, point.X, point.Y))
+					{
+						ExecuteSwipeItem(swipeItem);
+
+						if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
+						{
+							ResetSwipe();
+						}
+
+						break;
+					}
+				}
+
+				i++;
+			}
+		}
+
+		UIViewController GetViewController()
+		{
+			var window = UIApplication.SharedApplication.GetKeyWindow();
+			var viewController = window.RootViewController;
+
+			while (viewController.PresentedViewController != null)
+			{
+				viewController = viewController.PresentedViewController;
+			}
+
+			return viewController;
+		}
+
+		UINavigationController GetUINavigationController(UIViewController controller)
+		{
+			if (controller != null)
+			{
+				if (controller is UINavigationController)
+				{
+					return (controller as UINavigationController);
+				}
+
+				if (controller.ChildViewControllers.Any())
+				{
+					var childs = controller.ChildViewControllers.Count();
+
+					for (int i = 0; i < childs; i++)
+					{
+						var child = GetUINavigationController(controller.ChildViewControllers[i]);
+
+						if (child is UINavigationController)
+						{
+							return (child as UINavigationController);
+						}
+					}
+				}
+			}
+
+			return null;
+		}
+
+		void ExecuteSwipeItem(ISwipeItem item)
+		{
+			if (item == null)
+			{
+				return;
+			}
+
+			bool isEnabled = true;
+
+			if (item is SwipeItem swipeItem)
+			{
+				isEnabled = swipeItem.IsEnabled;
+			}
+
+			if (item is SwipeItemView swipeItemView)
+			{
+				isEnabled = swipeItemView.IsEnabled;
+			}
+
+			if (isEnabled)
+			{
+				item.OnInvoked();
+			}
+		}
+
+		void UpdateIsOpen(bool isOpen)
+		{
+			if (Element == null)
+			{
+				return;
+			} ((ISwipeViewController)Element).IsOpen = isOpen;
+		}
+
+		void OnParentScrolled(object sender, ScrolledEventArgs e)
+		{
+			var horizontalDelta = e.ScrollX - _previousScrollX;
+			var verticalDelta = e.ScrollY - _previousScrollY;
+
+			if (horizontalDelta >= SwipeMinimumDelta || verticalDelta >= SwipeMinimumDelta)
+			{
+				ResetSwipe();
+			}
+
+			_previousScrollX = e.ScrollX;
+			_previousScrollY = e.ScrollY;
+		}
+
+		void OnParentScrolled(object sender, ItemsViewScrolledEventArgs e)
+		{
+			var firstVisibleIndexDelta = e.FirstVisibleItemIndex - _previousFirstVisibleIndex;
+
+			if (firstVisibleIndexDelta != 0)
+			{
+				ResetSwipe();
+			}
+
+			_previousFirstVisibleIndex = e.FirstVisibleItemIndex;
+		}
+
+		void OnOpenRequested(object sender, OpenRequestedEventArgs e)
+		{
+			if (_contentView == null)
+			{
+				return;
+			}
+
+			var openSwipeItem = e.OpenSwipeItem;
+			var animated = e.Animated;
+
+			ProgrammaticallyOpenSwipeItem(openSwipeItem, animated);
+		}
+
+		void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem, bool animated)
+		{
+			if (_isOpen)
+			{
+				if (_previousOpenSwipeItem == openSwipeItem)
+				{
+					return;
+				}
+
+				ResetSwipe(false);
+			}
+
+			_previousOpenSwipeItem = openSwipeItem;
+
+			switch (openSwipeItem)
+			{
+				case OpenSwipeItem.BottomItems:
+					_swipeDirection = SwipeDirection.Up;
+					break;
+				case OpenSwipeItem.LeftItems:
+					_swipeDirection = SwipeDirection.Right;
+					break;
+				case OpenSwipeItem.RightItems:
+					_swipeDirection = SwipeDirection.Left;
+					break;
+				case OpenSwipeItem.TopItems:
+					_swipeDirection = SwipeDirection.Down;
+					break;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems.Where(s => s.IsVisible).Count() == 0)
+			{
+				return;
+			}
+
+			var swipeThreshold = GetSwipeThreshold();
+			UpdateOffset(swipeThreshold);
+
+			UpdateSwipeItems();
+			Swipe(animated);
+
+			_swipeOffset = Math.Abs(_swipeOffset);
+		}
+
+		void UpdateOffset(double swipeOffset)
+		{
+			switch (_swipeDirection)
+			{
+				case SwipeDirection.Right:
+				case SwipeDirection.Down:
+					_swipeOffset = swipeOffset;
+					break;
+				case SwipeDirection.Left:
+				case SwipeDirection.Up:
+					_swipeOffset = -swipeOffset;
+					break;
+			}
+		}
+
+		void OnCloseRequested(object sender, CloseRequestedEventArgs e)
+		{
+			var animated = e.Animated;
+
+			ResetSwipe(animated);
+		}
+
+		void RaiseSwipeStarted()
+		{
+			if (_swipeDirection == null || !ValidateSwipeDirection())
+			{
+				return;
+			}
+
+			var swipeStartedEventArgs = new SwipeStartedEventArgs(_swipeDirection.Value);
+			((ISwipeViewController)Element).SendSwipeStarted(swipeStartedEventArgs);
+		}
+
+		void RaiseSwipeChanging()
+		{
+			if (_swipeDirection == null)
+			{
+				return;
+			}
+
+			var swipeChangingEventArgs = new SwipeChangingEventArgs(_swipeDirection.Value, _swipeOffset);
+			((ISwipeViewController)Element).SendSwipeChanging(swipeChangingEventArgs);
+		}
+
+		void RaiseSwipeEnded()
+		{
+			if (_swipeDirection == null || !ValidateSwipeDirection())
+			{
+				return;
+			}
+
+			bool isOpen = false;
+
+			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
+
+			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
+			{
+				isOpen = true;
+			}
 
 			var swipeEndedEventArgs = new SwipeEndedEventArgs(_swipeDirection.Value, isOpen);
 			((ISwipeViewController)Element).SendSwipeEnded(swipeEndedEventArgs);

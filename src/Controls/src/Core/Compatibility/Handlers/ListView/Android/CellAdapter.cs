@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected CellAdapter(Context context)
 		{
 			if (context == null)
+			{
 				throw new ArgumentNullException("context");
+			}
 
 			_context = context;
 		}
@@ -43,10 +45,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set
 			{
 				if (_actionModeContext == value)
+				{
 					return;
+				}
 
 				if (_actionModeContext != null)
+				{
 					((INotifyCollectionChanged)_actionModeContext.ContextActions).CollectionChanged -= OnContextItemsChanged;
+				}
 
 				ActionModeObject = null;
 				_actionModeContext = value;
@@ -67,21 +73,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set
 			{
 				if (_contextView == value)
+				{
 					return;
+				}
 
 				if (_contextView != null)
 				{
 					var isSelected = (bool)ActionModeContext.GetValue(ListViewAdapter.IsSelectedProperty);
 					if (isSelected)
+					{
 						SetSelectedBackground(_contextView);
+					}
 					else
+					{
 						UnsetSelectedBackground(_contextView);
+					}
 				}
 
 				_contextView = value;
 
 				if (_contextView != null)
+				{
 					SetSelectedBackground(_contextView, true);
+				}
 			}
 		}
 
@@ -143,18 +157,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var listView = parent as AListView;
 				if (listView != null)
+				{
 					position -= listView.HeaderViewsCount;
+				}
+
 				HandleContextMode(view, position);
 			}
 			else
+			{
 				HandleItemClick(parent, view, position, id);
+			}
 		}
 
 		public bool OnItemLongClick(AdapterView parent, AView view, int position, long id)
 		{
 			var listView = parent as AListView;
 			if (listView != null)
+			{
 				position -= listView.HeaderViewsCount;
+			}
+
 			return HandleContextMode(view, position);
 		}
 
@@ -170,9 +192,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			using (var value = new TypedValue())
 			{
 				if (_context.Theme.ResolveAttribute(attribute, value, true))
+				{
 					view.SetBackgroundResource(value.ResourceId);
+				}
 				else
+				{
 					view.SetBackgroundResource(global::Android.Resource.Color.HoloBlueDark);
+				}
 			}
 		}
 
@@ -213,22 +239,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				action.PropertyChanging += changing;
 
 				if (action.Command != null)
+				{
 					action.Command.CanExecuteChanged += commandChanged;
+				}
 
 				if (!((IMenuItemController)action).IsEnabled)
+				{
 					item.SetEnabled(false);
+				}
 			}
 		}
 
 		bool HandleContextMode(AView view, int position)
 		{
 			if (view is EditText || view is TextView || view is SearchView)
+			{
 				return false;
+			}
 
 			Cell cell = GetCellForPosition(position);
 
 			if (cell == null)
+			{
 				return false;
+			}
 
 			if (_actionMode != null || _supportActionMode != null)
 			{
@@ -241,7 +275,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ActionModeContext = cell;
 
 				if (ActionModeContext.IsContextActionsLegacyModeEnabled == false)
+				{
 					_actionModeNeedsUpdates = true;
+				}
 
 				_actionMode?.Invalidate();
 				_supportActionMode?.Invalidate();
@@ -249,15 +285,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 			{
 				if (!cell.HasContextActions)
+				{
 					return false;
+				}
 
 				ActionModeContext = cell;
 
 				var activity = view.Context.GetActivity();
 				if (activity is not AppCompatActivity appCompat)
+				{
 					_actionMode = activity.StartActionMode(this);
+				}
 				else
+				{
 					_supportActionMode = appCompat.StartSupportActionMode(this);
+				}
 			}
 
 			ContextView = view;
@@ -292,10 +334,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.PropertyName == MenuItem.CommandProperty.PropertyName)
 			{
 				if (action.Command != null)
+				{
 					action.Command.CanExecuteChanged += OnContextActionCommandCanExecuteChanged;
+				}
 			}
 			else
+			{
 				_actionModeNeedsUpdates = true;
+			}
 		}
 
 		void OnContextActionPropertyChanging(object sender, PropertyChangingEventArgs e)
@@ -305,7 +351,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.PropertyName == MenuItem.CommandProperty.PropertyName)
 			{
 				if (action.Command != null)
+				{
 					action.Command.CanExecuteChanged -= OnContextActionCommandCanExecuteChanged;
+				}
 			}
 		}
 
@@ -331,7 +379,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				action.PropertyChanging -= changing;
 
 				if (action.Command != null)
+				{
 					action.Command.CanExecuteChanged -= commandChanged;
+				}
 			}
 			ContextView = null;
 

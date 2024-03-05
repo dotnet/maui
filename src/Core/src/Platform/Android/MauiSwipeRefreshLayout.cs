@@ -48,7 +48,9 @@ namespace Microsoft.Maui.Platform
 					var child = GetChildAt(i);
 
 					if (child is ImageView iv && child != _contentView)
+					{
 						return iv;
+					}
 				}
 
 				return null;
@@ -58,7 +60,9 @@ namespace Microsoft.Maui.Platform
 		public override bool CanChildScrollUp()
 		{
 			if (ChildCount == 0)
+			{
 				return base.CanChildScrollUp();
+			}
 
 			return CanScrollUp(_contentView);
 		}
@@ -66,17 +70,23 @@ namespace Microsoft.Maui.Platform
 		bool CanScrollUp(AView? view)
 		{
 			if (!(view is ViewGroup viewGroup))
+			{
 				return base.CanChildScrollUp();
+			}
 
 			if (!CanScrollUpViewByType(view))
+			{
 				return false;
+			}
 
 			for (int i = 0; i < viewGroup.ChildCount; i++)
 			{
 				var child = viewGroup.GetChildAt(i);
 
 				if (!CanScrollUpViewByType(child))
+				{
 					return false;
+				}
 
 				if (child is SwipeRefreshLayout)
 				{
@@ -102,13 +112,19 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (view is RecyclerView recyclerView)
+			{
 				return recyclerView.ComputeVerticalScrollOffset() > 0;
+			}
 
 			if (view is NestedScrollView nestedScrollView)
+			{
 				return nestedScrollView.ComputeVerticalScrollOffset() > 0;
+			}
 
 			if (view is AWebView webView)
+			{
 				return webView.ScrollY > 0;
+			}
 
 			return true;
 		}

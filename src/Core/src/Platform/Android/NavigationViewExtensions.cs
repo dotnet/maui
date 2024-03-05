@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Platform
 					try
 					{
 						if (navController.GetBackStackEntry(nvd.Id).Destination is FragmentNavigator.Destination found)
+						{
 							action.Invoke(found);
+						}
 					}
 					catch (IllegalArgumentException) { }
 				}

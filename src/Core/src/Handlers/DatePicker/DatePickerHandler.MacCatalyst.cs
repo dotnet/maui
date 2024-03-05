@@ -78,7 +78,9 @@ namespace Microsoft.Maui.Handlers
 		void SetVirtualViewDate()
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			VirtualView.Date = PlatformView.Date.ToDateTime().Date;
 		}
@@ -110,22 +112,30 @@ namespace Microsoft.Maui.Handlers
 			void OnValueChanged(object? sender, EventArgs? e)
 			{
 				if (_handler is not null && _handler.TryGetTarget(out var handler) && handler.UpdateImmediately)
+				{
 					handler.SetVirtualViewDate();
+				}
 
 				if (VirtualView is IDatePicker virtualView)
+				{
 					virtualView.IsFocused = true;
+				}
 			}
 
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is IDatePicker virtualView)
+				{
 					virtualView.IsFocused = true;
+				}
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is IDatePicker virtualView)
+				{
 					virtualView.IsFocused = false;
+				}
 			}
 		}
 	}

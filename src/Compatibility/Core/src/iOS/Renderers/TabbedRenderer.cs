@@ -79,7 +79,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			OnPagesChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
 			if (element != null)
+			{
 				element.SendViewInitialized(NativeView);
+			}
 
 			//disable edit/reorder of tabs
 			CustomizableViewControllers = null;
@@ -96,9 +98,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public void SetElementSize(Size size)
 		{
 			if (_loaded)
+			{
 				Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
+			}
 			else
+			{
 				_queuedSize = size;
+			}
 		}
 
 		public UIViewController ViewController
@@ -132,10 +138,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidLayoutSubviews();
 
 			if (Element == null)
+			{
 				return;
+			}
 
 			if (Element.Parent is BaseShellItem)
+			{
 				Element.Layout(View.Bounds.ToRectangle());
+			}
 
 			if (!Element.Bounds.IsEmpty)
 			{
@@ -172,14 +182,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var changed = ElementChanged;
 			if (changed != null)
+			{
 				changed(this, e);
+			}
 		}
 
 		UIViewController GetViewController(Page page)
 		{
 			var renderer = Platform.GetRenderer(page);
 			if (renderer == null)
+			{
 				return null;
+			}
 
 			return renderer.ViewController;
 		}
@@ -187,7 +201,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void HandleFinishedCustomizingViewControllers(object sender, UITabBarCustomizeChangeEventArgs e)
 		{
 			if (e.Changed)
+			{
 				UpdateChildrenOrderIndex(e.ViewControllers);
+			}
 		}
 
 		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -201,7 +217,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				IVisualElementRenderer renderer = Platform.GetRenderer(page);
 
 				if (renderer?.ViewController.TabBarItem == null)
+				{
 					return;
+				}
 
 				SetTabBarItem(renderer);
 			}
@@ -215,9 +233,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			UIViewController controller = null;
 			if (Tabbed.CurrentPage != null)
+			{
 				controller = GetViewController(Tabbed.CurrentPage);
+			}
+
 			if (controller != null && controller != base.SelectedViewController)
+			{
 				base.SelectedViewController = controller;
+			}
 
 			UpdateBarBackgroundColor();
 			UpdateBarTextColor();
@@ -230,38 +253,59 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var current = Tabbed.CurrentPage;
 				if (current == null)
+				{
 					return;
+				}
 
 				var controller = GetViewController(current);
 				if (controller == null)
+				{
 					return;
+				}
 
 				SelectedViewController = controller;
 			}
 			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
+			{
 				UpdateBarBackgroundColor();
+			}
 			else if (e.PropertyName == TabbedPage.BarBackgroundProperty.PropertyName)
+			{
 				UpdateBarBackground();
+			}
 			else if (e.PropertyName == TabbedPage.BarTextColorProperty.PropertyName)
+			{
 				UpdateBarTextColor();
+			}
 			else if (e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
+			{
 				UpdatePrefersStatusBarHiddenOnPages();
+			}
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
+			{
 				UpdateCurrentPagePreferredStatusBarUpdateAnimation();
+			}
 			else if (e.PropertyName == TabbedPage.SelectedTabColorProperty.PropertyName || e.PropertyName == TabbedPage.UnselectedTabColorProperty.PropertyName)
+			{
 				UpdateSelectedTabColors();
+			}
 			else if (e.PropertyName == PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
+			{
 				UpdatePrefersHomeIndicatorAutoHiddenOnPages();
+			}
 			else if (e.PropertyName == TabbedPageConfiguration.TranslucencyModeProperty.PropertyName)
+			{
 				UpdateBarTranslucent();
-
+			}
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			var current = Tabbed.CurrentPage;
 			if (current == null)
+			{
 				return null;
+			}
 
 			return GetViewController(current);
 		}
@@ -286,7 +330,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var current = Tabbed.CurrentPage;
 				if (current == null)
+				{
 					return null;
+				}
 
 				return GetViewController(current);
 			}
@@ -305,7 +351,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var i = 0;
 			foreach (var page in Tabbed.Children)
+			{
 				SetupPage(page, i++);
+			}
 		}
 
 		void SetControllers()
@@ -317,9 +365,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var child = logicalChildren[i];
 				var v = child as VisualElement;
 				if (v == null)
+				{
 					continue;
+				}
+
 				if (Platform.GetRenderer(v) != null)
+				{
 					list.Add(Platform.GetRenderer(v).ViewController);
+				}
 			}
 			ViewControllers = list.ToArray();
 		}
@@ -348,13 +401,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateBarBackgroundColor()
 		{
 			if (Tabbed == null || TabBar == null)
+			{
 				return;
+			}
 
 			var barBackgroundColor = Tabbed.BarBackgroundColor;
 			var isDefaultColor = barBackgroundColor == null;
 
 			if (isDefaultColor && !_barBackgroundColorWasSet)
+			{
 				return;
+			}
 
 			if (!_defaultBarColorSet)
 			{
@@ -364,7 +421,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (!isDefaultColor)
+			{
 				_barBackgroundColorWasSet = true;
+			}
 
 			TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
 		}
@@ -372,7 +431,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateBarBackground()
 		{
 			if (Tabbed == null || TabBar == null)
+			{
 				return;
+			}
 
 			var barBackground = Tabbed.BarBackground;
 
@@ -382,13 +443,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateBarTextColor()
 		{
 			if (Tabbed == null || TabBar == null || TabBar.Items == null)
+			{
 				return;
+			}
 
 			var barTextColor = Tabbed.BarTextColor;
 			var isDefaultColor = barTextColor == null;
 
 			if (isDefaultColor && !_barTextColorWasSet)
+			{
 				return;
+			}
 
 			if (!_defaultBarTextColorSet)
 			{
@@ -397,13 +462,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (!isDefaultColor)
+			{
 				_barTextColorWasSet = true;
+			}
 
 			UIColor tabBarTextColor;
 			if (isDefaultColor)
+			{
 				tabBarTextColor = _defaultBarTextColor;
+			}
 			else
+			{
 				tabBarTextColor = barTextColor.ToPlatform();
+			}
 
 			var attributes = new UIStringAttributes();
 			attributes.ForegroundColor = tabBarTextColor;
@@ -421,7 +492,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateBarTranslucent()
 		{
 			if (Tabbed == null || TabBar == null || Element == null)
+			{
 				return;
+			}
 
 			_defaultBarTranslucent = _defaultBarTranslucent ?? TabBar.Translucent;
 			switch (TabbedPageConfiguration.GetTranslucencyMode(Element))
@@ -467,7 +540,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var page = renderer.Element as Page;
 			if (page == null)
+			{
 				throw new InvalidCastException($"{nameof(renderer)} must be a {nameof(Page)} renderer.");
+			}
 
 			var icons = await GetIcon(page);
 			renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, icons?.Item1, icons?.Item2)
@@ -482,7 +557,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateSelectedTabColors()
 		{
 			if (Tabbed == null || TabBar == null || TabBar.Items == null)
+			{
 				return;
+			}
 
 			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != null)
 			{
@@ -494,9 +571,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != null)
+			{
 				TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToPlatform();
+			}
 			else
+			{
 				TabBar.UnselectedItemTintColor = UITabBar.Appearance.TintColor;
+			}
 		}
 
 		/// <summary>

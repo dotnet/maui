@@ -54,13 +54,19 @@ namespace Microsoft.Maui.Controls.Internals
 			var result = Resolve(type, args);
 
 			if (result != null)
+			{
 				return result;
+			}
 
 			if (args.Length > 0)
 			{
 				if (visualType != _defaultVisualType)
+				{
 					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+					{
 						return Activator.CreateInstance(type, new[] { args[0], source });
+					}
+				}
 
 				// This is by no means a general solution to matching with the correct constructor, but it'll
 				// do for finding Android renderers which need Context (vs older custom renderers which may still use

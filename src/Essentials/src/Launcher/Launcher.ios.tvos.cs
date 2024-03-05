@@ -25,7 +25,9 @@ namespace Microsoft.Maui.ApplicationModel
 			var nativeUrl = WebUtils.GetNativeUrl(uri);
 
 			if (UIApplication.SharedApplication.CanOpenUrl(nativeUrl))
+			{
 				return PlatformOpenAsync(nativeUrl);
+			}
 
 			return Task.FromResult(false);
 		}

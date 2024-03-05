@@ -20,14 +20,20 @@ namespace Microsoft.Maui.Controls.Xaml
 		public Array ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (Type == null)
+			{
 				throw new InvalidOperationException("Type argument mandatory for x:Array extension");
+			}
 
 			if (Items == null)
+			{
 				return null;
+			}
 
 			var array = Array.CreateInstance(Type, Items.Count);
 			for (var i = 0; i < Items.Count; i++)
+			{
 				((IList)array)[i] = Items[i];
+			}
 
 			return array;
 		}

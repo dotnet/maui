@@ -8,7 +8,10 @@ namespace Microsoft.Maui.Controls
 		internal TriggerAction(Type associatedType)
 		{
 			if (associatedType == null)
+			{
 				throw new ArgumentNullException("associatedType");
+			}
+
 			AssociatedType = associatedType;
 		}
 

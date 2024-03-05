@@ -27,7 +27,9 @@ namespace Microsoft.Maui.ApplicationModel
 			_activeWindowTracker.WindowMessage += OnWindowMessage;
 
 			if (MainThread.IsMainThread)
+			{
 				OnActiveWindowThemeChanged();
+			}
 		}
 
 		public string PackageName => AppInfoUtils.IsPackagedApp
@@ -53,9 +55,13 @@ namespace Microsoft.Maui.ApplicationModel
 		public void ShowSettingsUI()
 		{
 			if (AppInfoUtils.IsPackagedApp)
+			{
 				global::Windows.System.Launcher.LaunchUriAsync(new Uri(SettingsUri)).WatchForError();
+			}
 			else
+			{
 				Process.Start(new ProcessStartInfo { FileName = SettingsUri, UseShellExecute = true });
+			}
 		}
 
 		public AppTheme RequestedTheme
@@ -63,9 +69,15 @@ namespace Microsoft.Maui.ApplicationModel
 			get
 			{
 				if (MainThread.IsMainThread && Application.Current != null)
+				{
 					_applicationTheme = Application.Current.RequestedTheme;
+				}
 				else if (_applicationTheme == null)
+				{
+				{
 					return AppTheme.Unspecified;
+				}
+				}
 
 				return _applicationTheme == ApplicationTheme.Dark ? AppTheme.Dark : AppTheme.Light;
 			}
@@ -82,13 +94,17 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			if (e.MessageId == PlatformMethods.MessageIds.WM_SETTINGCHANGE ||
 				e.MessageId == PlatformMethods.MessageIds.WM_THEMECHANGE)
+			{
 				OnActiveWindowThemeChanged();
+			}
 		}
 
 		void OnActiveWindowThemeChanged()
 		{
 			if (Application.Current is Application app)
+			{
 				_applicationTheme = app.RequestedTheme;
+			}
 		}
 	}
 
@@ -99,7 +115,11 @@ namespace Microsoft.Maui.ApplicationModel
 			try
 			{
 				if (Package.Current != null)
+				{
+				{
 					return true;
+				}
+				}
 			}
 			catch
 			{
@@ -131,7 +151,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public static Version GetAppInfoVersionValue(this Assembly assembly, string name)
 		{
 			if (assembly.GetAppInfoValue(name) is string value && !string.IsNullOrEmpty(value))
+			{
 				return Version.Parse(value);
+			}
 
 			return null;
 		}
@@ -156,7 +178,11 @@ namespace Microsoft.Maui.ApplicationModel
 			foreach (var attr in assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
 			{
 				if (attr.Key == key)
+				{
+				{
 					return attr.Value;
+				}
+				}
 			}
 
 			return null;

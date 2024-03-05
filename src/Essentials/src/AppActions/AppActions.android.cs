@@ -23,11 +23,15 @@ namespace Microsoft.Maui.ApplicationModel
 		public Task<IEnumerable<AppAction>> GetAsync()
 		{
 			if (!IsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 #if __ANDROID_25__
 			if (Application.Context.GetSystemService(Context.ShortcutService) is not ShortcutManager manager)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 #pragma warning disable CA1416 // Known false positive with lambda
 			return Task.FromResult(manager.DynamicShortcuts.Select(s => s.ToAppAction()));
@@ -40,11 +44,15 @@ namespace Microsoft.Maui.ApplicationModel
 		public Task SetAsync(IEnumerable<AppAction> actions)
 		{
 			if (!IsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 #if __ANDROID_25__
 			if (Application.Context.GetSystemService(Context.ShortcutService) is not ShortcutManager manager)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 #pragma warning disable CA1416 // Known false positive with lambda
 			using var list = new JavaList<ShortcutInfo>(actions.Select(a => a.ToShortcutInfo()));
@@ -69,7 +77,10 @@ namespace Microsoft.Maui.ApplicationModel
 				var appAction = intent.ToAppAction();
 
 				if (!string.IsNullOrEmpty(appAction?.Id))
+				{
+				{
 					AppActionActivated?.Invoke(null, new AppActionEventArgs(appAction));
+				}
 			}
 		}
 	}

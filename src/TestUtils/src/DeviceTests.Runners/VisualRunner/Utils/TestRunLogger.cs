@@ -81,9 +81,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				_failed = _passed = _skipped = 0;
 
 				if (string.IsNullOrEmpty(message))
+				{
 					_logger.LogInformation("[Runner executing]");
+				}
 				else
+				{
 					_logger.LogInformation("[Runner executing: {0}]", message);
+				}
 			}
 		}
 

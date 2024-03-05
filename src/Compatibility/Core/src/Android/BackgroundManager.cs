@@ -33,19 +33,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		static void UpdateBackgroundColor(AView Control, VisualElement Element, Color color = null)
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
 
 			var finalColor = color ?? Element.BackgroundColor;
 			if (finalColor == null)
+			{
 				Control.SetBackground(null);
+			}
 			else
+			{
 				Control.SetBackgroundColor(finalColor.ToAndroid());
+			}
 		}
 
 		static void UpdateBackground(AView Control, VisualElement Element)
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
 
 			Brush background = Element.Background;
 

@@ -30,9 +30,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				case LinearItemsLayout listItemsLayout:
 					_orientation = listItemsLayout.Orientation;
 					if (_orientation == ItemsLayoutOrientation.Horizontal)
+					{
 						_horizontalSpacing = listItemsLayout.ItemSpacing;
+					}
 					else
+					{
 						_verticalSpacing = listItemsLayout.ItemSpacing;
+					}
+
 					break;
 			}
 
@@ -57,7 +62,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int itemCount = parent.GetAdapter().ItemCount;
 
 			if (position == RecyclerView.NoPosition || itemCount == 0)
+			{
 				return;
+			}
 
 			if (_orientation == ItemsLayoutOrientation.Vertical)
 			{

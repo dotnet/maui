@@ -37,11 +37,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var removeList = new List<long>();
 
 			foreach (var created in _createdShellContent)
+			{
 				if (!_items.Contains(created.Value))
+				{
 					removeList.Add(created.Key);
+				}
+			}
 
 			foreach (var remove in removeList)
+			{
 				_createdShellContent.Remove(remove);
+			}
 		}
 
 		public int CountOverride { get; set; }
@@ -59,8 +65,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var shellContent = _items[position];
 			foreach (var item in _createdShellContent)
+			{
 				if (item.Value == shellContent)
+				{
 					return item.Key;
+				}
+			}
 
 			var id = _id;
 			_createdShellContent.Add(_id++, shellContent);
@@ -83,7 +93,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 

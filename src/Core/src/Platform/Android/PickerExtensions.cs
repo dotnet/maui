@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Platform
 			if (titleColor != null)
 			{
 				if (PlatformInterop.CreateEditTextColorStateList(platformPicker.TextColors, titleColor.ToPlatform()) is ColorStateList c)
+				{
 					platformPicker.SetHintTextColor(c);
+				}
 			}
 		}
 
@@ -30,7 +32,9 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				if (PlatformInterop.CreateEditTextColorStateList(platformPicker.TextColors, textColor.ToPlatform()) is ColorStateList c)
+				{
 					platformPicker.SetTextColor(c);
+				}
 			}
 		}
 
@@ -42,9 +46,13 @@ namespace Microsoft.Maui.Platform
 			platformPicker.Hint = picker.Title;
 
 			if (picker.SelectedIndex == -1 || picker.SelectedIndex >= picker.GetCount())
+			{
 				platformPicker.Text = null;
+			}
 			else
+			{
 				platformPicker.Text = picker.GetItem(picker.SelectedIndex);
+			}
 		}
 
 		internal static void UpdateFlowDirection(this AndroidX.AppCompat.App.AlertDialog alertDialog, MauiPicker platformPicker)
@@ -55,7 +63,9 @@ namespace Microsoft.Maui.Platform
 			var dv = alertDialog.Window?.DecorView;
 
 			if (dv is not null)
+			{
 				dv.LayoutDirection = platformLayoutDirection;
+			}
 
 			var lv = alertDialog?.ListView;
 

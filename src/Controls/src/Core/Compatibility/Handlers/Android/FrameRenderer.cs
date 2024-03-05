@@ -74,7 +74,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set
 			{
 				if (value != null)
+				{
 					(this as IPlatformViewHandler).SetVirtualView(value);
+				}
 
 				_element = value;
 			}
@@ -110,7 +112,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -166,14 +170,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				SetMeasuredDimension((int)measure.Width, (int)measure.Height);
 			}
 			else
+			{
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+			}
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (Element == null)
+			{
 				return;
-
+			}
 
 			if (Element.Handler is IPlatformViewHandler pvh &&
 				Element is IContentView cv)
@@ -181,7 +188,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				pvh.LayoutVirtualView(l, t, r, b, cv.CrossPlatformArrange);
 			}
 			else
+			{
 				base.OnLayout(changed, l, t, r, b);
+			}
 
 			if (Element.IsClippedToBounds)
 			{
@@ -218,7 +227,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.OnSizeChanged(w, h, oldw, oldh);
 
 			if (w != _width || h != _height)
+			{
 				UpdateBackground();
+			}
 		}
 
 		protected virtual void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -229,7 +240,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			if (Element != null && e.PropertyName != null)
+			{
 				_viewHandlerWrapper.UpdateProperty(e.PropertyName);
+			}
 
 			ElementPropertyChanged?.Invoke(this, e);
 			_motionEventHelper.UpdateElement(Element);
@@ -238,7 +251,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateClippedToBounds()
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			var shouldClip = Element.IsClippedToBoundsSet(Element.CornerRadius > 0f);
 
@@ -248,7 +263,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateBackgroundColor()
 		{
 			if (_disposed || Element == null || _backgroundDrawable == null)
+			{
 				return;
+			}
 
 			Color bgColor = Element.BackgroundColor;
 			_backgroundDrawable.SetColor(bgColor?.ToPlatform() ?? AColor.White);
@@ -257,7 +274,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateBackground()
 		{
 			if (_disposed || Element == null)
+			{
 				return;
+			}
 
 			Brush background = Element.Background;
 
@@ -287,17 +306,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateBorderColor()
 		{
 			if (_disposed || Element == null || _backgroundDrawable == null)
+			{
 				return;
+			}
 
 			Color borderColor = Element.BorderColor;
 
 			if (borderColor == null)
+			{
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
+			}
 			else if (VirtualView is IBorderElement be)
 			{
 				var borderWidth = be.BorderWidth;
 				if (borderWidth < 0 || borderWidth == Primitives.Dimension.Unset)
+				{
 					borderWidth = 0;
+				}
 
 				_backgroundDrawable.SetStroke((int)Context.ToPixels(borderWidth), borderColor.ToPlatform());
 			}
@@ -306,23 +331,33 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateShadow()
 		{
 			if (_disposed || Element == null)
+			{
 				return;
+			}
 
 			float elevation = _defaultElevation;
 
 			if (elevation == -1f)
+			{
 				_defaultElevation = elevation = CardElevation;
+			}
 
 			if (Element.HasShadow)
+			{
 				CardElevation = elevation;
+			}
 			else
+			{
 				CardElevation = 0f;
+			}
 		}
 
 		void UpdateCornerRadius()
 		{
 			if (_disposed || Element == null || _backgroundDrawable == null)
+			{
 				return;
+			}
 
 			if (_defaultCornerRadius == -1f)
 			{
@@ -332,9 +367,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			float cornerRadius = Element.CornerRadius;
 
 			if (cornerRadius == -1f)
+			{
 				cornerRadius = _defaultCornerRadius;
+			}
 			else
+			{
 				cornerRadius = Context.ToPixels(cornerRadius);
+			}
 
 			_backgroundDrawable.SetCornerRadius(cornerRadius);
 
@@ -344,12 +383,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateContent()
 		{
 			if (ChildCount == 1)
+			{
 				RemoveViewAt(0);
+			}
 
 			var content = Element?.Content;
 
 			if (content == null || _mauiContext == null)
+			{
 				return;
+			}
 
 			var platformView = content.ToPlatform(_mauiContext);
 			AddView(platformView);
@@ -363,14 +406,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set
 			{
 				if (_hasContainer == value)
+				{
 					return;
+				}
 
 				_hasContainer = value;
 
 				if (value)
+				{
 					SetupContainer();
+				}
 				else
+				{
 					RemoveContainer();
+				}
 			}
 		}
 

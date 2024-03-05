@@ -20,12 +20,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void Dispose()
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			foreach (Stack<AView> views in _freeViews.Values)
 			{
 				foreach (AView view in views)
+				{
 					view.Dispose();
+				}
 			}
 
 			_disposed = true;
@@ -34,7 +38,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void ClearChildren()
 		{
 			if (_disposed)
+			{
 				throw new ObjectDisposedException(null);
+			}
 
 			ClearChildren(_viewGroup);
 		}
@@ -42,11 +48,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public TView GetFreeView<TView>() where TView : AView
 		{
 			if (_disposed)
+			{
 				throw new ObjectDisposedException(null);
+			}
 
 			Stack<AView> views;
 			if (_freeViews.TryGetValue(typeof(TView), out views) && views.Count > 0)
+			{
 				return (TView)views.Pop();
+			}
 
 			return null;
 		}
@@ -54,7 +64,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void ClearChildren(ViewGroup group)
 		{
 			if (group == null)
+			{
 				return;
+			}
 
 			int count = group.ChildCount;
 			for (var i = 0; i < count; i++)
@@ -63,12 +75,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				var g = child as ViewGroup;
 				if (g != null)
+				{
 					ClearChildren(g);
+				}
 
 				Type childType = child.GetType();
 				Stack<AView> stack;
 				if (!_freeViews.TryGetValue(childType, out stack))
+				{
 					_freeViews[childType] = stack = new Stack<AView>();
+				}
 
 				stack.Push(child);
 			}

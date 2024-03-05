@@ -159,11 +159,15 @@ namespace Microsoft.Maui.Graphics
 		{
 			var halfHeight = Math.Abs(height / 2);
 			if (cornerRadius > halfHeight)
+			{
 				cornerRadius = halfHeight;
+			}
 
 			var halfWidth = Math.Abs(width / 2);
 			if (cornerRadius > halfWidth)
+			{
 				cornerRadius = halfWidth;
+			}
 
 			EnsureStrokePatternSet();
 			PlatformDrawRoundedRectangle(x, y, width, height, cornerRadius);

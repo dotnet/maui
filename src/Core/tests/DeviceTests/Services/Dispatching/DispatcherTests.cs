@@ -191,7 +191,9 @@ namespace Microsoft.Maui.DeviceTests
 					ticks++;
 
 					if (ticks > 1)
+					{
 						taskCompletionSource.SetResult();
+					}
 				};
 
 				timer.Start();

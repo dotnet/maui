@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			foreach (var section in Sections)
 			{
 				if (section.Start >= position && section.End <= position)
+				{
 					return section.Index;
+				}
 			}
 			return 0;
 		}
@@ -51,7 +53,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void ValidateSectionData()
 		{
 			if (sectionDataValid)
+			{
 				return;
+			}
 
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			int count = 0;

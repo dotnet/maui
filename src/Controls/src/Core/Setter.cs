@@ -25,7 +25,10 @@ namespace Microsoft.Maui.Controls
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (Property == null)
+			{
 				throw new XamlParseException("Property not set", serviceProvider);
+			}
+
 			var valueconverter = serviceProvider.GetService(typeof(IValueConverterProvider)) as IValueConverterProvider;
 
 			MemberInfo minforetriever()
@@ -40,7 +43,10 @@ namespace Microsoft.Maui.Controls
 					throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", serviceProvider, innerException: e);
 				}
 				if (minfo != null)
+				{
 					return minfo;
+				}
+
 				try
 				{
 					return Property.DeclaringType.GetRuntimeMethod("Get" + Property.PropertyName, new[] { typeof(BindableObject) });
@@ -61,43 +67,69 @@ namespace Microsoft.Maui.Controls
 		internal void Apply(BindableObject target, SetterSpecificity specificity)
 		{
 			if (target == null)
+			{
 				throw new ArgumentNullException(nameof(target));
+			}
 
 			var targetObject = target;
 
 			if (!string.IsNullOrEmpty(TargetName) && target is Element element)
+			{
 				targetObject = element.FindByName(TargetName) as BindableObject ?? throw new XamlParseException($"Cannot resolve '{TargetName}' as Setter Target for '{target}'.");
+			}
 
 			if (Property == null)
+			{
 				return;
+			}
 
 			if (Value is BindingBase binding)
+			{
 				targetObject.SetBinding(Property, binding.Clone(), specificity);
+			}
 			else if (Value is DynamicResource dynamicResource)
+			{
 				targetObject.SetDynamicResource(Property, dynamicResource.Key, specificity);
+			}
 			else if (Value is IList<VisualStateGroup> visualStateGroupCollection)
+			{
 				targetObject.SetValue(Property, visualStateGroupCollection.Clone(), specificity);
+			}
 			else
+			{
 				targetObject.SetValue(Property, Value, specificity: specificity);
+			}
 		}
 
 		internal void UnApply(BindableObject target, SetterSpecificity specificity)
 		{
 
 			if (target == null)
+			{
 				throw new ArgumentNullException(nameof(target));
+			}
 
 			var targetObject = target;
 
 			if (!string.IsNullOrEmpty(TargetName) && target is Element element)
+			{
 				targetObject = element.FindByName(TargetName) as BindableObject ?? throw new ArgumentNullException(nameof(targetObject));
+			}
 
 			if (Property == null)
+			{
 				return;
+			}
+
 			if (Value is BindingBase binding)
+			{
 				targetObject.RemoveBinding(Property, specificity);
+			}
 			else if (Value is DynamicResource dynamicResource)
+			{
 				targetObject.RemoveDynamicResource(Property, specificity);
+			}
+
 			targetObject.ClearValue(Property, specificity);
 		}
 	}

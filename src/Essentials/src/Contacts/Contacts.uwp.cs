@@ -25,12 +25,16 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			var contactStore = await ContactManager.RequestStoreAsync()
 				.AsTask(cancellationToken).ConfigureAwait(false);
 			if (contactStore == null)
+			{
 				throw new PermissionException("Permission to access the contacts was denied.");
+			}
 
 			var contacts = await contactStore.FindContactsAsync()
 				.AsTask(cancellationToken).ConfigureAwait(false);
 			if (contacts == null || contacts.Count == 0)
+			{
 				return Array.Empty<Contact>();
+			}
 
 			return GetEnumerable();
 
@@ -46,7 +50,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		internal static Contact ConvertContact(global::Windows.ApplicationModel.Contacts.Contact contact)
 		{
 			if (contact == null)
+			{
 				return default;
+			}
 
 			var phones = contact.Phones?.Select(
 				item => new ContactPhone(item?.Number))?.ToList();

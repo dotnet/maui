@@ -17,6 +17,7 @@ using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Google.Android.Material.Tabs;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
@@ -25,7 +26,6 @@ using AColor = Android.Graphics.Color;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -89,7 +89,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (Element != null)
 				{
 					if (Element.IsSet(TabbedPage.UnselectedTabColorProperty))
+					{
 						return Element.UnselectedTabColor;
+					}
 				}
 
 				return null;
@@ -103,7 +105,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (Element != null)
 				{
 					if (Element.IsSet(TabbedPage.SelectedTabColorProperty))
+					{
 						return Element.SelectedTabColor;
+					}
 				}
 
 				return null;
@@ -251,7 +255,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				id = Resource.Id.navigationlayout_bottomtabs;
 				if (_tabplacementId == id)
+				{
 					return;
+				}
 
 				SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
 			}
@@ -259,7 +265,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				id = Resource.Id.navigationlayout_toptabs;
 				if (_tabplacementId == id)
+				{
 					return;
+				}
 
 				SetContentBottomMargin(0);
 			}
@@ -370,7 +378,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				// If the modification to the backing collection has changed the position of the current item
 				// then we need to update the viewpager so it remains selected
 				if (_viewPager.CurrentItem != currentIndex && currentIndex < Element.Children.Count && currentIndex >= 0)
+				{
 					_viewPager.SetCurrentItem(currentIndex, false);
+				}
 
 				adapter.NotifyDataSetChanged();
 			}
@@ -379,11 +389,15 @@ namespace Microsoft.Maui.Controls.Handlers
 		void TabSelected(TabLayout.Tab tab)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			int selectedIndex = tab.Position;
 			if (Element.Children.Count > selectedIndex && selectedIndex >= 0)
+			{
 				Element.CurrentPage = Element.Children[selectedIndex];
+			}
 
 			SetIconColorFilter(tab, true);
 		}
@@ -401,7 +415,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		void Reset()
 		{
 			foreach (var page in Element.Children)
+			{
 				SetupPage(page);
+			}
 		}
 
 		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -447,7 +463,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		internal void ScrollToCurrentPage()
 		{
 			if (Element.CurrentPage == null)
+			{
 				return;
+			}
 
 			// TODO MAUI
 			//if (Platform != null)
@@ -466,7 +484,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		void UpdateIgnoreContainerAreas()
 		{
 			foreach (IPageController child in Element.Children)
+			{
 				child.IgnoresContainerArea = child is NavigationPage;
+			}
 		}
 
 		void UpdateOffscreenPageLimit()
@@ -506,7 +526,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				Element.FindMauiContext());
 
 			if (Element.CurrentPage == null && Element.Children.Count > 0)
+			{
 				Element.CurrentPage = Element.Children[0];
+			}
 		}
 
 		void UpdateTabIcons()
@@ -514,7 +536,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			TabLayout tabs = _tabLayout;
 
 			if (tabs.TabCount != Element.Children.Count)
+			{
 				return;
+			}
 
 			for (var i = 0; i < Element.Children.Count; i++)
 			{
@@ -543,23 +567,31 @@ namespace Microsoft.Maui.Controls.Handlers
 		internal void UpdateBarBackgroundColor()
 		{
 			if (Element.BarBackground != null)
+			{
 				return;
+			}
 
 			if (IsBottomTabPlacement)
 			{
 				Color tintColor = Element.BarBackgroundColor;
 
 				if (tintColor == null)
+				{
 					_bottomNavigationView.SetBackground(null);
+				}
 				else if (tintColor != null)
+				{
 					_bottomNavigationView.SetBackgroundColor(tintColor.ToPlatform());
+				}
 			}
 			else
 			{
 				Color tintColor = Element.BarBackgroundColor;
 
 				if (tintColor == null)
+				{
 					_tabLayout.BackgroundTintMode = null;
+				}
 				else
 				{
 					_tabLayout.BackgroundTintMode = PorterDuff.Mode.Src;
@@ -571,30 +603,42 @@ namespace Microsoft.Maui.Controls.Handlers
 		internal void UpdateBarBackground()
 		{
 			if (_currentBarBackground == Element.BarBackground)
+			{
 				return;
+			}
 
 			_currentBarBackground = Element.BarBackground;
 
 			if (IsBottomTabPlacement)
+			{
 				_bottomNavigationView.UpdateBackground(_currentBarBackground);
+			}
 			else
+			{
 				_tabLayout.UpdateBackground(_currentBarBackground);
+			}
 		}
 
 		protected virtual ColorStateList GetItemTextColorStates()
 		{
 			if (_originalTabTextColors is null)
+			{
 				_originalTabTextColors = IsBottomTabPlacement ? _bottomNavigationView.ItemTextColor : _tabLayout.TabTextColors;
+			}
 
 			Color barItemColor = BarItemColor;
 			Color barTextColor = Element.BarTextColor;
 			Color barSelectedItemColor = BarSelectedItemColor;
 
 			if (barItemColor is null && barTextColor is null && barSelectedItemColor is null)
+			{
 				return _originalTabTextColors;
+			}
 
 			if (_newTabTextColors is not null)
+			{
 				return _newTabTextColors;
+			}
 
 			int checkedColor;
 
@@ -611,18 +655,28 @@ namespace Microsoft.Maui.Controls.Handlers
 			else
 			{
 				if (barItemColor is not null)
+				{
 					defaultColor = barItemColor.ToPlatform().ToArgb();
+				}
 
 				if (barItemColor is null && _originalTabTextColors is not null)
+				{
 					defaultColor = _originalTabTextColors.DefaultColor;
+				}
 
 				if (!defaultColor.HasValue)
+				{
 					return _originalTabTextColors;
+				}
 				else
+				{
 					checkedColor = defaultColor.Value;
+				}
 
 				if (barSelectedItemColor is not null)
+				{
 					checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
+				}
 			}
 
 			_newTabTextColors = GetColorStateList(defaultColor.Value, checkedColor);
@@ -635,38 +689,46 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (IsBottomTabPlacement)
 			{
 				if (_orignalTabIconColors is null)
+				{
 					_orignalTabIconColors = _bottomNavigationView.ItemIconTintList;
+				}
 			}
 			// this ensures that existing behavior doesn't change
 			else if (!IsBottomTabPlacement && BarSelectedItemColor != null && BarItemColor == null)
+			{
 				return null;
+			}
 
 			Color barItemColor = BarItemColor;
 			Color barSelectedItemColor = BarSelectedItemColor;
 
 			if (barItemColor == null && barSelectedItemColor == null)
+			{
 				return _orignalTabIconColors;
+			}
 
 			if (_newTabIconColors != null)
+			{
 				return _newTabIconColors;
+			}
 
 			int defaultColor;
-			
+
 			if (barItemColor is not null)
 			{
 				defaultColor = barItemColor.ToPlatform().ToArgb();
 			}
 			else
 			{
-				var styledAttributes = 
+				var styledAttributes =
 					TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
 
 				try
 				{
-					var defaultColors =  styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
+					var defaultColors = styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
 					if (defaultColors is not null)
 					{
-						defaultColor = defaultColors.DefaultColor;		
+						defaultColor = defaultColors.DefaultColor;
 					}
 					else
 					{
@@ -675,10 +737,14 @@ namespace Microsoft.Maui.Controls.Handlers
 						// NavigationBarView_itemIconTint should always resolve
 						// But just in case, we'll just hard code to some defaults
 						// instead of leaving the application in a broken state
-						if(IsDarkTheme)
+						if (IsDarkTheme)
+						{
 							defaultColor = new Color(1, 1, 1, 0.6f).ToPlatform();
+						}
 						else
+						{
 							defaultColor = new Color(0, 0, 0, 0.6f).ToPlatform();
+						}
 					}
 				}
 				finally
@@ -688,12 +754,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			if (barItemColor == null && _orignalTabIconColors != null)
+			{
 				defaultColor = _orignalTabIconColors.DefaultColor;
+			}
 
 			int checkedColor = defaultColor;
 
 			if (barSelectedItemColor != null)
+			{
 				checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
+			}
 
 			_newTabIconColors = GetColorStateList(defaultColor, checkedColor);
 			return _newTabIconColors;
@@ -707,19 +777,28 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				index = Math.Min(index, menu.Size() - 1);
 				if (index < 0)
+				{
 					return;
+				}
+
 				using (var menuItem = menu.GetItem(index))
+				{
 					menuItem.SetChecked(true);
+				}
 			}
 
 			if (sender is BottomSheetDialog bsd)
+			{
 				bsd.DismissEvent -= OnMoreSheetDismissed;
+			}
 		}
 
 		void OnMoreItemSelected(int selectedIndex, BottomSheetDialog dialog)
 		{
 			if (selectedIndex >= 0 && _bottomNavigationView.SelectedItemId != selectedIndex && Element.Children.Count > selectedIndex)
+			{
 				Element.CurrentPage = Element.Children[selectedIndex];
+			}
 
 			dialog.Dismiss();
 			dialog.DismissEvent -= OnMoreSheetDismissed;
@@ -731,7 +810,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			_newTabIconColors = null;
 
 			if (IsBottomTabPlacement)
+			{
 				_bottomNavigationView.ItemIconTintList = GetItemIconTintColorState() ?? _orignalTabIconColors;
+			}
 			else
 			{
 				var colors = GetItemIconTintColorState() ?? _orignalTabIconColors;
@@ -772,9 +853,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			_currentBarTextColorStateList = GetItemTextColorStates() ?? _originalTabTextColors;
 			if (IsBottomTabPlacement)
+			{
 				_bottomNavigationView.ItemTextColor = _currentBarTextColorStateList;
+			}
 			else
+			{
 				_tabLayout.TabTextColors = _currentBarTextColorStateList;
+			}
 		}
 
 		void SetIconColorFilter(TabLayout.Tab tab)
@@ -786,22 +871,32 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			var icon = tab.Icon;
 			if (icon == null)
+			{
 				return;
+			}
 
 			var colors = GetItemIconTintColorState();
 			if (colors == null)
+			{
 				ADrawableCompat.SetTintList(icon, null);
+			}
 			else
 			{
 				int[] _stateSet = null;
 
 				if (selected)
+				{
 					_stateSet = GetSelectedStateSet();
+				}
 				else
+				{
 					_stateSet = GetEmptyStateSet();
+				}
 
 				if (colors.GetColorForState(_stateSet, _defaultAndroidColor) == _defaultARGBColor)
+				{
 					ADrawableCompat.SetTintList(icon, null);
+				}
 				else
 				{
 					var wrappedIcon = ADrawableCompat.Wrap(icon);
@@ -824,14 +919,18 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (IsBottomTabPlacement)
 			{
 				if (_checkedStateSet == null)
+				{
 					_checkedStateSet = new int[] { global::Android.Resource.Attribute.StateChecked };
+				}
 
 				return _checkedStateSet;
 			}
 			else
 			{
 				if (_selectedStateSet == null)
+				{
 					_selectedStateSet = GetStateSet(new TempView(_context.Context).SelectedStateSet);
+				}
 
 				return _selectedStateSet;
 			}
@@ -840,7 +939,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		int[] GetEmptyStateSet()
 		{
 			if (_emptyStateSet == null)
+			{
 				_emptyStateSet = GetStateSet(new TempView(_context.Context).EmptyStateSet);
+			}
 
 			return _emptyStateSet;
 		}
@@ -859,7 +960,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			var results = new int[stateSet.Count];
 			for (int i = 0; i < results.Length; i++)
+			{
 				results[i] = stateSet[i];
+			}
 
 			return results;
 		}
@@ -918,7 +1021,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 
 				if (IsBottomTabPlacement)
+				{
 					_bottomNavigationView.SelectedItemId = position;
+				}
 			}
 
 			void TabLayoutMediator.ITabConfigurationStrategy.OnConfigureTab(TabLayout.Tab p0, int p1)
@@ -929,7 +1034,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			bool NavigationBarView.IOnItemSelectedListener.OnNavigationItemSelected(IMenuItem item)
 			{
 				if (_tabbedPageManager.Element == null)
+				{
 					return false;
+				}
 
 				var id = item.ItemId;
 				if (id == BottomNavigationViewUtils.MoreTabId)
@@ -942,7 +1049,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				else
 				{
 					if (_tabbedPageManager._bottomNavigationView.SelectedItemId != item.ItemId && _tabbedPageManager.Element.Children.Count > item.ItemId)
+					{
 						_tabbedPageManager.Element.CurrentPage = _tabbedPageManager.Element.Children[item.ItemId];
+					}
 				}
 
 				return true;

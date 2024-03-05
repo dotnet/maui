@@ -30,7 +30,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.LayoutSubviews();
 
 			if (_previousFrame != Frame)
+			{
+			{
 				_previousFrame = Frame;
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -43,11 +46,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					var view = viewsToLookAt.Pop();
 					var viewCellRenderer = view as ViewCellRenderer.ViewTableCell;
 					if (viewCellRenderer != null)
+					{
 						viewCellRenderer.Dispose();
+					}
 					else
 					{
 						foreach (var child in view.Subviews)
+						{
 							viewsToLookAt.Push(child);
+						}
 					}
 				}
 			}
@@ -74,7 +81,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (Control == null || Control.Style != style)
 				{
 					if (Control != null)
+					{
 						Control.Dispose();
+					}
 
 					var tv = CreateNativeControl();
 					_originalBackgroundView = tv.BackgroundView;
@@ -97,11 +106,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == TableView.RowHeightProperty.PropertyName)
+			{
 				UpdateRowHeight();
+			}
 			else if (e.PropertyName == TableView.HasUnevenRowsProperty.PropertyName)
+			{
 				SetSource();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				UpdateBackgroundView();
+			}
 		}
 
 		protected override void UpdateNativeWidget()
@@ -115,7 +130,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 			else
+			{
 				Control.Layer.ShouldRasterize = false;
+			}
 
 			base.UpdateNativeWidget();
 		}
@@ -127,7 +144,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the cells adhere to changes UI theme
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			{
 				Control.ReloadData();
+			}
 		}
 
 		void SetSource()
@@ -150,7 +169,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Control.RowHeight = UITableView.AutomaticDimension;
 			}
 			else
+			{
 				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
+			}
 		}
 
 		void UpdateEstimatedRowHeight()

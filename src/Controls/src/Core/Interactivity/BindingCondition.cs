@@ -27,9 +27,16 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_binding == value)
+				{
 					return;
+				}
+
 				if (IsSealed)
+				{
+				{
 					throw new InvalidOperationException("Cannot change Binding once the Condition has been applied.");
+				}
+
 				_binding = value;
 			}
 		}
@@ -41,9 +48,16 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_triggerValue == value)
+				{
 					return;
+				}
+
 				if (IsSealed)
+				{
+				{
 					throw new InvalidOperationException("Cannot change Value once the Condition has been applied.");
+				}
+
 				_triggerValue = value;
 			}
 		}
@@ -63,7 +77,9 @@ namespace Microsoft.Maui.Controls
 		internal override void SetUp(BindableObject bindable)
 		{
 			if (Binding != null)
+			{
 				bindable.SetBinding(_boundProperty, Binding.Clone());
+			}
 		}
 
 		internal override void TearDown(BindableObject bindable)
@@ -77,13 +93,19 @@ namespace Microsoft.Maui.Controls
 		bool EqualsToValue(object other)
 		{
 			if ((other == Value) || (other != null && other.Equals(Value)))
+			{
 				return true;
+			}
 
 			object converted = null;
 			if (s_valueConverter != null)
+			{
 				converted = s_valueConverter.Convert(Value, other != null ? other.GetType() : typeof(object), null, null);
+			}
 			else
+			{
 				return false;
+			}
 
 			return (other == converted) || (other != null && other.Equals(converted));
 		}
@@ -94,7 +116,9 @@ namespace Microsoft.Maui.Controls
 			bool newState = EqualsToValue(newValue);
 
 			if (newState == oldState)
+			{
 				return;
+			}
 
 			ConditionChanged?.Invoke(bindable, oldState, newState);
 		}

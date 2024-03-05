@@ -36,12 +36,16 @@ namespace Microsoft.Maui.Platform
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
 			if (e == null)
+			{
 				throw new ArgumentNullException(nameof(e));
+			}
 
 			int touchCount = e.PointerCount;
 			var touchPoints = new PointF[touchCount];
 			for (int i = 0; i < touchCount; i++)
+			{
 				touchPoints[i] = new PointF(e.GetX(i) / _scale, e.GetY(i) / _scale);
+			}
 
 			var actionMasked = e.Action & MotionEventActions.Mask;
 
@@ -83,7 +87,9 @@ namespace Microsoft.Maui.Platform
 					float deltaY = _lastMovedViewPoints[0].Y - points[0].Y;
 
 					if (Math.Abs(deltaX) <= 3 && Math.Abs(deltaY) <= 3)
+					{
 						return;
+					}
 				}
 			}
 
@@ -107,12 +113,16 @@ namespace Microsoft.Maui.Platform
 		public override bool OnHoverEvent(MotionEvent? e)
 		{
 			if (e == null)
+			{
 				throw new ArgumentNullException(nameof(e));
+			}
 
 			int touchCount = e.PointerCount;
 			var touchPoints = new PointF[touchCount];
 			for (int i = 0; i < touchCount; i++)
+			{
 				touchPoints[i] = new PointF(e.GetX(i) / _scale, e.GetY(i) / _scale);
+			}
 
 			var actionMasked = e.Action & MotionEventActions.Mask;
 

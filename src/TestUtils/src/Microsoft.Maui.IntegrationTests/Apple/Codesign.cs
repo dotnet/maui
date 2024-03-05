@@ -23,7 +23,9 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			foreach (string entitlement in expectedEntitlements)
 			{
 				if (fileContent.Contains(entitlement, StringComparison.OrdinalIgnoreCase))
+				{
 					foundEntitlements.Add(entitlement);
+				}
 			}
 
 			return foundEntitlements;

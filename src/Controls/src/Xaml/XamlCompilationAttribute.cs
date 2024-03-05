@@ -28,13 +28,21 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			var attr = type.GetCustomAttribute<XamlCompilationAttribute>();
 			if (attr != null)
+			{
 				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
+			}
+
 			attr = type.Module.GetCustomAttribute<XamlCompilationAttribute>();
 			if (attr != null)
+			{
 				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
+			}
+
 			attr = type.Assembly.GetCustomAttribute<XamlCompilationAttribute>();
 			if (attr != null)
+			{
 				return attr.XamlCompilationOptions == XamlCompilationOptions.Compile;
+			}
 
 			return false;
 		}

@@ -27,7 +27,9 @@ namespace Microsoft.Maui.Controls
 			var strValue = value?.ToString();
 
 			if (string.IsNullOrEmpty(strValue))
+			{
 				return null;
+			}
 
 			return Accelerator.FromString(strValue);
 		}
@@ -35,7 +37,9 @@ namespace Microsoft.Maui.Controls
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not Accelerator acc)
+			{
 				throw new NotSupportedException();
+			}
 
 			return acc.ToString();
 		}

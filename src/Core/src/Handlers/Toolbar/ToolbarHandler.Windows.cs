@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				var navRootManager = MauiContext?.GetNavigationRootManager();
 				if (navRootManager != null && navRootManager.Toolbar == mauiToolbar)
+				{
 					navRootManager.SetToolbar(null);
+				}
 			}
 		}
 	}

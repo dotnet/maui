@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		internal static void UpdateFlowDirection(this FrameworkElement control, IVisualElementController controller)
 		{
 			if (controller == null || control == null)
+			{
 				return;
+			}
 
 			if (controller is IView v)
 			{
@@ -17,9 +19,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			if (controller.EffectiveFlowDirection.IsRightToLeft())
+			{
 				control.FlowDirection = WFlowDirection.RightToLeft;
+			}
 			else if (controller.EffectiveFlowDirection.IsLeftToRight())
+			{
 				control.FlowDirection = WFlowDirection.LeftToRight;
+			}
 		}
 	}
 }

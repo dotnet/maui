@@ -26,9 +26,13 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			base.MovedToWindow();
 			if (Window != null)
+			{
 				Startup();
+			}
 			else
+			{
 				Cleanup();
+			}
 		}
 
 		protected virtual MKOverlayRenderer GetViewForOverlayDelegate(MKMapView mapview, IMKOverlay overlay)
@@ -49,7 +53,9 @@ namespace Microsoft.Maui.Maps.Platform
 					break;
 			}
 			if (overlayRenderer == null)
+			{
 				throw new InvalidOperationException($"MKOverlayRenderer not found for {overlay}.");
+			}
 
 			return overlayRenderer;
 		}
@@ -63,7 +69,9 @@ namespace Microsoft.Maui.Maps.Platform
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=26416
 			var userLocationAnnotation = Runtime.GetNSObject(annotation.Handle) as MKUserLocation;
 			if (userLocationAnnotation != null)
+			{
 				return null!;
+			}
 
 			const string defaultPinId = "defaultPin";
 			mapPin = mapView.DequeueReusableAnnotation(defaultPinId);
@@ -99,10 +107,14 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			_handlerRef.TryGetTarget(out IMapHandler? handler);
 			if (handler?.MauiContext == null)
+			{
 				return;
+			}
 
 			if (Annotations?.Length > 0)
+			{
 				RemoveAnnotations(Annotations);
+			}
 
 			foreach (IMapPin pin in pins)
 			{
@@ -119,7 +131,9 @@ namespace Microsoft.Maui.Maps.Platform
 			var elements = Overlays;
 
 			if (elements == null)
+			{
 				return;
+			}
 
 			foreach (IMKOverlay overlay in elements)
 			{
@@ -136,13 +150,18 @@ namespace Microsoft.Maui.Maps.Platform
 				{
 					case IGeoPathMapElement geoPathElement:
 						if (geoPathElement is IFilledMapElement)
+						{
 							overlay = MKPolygon.FromCoordinates(geoPathElement
 							.Select(position => new CLLocationCoordinate2D(position.Latitude, position.Longitude))
 							.ToArray());
+						}
 						else
+						{
 							overlay = MKPolyline.FromCoordinates(geoPathElement
 								.Select(position => new CLLocationCoordinate2D(position.Latitude, position.Longitude))
 								.ToArray());
+						}
+
 						break;
 					case ICircleMapElement circleElement:
 						overlay = MKCircle.Circle(
@@ -164,7 +183,9 @@ namespace Microsoft.Maui.Maps.Platform
 			foreach (IMapElement element in elements)
 			{
 				if (element.MapElementId is IMKOverlay overlay)
+				{
 					RemoveOverlay(overlay);
+				}
 			}
 		}
 
@@ -197,20 +218,26 @@ namespace Microsoft.Maui.Maps.Platform
 			var pin = GetPinForAnnotation(annotation!);
 
 			if (pin == null)
+			{
 				return;
+			}
 
 			// SendMarkerClick() returns the value of PinClickedEventArgs.HideInfoWindow
 			// Hide the info window by deselecting the annotation
 			bool deselect = pin.SendMarkerClick();
 
 			if (deselect)
+			{
 				DeselectAnnotation(annotation, false);
+			}
 		}
 
 		void MkMapViewOnRegionChanged(object? sender, MKMapViewChangeEventArgs e)
 		{
 			if (_handlerRef.TryGetTarget(out IMapHandler? handler) && handler?.VirtualView != null)
+			{
 				handler.VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(Region.Center.Latitude, Region.Center.Longitude), Region.Span.LatitudeDelta, Region.Span.LongitudeDelta);
+			}
 		}
 
 		IMapPin GetPinForAnnotation(IMKAnnotation annotation)
@@ -263,12 +290,16 @@ namespace Microsoft.Maui.Maps.Platform
 
 			// pin not found. Must have been activated outside of forms
 			if (targetPin == null)
+			{
 				return;
+			}
 
 			// if the tap happened on the annotation view itself, skip because this is what happens when the callout is showing
 			// when the callout is already visible the tap comes in on a different view
 			if (_lastTouchedView is MKAnnotationView)
+			{
 				return;
+			}
 
 			targetPin.SendMarkerClick();
 
@@ -276,7 +307,9 @@ namespace Microsoft.Maui.Maps.Platform
 			// Hide the info window by deselecting the annotation
 			bool deselect = targetPin.SendInfoWindowClick();
 			if (deselect)
+			{
 				DeselectAnnotation(annotation, true);
+			}
 		}
 
 		T? GetMapElement<T>(IMKOverlay mkPolyline) where T : MKOverlayRenderer
@@ -301,7 +334,9 @@ namespace Microsoft.Maui.Maps.Platform
 		static bool OnShouldReceiveMapTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
 			if (touch.View is MKAnnotationView)
+			{
 				return false;
+			}
 
 			return true;
 		}
@@ -309,13 +344,17 @@ namespace Microsoft.Maui.Maps.Platform
 		static void OnMapClicked(UITapGestureRecognizer recognizer)
 		{
 			if (recognizer.View is not MauiMKMapView mauiMkMapView)
+			{
 				return;
+			}
 
 			var tapPoint = recognizer.LocationInView(mauiMkMapView);
 			var tapGPS = mauiMkMapView.ConvertPoint(tapPoint, mauiMkMapView);
 
 			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
+			{
 				handler?.VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+			}
 		}
 	}
 }

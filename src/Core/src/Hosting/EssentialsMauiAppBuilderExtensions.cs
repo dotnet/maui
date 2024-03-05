@@ -146,7 +146,11 @@ namespace Microsoft.Maui.Hosting
 #endif
 
 				if (_essentialsBuilder.TrackVersions)
+				{
+				{
 					VersionTracking.Track();
+				}
+				}
 			}
 
 			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)

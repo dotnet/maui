@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override void ConnectHandler(W2DGraphicsView nativeView)
 		{
 			if (VirtualView is Polyline polyline)
+			{
 				polyline.Points.CollectionChanged += OnPointsCollectionChanged;
+			}
 
 			base.ConnectHandler(nativeView);
 		}
@@ -19,7 +21,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override void DisconnectHandler(W2DGraphicsView nativeView)
 		{
 			if (VirtualView is Polyline polyline)
+			{
 				polyline.Points.CollectionChanged -= OnPointsCollectionChanged;
+			}
 
 			base.DisconnectHandler(nativeView);
 		}
@@ -39,10 +43,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			IDrawable drawable = handler.PlatformView?.Drawable;
 
 			if (drawable == null)
+			{
 				return;
+			}
 
 			if (drawable is ShapeDrawable shapeDrawable)
+			{
 				shapeDrawable.UpdateWindingMode(polyline.FillRule == FillRule.EvenOdd ? WindingMode.EvenOdd : WindingMode.NonZero);
+			}
 
 			handler.PlatformView?.InvalidateShape(polyline);
 		}

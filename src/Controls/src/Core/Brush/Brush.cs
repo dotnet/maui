@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Controls
 		public static implicit operator Brush(Paint paint)
 		{
 			if (paint is SolidPaint solidPaint)
+			{
 				return new SolidColorBrush { Color = solidPaint.Color };
+			}
 
 			if (paint is GradientPaint gradientPaint)
 			{
@@ -46,7 +48,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+			{
 				return new ImageBrush { ImageSource = imageSource };
+			}
 
 			return null;
 		}
@@ -54,7 +58,9 @@ namespace Microsoft.Maui.Controls
 		public static implicit operator Paint(Brush brush)
 		{
 			if (brush is SolidColorBrush solidColorBrush)
+			{
 				return new SolidPaint { Color = solidColorBrush.Color };
+			}
 
 			if (brush is GradientBrush gradientBrush)
 			{
@@ -86,7 +92,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (brush is ImageBrush imageBrush)
+			{
 				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+			}
 
 			return null;
 		}

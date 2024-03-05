@@ -64,9 +64,15 @@ namespace Samples.ViewModel
 
 				AuthToken = string.Empty;
 				if (r.Properties.TryGetValue("name", out var name) && !string.IsNullOrEmpty(name))
+				{
 					AuthToken += $"Name: {name}{Environment.NewLine}";
+				}
+
 				if (r.Properties.TryGetValue("email", out var email) && !string.IsNullOrEmpty(email))
+				{
 					AuthToken += $"Email: {email}{Environment.NewLine}";
+				}
+
 				AuthToken += r?.AccessToken ?? r?.IdToken;
 			}
 			catch (OperationCanceledException)

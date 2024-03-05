@@ -19,7 +19,9 @@ namespace Microsoft.Maui
 		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IFontImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
+			{
 				return FromResult(null);
+			}
 
 			try
 			{
@@ -27,7 +29,9 @@ namespace Microsoft.Maui
 				var image = imageSource.GetPlatformImage(FontManager, scale);
 
 				if (image == null)
+				{
 					throw new InvalidOperationException("Unable to generate font image.");
+				}
 
 				var result = new ImageSourceServiceResult(image, true, () => image.Dispose());
 

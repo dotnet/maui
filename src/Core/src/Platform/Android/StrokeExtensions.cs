@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Platform
 			MauiDrawable? mauiDrawable = platformView.Background as MauiDrawable;
 
 			if (mauiDrawable == null && borderShape == null)
+			{
 				return;
+			}
 
 			mauiDrawable?.SetBorderBrush(border.Stroke);
 			mauiDrawable?.SetBorderWidth(border.StrokeThickness);
@@ -32,7 +34,9 @@ namespace Microsoft.Maui.Platform
 			MauiDrawable? mauiDrawable = platformView.Background as MauiDrawable;
 
 			if (mauiDrawable == null && borderShape == null)
+			{
 				return;
+			}
 
 			platformView.UpdateMauiDrawable(border);
 		}
@@ -43,7 +47,9 @@ namespace Microsoft.Maui.Platform
 			MauiDrawable? mauiDrawable = platformView.Background as MauiDrawable;
 
 			if (mauiDrawable == null && stroke.IsNullOrEmpty())
+			{
 				return;
+			}
 
 			platformView.UpdateMauiDrawable(border);
 			mauiDrawable?.SetBorderBrush(border.Stroke);
@@ -55,7 +61,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (mauiDrawable == null && !hasBorder)
+			{
 				return;
+			}
 
 			mauiDrawable?.SetBorderWidth(border.StrokeThickness);
 		}
@@ -68,7 +76,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (mauiDrawable == null && !hasBorder && (strokeDashPattern == null || strokeDashPattern.Length == 0))
+			{
 				return;
+			}
 
 			mauiDrawable?.SetBorderDash(border.StrokeDashPattern, border.StrokeDashOffset);
 		}
@@ -80,7 +90,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (mauiDrawable == null && !hasBorder)
+			{
 				return;
+			}
 
 			mauiDrawable?.SetBorderDash(border.StrokeDashPattern, border.StrokeDashOffset);
 		}
@@ -92,7 +104,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (mauiDrawable == null && !hasBorder)
+			{
 				return;
+			}
 
 			mauiDrawable?.SetBorderMiterLimit(border.StrokeMiterLimit);
 		}
@@ -103,7 +117,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (mauiDrawable == null && !hasBorder)
+			{
 				return;
+			}
 
 			mauiDrawable?.SetBorderLineCap(border.StrokeLineCap);
 		}
@@ -114,7 +130,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 
 			if (mauiDrawable == null && !hasBorder)
+			{
 				return;
+			}
 
 			mauiDrawable?.SetBorderLineJoin(border.StrokeLineJoin);
 		}
@@ -122,7 +140,9 @@ namespace Microsoft.Maui.Platform
 		public static void InvalidateBorderStrokeBounds(this AView platformView)
 		{
 			if (platformView.Background is not MauiDrawable mauiDrawable)
+			{
 				return;
+			}
 
 			mauiDrawable.InvalidateBorderBounds();
 		}
@@ -132,7 +152,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null;
 
 			if (!hasBorder)
+			{
 				return;
+			}
 
 			MauiDrawable? mauiDrawable = platformView.Background as MauiDrawable;
 
@@ -144,14 +166,20 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (border is IView v)
+			{
 				mauiDrawable.SetBackground(v.Background);
+			}
 			else
+			{
 				mauiDrawable.SetBackground(new SolidPaint(Colors.Transparent));
+			}
 
 			mauiDrawable.SetBorderShape(border.Shape);
 
 			if (platformView is ContentViewGroup contentViewGroup)
+			{
 				contentViewGroup.Clip = border;
+			}
 		}
 	}
 }

@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static UIViewController CreateViewController(this Page page)
 		{
 			if (!Forms.IsInitialized)
+			{
 				throw new InvalidOperationException("call Forms.Init() before this");
+			}
 
 			if (!(page.RealParent is Application))
 			{

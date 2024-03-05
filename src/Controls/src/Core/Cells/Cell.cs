@@ -39,7 +39,10 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (value == _effectiveFlowDirection)
+				{
+				{
 					return;
+				}
 
 				_effectiveFlowDirection = value;
 
@@ -56,7 +59,10 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (value == _effectiveVisual)
+				{
+				{
 					return;
+				}
 
 				_effectiveVisual = value;
 				OnPropertyChanged(VisualElement.VisualProperty.PropertyName);
@@ -76,7 +82,10 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (value == _window)
+				{
+				{
 					return;
+				}
 
 				_window = value;
 				OnPropertyChanged(VisualElement.WindowProperty.PropertyName);
@@ -114,7 +123,10 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_height == value)
+				{
+				{
 					return;
+				}
 
 				OnPropertyChanging("Height");
 				OnPropertyChanging("RenderHeight");
@@ -138,11 +150,15 @@ namespace Microsoft.Maui.Controls
 			{
 				var table = RealParent as TableView;
 				if (table != null)
+				{
 					return table.HasUnevenRows && Height > 0 ? Height : table.RowHeight;
+				}
 
 				var list = RealParent as ListView;
 				if (list != null)
+				{
 					return list.HasUnevenRows && Height > 0 ? Height : list.RowHeight;
+				}
 
 				return DefaultCellHeight;
 			}
@@ -161,7 +177,9 @@ namespace Microsoft.Maui.Controls
 		public void ForceUpdateSize()
 		{
 			if (_nextCallToForceUpdateSizeQueued)
+			{
 				return;
+			}
 
 			if ((Parent as ListView)?.HasUnevenRows == true || (Parent as TableView)?.HasUnevenRows == true)
 			{
@@ -185,7 +203,10 @@ namespace Microsoft.Maui.Controls
 			if (HasContextActions)
 			{
 				for (var i = 0; i < _contextActions.Count; i++)
+				{
+				{
 					SetInheritedBindingContext(_contextActions[i], BindingContext);
+				}
 			}
 		}
 
@@ -287,16 +308,25 @@ namespace Microsoft.Maui.Controls
 			// Technically we might be raising this even if it didn't change, but I'm taking the bet that
 			// its uncommon enough that we don't want to take the penalty of N GetValue calls to verify.
 			if (e.PropertyName == "RowHeight")
+			{
+			{
 				OnPropertyChanged("RenderHeight");
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName ||
 					 e.PropertyName == VisualElement.VisualProperty.PropertyName)
+			{
+			{
 				PropertyPropagationController.PropagatePropertyChanged(e.PropertyName);
+			}
 		}
 
 		void OnParentPropertyChanging(object sender, PropertyChangingEventArgs e)
 		{
 			if (e.PropertyName == "RowHeight")
+			{
+			{
 				OnPropertyChanging("RenderHeight");
+			}
 		}
 
 #if ANDROID
@@ -316,7 +346,9 @@ namespace Microsoft.Maui.Controls
 			var children = new List<Maui.IVisualTreeElement>(LogicalChildrenInternal);
 
 			if (_contextActions != null)
+			{
 				children.AddRange(_contextActions);
+			}
 
 			return children;
 		}

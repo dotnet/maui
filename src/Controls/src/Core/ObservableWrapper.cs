@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Controls
 		public ObservableWrapper(ObservableCollection<TTrack> list)
 		{
 			if (list == null)
+			{
 				throw new ArgumentNullException("list");
+			}
 
 			_list = list;
 
@@ -24,12 +26,19 @@ namespace Microsoft.Maui.Controls
 		public void Add(TRestrict item)
 		{
 			if (item == null)
+			{
 				throw new ArgumentNullException("item");
+			}
+
 			if (IsReadOnly)
+			{
 				throw new NotSupportedException("The collection is read-only.");
+			}
 
 			if (_list.Contains(item))
+			{
 				return;
+			}
 
 			item.Owned = true;
 			_list.Add(item);
@@ -38,7 +47,9 @@ namespace Microsoft.Maui.Controls
 		public void Clear()
 		{
 			if (IsReadOnly)
+			{
 				throw new NotSupportedException("The collection is read-only.");
+			}
 
 			for (int i = _list.Count - 1; i >= 0; i--)
 			{
@@ -58,7 +69,10 @@ namespace Microsoft.Maui.Controls
 		public void CopyTo(Array array, int destIndex)
 		{
 			if (array.Length - destIndex < Count)
+			{
 				throw new ArgumentException("Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
+			}
+
 			foreach (TRestrict item in this)
 			{
 				array.SetValue(item, destIndex);
@@ -77,7 +91,9 @@ namespace Microsoft.Maui.Controls
 				{
 					var item = _list[i];
 					if (item.Owned && item is TRestrict)
+					{
 						result++;
+					}
 				}
 				return result;
 			}
@@ -88,12 +104,19 @@ namespace Microsoft.Maui.Controls
 		public bool Remove(TRestrict item)
 		{
 			if (item == null)
+			{
 				throw new ArgumentNullException("item");
+			}
+
 			if (IsReadOnly)
+			{
 				throw new NotSupportedException("The collection is read-only.");
+			}
 
 			if (!item.Owned)
+			{
 				return false;
+			}
 
 			if (_list.Remove(item))
 			{
@@ -123,16 +146,24 @@ namespace Microsoft.Maui.Controls
 		{
 			int innerIndex = _list.IndexOf(value);
 			if (innerIndex == -1)
+			{
 				return -1;
+			}
+
 			return ToOuterIndex(innerIndex);
 		}
 
 		public void Insert(int index, TRestrict item)
 		{
 			if (item == null)
+			{
 				throw new ArgumentNullException("item");
+			}
+
 			if (IsReadOnly)
+			{
 				throw new NotSupportedException("The collection is read-only.");
+			}
 
 			item.Owned = true;
 			_list.Insert(ToInnerIndex(index), item);
@@ -145,19 +176,27 @@ namespace Microsoft.Maui.Controls
 			{
 				int innerIndex = ToInnerIndex(index);
 				if (value != null)
+				{
 					value.Owned = true;
+				}
+
 				TTrack old = _list[innerIndex];
 				_list[innerIndex] = value;
 
 				if (old != null)
+				{
 					old.Owned = false;
+				}
 			}
 		}
 
 		public void RemoveAt(int index)
 		{
 			if (IsReadOnly)
+			{
 				throw new NotSupportedException("The collection is read-only");
+			}
+
 			int innerIndex = ToInnerIndex(index);
 			TTrack item = _list[innerIndex];
 			if (item.Owned)
@@ -173,28 +212,38 @@ namespace Microsoft.Maui.Controls
 		{
 			NotifyCollectionChangedEventHandler handler = CollectionChanged;
 			if (handler == null)
+			{
 				return;
+			}
 
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
 					if (e.NewStartingIndex == -1 || e.NewItems.Count > 1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					var newItem = e.NewItems[0] as TRestrict;
 					if (newItem == null || !newItem.Owned)
+					{
 						break;
+					}
 
 					int outerIndex = ToOuterIndex(e.NewStartingIndex);
 					handler(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, e.NewItems, outerIndex));
 					break;
 				case NotifyCollectionChangedAction.Move:
 					if (e.NewStartingIndex == -1 || e.OldStartingIndex == -1 || e.NewItems.Count > 1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					var movedItem = e.NewItems[0] as TRestrict;
 					if (movedItem == null || !movedItem.Owned)
+					{
 						break;
+					}
 
 					int outerOldIndex = ToOuterIndex(e.OldStartingIndex);
 					int outerNewIndex = ToOuterIndex(e.NewStartingIndex);
@@ -202,11 +251,15 @@ namespace Microsoft.Maui.Controls
 					break;
 				case NotifyCollectionChangedAction.Remove:
 					if (e.OldStartingIndex == -1 || e.OldItems.Count > 1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					var removedItem = e.OldItems[0] as TRestrict;
 					if (removedItem == null || !removedItem.Owned)
+					{
 						break;
+					}
 
 					int outerRemovedIndex = ToOuterIndex(e.OldStartingIndex);
 					var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItem, outerRemovedIndex);
@@ -214,7 +267,9 @@ namespace Microsoft.Maui.Controls
 					break;
 				case NotifyCollectionChangedAction.Replace:
 					if (e.NewStartingIndex == -1 || e.OldStartingIndex == -1 || e.NewItems.Count > 1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					var newReplaceItem = e.NewItems[0] as TRestrict;
 					var oldReplaceItem = e.OldItems[0] as TRestrict;
@@ -251,7 +306,10 @@ namespace Microsoft.Maui.Controls
 				if (item is TRestrict && item.Owned)
 				{
 					if (outerIndex == outterIndex)
+					{
 						return innerIndex;
+					}
+
 					outerIndex++;
 				}
 			}

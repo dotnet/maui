@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Design
 			// MUST MATCH BoundsTypeConverter.ConvertFrom
 			string strValue = value?.ToString();
 			if (string.IsNullOrEmpty(strValue))
+			{
 				return false;
+			}
 
 			string[] xywh = strValue.Split(',');
 			bool hasX, hasY, hasW, hasH;
@@ -31,9 +33,14 @@ namespace Microsoft.Maui.Controls.Design
 			}
 
 			if (hasX && hasY && xywh.Length == 2)
+			{
 				return true;
+			}
+
 			if (hasX && hasY && hasW && hasH && xywh.Length == 4)
+			{
 				return true;
+			}
 
 			return false;
 		}

@@ -58,10 +58,14 @@ namespace Microsoft.Maui
 			var platformView = viewHandler.ToPlatform();
 
 			if (platformView == null)
+			{
 				return Size.Zero;
+			}
 
 			if (widthConstraint < 0 || heightConstraint < 0)
+			{
 				return Size.Zero;
+			}
 
 			widthConstraint = AdjustForExplicitSize(widthConstraint, platformView.Width);
 			heightConstraint = AdjustForExplicitSize(heightConstraint, platformView.Height);
@@ -78,10 +82,14 @@ namespace Microsoft.Maui
 			var platformView = viewHandler.ToPlatform();
 
 			if (platformView == null)
+			{
 				return;
+			}
 
 			if (rect.Width < 0 || rect.Height < 0)
+			{
 				return;
+			}
 
 			platformView.Arrange(new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
 

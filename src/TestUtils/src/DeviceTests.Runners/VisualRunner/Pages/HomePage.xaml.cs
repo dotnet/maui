@@ -64,7 +64,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 			assemblyList.SelectedItem = null;
 
 			if (BindingContext is ViewModelBase vm)
+			{
 				vm.OnAppearing();
+			}
 		}
 	}
 }

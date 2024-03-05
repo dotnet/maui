@@ -85,11 +85,17 @@ namespace Microsoft.Maui.Graphics.Platform
 			set
 			{
 				if (value == LineCap.Butt)
+				{
 					StrokePaint.StrokeCap = global::Android.Graphics.Paint.Cap.Butt;
+				}
 				else if (value == LineCap.Round)
+				{
 					StrokePaint.StrokeCap = global::Android.Graphics.Paint.Cap.Round;
+				}
 				else if (value == LineCap.Square)
+				{
 					StrokePaint.StrokeCap = global::Android.Graphics.Paint.Cap.Square;
+				}
 			}
 		}
 
@@ -98,11 +104,17 @@ namespace Microsoft.Maui.Graphics.Platform
 			set
 			{
 				if (value == LineJoin.Miter)
+				{
 					StrokePaint.StrokeJoin = global::Android.Graphics.Paint.Join.Miter;
+				}
 				else if (value == LineJoin.Round)
+				{
 					StrokePaint.StrokeJoin = global::Android.Graphics.Paint.Join.Round;
+				}
 				else if (value == LineJoin.Bevel)
+				{
 					StrokePaint.StrokeJoin = global::Android.Graphics.Paint.Join.Bevel;
+				}
 			}
 		}
 
@@ -129,7 +141,9 @@ namespace Microsoft.Maui.Graphics.Platform
 				{
 					var scaledPattern = new float[pattern.Length];
 					for (int i = 0; i < pattern.Length; i++)
+					{
 						scaledPattern[i] = pattern[i] * scaledStrokeSize;
+					}
 
 					var scaledStrokeDashOffset = strokeDashOffset * scaledStrokeSize;
 					StrokePaint.SetPathEffect(new DashPathEffect(scaledPattern, scaledStrokeDashOffset));

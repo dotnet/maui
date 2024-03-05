@@ -14,7 +14,9 @@ namespace Maui.Controls.Sample.ViewModels.Base
 			var items = CreateItems();
 
 			if (items != null)
+			{
 				Items = items.ToList();
+			}
 
 			Filter();
 		}

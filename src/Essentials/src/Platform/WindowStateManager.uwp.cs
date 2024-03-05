@@ -65,7 +65,9 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var window = manager.GetActiveWindow();
 			if (throwOnNull && window == null)
+			{
 				throw new NullReferenceException("The active Window can not be detected. Ensure that you have called Init in your Application class.");
+			}
 
 			return window;
 		}
@@ -81,10 +83,14 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var window = manager.GetActiveWindow();
 			if (throwOnNull && window == null)
+			{
 				throw new NullReferenceException("The active Window can not be detected. Ensure that you have called Init in your Application class.");
+			}
 
 			if (window == null)
+			{
 				return IntPtr.Zero;
+			}
 
 			var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
 
@@ -102,10 +108,14 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var window = manager.GetActiveWindow();
 			if (throwOnNull && window == null)
+			{
 				throw new NullReferenceException("The active Window can not be detected. Ensure that you have called Init in your Application class.");
+			}
 
 			if (window == null)
+			{
 				return null;
+			}
 
 			var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
 			var windowId = UI.Win32Interop.GetWindowIdFromWindow(handle);
@@ -127,7 +137,9 @@ namespace Microsoft.Maui.ApplicationModel
 		void SetActiveWindow(Window window)
 		{
 			if (_activeWindow == window)
+			{
 				return;
+			}
 
 			_activeWindow = window;
 
@@ -142,7 +154,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public void OnActivated(Window window, WindowActivatedEventArgs args)
 		{
 			if (args.WindowActivationState != WindowActivationState.Deactivated)
+			{
 				SetActiveWindow(window);
+			}
 		}
 	}
 }

@@ -12,7 +12,9 @@ namespace Microsoft.Maui.HotReload
 		public static void CheckHandlers(this IView? view)
 		{
 			if (view?.Handler == null)
+			{
 				return;
+			}
 			//So we can be smart and keep all old handlers
 			//However with the Old Legacy Shim layouts, this causes issues.
 			//So for now I am just going to kill all handlers, so everything needs rebuilt
@@ -30,7 +32,9 @@ namespace Microsoft.Maui.HotReload
 			if (view is IContainer layout)
 			{
 				foreach (var v in layout)
+				{
 					CheckHandlers(v);
+				}
 			}
 		}
 
@@ -40,14 +44,23 @@ namespace Microsoft.Maui.HotReload
 		{
 			var flags = BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic;
 			if (isSubclass)
+			{
 				flags = BindingFlags.Static | BindingFlags.NonPublic;
+			}
+
 			var foos = type.GetMethods(flags).Where(x => x.GetCustomAttributes(typeof(OnHotReloadAttribute), true).Length > 0).ToList();
 			foreach (var foo in foos)
+			{
 				yield return foo;
+			}
 
 			if (type.BaseType != null)
+			{
 				foreach (var foo in getOnHotReloadMethods(type.BaseType, true))
+				{
 					yield return foo;
+				}
+			}
 		}
 
 		class ReflectionMethodComparer : IEqualityComparer<MethodInfo>

@@ -45,7 +45,9 @@ namespace Maui.Controls.Sample.Pages
 		void RemovePage(object sender, EventArgs e)
 		{
 			if (Navigation.NavigationStack.Count >= 2)
+			{
 				Navigation.RemovePage(Navigation.NavigationStack[Navigation.NavigationStack.Count - 2]);
+			}
 		}
 
 		void ToggleNavigationBar(object sender, EventArgs e)
@@ -84,7 +86,9 @@ namespace Maui.Controls.Sample.Pages
 				var stackNavigationView = Parent as IStackNavigationView;
 
 				if (stackNavigationView == null && Parent is FlyoutPage fp)
+				{
 					stackNavigationView = fp.Detail as IStackNavigationView;
+				}
 
 				stackNavigationView!.RequestNavigation(
 					new NavigationRequest(

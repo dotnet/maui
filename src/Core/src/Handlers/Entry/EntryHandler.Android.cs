@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Handlers
 
 			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (!_set && PlatformView is MauiAppCompatEditText editText)
+			{
 				editText.SelectionChanged += OnSelectionChanged;
+			}
 
 			_set = true;
 		}
@@ -62,7 +64,9 @@ namespace Microsoft.Maui.Handlers
 
 			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (_set && platformView is MauiAppCompatEditText editText)
+			{
 				editText.SelectionChanged -= OnSelectionChanged;
+			}
 
 			_set = false;
 		}
@@ -104,7 +108,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry)
 		{
 			if (handler is EntryHandler platformHandler)
+			{
 				handler.PlatformView?.UpdatePlaceholderColor(entry);
+			}
 		}
 
 		public static void MapFont(IEntryHandler handler, IEntry entry) =>
@@ -139,19 +145,25 @@ namespace Microsoft.Maui.Handlers
 		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry)
 		{
 			if (handler is EntryHandler platformHandler)
+			{
 				handler.PlatformView?.UpdateClearButtonVisibility(entry, platformHandler.GetClearButtonDrawable);
+			}
 		}
 
 		static void MapFocus(IEntryHandler handler, IEntry entry, object? args)
 		{
 			if (args is FocusRequest request)
+			{
 				handler.PlatformView.Focus(request);
+			}
 		}
 
 		void OnViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
 		{
 			if (PlatformView is null || VirtualView is null)
+			{
 				return;
+			}
 
 			PlatformView.UpdateReturnType(VirtualView);
 		}
@@ -221,7 +233,7 @@ namespace Microsoft.Maui.Handlers
 					VirtualView?.Completed();
 				}
 				// InputPaneView Path
-				else if(evt?.KeyCode is null && (actionId == ImeAction.Done || actionId == currentInputImeFlag))
+				else if (evt?.KeyCode is null && (actionId == ImeAction.Done || actionId == currentInputImeFlag))
 				{
 					VirtualView?.Completed();
 				}
@@ -236,10 +248,14 @@ namespace Microsoft.Maui.Handlers
 			var selectedTextLength = PlatformView.GetSelectedTextLength();
 
 			if (VirtualView.CursorPosition != cursorPosition)
+			{
 				VirtualView.CursorPosition = cursorPosition;
+			}
 
 			if (VirtualView.SelectionLength != selectedTextLength)
+			{
 				VirtualView.SelectionLength = selectedTextLength;
+			}
 		}
 
 		internal void ShowClearButton()
@@ -252,14 +268,22 @@ namespace Microsoft.Maui.Handlers
 			var drawable = GetClearButtonDrawable();
 
 			if (VirtualView?.TextColor is not null)
+			{
 				drawable?.SetColorFilter(VirtualView.TextColor.ToPlatform(), FilterMode.SrcIn);
+			}
 			else
+			{
 				drawable?.ClearColorFilter();
+			}
 
 			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
+			{
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+			}
 			else
+			{
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
+			}
 
 			_clearButtonVisible = true;
 		}

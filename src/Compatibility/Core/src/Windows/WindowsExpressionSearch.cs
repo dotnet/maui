@@ -27,7 +27,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void Visit(Expression expression)
 		{
 			if (expression == null)
+			{
 				return;
+			}
 
 			switch (expression.NodeType)
 			{

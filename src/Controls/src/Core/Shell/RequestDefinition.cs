@@ -17,16 +17,24 @@ namespace Microsoft.Maui.Controls
 
 			List<String> builder = new List<string>();
 			if (Item?.Route != null)
+			{
 				builder.Add(Item.Route);
+			}
 
 			if (Section?.Route != null)
+			{
 				builder.Add(Section?.Route);
+			}
 
 			if (Content?.Route != null)
+			{
 				builder.Add(Content?.Route);
+			}
 
 			if (GlobalRoutes != null)
+			{
 				builder.AddRange(GlobalRoutes);
+			}
 
 			var uriPath = MakeUriString(builder);
 			var uri = ShellUriHandler.CreateUri(uriPath);
@@ -37,7 +45,9 @@ namespace Microsoft.Maui.Controls
 		string MakeUriString(List<string> segments)
 		{
 			if (segments[0].StartsWith("/", StringComparison.Ordinal) || segments[0].StartsWith("\\", StringComparison.Ordinal))
+			{
 				return String.Join("/", segments);
+			}
 
 			return $"//{String.Join("/", segments)}";
 		}

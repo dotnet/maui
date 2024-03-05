@@ -31,7 +31,9 @@ namespace Microsoft.Maui.DeviceTests
 			get
 			{
 				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+				{
 					return 50;
+				}
 
 				var scaledScreenSize = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
 				double w = scaledScreenSize.Width;

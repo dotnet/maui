@@ -20,13 +20,17 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateStrokeColor(this ShapeableImageView platformButton, IButtonStroke buttonStroke)
 		{
 			if (buttonStroke.StrokeColor is Color stroke)
+			{
 				platformButton.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToPlatform());
+			}
 		}
 
 		public static void UpdateStrokeThickness(this ShapeableImageView platformButton, IButtonStroke buttonStroke)
 		{
 			if (buttonStroke.StrokeThickness >= 0)
+			{
 				platformButton.StrokeWidth = (int)platformButton.Context.ToPixels(buttonStroke.StrokeThickness);
+			}
 		}
 
 		public static void UpdateCornerRadius(this ShapeableImageView platformButton, IButtonStroke buttonStroke)
@@ -62,7 +66,9 @@ namespace Microsoft.Maui.Platform
 				// Without ImageSource we do not apply Padding, although since there is no content
 				// there are no differences.
 				if (bitmapDrawable is null)
+				{
 					return;
+				}
 
 				var backgroundBounds = bitmapDrawable.Bounds;
 

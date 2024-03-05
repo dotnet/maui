@@ -51,22 +51,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 #if __MOBILE__
 			if (renderer.IsDisposed || renderer.Element == null || renderer.Control == null)
+			{
 				return;
-
+			}
 
 			if (renderer.GetImage() is FormsUIImageView imageView &&
 				renderer.Element is IImageElement imageElement &&
 				renderer.Element is IImageController imageController)
 			{
 				if (imageElement.IsLoading)
+				{
 					return;
+				}
 
 				if (imageView.Animation == null && imageElement.IsAnimationPlaying)
+				{
 					await SetImage(renderer, imageElement).ConfigureAwait(false);
+				}
+
 				if (imageView.Animation != null && imageElement.IsAnimationPlaying && !imageView.IsAnimating)
+				{
 					imageView.StartAnimating();
+				}
 				else if (imageView.Animation != null && !imageElement.IsAnimationPlaying && imageView.IsAnimating)
+				{
+				{
 					imageView.StopAnimating();
+				}
 			}
 #else
 			await Task.CompletedTask;
@@ -100,11 +111,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var imageElement = renderer.Element as IImageElement;
 
 			if (e.PropertyName == Image.IsOpaqueProperty.PropertyName)
+			{
 				SetOpacity(renderer, renderer.Element as IImageElement);
+			}
 			else if (e.PropertyName == Image.AspectProperty.PropertyName)
+			{
+			{
 				SetAspect(renderer, renderer.Element as IImageElement);
+			}
 			else if (e.PropertyName == Image.IsAnimationPlayingProperty.PropertyName)
+			{
 				await StartStopAnimation(renderer).ConfigureAwait(false);
+			}
 		}
 
 
@@ -173,10 +191,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				var oldSource = oldElement.Source;
 				if (Equals(oldSource, source))
+				{
 					return;
+				}
 
 				if (oldSource is FileImageSource oldFile && source is FileImageSource newFile && oldFile == newFile)
+				{
 					return;
+				}
 
 #if __MOBILE__
 				if (Control is FormsUIImageView imageView)
@@ -203,7 +225,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				bool useAnimation = imageController.GetLoadAsAnimation();
 				IAnimationSourceHandler handler = null;
 				if (useAnimation && source != null)
+				{
 					handler = Controls.Internals.Registrar.Registered.GetHandlerForObject<IAnimationSourceHandler>(source);
+				}
 
 				if (handler != null)
 				{
@@ -212,13 +236,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					if (animation != null && Control is FormsUIImageView imageView && imageElement.Source == source)
 					{
 						if (imageView.Animation != null)
+						{
 							imageView.AnimationStopped -= OnAnimationStopped;
+						}
 
 						imageView.Animation = animation;
 						imageView.AnimationStopped += OnAnimationStopped;
 
 						if ((bool)Element.GetValue(Image.IsAnimationPlayingProperty))
+						{
 							imageView.StartAnimating();
+						}
 					}
 					else
 					{
@@ -231,20 +259,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					var uiimage = await source.GetNativeImageAsync();
 
 					if (renderer.IsDisposed)
+					{
+					{
 						return;
+					}
 
 					// only set if we are still on the same image
 					if (Control != null && imageElement.Source == source)
+					{
 						renderer.SetImage(uiimage);
+					}
 					else
+					{
 						uiimage?.Dispose();
+					}
 				}
 			}
 			finally
 			{
 				// only mark as finished if we are still on the same image
 				if (imageElement.Source == source)
+				{
 					imageController?.SetIsLoading(false);
+				}
 			}
 
 			(imageElement as IViewController)?.PlatformSizeChanged();
@@ -267,11 +304,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		internal static async Task<NativeImage> GetNativeImageAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (source == null || source.IsEmpty)
+			{
 				return null;
+			}
 
 			var handler = Controls.Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source);
 			if (handler == null)
+			{
 				return null;
+			}
 
 			try
 			{
@@ -314,7 +355,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var nativeRenderer = renderer as IVisualNativeElementRenderer;
 
 			if (element == null || renderer.NativeView == null || (nativeRenderer != null && nativeRenderer.Control == null))
+			{
 				return;
+			}
 
 			onLoading?.Invoke(true);
 			if (element.GetValue(imageSourceProperty) is ImageSource initialSource && !initialSource.IsEmpty)
@@ -330,11 +373,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 						// makse sure things are good now that we are back
 						if (element == null || renderer.NativeView == null || (nativeRenderer != null && nativeRenderer.Control == null))
+						{
 							return;
+						}
 
 						// only set if we are still on the same image
 						if (element.GetValue(imageSourceProperty) == initialSource)
+						{
 							onSet(drawable);
+						}
 					}
 				}
 				finally
@@ -343,7 +390,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					{
 						// only mark as finished if we are still on the same image
 						if (element.GetValue(imageSourceProperty) == initialSource)
+						{
+						{
 							onLoading.Invoke(false);
+						}
 					}
 				}
 			}
@@ -369,7 +419,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					{
 						// only set if we are still on the same image
 						if (bindable.GetValue(imageSourceProperty) == initialSource)
+						{
 							onSet(nsimage);
+						}
 					}
 				}
 				finally
@@ -378,7 +430,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					{
 						// only mark as finished if we are still on the same image
 						if (bindable.GetValue(imageSourceProperty) == initialSource)
+						{
+						{
 							onLoading.Invoke(false);
+						}
 					}
 				}
 			}

@@ -67,7 +67,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 		void Insert_OnClicked(object sender, EventArgs e)
 		{
 			if (!IsValid(out var index))
+			{
 				return;
+			}
 
 			Items.Insert(index, CreateDrink());
 		}
@@ -75,7 +77,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 		void Add_OnClicked(object sender, EventArgs e)
 		{
 			if (!IsValid(out var _))
+			{
 				return;
+			}
 
 			Items.Add(CreateDrink());
 		}
@@ -83,7 +87,10 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 		void SetValue<T>(ref T backingField, in T value, [CallerMemberName] string callerName = "")
 		{
 			if (Equals(backingField, value))
+			{
 				return;
+			}
+
 			OnPropertyChanging(callerName);
 			backingField = value;
 			OnPropertyChanged(callerName);
@@ -92,7 +99,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 		void Remove_OnClicked(object sender, EventArgs e)
 		{
 			if (!IsValid(out var index))
+			{
 				return;
+			}
 
 			Items.RemoveAt(index);
 		}
@@ -122,11 +131,19 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 		{
 			index = -1;
 			if (string.IsNullOrWhiteSpace(Index))
+			{
 				return false;
+			}
+
 			if (!int.TryParse(Index, out index))
+			{
 				return false;
+			}
+
 			if (index > Items.Count || index < 0)
+			{
 				return false;
+			}
 
 			return true;
 		}
@@ -141,13 +158,19 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 		{
 			if (item is Coffee)
+			{
 				return CoffeeTemplate;
+			}
 
 			if (item is Milk)
+			{
 				return MilkTemplate;
+			}
 
 			if (item is Latte)
+			{
 				return LatteTemplate;
+			}
 
 			throw new ArgumentOutOfRangeException();
 		}

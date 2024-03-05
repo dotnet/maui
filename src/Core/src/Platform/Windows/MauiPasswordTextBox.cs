@@ -43,7 +43,9 @@ namespace Microsoft.Maui.Platform
 		static void OnPasswordPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
 		{
 			if (dependencyObject is MauiPasswordTextBox textBox)
+			{
 				textBox.UpdateVisibleText();
+			}
 		}
 
 		InputScope? _passwordInputScope;
@@ -62,19 +64,19 @@ namespace Microsoft.Maui.Platform
 			TextChanged += OnNativeTextChanged;
 		}
 
-		public bool IsPassword
+		public static bool IsPassword
 		{
 			get => (bool)GetValue(IsPasswordProperty);
 			set => SetValue(IsPasswordProperty, value);
 		}
 
-		public string Password
+		public static string Password
 		{
 			get => (string)GetValue(PasswordProperty);
 			set => SetValue(PasswordProperty, value);
 		}
 
-		public bool IsObfuscationDelayed
+		public static bool IsObfuscationDelayed
 		{
 			get => (bool)GetValue(IsObfuscationDelayedProperty);
 			set => SetValue(IsObfuscationDelayedProperty, value);
@@ -92,7 +94,7 @@ namespace Microsoft.Maui.Platform
 		// handled accordingly.
 		protected override void OnKeyDown(KeyRoutedEventArgs e)
 		{
-			if (!IsPassword)
+			if (!MauiPasswordTextBox.IsPassword)
 			{
 				base.OnKeyDown(e);
 				return;
@@ -141,17 +143,19 @@ namespace Microsoft.Maui.Platform
 			// but when IsPassword=true, it is too late to handle it at that moment, as we have already
 			// obfuscated the text and have lost the real CursorPosition value. So, let's handle that
 			// issue here when IsPassword is enabled.
-			if (!IsPassword)
+			if (!MauiPasswordTextBox.IsPassword)
+			{
 				return;
+			}
 
 			// As we are obfuscating the text by ourselves we are setting the Text property directly on code many times.
 			// This causes that we invoke the SelectionChanged event many times with SelectionStart = 0, setting the cursor
 			// to the beginning of the TextBox.
 			// To avoid this behavior let's save the current cursor position of the first time the Text is updated by the user
 			// and keep the same cursor position after each Text update until a new Text update by the user happens.
-			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
+			var updatedPassword = DetermineTextFromPassword(MauiPasswordTextBox.Password, SelectionStart, Text);
 
-			if (Password != updatedPassword)
+			if (MauiPasswordTextBox.Password != updatedPassword)
 			{
 				_cachedCursorPosition = SelectionStart;
 				_cachedTextLength = updatedPassword.Length;
@@ -166,21 +170,25 @@ namespace Microsoft.Maui.Platform
 
 		void OnNativeTextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
 		{
-			if (IsPassword)
+			if (MauiPasswordTextBox.IsPassword)
 			{
-				if (IsObfuscationDelayed)
+				if (MauiPasswordTextBox.IsObfuscationDelayed)
+				{
 					DelayObfuscation();
+				}
 				else
+				{
 					ImmediateObfuscation();
+				}
 			}
-			else if (Text != Password)
+			else if (Text != MauiPasswordTextBox.Password)
 			{
 				// Not in password mode, so we just need to make the "real" text match
 				// what's in the textbox; the internalChange flag keeps the TextProperty
 				// synchronization from happening
 
 				_internalChangeFlag = true;
-				Password = Text;
+				MauiPasswordTextBox.Password = Text;
 				_internalChangeFlag = false;
 			}
 		}
@@ -188,17 +196,21 @@ namespace Microsoft.Maui.Platform
 		void UpdateVisibleText()
 		{
 			if (_internalChangeFlag)
+			{
 				return;
+			}
 
-			var updatedText = IsPassword ? Obfuscate(Password) : Password;
+			var updatedText = MauiPasswordTextBox.IsPassword ? Obfuscate(MauiPasswordTextBox.Password) : MauiPasswordTextBox.Password;
 
 			if (Text != updatedText)
+			{
 				Text = updatedText;
+			}
 		}
 
 		void UpdateInputScope()
 		{
-			if (!IsPassword)
+			if (!MauiPasswordTextBox.IsPassword)
 			{
 				InputScope = _cachedInputScope;
 				IsSpellCheckEnabled = _cachedSpellCheckSetting;
@@ -231,7 +243,7 @@ namespace Microsoft.Maui.Platform
 
 		void DelayObfuscation()
 		{
-			var lengthDifference = Text.Length - Password.Length;
+			var lengthDifference = Text.Length - MauiPasswordTextBox.Password.Length;
 
 			UpdatePasswordIfNeeded();
 
@@ -244,13 +256,13 @@ namespace Microsoft.Maui.Platform
 			{
 				// Either More than one character got added in this text change (e.g., a paste operation)
 				// Or characters were removed. Either way, we don't need to do the delayed obfuscation dance
-				updatedVisibleText = Obfuscate(Password);
+				updatedVisibleText = Obfuscate(MauiPasswordTextBox.Password);
 			}
 			else
 			{
 				// Only one character was added; we need to leave it visible for a brief time period
 				// Obfuscate all but the last character for now
-				updatedVisibleText = Obfuscate(Password, true);
+				updatedVisibleText = Obfuscate(MauiPasswordTextBox.Password, true);
 
 				// Leave the last character visible until a new character is added
 				// or sufficient time has passed
@@ -259,7 +271,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (Text != updatedVisibleText)
+			{
 				Text = updatedVisibleText;
+			}
 
 			void StartTimeout(CancellationToken token)
 			{
@@ -279,19 +293,25 @@ namespace Microsoft.Maui.Platform
 
 		void UpdatePasswordIfNeeded()
 		{
-			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
+			var updatedPassword = DetermineTextFromPassword(MauiPasswordTextBox.Password, SelectionStart, Text);
 
-			if (Password != updatedPassword)
-				Password = updatedPassword;
+			if (MauiPasswordTextBox.Password != updatedPassword)
+			{
+				MauiPasswordTextBox.Password = updatedPassword;
+			}
 		}
 
 		static string Obfuscate(string text, bool leaveLastVisible = false)
 		{
 			if (string.IsNullOrEmpty(text))
+			{
 				return string.Empty;
+			}
 
 			if (!leaveLastVisible)
+			{
 				return new string(ObfuscationCharacter, text.Length);
+			}
 
 			return text.Length == 1
 				? text
@@ -304,13 +324,19 @@ namespace Microsoft.Maui.Platform
 
 			var lengthDifference = passwordText.Length - realText.Length;
 			if (lengthDifference > 0)
+			{
 				realText = realText.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
+			}
 			else if (lengthDifference < 0)
+			{
 				realText = realText.Remove(start, -lengthDifference);
+			}
 
 			var sb = new StringBuilder(passwordText.Length);
 			for (int i = 0; i < passwordText.Length; i++)
+			{
 				sb.Append((char)(passwordText[i] == ObfuscationCharacter ? realText[i] : passwordText[i]));
+			}
 
 			return sb.ToString();
 		}

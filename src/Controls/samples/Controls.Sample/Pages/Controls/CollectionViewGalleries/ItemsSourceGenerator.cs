@@ -185,7 +185,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			GenerateItems();
 
 			if (carousel == null)
+			{
 				return;
+			}
 		}
 	}
 }

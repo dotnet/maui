@@ -205,7 +205,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_itemDisplayBinding == value)
+				{
 					return;
+				}
 
 				OnPropertyChanging();
 				var oldValue = value;
@@ -223,7 +225,9 @@ namespace Microsoft.Maui.Controls
 		string GetDisplayMember(object item)
 		{
 			if (ItemDisplayBinding == null)
+			{
 				return item == null ? string.Empty : item.ToString();
+			}
 
 			ItemDisplayBinding.Apply(item, this, s_displayProperty, false, SetterSpecificity.FromBinding);
 			ItemDisplayBinding.Unapply();
@@ -249,7 +253,9 @@ namespace Microsoft.Maui.Controls
 			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
 			// If the index has not changed, still need to change the selected item
 			if (newIndex == oldIndex)
+			{
 				UpdateSelectedItem(newIndex);
+			}
 
 			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
@@ -263,7 +269,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var oldObservable = oldValue as INotifyCollectionChanged;
 			if (oldObservable != null)
+			{
 				oldObservable.CollectionChanged -= CollectionChanged;
+			}
 
 			var newObservable = newValue as INotifyCollectionChanged;
 			if (newObservable != null)
@@ -305,23 +313,31 @@ namespace Microsoft.Maui.Controls
 		{
 			int index = e.NewStartingIndex < 0 ? Items.Count : e.NewStartingIndex;
 			foreach (object newItem in e.NewItems)
+			{
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+			}
 		}
 
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
 		{
 			int index = e.OldStartingIndex < Items.Count ? e.OldStartingIndex : Items.Count;
 			foreach (object _ in e.OldItems)
+			{
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+			}
 		}
 
 		void ResetItems()
 		{
 			if (ItemsSource == null)
+			{
 				return;
-			((LockableObservableListWrapper)Items).InternalClear();
+			} ((LockableObservableListWrapper)Items).InternalClear();
 			foreach (object item in ItemsSource)
+			{
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			}
+
 			Handler?.UpdateValue(nameof(IPicker.Items));
 			UpdateSelectedItem(SelectedIndex);
 		}
@@ -406,11 +422,20 @@ namespace Microsoft.Maui.Controls
 		string IItemDelegate<string>.GetItem(int index)
 		{
 			if (index < 0)
+			{
 				return string.Empty;
+			}
+
 			if (index < Items?.Count)
+			{
 				return GetItem(index);
+			}
+
 			if (index < ItemsSource?.Count)
+			{
 				return GetDisplayMember(ItemsSource[index]);
+			}
+
 			return string.Empty;
 		}
 

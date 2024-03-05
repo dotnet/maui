@@ -228,10 +228,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void Start(SensorSpeed sensorSpeed)
 		{
 			if (!PlatformIsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (IsMonitoring)
+			{
 				throw new InvalidOperationException("Orientation sensor has already been started.");
+			}
 
 			IsMonitoring = true;
 			SensorSpeed = sensorSpeed;
@@ -253,10 +257,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void Stop()
 		{
 			if (!PlatformIsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (!IsMonitoring)
+			{
 				return;
+			}
 
 			IsMonitoring = false;
 
@@ -276,9 +284,13 @@ namespace Microsoft.Maui.Devices.Sensors
 			var args = new OrientationSensorChangedEventArgs(reading);
 
 			if (UseSyncContext)
+			{
 				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, args));
+			}
 			else
+			{
 				ReadingChanged?.Invoke(null, args);
+			}
 		}
 	}
 }

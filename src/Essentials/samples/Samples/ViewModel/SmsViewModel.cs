@@ -33,7 +33,10 @@ namespace Samples.ViewModel
 		async void OnSendSms()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
+
 			IsBusy = true;
 
 			try

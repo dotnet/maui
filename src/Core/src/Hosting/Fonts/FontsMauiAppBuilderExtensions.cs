@@ -82,9 +82,13 @@ namespace Microsoft.Maui.Hosting
 					foreach (var font in fontsBuilder)
 					{
 						if (font.Assembly == null)
+						{
 							_fontRegistrar.Register(font.Filename, font.Alias);
+						}
 						else
+						{
 							_fontRegistrar.Register(font.Filename, font.Alias, font.Assembly);
+						}
 					}
 				}
 			}

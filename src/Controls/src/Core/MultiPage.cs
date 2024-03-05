@@ -79,7 +79,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_current == value)
+				{
 					return;
+				}
 
 				var previousPage = _current;
 				OnPropertyChanging();
@@ -95,7 +97,9 @@ namespace Microsoft.Maui.Controls
 				OnCurrentPageChanged();
 
 				if (HasAppeared)
+				{
 					_current?.SendAppearing();
+				}
 
 				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(_current));
 				_current?.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
@@ -119,7 +123,9 @@ namespace Microsoft.Maui.Controls
 			{
 				bool handled = CurrentPage.SendBackButtonPressed();
 				if (handled)
+				{
 					return true;
+				}
 			}
 
 			return base.OnBackButtonPressed();
@@ -136,7 +142,9 @@ namespace Microsoft.Maui.Controls
 		{
 			EventHandler changed = CurrentPageChanged;
 			if (changed != null)
+			{
 				changed(this, EventArgs.Empty);
+			}
 		}
 
 		protected virtual void OnPagesChanged(NotifyCollectionChangedEventArgs e)
@@ -145,7 +153,9 @@ namespace Microsoft.Maui.Controls
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			if (propertyName == ItemsSourceProperty.PropertyName)
+			{
 				_children.IsReadOnly = ItemsSource != null;
+			}
 			else if (propertyName == SelectedItemProperty.PropertyName)
 			{
 				UpdateCurrentPage();
@@ -178,7 +188,9 @@ namespace Microsoft.Maui.Controls
 		public static int GetIndex(T page)
 		{
 			if (page == null)
+			{
 				throw new ArgumentNullException("page");
+			}
 
 			return (int)page.GetValue(IndexProperty);
 		}
@@ -189,7 +201,9 @@ namespace Microsoft.Maui.Controls
 			foreach (T page in InternalChildren)
 			{
 				if (index == GetIndex(page))
+				{
 					return page;
+				}
 			}
 			return null;
 		}
@@ -198,7 +212,9 @@ namespace Microsoft.Maui.Controls
 		public static void SetIndex(Page page, int index)
 		{
 			if (page == null)
+			{
 				throw new ArgumentNullException("page");
+			}
 
 			page.SetValue(IndexProperty, index);
 		}
@@ -206,16 +222,22 @@ namespace Microsoft.Maui.Controls
 		void OnChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (Children.IsReadOnly)
+			{
 				return;
+			}
 
 			var i = 0;
 			foreach (T page in Children)
+			{
 				SetIndex(page, i++);
+			}
 
 			OnPagesChanged(e);
 
 			if (CurrentPage == null || Children.IndexOf(CurrentPage) == -1)
+			{
 				CurrentPage = Children.FirstOrDefault();
+			}
 		}
 
 		void OnTemplatedItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -224,10 +246,14 @@ namespace Microsoft.Maui.Controls
 			{
 				case NotifyCollectionChangedAction.Add:
 					if (e.NewStartingIndex < 0)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					for (int i = e.NewStartingIndex; i < Children.Count; i++)
+					{
 						SetIndex((T)InternalChildren[i], i + e.NewItems.Count);
+					}
 
 					for (var i = 0; i < e.NewItems.Count; i++)
 					{
@@ -242,11 +268,15 @@ namespace Microsoft.Maui.Controls
 
 				case NotifyCollectionChangedAction.Remove:
 					if (e.OldStartingIndex < 0)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					int removeIndex = e.OldStartingIndex;
 					for (int i = removeIndex + e.OldItems.Count; i < Children.Count; i++)
+					{
 						SetIndex((T)InternalChildren[i], removeIndex++);
+					}
 
 					for (var i = 0; i < e.OldItems.Count; i++)
 					{
@@ -259,10 +289,14 @@ namespace Microsoft.Maui.Controls
 
 				case NotifyCollectionChangedAction.Move:
 					if (e.NewStartingIndex < 0 || e.OldStartingIndex < 0)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					if (e.NewStartingIndex == e.OldStartingIndex)
+					{
 						return;
+					}
 
 					bool movingForward = e.OldStartingIndex < e.NewStartingIndex;
 
@@ -270,7 +304,9 @@ namespace Microsoft.Maui.Controls
 					{
 						int moveIndex = e.OldStartingIndex;
 						for (int i = moveIndex + e.OldItems.Count; i <= e.NewStartingIndex; i++)
+						{
 							SetIndex((T)InternalChildren[i], moveIndex++);
+						}
 					}
 					else
 					{
@@ -282,11 +318,15 @@ namespace Microsoft.Maui.Controls
 					}
 
 					for (var i = 0; i < e.OldItems.Count; i++)
+					{
 						InternalChildren.RemoveAt(e.OldStartingIndex);
+					}
 
 					int insertIndex = e.NewStartingIndex;
 					if (movingForward)
+					{
 						insertIndex -= e.OldItems.Count - 1;
+					}
 
 					for (var i = 0; i < e.OldItems.Count; i++)
 					{
@@ -299,7 +339,9 @@ namespace Microsoft.Maui.Controls
 
 				case NotifyCollectionChangedAction.Replace:
 					if (e.OldStartingIndex < 0)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					for (int i = e.OldStartingIndex; i - e.OldStartingIndex < e.OldItems.Count; i++)
 					{
@@ -331,7 +373,9 @@ namespace Microsoft.Maui.Controls
 			InternalChildren.Clear();
 
 			foreach (Element element in snapshot)
+			{
 				element.Owned = false;
+			}
 
 			for (var i = 0; i < _templatedItems.Count; i++)
 			{
@@ -356,7 +400,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (currentNeedsUpdate)
+			{
 				UpdateCurrentPage();
+			}
 
 			OnPagesChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
@@ -369,12 +415,18 @@ namespace Microsoft.Maui.Controls
 			{
 				int index = _templatedItems.ListProxy.IndexOf(SelectedItem);
 				if (index == -1)
+				{
 					CurrentPage = (T)InternalChildren.FirstOrDefault();
+				}
 				else
+				{
 					CurrentPage = _templatedItems.GetOrCreateContent(index, SelectedItem);
+				}
 			}
 			else if (SelectedItem is T)
+			{
 				CurrentPage = (T)SelectedItem;
+			}
 		}
 	}
 }

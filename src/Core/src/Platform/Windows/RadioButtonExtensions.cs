@@ -52,9 +52,13 @@ namespace Microsoft.Maui.Platform
 			_ = radioButton.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			if (radioButton.PresentedContent is IView view)
+			{
 				platformRadioButton.Content = view.ToPlatform(radioButton.Handler.MauiContext);
+			}
 			else
+			{
 				platformRadioButton.Content = $"{radioButton.Content}";
+			}
 		}
 
 		private static readonly string[] _borderColorKeys =
@@ -75,9 +79,13 @@ namespace Microsoft.Maui.Platform
 		static void UpdateColors(ResourceDictionary resource, string[] keys, WBrush? brush)
 		{
 			if (brush is null)
+			{
 				resource.RemoveKeys(keys);
+			}
 			else
+			{
 				resource.SetValueForAllKey(keys, brush);
+			}
 		}
 
 		public static void UpdateStrokeThickness(this RadioButton nativeRadioButton, IRadioButton radioButton)

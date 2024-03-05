@@ -113,14 +113,19 @@ namespace Microsoft.Maui.Devices
 			add
 			{
 				if (BatteryInfoChangedInternal == null)
+				{
 					StartBatteryListeners();
+				}
+
 				BatteryInfoChangedInternal += value;
 			}
 			remove
 			{
 				BatteryInfoChangedInternal -= value;
 				if (BatteryInfoChangedInternal == null)
+				{
 					StopBatteryListeners();
+				}
 			}
 		}
 
@@ -129,14 +134,19 @@ namespace Microsoft.Maui.Devices
 			add
 			{
 				if (EnergySaverStatusChangedInternal == null)
+				{
 					StartEnergySaverListeners();
+				}
+
 				EnergySaverStatusChangedInternal += value;
 			}
 			remove
 			{
 				EnergySaverStatusChangedInternal -= value;
 				if (EnergySaverStatusChangedInternal == null)
+				{
 					StopEnergySaverListeners();
+				}
 			}
 		}
 

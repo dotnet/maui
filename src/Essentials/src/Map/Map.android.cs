@@ -43,7 +43,9 @@ namespace Microsoft.Maui.ApplicationModel
 		internal string GetMapsUri(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
+			{
 				throw new ArgumentNullException(nameof(options));
+			}
 
 			var uri = string.Empty;
 			var lat = latitude.ToString(CultureInfo.InvariantCulture);
@@ -54,7 +56,9 @@ namespace Microsoft.Maui.ApplicationModel
 				uri = $"geo:{lat},{lng}?q={lat},{lng}";
 
 				if (!string.IsNullOrWhiteSpace(options.Name))
+				{
 					uri += $"({AndroidUri.Encode(options.Name)})";
+				}
 			}
 			else
 			{
@@ -67,17 +71,23 @@ namespace Microsoft.Maui.ApplicationModel
 		internal string GetMapsUri(Placemark placemark, MapLaunchOptions options)
 		{
 			if (placemark == null)
+			{
 				throw new ArgumentNullException(nameof(placemark));
+			}
 
 			if (options == null)
+			{
 				throw new ArgumentNullException(nameof(options));
+			}
 
 			var uri = string.Empty;
 			if (options.NavigationMode == NavigationMode.None)
 			{
 				uri = $"geo:0,0?q={placemark.GetEscapedAddress()}";
 				if (!string.IsNullOrWhiteSpace(options.Name))
+				{
 					uri += $"({AndroidUri.Encode(options.Name)})";
+				}
 			}
 			else
 			{
@@ -117,7 +127,9 @@ namespace Microsoft.Maui.ApplicationModel
 			var canStart = PlatformUtils.IsIntentSupported(intent);
 
 			if (canStart)
+			{
 				Platform.AppContext.StartActivity(intent);
+			}
 
 			return Task.FromResult(canStart);
 		}

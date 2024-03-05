@@ -89,13 +89,17 @@ namespace Microsoft.Maui.Controls
 		void UpdateState(bool knownAttached = false)
 		{
 			if (!knownAttached && !IsAttached)
+			{
 				return;
+			}
 
 			var w = _window?.Width ?? -1;
 			var h = _window?.Height ?? -1;
 
 			if (w == -1 || h == -1)
+			{
 				return;
+			}
 
 			var mw = MinWindowWidth;
 			var mh = MinWindowHeight;

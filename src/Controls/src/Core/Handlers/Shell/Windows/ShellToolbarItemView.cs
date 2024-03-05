@@ -31,7 +31,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnClick(object sender, RoutedEventArgs e)
 		{
 			if (ToolbarItem is IMenuItemController controller)
+			{
 				controller?.Activate();
+			}
 		}
 
 		public ToolbarItem ToolbarItem
@@ -43,13 +45,17 @@ namespace Microsoft.Maui.Controls.Platform
 		void ToolbarItemChanged(ToolbarItem oldItem, ToolbarItem newItem)
 		{
 			if (oldItem != null)
+			{
 				oldItem.PropertyChanged -= ToolbarItemPropertyChanged;
+			}
 
 			// TODO MAUI
 			this.SetAutomationProperties(newItem, null, defaultName: newItem?.Text);
 
 			if (newItem != null)
+			{
 				newItem.PropertyChanged += ToolbarItemPropertyChanged;
+			}
 
 			void ToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{

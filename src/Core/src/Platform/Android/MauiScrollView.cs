@@ -67,10 +67,14 @@ namespace Microsoft.Maui.Platform
 		public void SetVerticalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
 			if (_defaultVerticalScrollVisibility == 0)
+			{
 				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+			}
 
 			if (scrollBarVisibility == ScrollBarVisibility.Default)
+			{
 				scrollBarVisibility = _defaultVerticalScrollVisibility;
+			}
 
 			VerticalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
 
@@ -116,7 +120,10 @@ namespace Microsoft.Maui.Platform
 				{
 					_content.RemoveFromParent();
 					if (_hScrollView != null)
+					{
 						_hScrollView.RemoveFromParent();
+					}
+
 					AddView(_content);
 				}
 			}
@@ -127,7 +134,9 @@ namespace Microsoft.Maui.Platform
 			// See also MauiHorizontalScrollView notes in OnInterceptTouchEvent
 
 			if (ev == null)
+			{
 				return false;
+			}
 
 			// set the start point for the bidirectional scroll; 
 			// Down is swallowed by other controls, so we'll just sneak this in here without actually preventing
@@ -144,7 +153,9 @@ namespace Microsoft.Maui.Platform
 		public override bool OnTouchEvent(MotionEvent? ev)
 		{
 			if (ev == null || !Enabled)
+			{
 				return false;
+			}
 
 			if (ShouldSkipOnTouch)
 			{
@@ -349,7 +360,9 @@ namespace Microsoft.Maui.Platform
 		public override bool OnInterceptTouchEvent(MotionEvent? ev)
 		{
 			if (ev == null || _parentScrollView == null)
+			{
 				return false;
+			}
 
 			// TODO ezhart 2021-07-12 The previous version of this checked _renderer.Element.InputTransparent; we don't have acces to that here,
 			// and I'm not sure it even applies. We need to determine whether touch events will get here at all if we've marked the ScrollView InputTransparent
@@ -371,10 +384,14 @@ namespace Microsoft.Maui.Platform
 		public override bool OnTouchEvent(MotionEvent? ev)
 		{
 			if (ev == null || _parentScrollView == null)
+			{
 				return false;
+			}
 
 			if (!_parentScrollView.Enabled)
+			{
 				return false;
+			}
 
 			// If the touch is caught by the horizontal scrollview, forward it to the parent 
 			_parentScrollView.ShouldSkipOnTouch = true;

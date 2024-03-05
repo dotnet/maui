@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls
 		static void OnToolTipPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is IElement element)
+			{
 				element?.Handler?.UpdateValue(nameof(IToolTipElement.ToolTip));
+			}
 		}
 
 		public static object GetText(BindableObject bindable)
@@ -27,7 +29,9 @@ namespace Microsoft.Maui.Controls
 		internal static ToolTip? GetToolTip(BindableObject bindable)
 		{
 			if (!bindable.IsSet(TextProperty))
+			{
 				return null;
+			}
 
 			return new ToolTip()
 			{

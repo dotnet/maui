@@ -7,7 +7,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		public static SKPaint CreateCopy(this SKPaint paint)
 		{
 			if (paint == null)
+			{
 				return null;
+			}
 
 			var copy = new SKPaint
 			{

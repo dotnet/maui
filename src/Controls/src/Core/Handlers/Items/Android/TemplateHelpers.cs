@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var handler = view.Handler;
 
 			if (handler == null)
+			{
 				handler = (IPlatformViewHandler)view.ToHandler(context);
+			}
 
 			return (IPlatformViewHandler)handler;
 		}

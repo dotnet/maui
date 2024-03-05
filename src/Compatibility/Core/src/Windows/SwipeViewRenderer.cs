@@ -64,11 +64,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, changedProperty);
 
 			if (changedProperty.PropertyName == ContentView.ContentProperty.PropertyName)
+			{
 				UpdateContent();
+			}
+			}
 			else if (changedProperty.IsOneOf(SwipeView.LeftItemsProperty, SwipeView.RightItemsProperty, SwipeView.TopItemsProperty, SwipeView.BottomItemsProperty))
+			{
 				UpdateSwipeItems();
+			}
+			}
 			else if (changedProperty.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
 				UpdateBackgroundColor();
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -110,16 +118,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 
 				if (_leftItems != null)
+				{
 					DisposeSwipeItems(_leftItems);
+				}
 
 				if (_rightItems != null)
+				{
 					DisposeSwipeItems(_rightItems);
+				}
 
 				if (_topItems != null)
+				{
 					DisposeSwipeItems(_topItems);
+				}
 
 				if (_bottomItems != null)
+				{
 					DisposeSwipeItems(_bottomItems);
+				}
 			}
 
 			_isDisposed = true;
@@ -144,11 +160,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Control.Parent != null)
+			{
 				return base.MeasureOverride(availableSize);
+			}
 			else
 			{
 				if (Element == null || availableSize.Width * availableSize.Height == 0)
+				{
 					return new global::Windows.Foundation.Size(0, 0);
+				}
 
 				Element.IsInPlatformLayout = true;
 
@@ -162,10 +182,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					double h = Element.Height;
 
 					if (w == -1)
+					{
 						w = availableSize.Width;
+					}
 
 					if (h == -1)
+					{
 						h = availableSize.Height;
+					}
 
 					w = Math.Max(0, w);
 					h = Math.Max(0, h);
@@ -190,9 +214,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var formsSwipeItems = sender as SwipeItems;
 
 			if (e.PropertyName == SwipeItems.ModeProperty.PropertyName)
+			{
 				UpdateSwipeMode(formsSwipeItems);
+			}
+			}
 			else if (e.PropertyName == SwipeItems.SwipeBehaviorOnInvokedProperty.PropertyName)
+			{
 				UpdateSwipeBehaviorOnInvoked(formsSwipeItems);
+			}
 		}
 
 		void OnSwipeItemPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -205,14 +234,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				MenuItem.CommandProperty,
 				MenuItem.CommandParameterProperty,
 				VisualElement.BackgroundColorProperty))
+			{
 				UpdateSwipeItem(formsSwipeItem);
+			}
 		}
 
 		[PortHandler]
 		void UpdateContent()
 		{
 			if (Element.Content == null)
+			{
 				return;
+			}
 
 			var renderer = Element.Content.GetOrCreateRenderer();
 			Control.Content = renderer?.ContainerElement;
@@ -221,16 +254,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateSwipeItems()
 		{
 			if (IsValidSwipeItems(Element.LeftItems))
+			{
 				Control.LeftItems = CreateSwipeItems(SwipeDirection.Left);
+			}
 
 			if (IsValidSwipeItems(Element.RightItems))
+			{
 				Control.RightItems = CreateSwipeItems(SwipeDirection.Right);
+			}
 
 			if (IsValidSwipeItems(Element.TopItems))
+			{
 				Control.TopItems = CreateSwipeItems(SwipeDirection.Up);
+			}
 
 			if (IsValidSwipeItems(Element.BottomItems))
+			{
 				Control.BottomItems = CreateSwipeItems(SwipeDirection.Down);
+			}
 		}
 
 		void UpdateSwipeMode(SwipeItems swipeItems)
@@ -238,7 +279,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var windowsSwipeItems = GetWindowsSwipeItems(swipeItems);
 
 			if (windowsSwipeItems != null)
+			{
 				windowsSwipeItems.Mode = GetSwipeMode(swipeItems.Mode);
+			}
 		}
 
 		void UpdateSwipeBehaviorOnInvoked(SwipeItems swipeItems)
@@ -246,14 +289,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var windowsSwipeItems = GetWindowsSwipeItems(swipeItems);
 
 			if (windowsSwipeItems != null)
+			{
 				foreach (var windowSwipeItem in windowsSwipeItems.ToList())
+				{
 					windowSwipeItem.BehaviorOnInvoked = GetSwipeBehaviorOnInvoked(swipeItems.SwipeBehaviorOnInvoked);
+				}
+			}
 		}
 
 		void UpdateSwipeItem(SwipeItem formsSwipeItem)
 		{
 			if (formsSwipeItem == null)
+			{
 				return;
+			}
 
 			var windowsSwipeItem = GetWindowsSwipeItem(formsSwipeItem);
 
@@ -280,9 +329,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				foreach (var item in list)
 				{
 					if (item.Key != null)
+					{
 						item.Key.Invoked -= OnSwipeItemInvoked;
+					}
+
 					if (item.Value != null)
+					{
 						item.Value.PropertyChanged -= OnSwipeItemPropertyChanged;
+					}
 				}
 
 				list.Clear();
@@ -379,16 +433,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		WSwipeItems GetWindowsSwipeItems(SwipeItems swipeItems)
 		{
 			if (swipeItems == Element.LeftItems)
+			{
 				return Control.LeftItems;
+			}
 
 			if (swipeItems == Element.RightItems)
+			{
 				return Control.RightItems;
+			}
 
 			if (swipeItems == Element.TopItems)
+			{
 				return Control.TopItems;
+			}
 
 			if (swipeItems == Element.BottomItems)
+			{
 				return Control.BottomItems;
+			}
 
 			return null;
 		}
@@ -396,16 +458,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		WSwipeItem GetWindowsSwipeItem(SwipeItem swipeItem)
 		{
 			if (_leftItems != null)
+			{
 				return _leftItems.FirstOrDefault(x => x.Value.Equals(swipeItem)).Key;
+			}
 
 			if (_rightItems != null)
+			{
 				return _rightItems.FirstOrDefault(x => x.Value.Equals(swipeItem)).Key;
+			}
 
 			if (_topItems != null)
+			{
 				return _topItems.FirstOrDefault(x => x.Value.Equals(swipeItem)).Key;
+			}
 
 			if (_bottomItems != null)
+			{
 				return _bottomItems.FirstOrDefault(x => x.Value.Equals(swipeItem)).Key;
+			}
 
 			return null;
 		}
@@ -417,7 +487,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_leftItems.TryGetValue(swipeItem, out SwipeItem formsSwipeItem);
 
 				if (formsSwipeItem != null)
+				{
 					return formsSwipeItem;
+				}
 			}
 
 			if (_rightItems != null)
@@ -425,7 +497,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_rightItems.TryGetValue(swipeItem, out SwipeItem formsSwipeItem);
 
 				if (formsSwipeItem != null)
+				{
 					return formsSwipeItem;
+				}
 			}
 
 			if (_topItems != null)
@@ -433,7 +507,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_topItems.TryGetValue(swipeItem, out SwipeItem formsSwipeItem);
 
 				if (formsSwipeItem != null)
+				{
 					return formsSwipeItem;
+				}
 			}
 
 			if (_bottomItems != null)
@@ -441,7 +517,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_bottomItems.TryGetValue(swipeItem, out SwipeItem formsSwipeItem);
 
 				if (formsSwipeItem != null)
+				{
 					return formsSwipeItem;
+				}
 			}
 
 			return null;
@@ -485,7 +563,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnCloseRequested(object sender, EventArgs e)
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			Control.Close();
 		}

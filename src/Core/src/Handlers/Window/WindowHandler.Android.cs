@@ -43,13 +43,17 @@ namespace Microsoft.Maui.Handlers
 		public static void MapToolbar(IWindowHandler handler, IWindow view)
 		{
 			if (view is IToolbarElement tb)
+			{
 				ViewHandler.MapToolbar(handler, tb);
+			}
 		}
 
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
 		{
 			if (args is DisplayDensityRequest request)
+			{
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
+			}
 		}
 
 		private protected override void OnConnectHandler(object platformView)
@@ -67,13 +71,17 @@ namespace Microsoft.Maui.Handlers
 			DisconnectHandler(_rootManager);
 
 			if (_rootManager != null)
+			{
 				_rootManager.RootViewChanged -= OnRootViewChanged;
+			}
 		}
 
 		void OnRootViewChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView.VisualDiagnosticsOverlay != null && _rootManager?.RootView is ViewGroup)
+			{
 				VirtualView.VisualDiagnosticsOverlay.Initialize();
+			}
 		}
 
 		// This is here to try and ensure symmetry with disconnect code between test handler

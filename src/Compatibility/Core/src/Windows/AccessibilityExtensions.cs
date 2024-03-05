@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static void SetBackButtonTitle(this PageControl Control, Element Element)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			var elemValue = ConcatenateNameAndHint(Element);
 
@@ -32,11 +34,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 
 			if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(hint))
+			{
 				separator = "";
-
+			}
 			else
+			{
 				separator = ". ";
-
+			}
 
 			return string.Join(separator, name, hint);
 

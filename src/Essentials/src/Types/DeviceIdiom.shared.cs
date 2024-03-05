@@ -42,10 +42,14 @@ namespace Microsoft.Maui.Devices
 		DeviceIdiom(string deviceIdiom)
 		{
 			if (deviceIdiom == null)
+			{
 				throw new ArgumentNullException(nameof(deviceIdiom));
+			}
 
 			if (deviceIdiom.Length == 0)
+			{
 				throw new ArgumentException(nameof(deviceIdiom));
+			}
 
 			this.deviceIdiom = deviceIdiom;
 		}

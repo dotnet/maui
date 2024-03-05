@@ -16,7 +16,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static void SetAccessibilityProperties(this NativeView nativeViewElement, Element element)
 		{
 			if (element == null)
+			{
+			{
 				return;
+			}
 
 			nativeViewElement.AccessibilityIdentifier = element?.AutomationId;
 			SetAccessibilityLabel(nativeViewElement, element);
@@ -28,10 +31,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static string SetAccessibilityHint(this NativeView Control, Element Element, string _defaultAccessibilityHint = null)
 		{
 			if (Element == null || Control == null)
+			{
 				return _defaultAccessibilityHint;
+			}
 #if __MOBILE__
 			if (_defaultAccessibilityHint == null)
+			{
 				_defaultAccessibilityHint = Control.AccessibilityHint;
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			Control.AccessibilityHint = (string)Element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
@@ -49,10 +56,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static string SetAccessibilityLabel(this NativeView Control, Element Element, string _defaultAccessibilityLabel = null)
 		{
 			if (Element == null || Control == null)
+			{
 				return _defaultAccessibilityLabel;
+			}
 
 			if (_defaultAccessibilityLabel == null)
+			{
 				_defaultAccessibilityLabel = Control.AccessibilityLabel;
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			Control.AccessibilityLabel = (string)Element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
@@ -65,10 +76,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static string SetAccessibilityHint(this UIBarItem Control, Element Element, string _defaultAccessibilityHint = null)
 		{
 			if (Element == null || Control == null)
+			{
 				return _defaultAccessibilityHint;
+			}
 
 			if (_defaultAccessibilityHint == null)
+			{
 				_defaultAccessibilityHint = Control.AccessibilityHint;
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			Control.AccessibilityHint = (string)Element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
@@ -81,10 +96,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static string SetAccessibilityLabel(this UIBarItem Control, Element Element, string _defaultAccessibilityLabel = null)
 		{
 			if (Element == null || Control == null)
+			{
 				return _defaultAccessibilityLabel;
+			}
 
 			if (_defaultAccessibilityLabel == null)
+			{
 				_defaultAccessibilityLabel = Control.AccessibilityLabel;
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			Control.AccessibilityLabel = (string)Element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
@@ -97,11 +116,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static bool? SetIsAccessibilityElement(this NativeView Control, Element Element, bool? _defaultIsAccessibilityElement = null)
 		{
 			if (Element == null || Control == null)
+			{
 				return _defaultIsAccessibilityElement;
+			}
 
 			// If the user hasn't set IsInAccessibleTree then just don't do anything
 			if (!Element.IsSet(AutomationProperties.IsInAccessibleTreeProperty))
+			{
 				return null;
+			}
 
 #if __MOBILE__
 			if (!_defaultIsAccessibilityElement.HasValue)
@@ -132,10 +155,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public static bool? SetAccessibilityElementsHidden(this NativeView Control, Element Element, bool? _defaultAccessibilityElementsHidden = null)
 		{
 			if (Element == null || Control == null)
+			{
 				return _defaultAccessibilityElementsHidden;
+			}
 
 			if (!Element.IsSet(AutomationProperties.ExcludedWithChildrenProperty))
+			{
 				return null;
+			}
 
 #if __MOBILE__
 			if (!_defaultAccessibilityElementsHidden.HasValue)

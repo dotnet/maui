@@ -21,10 +21,38 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public RendererPool(IVisualElementRenderer renderer, VisualElement oldElement)
 		{
 			if (renderer == null)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				throw new ArgumentNullException("renderer");
 
 			if (oldElement == null)
+After:
+			{
+*/
+			{
+				throw new ArgumentNullException("renderer");
+			}
+
+			if (oldElement == null)
+			{
+				throw new ArgumentNullException("renderer");
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+			_oldElement = oldElement;
+			_parent = renderer;
+After:
+			}
+
+			if (oldElement == null)
+			{
 				throw new ArgumentNullException("oldElement");
+			}
+
+			_oldElement = renderer;
+*/
+			}
 
 			_oldElement = oldElement;
 			_parent = renderer;
@@ -33,13 +61,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public IVisualElementRenderer GetFreeRenderer(VisualElement view)
 		{
 			if (view == null)
+			{
+			{
 				throw new ArgumentNullException("view");
+			}
 
 			var rendererType = Controls.Internals.Registrar.Registered.GetHandlerTypeForObject(view) ?? typeof(ViewRenderer);
 
 			Stack<IVisualElementRenderer> renderers;
 			if (!_freeRenderers.TryGetValue(rendererType, out renderers) || renderers.Count == 0)
+			{
 				return null;
+			}
 
 			var renderer = renderers.Pop();
 			renderer.SetElement(view);
@@ -49,7 +82,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public void UpdateNewElement(VisualElement newElement)
 		{
 			if (newElement == null)
+			{
+			{
 				throw new ArgumentNullException("newElement");
+			}
 
 			var sameChildrenTypes = true;
 
@@ -70,7 +106,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				}
 			}
 			else
+			{
 				sameChildrenTypes = false;
+			}
 
 			if (!sameChildrenTypes)
 			{
@@ -78,13 +116,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				FillChildrenWithRenderers(newElement);
 			}
 			else
+			{
+			{
 				UpdateRenderers(newElement);
+			}
 		}
 
 		void ClearRenderers(IVisualElementRenderer renderer)
 		{
 			if (renderer == null)
+			{
 				return;
+			}
 
 			var subviews = renderer.NativeView.Subviews;
 			for (var i = 0; i < subviews.Length; i++)
@@ -97,7 +140,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					// The ListView CalculateHeightForCell method can create renderers and dispose its child renderers before this is called.
 					// Thus, it is possible that this work is already completed.
 					if (childRenderer.Element != null && ReferenceEquals(childRenderer, Platform.GetRenderer(childRenderer.Element)))
+					{
 						childRenderer.Element.ClearValue(Platform.RendererProperty);
+					}
 				}
 
 				subviews[i].RemoveFromSuperview();
@@ -133,7 +178,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			Stack<IVisualElementRenderer> renderers;
 			if (!_freeRenderers.TryGetValue(rendererType, out renderers))
+			{
 				_freeRenderers[rendererType] = renderers = new Stack<IVisualElementRenderer>();
+			}
 
 			renderers.Push(renderer);
 		}
@@ -143,22 +190,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var newElementController = (IElementController)newElement;
 
 			if (newElementController.LogicalChildren.Count == 0)
+			{
 				return;
+			}
 
 			var subviews = _parent.NativeView.Subviews;
 			for (var i = 0; i < subviews.Length; i++)
 			{
 				var childRenderer = subviews[i] as IVisualElementRenderer;
 				if (childRenderer == null)
+				{
 					continue;
+				}
 
 				var x = (int)childRenderer.NativeView.Layer.ZPosition / 1000;
 				var element = newElementController.LogicalChildren[x] as VisualElement;
 				if (element == null)
+				{
 					continue;
+				}
 
 				if (childRenderer.Element != null && ReferenceEquals(childRenderer, Platform.GetRenderer(childRenderer.Element)))
+				{
 					childRenderer.Element.ClearValue(Platform.RendererProperty);
+				}
 
 				childRenderer.SetElement(element);
 				Platform.SetRenderer(element, childRenderer);

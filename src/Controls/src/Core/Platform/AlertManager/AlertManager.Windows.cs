@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var platformWindow = window.MauiContext.GetPlatformWindow();
 
 			if (Subscriptions.Any(s => s.PlatformView == platformWindow))
+			{
 				return;
+			}
 
 			Subscriptions.Add(new AlertRequestHelper(window, platformWindow));
 		}
@@ -27,7 +29,9 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext? mauiContext = window?.Handler?.MauiContext;
 			var platformWindow = mauiContext?.GetPlatformWindow();
 			if (platformWindow == null)
+			{
 				return;
+			}
 
 			var toRemove = Subscriptions.Where(s => s.PlatformView == platformWindow).ToList();
 
@@ -78,7 +82,9 @@ namespace Microsoft.Maui.Controls.Platform
 			async void OnAlertRequested(Page sender, AlertArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
+				{
 					return;
+				}
 
 				string content = arguments.Message ?? string.Empty;
 				string title = arguments.Title ?? string.Empty;
@@ -103,17 +109,25 @@ namespace Microsoft.Maui.Controls.Platform
 					if (sender is IVisualElementController visualElementController)
 					{
 						if (visualElementController.EffectiveFlowDirection.IsRightToLeft())
+						{
 							alertDialog.FlowDirection = UI.Xaml.FlowDirection.RightToLeft;
+						}
 						else if (visualElementController.EffectiveFlowDirection.IsLeftToRight())
+						{
 							alertDialog.FlowDirection = UI.Xaml.FlowDirection.LeftToRight;
+						}
 					}
 				}
 
 				if (arguments.Cancel != null)
+				{
 					alertDialog.SecondaryButtonText = arguments.Cancel;
+				}
 
 				if (arguments.Accept != null)
+				{
 					alertDialog.PrimaryButtonText = arguments.Accept;
+				}
 
 				// This is a temporary workaround
 				alertDialog.XamlRoot = PlatformView.Content.XamlRoot;
@@ -134,7 +148,9 @@ namespace Microsoft.Maui.Controls.Platform
 			async void OnPromptRequested(Page sender, PromptArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
+				{
 					return;
+				}
 
 				var promptDialog = new PromptDialog
 				{
@@ -147,10 +163,14 @@ namespace Microsoft.Maui.Controls.Platform
 				};
 
 				if (arguments.Cancel != null)
+				{
 					promptDialog.SecondaryButtonText = arguments.Cancel;
+				}
 
 				if (arguments.Accept != null)
+				{
 					promptDialog.PrimaryButtonText = arguments.Accept;
+				}
 
 				var currentAlert = CurrentPrompt;
 
@@ -171,7 +191,9 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
+				{
 					return;
+				}
 
 				bool userDidSelect = false;
 
@@ -180,9 +202,13 @@ namespace Microsoft.Maui.Controls.Platform
 					if (sender is IVisualElementController visualElementController)
 					{
 						if (visualElementController.EffectiveFlowDirection.IsRightToLeft())
+						{
 							arguments.FlowDirection = FlowDirection.RightToLeft;
+						}
 						else if (visualElementController.EffectiveFlowDirection.IsLeftToRight())
+						{
 							arguments.FlowDirection = FlowDirection.LeftToRight;
+						}
 					}
 				}
 
@@ -204,7 +230,9 @@ namespace Microsoft.Maui.Controls.Platform
 				actionSheet.Closed += (s, e) =>
 				{
 					if (!userDidSelect)
+					{
 						arguments.SetResult(null);
+					}
 				};
 
 				try
@@ -213,21 +241,31 @@ namespace Microsoft.Maui.Controls.Platform
 					var pageParent = current?.Parent as FrameworkElement;
 
 					if (pageParent != null)
+					{
 						actionSheet.ShowAt(pageParent);
+					}
 					else
 					{
 						if (current != null && current is FrameworkElement mainPage)
+						{
 							actionSheet.ShowAt(current);
+						}
 						else
+						{
 							arguments.SetResult(null);
+						}
 					}
 				}
 				catch (ArgumentException) // If the page is not in the visual tree
 				{
 					if (UI.Xaml.Window.Current != null && UI.Xaml.Window.Current.Content is FrameworkElement mainPage)
+					{
 						actionSheet.ShowAt(mainPage);
+					}
 					else
+					{
 						arguments.SetResult(null);
+					}
 				}
 			}
 
@@ -243,7 +281,9 @@ namespace Microsoft.Maui.Controls.Platform
 				ContentDialogResult result = await prompt.ShowAsync();
 
 				if (result == ContentDialogResult.Primary)
+				{
 					return prompt.Input;
+				}
 
 				return null;
 			}

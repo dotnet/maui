@@ -44,9 +44,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (_cache.TryGetValue(color, out var cacheItem))
 			{
 				if (cacheItem.Count == 1)
+				{
 					_cache.Remove(color);
+				}
 				else
+				{
 					_cache[color] = (cacheItem.Image, cacheItem.Count + 1);
+				}
 			}
 		}
 	}

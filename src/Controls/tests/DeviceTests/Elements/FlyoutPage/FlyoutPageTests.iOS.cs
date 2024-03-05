@@ -104,9 +104,13 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				if (isRtl)
+				{
 					Assert.Equal(screenBounds.Width - flyoutBounds.Width, flyoutBounds.X);
+				}
 				else
+				{
 					Assert.Equal(0, flyoutBounds.X);
+				}
 
 				await CloseFlyout(flyoutPage);
 
@@ -118,9 +122,13 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(detailBoundsNotPresented, detailBounds);
 
 					if (isRtl)
+					{
 						Assert.Equal(screenBounds.Width, flyoutBoundsNotPresented.X);
+					}
 					else
+					{
 						Assert.Equal(-flyoutBoundsNotPresented.Width, flyoutBoundsNotPresented.X);
+					}
 				}
 				else
 				{

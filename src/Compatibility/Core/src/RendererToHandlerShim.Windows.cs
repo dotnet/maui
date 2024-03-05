@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (widthConstraint < 0 || heightConstraint < 0)
+			{
 				return Size.Zero;
+			}
 
 			return VisualElementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
 		}

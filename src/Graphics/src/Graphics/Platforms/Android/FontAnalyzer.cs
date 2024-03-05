@@ -75,16 +75,24 @@ namespace Microsoft.Maui.Graphics.Android
 							int nameidValue = GetWord(table, nameidOffset + 6);
 
 							if (nameidValue == 1 && platformId == 1)
+							{
 								familyName = ReadTableEntry(table, nameidOffset, stringOffset);
+							}
 
 							if (nameidValue == 2 && platformId == 1)
+							{
 								styleName = ReadTableEntry(table, nameidOffset, stringOffset);
+							}
 
 							if (nameidValue == 4 && platformId == 1)
+							{
 								fullName = ReadTableEntry(table, nameidOffset, stringOffset);
+							}
 
 							if (familyName != null && styleName != null && fullName != null)
+							{
 								return new FontInfo(aFileName, familyName, styleName, fullName);
+							}
 						}
 					}
 				}
@@ -110,7 +118,9 @@ namespace Microsoft.Maui.Graphics.Android
 
 			// Make sure it is inside the array
 			if (nameOffset >= 0 && nameOffset + nameLength < table.Length)
+			{
 				return Encoding.UTF8.GetString(table, nameOffset, nameLength);
+			}
 
 			return null;
 		}
@@ -142,7 +152,9 @@ namespace Microsoft.Maui.Graphics.Android
 		private void Read(byte[] array)
 		{
 			if (_mFile.Read(array) != array.Length)
+			{
 				throw new Exception();
+			}
 		}
 
 		// Helper

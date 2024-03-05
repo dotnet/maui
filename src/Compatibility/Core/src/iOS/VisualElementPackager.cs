@@ -26,11 +26,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		VisualElementPackager(IVisualElementRenderer renderer, VisualElement element, bool isHeadless = false)
 		{
 			if (renderer == null)
+			{
+			{
 				throw new ArgumentNullException(nameof(renderer));
+			}
 
 			Renderer = renderer;
 			if (!isHeadless)
+			{
 				renderer.ElementChanged += OnRendererElementChanged;
+			}
 
 			SetElement(null, element ?? renderer.Element);
 		}
@@ -48,7 +53,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				var child = ElementController.LogicalChildren[i] as VisualElement;
 				if (child != null)
+				{
+				{
 					OnChildAdded(child);
+				}
 			}
 		}
 
@@ -60,7 +68,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void Disconnect(VisualElement oldElement)
 		{
 			if (oldElement == null)
+			{
 				return;
+			}
 
 			oldElement.ChildAdded -= OnChildAdded;
 			oldElement.ChildRemoved -= OnChildRemoved;
@@ -70,7 +80,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -80,11 +92,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					{
 						var child = ElementController.LogicalChildren[i] as VisualElement;
 						if (child == null)
+						{
 							continue;
+						}
 
 						var childRenderer = Platform.GetRenderer(child);
 						if (childRenderer == null)
+						{
 							continue;
+						}
 
 						childRenderer.Dispose();
 					}
@@ -104,7 +120,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected virtual void OnChildAdded(VisualElement view)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
+
 			Performance.Start(out string reference);
 			if (CompressedLayout.GetIsHeadless(view))
 			{
@@ -121,7 +140,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				uiview.AddSubview(viewRenderer.NativeView);
 
 				if (Renderer.ViewController != null && viewRenderer.ViewController != null)
+				{
 					Renderer.ViewController.AddChildViewController(viewRenderer.ViewController);
+				}
 
 				EnsureChildrenOrder();
 			}
@@ -133,12 +154,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			var viewRenderer = Platform.GetRenderer(view);
 			if (viewRenderer == null || viewRenderer.NativeView == null)
+			{
 				return;
+			}
 
 			viewRenderer.NativeView.RemoveFromSuperview();
 
 			if (Renderer.ViewController != null && viewRenderer.ViewController != null)
+			{
 				viewRenderer.ViewController.RemoveFromParentViewController();
+			}
 
 			viewRenderer.Dispose();
 		}
@@ -146,17 +171,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void EnsureChildrenOrder()
 		{
 			if (ElementController.LogicalChildren.Count == 0)
+			{
 				return;
+			}
 
 			for (var z = 0; z < ElementController.LogicalChildren.Count; z++)
 			{
 				var child = ElementController.LogicalChildren[z] as VisualElement;
 				if (child == null)
+				{
 					continue;
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+				var nativeControl = childRenderer.NativeView;
+After:
+				}
+
+				var childRenderer = childRenderer.NativeView;
+*/
+				}
+
 				var childRenderer = Platform.GetRenderer(child);
 
 				if (childRenderer == null)
+				{
 					continue;
+				}
 
 				var nativeControl = childRenderer.NativeView;
 #if __MOBILE__
@@ -170,20 +211,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			var view = e.Element as VisualElement;
 			if (view != null)
+			{
+			{
 				OnChildAdded(view);
+			}
 		}
 
 		void OnChildRemoved(object sender, ElementEventArgs e)
 		{
 			var view = e.Element as VisualElement;
 			if (view != null)
+			{
+			{
 				OnChildRemoved(view);
+			}
 		}
 
 		void OnRendererElementChanged(object sender, VisualElementChangedEventArgs args)
 		{
 			if (args.NewElement == _element)
+			{
 				return;
+			}
 
 			SetElement(_element, args.NewElement);
 		}
@@ -191,7 +240,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void SetElement(VisualElement oldElement, VisualElement newElement)
 		{
 			if (oldElement == newElement)
+			{
 				return;
+			}
 
 			Performance.Start(out string reference);
 
@@ -216,7 +267,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					{
 						var child = elementController.LogicalChildren[i] as VisualElement;
 						if (child != null)
+						{
 							OnChildRemoved(child);
+						}
 					}
 				}
 			}

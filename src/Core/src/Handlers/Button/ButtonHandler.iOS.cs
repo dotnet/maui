@@ -54,14 +54,19 @@ namespace Microsoft.Maui.Handlers
 						Color backgroundColor = solidPaint.Color;
 
 						if (backgroundColor == null)
+						{
 							config.BaseBackgroundColor = ColorExtensions.BackgroundColor;
+						}
 						else
+						{
 							config.BaseBackgroundColor = backgroundColor.ToPlatform();
-
+						}
 					}
 				}
 				if (handler.PlatformView != null)
+				{
 					handler.PlatformView.Configuration = config;
+				}
 			}
 			else
 			{
@@ -100,9 +105,15 @@ namespace Microsoft.Maui.Handlers
 			{
 				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
 				if (button?.TextColor != null && handler.PlatformView != null)
+				{
 					config.BaseForegroundColor = button?.TextColor.ToPlatform();
+				}
+
 				if (handler.PlatformView != null)
+				{
 					handler.PlatformView.Configuration = config;
+				}
+				}
 			}
 			else
 			{
@@ -200,7 +211,10 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(UIImage? platformImage)
 			{
 				if (Handler?.PlatformView is not UIButton button)
+				{
+				{
 					return;
+				}
 
 				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 

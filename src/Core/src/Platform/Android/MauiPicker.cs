@@ -31,7 +31,9 @@ namespace Microsoft.Maui.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				PickerManager.Dispose(this);
+			}
 
 			base.Dispose(disposing);
 		}
@@ -42,7 +44,9 @@ namespace Microsoft.Maui.Platform
 		public MauiPickerBase(Context context) : base(context)
 		{
 			if (Background != null)
+			{
 				DrawableCompat.Wrap(Background);
+			}
 		}
 	}
 }

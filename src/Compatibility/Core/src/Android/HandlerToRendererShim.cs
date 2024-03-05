@@ -45,7 +45,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public void SetElement(VisualElement element)
 		{
 			if (element == Element)
+			{
 				return;
+			}
 
 			var oldElement = Element;
 			if (oldElement != null)
@@ -63,7 +65,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			((IView)element).Handler = ViewHandler;
 
 			if (ViewHandler.VirtualView != element)
+			{
 				ViewHandler.SetVirtualView((IView)element);
+			}
 
 			if (Tracker == null)
 			{

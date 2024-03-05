@@ -65,13 +65,18 @@ namespace Microsoft.Maui.DeviceTests
 			var hasFlag = self.HasFlag(flag);
 
 			if (!hasFlag)
+			{
+			{
 				throw ContainsException.ForSetItemNotFound(flag.ToString(), self.ToString());
+			}
 		}
 
 		public static void CloseEnough(double expected, double actual, double epsilon = 0.2, string? message = null)
 		{
 			if (!String.IsNullOrWhiteSpace(message))
+			{
 				message = " " + message;
+			}
 
 			var diff = Math.Abs(expected - actual);
 			Assert.True(diff <= epsilon, $"Expected: {expected}. Actual: {actual}. Diff: {diff} Epsilon: {epsilon}.{message}");
@@ -92,12 +97,18 @@ namespace Microsoft.Maui.DeviceTests
 				if (platformView.XamlRoot is null)
 				{
 					if (!expectation)
+					{
 						await AttachAndRun(platformView, RunAssertions, mauiContext);
+					}
 					else
+					{
 						await AttachAndRun(platformViewHandler.ContainerView!, RunAssertions, mauiContext);
+					}
 				}
 				else
+				{
 					RunAssertions();
+				}
 			});
 
 #else
@@ -145,7 +156,9 @@ namespace Microsoft.Maui.DeviceTests
 			var dispatcher = mauiContext.GetDispatcher();
 
 			if (dispatcher.IsDispatchRequired)
+			{
 				return dispatcher.DispatchAsync(Run);
+			}
 
 			return Run();
 
@@ -192,9 +205,50 @@ namespace Microsoft.Maui.DeviceTests
 			catch (Exception ex)
 			{
 				if (!string.IsNullOrEmpty(message))
+
+/* Unmerged change from project 'TestUtils.DeviceTests(net8.0-maccatalyst)'
+Before:
 					throw new Exception(message, ex);
 				else
+After:
+				{
+					throw new Exception(message, ex);
+				}
+				else
+				{
+*/
+
+/* Unmerged change from project 'TestUtils.DeviceTests(net8.0-android)'
+Before:
+					throw new Exception(message, ex);
+				else
+After:
+				{
+					throw new Exception(message, ex);
+				}
+				else
+				{
+*/
+
+/* Unmerged change from project 'TestUtils.DeviceTests(net8.0-windows10.0.20348.0)'
+Before:
+					throw new Exception(message, ex);
+				else
+After:
+				{
+					throw new Exception(message, ex);
+				}
+				else
+				{
+*/
+				{
+					throw new Exception(message, ex);
+				}
+				else
+				{
 					throw;
+				}
+				}
 			}
 		}
 
@@ -241,7 +295,11 @@ namespace Microsoft.Maui.DeviceTests
 		public static bool IsLoadedOnPlatform(this IElement element)
 		{
 			if (element.Handler is not IPlatformViewHandler pvh)
+			{
+			{
 				return false;
+			}
+			}
 
 			return pvh.PlatformView?.IsLoaded() == true;
 		}

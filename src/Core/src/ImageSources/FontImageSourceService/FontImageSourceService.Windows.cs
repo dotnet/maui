@@ -22,7 +22,9 @@ namespace Microsoft.Maui
 		public Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IFontImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
+			{
 				return FromResult(null);
+			}
 
 			try
 			{
@@ -35,7 +37,9 @@ namespace Microsoft.Maui
 				var image = RenderImageSource(imageSource, scale);
 
 				if (image == null)
+				{
 					throw new InvalidOperationException("Unable to generate font image.");
+				}
 
 				// TODO: The DPI not working as the view is not respecting the
 				//       value, so mark this image as non-resolution-dependent.
@@ -99,7 +103,9 @@ namespace Microsoft.Maui
 		string GetFontSource(IFontImageSource imageSource)
 		{
 			if (imageSource == null)
+			{
 				return string.Empty;
+			}
 
 			var fontFamily = FontManager.GetFontFamily(imageSource.Font);
 
@@ -128,7 +134,7 @@ namespace Microsoft.Maui
 			if (!AppInfoUtils.IsPackagedApp)
 			{
 				var fontUri = new Uri(fontSource, UriKind.RelativeOrAbsolute);
-			
+
 				var path = fontUri.AbsolutePath.TrimStart('/');
 				if (FileSystemUtils.TryGetAppPackageFileUri(path, out var uri))
 				{

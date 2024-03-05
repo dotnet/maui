@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Platform
 		public static void ApplyKeyboard(this IUITextInput textInput, Keyboard keyboard)
 		{
 			if (textInput is IUITextInputTraits traits)
+			{
 				ApplyKeyboard(traits, keyboard);
+			}
 		}
 
 		public static void ApplyKeyboard(this IUITextInputTraits textInput, Keyboard keyboard)
@@ -28,13 +30,21 @@ namespace Microsoft.Maui.Platform
 				textInput.SetSpellCheckingType(UITextSpellCheckingType.Yes);
 			}
 			else if (keyboard == Keyboard.Email)
+			{
 				textInput.SetKeyboardType(UIKeyboardType.EmailAddress);
+			}
 			else if (keyboard == Keyboard.Numeric)
+			{
 				textInput.SetKeyboardType(UIKeyboardType.DecimalPad);
+			}
 			else if (keyboard == Keyboard.Telephone)
+			{
 				textInput.SetKeyboardType(UIKeyboardType.PhonePad);
+			}
 			else if (keyboard == Keyboard.Url)
+			{
 				textInput.SetKeyboardType(UIKeyboardType.Url);
+			}
 			else if (keyboard is CustomKeyboard)
 			{
 				var custom = (CustomKeyboard)keyboard;
@@ -52,13 +62,21 @@ namespace Microsoft.Maui.Platform
 
 				// Sentence being first ensures that the behavior of ALL is backwards compatible
 				if (capitalizedSentenceEnabled)
+				{
 					capSettings = UITextAutocapitalizationType.Sentences;
+				}
 				else if (capitalizedWordsEnabled)
+				{
 					capSettings = UITextAutocapitalizationType.Words;
+				}
 				else if (capitalizedCharacterEnabled)
+				{
 					capSettings = UITextAutocapitalizationType.AllCharacters;
+				}
 				else if (capitalizedNone)
+				{
 					capSettings = UITextAutocapitalizationType.None;
+				}
 
 				textInput.SetAutocapitalizationType(capSettings);
 				textInput.SetAutocorrectionType(suggestionsEnabled ? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No);

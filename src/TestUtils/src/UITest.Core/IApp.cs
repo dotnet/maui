@@ -43,7 +43,9 @@
 			where T : IApp
 		{
 			if (app is not T derivedApp)
+			{
 				throw new NotImplementedException($"The app '{app}' does not implement '{typeof(T).FullName}'.");
+			}
 
 			return derivedApp;
 		}

@@ -89,14 +89,20 @@ namespace Microsoft.Maui.Handlers
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
 			if (PlatformView == null)
+			{
 				return;
+			}
 
 			if (e.HasFocus)
 			{
 				if (PlatformView.Clickable)
+				{
 					PlatformView.CallOnClick();
+				}
 				else
+				{
 					OnClick(PlatformView, EventArgs.Empty);
+				}
 			}
 			else if (_dialog != null)
 			{
@@ -130,7 +136,9 @@ namespace Microsoft.Maui.Handlers
 					{
 						var item = items[i];
 						if (item == null)
+						{
 							items[i] = String.Empty;
+						}
 					}
 
 					builder.SetItems(items, (s, e) =>
@@ -146,7 +154,9 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				if (_dialog == null)
+				{
 					return;
+				}
 
 				_dialog.UpdateFlowDirection(PlatformView);
 

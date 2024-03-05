@@ -54,19 +54,25 @@ namespace Microsoft.Maui.Controls
 		void OnLayoutChanged(object sender, LayoutChangedEventArgs args)
 		{
 			if (Handler is not ILabelHandler labelHandler)
+			{
 				return;
+			}
 
 			var platformView = labelHandler.PlatformView;
 			var virtualView = labelHandler.VirtualView as Label;
 
 			if (platformView == null || virtualView == null)
+			{
 				return;
+			}
 
 			var text = virtualView.FormattedText;
 
 			// don't attempt to layout if this is not a formatted text WITH some text
 			if (virtualView.TextType != TextType.Text || text?.Spans == null || text.Spans.Count == 0)
+			{
 				return;
+			}
 
 			var spannableString = virtualView.ToSpannableString();
 

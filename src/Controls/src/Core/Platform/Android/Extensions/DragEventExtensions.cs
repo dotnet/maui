@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Platform.Android.Extensions
 			var context = sourceElement?.Handler?.MauiContext?.Context;
 
 			if (context is null | e is null)
+			{
 				return null;
+			}
 
 			double rawX = 0;
 			double rawY = 0;

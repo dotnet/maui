@@ -27,7 +27,10 @@ namespace Microsoft.Maui.Controls
 		{
 			var array = new float[Count];
 			for (int i = 0; i < Count; i++)
+			{
 				array[i] = (float)this[i];
+			}
+
 			return array;
 		}
 	}

@@ -28,10 +28,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			previousImageSource = previousImageSource ?? previousView?.Source;
 
 			if (imageView.IsDisposed())
+			{
 				return;
+			}
 
 			if (newImageSource != null && Equals(previousImageSource, newImageSource))
+			{
 				return;
+			}
 
 			imageController?.SetIsLoading(true);
 
@@ -50,7 +54,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					{
 						var animationHandler = Registrar.Registered.GetHandlerForObject<IAnimationSourceHandler>(newImageSource);
 						if (animationHandler != null)
+						{
 							animation = await animationHandler.LoadImageAnimationAsync(newImageSource, imageView.Context);
+						}
 					}
 
 					if (animation == null)
@@ -66,14 +72,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 							{
 								// only set the image if we are still on the same one
 								if (!imageView.IsDisposed() && SourceIsNotChanged(newView, newImageSource))
+								{
 									imageView.SetImageDrawable(drawable);
+								}
 							}
 						}
 					}
 					else
 					{
 						if (!imageView.IsDisposed() && SourceIsNotChanged(newView, newImageSource))
+						{
 							imageView.SetImageDrawable(animation.ImageDrawable);
+						}
 						else
 						{
 							animation?.Reset();

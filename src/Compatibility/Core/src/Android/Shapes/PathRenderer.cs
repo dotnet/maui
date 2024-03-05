@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, args);
 
 			if (args.PropertyName == Path.DataProperty.PropertyName)
+			{
 				UpdateData();
+			}
 			else if (args.PropertyName == Path.RenderTransformProperty.PropertyName)
 			{
 				UpdateData();

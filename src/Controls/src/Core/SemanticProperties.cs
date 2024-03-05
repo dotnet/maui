@@ -79,14 +79,18 @@ namespace Microsoft.Maui.Controls
 				foreach (var bp in _semanticPropertiesToWatch)
 				{
 					if (args.Is(bp))
+					{
 						CopyProperty(bp, source, dest);
+					}
 				}
 			}
 
 			void CopyProperty(BindableProperty bp, BindableObject source, BindableObject dest)
 			{
 				if (source.IsSet(bp))
+				{
 					dest.SetValue(bp, source.GetValue(bp));
+				}
 			}
 		}
 	}

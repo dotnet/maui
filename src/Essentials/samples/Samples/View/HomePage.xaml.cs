@@ -17,7 +17,9 @@ namespace Samples.View
 		{
 			var item = e.CurrentSelection?.FirstOrDefault() as SampleItem;
 			if (item == null)
+			{
 				return;
+			}
 
 			await Navigation.PushAsync((Page)Activator.CreateInstance(item.PageType));
 

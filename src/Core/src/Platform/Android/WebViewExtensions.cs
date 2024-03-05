@@ -26,13 +26,17 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 			else
+			{
 				platformWebView.LoadUrl("about:blank");
+			}
 		}
 
 		public static void UpdateSettings(this AWebView platformWebView, IWebView webView, bool javaScriptEnabled, bool domStorageEnabled)
 		{
 			if (platformWebView.Settings == null)
+			{
 				return;
+			}
 
 			platformWebView.Settings.JavaScriptEnabled = javaScriptEnabled;
 			platformWebView.Settings.DomStorageEnabled = domStorageEnabled;
@@ -41,12 +45,18 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateUserAgent(this AWebView platformWebView, IWebView webView)
 		{
 			if (platformWebView.Settings == null)
+			{
 				return;
+			}
 
 			if (webView.UserAgent != null)
+			{
 				platformWebView.Settings.UserAgentString = webView.UserAgent;
+			}
 			else
+			{
 				webView.UserAgent = platformWebView.Settings.UserAgentString;
+			}
 		}
 
 		public static void Eval(this AWebView platformWebView, IWebView webView, string script)
@@ -59,10 +69,14 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateGoBack(this AWebView platformWebView, IWebView webView)
 		{
 			if (platformWebView == null)
+			{
 				return;
+			}
 
 			if (platformWebView.CanGoBack())
+			{
 				platformWebView.GoBack();
+			}
 
 			platformWebView.UpdateCanGoBackForward(webView);
 		}
@@ -70,10 +84,14 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateGoForward(this AWebView platformWebView, IWebView webView)
 		{
 			if (platformWebView == null)
+			{
 				return;
+			}
 
 			if (platformWebView.CanGoForward())
+			{
 				platformWebView.GoForward();
+			}
 
 			platformWebView.UpdateCanGoBackForward(webView);
 		}
@@ -86,7 +104,9 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateCanGoBackForward(this AWebView platformWebView, IWebView webView)
 		{
 			if (webView == null || platformWebView == null)
+			{
 				return;
+			}
 
 			webView.CanGoBack = platformWebView.CanGoBack();
 			webView.CanGoForward = platformWebView.CanGoForward();

@@ -93,14 +93,20 @@ namespace Microsoft.Maui.Handlers
 		static partial void MappingSemantics(IViewHandler handler, IView view)
 		{
 			if (handler.PlatformView == null)
+			{
 				return;
+			}
 
 			AccessibilityDelegateCompat? accessibilityDelegate = null;
 			if (handler.PlatformView is View viewPlatform)
+			{
 				accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(viewPlatform) as MauiAccessibilityDelegateCompat;
+			}
 
 			if (handler.PlatformView is not PlatformView platformView)
+			{
 				return;
+			}
 
 			platformView = platformView.GetSemanticPlatformElement();
 
@@ -118,7 +124,9 @@ namespace Microsoft.Maui.Handlers
 				{
 					var currentDelegate = ViewCompat.GetAccessibilityDelegate(platformView);
 					if (currentDelegate is MauiAccessibilityDelegateCompat)
+					{
 						currentDelegate = null;
+					}
 
 					accessibilityDelegate = new MauiAccessibilityDelegateCompat(currentDelegate)
 					{
@@ -143,7 +151,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapToolbar(IViewHandler handler, IView view)
 		{
 			if (handler.VirtualView is not IToolbarElement te || te.Toolbar == null)
+			{
 				return;
+			}
 
 			MapToolbar(handler, te);
 		}
@@ -151,7 +161,9 @@ namespace Microsoft.Maui.Handlers
 		internal static void MapToolbar(IElementHandler handler, IToolbarElement te)
 		{
 			if (te.Toolbar == null)
+			{
 				return;
+			}
 
 			var rootManager = handler.MauiContext?.GetNavigationRootManager();
 			rootManager?.SetToolbarElement(te);

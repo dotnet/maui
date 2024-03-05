@@ -66,7 +66,10 @@ namespace Microsoft.Maui.Controls
 		public void Clear()
 		{
 			for (int i = _menus.Count - 1; i >= 0; i--)
+			{
+			{
 				RemoveAt(i);
+			}
 		}
 
 		public bool Contains(IMenuElement item)

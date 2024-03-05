@@ -46,9 +46,11 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.VirtualView.Flyout.ToPlatform(handler.MauiContext);
 
 			if (handler.PlatformView is RootNavigationView rnv)
+			{
 				rnv.FlyoutView = handler.VirtualView.Flyout;
+			}
 
-			handler.PlatformView.FlyoutCustomContent = handler.VirtualView.Flyout?.ToPlatform(handler.MauiContext);
+			MauiNavigationView.FlyoutCustomContent = handler.VirtualView.Flyout?.ToPlatform(handler.MauiContext);
 		}
 
 		public static void MapDetail(IFlyoutViewHandler handler, IFlyoutView flyoutView)
@@ -69,9 +71,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFlyoutWidth(IFlyoutViewHandler handler, IFlyoutView flyoutView)
 		{
 			if (flyoutView.Width >= 0)
+			{
 				handler.PlatformView.OpenPaneLength = flyoutView.Width;
+			}
 			else
+			{
 				handler.PlatformView.OpenPaneLength = 320;
+			}
 			// At some point this Template Setting is going to show up with a bump to winui
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 

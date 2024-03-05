@@ -193,9 +193,85 @@ namespace Maui.Controls.Sample.Pages
 			}
 
 			if (index == -1)
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-maccatalyst)'
+Before:
 				parent.Add(newMenuItem);
-			else
+After:
+			{
+				parent.Add(newMenuItem);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-windows10.0.19041.0)'
+Before:
+				parent.Add(newMenuItem);
+After:
+			{
+				parent.Add(newMenuItem);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-windows10.0.20348.0)'
+Before:
+				parent.Add(newMenuItem);
+After:
+			{
+				parent.Add(newMenuItem);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0)'
+Before:
+				parent.Add(newMenuItem);
+After:
+			{
+				parent.Add(newMenuItem);
+			}
+*/
+			
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-maccatalyst)'
+Before:
 				parent.Insert(index, newMenuItem);
+After:
+			{
+				parent.Insert(index, newMenuItem);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-windows10.0.19041.0)'
+Before:
+				parent.Insert(index, newMenuItem);
+After:
+			{
+				parent.Insert(index, newMenuItem);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-windows10.0.20348.0)'
+Before:
+				parent.Insert(index, newMenuItem);
+After:
+			{
+				parent.Insert(index, newMenuItem);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0)'
+Before:
+				parent.Insert(index, newMenuItem);
+After:
+			{
+				parent.Insert(index, newMenuItem);
+			}
+*/
+{
+				parent.Add(newMenuItem);
+			}
+			else
+			{
+				parent.Insert(index, newMenuItem);
+			}
 
 			newMenuItemCount++;
 		}

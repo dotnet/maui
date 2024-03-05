@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.HandleCellPropertyChanged(sender, args);
 
 			if (args.PropertyName == ImageCell.ImageSourceProperty.PropertyName)
+			{
 				SetImage(imageCell, tvc);
+			}
 		}
 
 		void SetImage(ImageCell cell, CellTableViewCell target)

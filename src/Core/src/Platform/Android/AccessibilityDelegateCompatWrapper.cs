@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Platform
 			get
 			{
 				if (_originalDelegate == s_blankDelegate)
+				{
 					return null;
+				}
 
 				return _originalDelegate;
 			}

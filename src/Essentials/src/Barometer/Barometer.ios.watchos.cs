@@ -28,9 +28,12 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStop()
 		{
 			if (altitudeManager == null)
+			{
 				return;
+			}
 
 			altitudeManager.StopRelativeAltitudeUpdates();
+			altitudeManager.Dispose();
 			altitudeManager.Dispose();
 			altitudeManager = null;
 		}

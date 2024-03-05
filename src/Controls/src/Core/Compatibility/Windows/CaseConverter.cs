@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
 			if (value == null)
+			{
 				return null;
+			}
 
 			var v = (string)value;
 			return ConvertToUpper ? v.ToUpper(CultureInfo.CurrentCulture) : v.ToLower(CultureInfo.CurrentCulture);

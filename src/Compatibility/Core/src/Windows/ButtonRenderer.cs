@@ -48,29 +48,45 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				//TODO: We may want to revisit this strategy later. If a user wants to reset any of these to the default, the UI won't update.
 				if (Element.IsSet(VisualElement.BackgroundColorProperty) && Element.BackgroundColor != (Color)VisualElement.BackgroundColorProperty.DefaultValue)
+				{
 					UpdateBackgroundBrush();
+				}
 
 				if (Element.IsSet(VisualElement.BackgroundProperty) && (Element.Background != null && !Element.Background.IsEmpty))
+				{
 					UpdateBackgroundBrush();
+				}
 
 				if (Element.IsSet(Button.TextColorProperty) && Element.TextColor != (Color)Button.TextColorProperty.DefaultValue)
+				{
 					UpdateTextColor();
+				}
 
 				if (Element.IsSet(Button.BorderColorProperty) && Element.BorderColor != (Color)Button.BorderColorProperty.DefaultValue)
+				{
 					UpdateBorderColor();
+				}
 
 				if (Element.IsSet(Button.CharacterSpacingProperty))
+				{
 					UpdateCharacterSpacing();
+				}
 
 				if (Element.IsSet(Button.BorderWidthProperty) && Element.BorderWidth != (double)Button.BorderWidthProperty.DefaultValue)
+				{
 					UpdateBorderWidth();
+				}
 
 				if (Element.IsSet(Button.CornerRadiusProperty) && Element.CornerRadius != (int)Button.CornerRadiusProperty.DefaultValue)
+				{
 					UpdateBorderRadius();
+				}
 
 				// By default Button loads width padding 8, 4, 8 ,4
 				if (Element.IsSet(Button.PaddingProperty))
+				{
 					UpdatePadding();
+				}
 
 				UpdateFont();
 			}
@@ -142,7 +158,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdatePadding();
 			}
 			else if (e.PropertyName == Button.LineBreakModeProperty.PropertyName)
+			{
 				UpdateLineBreakMode();
+			}
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -174,9 +192,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateBackgroundBrush()
 		{
 			if (Brush.IsNullOrEmpty(Element.Background))
+			{
 				Control.BackgroundColor = Element.BackgroundColor.IsNotDefault() ? Element.BackgroundColor.ToPlatform() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+			}
 			else
+			{
 				Control.BackgroundColor = Element.Background.ToBrush();
+			}
 		}
 
 		[PortHandler]
@@ -304,10 +326,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateFont()
 		{
 			if (Control == null || Element is not ITextStyle textStyle)
+			{
 				return;
+			}
 
 			if (textStyle.Font == Font.Default && !_fontApplied)
+			{
 				return;
+			}
 
 			Font fontToApply = textStyle.Font == Font.Default
 #pragma warning disable CS0612 // Type or member is obsolete
@@ -338,7 +364,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
+
 			if (_button != null)
 			{
 				_button.Click -= OnButtonClick;

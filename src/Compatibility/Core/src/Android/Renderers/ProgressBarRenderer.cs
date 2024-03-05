@@ -50,16 +50,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
+			{
 				UpdateProgress();
+			}
 			else if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName)
+			{
 				UpdateProgressColor();
+			}
 		}
 
 		[PortHandler]
 		internal virtual protected void UpdateProgressColor()
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
 
 			Color color = Element.ProgressColor;
 
@@ -72,9 +78,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var tintList = ColorStateList.ValueOf(color.ToAndroid());
 				if (Control.Indeterminate)
+				{
 					Control.IndeterminateTintList = tintList;
+				}
 				else
+				{
 					Control.ProgressTintList = tintList;
+				}
 			}
 		}
 

@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.OnDisconnectHandler(platformView);
 			if (platformView is MaterialToolbar mt && mt.IsAlive())
+			{
 				mt.RemoveFromParent();
+			}
 		}
 
 		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
@@ -74,14 +76,18 @@ namespace Microsoft.Maui.Handlers
 		void SetupToolbar()
 		{
 			if (_stackNavigationManager == null || _navController == null)
+			{
 				return;
+			}
 
 			var appbarConfigBuilder =
 					new AppBarConfiguration
 						.Builder(_stackNavigationManager.NavGraph);
 
 			if (_drawerLayout != null)
+			{
 				appbarConfigBuilder = appbarConfigBuilder.SetOpenableLayout(_drawerLayout);
+			}
 
 			var appbarConfig =
 				appbarConfigBuilder.Build();

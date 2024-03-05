@@ -60,7 +60,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			ctattributes.Font = font;
 
 			if (contextFontColor != null)
+			{
 				ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+			}
 
 			return ctattributes;
 		}
@@ -98,6 +100,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			ctattributes.Font = font;
 
 			if (attributes.GetUnderline())
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
 				ctattributes.UnderlineStyle = CTUnderlineStyle.Single;
 
 			var foreground = attributes.GetForegroundColor();
@@ -192,6 +197,874 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			if (dictionary != null)
 				attributedString.AddAttributes(dictionary, new NSRange(start, length));
+		}
+After:
+			{
+				ctattributes.UnderlineStyle = CTUnderlineStyle.Single;
+			}
+
+			var foreground = attributes.GetForegroundColor();
+			if (foreground != null)
+			{
+				ctattributes.AddAttributes(dictionary, new NSRange(start, length));
+			}
+			else
+			{
+				if (contextFontColor != null)
+				{
+					ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+				}
+				else
+				{
+					ctattributes.ForegroundColorFromContext = true;
+				}
+			}
+
+			var background = attributes.GetBackgroundColor();
+			if (background != null)
+			{
+				ctattributes.BackgroundColor = background.Parse().ToCGColor();
+			}
+
+			attributedString.AddAttributes(ctattributes, new NSRange(start, length));
+
+			NSMutableDictionary dictionary = null;
+#if MONOMAC
+#if DEBUG
+			var previousCheckStatus = NSApplication.CheckForIllegalCrossThreadCalls;
+			NSApplication.CheckForIllegalCrossThreadCalls = false;
+#endif
+
+			if (attributes.GetUnorderedList())
+			{
+				var paragraphStyle = new NSMutableParagraphStyle ();
+
+				var textLists = new NSTextList[1];
+
+				var marker = "{disc}";
+
+				switch (attributes.GetMarker())
+				{
+					case MarkerType.Hyphen:
+						marker = "{hyphen}";
+						break;
+					case MarkerType.OpenCircle:
+						marker = "{circle}";
+						break;
+				}
+
+				textLists [0] = new NSTextList (marker, NSTextListOptions.PrependEnclosingMarker);
+				paragraphStyle.SetTextLists(textLists);
+
+				if (dictionary == null) dictionary = new NSMutableDictionary ();
+				dictionary.Add(NSStringAttributeKey.ParagraphStyle, paragraphStyle);
+			}
+
+#if DEBUG
+			NSApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
+#endif
+#endif
+
+#if MONOMAC
+			if (!coreTextCompatible)
+			{
+				if (attributes.GetSuperscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(1));
+				}
+
+				if (attributes.GetSubscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(-1));
+				}
+			}
+			else
+			{
+#endif
+			if (attributes.GetSuperscript())
+			{
+				if (dictionary == null)
+				{
+					dictionary = new NSMutableDictionary();
+				}
+
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
+			}
+
+			if (attributes.GetSubscript())
+			{
+				if (dictionary == null)
+				{
+					dictionary = new NSMutableDictionary();
+				}
+
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
+			}
+
+#if MONOMAC
+		}
+#endif
+
+			if (dictionary != null)
+			{
+				attributedString.AddAttributes(dictionary, new NSRange(start, length));
+			}
+		}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				ctattributes.UnderlineStyle = CTUnderlineStyle.Single;
+
+			var foreground = attributes.GetForegroundColor();
+			if (foreground != null)
+				ctattributes.ForegroundColor = foreground.Parse().ToCGColor();
+			else
+			{
+				if (contextFontColor != null)
+					ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+				else
+					ctattributes.ForegroundColorFromContext = true;
+			}
+
+			var background = attributes.GetBackgroundColor();
+			if (background != null)
+				ctattributes.BackgroundColor = background.Parse().ToCGColor();
+
+			attributedString.AddAttributes(ctattributes, new NSRange(start, length));
+
+			NSMutableDictionary dictionary = null;
+#if MONOMAC
+#if DEBUG
+			var previousCheckStatus = NSApplication.CheckForIllegalCrossThreadCalls;
+			NSApplication.CheckForIllegalCrossThreadCalls = false;
+#endif
+
+			if (attributes.GetUnorderedList())
+			{
+				var paragraphStyle = new NSMutableParagraphStyle ();
+
+				var textLists = new NSTextList[1];
+
+				var marker = "{disc}";
+
+				switch (attributes.GetMarker())
+				{
+					case MarkerType.Hyphen:
+						marker = "{hyphen}";
+						break;
+					case MarkerType.OpenCircle:
+						marker = "{circle}";
+						break;
+				}
+
+				textLists [0] = new NSTextList (marker, NSTextListOptions.PrependEnclosingMarker);
+				paragraphStyle.SetTextLists(textLists);
+
+				if (dictionary == null) dictionary = new NSMutableDictionary ();
+				dictionary.Add(NSStringAttributeKey.ParagraphStyle, paragraphStyle);
+			}
+
+#if DEBUG
+			NSApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
+#endif
+#endif
+
+#if MONOMAC
+			if (!coreTextCompatible)
+			{
+				if (attributes.GetSuperscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(1));
+				}
+
+				if (attributes.GetSubscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(-1));
+				}
+			}
+			else
+			{
+#endif
+			if (attributes.GetSuperscript())
+			{
+				if (dictionary == null)
+					dictionary = new NSMutableDictionary();
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
+			}
+
+			if (attributes.GetSubscript())
+			{
+				if (dictionary == null)
+					dictionary = new NSMutableDictionary();
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
+			}
+
+#if MONOMAC
+		}
+#endif
+
+			if (dictionary != null)
+				attributedString.AddAttributes(dictionary, new NSRange(start, length));
+		}
+After:
+			{
+				ctattributes.UnderlineStyle = CTUnderlineStyle.Single;
+			}
+
+			var foreground = attributes.GetForegroundColor();
+			if (foreground != null)
+			{
+				ctattributes.AddAttributes(dictionary, new NSRange(start, length));
+			}
+			else
+			{
+				if (contextFontColor != null)
+				{
+					ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+				}
+				else
+				{
+					ctattributes.ForegroundColorFromContext = true;
+				}
+			}
+
+			var background = attributes.GetBackgroundColor();
+			if (background != null)
+			{
+				ctattributes.BackgroundColor = background.Parse().ToCGColor();
+			}
+
+			attributedString.AddAttributes(ctattributes, new NSRange(start, length));
+
+			NSMutableDictionary dictionary = null;
+#if MONOMAC
+#if DEBUG
+			var previousCheckStatus = NSApplication.CheckForIllegalCrossThreadCalls;
+			NSApplication.CheckForIllegalCrossThreadCalls = false;
+#endif
+
+			if (attributes.GetUnorderedList())
+			{
+				var paragraphStyle = new NSMutableParagraphStyle ();
+
+				var textLists = new NSTextList[1];
+
+				var marker = "{disc}";
+
+				switch (attributes.GetMarker())
+				{
+					case MarkerType.Hyphen:
+						marker = "{hyphen}";
+						break;
+					case MarkerType.OpenCircle:
+						marker = "{circle}";
+						break;
+				}
+
+				textLists [0] = new NSTextList (marker, NSTextListOptions.PrependEnclosingMarker);
+				paragraphStyle.SetTextLists(textLists);
+
+				if (dictionary == null) dictionary = new NSMutableDictionary ();
+				dictionary.Add(NSStringAttributeKey.ParagraphStyle, paragraphStyle);
+			}
+
+#if DEBUG
+			NSApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
+#endif
+#endif
+
+#if MONOMAC
+			if (!coreTextCompatible)
+			{
+				if (attributes.GetSuperscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(1));
+				}
+
+				if (attributes.GetSubscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(-1));
+				}
+			}
+			else
+			{
+#endif
+			if (attributes.GetSuperscript())
+			{
+				if (dictionary == null)
+				{
+					dictionary = new NSMutableDictionary();
+				}
+
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
+			}
+
+			if (attributes.GetSubscript())
+			{
+				if (dictionary == null)
+				{
+					dictionary = new NSMutableDictionary();
+				}
+
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
+			}
+
+#if MONOMAC
+		}
+#endif
+
+			if (dictionary != null)
+			{
+				attributedString.AddAttributes(dictionary, new NSRange(start, length));
+			}
+		}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				ctattributes.UnderlineStyle = CTUnderlineStyle.Single;
+
+			var foreground = attributes.GetForegroundColor();
+			if (foreground != null)
+				ctattributes.ForegroundColor = foreground.Parse().ToCGColor();
+			else
+			{
+				if (contextFontColor != null)
+					ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+				else
+					ctattributes.ForegroundColorFromContext = true;
+			}
+
+			var background = attributes.GetBackgroundColor();
+			if (background != null)
+				ctattributes.BackgroundColor = background.Parse().ToCGColor();
+
+			attributedString.AddAttributes(ctattributes, new NSRange(start, length));
+
+			NSMutableDictionary dictionary = null;
+#if MONOMAC
+#if DEBUG
+			var previousCheckStatus = NSApplication.CheckForIllegalCrossThreadCalls;
+			NSApplication.CheckForIllegalCrossThreadCalls = false;
+#endif
+
+			if (attributes.GetUnorderedList())
+			{
+				var paragraphStyle = new NSMutableParagraphStyle ();
+
+				var textLists = new NSTextList[1];
+
+				var marker = "{disc}";
+
+				switch (attributes.GetMarker())
+				{
+					case MarkerType.Hyphen:
+						marker = "{hyphen}";
+						break;
+					case MarkerType.OpenCircle:
+						marker = "{circle}";
+						break;
+				}
+
+				textLists [0] = new NSTextList (marker, NSTextListOptions.PrependEnclosingMarker);
+				paragraphStyle.SetTextLists(textLists);
+
+				if (dictionary == null) dictionary = new NSMutableDictionary ();
+				dictionary.Add(NSStringAttributeKey.ParagraphStyle, paragraphStyle);
+			}
+
+#if DEBUG
+			NSApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
+#endif
+#endif
+
+#if MONOMAC
+			if (!coreTextCompatible)
+			{
+				if (attributes.GetSuperscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(1));
+				}
+
+				if (attributes.GetSubscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(-1));
+				}
+			}
+			else
+			{
+#endif
+			if (attributes.GetSuperscript())
+			{
+				if (dictionary == null)
+					dictionary = new NSMutableDictionary();
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
+			}
+
+			if (attributes.GetSubscript())
+			{
+				if (dictionary == null)
+					dictionary = new NSMutableDictionary();
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
+			}
+
+#if MONOMAC
+		}
+#endif
+
+			if (dictionary != null)
+				attributedString.AddAttributes(dictionary, new NSRange(start, length));
+		}
+After:
+			{
+				ctattributes.UnderlineStyle = CTUnderlineStyle.Single;
+			}
+
+			var foreground = attributes.GetForegroundColor();
+			if (foreground != null)
+			{
+				ctattributes.AddAttributes(dictionary, new NSRange(start, length));
+			}
+			else
+			{
+				if (contextFontColor != null)
+				{
+					ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+				}
+				else
+				{
+					ctattributes.ForegroundColorFromContext = true;
+				}
+			}
+
+			var background = attributes.GetBackgroundColor();
+			if (background != null)
+			{
+				ctattributes.BackgroundColor = background.Parse().ToCGColor();
+			}
+
+			attributedString.AddAttributes(ctattributes, new NSRange(start, length));
+
+			NSMutableDictionary dictionary = null;
+#if MONOMAC
+#if DEBUG
+			var previousCheckStatus = NSApplication.CheckForIllegalCrossThreadCalls;
+			NSApplication.CheckForIllegalCrossThreadCalls = false;
+#endif
+
+			if (attributes.GetUnorderedList())
+			{
+				var paragraphStyle = new NSMutableParagraphStyle ();
+
+				var textLists = new NSTextList[1];
+
+				var marker = "{disc}";
+
+				switch (attributes.GetMarker())
+				{
+					case MarkerType.Hyphen:
+						marker = "{hyphen}";
+						break;
+					case MarkerType.OpenCircle:
+						marker = "{circle}";
+						break;
+				}
+
+				textLists [0] = new NSTextList (marker, NSTextListOptions.PrependEnclosingMarker);
+				paragraphStyle.SetTextLists(textLists);
+
+				if (dictionary == null) dictionary = new NSMutableDictionary ();
+				dictionary.Add(NSStringAttributeKey.ParagraphStyle, paragraphStyle);
+			}
+
+#if DEBUG
+			NSApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
+#endif
+#endif
+
+#if MONOMAC
+			if (!coreTextCompatible)
+			{
+				if (attributes.GetSuperscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(1));
+				}
+
+				if (attributes.GetSubscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(-1));
+				}
+			}
+			else
+			{
+#endif
+			if (attributes.GetSuperscript())
+			{
+				if (dictionary == null)
+				{
+					dictionary = new NSMutableDictionary();
+				}
+
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
+			}
+
+			if (attributes.GetSubscript())
+			{
+				if (dictionary == null)
+				{
+					dictionary = new NSMutableDictionary();
+				}
+
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
+			}
+
+#if MONOMAC
+		}
+#endif
+
+			if (dictionary != null)
+			{
+				attributedString.AddAttributes(dictionary, new NSRange(start, length));
+			}
+		}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+				ctattributes.UnderlineStyle = CTUnderlineStyle.Single;
+
+			var foreground = attributes.GetForegroundColor();
+			if (foreground != null)
+				ctattributes.ForegroundColor = foreground.Parse().ToCGColor();
+			else
+			{
+				if (contextFontColor != null)
+					ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+				else
+					ctattributes.ForegroundColorFromContext = true;
+			}
+
+			var background = attributes.GetBackgroundColor();
+			if (background != null)
+				ctattributes.BackgroundColor = background.Parse().ToCGColor();
+
+			attributedString.AddAttributes(ctattributes, new NSRange(start, length));
+
+			NSMutableDictionary dictionary = null;
+#if MONOMAC
+#if DEBUG
+			var previousCheckStatus = NSApplication.CheckForIllegalCrossThreadCalls;
+			NSApplication.CheckForIllegalCrossThreadCalls = false;
+#endif
+
+			if (attributes.GetUnorderedList())
+			{
+				var paragraphStyle = new NSMutableParagraphStyle ();
+
+				var textLists = new NSTextList[1];
+
+				var marker = "{disc}";
+
+				switch (attributes.GetMarker())
+				{
+					case MarkerType.Hyphen:
+						marker = "{hyphen}";
+						break;
+					case MarkerType.OpenCircle:
+						marker = "{circle}";
+						break;
+				}
+
+				textLists [0] = new NSTextList (marker, NSTextListOptions.PrependEnclosingMarker);
+				paragraphStyle.SetTextLists(textLists);
+
+				if (dictionary == null) dictionary = new NSMutableDictionary ();
+				dictionary.Add(NSStringAttributeKey.ParagraphStyle, paragraphStyle);
+			}
+
+#if DEBUG
+			NSApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
+#endif
+#endif
+
+#if MONOMAC
+			if (!coreTextCompatible)
+			{
+				if (attributes.GetSuperscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(1));
+				}
+
+				if (attributes.GetSubscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(-1));
+				}
+			}
+			else
+			{
+#endif
+			if (attributes.GetSuperscript())
+			{
+				if (dictionary == null)
+					dictionary = new NSMutableDictionary();
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
+			}
+
+			if (attributes.GetSubscript())
+			{
+				if (dictionary == null)
+					dictionary = new NSMutableDictionary();
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
+			}
+
+#if MONOMAC
+		}
+#endif
+
+			if (dictionary != null)
+				attributedString.AddAttributes(dictionary, new NSRange(start, length));
+		}
+After:
+			{
+				ctattributes.UnderlineStyle = CTUnderlineStyle.Single;
+			}
+
+			var foreground = attributes.GetForegroundColor();
+			if (foreground != null)
+			{
+				ctattributes.AddAttributes(dictionary, new NSRange(start, length));
+			}
+			else
+			{
+				if (contextFontColor != null)
+				{
+					ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+				}
+				else
+				{
+					ctattributes.ForegroundColorFromContext = true;
+				}
+			}
+
+			var background = attributes.GetBackgroundColor();
+			if (background != null)
+			{
+				ctattributes.BackgroundColor = background.Parse().ToCGColor();
+			}
+
+			attributedString.AddAttributes(ctattributes, new NSRange(start, length));
+
+			NSMutableDictionary dictionary = null;
+#if MONOMAC
+#if DEBUG
+			var previousCheckStatus = NSApplication.CheckForIllegalCrossThreadCalls;
+			NSApplication.CheckForIllegalCrossThreadCalls = false;
+#endif
+
+			if (attributes.GetUnorderedList())
+			{
+				var paragraphStyle = new NSMutableParagraphStyle ();
+
+				var textLists = new NSTextList[1];
+
+				var marker = "{disc}";
+
+				switch (attributes.GetMarker())
+				{
+					case MarkerType.Hyphen:
+						marker = "{hyphen}";
+						break;
+					case MarkerType.OpenCircle:
+						marker = "{circle}";
+						break;
+				}
+
+				textLists [0] = new NSTextList (marker, NSTextListOptions.PrependEnclosingMarker);
+				paragraphStyle.SetTextLists(textLists);
+
+				if (dictionary == null) dictionary = new NSMutableDictionary ();
+				dictionary.Add(NSStringAttributeKey.ParagraphStyle, paragraphStyle);
+			}
+
+#if DEBUG
+			NSApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
+#endif
+#endif
+
+#if MONOMAC
+			if (!coreTextCompatible)
+			{
+				if (attributes.GetSuperscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(1));
+				}
+
+				if (attributes.GetSubscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(-1));
+				}
+			}
+			else
+			{
+#endif
+			if (attributes.GetSuperscript())
+			{
+				if (dictionary == null)
+				{
+					dictionary = new NSMutableDictionary();
+				}
+
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
+			}
+
+			if (attributes.GetSubscript())
+			{
+				if (dictionary == null)
+				{
+					dictionary = new NSMutableDictionary();
+				}
+
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
+			}
+
+#if MONOMAC
+		}
+#endif
+
+			if (dictionary != null)
+			{
+				attributedString.AddAttributes(dictionary, new NSRange(start, length));
+			}
+		}
+*/
+			{
+				ctattributes.UnderlineStyle = CTUnderlineStyle.Single;
+			}
+
+			var foreground = attributes.GetForegroundColor();
+			if (foreground != null)
+			{
+				ctattributes.ForegroundColor = foreground.Parse().ToCGColor();
+			}
+			else
+			{
+				if (contextFontColor != null)
+				{
+					ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+				}
+				else
+				{
+					ctattributes.ForegroundColorFromContext = true;
+				}
+			}
+
+			var background = attributes.GetBackgroundColor();
+			if (background != null)
+			{
+				ctattributes.BackgroundColor = background.Parse().ToCGColor();
+			}
+
+			attributedString.AddAttributes(ctattributes, new NSRange(start, length));
+
+			NSMutableDictionary dictionary = null;
+#if MONOMAC
+#if DEBUG
+			var previousCheckStatus = NSApplication.CheckForIllegalCrossThreadCalls;
+			NSApplication.CheckForIllegalCrossThreadCalls = false;
+#endif
+
+			if (attributes.GetUnorderedList())
+			{
+				var paragraphStyle = new NSMutableParagraphStyle ();
+
+				var textLists = new NSTextList[1];
+
+				var marker = "{disc}";
+
+				switch (attributes.GetMarker())
+				{
+					case MarkerType.Hyphen:
+						marker = "{hyphen}";
+						break;
+					case MarkerType.OpenCircle:
+						marker = "{circle}";
+						break;
+				}
+
+				textLists [0] = new NSTextList (marker, NSTextListOptions.PrependEnclosingMarker);
+				paragraphStyle.SetTextLists(textLists);
+
+				if (dictionary == null) dictionary = new NSMutableDictionary ();
+				dictionary.Add(NSStringAttributeKey.ParagraphStyle, paragraphStyle);
+			}
+
+#if DEBUG
+			NSApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
+#endif
+#endif
+
+#if MONOMAC
+			if (!coreTextCompatible)
+			{
+				if (attributes.GetSuperscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(1));
+				}
+
+				if (attributes.GetSubscript())
+				{
+					if (dictionary == null) dictionary = new NSMutableDictionary();
+					dictionary.Add(NSStringAttributeKey.Superscript, NSNumber.FromInt32(-1));
+				}
+			}
+			else
+			{
+#endif
+			if (attributes.GetSuperscript())
+			{
+				if (dictionary == null)
+				{
+					dictionary = new NSMutableDictionary();
+				}
+
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
+			}
+
+			if (attributes.GetSubscript())
+			{
+				if (dictionary == null)
+				{
+					dictionary = new NSMutableDictionary();
+				}
+
+				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
+			}
+
+#if MONOMAC
+		}
+#endif
+
+			if (dictionary != null)
+			{
+				attributedString.ForegroundColor = foreground.Parse().ToCGColor();
+			}
+			}
 		}
 	}
 }

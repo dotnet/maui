@@ -17,17 +17,23 @@ namespace Microsoft.Maui.IntegrationTests
 		public static string GetMauiDirectory()
 		{
 			if (Directory.Exists(_mauiDir))
+			{
 				return _mauiDir;
+			}
 
 			return _mauiDir = GetTopDirRecursive(Path.GetFullPath(Path.GetDirectoryName(typeof(TestEnvironment).Assembly.Location) ?? ""));
 
 			static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
 			{
 				if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.sln")))
+				{
 					return searchDirectory;
+				}
 
 				if (maxSearchDepth <= 0)
+				{
 					throw new DirectoryNotFoundException("Unable to locate root maui directory!");
+				}
 
 				return GetTopDirRecursive(Directory.GetParent(searchDirectory)?.FullName ?? "", --maxSearchDepth);
 			}
@@ -63,7 +69,9 @@ namespace Microsoft.Maui.IntegrationTests
 		public static string GetTestDirectoryRoot()
 		{
 			if (Directory.Exists(_testOutputDirectory))
+			{
 				return _testOutputDirectory;
+			}
 
 			// Set when running on Azure Pipelines https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
 			var rootDir = Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY");
@@ -84,11 +92,16 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			var sdkPath = Environment.GetEnvironmentVariable("ANDROID_SDK_ROOT");
 			if (string.IsNullOrEmpty(sdkPath))
+			{
 				sdkPath = Environment.GetEnvironmentVariable("ANDROID_HOME");
+			}
+
 			if (string.IsNullOrEmpty(sdkPath))
+			{
 				sdkPath = IsWindows
 					? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Android", "android-sdk")
 					: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Developer", "Xamarin", "android-sdk-macosx");
+			}
 
 			return sdkPath;
 		}
@@ -105,7 +118,9 @@ namespace Microsoft.Maui.IntegrationTests
 					var versionedDirectories = Directory.EnumerateDirectories(toolsTopDir).Where(d => Version.TryParse(Path.GetFileName(d), out Version? v));
 					var latestVersionDir = versionedDirectories.OrderByDescending(d => Version.Parse(Path.GetFileName(d))).FirstOrDefault();
 					if (Directory.Exists(latestVersionDir))
+					{
 						toolsPath = Path.Combine(latestVersionDir, "bin");
+					}
 				}
 			}
 

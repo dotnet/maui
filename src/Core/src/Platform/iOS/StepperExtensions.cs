@@ -20,13 +20,17 @@ namespace Microsoft.Maui.Platform
 			var increment = stepper.Interval;
 
 			if (increment > 0)
+			{
 				platformStepper.StepValue = stepper.Interval;
+			}
 		}
 
 		public static void UpdateValue(this UIStepper platformStepper, IStepper stepper)
 		{
 			if (platformStepper.Value != stepper.Value)
+			{
 				platformStepper.Value = stepper.Value;
+			}
 		}
 	}
 }

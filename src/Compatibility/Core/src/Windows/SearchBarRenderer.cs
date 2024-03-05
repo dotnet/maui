@@ -65,35 +65,65 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.IsOneOf(SearchBar.TextProperty, SearchBar.TextTransformProperty))
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == SearchBar.PlaceholderProperty.PropertyName)
+			{
 				UpdatePlaceholder();
+			}
 			else if (e.PropertyName == SearchBar.CancelButtonColorProperty.PropertyName)
+			{
 				UpdateCancelButtonColor();
+			}
 			else if (e.PropertyName == SearchBar.HorizontalTextAlignmentProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == SearchBar.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateVerticalTextAlignment();
+			}
 			else if (e.PropertyName == SearchBar.FontAttributesProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == SearchBar.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == SearchBar.FontFamilyProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == SearchBar.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == SearchBar.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == SearchBar.PlaceholderColorProperty.PropertyName)
+			{
 				UpdatePlaceholderColor();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == Specifics.IsSpellCheckEnabledProperty.PropertyName)
+			{
 				UpdateIsSpellCheckEnabled();
+			}
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+			{
 				UpdateMaxLength();
+			}
 			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
 				UpdateInputScope();
+			}
 		}
 
 		void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -122,8 +152,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// If the Forms VisualStateManager is in play or the user wants to disable the Forms legacy
 			// color stuff, then the underlying textbox should just use the Forms VSM states
 			if (_queryTextBox != null)
+			{
 				_queryTextBox.UseFormsVsm = Element.HasVisualStateGroups()
 								|| !Element.OnThisPlatform().GetIsLegacyColorModeEnabled();
+			}
 		}
 
 		protected override void SetAutomationId(string id)
@@ -131,7 +163,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.SetAutomationId(id);
 
 			if (_queryTextBox == null)
+			{
 				return;
+			}
 
 			// This allow us to locate the actual TextBox for Automation purposes
 			// It's more reliable to interact directly with the TextBox
@@ -144,7 +178,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// Modifies the text of the control if it does not match the query.
 			// This is possible because OnTextChanged is fired with a delay
 			if (e.QueryText != Element.Text)
+			{
 				Element.SetValueFromRenderer(SearchBar.TextProperty, e.QueryText);
+			}
 
 			Element.OnSearchButtonPressed();
 		}
@@ -153,15 +189,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs e)
 		{
 			if (e.Reason == AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
+			{
 				return;
-
-			((IElementController)Element).SetValueFromRenderer(SearchBar.TextProperty, sender.Text);
+			} ((IElementController)Element).SetValueFromRenderer(SearchBar.TextProperty, sender.Text);
 		}
 
 		void UpdateHorizontalTextAlignment()
 		{
 			if (_queryTextBox == null)
+			{
 				return;
+			}
 
 			_queryTextBox.TextAlignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
@@ -169,7 +207,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateVerticalTextAlignment()
 		{
 			if (_queryTextBox == null)
+			{
 				return;
+			}
 
 			_queryTextBox.VerticalContentAlignment = Element.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
@@ -177,7 +217,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateCancelButtonColor()
 		{
 			if (_cancelButton == null || !_cancelButton.IsReady)
+			{
 				return;
+			}
 
 			Color cancelColor = Element.CancelButtonColor;
 
@@ -201,12 +243,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateFont()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			SearchBar searchBar = Element;
 
 			if (searchBar == null)
+			{
 				return;
+			}
 
 			bool searchBarIsDefault =
 				searchBar.FontFamily == null &&
@@ -216,7 +262,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				searchBar.FontAttributes == FontAttributes.None;
 
 			if (searchBarIsDefault && !_fontApplied)
+			{
 				return;
+			}
 
 			if (searchBarIsDefault)
 			{
@@ -227,7 +275,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Control.ClearValue(Microsoft.UI.Xaml.Controls.Control.FontStretchProperty);
 			}
 			else
+			{
 				Control.ApplyFont(searchBar);
+			}
 
 			_fontApplied = true;
 		}
@@ -248,7 +298,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdatePlaceholderColor()
 		{
 			if (_queryTextBox == null)
+			{
 				return;
+			}
 
 			Color placeholderColor = Element.PlaceholderColor;
 
@@ -269,7 +321,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateTextColor()
 		{
 			if (_queryTextBox == null)
+			{
 				return;
+			}
 
 			Color textColor = Element.TextColor;
 
@@ -284,30 +338,40 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateIsSpellCheckEnabled()
 		{
 			if (_queryTextBox == null)
+			{
 				return;
+			}
 
 			if (Element.IsSet(Specifics.IsSpellCheckEnabledProperty))
+			{
 				_queryTextBox.IsSpellCheckEnabled = Element.OnThisPlatform().GetIsSpellCheckEnabled();
+			}
 		}
 
 		void UpdateMaxLength()
 		{
 			if (_queryTextBox == null)
+			{
 				return;
+			}
 
 			_queryTextBox.MaxLength = Element.MaxLength;
 
 			var currentControlText = Control.Text;
 
 			if (currentControlText.Length > Element.MaxLength)
+			{
 				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+			}
 		}
 
 		[PortHandler("Partially ported")]
 		void UpdateInputScope()
 		{
 			if (_queryTextBox == null)
+			{
 				return;
+			}
 
 			InputView model = Element;
 
@@ -321,9 +385,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_queryTextBox.ClearValue(TextBox.IsTextPredictionEnabledProperty);
 
 				if (model.IsSet(InputView.IsSpellCheckEnabledProperty))
+				{
 					_queryTextBox.IsSpellCheckEnabled = model.IsSpellCheckEnabled;
+				}
 				else
+				{
 					_queryTextBox.ClearValue(TextBox.IsSpellCheckEnabledProperty);
+				}
 			}
 
 			_queryTextBox.InputScope = model.Keyboard.ToInputScope();
@@ -332,7 +400,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void UpdateBackgroundColor()
 		{
 			if (_queryTextBox == null)
+			{
 				return;
+			}
 
 			Color backgroundColor = Element.BackgroundColor;
 
@@ -349,7 +419,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void UpdateBackground()
 		{
 			if (_queryTextBox == null)
+			{
 				return;
+			}
 
 			if (!Brush.IsNullOrEmpty(Element.Background))
 			{
@@ -359,14 +431,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				Color backgroundColor = Element.BackgroundColor;
 				if (backgroundColor.IsDefault())
+				{
 					_queryTextBox.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
+				}
 			}
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (disposing && Control != null)
 			{

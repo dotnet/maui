@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.XamlC
 						typeName = valueNode.Value as string;
 					else if (targetTypeNode is ElementNode elementNode && elementNode.XmlType.Name == "TypeExtension")
 						typeName = (elementNode.Properties[new XmlName("", "TypeName")] as ValueNode).Value as string;
-					
+
 				}
 				propertyName = parts[0];
 			}

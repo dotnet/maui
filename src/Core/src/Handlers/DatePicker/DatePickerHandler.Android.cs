@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Handlers
 			var date = VirtualView?.Date;
 
 			if (date != null)
+			{
 				_dialog = CreateDatePickerDialog(date.Value.Year, date.Value.Month, date.Value.Day);
+			}
 
 			return mauiDatePicker;
 		}
@@ -34,7 +36,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
 			if (platformView.IsAttachedToWindow)
+			{
 				OnViewAttachedToWindow();
+			}
 		}
 
 		void OnViewDetachedFromWindow(object? sender = null, View.ViewDetachedFromWindowEventArgs? e = null)
@@ -95,13 +99,17 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
+			{
 				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
+			}
 		}
 
 		public static partial void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
+			{
 				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
+			}
 		}
 
 		public static partial void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
@@ -119,16 +127,22 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
+			{
 				handler.PlatformView?.UpdateTextColor(datePicker);
+			}
 		}
 
 		void ShowPickerDialog()
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			if (_dialog != null && _dialog.IsShowing)
+			{
 				return;
+			}
 
 			var date = VirtualView.Date;
 			ShowPickerDialog(date.Year, date.Month - 1, date.Day);
@@ -137,7 +151,9 @@ namespace Microsoft.Maui.Handlers
 		void ShowPickerDialog(int year, int month, int day)
 		{
 			if (_dialog == null)
+			{
 				_dialog = CreateDatePickerDialog(year, month, day);
+			}
 			else
 			{
 				EventHandler? setDateLater = null;

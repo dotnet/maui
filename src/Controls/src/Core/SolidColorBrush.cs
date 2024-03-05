@@ -45,7 +45,9 @@ namespace Microsoft.Maui.Controls
 		public override bool Equals(object obj)
 		{
 			if (!(obj is SolidColorBrush dest))
+			{
 				return false;
+			}
 
 			return Color == dest.Color;
 		}

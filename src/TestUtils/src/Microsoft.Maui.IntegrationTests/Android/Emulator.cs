@@ -21,7 +21,9 @@ namespace Microsoft.Maui.IntegrationTests.Android
 		{
 			var installOutput = ToolRunner.Run(SdkManagerTool, $"\"{SystemImageId}\"", out int exitCode, timeoutInSeconds: 120);
 			if (exitCode != 0)
+			{
 				TestContext.WriteLine(installOutput);
+			}
 
 			return exitCode == 0;
 		}
@@ -36,11 +38,15 @@ namespace Microsoft.Maui.IntegrationTests.Android
 		{
 			var createArgs = $"create avd -n {Name} -k \"{SystemImageId}\" -d {DeviceType}";
 			if (force)
+			{
 				createArgs += " -f";
+			}
 
 			var createOutput = ToolRunner.Run(AvdManagerTool, createArgs, out int exitCode, timeoutInSeconds: 15);
 			if (exitCode != 0)
+			{
 				TestContext.WriteLine(createOutput);
+			}
 
 			return exitCode == 0;
 		}
@@ -48,13 +54,19 @@ namespace Microsoft.Maui.IntegrationTests.Android
 		public bool LaunchAndWaitForAvd(int timeToWaitInSeconds, string logFile)
 		{
 			if (Adb.WaitForEmulator(5, Id))
+			{
 				return true;
+			}
 
 			if (!DeleteAvd())
+			{
 				return false;
+			}
 
 			if (!CreateAvd())
+			{
 				return false;
+			}
 
 			var launchArgs = $"-verbose -detect-image-hang -port {Port} -avd {Name}";
 			launchArgs += TestEnvironment.IsRunningOnCI ? " -no-window -no-boot-anim" : string.Empty;

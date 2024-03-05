@@ -60,15 +60,29 @@ namespace Microsoft.Maui.Controls
 		public static void AddWithSpan(this Grid grid, IView view, int row = 0, int column = 0, int rowSpan = 1, int columnSpan = 1)
 		{
 			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
+
 			if (row < 0)
+			{
 				throw new ArgumentOutOfRangeException(nameof(row));
+			}
+
 			if (column < 0)
+			{
 				throw new ArgumentOutOfRangeException(nameof(column));
+			}
+
 			if (rowSpan < 1)
+			{
 				throw new ArgumentOutOfRangeException(nameof(rowSpan));
+			}
+
 			if (columnSpan < 1)
+			{
 				throw new ArgumentOutOfRangeException(nameof(columnSpan));
+			}
 
 			grid.Add(view);
 

@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls
 		public NavigationEventArgs(Page page)
 		{
 			if (page == null)
+			{
 				throw new ArgumentNullException("page");
+			}
 
 			Page = page;
 		}

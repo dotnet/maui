@@ -14,36 +14,60 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			//shortcut for Binding and StaticResource, to avoid too many reflection calls.
 			if (match == "Binding")
+			{
 				markupExtension = new BindingExtension();
+			}
 			else if (match == "TemplateBinding")
+			{
 				markupExtension = new TemplateBindingExtension();
+			}
 			else if (match == "StaticResource")
+			{
 				markupExtension = new StaticResourceExtension();
+			}
 			else if (match == "OnPlatform")
+			{
 				markupExtension = new OnPlatformExtension();
+			}
 			else if (match == "OnIdiom")
+			{
 				markupExtension = new OnIdiomExtension();
+			}
 			else if (match == "AppThemeBinding")
+			{
 				markupExtension = new AppThemeBindingExtension();
+			}
 			else if (match == "DataTemplate")
+			{
 				markupExtension = new DataTemplateExtension();
+			}
 			else
 			{
 				if (typeResolver == null)
+				{
 					return null;
+				}
+
 				Type type;
 
 				//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
 				if (!typeResolver.TryResolve(match + "Extension", out type) && !typeResolver.TryResolve(match, out type))
+				{
 					throw new XamlParseException($"MarkupExtension not found for {match}", serviceProvider);
+				}
+
 				markupExtension = Activator.CreateInstance(type) as IMarkupExtension;
 			}
 
 			if (markupExtension == null)
+			{
 				throw new XamlParseException($"Missing public default constructor for MarkupExtension {match}", serviceProvider);
+			}
 
 			if (remaining == "}")
+			{
 				return markupExtension.ProvideValue(serviceProvider);
+			}
 
 			Property value;
 			do
@@ -65,7 +89,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				var t = markupExtension.GetType();
 				prop = ApplyPropertiesVisitor.GetContentPropertyName(t);
 				if (prop == null)
+				{
 					return;
+				}
+
 				try
 				{
 					setter = t.GetRuntimeProperty(prop).SetMethod;
@@ -94,7 +121,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					value = strValue.ConvertTo(markupExtension.GetType().GetRuntimeProperty(prop).PropertyType,
 						(Func<TypeConverter>)null, serviceProvider, out Exception converterException);
 					if (converterException != null)
+					{
 						throw converterException;
+					}
 				}
 				catch (AmbiguousMatchException e)
 				{

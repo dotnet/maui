@@ -27,9 +27,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override void AddSubview(UIView view)
 		{
 			if (view != _actualView)
+			{
 				_actualView.AddSubview(view);
+			}
 			else
+			{
 				base.AddSubview(view);
+			}
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
@@ -53,7 +57,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				e.PropertyName == Microsoft.Maui.Controls.Frame.CornerRadiusProperty.PropertyName ||
 				e.PropertyName == Microsoft.Maui.Controls.Frame.IsClippedToBoundsProperty.PropertyName ||
 				e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
+			{
 				SetupLayer();
+			}
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -62,24 +68,32 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility			// Make sure the control adheres to changes in UI theme
 			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			{
 				SetupLayer();
+			}
 		}
 
 		public virtual void SetupLayer()
 		{
 			if (_actualView == null)
+			{
 				return;
+			}
 
 			float cornerRadius = Element.CornerRadius;
 
 			if (cornerRadius == -1f)
+			{
 				cornerRadius = 5f; // default corner radius
+			}
 
 			_actualView.Layer.CornerRadius = cornerRadius;
 			_actualView.Layer.MasksToBounds = cornerRadius > 0;
 
 			if (Element.BackgroundColor == null)
+			{
 				_actualView.Layer.BackgroundColor = ColorExtensions.BackgroundColor.CGColor;
+			}
 			else
 			{
 				// BackgroundColor gets set on the base class too which messes with
@@ -103,7 +117,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (Element.BorderColor == null)
+			{
 				_actualView.Layer.BorderColor = UIColor.Clear.CGColor;
+			}
 			else
 			{
 				_actualView.Layer.BorderColor = Element.BorderColor.ToCGColor();
@@ -145,7 +161,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override void Draw(CGRect rect)
 		{
 			if (_actualView != null)
+			{
 				_actualView.Frame = Bounds;
+			}
 
 			base.Draw(rect);
 
@@ -155,7 +173,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
@@ -166,10 +186,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (_actualView != null)
 				{
 					for (var i = 0; i < _actualView.GestureRecognizers?.Length; i++)
+					{
 						_actualView.GestureRecognizers.Remove(_actualView.GestureRecognizers[i]);
+					}
 
 					for (var j = 0; j < _actualView.Subviews.Length; j++)
+					{
 						_actualView.Subviews.Remove(_actualView.Subviews[j]);
+					}
 
 					_actualView.RemoveFromSuperview();
 					_actualView.Dispose();
@@ -195,7 +219,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				foreach (var view in Subviews)
 				{
 					if (view.HitTest(ConvertPointToView(point, view), uievent) != null)
+					{
 						return true;
+					}
 				}
 
 				return false;

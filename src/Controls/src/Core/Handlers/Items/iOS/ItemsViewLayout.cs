@@ -188,7 +188,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			// This is currently causing an infinite layout loop on iOS 15 https://github.com/dotnet/maui/issues/6566
 			if (preferredAttributes.RepresentedElementKind == "UICollectionElementKindSectionHeader" && OperatingSystem.IsIOSVersionAtLeast(15))
+			{
 				return base.ShouldInvalidateLayout(preferredAttributes, originalAttributes);
+			}
 
 			if (ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
 			{
@@ -562,9 +564,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var lastIndexPath = NSIndexPath.FromItemSection(itemCount - 1, section);
 
 					if (itemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Bottom, true);
+After:
+					{
+						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Bottom, true);
+					}
+*/
+					{
+						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Bottom, true);
+					}
 					else
+					{
+					{
 						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Right, true);
+					}
 
 					return;
 				}
@@ -608,7 +624,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		CGSize TryFindEstimatedSize(CGSize existingMeasurement)
 		{
 			if (CollectionView == null || GetPrototypeForIndexPath == null)
+			{
 				return existingMeasurement;
+			}
 
 			//Since this issue only seems to be reproducible on Horizontal scrolling, we only check for that
 			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
@@ -625,10 +643,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var group = 0;
 			var collectionViewWidth = CollectionView.Bounds.Width;
 			var numberOfItemsInGroup = CollectionView.NumberOfItemsInSection(group);
-			
+
 			// Calculate the number of cells that can fit in the viewport
 			var numberOfCellsToCheck = Math.Min((int)(collectionViewWidth / existingMeasurement.Width) + 1, numberOfItemsInGroup);
-			
+
 			// Iterate through the cells and find the one with a wider width
 			for (int i = 1; i < numberOfCellsToCheck; i++)
 			{
@@ -637,13 +655,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					cellAtIndex.ConstrainTo(ConstrainedDimension);
 					var measureCellAtIndex = cellAtIndex.Measure();
-					
+
 					// Check if the cell has a wider width
 					if (measureCellAtIndex.Width > existingMeasurement.Width)
 					{
 						existingMeasurement = measureCellAtIndex;
 					}
-					
+
 					// TODO: Cache this cell size
 				}
 			}

@@ -18,28 +18,46 @@ namespace Microsoft.Maui.Graphics
 		public SizeF(float size = 0)
 		{
 			if (float.IsNaN(size))
+			{
 				throw new ArgumentException("NaN is not a valid value for size");
+			}
+
 			_width = size;
+			_height = size;
 			_height = size;
 		}
 
 		public SizeF(float width, float height)
 		{
 			if (float.IsNaN(width))
+			{
 				throw new ArgumentException("NaN is not a valid value for width");
+			}
+
 			if (float.IsNaN(height))
+			{
 				throw new ArgumentException("NaN is not a valid value for height");
+			}
+
 			_width = width;
+			_height = height;
 			_height = height;
 		}
 
 		public SizeF(Vector2 vector)
 		{
 			if (float.IsNaN(vector.X))
+			{
 				throw new ArgumentException("NaN is not a valid value for X");
+			}
+
 			if (float.IsNaN(vector.Y))
+			{
 				throw new ArgumentException("NaN is not a valid value for Y");
+			}
+
 			_width = vector.X;
+			_height = vector.Y;
 			_height = vector.Y;
 		}
 
@@ -52,7 +70,11 @@ namespace Microsoft.Maui.Graphics
 			set
 			{
 				if (float.IsNaN(value))
+				{
+				{
 					throw new ArgumentException("NaN is not a valid value for Width");
+				}
+
 				_width = value;
 			}
 		}
@@ -64,7 +86,11 @@ namespace Microsoft.Maui.Graphics
 			set
 			{
 				if (float.IsNaN(value))
+				{
+				{
 					throw new ArgumentException("NaN is not a valid value for Height");
+				}
+
 				_height = value;
 			}
 		}
@@ -127,7 +153,10 @@ namespace Microsoft.Maui.Graphics
 		public override bool Equals(object obj)
 		{
 			if (obj is null)
+			{
 				return false;
+			}
+
 			return obj is SizeF && Equals((SizeF)obj);
 		}
 

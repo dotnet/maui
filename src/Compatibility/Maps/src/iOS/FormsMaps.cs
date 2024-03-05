@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Controls
 		public static void Init()
 		{
 			if (s_isInitialized)
+			{
 				return;
+			}
 
 			s_isInitialized = true;
 		}

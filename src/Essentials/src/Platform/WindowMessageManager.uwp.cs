@@ -34,7 +34,9 @@ namespace Microsoft.Maui.ApplicationModel
 			foreach (var weakManager in _managers.Values.ToArray())
 			{
 				if (weakManager.TryGetTarget(out var manager))
+				{
 					yield return manager;
+				}
 			}
 		}
 
@@ -43,7 +45,9 @@ namespace Microsoft.Maui.ApplicationModel
 			add
 			{
 				if (WindowMessageInternal is null)
+				{
 					Attach();
+				}
 
 				WindowMessageInternal += value;
 			}
@@ -52,7 +56,9 @@ namespace Microsoft.Maui.ApplicationModel
 				WindowMessageInternal -= value;
 
 				if (WindowMessageInternal is null)
+				{
 					Detach();
+				}
 			}
 		}
 
@@ -91,7 +97,9 @@ namespace Microsoft.Maui.ApplicationModel
 					evt.Invoke(manager, args);
 
 					if (args.Handled)
+					{
 						return args.Result;
+					}
 				}
 
 				return PlatformMethods.CallWindowProc(manager._oldWndProc, hWnd, uMsg, wParam, lParam);
@@ -108,7 +116,9 @@ namespace Microsoft.Maui.ApplicationModel
 			if (_managers.TryGetValue(handle, out var weakManager) &&
 				weakManager.TryGetTarget(out var manager) &&
 				!manager._isDisposed)
+			{
 				return manager;
+			}
 
 			var newManager = new WindowMessageManager(window);
 
@@ -126,7 +136,9 @@ namespace Microsoft.Maui.ApplicationModel
 					// dispose managed state (managed objects)
 
 					if (_managers.ContainsKey(_windowHandle))
+					{
 						_managers.Remove(_windowHandle);
+					}
 				}
 
 				// free unmanaged resources (unmanaged objects) and override finalizer

@@ -37,13 +37,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, args);
 
 			if (args.PropertyName == Line.X1Property.PropertyName)
+			{
 				UpdateX1();
+			}
 			else if (args.PropertyName == Line.Y1Property.PropertyName)
+			{
 				UpdateY1();
+			}
 			else if (args.PropertyName == Line.X2Property.PropertyName)
+			{
 				UpdateX2();
+			}
 			else if (args.PropertyName == Line.Y2Property.PropertyName)
+			{
 				UpdateY2();
+			}
 		}
 
 		void UpdateX1()

@@ -133,7 +133,9 @@ namespace Microsoft.Maui.Controls
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is not SwipeView swipeView)
+			{
 				return;
+			}
 
 			if (oldValue is SwipeItems oldItems)
 			{
@@ -149,31 +151,53 @@ namespace Microsoft.Maui.Controls
 				swipeView.AddLogicalChild(newItems);
 			}
 
+			if (newValue is SwipeItems newItems)
+			{
+				newItems.CollectionChanged += SwipeItemsCollectionChanged;
+				newItems.PropertyChanged += SwipeItemsPropertyChanged;
+				swipeView.AddLogicalChild(newItems);
+			}
+
 			void SwipeItemsPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (sender is SwipeItems swipeItems)
+				{
+				{
 					SendChange(swipeItems);
+				}
 			}
 
 			void SwipeItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 			{
 				if (sender is SwipeItems swipeItems)
+				{
+				{
 					SendChange(swipeItems);
+				}
 			}
 
 			void SendChange(SwipeItems swipeItems)
 			{
 				if (swipeItems == swipeView.LeftItems)
+				{
 					swipeView?.Handler?.UpdateValue(nameof(LeftItems));
+				}
 
 				if (swipeItems == swipeView.RightItems)
+				{
+				{
 					swipeView?.Handler?.UpdateValue(nameof(RightItems));
+				}
 
 				if (swipeItems == swipeView.TopItems)
+				{
 					swipeView?.Handler?.UpdateValue(nameof(TopItems));
+				}
 
 				if (swipeItems == swipeView.BottomItems)
+				{
 					swipeView?.Handler?.UpdateValue(nameof(BottomItems));
+				}
 			}
 		}
 
@@ -278,9 +302,14 @@ namespace Microsoft.Maui.Controls
 		void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == IsEnabledProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IsEnabled));
+			}
 			else if (e.PropertyName == MarginProperty.PropertyName)
+			{
+			{
 				UpdateMargin();
+			}
 		}
 
 		private protected override void OnParentChangedCore()
@@ -338,10 +367,15 @@ namespace Microsoft.Maui.Controls
 		void UpdateMargin()
 		{
 			if (this is not ISwipeView swipeView)
+			{
 				return;
+			}
 
 			if (swipeView.IsOpen)
+			{
+			{
 				swipeView.RequestClose(new SwipeViewCloseRequest(false));
+			}
 		}
 
 		void OnParentScrolled(object? sender, ScrolledEventArgs e)
@@ -350,7 +384,9 @@ namespace Microsoft.Maui.Controls
 			var verticalDelta = e.ScrollY - _previousScrollY;
 
 			if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
+			{
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
+			}
 
 			_previousScrollX = e.ScrollX;
 			_previousScrollY = e.ScrollY;
@@ -359,7 +395,9 @@ namespace Microsoft.Maui.Controls
 		void OnParentScrolled(object? sender, ItemsViewScrolledEventArgs e)
 		{
 			if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
+			{
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
+			}
 		}
 
 		void ISwipeView.SwipeStarted(SwipeViewSwipeStarted swipeStarted)

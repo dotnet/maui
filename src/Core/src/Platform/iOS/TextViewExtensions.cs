@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Platform
 			string text = editor.Text;
 
 			if (textView.Text != text)
+			{
 				textView.Text = text;
+			}
 		}
 
 		public static void UpdateTextColor(this UITextView textView, IEditor editor)
@@ -19,22 +21,30 @@ namespace Microsoft.Maui.Platform
 			var textColor = editor.TextColor;
 
 			if (textColor == null)
+			{
 				textView.TextColor = ColorExtensions.LabelColor;
+			}
 			else
+			{
 				textView.TextColor = textColor.ToPlatform();
+			}
 		}
 
 		public static void UpdateCharacterSpacing(this UITextView textView, ITextStyle textStyle)
 		{
 			var textAttr = textView.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
 			if (textAttr != null)
+			{
 				textView.AttributedText = textAttr;
+			}
 
 			if (textView is MauiTextView mauiTextView)
 			{
 				var phAttr = mauiTextView.AttributedPlaceholderText?.WithCharacterSpacing(textStyle.CharacterSpacing);
 				if (phAttr != null)
+				{
 					mauiTextView.AttributedPlaceholderText = phAttr;
+				}
 			}
 		}
 
@@ -42,23 +52,33 @@ namespace Microsoft.Maui.Platform
 		{
 			var newText = textView.AttributedText.TrimToMaxLength(editor.MaxLength);
 			if (newText != null && textView.AttributedText != newText)
+			{
 				textView.AttributedText = newText;
+			}
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this UITextView textView, IEditor editor)
 		{
 			if (editor.IsTextPredictionEnabled)
+			{
 				textView.AutocorrectionType = UITextAutocorrectionType.Yes;
+			}
 			else
+			{
 				textView.AutocorrectionType = UITextAutocorrectionType.No;
+			}
 		}
 
 		public static void UpdateIsSpellCheckEnabled(this UITextView textView, IEditor editor)
 		{
 			if (editor.IsSpellCheckEnabled)
+			{
 				textView.SpellCheckingType = UITextSpellCheckingType.Yes;
+			}
 			else
+			{
 				textView.SpellCheckingType = UITextSpellCheckingType.No;
+			}
 		}
 
 		public static void UpdateFont(this UITextView textView, ITextStyle textStyle, IFontManager fontManager)
@@ -97,18 +117,28 @@ namespace Microsoft.Maui.Platform
 		{
 			var selectedTextRange = textView.SelectedTextRange;
 			if (selectedTextRange == null)
+			{
 				return;
+			}
+
 			if (textView.GetOffsetFromPosition(textView.BeginningOfDocument, selectedTextRange.Start) != editor.CursorPosition)
+			{
 				UpdateCursorSelection(textView, editor);
+			}
 		}
 
 		public static void UpdateSelectionLength(this UITextView textView, IEditor editor)
 		{
 			var selectedTextRange = textView.SelectedTextRange;
 			if (selectedTextRange == null)
+			{
 				return;
+			}
+
 			if (textView.GetOffsetFromPosition(selectedTextRange.Start, selectedTextRange.End) != editor.SelectionLength)
+			{
 				UpdateCursorSelection(textView, editor);
+			}
 		}
 
 		public static void UpdateHorizontalTextAlignment(this UITextView textView, IEditor editor)
@@ -146,7 +176,9 @@ namespace Microsoft.Maui.Platform
 			startOffset = Math.Max(0, (int)textView.GetOffsetFromPosition(textView.BeginningOfDocument, start));
 
 			if (startOffset != cursorPosition)
+			{
 				editor.CursorPosition = startOffset;
+			}
 
 			return start;
 		}
@@ -161,7 +193,9 @@ namespace Microsoft.Maui.Platform
 
 			int newSelectionLength = Math.Max(0, endOffset - startOffset);
 			if (newSelectionLength != selectionLength)
+			{
 				editor.SelectionLength = newSelectionLength;
+			}
 
 			return end;
 		}

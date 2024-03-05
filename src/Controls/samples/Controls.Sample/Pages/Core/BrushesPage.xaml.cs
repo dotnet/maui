@@ -25,10 +25,14 @@ namespace Maui.Controls.Sample.Pages
 			var color = GetRandomColor();
 
 			if (SolidBrushBorder.Background is SolidColorBrush solidColorBrush)
+			{
 				solidColorBrush.Color = color;
+			}
 
 			if (SolidBrushPolygon.Fill is SolidColorBrush solidBrushPolygon)
+			{
 				solidBrushPolygon.Color = color;
+			}
 		}
 
 		void OnRemovePolygonSolidColorClicked(object sender, EventArgs e)
@@ -48,7 +52,9 @@ namespace Maui.Controls.Sample.Pages
 		void UpdateGradientStopColor(GradientBrush? gradientBrush, int index, Color color)
 		{
 			if (gradientBrush is null)
+			{
 				return;
+			}
 
 			GradientStop randomStop = gradientBrush.GradientStops[index];
 			randomStop.Color = color;

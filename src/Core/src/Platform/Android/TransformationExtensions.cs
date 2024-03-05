@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Platform
 			var scale = view.Scale;
 
 			if (double.IsNaN(scale))
+			{
 				return;
+			}
 
 			platformView.ScaleX = (float)(scale * view.ScaleX);
 		}
@@ -35,7 +37,9 @@ namespace Microsoft.Maui.Platform
 			var scale = view.Scale;
 
 			if (double.IsNaN(scale))
+			{
 				return;
+			}
 
 			platformView.ScaleY = (float)(scale * view.ScaleY);
 		}

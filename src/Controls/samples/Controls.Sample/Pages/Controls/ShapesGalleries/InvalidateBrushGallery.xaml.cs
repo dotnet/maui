@@ -41,7 +41,9 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 		void UpdateBrush()
 		{
 			if (++_colorIndex >= _colors.Length)
+			{
 				_colorIndex = 0;
+			}
 
 			_brush.Color = _colors[_colorIndex];
 		}

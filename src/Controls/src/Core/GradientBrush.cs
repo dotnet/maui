@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 
 			foreach (var gradientStop in GradientStops)
+			{
 				SetInheritedBindingContext(gradientStop, BindingContext);
+			}
 		}
 
 		void UpdateGradientStops(GradientStopCollection oldCollection, GradientStopCollection newCollection)
@@ -56,7 +58,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (newCollection == null)
+			{
 				return;
+			}
 
 			newCollection.CollectionChanged += OnGradientStopCollectionChanged;
 
@@ -74,7 +78,9 @@ namespace Microsoft.Maui.Controls
 				foreach (var oldItem in e.OldItems)
 				{
 					if (!(oldItem is GradientStop oldStop))
+					{
 						continue;
+					}
 
 					oldStop.Parent = null;
 					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
@@ -86,7 +92,9 @@ namespace Microsoft.Maui.Controls
 				foreach (var newItem in e.NewItems)
 				{
 					if (!(newItem is GradientStop newStop))
+					{
 						continue;
+					}
 
 					newStop.Parent = this;
 					newStop.PropertyChanged += OnGradientStopPropertyChanged;

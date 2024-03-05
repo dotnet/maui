@@ -98,7 +98,13 @@ namespace Microsoft.Maui.Devices
 							return BatteryState.Discharging;
 						default:
 							if (ChargeLevel >= 1.0)
+							{
+							{
 								return BatteryState.Full;
+							}
+
+							}
+
 							return BatteryState.Unknown;
 					}
 				}

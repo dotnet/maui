@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (view == null)
+			{
 				return null;
+			}
 
 			return new WrapperControl(view);
 		}
@@ -45,7 +47,9 @@ namespace Microsoft.Maui.Controls.Platform
 				_view?.Cleanup();
 
 				if (_view != null)
+				{
 					_view.MeasureInvalidated -= OnMeasureInvalidated;
+				}
 			}
 
 			public WrapperControl(View view)

@@ -24,7 +24,10 @@ namespace Microsoft.Maui.Controls
 		public void AttachTo(BindableObject bindable)
 		{
 			if (bindable == null)
+			{
 				throw new ArgumentNullException("bindable");
+			}
+
 			OnAttachedTo(bindable);
 		}
 
@@ -61,13 +64,18 @@ namespace Microsoft.Maui.Controls
 				_associatedObjects.Add(bindable);
 			}
 			foreach (T item in this)
+			{
 				item.AttachTo(bindable);
+			}
 		}
 
 		protected virtual void OnDetachingFrom(BindableObject bindable)
 		{
 			foreach (T item in this)
+			{
 				item.DetachFrom(bindable);
+			}
+
 			lock (_associatedObjects)
 			{
 				_associatedObjects.Remove(bindable);

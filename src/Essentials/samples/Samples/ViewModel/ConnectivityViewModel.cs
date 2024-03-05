@@ -17,7 +17,10 @@ namespace Samples.ViewModel
 			{
 				var profiles = string.Empty;
 				foreach (var p in Connectivity.ConnectionProfiles)
+				{
 					profiles += "\n" + p.ToString();
+				}
+
 				return profiles;
 			}
 		}

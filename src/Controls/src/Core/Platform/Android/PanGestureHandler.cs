@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var context = GetView()?.Handler?.MauiContext?.Context;
 					if (context == null)
+					{
 						return 0;
+					}
 
 					return context.FromPixels(input);
 				};
@@ -34,7 +36,9 @@ namespace Microsoft.Maui.Controls.Platform
 			View view = GetView();
 
 			if (view == null)
+			{
 				return false;
+			}
 
 			var result = false;
 			foreach (PanGestureRecognizer panGesture in
@@ -52,7 +56,9 @@ namespace Microsoft.Maui.Controls.Platform
 			View view = GetView();
 
 			if (view == null)
+			{
 				return false;
+			}
 
 			var result = false;
 			foreach (PanGestureRecognizer panGesture in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>())
@@ -69,7 +75,9 @@ namespace Microsoft.Maui.Controls.Platform
 			View view = GetView();
 
 			if (view == null)
+			{
 				return false;
+			}
 
 			var result = false;
 			foreach (PanGestureRecognizer panGesture in

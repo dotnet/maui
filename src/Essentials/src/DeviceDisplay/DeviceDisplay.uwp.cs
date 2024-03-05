@@ -58,13 +58,17 @@ namespace Microsoft.Maui.Devices
 		protected override DisplayInfo GetMainDisplayInfo()
 		{
 			if (WindowStateManager.Default.GetActiveAppWindow(false) is not AppWindow appWindow)
+			{
 				return default;
+			}
 
 			var windowHandle = UI.Win32Interop.GetWindowFromWindowId(appWindow.Id);
 			var mi = GetDisplay(windowHandle);
 
 			if (mi == null)
+			{
 				return default;
+			}
 
 			var vDevMode = new DEVMODE();
 			EnumDisplaySettings(mi.Value.DeviceNameToLPTStr(), -1, ref vDevMode);
@@ -74,9 +78,13 @@ namespace Microsoft.Maui.Devices
 
 			var dpi = (double)GetDpiForWindow(windowHandle);
 			if (dpi != 0)
+			{
 				dpi /= DeviceDisplay.BaseLogicalDpi;
+			}
 			else
+			{
 				dpi = 1.0;
+			}
 
 			var displayOrientation = GetDisplayOrientation(vDevMode);
 			var rotation = CalculateRotation(displayOrientation);
@@ -124,7 +132,9 @@ namespace Microsoft.Maui.Devices
 		{
 			if (e.MessageId == PlatformMethods.MessageIds.WM_DISPLAYCHANGE ||
 				e.MessageId == PlatformMethods.MessageIds.WM_DPICHANGED)
+			{
 				OnMainDisplayInfoChanged();
+			}
 		}
 
 		static DisplayRotation CalculateRotation(DisplayOrientations orientation) =>
@@ -199,7 +209,9 @@ namespace Microsoft.Maui.Devices
 
 				var index = 0;
 				foreach (char c in DeviceName.ToCharArray())
+				{
 					lptArray[index++] = Convert.ToByte(c);
+				}
 
 				lptArray[index] = Convert.ToByte('\0');
 

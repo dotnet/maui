@@ -108,28 +108,40 @@ namespace UITest.Appium
 
 			var testName = config.GetProperty<string>("TestName");
 			if (!string.IsNullOrWhiteSpace(testName))
+			{
 				appiumOptions.AddAdditionalAppiumOption("testName", testName);
+			}
 
 			if (config.GetProperty<bool>("FullReset"))
+			{
 				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "true");
+			}
 
 			if (config.GetProperty<bool>("NoReset"))
+			{
 				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");
+			}
 
 			var appPath = config.GetProperty<string>("AppPath");
 			if (!string.IsNullOrEmpty(appPath))
+			{
 				appiumOptions.App = appPath;
+			}
 
 			appiumOptions.PlatformName = config.GetProperty<string>("PlatformName");
 			appiumOptions.AutomationName = config.GetProperty<string>("AutomationName");
 
 			var deviceName = config.GetProperty<string>("DeviceName");
 			if (!string.IsNullOrEmpty(deviceName))
+			{
 				appiumOptions.DeviceName = deviceName;
+			}
 
 			var platformVersion = config.GetProperty<string>("PlatformVersion");
 			if (!string.IsNullOrEmpty(platformVersion))
+			{
 				appiumOptions.PlatformVersion = platformVersion;
+			}
 
 			appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NewCommandTimeout, 3000);
 		}

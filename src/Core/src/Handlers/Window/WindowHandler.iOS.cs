@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.RootViewController = nativeContent;
 
 			if (window.VisualDiagnosticsOverlay != null)
+			{
 				window.VisualDiagnosticsOverlay.Initialize();
+			}
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
@@ -54,7 +56,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapMenuBar(IWindowHandler handler, IWindow view)
 		{
 			if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13)))
+			{
 				return;
+			}
 
 			if (MauiUIApplicationDelegate.Current != null &&
 				view is IMenuBarElement mb)
@@ -82,7 +86,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
 		{
 			if (args is DisplayDensityRequest request)
+			{
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
+			}
 		}
 
 		void UpdateVirtualViewFrame(UIWindow window)

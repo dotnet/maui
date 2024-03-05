@@ -14,9 +14,15 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		internal XamlServiceProvider(INode node, HydrationContext context)
 		{
 			if (context != null && node != null && node.Parent != null && context.Values.TryGetValue(node.Parent, out object targetObject))
+			{
 				IProvideValueTarget = new XamlValueTargetProvider(targetObject, node, context, null);
+			}
+
 			if (context != null)
+			{
 				IRootObjectProvider = new XamlRootObjectProvider(context.RootElement);
+			}
+
 			if (context != null && node != null)
 			{
 				IXamlTypeResolver = new XamlTypeResolver(node.NamespaceResolver, XamlParser.GetElementType, context.RootAssembly);
@@ -24,7 +30,9 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			}
 
 			if (node is IXmlLineInfo xmlLineInfo)
+			{
 				IXmlLineInfoProvider = new XmlLineInfoProvider(xmlLineInfo);
+			}
 
 			IValueConverterProvider = new ValueConverterProvider();
 		}
@@ -87,7 +95,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			get
 			{
 				if (Node == null || Context == null)
+				{
 					yield break;
+				}
+
 				var n = Node;
 				var context = Context;
 				while (n.Parent != null && context != null)
@@ -95,7 +106,9 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 					if (n.Parent is IElementNode)
 					{
 						if (context.Values.TryGetValue(n.Parent, out var obj))
+						{
 							yield return obj;
+						}
 						else
 						{
 							context = context.ParentContext;
@@ -123,9 +136,14 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope[] scopes, bool notused)
 		{
 			if (objectAndParents == null)
+			{
 				throw new ArgumentNullException(nameof(objectAndParents));
+			}
+
 			if (objectAndParents.Length == 0)
+			{
 				throw new ArgumentException();
+			}
 
 			this.objectAndParents = objectAndParents;
 			this.targetProperty = targetProperty;
@@ -140,18 +158,32 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		{
 			object value;
 			if (scopes != null)
+			{
 				foreach (var scope in scopes)
+				{
 					if ((value = scope?.FindByName(name)) != null)
+					{
 						return value;
+					}
+				}
+			}
 
 			for (var i = 0; i < objectAndParents.Length; i++)
 			{
 				if (!(objectAndParents[i] is BindableObject bo))
+				{
 					continue;
+				}
+
 				if (!(NameScope.GetNameScope(bo) is INameScope ns))
+				{
 					continue;
+				}
+
 				if ((value = ns.FindByName(name)) != null)
+				{
 					return value;
+				}
 			}
 			return null;
 		}
@@ -180,7 +212,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		{
 			var type = Resolve(qualifiedTypeName, serviceProvider, out XamlParseException e);
 			if (e != null)
+			{
 				throw e;
+			}
+
 			return type;
 		}
 
@@ -203,7 +238,9 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			if (serviceProvider != null)
 			{
 				if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider)
+				{
 					xmlLineInfo = lineInfoProvider.XmlLineInfo;
+				}
 			}
 
 			var xmlType = TypeArgumentsParser.ParseSingle(qualifiedTypeName, namespaceResolver, xmlLineInfo);
@@ -239,7 +276,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			{
 				object value;
 				if ((value = (n as IElementNode)?.NameScopeRef.NameScope?.FindByName(name)) != null)
+				{
 					return value;
+				}
+
 				n = n.Parent;
 			}
 			return null;
@@ -255,7 +295,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public string LookupNamespace(string prefix)
 		{
 			if (namespaces.TryGetValue(prefix, out var result))
+			{
 				return result;
+			}
+
 			return null;
 		}
 

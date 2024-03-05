@@ -19,7 +19,9 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = (View)viewHandler.PlatformView;
 
 			if (platformView.LayoutDirection == LayoutDirection.Rtl)
+			{
 				return FlowDirection.RightToLeft;
+			}
 
 			return FlowDirection.LeftToRight;
 		}
@@ -35,7 +37,9 @@ namespace Microsoft.Maui.DeviceTests
 		protected string GetSemanticHint(IViewHandler viewHandler)
 		{
 			if (GetSemanticPlatformElement(viewHandler) is EditText et)
+			{
 				return et.Hint;
+			}
 
 			return null;
 		}
@@ -46,8 +50,10 @@ namespace Microsoft.Maui.DeviceTests
 			// With lower Apis you use ViewCompat.SetAccessibilityHeading
 			// but there exists no ViewCompat.GetAccessibilityHeading
 			if (OperatingSystem.IsAndroidVersionAtLeast(28))
+			{
 				return ((View)viewHandler.PlatformView).AccessibilityHeading
 					? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
+			}
 
 			return viewHandler.VirtualView.Semantics.HeadingLevel;
 		}
@@ -131,11 +137,17 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = (View)viewHandler.PlatformView;
 
 			if (platformView.Visibility == ViewStates.Visible)
+			{
 				return Visibility.Visible;
+			}
 			else if (platformView.Visibility == ViewStates.Gone)
+			{
 				return Visibility.Collapsed;
+			}
 			else
+			{
 				return Visibility.Hidden;
+			}
 		}
 
 		protected Maui.Graphics.Rect GetPlatformViewBounds(IViewHandler viewHandler) =>

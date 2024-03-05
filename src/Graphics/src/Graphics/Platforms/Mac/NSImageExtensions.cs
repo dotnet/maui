@@ -88,7 +88,9 @@ namespace Microsoft.Maui.Graphics.Platform
 				context.Dispose();
 
 				if (disposeOriginal)
+				{
 					target?.Dispose();
+				}
 			}
 		}
 	}

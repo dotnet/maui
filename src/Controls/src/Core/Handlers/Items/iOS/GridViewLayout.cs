@@ -272,7 +272,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			if (CollectionView.NumberOfSections() == 0)
+			{
 				return false;
+			}
 
 			var itemCount = CollectionView.NumberOfItemsInSection(section);
 

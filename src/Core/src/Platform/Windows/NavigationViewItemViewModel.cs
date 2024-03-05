@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Platform
 			[CallerMemberName] string propertyName = "")
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))
+			{
 				return false;
+			}
 
 			backingStore = value;
 			onChanged.Invoke(new PropertyChangedEventArgs(propertyName));

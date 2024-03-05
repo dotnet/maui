@@ -28,10 +28,14 @@ namespace Microsoft.Maui.Controls
 
 			// sync the number of groups
 			for (var i = flyoutItems.Count; i < _lastGeneratedFlyoutItems.Count; i++)
+			{
 				flyoutItems.Add(new ReadOnlyObservableCollectionWithSource<Element>());
+			}
 
 			for (var i = _lastGeneratedFlyoutItems.Count; i < flyoutItems.Count; i++)
+			{
 				flyoutItems.RemoveAt(i);
+			}
 
 			for (var i = 0; i < _lastGeneratedFlyoutItems.Count; i++)
 			{
@@ -42,7 +46,9 @@ namespace Microsoft.Maui.Controls
 				{
 					var item = dest[j];
 					if (!source.Contains(item))
+					{
 						dest.RemoveAt(j);
+					}
 				}
 
 				for (var j = 0; j < source.Count; j++)
@@ -53,19 +59,27 @@ namespace Microsoft.Maui.Controls
 					if (destIndex == -1)
 					{
 						if (j < dest.Count)
+						{
 							dest.Insert(j, item);
+						}
 						else
+						{
 							dest.Add(item);
+						}
 					}
 					else
 					{
 						if (j < dest.Count)
 						{
 							if (destIndex != j)
+							{
 								dest.Move(destIndex, j);
+							}
 						}
 						else
+						{
 							dest.Add(item);
+						}
 					}
 				}
 			}
@@ -83,7 +97,9 @@ namespace Microsoft.Maui.Controls
 		public List<List<Element>> GenerateFlyoutGrouping()
 		{
 			if (_lastGeneratedFlyoutItems == null)
+			{
 				UpdateFlyoutGroupings();
+			}
 
 			return _lastGeneratedFlyoutItems;
 		}
@@ -105,17 +121,23 @@ namespace Microsoft.Maui.Controls
 			foreach (var shellItem in ShellController.GetItems())
 			{
 				if (!ShowInFlyoutMenu(shellItem))
+				{
 					continue;
+				}
 
 				if (Routing.IsImplicit(shellItem) || shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
 				{
 					if (shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
+					{
 						IncrementGroup();
+					}
 
 					foreach (var shellSection in (shellItem as IShellItemController).GetItems())
 					{
 						if (!ShowInFlyoutMenu(shellSection))
+						{
 							continue;
+						}
 
 						var shellContents = ((IShellSectionController)shellSection).GetItems();
 						if (Routing.IsImplicit(shellSection) || shellSection.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
@@ -123,7 +145,9 @@ namespace Microsoft.Maui.Controls
 							foreach (var shellContent in shellContents)
 							{
 								if (!ShowInFlyoutMenu(shellContent))
+								{
 									continue;
+								}
 
 								currentGroup.Add(shellContent);
 								if (shellContent == shellSection.CurrentItem)
@@ -133,7 +157,9 @@ namespace Microsoft.Maui.Controls
 							}
 
 							if (shellSection.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
+							{
 								IncrementGroup();
+							}
 						}
 						else
 						{
@@ -142,12 +168,16 @@ namespace Microsoft.Maui.Controls
 								if (Routing.IsImplicit(shellSection) && shellContents.Count == 1)
 								{
 									if (!ShowInFlyoutMenu(shellContents[0]))
+									{
 										continue;
+									}
 
 									currentGroup.Add(shellContents[0]);
 								}
 								else
+								{
 									currentGroup.Add(shellSection);
+								}
 							}
 
 							// If we have only a single child we will also show the items menu items
@@ -159,12 +189,16 @@ namespace Microsoft.Maui.Controls
 					}
 
 					if (shellItem.FlyoutDisplayOptions == FlyoutDisplayOptions.AsMultipleItems)
+					{
 						IncrementGroup();
+					}
 				}
 				else
 				{
 					if (!(shellItem is TabBar))
+					{
 						currentGroup.Add(shellItem);
+					}
 				}
 			}
 
@@ -199,7 +233,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (!hasChanged)
+				{
 					return false;
+				}
 			}
 
 			_lastGeneratedFlyoutItems = result;
@@ -208,7 +244,9 @@ namespace Microsoft.Maui.Controls
 			bool ShowInFlyoutMenu(BindableObject bo)
 			{
 				if (bo is MenuShellItem msi)
+				{
 					return Shell.GetFlyoutItemIsVisible(msi.MenuItem);
+				}
 
 				return Shell.GetFlyoutItemIsVisible(bo);
 			}
@@ -218,7 +256,9 @@ namespace Microsoft.Maui.Controls
 				foreach (var item in menuItems)
 				{
 					if (ShowInFlyoutMenu(item))
+					{
 						currentGroup.Add(item);
+					}
 				}
 			}
 

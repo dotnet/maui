@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		protected override void AddPageImpl(float width, float height)
 		{
 			if (_closed)
+			{
 				throw new Exception("Unable to add a page because the PDFContext is already closed.");
+			}
 
 			if (_data == null)
 			{
@@ -37,7 +39,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			if (_pageOpen)
+			{
 				_context.EndPage();
+			}
 
 			_context.BeginPage(new CGRect(0, 0, width, height));
 			_context.TranslateCTM(0, height);
@@ -82,7 +86,9 @@ namespace Microsoft.Maui.Graphics.Platform
 				try
 				{
 					if (_pageOpen)
+					{
 						_context.EndPage();
+					}
 
 					_context.Close();
 				}

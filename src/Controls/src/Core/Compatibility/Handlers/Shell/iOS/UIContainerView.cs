@@ -33,13 +33,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_platformView = _view.ToPlatform();
 
 			if (_platformView.Superview != this)
+			{
 				AddSubview(_platformView);
+			}
 		}
 
 		bool IsPlatformViewValid()
 		{
 			if (View == null || _platformView == null || _renderer == null)
+			{
 				return false;
+			}
 
 			return _platformView.Superview == this;
 		}
@@ -53,7 +57,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			get
 			{
 				if (MatchHeight && Height != null)
+				{
 					return Height.Value;
+				}
 
 				return _measuredHeight;
 			}
@@ -114,13 +120,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void LayoutSubviews()
 		{
 			if (!IsPlatformViewValid())
+			{
 				return;
+			}
 
 			var height = Height ?? MeasuredHeight;
 			var width = Width ?? Frame.Width;
 
 			if (double.IsNaN(height))
+			{
 				return;
+			}
 
 			var platformFrame = new Rect(0, 0, width, height);
 
@@ -140,14 +150,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
 				Disconnect();
 
 				if (_platformView.Superview == this)
+				{
 					_platformView.RemoveFromSuperview();
+				}
 
 				_renderer = null;
 				_platformView = null;

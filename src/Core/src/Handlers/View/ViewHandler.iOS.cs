@@ -36,13 +36,17 @@ namespace Microsoft.Maui.Handlers
 				foreach (var interaction in uiView.Interactions)
 				{
 					if (interaction is MauiUIContextMenuInteraction menuInteraction)
+					{
 						currentInteraction = menuInteraction;
+					}
 				}
 
 				if (contextFlyoutContainer.ContextFlyout != null)
 				{
 					if (currentInteraction == null)
+					{
 						uiView.AddInteraction(new MauiUIContextMenuInteraction(handler));
+					}
 				}
 				else if (currentInteraction != null)
 				{

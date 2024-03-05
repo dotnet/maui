@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Controls.Platform
 					Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
 
 					if (modalBkgndColor?.Alpha < 1)
+					{
 						result = UIKit.UIModalPresentationStyle.OverFullScreen;
+					}
 				}
 
 				ModalPresentationStyle = result;
@@ -56,7 +58,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (modal.VirtualView is Page page)
+			{
 				page.PropertyChanged += OnModalPagePropertyChanged;
+			}
 		}
 
 		[Export("presentationControllerDidDismiss:")]
@@ -71,7 +75,9 @@ namespace Microsoft.Maui.Controls.Platform
 				// and then submit that to shell
 				var modalStack = new List<Page>(shell.CurrentItem.CurrentItem.Navigation.ModalStack);
 				if (modalStack.Count > 0)
+				{
 					modalStack.RemoveAt(modalStack.Count - 1);
+				}
 
 				var result = ShellNavigationManager.GetNavigationParameters(
 					shell.CurrentItem,
@@ -82,7 +88,9 @@ namespace Microsoft.Maui.Controls.Platform
 				shell.NavigationManager.GoToAsync(result).FireAndForget();
 			}
 			else
+			{
 				Page.Navigation.PopModalAsync(false).FireAndForget();
+			}
 		}
 
 		public override void DismissViewController(bool animated, Action? completionHandler)
@@ -141,7 +149,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void ViewWillAppear(bool animated)
 		{
 			if (!_isDisposed)
+			{
 				UpdateBackgroundColor();
+			}
 
 			base.ViewWillAppear(animated);
 		}
@@ -149,7 +159,9 @@ namespace Microsoft.Maui.Controls.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
@@ -170,7 +182,9 @@ namespace Microsoft.Maui.Controls.Platform
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			}
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarStyle()
@@ -181,13 +195,17 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.BackgroundColorProperty.PropertyName)
+			{
 				UpdateBackgroundColor();
+			}
 		}
 
 		void UpdateBackgroundColor()
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (ModalPresentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 			{

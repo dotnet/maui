@@ -41,8 +41,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (_container == value)
+				{
 					return;
-
+				}
 
 				_container = value;
 
@@ -56,7 +57,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (_control == value)
+				{
 					return;
+				}
 
 				_control = value;
 				UpdateNativeControl();
@@ -69,7 +72,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (_element == value)
+				{
 					return;
+				}
 
 				if (_element != null)
 				{
@@ -100,12 +105,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
 			if (!disposing)
+			{
 				return;
+			}
 
 			if (_element != null)
 			{
@@ -173,7 +182,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected virtual void UpdateNativeControl()
 		{
 			if (Element == null || Container == null)
+			{
 				return;
+			}
 
 			UpdateVisibility(Element, Container);
 			UpdateOpacity(Element, Container);
@@ -193,7 +204,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void MaybeInvalidate()
 		{
 			if (Element.IsInPlatformLayout)
+			{
 				return;
+			}
 
 			var parent = (FrameworkElement)Container.Parent;
 			parent?.InvalidateMeasure();
@@ -208,7 +221,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnUpdated()
 		{
 			if (Updated != null)
+			{
 				Updated(this, EventArgs.Empty);
+			}
 		}
 
 		static void UpdateInputTransparent(VisualElement view, FrameworkElement frameworkElement)
@@ -224,30 +239,42 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateClip(VisualElement view, FrameworkElement frameworkElement)
 		{
 			if (!ShouldUpdateClip(view, frameworkElement))
+			{
 				return;
+			}
 
 			var geometry = view.Clip;
 
 			HasClip = geometry != null;
 
 			if (CompositionHelper.IsCompositionGeometryTypePresent)
+			{
 				frameworkElement.ClipVisual(geometry);
+			}
 			else
+			{
 				frameworkElement.Clip(geometry);
+			}
 		}
 
 		bool ShouldUpdateClip(VisualElement view, FrameworkElement frameworkElement)
 		{
 			if (view == null || frameworkElement == null)
+			{
 				return false;
+			}
 
 			var formsGeometry = view.Clip;
 
 			if (formsGeometry != null)
+			{
 				return true;
+			}
 
 			if (formsGeometry == null && HasClip)
+			{
 				return true;
+			}
 
 			return false;
 		}

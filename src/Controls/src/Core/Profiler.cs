@@ -57,7 +57,9 @@ namespace Microsoft.Maui.Controls.Internals
 		public static void Start()
 		{
 			if (!IsEnabled)
+			{
 				return;
+			}
 
 			Running = true;
 		}
@@ -66,12 +68,16 @@ namespace Microsoft.Maui.Controls.Internals
 		public static void Stop()
 		{
 			if (!IsEnabled)
+			{
 				return;
+			}
 
 			// unwind stack
 			Running = false;
 			while (Stack.Count > 0)
+			{
 				Stack.Pop();
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FrameBegin']/Docs/*" />
@@ -80,7 +86,9 @@ namespace Microsoft.Maui.Controls.Internals
 			[CallerLineNumber] int line = 0)
 		{
 			if (!IsEnabled || !Running)
+			{
 				return;
+			}
 
 			FrameBeginBody(name, null, line);
 		}
@@ -90,7 +98,9 @@ namespace Microsoft.Maui.Controls.Internals
 			[CallerMemberName] string name = "")
 		{
 			if (!IsEnabled || !Running)
+			{
 				return;
+			}
 
 			FrameEndBody(name);
 		}
@@ -101,7 +111,9 @@ namespace Microsoft.Maui.Controls.Internals
 			[CallerLineNumber] int line = 0)
 		{
 			if (!IsEnabled || !Running)
+			{
 				return;
+			}
 
 			FramePartitionBody(id, line);
 		}
@@ -112,7 +124,9 @@ namespace Microsoft.Maui.Controls.Internals
 			int line)
 		{
 			if (!Stopwatch.IsRunning)
+			{
 				Stopwatch.Start();
+			}
 
 			Stack.Push(new Profile(name, id, line));
 		}
@@ -121,8 +135,11 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			var profile = Stack.Pop();
 			if (profile._name != name)
+			{
 				throw new InvalidOperationException(
 					$"Expected to end frame '{profile._name}', not '{name}'.");
+			}
+
 			profile.Dispose();
 		}
 
@@ -164,9 +181,14 @@ namespace Microsoft.Maui.Controls.Internals
 		public void Dispose()
 		{
 			if (!IsEnabled)
+			{
 				return;
+			}
+
 			if (Running && _start == 0)
+			{
 				return;
+			}
 
 			var ticks = Stopwatch.ElapsedTicks - _start;
 			--Depth;

@@ -118,14 +118,19 @@ namespace Microsoft.Maui.Controls
 								   Func<bool> repeat = null)
 		{
 			if (repeat == null)
+			{
 				self.Animate(name, animation.GetCallback(), rate, length, easing, finished, null);
+			}
 			else
 			{
 				Func<bool> r = () =>
 				{
 					var val = repeat();
 					if (val)
+					{
 						animation.ResetChildren();
+					}
+
 					return val;
 				};
 				self.Animate(name, animation.GetCallback(), rate, length, easing, finished, r);
@@ -154,11 +159,19 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			if (transform == null)
+			{
 				throw new ArgumentNullException(nameof(transform));
+			}
+
 			if (callback == null)
+			{
 				throw new ArgumentNullException(nameof(callback));
+			}
+
 			if (self == null)
+			{
 				throw new ArgumentNullException(nameof(self));
+			}
 
 			animationManager ??= self.GetAnimationManager();
 
@@ -243,7 +256,9 @@ namespace Microsoft.Maui.Controls
 			Action<double> step = f => callback(transform(f));
 			Action<double, bool> final = null;
 			if (finished != null)
+			{
 				final = (f, b) => finished(transform(f), b);
+			}
 
 			var info = new Info { Rate = rate, Length = length, Easing = easing ?? Easing.Linear, AnimationManager = animationManager };
 
@@ -299,7 +314,9 @@ namespace Microsoft.Maui.Controls
 			});
 			s_kinetics[key] = tick;
 			if (!animationManager.Ticker.IsRunning)
+			{
 				animationManager.Ticker.Start();
+			}
 		}
 
 		static void HandleTweenerFinished(object o, EventArgs args)
@@ -358,7 +375,9 @@ namespace Microsoft.Maui.Controls
 		{
 			IDispatcher dispatcher = null;
 			if (self is BindableObject element)
+			{
 				dispatcher = element.Dispatcher;
+			}
 
 			// a null dispatcher is OK as we will find one in Dispatch
 			dispatcher.DispatchIfRequired(action);

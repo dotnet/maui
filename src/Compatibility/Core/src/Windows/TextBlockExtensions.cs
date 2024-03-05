@@ -39,12 +39,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 		{
 			if (element?.FormattedText?.Spans == null
 				|| element.FormattedText.Spans.Count == 0)
+			{
 				return;
+			}
 
 			var labelWidth = control.ActualWidth;
 
 			if (labelWidth <= 0 || control.Height <= 0)
+			{
 				return;
+			}
 
 			for (int i = 0; i < element.FormattedText.Spans.Count; i++)
 			{

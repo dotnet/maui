@@ -124,9 +124,13 @@ namespace Microsoft.Maui.DeviceTests
 			var value = (int)item;
 
 			if (value == 1)
+			{
 				return Template1;
+			}
 			else
+			{
 				return Template2;
+			}
 		}
 	}
 }

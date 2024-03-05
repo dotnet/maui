@@ -79,7 +79,9 @@ namespace Microsoft.Maui.Controls
 				{
 					var rb = itor.Current as RadioButton;
 					if (rb != null && rb != radioButton && string.IsNullOrEmpty(rb.GroupName) && (rb.IsChecked == true))
+					{
 						rb.SetValueFromRenderer(RadioButton.IsCheckedProperty, false);
+					}
 				}
 			}
 
@@ -102,7 +104,10 @@ namespace Microsoft.Maui.Controls
 		{
 			Element parent = element.Parent;
 			while (parent != null && !(parent is Page))
+			{
 				parent = parent.Parent;
+			}
+
 			return parent;
 		}
 	}
