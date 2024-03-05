@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 #endif
 
 #if ANDROID
-            if (view?.InputTransparent == true && (platformView is null || platformView is not IInputTransparentManagingView))
+			if (view?.InputTransparent == true && (platformView is null || platformView is not IInputTransparentManagingView))
 				return true;
 #endif
 
@@ -65,8 +65,8 @@ namespace Microsoft.Maui
 				return true;
 #endif
 
-#if WINDOWS || TIZEN                 
-            if (view is IBorderView border)
+#if WINDOWS || TIZEN
+			if (view is IBorderView border)
 				return border?.Shape != null || border?.Stroke != null;
 #endif
 
