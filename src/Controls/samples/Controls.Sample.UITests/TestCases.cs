@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample
 {
@@ -101,7 +100,6 @@ namespace Maui.Controls.Sample
 				{
 					throw new InvalidCastException("Issue must be of type Page");
 				}
-
 				return page;
 			}
 
