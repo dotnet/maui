@@ -591,6 +591,27 @@ public class PlatformInterop {
             .getBounds();
     }
 
+    /**
+     * Gets font metrics based on the given context and default font size
+     * @param context
+     * @param defaultFontSize
+     * @return FontMetrics object or null if context or display metrics is null
+     */
+    public static Paint.FontMetrics getFontMetrics(Context context, double defaultFontSize) {
+        if (context != null && context.getResources().getDisplayMetrics() != null) {
+            return new Paint() {{
+                setTextSize(
+                    TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_SP,
+                        (float) defaultFontSize,
+                        context.getResources().getDisplayMetrics()
+                ));
+            }}.getFontMetrics();
+        } else {
+            return null;
+        }
+    }
+
     private static class ColorStates
     {
         static final int[] EMPTY = new int[] { };

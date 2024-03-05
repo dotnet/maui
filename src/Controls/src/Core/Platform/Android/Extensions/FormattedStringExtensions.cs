@@ -64,12 +64,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var builder = new StringBuilder();
 
-			var fontMetrics = context?.Resources?.DisplayMetrics != null ? new Paint()
-			{
-				TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, (float)defaultFontSize, context.Resources.DisplayMetrics)
-			}.GetFontMetrics()
-			: null;
-			
+			var fontMetrics = PlatformInterop.GetFontMetrics(context, defaultFontSize);
+
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
