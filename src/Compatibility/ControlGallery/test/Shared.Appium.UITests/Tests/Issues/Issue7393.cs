@@ -19,7 +19,7 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(Success, timeout: TimeSpan.FromSeconds(30));
+			RunningApp.WaitForElement(Success, timeout: TimeSpan.FromSeconds(30));
 		}
 	}
 }

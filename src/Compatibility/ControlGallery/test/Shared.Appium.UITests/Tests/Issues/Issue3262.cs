@@ -15,19 +15,19 @@ namespace UITests.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
-			App.Click("PageWithoutCookies");
-			App.WaitForElement("PageWithoutCookies");
+			RunningApp.Tap("PageWithoutCookies");
+			RunningApp.WaitForElement("PageWithoutCookies");
 		}
 
 		[Test]
 		[Category(UITestCategories.WebView)]
 		public void ChangeDuringNavigating()
 		{
-			App.WaitForElement("Loaded");
+			RunningApp.WaitForElement("Loaded");
 			// add a couple cookies
-			App.Click("ChangeDuringNavigating");
+			RunningApp.Tap("ChangeDuringNavigating");
 			ValidateSuccess();
-			App.Click("ChangeDuringNavigating");
+			RunningApp.Tap("ChangeDuringNavigating");
 			ValidateSuccess();
 		}
 
@@ -35,11 +35,11 @@ namespace UITests.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void AddAdditionalCookieToWebView()
 		{
-			App.WaitForElement("Loaded");
+			RunningApp.WaitForElement("Loaded");
 			// add a couple cookies
-			App.Click("AdditionalCookie");
+			RunningApp.Tap("AdditionalCookie");
 			ValidateSuccess();
-			App.Click("AdditionalCookie");
+			RunningApp.Tap("AdditionalCookie");
 			ValidateSuccess();
 		}
 
@@ -47,8 +47,8 @@ namespace UITests.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void SetToOneCookie()
 		{
-			App.WaitForElement("Loaded");
-			App.Click("OneCookie");
+			RunningApp.WaitForElement("Loaded");
+			RunningApp.Tap("OneCookie");
 			ValidateSuccess();
 		}
 
@@ -56,11 +56,11 @@ namespace UITests.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
-			App.WaitForElement("Loaded");
+			RunningApp.WaitForElement("Loaded");
 			// add a cookie to verify said cookie remains
-			App.Click("AdditionalCookie");
+			RunningApp.Tap("AdditionalCookie");
 			ValidateSuccess();
-			App.Click("NullAllCookies");
+			RunningApp.Tap("NullAllCookies");
 			ValidateSuccess();
 		}
 
@@ -68,11 +68,11 @@ namespace UITests.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void RemoveAllTheCookiesIAdded()
 		{
-			App.WaitForElement("Loaded");
+			RunningApp.WaitForElement("Loaded");
 			// add a cookie so you can remove a cookie
-			App.Click("AdditionalCookie");
+			RunningApp.Tap("AdditionalCookie");
 			ValidateSuccess();
-			App.Click("EmptyAllCookies");
+			RunningApp.Tap("EmptyAllCookies");
 			ValidateSuccess();
 		}
 
@@ -80,11 +80,11 @@ namespace UITests.Tests.Issues
 		{
 			try
 			{
-				App.WaitForElement("Success");
+				RunningApp.WaitForElement("Success");
 			}
 			catch
 			{
-				App.Click("DisplayAllCookies");
+				RunningApp.Tap("DisplayAllCookies");
 				throw;
 			}
 		}

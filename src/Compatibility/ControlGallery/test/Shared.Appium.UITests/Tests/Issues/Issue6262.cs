@@ -17,15 +17,15 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("ClickMe");
-			App.Click("ClickMe");
-			App.WaitForElement("ClickMe");
-			App.WaitForNoElement("Fail");
-			App.Click("RetryTest");
-			App.WaitForElement("ClickMe");
-			App.Click("ClickMe");
-			App.WaitForElement("ClickMe");
-			App.WaitForNoElement("Fail");
+			RunningApp.WaitForElement("ClickMe");
+			RunningApp.Tap("ClickMe");
+			RunningApp.WaitForElement("ClickMe");
+			RunningApp.WaitForNoElement("Fail");
+			RunningApp.Tap("RetryTest");
+			RunningApp.WaitForElement("ClickMe");
+			RunningApp.Tap("ClickMe");
+			RunningApp.WaitForElement("ClickMe");
+			RunningApp.WaitForNoElement("Fail");
 		}
 	}
 }

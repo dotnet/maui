@@ -23,12 +23,12 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForNoElement(Failed);
-			App.WaitForElement(SwipeViewId);
-			App.Click("SwipeViewCheckBoxId");
-			App.Click("SwipeViewContentCheckBoxId");
-			App.Click(SwipeButtonId);
-			App.WaitForNoElement(Success);
+			RunningApp.WaitForNoElement(Failed);
+			RunningApp.WaitForElement(SwipeViewId);
+			RunningApp.Tap("SwipeViewCheckBoxId");
+			RunningApp.Tap("SwipeViewContentCheckBoxId");
+			RunningApp.Tap(SwipeButtonId);
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }

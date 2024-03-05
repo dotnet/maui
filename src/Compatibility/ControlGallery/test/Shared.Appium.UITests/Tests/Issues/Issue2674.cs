@@ -16,8 +16,8 @@ namespace UITests
 		[Category(UITestCategories.Picker)]
 		public void Issue2674Test()
 		{
-			App.Screenshot("I am at Issue2674");
-			App.WaitForElement("picker");
+			RunningApp.Screenshot("I am at Issue2674");
+			RunningApp.WaitForElement("picker");
 		}
 	}
 }

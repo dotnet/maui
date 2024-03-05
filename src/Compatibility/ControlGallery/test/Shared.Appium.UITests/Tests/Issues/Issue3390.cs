@@ -16,8 +16,8 @@ namespace UITests
 		[Category(UITestCategories.Button)]
 		public void Issue3390Test()
 		{
-			App.Click("TestButton");
-			App.WaitForNoElement("Success");
+			RunningApp.Tap("TestButton");
+			RunningApp.WaitForNoElement("Success");
 		}
 	}
 }

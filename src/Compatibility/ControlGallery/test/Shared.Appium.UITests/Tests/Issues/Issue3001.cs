@@ -20,9 +20,9 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Windows]);
 
-			App.WaitForElement(ButtonId);
-			App.Click(ButtonId);
-			App.WaitForElement(ReadyId, timeout: TimeSpan.FromSeconds(5));
+			RunningApp.WaitForElement(ButtonId);
+			RunningApp.Tap(ButtonId);
+			RunningApp.WaitForElement(ReadyId, timeout: TimeSpan.FromSeconds(5));
 		}
 	}
 }

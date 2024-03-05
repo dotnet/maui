@@ -18,8 +18,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("IssuePageLabel");
-			var element = App.WaitForElement("banktitleicon");
+			RunningApp.WaitForElement("IssuePageLabel");
+			var element = RunningApp.WaitForElement("banktitleicon");
 
 			ClassicAssert.NotNull(element);
 

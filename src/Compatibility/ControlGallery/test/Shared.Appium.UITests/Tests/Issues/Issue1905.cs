@@ -19,12 +19,12 @@ namespace UITests
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
 			// wait for test to load
-			App.WaitForElement("btnRefresh");
-			App.Screenshot("Should show refresh control");
+			RunningApp.WaitForElement("btnRefresh");
+			RunningApp.Screenshot("Should show refresh control");
 
 			// wait for test to finish so it doesn't keep working
 			// in the background and break the next test
-			App.WaitForElement("data refreshed");
+			RunningApp.WaitForElement("data refreshed");
 		}
 	}
 }

@@ -15,7 +15,7 @@ namespace UITests
 		[Category(UITestCategories.Label)]
 		public void ExpectingPageNotToBreak()
 		{
-			App.Screenshot("Test passed, label is showing as it should!");
+			RunningApp.Screenshot("Test passed, label is showing as it should!");
 			//if it doesn't crash, we're good.
 		}
 	}

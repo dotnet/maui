@@ -16,9 +16,9 @@ namespace UITests
 		[Category(UITestCategories.ListView)]
 		public void Issue2775Test()
 		{
-			App.WaitForElement("TestReady");
-			App.Screenshot("I am at Issue 2775");
-			App.Screenshot("I see the Label");
+			RunningApp.WaitForElement("TestReady");
+			RunningApp.Screenshot("I am at Issue 2775");
+			RunningApp.Screenshot("I see the Label");
 		}
 	}
 }

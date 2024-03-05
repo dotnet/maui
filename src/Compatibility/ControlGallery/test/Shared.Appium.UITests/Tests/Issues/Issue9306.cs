@@ -22,15 +22,15 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(SwipeViewId);
+			RunningApp.WaitForElement(SwipeViewId);
 
-			App.SwipeLeftToRight(SwipeViewId);
-			App.SwipeRightToLeft(SwipeViewId);
-			App.SwipeLeftToRight(SwipeViewId);
+			RunningApp.SwipeLeftToRight(SwipeViewId);
+			RunningApp.SwipeRightToLeft(SwipeViewId);
+			RunningApp.SwipeLeftToRight(SwipeViewId);
 
-			App.Click(SwipeItemId);
+			RunningApp.Tap(SwipeItemId);
 
-			var result = App.FindElement(LeftCountLabelId).GetText();
+			var result = RunningApp.FindElement(LeftCountLabelId).GetText();
 
 			ClassicAssert.AreEqual("1", result);
 		}

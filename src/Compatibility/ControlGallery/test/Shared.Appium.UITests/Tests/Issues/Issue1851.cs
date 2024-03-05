@@ -17,11 +17,11 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("btn");
-			App.Click("btn");
-			App.WaitForElement("btn");
-			App.Click("btn");
-			App.WaitForElement("btn");
+			RunningApp.WaitForElement("btn");
+			RunningApp.Tap("btn");
+			RunningApp.WaitForElement("btn");
+			RunningApp.Tap("btn");
+			RunningApp.WaitForElement("btn");
 		}
 	}
 }

@@ -22,19 +22,19 @@ namespace UITests.Tests.Issues
 			App.ScrollDown(ScrollViewMark);
 			App.ScrollDown(ScrollViewMark);
 
-			App.WaitForElement(FirstItemMark, timeout: TimeSpan.FromSeconds(5));
+			RunningApp.WaitForElement(FirstItemMark, timeout: TimeSpan.FromSeconds(5));
 		}
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		public void Issue2680Test_ScrollEnabled()
 		{
-			App.Click(ToggleButtonMark);
+			RunningApp.Tap(ToggleButtonMark);
 
 			App.ScrollDown(ScrollViewMark);
 			App.ScrollDown(ScrollViewMark);
 
-			App.WaitForNoElement(FirstItemMark, timeout: TimeSpan.FromSeconds(5));
+			RunningApp.WaitForNoElement(FirstItemMark, timeout: TimeSpan.FromSeconds(5));
 		}
 	}
 }

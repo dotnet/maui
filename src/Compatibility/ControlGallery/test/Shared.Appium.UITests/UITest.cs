@@ -131,7 +131,7 @@ namespace UITests
 
 			name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
-			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+			byte[] screenshotPngBytes = RunningApp.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
 
 			var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 

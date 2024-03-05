@@ -17,17 +17,17 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("entryInsert");
-			App.Click("entryInsert");
-			App.ClearText("entryInsert");
-			App.EnterText("entryInsert", "1");
-			App.Click("Insert");
+			RunningApp.WaitForElement("entryInsert");
+			RunningApp.Tap("entryInsert");
+			RunningApp.ClearText("entryInsert");
+			RunningApp.EnterText("entryInsert", "1");
+			RunningApp.Tap("Insert");
 
 			// If the bug is still present, then there will be 
 			// two "Item: 0" items instead of the newly inserted item
 			// Or the header will have disappeared
-			App.WaitForElement("Inserted");
-			App.WaitForElement("This is the header");
+			RunningApp.WaitForElement("Inserted");
+			RunningApp.WaitForElement("This is the header");
 		}
 	}
 }

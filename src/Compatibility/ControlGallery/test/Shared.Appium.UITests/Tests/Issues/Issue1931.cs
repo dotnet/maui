@@ -19,28 +19,28 @@ namespace UITests
 		[Category(UITestCategories.ScrollView)]
 		public void ScrollViewInHeaderDisposesProperly()
 		{
-			App.WaitForElement(Go);
-			App.Click(Go);
+			RunningApp.WaitForElement(Go);
+			RunningApp.Tap(Go);
 
-			App.WaitForElement(Back);
-			App.Click(Back);
+			RunningApp.WaitForElement(Back);
+			RunningApp.Tap(Back);
 
-			App.WaitForElement(Success);
+			RunningApp.WaitForElement(Success);
 		}
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		public void Test4186()
 		{
-			App.WaitForElement(Go);
-			App.Click(Go);
-			App.WaitForElement("Chicken");
-			App.Click("Chicken");
-			App.WaitForElement(Go);
-			App.Click(Go);
-			App.WaitForElement("Chicken");
-			App.Click("Chicken");
-			App.WaitForNoElement(Success);
+			RunningApp.WaitForElement(Go);
+			RunningApp.Tap(Go);
+			RunningApp.WaitForElement("Chicken");
+			RunningApp.Tap("Chicken");
+			RunningApp.WaitForElement(Go);
+			RunningApp.Tap(Go);
+			RunningApp.WaitForElement("Chicken");
+			RunningApp.Tap("Chicken");
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }

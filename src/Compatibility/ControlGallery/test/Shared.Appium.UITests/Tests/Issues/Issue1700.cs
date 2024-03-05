@@ -23,7 +23,7 @@ namespace UITests
 			Task.Delay(3000).Wait();
 
 			// If we can see this label at all, it means we didn't crash and the test is successful
-			App.WaitForElement(Success);
+			RunningApp.WaitForElement(Success);
 		}
 	}
 }

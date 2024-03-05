@@ -18,12 +18,12 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("Switch");
-			App.Screenshot("Switch Default");
-			App.Click("Switch");
-			App.Screenshot("Switch Off with Red ThumbColor");
-			App.Click("Switch");
-			App.Screenshot("Switch On with Green ThumbColor");
+			RunningApp.WaitForElement("Switch");
+			RunningApp.Screenshot("Switch Default");
+			RunningApp.Tap("Switch");
+			RunningApp.Screenshot("Switch Off with Red ThumbColor");
+			RunningApp.Tap("Switch");
+			RunningApp.Screenshot("Switch On with Green ThumbColor");
 		}
 	}
 }

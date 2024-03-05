@@ -18,8 +18,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("TestLabel");
-			App.Screenshot("Was label on page shown");
+			RunningApp.WaitForElement("TestLabel");
+			RunningApp.Screenshot("Was label on page shown");
 		}
 	}
 }

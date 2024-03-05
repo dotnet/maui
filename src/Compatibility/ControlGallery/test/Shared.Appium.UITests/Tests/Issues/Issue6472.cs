@@ -23,16 +23,16 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(ListViewAutomationId);
-			App.Screenshot("We got here without an exception while loading the data and data is visible");
+			RunningApp.WaitForElement(ListViewAutomationId);
+			RunningApp.Screenshot("We got here without an exception while loading the data and data is visible");
 
-			App.Click(ClearButtonAutomationId);
-			App.Click(UiThreadButtonAutomationId);
-			App.Click(OtherThreadButtonAutomationId);
+			RunningApp.Tap(ClearButtonAutomationId);
+			RunningApp.Tap(UiThreadButtonAutomationId);
+			RunningApp.Tap(OtherThreadButtonAutomationId);
 
-			App.Click(ClearButtonAutomationId);
-			App.Click(OtherThreadButtonAutomationId);
-			App.Click(UiThreadButtonAutomationId);
+			RunningApp.Tap(ClearButtonAutomationId);
+			RunningApp.Tap(OtherThreadButtonAutomationId);
+			RunningApp.Tap(UiThreadButtonAutomationId);
 		}
 	}
 }

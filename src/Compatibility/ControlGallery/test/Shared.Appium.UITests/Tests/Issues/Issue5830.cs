@@ -18,8 +18,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("TestReady");
-			App.Screenshot("EntryTableViewCell Test with custom Text and TextColor");
+			RunningApp.WaitForElement("TestReady");
+			RunningApp.Screenshot("EntryTableViewCell Test with custom Text and TextColor");
 		}
 	}
 }

@@ -21,20 +21,20 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("WelcomeLabel");
-			App.WaitForElement(UsernameId);
-			App.WaitForElement(PasswordId);
-			App.WaitForElement("Login");
-			App.Screenshot("All elements present");
+			RunningApp.WaitForElement("WelcomeLabel");
+			RunningApp.WaitForElement(UsernameId);
+			RunningApp.WaitForElement(PasswordId);
+			RunningApp.WaitForElement("Login");
+			RunningApp.Screenshot("All elements present");
 
-			App.Click(UsernameId);
-			App.WaitForElement("WelcomeLabel");
-			App.EnterText(UsernameId, "Usertest");
-			App.Screenshot("User entered");
+			RunningApp.Tap(UsernameId);
+			RunningApp.WaitForElement("WelcomeLabel");
+			RunningApp.EnterText(UsernameId, "Usertest");
+			RunningApp.Screenshot("User entered");
 
-			App.Click(PasswordId);
-			App.WaitForElement("WelcomeLabel");
-			App.EnterText(PasswordId, "Userpass");
+			RunningApp.Tap(PasswordId);
+			RunningApp.WaitForElement("WelcomeLabel");
+			RunningApp.EnterText(PasswordId, "Userpass");
 		}
 	}
 }

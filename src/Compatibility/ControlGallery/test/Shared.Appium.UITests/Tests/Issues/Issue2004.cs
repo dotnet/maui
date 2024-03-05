@@ -15,7 +15,7 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public void NoCrashFromDisposedBitmapWhenSwitchingPages()
 		{
-			App.WaitForElement("Success", timeout: TimeSpan.FromSeconds(20));
+			RunningApp.WaitForElement("Success", timeout: TimeSpan.FromSeconds(20));
 		}
 	}
 }

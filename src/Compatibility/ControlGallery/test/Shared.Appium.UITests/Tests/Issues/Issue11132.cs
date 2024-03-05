@@ -20,8 +20,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(InstructionsId);
-			App.Screenshot("No crash");
+			RunningApp.WaitForElement(InstructionsId);
+			RunningApp.Screenshot("No crash");
 		}
 	}
 }

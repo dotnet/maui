@@ -23,20 +23,20 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(Button1Id);
+			RunningApp.WaitForElement(Button1Id);
 
-			App.Click(Button1Id);
+			RunningApp.Tap(Button1Id);
 
 			await Task.Delay(500);
-			//App.WaitForElement(Action1);
+			//RunningApp.WaitForElement(Action1);
 
 			// Tap outside ActionSheet to dismiss it
-			App.Click(LabelId);
+			RunningApp.Tap(LabelId);
 
-			App.WaitForElement(Button2Id);
-			App.Click(Button2Id);
+			RunningApp.WaitForElement(Button2Id);
+			RunningApp.Tap(Button2Id);
 
-			App.WaitForElement(Success);
+			RunningApp.WaitForElement(Success);
 		}
 	}
 }

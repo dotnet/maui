@@ -17,11 +17,11 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("Instructions");
-			App.SetOrientationLandscape();
-			App.WaitForElement("Instructions");
-			App.SetOrientationPortrait();
-			App.WaitForElement("Instructions");
+			RunningApp.WaitForElement("Instructions");
+			RunningApp.SetOrientationLandscape();
+			RunningApp.WaitForElement("Instructions");
+			RunningApp.SetOrientationPortrait();
+			RunningApp.WaitForElement("Instructions");
 		}
 	}
 }

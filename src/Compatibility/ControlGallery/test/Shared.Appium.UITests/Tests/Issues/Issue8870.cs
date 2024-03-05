@@ -20,27 +20,27 @@ namespace UITests
 		{
 			int delay = 3000;
 
-			App.WaitForElement(CheckResult);
+			RunningApp.WaitForElement(CheckResult);
 
-			App.SetOrientationPortrait();
+			RunningApp.SetOrientationPortrait();
 			await Task.Delay(delay);
 
-			App.SetOrientationLandscape();
+			RunningApp.SetOrientationLandscape();
 			await Task.Delay(delay);
 
-			App.SetOrientationPortrait();
+			RunningApp.SetOrientationPortrait();
 			await Task.Delay(delay);
 
-			App.SetOrientationLandscape();
+			RunningApp.SetOrientationLandscape();
 			await Task.Delay(delay);
 
-			App.SetOrientationPortrait();
+			RunningApp.SetOrientationPortrait();
 			await Task.Delay(delay);
 
-			App.WaitForElement(CheckResult);
-			App.Click(CheckResult);
+			RunningApp.WaitForElement(CheckResult);
+			RunningApp.Tap(CheckResult);
 
-			App.WaitForNoElement(Success);
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }

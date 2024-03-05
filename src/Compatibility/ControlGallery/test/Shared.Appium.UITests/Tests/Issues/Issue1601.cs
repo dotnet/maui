@@ -18,11 +18,11 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.Screenshot("Start G1601");
-			App.WaitForElement("CrashButton");
-			App.Screenshot("I see the button");
-			App.Click("CrashButton");
-			App.Screenshot("Didn't crash!");
+			RunningApp.Screenshot("Start G1601");
+			RunningApp.WaitForElement("CrashButton");
+			RunningApp.Screenshot("I see the button");
+			RunningApp.Tap("CrashButton");
+			RunningApp.Screenshot("Didn't crash!");
 		}
 	}
 }

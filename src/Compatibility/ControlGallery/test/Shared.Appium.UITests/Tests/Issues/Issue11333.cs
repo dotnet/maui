@@ -19,10 +19,10 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(SwipeViewId);
-			App.SwipeRightToLeft();
-			App.Click(SwipeViewId);
-			App.WaitForElement("ResultLabel");
+			RunningApp.WaitForElement(SwipeViewId);
+			RunningApp.SwipeRightToLeft();
+			RunningApp.Tap(SwipeViewId);
+			RunningApp.WaitForElement("ResultLabel");
 		}
 	}
 }

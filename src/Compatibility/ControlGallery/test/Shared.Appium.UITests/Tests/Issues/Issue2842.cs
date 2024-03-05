@@ -18,9 +18,9 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("btnClick");
-			App.Click("btnClick");
-			App.Screenshot("Verify that the text is not on top of the image");
+			RunningApp.WaitForElement("btnClick");
+			RunningApp.Tap("btnClick");
+			RunningApp.Screenshot("Verify that the text is not on top of the image");
 		}
 	}
 }

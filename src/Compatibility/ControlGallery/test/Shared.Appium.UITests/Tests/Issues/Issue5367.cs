@@ -18,8 +18,8 @@ namespace UITests.Tests.Issues
 		[Category(UITestCategories.Editor)]
 		public void Issue3390Test()
 		{
-			App.WaitForElement(MaxLengthEditor);
-			App.Click(ForceBigStringButton);
+			RunningApp.WaitForElement(MaxLengthEditor);
+			RunningApp.Tap(ForceBigStringButton);
 		}
 	}
 }

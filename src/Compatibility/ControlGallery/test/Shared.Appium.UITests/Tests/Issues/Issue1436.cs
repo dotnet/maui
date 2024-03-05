@@ -18,8 +18,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("TestReady");
-			App.Screenshot("I am at Issue 1436");
+			RunningApp.WaitForElement("TestReady");
+			RunningApp.Screenshot("I am at Issue 1436");
 		}
 	}
 }

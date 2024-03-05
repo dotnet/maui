@@ -18,15 +18,15 @@ namespace UITests
 		public void BindingToValuesTypesAndScrollingNoCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-			App.Click("PushPageButton");
-			App.WaitForElement("PushPageButton");
-			App.Click("PushPageButton");
-			App.WaitForElement("PushPageButton");
+			RunningApp.Tap("PushPageButton");
+			RunningApp.WaitForElement("PushPageButton");
+			RunningApp.Tap("PushPageButton");
+			RunningApp.WaitForElement("PushPageButton");
 
-			App.WaitForNoElement("You can check result");
-			App.Click("CheckResultButton");
+			RunningApp.WaitForNoElement("You can check result");
+			RunningApp.Tap("CheckResultButton");
 
-			App.WaitForNoElement(Success);
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }

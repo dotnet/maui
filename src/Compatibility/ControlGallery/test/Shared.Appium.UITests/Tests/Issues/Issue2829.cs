@@ -21,12 +21,12 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.Click(kCreateListViewButton);
-			App.WaitForNoElement("0");
-			App.Click(kScrollMe);
-			App.WaitForNoElement("70");
-			App.Back();
-			App.WaitForElement(kSuccess);
+			RunningApp.Tap(kCreateListViewButton);
+			RunningApp.WaitForNoElement("0");
+			RunningApp.Tap(kScrollMe);
+			RunningApp.WaitForNoElement("70");
+			RunningApp.Back();
+			RunningApp.WaitForElement(kSuccess);
 		}
 	}
 }

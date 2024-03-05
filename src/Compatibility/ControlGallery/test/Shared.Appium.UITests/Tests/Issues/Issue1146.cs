@@ -18,8 +18,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("switch");
-			App.Screenshot("Is the button here?");
+			RunningApp.WaitForElement("switch");
+			RunningApp.Screenshot("Is the button here?");
 		}
 	}
 }

@@ -17,7 +17,7 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public void Issue2837Test()
 		{
-			App.WaitForElement(Success);
+			RunningApp.WaitForElement(Success);
 		}
 	}
 }

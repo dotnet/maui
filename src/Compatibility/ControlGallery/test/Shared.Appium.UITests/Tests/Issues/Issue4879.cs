@@ -16,8 +16,8 @@ namespace UITests
 		[Category(UITestCategories.ImageButton)]
 		public void Issue4879Test()
 		{
-			App.WaitForElement("TestReady");
-			App.Screenshot("I am at Issue 4879 - All buttons/images should be the same size.");
+			RunningApp.WaitForElement("TestReady");
+			RunningApp.Screenshot("I am at Issue 4879 - All buttons/images should be the same size.");
 		}
 	}
 }

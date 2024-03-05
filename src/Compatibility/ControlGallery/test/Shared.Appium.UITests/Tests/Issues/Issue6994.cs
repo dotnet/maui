@@ -17,9 +17,9 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("Click me");
-			App.Click("Click me");
-			App.WaitForElement("Success");
+			RunningApp.WaitForElement("Click me");
+			RunningApp.Tap("Click me");
+			RunningApp.WaitForElement("Success");
 		}
 	}
 }

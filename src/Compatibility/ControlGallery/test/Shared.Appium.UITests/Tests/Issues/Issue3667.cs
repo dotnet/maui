@@ -17,15 +17,15 @@ namespace UITests
 		[Category(UITestCategories.Label)]
 		public void Issue3667Tests()
 		{
-			App.WaitForNoElement(text);
-			App.Click("ChangeTextTransformButton");
-			App.WaitForNoElement(text);
-			App.Click("ChangeTextTransformButton");
-			App.WaitForNoElement(text.ToLowerInvariant());
-			App.Click("ChangeTextTransformButton");
-			App.WaitForNoElement(text.ToUpperInvariant());
-			App.Click("ChangeTextTransformButton");
-			App.WaitForNoElement(text);
+			RunningApp.WaitForNoElement(text);
+			RunningApp.Tap("ChangeTextTransformButton");
+			RunningApp.WaitForNoElement(text);
+			RunningApp.Tap("ChangeTextTransformButton");
+			RunningApp.WaitForNoElement(text.ToLowerInvariant());
+			RunningApp.Tap("ChangeTextTransformButton");
+			RunningApp.WaitForNoElement(text.ToUpperInvariant());
+			RunningApp.Tap("ChangeTextTransformButton");
+			RunningApp.WaitForNoElement(text);
 		}
 	}
 }

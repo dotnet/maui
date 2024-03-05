@@ -21,12 +21,12 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(InnerGrid);
-			App.Click(InnerGrid);
+			RunningApp.WaitForElement(InnerGrid);
+			RunningApp.Tap(InnerGrid);
 
-			var green = App.WaitForElement(OuterGrid).GetRect();
+			var green = RunningApp.WaitForElement(OuterGrid).GetRect();
 			App.TapCoordinates(green.CenterX(), green.Y + 20);
-			App.WaitForElement(Success);
+			RunningApp.WaitForElement(Success);
 		}
 	}
 }

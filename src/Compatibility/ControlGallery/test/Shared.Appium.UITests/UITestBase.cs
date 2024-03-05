@@ -121,7 +121,7 @@ namespace UITests
 			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
 			if (screenshotPath is not null)
 			{
-				_ = App.Screenshot(screenshotPath);
+				_ = RunningApp.Screenshot(screenshotPath);
 
 				AddTestAttachment(screenshotPath, Path.GetFileName(screenshotPath));
 			}

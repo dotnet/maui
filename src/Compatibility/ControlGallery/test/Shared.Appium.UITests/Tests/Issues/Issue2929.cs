@@ -21,7 +21,7 @@ namespace UITests
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Android, TestDevice.Mac]);
 
 			// If we can see the Success label, it means we didn't crash. 
-			App.WaitForElement(Success);
+			RunningApp.WaitForElement(Success);
 		}
 
 		[Test]
@@ -30,11 +30,11 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Android, TestDevice.Mac]);
 			
-			App.WaitForElement(Go);
-			App.Click(Go);
+			RunningApp.WaitForElement(Go);
+			RunningApp.Tap(Go);
 
 			// If we can see the Success label, it means we didn't crash. 
-			App.WaitForElement(Success);
+			RunningApp.WaitForElement(Success);
 		}
 	}
 }

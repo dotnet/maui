@@ -18,7 +18,7 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.SetOrientationLandscape();
+			RunningApp.SetOrientationLandscape();
 
 			var buttonLabels = new[] {
 				"Button1",
@@ -27,11 +27,11 @@ namespace UITests
 			};
 
 			foreach (string buttonLabel in buttonLabels)
-				App.WaitForElement(buttonLabel);
+				RunningApp.WaitForElement(buttonLabel);
 
-			App.Screenshot("StackLayout in Modal respects rotation");
+			RunningApp.Screenshot("StackLayout in Modal respects rotation");
 
-			App.SetOrientationPortrait();
+			RunningApp.SetOrientationPortrait();
 		}
 	}
 }

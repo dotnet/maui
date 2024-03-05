@@ -19,11 +19,11 @@ namespace UITests
 		[Category(UITestCategories.Layout)]
 		public void ZIndexWhenInsertingChildren()
 		{
-			App.WaitForNoElement(ButtonText);
-			App.Click(ButtonText);
-			App.Click(ButtonText);
-			App.Click(TestForButtonClicked);
-			App.WaitForNoElement(Success);
+			RunningApp.WaitForNoElement(ButtonText);
+			RunningApp.Tap(ButtonText);
+			RunningApp.Tap(ButtonText);
+			RunningApp.Tap(TestForButtonClicked);
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }

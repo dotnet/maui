@@ -19,7 +19,7 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForNoElement(SuccessMessage);
+			RunningApp.WaitForNoElement(SuccessMessage);
 		}
 	}
 }

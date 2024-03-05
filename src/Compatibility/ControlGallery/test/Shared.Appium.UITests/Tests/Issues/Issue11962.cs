@@ -17,12 +17,12 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.Click("NextButton");
-			App.Click("BackButton");
-			App.Click("NextButton");
-			App.Click("BackButton");
-			App.Click("NextButton");
-			App.Click("BackButton");
+			RunningApp.Tap("NextButton");
+			RunningApp.Tap("BackButton");
+			RunningApp.Tap("NextButton");
+			RunningApp.Tap("BackButton");
+			RunningApp.Tap("NextButton");
+			RunningApp.Tap("BackButton");
 		}
 	}
 }

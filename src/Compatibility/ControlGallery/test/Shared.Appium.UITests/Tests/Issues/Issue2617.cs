@@ -18,7 +18,7 @@ namespace UITests
 		public async Task BindingToValuesTypesAndScrollingNoCrash()
 		{
 			await Task.Delay(4000);
-			App.WaitForNoElement(Success);
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }

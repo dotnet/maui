@@ -18,9 +18,9 @@ namespace UITests.Tests.Issues
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("srb_vertical");
-			App.WaitForElement("srb_horizontal");
-			App.Screenshot("Please verify we have 2 SearchBars. One below the label, other side by side with the label");
+			RunningApp.WaitForElement("srb_vertical");
+			RunningApp.WaitForElement("srb_horizontal");
+			RunningApp.Screenshot("Please verify we have 2 SearchBars. One below the label, other side by side with the label");
 		}
 	}
 }

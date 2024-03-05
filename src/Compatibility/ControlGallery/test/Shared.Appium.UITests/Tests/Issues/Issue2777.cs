@@ -16,8 +16,8 @@ namespace UITests
 		[Category(UITestCategories.CollectionView)]
 		public void Issue2777Test()
 		{
-			App.Screenshot("I am at Issue 2965");
-			App.WaitForNoElement("The letter A");
+			RunningApp.Screenshot("I am at Issue 2965");
+			RunningApp.WaitForNoElement("The letter A");
 		}
 	}
 }

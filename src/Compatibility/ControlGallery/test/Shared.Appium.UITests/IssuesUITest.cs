@@ -39,7 +39,7 @@ namespace UITests
 			try
 			{
 				this.Back();
-				App.Click("GoBackToGalleriesButton");
+				RunningApp.Tap("GoBackToGalleriesButton");
 			}
 			catch (Exception e)
 			{
@@ -52,12 +52,12 @@ namespace UITests
 
 		private void NavigateToIssue(string issue)
 		{
-			App.NavigateToIssues();
+			RunningApp.NavigateToIssues();
 
-			App.EnterText("SearchBarGo", issue);
+			RunningRunningApp.EnterText("SearchBarGo", issue);
 
-			App.WaitForElement("SearchButton");
-			App.Click("SearchButton");
+			RunningApp.WaitForElement("SearchButton");
+			RunningApp.Tap("SearchButton");
 		}
 	}
 }

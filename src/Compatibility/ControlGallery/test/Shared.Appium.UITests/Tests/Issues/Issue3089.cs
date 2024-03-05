@@ -20,8 +20,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
-			App.Click(Reload);
-			App.WaitForNoElement(Success);
+			RunningApp.Tap(Reload);
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }

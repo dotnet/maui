@@ -17,17 +17,17 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("FilterItems");
-			App.Click("FilterItems");
-			App.EnterText("FilterItems", "abcdef");
+			RunningApp.WaitForElement("FilterItems");
+			RunningApp.Tap("FilterItems");
+			RunningApp.EnterText("FilterItems", "abcdef");
 
 			// Default empty view
-			App.WaitForElement("Nothing to see here.");
+			RunningApp.WaitForElement("Nothing to see here.");
 
-			App.Click("ToggleEmptyView");
+			RunningApp.Tap("ToggleEmptyView");
 
 			// Other empty view
-			App.WaitForElement("No results matched your filter.");
+			RunningApp.WaitForElement("No results matched your filter.");
 		}
 	}
 }

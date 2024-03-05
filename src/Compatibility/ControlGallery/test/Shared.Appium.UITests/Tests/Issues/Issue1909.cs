@@ -16,8 +16,8 @@ namespace UITests
 		[Category(UITestCategories.Button)]
 		public void Issue1909Test()
 		{
-			App.WaitForElement("TestReady");
-			App.Screenshot("I am at Issue 1909");
+			RunningApp.WaitForElement("TestReady");
+			RunningApp.Screenshot("I am at Issue 1909");
 		}
 	}
 }

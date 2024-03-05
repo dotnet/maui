@@ -17,9 +17,9 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForNoElement("If you see the refresh circle this test has failed");
+			RunningApp.WaitForNoElement("If you see the refresh circle this test has failed");
 
-			App.WaitForNoElement("RefreshControl");
+			RunningApp.WaitForNoElement("RefreshControl");
 		}
 	}
 }

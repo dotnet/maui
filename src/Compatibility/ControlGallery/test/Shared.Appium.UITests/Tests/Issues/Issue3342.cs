@@ -17,8 +17,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.Screenshot("I am at Issue 3342");
-			App.Screenshot("I see the green box");
+			RunningApp.Screenshot("I am at Issue 3342");
+			RunningApp.Screenshot("I see the green box");
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			var somePadding = App.WaitForElement("Hello").GetRect();
+			var somePadding = RunningApp.WaitForElement("Hello").GetRect();
 			ClassicAssert.AreEqual(20f, somePadding.Y);
 		}
 	}

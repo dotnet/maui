@@ -17,14 +17,14 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("entryUpdate_Spacing");
-			App.Click("entryUpdate_Spacing");
-			App.ClearText("entryUpdate_Spacing");
-			App.EnterText("entryUpdate_Spacing", "0,500");
-			App.Click("btnUpdate_Spacing");
+			RunningApp.WaitForElement("entryUpdate_Spacing");
+			RunningApp.Tap("entryUpdate_Spacing");
+			RunningApp.ClearText("entryUpdate_Spacing");
+			RunningApp.EnterText("entryUpdate_Spacing", "0,500");
+			RunningApp.Tap("btnUpdate_Spacing");
 
 			// If it hasn't crashed, we should still be able to find this
-			App.WaitForElement("entryUpdate_Spacing");
+			RunningApp.WaitForElement("entryUpdate_Spacing");
 		}
 	}
 }

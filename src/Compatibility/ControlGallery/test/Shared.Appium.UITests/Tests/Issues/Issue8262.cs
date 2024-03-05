@@ -17,13 +17,13 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("ScrollMe");
+			RunningApp.WaitForElement("ScrollMe");
 			App.ScrollDown("ScrollMe", ScrollStrategy.Gesture, swipeSpeed: 20000);
 			App.ScrollUp("ScrollMe", ScrollStrategy.Gesture, swipeSpeed: 20000);
 			App.ScrollDown("ScrollMe", ScrollStrategy.Gesture, swipeSpeed: 20000);
 			App.ScrollUp("ScrollMe", ScrollStrategy.Gesture, swipeSpeed: 20000);
 			App.ScrollDown("ScrollMe", ScrollStrategy.Gesture, swipeSpeed: 20000);
-			App.WaitForElement("ScrollMe");
+			RunningApp.WaitForElement("ScrollMe");
 		}
 	}
 }

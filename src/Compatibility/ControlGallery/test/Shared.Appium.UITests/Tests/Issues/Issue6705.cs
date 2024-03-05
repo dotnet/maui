@@ -19,9 +19,9 @@ namespace UITests
 
 			for (var i = 1; i < 6; i++)
 			{
-				App.WaitForElement($"Button{i}");
-				App.Click($"Button{i}");
-				App.WaitForElement($"{i}");
+				RunningApp.WaitForElement($"Button{i}");
+				RunningApp.Tap($"Button{i}");
+				RunningApp.WaitForElement($"{i}");
 			}
 		}
 	}

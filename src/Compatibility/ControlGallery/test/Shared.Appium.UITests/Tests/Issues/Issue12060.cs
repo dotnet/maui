@@ -15,9 +15,9 @@ namespace UITests
 		[Category(UITestCategories.DragAndDrop)]
 		public void AppDoesntCrashWhenResettingPage()
 		{
-			App.WaitForElement("TestLoaded");
+			RunningApp.WaitForElement("TestLoaded");
 			App.DragAndDrop("DragBox", "DropBox");
-			App.WaitForNoElement("Success");
+			RunningApp.WaitForNoElement("Success");
 		}
 	}
 }

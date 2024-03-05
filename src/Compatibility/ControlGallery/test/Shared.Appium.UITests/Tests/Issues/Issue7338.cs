@@ -20,7 +20,7 @@ namespace UITests
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 			
 			// If the instructions are visible at all, then this has succeeded
-			App.WaitForElement(Success);
+			RunningApp.WaitForElement(Success);
 		}
 	}
 }

@@ -38,6 +38,8 @@ namespace UITests
 			}
 		}
 
+		internal IApp RunningApp => App;
+
 		public abstract IConfig GetTestConfig();
 
 		public void InitialSetup(IServerContext context)

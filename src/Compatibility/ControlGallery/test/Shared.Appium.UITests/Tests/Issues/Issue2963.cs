@@ -19,10 +19,10 @@ namespace UITests
 		[Test]
 		public void Issue2963Test()
 		{
-			App.Screenshot("I am at Issue 2963");
-			App.Click(EditorId);
-			ClassicAssert.AreEqual("False", App.FindElement(FocusedLabelId).GetText());
-			App.Screenshot("Label should still be false");
+			RunningApp.Screenshot("I am at Issue 2963");
+			RunningApp.Tap(EditorId);
+			ClassicAssert.AreEqual("False", RunningApp.FindElement(FocusedLabelId).GetText());
+			RunningApp.Screenshot("Label should still be false");
 		}
 	}
 }

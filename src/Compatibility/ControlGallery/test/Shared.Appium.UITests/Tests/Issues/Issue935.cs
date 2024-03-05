@@ -19,10 +19,10 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.Click("TestLabel");
-			App.Screenshot("Tapped Cell Once");
-			App.Click("TestLabel");
-			App.Screenshot("Tapped Cell Twice");
+			RunningApp.Tap("TestLabel");
+			RunningApp.Screenshot("Tapped Cell Once");
+			RunningApp.Tap("TestLabel");
+			RunningApp.Screenshot("Tapped Cell Twice");
 		}
 	}
 }

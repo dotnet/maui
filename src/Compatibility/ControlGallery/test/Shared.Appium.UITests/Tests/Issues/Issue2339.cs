@@ -17,13 +17,13 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows], "Focus Behavior is different");
 
-			App.WaitForElement("btnFocusThenUnFocus");
-			App.Click("btnFocusThenUnFocus");
-			App.WaitForNoElement("Picker Focused: 1");
-			App.WaitForNoElement("Picker UnFocused: 1");
-			App.Click("btnFocusThenUnFocus");
-			App.WaitForNoElement("Picker Focused: 2");
-			App.WaitForNoElement("Picker UnFocused: 2");
+			RunningApp.WaitForElement("btnFocusThenUnFocus");
+			RunningApp.Tap("btnFocusThenUnFocus");
+			RunningApp.WaitForNoElement("Picker Focused: 1");
+			RunningApp.WaitForNoElement("Picker UnFocused: 1");
+			RunningApp.Tap("btnFocusThenUnFocus");
+			RunningApp.WaitForNoElement("Picker Focused: 2");
+			RunningApp.WaitForNoElement("Picker UnFocused: 2");
 		}
 	}
 }

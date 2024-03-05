@@ -21,11 +21,11 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
 
-			App.WaitForElement(SwipeViewId);
-			App.SwipeLeftToRight(SwipeViewId);
-			App.Click(SwipeViewId);
-			App.WaitForElement("Success");
-			App.Screenshot("The test has passed");
+			RunningApp.WaitForElement(SwipeViewId);
+			RunningApp.SwipeLeftToRight(SwipeViewId);
+			RunningApp.Tap(SwipeViewId);
+			RunningApp.WaitForElement("Success");
+			RunningApp.Screenshot("The test has passed");
 		}
 	}
 }

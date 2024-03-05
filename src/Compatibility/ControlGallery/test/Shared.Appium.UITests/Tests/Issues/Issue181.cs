@@ -18,8 +18,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("TestLabel");
-			App.Screenshot("Label should have red text");
+			RunningApp.WaitForElement("TestLabel");
+			RunningApp.Screenshot("Label should have red text");
 		}
 	}
 }

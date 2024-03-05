@@ -18,8 +18,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("TestReady");
-			App.Screenshot("I see a blue circle");
+			RunningApp.WaitForElement("TestReady");
+			RunningApp.Screenshot("I see a blue circle");
 		}
 	}
 }

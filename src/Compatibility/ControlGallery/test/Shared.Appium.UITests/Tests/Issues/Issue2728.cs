@@ -20,8 +20,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Windows]);
 
-			App.WaitForNoElement(LabelHome);
-			App.Screenshot("Label rendered with italic font");
+			RunningApp.WaitForNoElement(LabelHome);
+			RunningApp.Screenshot("Label rendered with italic font");
 		}
 	}
 }

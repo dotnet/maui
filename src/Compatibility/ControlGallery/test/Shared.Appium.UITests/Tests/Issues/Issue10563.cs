@@ -24,26 +24,26 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(OpenLeftId);
-			App.Click(OpenLeftId);
-			App.Screenshot("Left SwipeItems");
-			App.Click(CloseId);
+			RunningApp.WaitForElement(OpenLeftId);
+			RunningApp.Tap(OpenLeftId);
+			RunningApp.Screenshot("Left SwipeItems");
+			RunningApp.Tap(CloseId);
 
-			App.WaitForElement(OpenRightId);
-			App.Click(OpenRightId);
-			App.Screenshot("Right SwipeItems");
+			RunningApp.WaitForElement(OpenRightId);
+			RunningApp.Tap(OpenRightId);
+			RunningApp.Screenshot("Right SwipeItems");
 
-			App.Click(CloseId);
+			RunningApp.Tap(CloseId);
 
-			App.WaitForElement(OpenTopId);
-			App.Click(OpenTopId);
-			App.Screenshot("Top SwipeItems");
-			App.Click(CloseId);
+			RunningApp.WaitForElement(OpenTopId);
+			RunningApp.Tap(OpenTopId);
+			RunningApp.Screenshot("Top SwipeItems");
+			RunningApp.Tap(CloseId);
 
-			App.WaitForElement(OpenBottomId);
-			App.Click(OpenBottomId);
-			App.Screenshot("Bottom SwipeItems");
-			App.Click(CloseId);
+			RunningApp.WaitForElement(OpenBottomId);
+			RunningApp.Tap(OpenBottomId);
+			RunningApp.Screenshot("Bottom SwipeItems");
+			RunningApp.Tap(CloseId);
 		}
 	}
 }

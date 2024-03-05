@@ -18,7 +18,7 @@ namespace UITests
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
 			// If this hasn't already crashed, the test is passing
-			App.WaitForElement("Success");
+			RunningApp.WaitForElement("Success");
 		}
 	}
 }

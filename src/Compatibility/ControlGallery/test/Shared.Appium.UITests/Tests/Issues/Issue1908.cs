@@ -18,8 +18,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("OASIS1");
-			App.Screenshot("For manual review. Images load");
+			RunningApp.WaitForElement("OASIS1");
+			RunningApp.Screenshot("For manual review. Images load");
 		}
 	}
 }

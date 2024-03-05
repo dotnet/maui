@@ -20,12 +20,12 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(BtnLeakId);
-			App.Click(BtnLeakId);
-			App.WaitForElement(BtnScrollToId);
-			App.Click(BtnScrollToId);
-			App.Back();
-			App.WaitForElement(BtnLeakId);
+			RunningApp.WaitForElement(BtnLeakId);
+			RunningApp.Tap(BtnLeakId);
+			RunningApp.WaitForElement(BtnScrollToId);
+			RunningApp.Tap(BtnScrollToId);
+			RunningApp.Back();
+			RunningApp.WaitForElement(BtnLeakId);
 		}
 	}
 }

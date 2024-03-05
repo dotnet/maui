@@ -18,7 +18,7 @@ namespace UITests.Tests.Issues
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
 			await Task.Delay(500);
-			App.WaitForElement("Success");
+			RunningApp.WaitForElement("Success");
 		}
 	}
 }

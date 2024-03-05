@@ -21,9 +21,9 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			var rect = App.WaitForElement(BoxViewId).GetRect();
-			App.Click(ClickMeId);
-			var rect2 = App.WaitForElement(BoxViewId).GetRect();
+			var rect = RunningApp.WaitForElement(BoxViewId).GetRect();
+			RunningApp.Tap(ClickMeId);
+			var rect2 = RunningApp.WaitForElement(BoxViewId).GetRect();
 
 			ClassicAssert.AreEqual(rect.X, rect2.X);
 			ClassicAssert.AreEqual(rect.Y, rect2.Y);

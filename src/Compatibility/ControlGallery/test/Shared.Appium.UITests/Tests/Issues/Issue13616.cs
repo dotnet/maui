@@ -17,9 +17,9 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("AddItemButtonId");
-			App.Click("AddItemButtonId");
-			App.WaitForElement("CarouselViewId");
+			RunningApp.WaitForElement("AddItemButtonId");
+			RunningApp.Tap("AddItemButtonId");
+			RunningApp.WaitForElement("CarouselViewId");
 		}
 	}
 }

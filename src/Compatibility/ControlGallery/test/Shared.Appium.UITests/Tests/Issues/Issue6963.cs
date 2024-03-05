@@ -16,7 +16,7 @@ namespace UITests
 		public void SelectedItemsNotInSourceDoesNotCrash()
 		{      
 			// If this page didn't crash, then we're good
-			App.WaitForElement("FirstLabel");
+			RunningApp.WaitForElement("FirstLabel");
 		}
 	}
 }

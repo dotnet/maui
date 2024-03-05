@@ -19,14 +19,14 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.Click(FlyoutIconAutomationId);
-			App.Click("CollectionView");
-			App.Click("Toggle");
-			App.Click("Toggle");
-			App.Click(FlyoutIconAutomationId);
-			App.Click("About");
-			App.Click(FlyoutIconAutomationId);
-			App.Click("CollectionView");
+			RunningApp.Tap(FlyoutIconAutomationId);
+			RunningApp.Tap("CollectionView");
+			RunningApp.Tap("Toggle");
+			RunningApp.Tap("Toggle");
+			RunningApp.Tap(FlyoutIconAutomationId);
+			RunningApp.Tap("About");
+			RunningApp.Tap(FlyoutIconAutomationId);
+			RunningApp.Tap("CollectionView");
 		}
 	}
 }

@@ -21,20 +21,20 @@ namespace UITests.Tests.Issues
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Windows]);
 
-			App.WaitForElement("TestReady");
-			App.Screenshot("Small blue box");
+			RunningApp.WaitForElement("TestReady");
+			RunningApp.Screenshot("Small blue box");
 
 			// Check the box and button elements.
-			App.WaitForElement(BoxToScale);
-			App.WaitForElement(AnimateBoxViewButton);
+			RunningApp.WaitForElement(BoxToScale);
+			RunningApp.WaitForElement(AnimateBoxViewButton);
 
 			// Tap the button.
-			App.Click(AnimateBoxViewButton);
+			RunningApp.Tap(AnimateBoxViewButton);
 
 			// Wait for animation to finish.
 			await Task.Delay(500);
 
-			App.Screenshot("Bigger blue box");
+			RunningApp.Screenshot("Bigger blue box");
 		}
 	}
 }

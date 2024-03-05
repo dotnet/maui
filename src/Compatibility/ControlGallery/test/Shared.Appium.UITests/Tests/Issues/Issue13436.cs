@@ -17,7 +17,7 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("CarouselId");
+			RunningApp.WaitForElement("CarouselId");
 		}
 	}
 }

@@ -21,8 +21,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(AllEventsHaveDetached);
-			var text = App.FindElement(AllEventsHaveDetached).GetText();
+			RunningApp.WaitForElement(AllEventsHaveDetached);
+			var text = RunningApp.FindElement(AllEventsHaveDetached).GetText();
 			ClassicAssert.NotNull(text);
 			ClassicAssert.AreEqual("Success", text);
 		}

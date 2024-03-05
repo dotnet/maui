@@ -21,31 +21,31 @@ namespace UITests
 		[Category(UITestCategories.CollectionView)]
 		public void EmptyViewBecomesVisibleWhenItemsSourceIsCleared()
 		{
-			App.Screenshot("Screen opens, items are shown");
+			RunningApp.Screenshot("Screen opens, items are shown");
 
-			App.WaitForElement(LayoutAutomationId);
-			App.Click(ClearAutomationId);
-			App.WaitForElement(EmptyViewAutomationId);
+			RunningApp.WaitForElement(LayoutAutomationId);
+			RunningApp.Tap(ClearAutomationId);
+			RunningApp.WaitForElement(EmptyViewAutomationId);
 
-			App.Screenshot("Empty view is visible");
+			RunningApp.Screenshot("Empty view is visible");
 		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{
-			App.Screenshot("Screen opens, items are shown");
+			RunningApp.Screenshot("Screen opens, items are shown");
 
-			App.WaitForElement(LayoutAutomationId);
-			App.Click(ClearAutomationId);
-			App.WaitForElement(EmptyViewAutomationId);
+			RunningApp.WaitForElement(LayoutAutomationId);
+			RunningApp.Tap(ClearAutomationId);
+			RunningApp.WaitForElement(EmptyViewAutomationId);
 
-			App.Screenshot("Items are cleared, empty view visible");
+			RunningApp.Screenshot("Items are cleared, empty view visible");
 
-			App.Click(AddAutomationId);
-			App.WaitForNoElement(EmptyViewAutomationId);
+			RunningApp.Tap(AddAutomationId);
+			RunningApp.WaitForNoElement(EmptyViewAutomationId);
 
-			App.Screenshot("Item is added, empty view is not visible");
+			RunningApp.Screenshot("Item is added, empty view is not visible");
 		}
 	}
 }

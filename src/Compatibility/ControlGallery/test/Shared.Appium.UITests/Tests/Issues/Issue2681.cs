@@ -19,8 +19,8 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
 
-			App.Click(NavigateToPage);
-			App.WaitForNoElement("3");
+			RunningApp.Tap(NavigateToPage);
+			RunningApp.WaitForNoElement("3");
 		}
 	}
 }

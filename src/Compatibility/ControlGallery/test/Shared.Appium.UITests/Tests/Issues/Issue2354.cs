@@ -17,7 +17,7 @@ namespace UITests.Tests.Issues
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement("ImageLoaded");
+			RunningApp.WaitForElement("ImageLoaded");
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);
 		}

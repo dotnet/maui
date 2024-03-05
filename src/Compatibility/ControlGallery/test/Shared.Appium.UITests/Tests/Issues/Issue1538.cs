@@ -18,7 +18,7 @@ namespace UITests
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
 			Task.Delay(1000).Wait();
-			App.WaitForElement("Foo");
+			RunningApp.WaitForElement("Foo");
 		}
 	}
 }

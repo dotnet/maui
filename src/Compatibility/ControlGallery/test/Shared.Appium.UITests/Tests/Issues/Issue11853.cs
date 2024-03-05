@@ -19,14 +19,14 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(Run);
-			App.Click(Run);
+			RunningApp.WaitForElement(Run);
+			RunningApp.Tap(Run);
 			Task.Delay(5000).Wait();
-			App.Click(Run);
+			RunningApp.Tap(Run);
 			Task.Delay(5000).Wait();
 
 			// If we can still find the button, then we didn't crash
-			App.WaitForElement(Run);
+			RunningApp.WaitForElement(Run);
 		}
 	}
 }

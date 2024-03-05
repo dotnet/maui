@@ -20,9 +20,9 @@ namespace UITests
 
 			for (int i = 0; i < 20; i++)
 			{
-				App.Click("AddButton");
-				App.WaitForElement("Name " + (i + 1).ToString());
-				App.Screenshot("Added Cell");
+				RunningApp.Tap("AddButton");
+				RunningApp.WaitForElement("Name " + (i + 1).ToString());
+				RunningApp.Screenshot("Added Cell");
 			}
 		}
 	}

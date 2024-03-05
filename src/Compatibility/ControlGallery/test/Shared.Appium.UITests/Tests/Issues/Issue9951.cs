@@ -20,16 +20,16 @@ namespace UITests
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
-			App.WaitForElement(SwitchId);
+			RunningApp.WaitForElement(SwitchId);
 
-			App.Screenshot("Initial switch state");
+			RunningApp.Screenshot("Initial switch state");
 
-			App.Click(SwitchId);
+			RunningApp.Tap(SwitchId);
 
 			//Delay so that the switch toggling is finished
 			await Task.Delay(200);
 
-			App.Screenshot("Toggled switch state");
+			RunningApp.Screenshot("Toggled switch state");
 		}
 	}
 }

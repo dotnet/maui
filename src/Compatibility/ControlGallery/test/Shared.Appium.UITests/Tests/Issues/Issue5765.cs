@@ -20,7 +20,7 @@ namespace UITests
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
 
 			// If the first label is visible at all, then this has succeeded
-			App.WaitForElement(Target);
+			RunningApp.WaitForElement(Target);
 		}
 	}
 }

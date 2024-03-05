@@ -16,8 +16,8 @@ namespace UITests
 		[Category(UITestCategories.CollectionView)]
 		public void VisualPropagatesToEmptyView()
 		{
-			App.WaitForElement("TestReady");
-			App.Screenshot("CollectionViewWithEmptyView");
+			RunningApp.WaitForElement("TestReady");
+			RunningApp.Screenshot("CollectionViewWithEmptyView");
 		}
 	}
 }
