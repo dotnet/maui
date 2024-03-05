@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Define the small navigation animation that occurs when a page is navigated to with the GoToAsync method.
+		/// Defines the navigation animation that occurs when a page is navigated to with the <see cref="GoToAsync(ShellNavigationState, bool)"/> method.
 		/// </summary>
 		public static readonly BindableProperty PresentationModeProperty = BindableProperty.CreateAttached("PresentationMode", typeof(PresentationMode), typeof(Shell), PresentationMode.Animated);
 
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls
 		/// - ModalNotAnimated - indicates that the page will be displayed as a modal page, without a navigation animation.
 		/// </remarks>
 		/// <param name="obj">The BindableObject that modify the Shell tabs visibility.</param>
-		/// <param name="presentationMode">Define the navigation animation that occurs when a page is navigated.</param>
+		/// <param name="presentationMode">Defines the navigation animation that occurs when a page is navigated.</param>
 		public static void SetPresentationMode(BindableObject obj, PresentationMode presentationMode) => obj.SetValue(PresentationModeProperty, presentationMode);
 
 		/// <summary>
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls
 		/// This enables scenarios such as expanding the flyout across the entire screen.
 		/// </summary>
 		/// <param name="obj">The BindableObject that modify the width of the flyout.</param>
-		/// <param name="value">Define the width of the flyout.</param>
+		/// <param name="value">Defines the width of the flyout.</param>
 		public static void SetFlyoutWidth(BindableObject obj, double value) => obj.SetValue(FlyoutWidthProperty, value);
 
 		/// <summary>
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls
 		/// This enables scenarios such as reducing the height of the flyout so that it doesn't obscure the tab bar.
 		/// </summary>
 		/// <param name="obj">The BindableObject that modify the height of the flyout.</param>
-		/// <param name="value">Define the height of the flyout.</param>
+		/// <param name="value">Defines the height of the flyout.</param>
 		public static void SetFlyoutHeight(BindableObject obj, double value) => obj.SetValue(FlyoutHeightProperty, value);
 
 		/// <summary>
@@ -300,7 +300,7 @@ namespace Microsoft.Maui.Controls
 		/// Enabling it results in a search box being added at the top of the page.
 		/// </summary>
 		/// <param name="obj">The BindableObject that modify the Shell search functionality.</param>
-		/// <param name="handler">Define the integrated search functionality in Shell.</param>
+		/// <param name="handler">Defines the integrated search functionality in Shell.</param>
 		public static void SetSearchHandler(BindableObject obj, SearchHandler handler) => obj.SetValue(SearchHandlerProperty, handler);
 
 		/// <summary>
@@ -1086,7 +1086,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty FlyoutHeaderTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutHeaderTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
-				propertyChanging: OnFlyoutHeaderTemplateChanging);
+				propertyChanging: OnFlyoutHeaderTemplateChanging); GoToAsync
 
 		/// <summary>
 		/// The flyout footer appearance can be defined by setting a DataTemplate.
