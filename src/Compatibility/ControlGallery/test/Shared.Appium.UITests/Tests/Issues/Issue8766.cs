@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "[Bug] CollectionView.EmptyView does not inherit parent Visual";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void VisualPropagatesToEmptyView()
 		{
 			App.WaitForElement("TestReady");

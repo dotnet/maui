@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "BoxView corner radius";
 		
 		[Test]
+		[Category(UITestCategories.BoxView)]
 		public void Issue3884Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

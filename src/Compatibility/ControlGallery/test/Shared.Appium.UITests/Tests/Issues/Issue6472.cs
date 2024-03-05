@@ -18,6 +18,7 @@ namespace UITests
 		public override string Issue => "[Bug][iOS] listview / observable collection throwing native error on load";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void ListViewDoesNotThrowExceptionWithObservableCollection()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

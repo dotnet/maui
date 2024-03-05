@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "[UWP] Scrollview with null content crashes on UWP";
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void NullContentOnScrollViewDoesntCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);

@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "[Frame, CollectionView, Android]The Label.Text is invisible on Android if DataTemplate have frame as layout";
 	
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void FlexLayoutsInFramesShouldSizeCorrectly()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

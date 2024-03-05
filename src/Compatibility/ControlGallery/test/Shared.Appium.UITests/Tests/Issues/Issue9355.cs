@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "ScrollViewRenderer renderer dispose crash";
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void Issue9355Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

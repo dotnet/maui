@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "[Enhancement] EntryCellTableViewCell should be public";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void Issue5830Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

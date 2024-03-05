@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[Bug] CollectionView Header cause delay to adding items."; 
 		
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void HeaderDoesNotBreakIndexes()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "Memory leak when SwitchCell or EntryCell";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void BindingToValuesTypesAndScrollingNoCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "[Android] Fix load TitleIcon on non app compact";
 
 		[Test]
+		[Category(UITestCategories.Navigation)]
 		public void Issue6458Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

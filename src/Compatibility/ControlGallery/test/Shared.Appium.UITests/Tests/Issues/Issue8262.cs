@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[Android] ImageRenderer still being accessed after control destroyed";
 
 		[Test]
+		[Category(UITestCategories.Image)]
 		public void ScrollingQuicklyOnCollectionViewDoesntCrashOnDestroyedImage()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "Clearing CollectionView IsGrouped=\"True\" crashes application iOS ";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void ClearingGroupedCollectionViewShouldNotCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

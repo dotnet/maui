@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "NullReferenceException Microsoft.Maui.Controls.Platform.iOS.StructuredItemsViewRenderer [Bug]";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void ReappearingCollectionViewShouldNotThrowNRE()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

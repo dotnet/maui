@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "InvokeOnMainThreadAsync throws NullReferenceException"; 
 		
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void Issue6705Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

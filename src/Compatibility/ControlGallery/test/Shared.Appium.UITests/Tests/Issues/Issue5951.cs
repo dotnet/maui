@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "App Crashes On Shadow Effect's OnDetached On Button That's Never Visible";
 
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void Issue5951Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

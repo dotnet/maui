@@ -12,6 +12,7 @@ namespace UITests.Tests.Issues
 		public override string Issue => "iOS race condition(or not checking for null) of refreshing(offset animation) causes NullReferenceException";
 
 		[Test]
+		[Category(UITestCategories.RefreshView)]
 		public async Task RefreshingListViewCrashesWhenDisposedTest()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

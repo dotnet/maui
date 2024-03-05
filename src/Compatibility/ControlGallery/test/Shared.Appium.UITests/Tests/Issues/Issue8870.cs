@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "[Bug] CollectionView with HTML Labels Freeze the Screen on Rotation";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public async Task RotatingCollectionViewWithHTMLShouldNotHangOrCrash()
 		{
 			int delay = 3000;

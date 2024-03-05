@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "[Android] ScrollView crashes when setting ScrollbarFadingEnabled to false in Custom Renderer";
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void ScrollViewWithScrollbarFadingEnabledFalseDoesntCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

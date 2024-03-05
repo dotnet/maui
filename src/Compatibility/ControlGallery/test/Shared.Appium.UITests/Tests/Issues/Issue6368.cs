@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[CustomRenderer]Crash when navigating back from page with custom renderer control";
 
 		[Test]
+		[Category(UITestCategories.Navigation)]
 		public void Issue6368Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

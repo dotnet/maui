@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "[iOS] Top Padding not working on iOS when it is set alone";
 
 		[Test]
+		[Category(UITestCategories.Layout)]
 		public void PaddingEqualToSafeAreaWorks()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

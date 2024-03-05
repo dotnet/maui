@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[Bug] Button in Grid gets wrong z-index";
 
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void ImageShouldLayoutOnTopOfButton()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

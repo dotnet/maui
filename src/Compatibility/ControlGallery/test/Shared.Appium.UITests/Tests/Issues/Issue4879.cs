@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "4879 - ImageButtonPadding";
 
 		[Test]
+		[Category(UITestCategories.ImageButton)]
 		public void Issue4879Test()
 		{
 			App.WaitForElement("TestReady");

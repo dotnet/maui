@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "[Enhancement] Add text-transforms to Label";
 
 		[Test]
+		[Category(UITestCategories.Label)]
 		public void Issue3667Tests()
 		{
 			App.WaitForNoElement(text);

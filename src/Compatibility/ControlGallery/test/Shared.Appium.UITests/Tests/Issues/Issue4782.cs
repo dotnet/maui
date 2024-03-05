@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "[Android] Null drawable crashes Image Button";
 
 		[Test]
+		[Category(UITestCategories.ImageButton)]
 		public void ImageButtonNullDrawable()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

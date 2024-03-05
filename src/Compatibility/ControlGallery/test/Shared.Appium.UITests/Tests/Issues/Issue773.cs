@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "Horizontal ScrollView locks after rotation"; 
 		
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void Issue773TestsRotationRelayoutIssue()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

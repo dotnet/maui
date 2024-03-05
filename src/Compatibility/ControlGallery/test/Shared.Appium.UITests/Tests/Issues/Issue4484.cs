@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[Android] ImageButton inside NavigationView.TitleView throw exception during device rotation";
 		
 		[Test]
+		[Category(UITestCategories.ImageButton)]
 		public void RotatingDeviceDoesntCrashTitleView()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

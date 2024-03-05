@@ -18,6 +18,7 @@ namespace UITests
 		public override string Issue => "EmptyView for BindableLayout (view)";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void EmptyViewBecomesVisibleWhenItemsSourceIsCleared()
 		{
 			App.Screenshot("Screen opens, items are shown");
@@ -30,6 +31,7 @@ namespace UITests
 		}
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{
 			App.Screenshot("Screen opens, items are shown");

@@ -15,6 +15,7 @@ namespace UITests.Tests.Issues
 		public override string Issue => "[Bug] Editor with MaxLength";
 
 		[Test]
+		[Category(UITestCategories.Editor)]
 		public void Issue3390Test()
 		{
 			App.WaitForElement(MaxLengthEditor);

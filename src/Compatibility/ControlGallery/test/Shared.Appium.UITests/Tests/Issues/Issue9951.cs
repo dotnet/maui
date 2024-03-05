@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "Android 10 Setting ThumbColor on Switch causes a square block"; 
 		
 		[Test]
+		[Category(UITestCategories.Switch)]
 		public async Task SwitchColorTest()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

@@ -16,6 +16,7 @@ namespace UITests
 		public override string Issue => "[iOS] Wrong anchor behavior when setting HeightRequest ";
 
 		[Test]
+		[Category(UITestCategories.Layout)]
 		public void WrongTranslationBehaviorWhenChangingHeightRequestAndSettingAnchor()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

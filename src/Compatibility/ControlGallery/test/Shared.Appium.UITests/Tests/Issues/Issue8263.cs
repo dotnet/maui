@@ -13,6 +13,7 @@ namespace UITests
 		public override string Issue => "[Enhancement] Add On/Off VisualStates for Switch"; 
 		
 		[Test]
+		[Category(UITestCategories.Switch)]
 		public void SwitchOnOffVisualStatesTest()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

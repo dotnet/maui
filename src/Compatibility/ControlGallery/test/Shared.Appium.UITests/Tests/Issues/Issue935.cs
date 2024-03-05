@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Description("Verify that OnTapped is fired every time a ViewCell is tapped")]
+		[Category(UITestCategories.ListView)]
 		public void Issue935TestsMultipleOnTappedViewCell()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

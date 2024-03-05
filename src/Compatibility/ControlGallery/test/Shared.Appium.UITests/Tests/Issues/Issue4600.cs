@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "[iOS] CollectionView crash with empty ObservableCollection";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void TestIssue1905RefreshShows()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "[Android] infinite layout loop";
 
 		[Test]
+		[Category(UITestCategories.Layout)]
 		public void NonAppCompatBasicSwitchTest()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

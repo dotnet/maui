@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "Regression in Xamarin.Forms 4.2.0-pre1 (Java.Lang.NullPointerException when using FastRenderers)"; 
 		
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void NullPointerExceptionOnFastLabelTextColorChange()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

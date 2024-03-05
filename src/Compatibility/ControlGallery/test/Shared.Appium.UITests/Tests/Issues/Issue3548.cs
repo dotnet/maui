@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "Cannot attach effect to Frame";
 
 		[Test]
+		[Category(UITestCategories.Frame)]
 		public void CheckIsEffectAttached()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

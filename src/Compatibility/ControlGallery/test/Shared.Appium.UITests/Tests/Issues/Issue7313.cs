@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "ListView RefreshControl Not Hiding";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void RefreshControlTurnsOffSuccessfully()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

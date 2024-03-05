@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "CollectionView: Swapping EmptyViews has no effect";
 	
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void SwappingEmptyViews()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

@@ -13,6 +13,7 @@ namespace UITests.Tests.Issues
 		public override string Issue => "[iOS] Searchbar in Horizontal Stacklayout doesn't render";
 
 		[Test]
+		[Category(UITestCategories.SearchBar)]
 		public void Issue3413Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

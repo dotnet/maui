@@ -14,6 +14,7 @@ namespace UITests
 		public override string Issue => "[Bug] CollectionView problems and crashes with IsGrouped=\"true\"";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void AddingItemsToGroupedCollectionViewShouldNotCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

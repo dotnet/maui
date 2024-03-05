@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "Span with tail truncation and paragraph breaks with Java.Lang.IndexOutOfBoundsException";
 
 		[Test]
+		[Category(UITestCategories.Label)]
 		public void ExpectingPageNotToBreak()
 		{
 			App.Screenshot("Test passed, label is showing as it should!");

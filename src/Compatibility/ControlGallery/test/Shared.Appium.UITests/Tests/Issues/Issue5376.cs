@@ -12,6 +12,7 @@ namespace UITests
 		public override string Issue => "Call unfocus entry crashes app";
 		
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void Issue5376Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

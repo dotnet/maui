@@ -16,6 +16,7 @@ namespace UITests
 		public override string Issue => "Async loading of Content causes UI element to be unclickable"; 
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void Issue852TestsEntriesClickable()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

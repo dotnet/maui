@@ -16,6 +16,7 @@ namespace UITests.Tests.Issues
 		public override string Issue => "Add a ScaleXTo and ScaleYTo animation extension method";
 
 		[Test]
+		[Category(UITestCategories.Animation)]
 		public async Task AnimateScaleOfBoxView()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Windows]);
