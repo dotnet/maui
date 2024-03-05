@@ -195,13 +195,6 @@ namespace Microsoft.Maui.Controls
 		/// Sets the navigation animation that occurs when a page is navigated to with the GoToAsync method.
 		/// </summary>
 		/// <remarks>
-		/// Can set to one of the PresentationMode enumeration members:
-		/// - NotAnimated - indicates that the page will be displayed without a navigation animation.
-		/// - Animated - indicates that the page will be displayed with a navigation animation.This is the default value of the Shell.PresentationMode attached property.
-		/// - Modal - indicates that the page will be displayed as a modal page.
-		/// - ModalAnimated - indicates that the page will be displayed as a modal page, with a navigation animation.
-		/// - ModalNotAnimated - indicates that the page will be displayed as a modal page, without a navigation animation.
-		/// </remarks>
 		/// <param name="obj">The BindableObject that modify the Shell tabs visibility.</param>
 		/// <param name="presentationMode">Defines the navigation animation that occurs when a page is navigated.</param>
 		public static void SetPresentationMode(BindableObject obj, PresentationMode presentationMode) => obj.SetValue(PresentationModeProperty, presentationMode);
@@ -216,13 +209,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Sets the behavior used to open the flyout.
 		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen.
+		/// However, this behavior can be changed by setting the <see cref = "FlyoutBehavior" /> attached property.
 		/// </summary>
-		/// <remarks>
-		/// However, this behavior can be changed by setting the Shell. FlyoutBehavior attached property to one of the FlyoutBehavior enumeration members:
-		/// - Disabled - indicates that the flyout can't be opened by the user.
-		/// - Flyout - indicates that the flyout can be opened and closed by the user.This is the default value for the FlyoutBehavior property.
-		/// - Locked - indicates that the flyout can't be closed by the user, and that it doesn't overlap content.
-		/// </remarks>
 		/// <param name="obj">The BindableObject that modify the Shell behavior used to open the flyout.</param>
 		/// <param name="value">The behavior used to open the flyout.</param>
 		public static void SetFlyoutBehavior(BindableObject obj, FlyoutBehavior value) => obj.SetValue(FlyoutBehaviorProperty, value);
@@ -1043,10 +1031,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlyoutBackgroundImage), typeof(ImageSource), typeof(Shell), default(ImageSource), BindingMode.OneTime);
 
 		/// <summary>
-		/// The aspect ratio of the background image can be configured by setting the FlyoutBackgroundImageAspect property, of type Aspect, to one of the Aspect enumeration members:
-		/// - AspectFill - clips the image so that it fills the display area while preserving the aspect ratio.
-		/// - AspectFit - letterboxes the image, if required, so that the image fits into the display area, with blank space added to the top/bottom or sides depending on whether the image is wide or tall.This is the default value of the FlyoutBackgroundImageAspect property.
-		/// - Fill - stretches the image to completely and exactly fill the display area.This may result in image distortion.
+		/// The aspect ratio of the background image.
 		/// </summary>
 		public static readonly BindableProperty FlyoutBackgroundImageAspectProperty =
 			BindableProperty.Create(nameof(FlyoutBackgroundImageAspect), typeof(Aspect), typeof(Shell), default(Aspect), BindingMode.OneTime);
@@ -1114,10 +1099,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Modify the behavior of the flyout scroll.
 		/// By default, a flyout can be scrolled vertically when the flyout items don't fit in the flyout. 
-		/// Can be changed by setting one of the ScrollMode enumeration members:
-		/// - Disabled – indicates that vertical scrolling will be disabled.
-		/// - Enabled – indicates that vertical scrolling will be enabled.
-		/// - Auto – indicates that vertical scrolling will be enabled if the flyout items don't fit in the flyout. This is the default value of the FlyoutVerticalScrollMode property.
 		/// </summary>
 		public static readonly BindableProperty FlyoutVerticalScrollModeProperty =
 			BindableProperty.Create(nameof(FlyoutVerticalScrollMode), typeof(ScrollMode), typeof(Shell), ScrollMode.Auto);
