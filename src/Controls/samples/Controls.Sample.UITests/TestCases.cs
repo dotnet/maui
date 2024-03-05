@@ -102,10 +102,6 @@ namespace Maui.Controls.Sample
 					throw new InvalidCastException("Issue must be of type Page");
 				}
 
-				// Make sure background color is consistant so that the Mica material doesn't cause issues on Windows
-				page.BackgroundColor = Application.Current.RequestedTheme == 
-					Microsoft.Maui.ApplicationModel.AppTheme.Dark ? Colors.Black : Colors.White;
-
 				return page;
 			}
 

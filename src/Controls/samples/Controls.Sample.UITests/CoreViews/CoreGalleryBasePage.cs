@@ -44,8 +44,6 @@ namespace Maui.Controls.Sample
 
 			Root = new StackLayout
 			{
-				// Make sure background color is consistant so that the Mica material doesn't cause issues on Windows
-				BackgroundColor = Application.Current.RequestedTheme == AppTheme.Dark ? Colors.Black : Colors.White,
 				Padding = new Thickness(20),
 				Children =
 				{
