@@ -16,7 +16,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[TestCase("SwapFlyoutPage")]
 		[TestCase("SwapTabbedPage")]
 		[TestCase("RemoveAddTabs")]
-		public async Task MakingFragmentRelatedChangesWhileAppIsBackgroundedFails(string scenario)
+		public void MakingFragmentRelatedChangesWhileAppIsBackgroundedFails(string scenario)
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
 
@@ -24,10 +24,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			{
 				App.WaitForElement(scenario);
 				App.Click(scenario);
+				App.WaitForElement("BackgroundMe");
 				App.BackgroundApp();
-
-				// Wait for app to finish backgrounding
-				await Task.Yield();
 				App.WaitForNoElement("BackgroundMe");
 				App.ForegroundApp();
 				App.WaitForElement("Restore");
@@ -35,6 +33,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}
 			catch
 			{
+				SaveUIDiagnosticInfo();
+
 				// Just in case these tests leave the app in an unreliable state
 				App.ResetApp();
 				FixtureSetup();
