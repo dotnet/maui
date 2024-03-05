@@ -48,27 +48,30 @@ namespace Microsoft.Maui
 			await Screenshot.Default.CaptureAsync(window);
 #endif
 
-#if !TIZEN
 		internal static bool NeedsContainer(this IView? view, PlatformView? platformView)
 		{
+#if !TIZEN
 			if (view?.Clip != null || view?.Shadow != null)
 				return true;
+#endif
 
 #if ANDROID
-			if (view?.InputTransparent == true && (platformView is null || platformView is not IInputTransparentManagingView))
+            if (view?.InputTransparent == true && (platformView is null || platformView is not IInputTransparentManagingView))
 				return true;
 #endif
 
 #if ANDROID || IOS
 			if (view is IBorder border && border.Border != null)
 				return true;
-#elif WINDOWS
-			if (view is IBorderView border)
+#endif
+
+#if WINDOWS || TIZEN                 
+            if (view is IBorderView border)
 				return border?.Shape != null || border?.Stroke != null;
 #endif
+
 			return false;
 		}
-#endif
 
 	}
 }

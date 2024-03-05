@@ -42,6 +42,26 @@ namespace Microsoft.Maui.AppiumTests
 			RunTest(key, clickable, passthru);
 		}
 
+		[Test]
+		[Combinatorial]
+		public void ScrollViewInputTransparencySimpleMatrix([Values] bool rootTrans, [Values] bool rootCascade, [Values] bool trans)
+		{
+			var (clickable, passthru) = Test.InputTransparencyMatrix.SimpleStates[(rootTrans, rootCascade, trans)];
+			var key = Test.InputTransparencyMatrix.GetSimpleKey("ScrollView", rootTrans, rootCascade, trans, clickable, passthru);
+
+			RunTest(key, clickable, passthru);
+		}
+
+		[Test]
+		[Combinatorial]
+		public void ContentViewInputTransparencySimpleMatrix([Values] bool rootTrans, [Values] bool rootCascade, [Values] bool trans)
+		{
+			var (clickable, passthru) = Test.InputTransparencyMatrix.SimpleStates[(rootTrans, rootCascade, trans)];
+			var key = Test.InputTransparencyMatrix.GetSimpleKey("ContentView", rootTrans, rootCascade, trans, clickable, passthru);
+
+			RunTest(key, clickable, passthru);
+		}
+
 		void RunTest(string test, bool? clickable = null, bool? passthru = null)
 		{
 			var remote = new EventViewContainerRemote(UITestContext, test);
