@@ -117,7 +117,6 @@ namespace Microsoft.Maui.Controls
 		/// <param name="self">The <see cref="T:Microsoft.Maui.Controls.BindableObject" />.</param>
 		/// <param name="targetProperty">The <see cref="T:Microsoft.Maui.Controls.BindableProperty" /> on which to set a binding.</param>
 		/// <param name="getter">An getter method used to retrieve the source property.</param>
-		/// <param name="setter">An optional setter method to update the value of the source property.</param>
 		/// <param name="mode">The binding mode. This property is optional. Default is <see cref="F:Microsoft.Maui.Controls.BindingMode.Default" />.</param>
 		/// <param name="converter">The converter. This parameter is optional. Default is <see langword="null" />.</param>
 		/// <param name="converterParameter">An user-defined parameter to pass to the converter. This parameter is optional. Default is <see langword="null" />.</param>
@@ -130,7 +129,6 @@ namespace Microsoft.Maui.Controls
 			this BindableObject self,
 			BindableProperty targetProperty,
 			Func<TSource, TProperty> getter,
-			Action<TSource, TProperty>? setter = null,
 			BindingMode mode = BindingMode.Default,
 			IValueConverter? converter = null,
 			object? converterParameter = null,
