@@ -49,13 +49,13 @@ namespace Microsoft.Maui
 #endif
 
 #if !TIZEN
-		internal static bool NeedsContainer(this IView? view)
+		internal static bool NeedsContainer(this IView? view, PlatformView? platformView)
 		{
 			if (view?.Clip != null || view?.Shadow != null)
 				return true;
 
 #if ANDROID
-			if (view?.InputTransparent == true)
+			if (view?.InputTransparent == true && (platformView is null || platformView is not IInputTransparentManagingView))
 				return true;
 #endif
 
