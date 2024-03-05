@@ -194,7 +194,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Sets the navigation animation that occurs when a page is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
 		/// </summary>
-		/// <remarks>
 		/// <param name="obj">The object that modify the Shell tabs visibility.</param>
 		/// <param name="presentationMode">Defines the navigation animation that occurs when a page is navigated.</param>
 		public static void SetPresentationMode(BindableObject obj, PresentationMode presentationMode) => obj.SetValue(PresentationModeProperty, presentationMode);
