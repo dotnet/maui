@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample
 {
@@ -62,9 +63,7 @@ namespace Maui.Controls.Sample
 						TrackOnInsights(page);
 						if (page is ContentPage /*|| page is CarouselPage*/)
 						{
-
 							await Navigation.PushAsync(page);
-
 						}
 						else if (page is Shell)
 						{
@@ -102,6 +101,11 @@ namespace Maui.Controls.Sample
 				{
 					throw new InvalidCastException("Issue must be of type Page");
 				}
+
+				// Make sure background color is consistant so that the Mica material doesn't cause issues on Windows
+				page.BackgroundColor = Application.Current.RequestedTheme == 
+					Microsoft.Maui.ApplicationModel.AppTheme.Dark ? Colors.Black : Colors.White;
+
 				return page;
 			}
 
