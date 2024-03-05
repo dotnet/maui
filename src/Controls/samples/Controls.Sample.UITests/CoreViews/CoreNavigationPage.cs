@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample
 
 		private void UpdateThemeColor(object _, AppThemeChangedEventArgs args)
 		{
-			// Make sure background color is consistant so that the Mica material doesn't cause issues on Windows
+			// Make sure background color is consistent so that the Mica material doesn't cause issues on Windows
 			BackgroundColor =
 					Application.Current.RequestedTheme == Microsoft.Maui.ApplicationModel.AppTheme.Dark ? Colors.Black : Colors.White;
 		}
