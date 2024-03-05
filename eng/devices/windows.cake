@@ -82,10 +82,12 @@ void setBinLogDir()
 
 	var binDir = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
 	var regKeyPath = @"SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps";
-	try {
+	RegistryKey key = null;
+	try 
+	{
 		using (var hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
-		using (var key = hklm.OpenSubKey(regKeyPath))
 		{
+			key = hklm.OpenSubKey(regKeyPath);
 			if (key == null)
 			{
 				key = RegistryKey.CreateSubKey(regKeyPath);
@@ -94,8 +96,15 @@ void setBinLogDir()
 			key.SetValue("DumpType", 2);
 		}
 		Information($"Successfully set dump log file path to {binDir}");
-	} catch { 
+	} catch 
+	{ 
 		Information("Error setting bin log dir");
+	} finally 
+	{
+		if (key != null)
+		{
+			key.Dispose();
+		}
 	}
 }
 
