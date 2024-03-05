@@ -158,11 +158,6 @@ Teardown(context =>
 	if (emulatorProcess == null || !DEVICE_BOOT || TARGET.ToLower() == "boot")
 		return;
 
-	if (IsCIBuild())
-	{
-		AdbShell("pm enable --user 0 com.google.android.configupdater");
-	}
-
 	//stop and cleanup the emulator
 	Information("AdbEmuKill");
 	AdbEmuKill(adbSettings);
