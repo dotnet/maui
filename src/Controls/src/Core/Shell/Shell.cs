@@ -193,13 +193,15 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Sets the navigation animation that occurs when a page is navigated to with the GoToAsync method.
+		/// </summary>
+		/// <remarks>
 		/// Can set to one of the PresentationMode enumeration members:
 		/// - NotAnimated - indicates that the page will be displayed without a navigation animation.
 		/// - Animated - indicates that the page will be displayed with a navigation animation.This is the default value of the Shell.PresentationMode attached property.
 		/// - Modal - indicates that the page will be displayed as a modal page.
 		/// - ModalAnimated - indicates that the page will be displayed as a modal page, with a navigation animation.
 		/// - ModalNotAnimated - indicates that the page will be displayed as a modal page, without a navigation animation.
-		/// </summary>
+		/// </remarks>
 		/// <param name="obj">The BindableObject that modify the Shell tabs visibility.</param>
 		/// <param name="presentationMode">Define the navigation animation that occurs when a page is navigated.</param>
 		public static void SetPresentationMode(BindableObject obj, PresentationMode presentationMode) => obj.SetValue(PresentationModeProperty, presentationMode);
@@ -213,12 +215,14 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Sets the behavior used to open the flyout.
-		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen. 
+		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen.
+		/// </summary>
+		/// <remarks>
 		/// However, this behavior can be changed by setting the Shell. FlyoutBehavior attached property to one of the FlyoutBehavior enumeration members:
 		/// - Disabled - indicates that the flyout can't be opened by the user.
 		/// - Flyout - indicates that the flyout can be opened and closed by the user.This is the default value for the FlyoutBehavior property.
 		/// - Locked - indicates that the flyout can't be closed by the user, and that it doesn't overlap content.
-		/// </summary>
+		/// </remarks>
 		/// <param name="obj">The BindableObject that modify the Shell behavior used to open the flyout.</param>
 		/// <param name="value">The behavior used to open the flyout.</param>
 		public static void SetFlyoutBehavior(BindableObject obj, FlyoutBehavior value) => obj.SetValue(FlyoutBehaviorProperty, value);
