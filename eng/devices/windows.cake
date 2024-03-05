@@ -2,6 +2,7 @@
 #load "../cake/dotnet.cake"
 #load "./devices-shared.cake"
 
+using Microsoft.Win32;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -77,15 +78,25 @@ void Cleanup()
 
 void setBinLogDir()
 {
-	var binDir = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
-	try {
-		StartProcess("cmd",
-			$"/c reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting\\LocalDumps\" /v DumpFolder /d \"{binDir}\"");
-		StartProcess("cmd",
-			"/c reg add \"HKLM\\SOFTWARE\\Microsoft\\Windows\\Windows Error Reporting\\LocalDumps\" /v DumpType /t REG_DWORD /d 2");
+	Information("Attempting to set bin log dir");
 
+	var binDir = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
+	var regKeyPath = @"SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps";
+	try {
+		using (var hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
+		using (var key = hklm.OpenSubKey(regKeyPath))
+		{
+			if (key == null)
+			{
+				key = RegistryKey.CreateSubKey(regKeyPath);
+			}
+			key.SetValue("DumpFolder", binDir);
+			key.SetValue("DumpType", 2);
+		}
 		Information($"Successfully set dump log file path to {binDir}");
-	} catch { }
+	} catch { 
+		Information("Error setting bin log dir");
+	}
 }
 
 Task("Cleanup");
