@@ -24,9 +24,9 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>b684e93eda5576d8d5fd29313fd163cc3a9ffcb2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="17.2.9241-net9-p2">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="17.2.9243-net9-p2">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>088bb48cbaf2ce7c3cfd8d1009422234da85628c</Sha>
+      <Sha>b684e93eda5576d8d5fd29313fd163cc3a9ffcb2</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
