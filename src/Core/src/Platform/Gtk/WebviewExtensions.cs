@@ -11,6 +11,11 @@ public static partial class WebviewExtensions
 		platformWebView.UpdateSource(webView, null);
 	}
 
+	public static void MapWebViewSettings(IWebViewHandler handler, IWebView webView)
+	{
+		handler.PlatformView.UpdateSettings(webView, true, true);
+	}
+
 	public static void UpdateSource(this MauiWebView platformWebView, IWebView webView, IWebViewDelegate? webViewDelegate)
 	{
 		IWebViewSource? source = webView.Source;
@@ -30,13 +35,14 @@ public static partial class WebviewExtensions
 		}
 	}
 
-	public static void UpdateSettings(this MauiWebView platformWebView, IWebView webView, bool javaScriptEnabled, bool domStorageEnabled)
+	public static void UpdateSettings(this MauiWebView platformWebView, IWebView webView, bool javaScriptEnabled, bool html5DomStorageEnabled)
 	{
 		if (platformWebView.Settings == null)
 			return;
 
-		// platformWebView.Settings.JavaScriptEnabled = javaScriptEnabled;
-		// platformWebView.Settings.DomStorageEnabled = domStorageEnabled;
+		platformWebView.Settings.EnableJavascript = javaScriptEnabled;
+		platformWebView.Settings.EnableHtml5LocalStorage = html5DomStorageEnabled;
+
 	}
 
 	public static void UpdateUserAgent(this MauiWebView platformWebView, IWebView webView)
@@ -44,10 +50,10 @@ public static partial class WebviewExtensions
 		if (platformWebView.Settings == null)
 			return;
 
-		// if (webView.UserAgent != null)
-		// 	platformWebView.Settings.UserAgentString = webView.UserAgent;
-		// else
-		// 	webView.UserAgent = platformWebView.Settings.UserAgentString;
+		if (webView.UserAgent != null)
+			platformWebView.Settings.UserAgent = webView.UserAgent;
+		else
+			webView.UserAgent = platformWebView.Settings.UserAgent;
 	}
 
 	public static void Eval(this MauiWebView platformWebView, IWebView webView, string script)
@@ -97,9 +103,34 @@ public static partial class WebviewExtensions
 	{
 		try
 		{
-			// var javaScriptResult = new JavascriptResult();
-			// webView.EvaluateJavascript(request.Script, javaScriptResult);
-			// request.RunAndReport(javaScriptResult.JsValue);
+			webView.RunJavascript(request.Script, null, (sender, res) =>
+			{
+				if (sender is not WebView view)
+				{
+					request.SetException(new ArgumentException($"{nameof(WebView)} is null"));
+
+					return;
+				}
+
+				try
+				{
+					var javascriptResult = view.RunJavascriptFinish(res);
+
+					if (javascriptResult.JsValue is not { } jsValue)
+						return;
+
+					if (jsValue.IsString)
+						request.SetResult(jsValue.ToString());
+					else
+						request.SetException(new ArgumentException($"script {request.Script} is not {nameof(jsValue.IsString)}"));
+
+				}
+				catch (Exception exception)
+				{
+					request.SetException(exception);
+				}
+			});
+
 		}
 		catch (Exception ex)
 		{

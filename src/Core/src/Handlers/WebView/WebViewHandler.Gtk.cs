@@ -24,6 +24,12 @@ namespace Microsoft.Maui.Handlers
 			return new(this);
 		}
 
+		protected override void ConnectHandler(MauiWebView platformView)
+		{
+			base.ConnectHandler(platformView);
+			platformView.UpdateSettings(VirtualView, true, true);
+		}
+
 		protected override void DisconnectHandler(MauiWebView platformView)
 		{
 
