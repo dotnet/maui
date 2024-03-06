@@ -359,7 +359,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		sb.AppendLine("\t\tprivate void InitializeComponent()");
 		sb.AppendLine("\t\t{");
 		sb.AppendLine("\t\t\t[global::System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(\"TrimAnalysis\", \"IL2026:RequiresUnreferencedCode\",");
-		sb.AppendLine("\t\t\t\tJustification = \"The body of InitializeComponent will be replaced by XamlC so LoadFromXaml will never be called in production builds.\")]");
+		sb.AppendLine("\t\t\t\tJustification = \"By default, Xaml compilation replaces the body of InitializeComponent, so LoadFromXaml will never be called in production builds.\")]");
 		sb.AppendLine("\t\t\tvoid LoadFromXaml()");
 		sb.AppendLine("\t\t\t{");
 		sb.AppendLine($"\t\t\t\tglobal::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof({rootType}));");
