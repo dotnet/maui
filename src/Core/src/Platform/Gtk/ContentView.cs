@@ -5,9 +5,9 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Platform
 {
 
-	public class ContentView : Gtk.Box, ICrossPlatformLayoutBacking
+	public class ContentView : EventBox, ICrossPlatformLayoutBacking
 	{
-		public ContentView() : base(Orientation.Horizontal, 0) { }
+		public ContentView() : base() { }
 
 		public ICrossPlatformLayout? CrossPlatformLayout { get; set; }
 
@@ -24,11 +24,22 @@ namespace Microsoft.Maui.Platform
 				}
 				else if (value != null)
 				{
-					PackStart(value, true, true, 0);
+					//PackStart(value, true, false, 0);
+					Child = value;
 				}
 
 				_content = value;
 			}
+		}
+		
+		Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			return CrossPlatformLayout?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Size.Zero;
+		}
+
+		Size CrossPlatformArrange(Rect bounds)
+		{
+			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Size.Zero;
 		}
 	}
 
