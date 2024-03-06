@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue20896">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <Style TargetType="Button">
+                <Setter Property="ImageSource" Value="groceries.png" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="TextColor" Value="Black" />
+            </Style>
+        
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ScrollView>
+        <StackLayout
+            Padding="12">
+            <Label 
+                Text="This is a manual test to verify the use of ContentLayout in Catalyst. Remember, edit the info.plist to a UIDeviceFamily = 6"/>
+            <Button 
+                Text="Default" /> 
+            <Button
+                ContentLayout="Left, 24"
+                Text="Left - 24"/>   
+            <Button
+                ContentLayout="Top, 24"
+                Text="Top - 24"/>
+            <Button
+                ContentLayout="Right, 24"
+                Text="Right - 24"/>
+            <Button
+                ContentLayout="Bottom, 24"
+                Text="Bottom - 24"/>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

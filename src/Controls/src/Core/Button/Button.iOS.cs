@@ -14,6 +14,10 @@ namespace Microsoft.Maui.Controls
 		{
 			var result = base.ArrangeOverride(bounds);
 			Handler?.UpdateValue(nameof(ContentLayout));
+
+			if(ImageSource is not null)
+ 				Handler?.UpdateValue(nameof(IImage.Source));
+				
 			return result;
 		}
 
