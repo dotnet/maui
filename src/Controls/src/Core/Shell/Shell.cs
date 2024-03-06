@@ -1070,7 +1070,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty FlyoutHeaderTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutHeaderTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
-				propertyChanging: OnFlyoutHeaderTemplateChanging); GoToAsync
+				propertyChanging: OnFlyoutHeaderTemplateChanging);
 
 		/// <summary>
 		/// The flyout footer appearance can be defined by setting a DataTemplate.
