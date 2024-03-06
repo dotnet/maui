@@ -97,7 +97,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			{
 				if (carouselView.ItemsLayout is LinearItemsLayout linearItemsLayout)
 				{
-					Enum.TryParse(snapPointsTypePicker.SelectedItem.ToString(), out SnapPointsType snapPointsType);
+					Enum.TryParse(snapPointsTypePicker.SelectedItem?.ToString(), out SnapPointsType snapPointsType);
 					linearItemsLayout.SnapPointsType = snapPointsType;
 				}
 			};
@@ -106,7 +106,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			{
 				if (carouselView.ItemsLayout is LinearItemsLayout linearItemsLayout)
 				{
-					Enum.TryParse(snapPointsAlignmentPicker.SelectedItem.ToString(), out SnapPointsAlignment snapPointsAlignment);
+					Enum.TryParse(snapPointsAlignmentPicker.SelectedItem?.ToString(), out SnapPointsAlignment snapPointsAlignment);
 					linearItemsLayout.SnapPointsAlignment = snapPointsAlignment;
 				}
 			};
