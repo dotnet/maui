@@ -111,6 +111,7 @@ Setup(context =>
 		var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
 		if (api == 27 && DEVICE_ARCH == "x86_64")
 			sdk = "default";
+
 		ANDROID_AVD_IMAGE = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
 
 		Information("Going to run image: {0}", ANDROID_AVD_IMAGE);
@@ -142,6 +143,12 @@ Setup(context =>
 		// start the emulator
 		Information("Starting Emulator: {0}...", ANDROID_AVD);
 		emulatorProcess = AndroidEmulatorStart(ANDROID_AVD, emuSettings);
+	}
+
+	if (IsCIBuild())
+	{
+		AdbLogcat(new AdbLogcatOptions() { Clear = true });
+		AdbShell("logcat -G 16M");
 	}
 });
 
@@ -343,8 +350,29 @@ Task("uitest")
 	
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_android.log");
 
-	Information("Run UITests project {0}", PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
+	Information("Run UITests project {0}", PROJECT.FullPath);	
+	
+	int numOfRetries = 0;
+
+	if (IsCIBuild())
+		numOfRetries = 1;
+
+	for(int retryCount = 0; retryCount <= numOfRetries; retryCount++)
+	{
+		try
+		{
+			RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
+			break;
+		}
+		catch(Exception)
+		{
+			if (retryCount == numOfRetries)
+			{
+				WriteLogCat();
+				throw;
+			}
+		}
+	}
 });
 
 Task("cg-uitest")
@@ -392,7 +420,49 @@ Task("cg-uitest")
 	FailRunOnOnlyInconclusiveTests(System.IO.Path.Combine(nunitSettings.Work.FullPath, "TestResult.xml"));
 });
 
+
+Task("logcat")
+	.Does(() =>
+{
+	WriteLogCat();
+});
+
 RunTarget(TARGET);
+
+void WriteLogCat(string filename = null)
+{
+	if (string.IsNullOrWhiteSpace(filename))
+	{
+		var timeStamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+		filename = $"logcat_{TARGET}_{timeStamp}.log";
+	}
+		
+	EnsureDirectoryExists(GetLogDirectory());
+	// I tried AdbLogcat here but the pipeline kept reporting "cannot create file"
+	var location = $"{GetLogDirectory()}/{filename}";
+	Information("Writing logcat to {0}", location);
+
+	var processSettings = new ProcessSettings();
+	processSettings.RedirectStandardOutput = true;
+	processSettings.RedirectStandardError = true;
+	var adb = $"{ANDROID_SDK_ROOT}/platform-tools/adb";
+
+	Information("Running: {0} logcat -d", adb);
+	processSettings.Arguments = $"logcat -d";
+    using (var fs = new System.IO.FileStream(location, System.IO.FileMode.Create)) 
+	using (var sw = new StreamWriter(fs))
+	{
+		processSettings.RedirectedStandardOutputHandler = (output) => {
+			sw.WriteLine(output);
+			return output;
+		};
+
+		var process = StartProcess($"{adb}", processSettings); 
+		Information("exit code {0}", process);
+	}
+
+	Information("Logcat written to {0}", location);
+}
 
 void SetupAppPackageNameAndResult()
 {
