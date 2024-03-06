@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Threading;
 using Gdk;
 using Gtk;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics.Platform.Gtk;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
-using CollectionViewSelectionMode = Microsoft.Maui.Controls.SelectionMode;
 
 namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
@@ -17,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 	/// <summary>
 	/// A View that contain a templated list of items.
 	/// </summary>
-	public partial class CollectionView : Gtk.ScrolledWindow, ICollectionViewController
+	public partial class CollectionView : ScrolledWindow, ICollectionViewController
 	{
 
 		double _previousHorizontalOffset;
@@ -26,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 		Widget? _headerView;
 		Widget? _footerView;
 
-		Microsoft.Maui.Controls.SelectionMode _selectionMode;
+		SelectionMode _selectionMode;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CollectionView"/> class.
@@ -80,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 		/// <summary>
 		/// Gets or sets a value that controls whether and how many items can be selected.
 		/// </summary>
-		public Microsoft.Maui.Controls.SelectionMode SelectionMode
+		public SelectionMode SelectionMode
 		{
 			get => _selectionMode;
 			set
@@ -245,7 +238,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 
 			CollectionViewController = new CollectionViewController()
 			{
-				SelectionMode = this.SelectionMode,
+				SelectionMode = SelectionMode,
 				GetViewPort = () => ViewPort,
 				AddToContainer = holder => CollectionContainer.AddItem(holder),
 				RemoveFromContainer = holder => CollectionContainer.RemoveItem(holder),
@@ -317,7 +310,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 				LayoutManager = LayoutManager
 			};
 
-			this.Child = CollectionContainer;
+			Child = CollectionContainer;
 
 			this.WidthSpecification(LayoutParamPolicies.MatchParent);
 			this.HeightSpecification(LayoutParamPolicies.MatchParent);

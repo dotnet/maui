@@ -4,10 +4,8 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using Gtk;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
-using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls.Handlers.Items.Platform;
 
@@ -156,7 +154,7 @@ public class CollectionViewController : ICollectionViewController
 		if (_viewHolderIndexTable.TryGetValue(viewHolder, out var index))
 		{
 
-			if (_selectedItems.Contains(index) && SelectionMode != Microsoft.Maui.Controls.SelectionMode.Single)
+			if (_selectedItems.Contains(index) && SelectionMode != SelectionMode.Single)
 			{
 				RequestItemUnselect(index, viewHolder);
 			}
@@ -334,12 +332,12 @@ public class CollectionViewController : ICollectionViewController
 		LayoutManager?.ItemMeasureInvalidated(index);
 	}
 
-	Microsoft.Maui.Controls.SelectionMode _selectionMode;
+	SelectionMode _selectionMode;
 
 	/// <summary>
 	/// Gets or sets a value that controls whether and how many items can be selected.
 	/// </summary>
-	public Microsoft.Maui.Controls.SelectionMode SelectionMode
+	public SelectionMode SelectionMode
 	{
 		get => _selectionMode;
 		set
@@ -356,17 +354,17 @@ public class CollectionViewController : ICollectionViewController
 
 	void RequestItemSelect(int index, ViewHolder? viewHolder = null)
 	{
-		if (SelectionMode == Microsoft.Maui.Controls.SelectionMode.None)
+		if (SelectionMode == SelectionMode.None)
 			return;
 
-		if (SelectionMode != Microsoft.Maui.Controls.SelectionMode.Multiple && _selectedItems.Any())
+		if (SelectionMode != SelectionMode.Multiple && _selectedItems.Any())
 		{
 			var selected = _selectedItems.First();
 
 			if (selected == index)
 			{
 				// already selected
-				if (SelectionMode == Microsoft.Maui.Controls.SelectionMode.Single)
+				if (SelectionMode == SelectionMode.Single)
 					return;
 			}
 			else
@@ -399,7 +397,7 @@ public class CollectionViewController : ICollectionViewController
 
 	public void RequestItemUnselect(int index, ViewHolder? viewHolder = null)
 	{
-		if (SelectionMode == Microsoft.Maui.Controls.SelectionMode.None)
+		if (SelectionMode == SelectionMode.None)
 			return;
 
 		if (_selectedItems.Contains(index))
@@ -418,7 +416,7 @@ public class CollectionViewController : ICollectionViewController
 
 	void UpdateSelectionMode()
 	{
-		if (_selectionMode == Microsoft.Maui.Controls.SelectionMode.None)
+		if (_selectionMode == SelectionMode.None)
 		{
 			if (_selectedItems.Count > 0)
 			{
@@ -433,7 +431,7 @@ public class CollectionViewController : ICollectionViewController
 
 			_selectedItems.Clear();
 		}
-		else if (_selectionMode == Microsoft.Maui.Controls.SelectionMode.Single)
+		else if (_selectionMode == SelectionMode.Single)
 		{
 			if (_selectedItems.Count > 1)
 			{

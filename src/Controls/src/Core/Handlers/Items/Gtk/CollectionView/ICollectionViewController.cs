@@ -1,6 +1,4 @@
-﻿using Gtk.UIExtensions.Common;
-using Rect = Microsoft.Maui.Graphics.Rect;
-using Size = Microsoft.Maui.Graphics.Size;
+﻿using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {

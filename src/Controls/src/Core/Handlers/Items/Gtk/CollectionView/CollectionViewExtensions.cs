@@ -1,7 +1,5 @@
 #nullable disable
 
-using Microsoft.Maui.Controls;
-
 namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
 

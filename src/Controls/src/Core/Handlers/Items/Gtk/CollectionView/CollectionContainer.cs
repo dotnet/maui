@@ -1,8 +1,6 @@
 #define USE_ADJUSTSIZEREQUEST_
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
@@ -12,7 +10,7 @@ using Rectangle = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls.Handlers.Items.Platform;
 
-public partial class CollectionContainer : Gtk.Container
+public partial class CollectionContainer : Container
 {
 
 	public CollectionContainer()
