@@ -279,7 +279,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			try
 			{
-				return (view as IView).Measure(widthConstraint, heightConstraint).ToPixel();
+				var measured = (view as IView).Measure(widthConstraint, heightConstraint).ToPixel(); 
+				return measured;
 			}
 			finally
 			{

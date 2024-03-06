@@ -31,7 +31,7 @@ public partial class CollectionView
 
 	Rect LastAllocation { get; set; }
 
-	const bool RestrictToMesuredAllocation = true;
+	const bool RestrictToMesuredAllocation = false;
 
 	protected Size? MeasuredSizeH { get; set; }
 
@@ -121,7 +121,7 @@ public partial class CollectionView
 
 			var mAllocation = allocation.ToRect();
 			CurrentAllocation = mAllocation;
-			
+
 			clearCache = LastAllocation.IsEmpty || mAllocation.IsEmpty || LastAllocation != mAllocation;
 			ClearMeasured(clearCache);
 
@@ -297,10 +297,12 @@ public partial class CollectionView
 			try
 			{
 				LastAllocation = Allocation.ToRect();
+				CurrentAllocation = LastAllocation;
 				Measure(Allocation.Width, Allocation.Height);
 			}
 			catch
 			{
+				CurrentAllocation = null;
 				IsReallocating = false;
 			}
 		}

@@ -21,7 +21,7 @@ public static class WidgetExtensions
 	{
 		if (it is ViewHolder holder)
 		{
-			holder.Bounds = bounds;
+			holder.UpdateBounds(bounds);
 
 			return;
 		}

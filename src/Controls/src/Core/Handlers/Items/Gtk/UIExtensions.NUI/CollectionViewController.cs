@@ -133,7 +133,7 @@ public class CollectionViewController : ICollectionViewController
 			}
 		}
 
-		holder.Bounds = bounds;
+		holder.UpdateBounds(bounds);
 
 		return holder;
 	}

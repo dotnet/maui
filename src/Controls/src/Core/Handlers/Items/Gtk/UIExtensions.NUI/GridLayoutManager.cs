@@ -94,6 +94,11 @@ namespace Gtk.UIExtensions.NUI
 			get => IsHorizontal ? BaseItemBound.Width : BaseItemBound.Height;
 		}
 
+		double BaseColumnSize
+		{
+			get => IsHorizontal ? BaseItemBound.Height : BaseItemBound.Width;
+		}
+		
 		Size BaseItemBound
 		{
 			get
@@ -348,7 +353,7 @@ namespace Gtk.UIExtensions.NUI
 			double columnSize = ColumnSize;
 
 			if (double.IsInfinity(columnSize))
-				columnSize = BaseItemSize;
+				columnSize = BaseColumnSize;
 
 			double rowStartPoint = 0;
 			double columnStartPoint = 0;
