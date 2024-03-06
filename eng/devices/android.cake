@@ -352,18 +352,27 @@ Task("uitest")
 
 	Information("Run UITests project {0}", PROJECT.FullPath);	
 	
-	try{
-        try{
-		    RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
-        }
-        catch{
-		    RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
-        }
-	}
-	catch(Exception)
+	int numOfRetries = 0;
+	int retryCount = 0;
+
+	if (IsCIBuild())
+		numOfRetries = 1;
+
+	for(int retryCount = 0; retryCount <= numOfRetries; retryCount++)
 	{
-		WriteLogCat();
-		throw;
+		try
+		{
+			RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
+			break;
+		}
+		catch(Exception)
+		{
+			if (retryCount == numOfRetries)
+			{
+				WriteLogCat();
+				throw;
+			}
+		}
 	}
 });
 
