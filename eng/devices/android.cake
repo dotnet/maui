@@ -353,7 +353,6 @@ Task("uitest")
 	Information("Run UITests project {0}", PROJECT.FullPath);	
 	
 	int numOfRetries = 0;
-	int retryCount = 0;
 
 	if (IsCIBuild())
 		numOfRetries = 1;
