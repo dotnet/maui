@@ -1,8 +1,9 @@
+using Gtk;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using View = Gtk.Widget;
 
-namespace Gtk.UIExtensions.NUI
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
     /// <summary>
     /// Interface for positioning item views within a CollectionView
@@ -104,14 +105,14 @@ namespace Gtk.UIExtensions.NUI
         /// </summary>
         /// <param name="header">Header view</param>
         /// <param name="size">Size of header</param>
-		void SetHeader(View? header, Size size);
+		void SetHeader(Widget? header, Size size);
 
         /// <summary>
         /// Sets footer on layout
         /// </summary>
         /// <param name="footer">Fotter view</param>
         /// <param name="size">Size of footer</param>
-		void SetFooter(View? footer, Size size);
+		void SetFooter(Widget? footer, Size size);
 
         /// <summary>
         /// Gets index of next row item

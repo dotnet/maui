@@ -1,5 +1,5 @@
 ﻿#nullable disable
-using TCollectionView = Gtk.UIExtensions.NUI.CollectionView;
+using TCollectionView = Microsoft.Maui.Controls.Handlers.Items.Platform.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

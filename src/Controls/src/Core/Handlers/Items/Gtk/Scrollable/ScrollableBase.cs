@@ -1,10 +1,11 @@
 using System;
+using Gtk;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
 #pragma warning disable CS0067 // Event is never used
 
-namespace Gtk.UIExtensions.NUI;
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform;
 
 public class ScrollableBase
 {

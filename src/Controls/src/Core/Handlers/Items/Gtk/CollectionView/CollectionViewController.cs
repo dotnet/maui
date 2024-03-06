@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
+using Gtk;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 using Microsoft.Maui.Layouts;
 
-namespace Gtk.UIExtensions.NUI;
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform;
 
 public class CollectionViewController : ICollectionViewController
 {

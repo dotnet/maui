@@ -11,7 +11,7 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using CollectionViewSelectionMode = Microsoft.Maui.Controls.SelectionMode;
 
-namespace Gtk.UIExtensions.NUI
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
 
 	/// <summary>
@@ -223,7 +223,7 @@ namespace Gtk.UIExtensions.NUI
 		/// <returns>A ScrollView instance</returns>
 		protected virtual ScrollableBase CreateScrollView()
 		{
-			return new SnappableScrollView(this)
+			return new SnappableScrollable(this)
 			{
 				UseCostomScrolling = true,
 				MaximumVelocity = 8.5f,
@@ -334,7 +334,7 @@ namespace Gtk.UIExtensions.NUI
 
 			SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
 
-			if (ScrollView is SnappableScrollView snappable)
+			if (ScrollView is SnappableScrollable snappable)
 			{
 				snappable.SnapRequestFinished += OnSnapRequestFinished;
 			}

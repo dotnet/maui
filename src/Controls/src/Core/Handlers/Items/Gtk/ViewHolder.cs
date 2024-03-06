@@ -3,7 +3,7 @@ using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 
-namespace Gtk.UIExtensions.NUI
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
 	public enum ViewHolderState
 	{
@@ -172,7 +172,7 @@ namespace Gtk.UIExtensions.NUI
 			// return false;
 		}
 
-		void OnTouchEvent(object source, TouchEventArgs e)
+		void OnTouchEvent(object source, Gtk.TouchEventArgs e)
 		{
 			// if (e.Touch.GetState(0) == PointStateType.Down)
 			// {

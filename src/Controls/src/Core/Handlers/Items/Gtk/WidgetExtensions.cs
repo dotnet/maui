@@ -1,9 +1,10 @@
 using System;
+using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 using Microsoft.Maui.Platform;
 
-namespace Gtk.UIExtensions.NUI;
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform;
 
 public static class WidgetExtensions
 {

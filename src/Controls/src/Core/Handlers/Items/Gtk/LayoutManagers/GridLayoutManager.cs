@@ -7,7 +7,7 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using NView = Gtk.Widget;
 
-namespace Gtk.UIExtensions.NUI
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
 
 	/// <summary>
@@ -398,7 +398,7 @@ namespace Gtk.UIExtensions.NUI
 
 			for (int i = startIndex; i <= endIndex; i++)
 			{
-				Widget? itemView = null;
+				NView? itemView = null;
 
 				if (!_realizedItem.ContainsKey(i))
 				{

@@ -5,12 +5,12 @@ using Gtk;
 
 #pragma warning disable CS0067 // Event is never used
 
-namespace Gtk.UIExtensions.NUI;
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform;
 
 /// <summary>
 /// A ScrollView that implemented snap points
 /// </summary>
-internal class SnappableScrollView : ScrollableBase
+internal class SnappableScrollable : ScrollableBase
 {
 	delegate float UserAlphaFunctionDelegate(float progress);
 
@@ -22,7 +22,7 @@ internal class SnappableScrollView : ScrollableBase
 
 	int _currentItemIndex = -1;
 
-	public SnappableScrollView(CollectionView cv) : base(cv)
+	public SnappableScrollable(CollectionView cv) : base(cv)
 	{
 		CollectionView = cv;
 

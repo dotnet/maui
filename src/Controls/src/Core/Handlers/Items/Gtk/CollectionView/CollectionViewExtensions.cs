@@ -2,7 +2,7 @@
 
 using Microsoft.Maui.Controls;
 
-namespace Gtk.UIExtensions.NUI
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
 
 	public static class CollectionViewExtensions

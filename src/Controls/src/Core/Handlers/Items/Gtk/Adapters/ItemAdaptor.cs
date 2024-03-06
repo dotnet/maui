@@ -6,7 +6,7 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using NView = Gtk.Widget;
 
-namespace Gtk.UIExtensions.NUI
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
     /// <summary>
     /// Base class for an Adapter

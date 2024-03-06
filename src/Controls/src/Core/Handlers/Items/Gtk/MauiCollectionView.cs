@@ -2,13 +2,13 @@
 using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui.Controls.Platform;
-using Gtk.UIExtensions.NUI;
+using Microsoft.Maui.Controls.Handlers.Items.Platform;
 using IMeasurable = Gtk.UIExtensions.Common.IMeasurable;
-using TCollectionView = Gtk.UIExtensions.NUI.CollectionView;
+using TCollectionView = Microsoft.Maui.Controls.Handlers.Items.Platform.CollectionView;
 using TScrollToPosition = Microsoft.Maui.Controls.ScrollToPosition;
 using TSize = Microsoft.Maui.Graphics.Size;
-using TSnapPointsAlignment = Gtk.UIExtensions.NUI.SnapPointsAlignment;
-using TSnapPointsType = Gtk.UIExtensions.NUI.SnapPointsType;
+using TSnapPointsAlignment = Microsoft.Maui.Controls.Handlers.Items.Platform.SnapPointsAlignment;
+using TSnapPointsType = Microsoft.Maui.Controls.Handlers.Items.Platform.SnapPointsType;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

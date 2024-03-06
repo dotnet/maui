@@ -1,10 +1,10 @@
 ﻿#nullable disable
 using Microsoft.Maui.Graphics;
-using TCollectionView = Gtk.UIExtensions.NUI.CollectionView;
+using TCollectionView = Microsoft.Maui.Controls.Handlers.Items.Platform.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, Gtk.UIExtensions.NUI.CollectionView> where TItemsView : ItemsView
+	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, Platform.CollectionView> where TItemsView : ItemsView
 	{
 		protected override void ConnectHandler(TCollectionView nativeView)
 		{

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Maui.Graphics;
-using Gtk.UIExtensions.NUI;
+using Microsoft.Maui.Controls.Handlers.Items.Platform;
 using NView = Gtk.Widget;
 using TSize = Microsoft.Maui.Graphics.Size;
 using XLabel = Microsoft.Maui.Controls.Label;
@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override TSize MeasureHeader(double widthConstraint, double heightConstraint)
 		{
 			// TODO. It is workaround code, if update Tizen.UIExtensions.NUI, this code will be removed
-			if (CollectionView is Gtk.UIExtensions.NUI.CollectionView cv)
+			if (CollectionView is Platform.CollectionView cv)
 			{
 				if (cv.LayoutManager != null)
 				{

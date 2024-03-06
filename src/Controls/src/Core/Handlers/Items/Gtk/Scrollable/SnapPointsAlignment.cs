@@ -1,4 +1,4 @@
-namespace Gtk.UIExtensions.NUI
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
     /// <summary>
     /// Enumerates values that specifies how snap points are aligned with items.

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Gtk.UIExtensions.NUI
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
     /// <summary>
     /// EventArgs for CollectionView Scrolled event

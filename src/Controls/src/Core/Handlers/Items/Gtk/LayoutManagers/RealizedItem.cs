@@ -1,4 +1,4 @@
-namespace Gtk.UIExtensions.NUI;
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform;
 
 public class RealizedItem
 {

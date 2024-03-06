@@ -3,13 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 using Point = Microsoft.Maui.Graphics.Point;
 using Size = Microsoft.Maui.Graphics.Size;
 using Rectangle = Microsoft.Maui.Graphics.Rect;
 
-namespace Gtk.UIExtensions.NUI;
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform;
 
 public partial class CollectionContainer : Gtk.Container
 {

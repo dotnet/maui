@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Gtk.UIExtensions.NUI;
+using Microsoft.Maui.Controls.Handlers.Items.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

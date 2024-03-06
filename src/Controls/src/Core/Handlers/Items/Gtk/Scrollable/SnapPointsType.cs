@@ -1,4 +1,4 @@
-namespace Gtk.UIExtensions.NUI
+namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
     /// <summary>
     /// Enumerates values that specifies the behavior of snap points when scrolling..
