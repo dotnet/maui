@@ -466,7 +466,7 @@ public class CollectionViewController : ICollectionViewController
 			return;
 
 		_itemSize = new Size(-1, -1);
-		_layoutManager.CollectionView = this;
+		_layoutManager.Controller = this;
 
 		LayoutManagerChanged?.Invoke(this, new());
 		_layoutManager.SizeAllocated(AllocatedSize);

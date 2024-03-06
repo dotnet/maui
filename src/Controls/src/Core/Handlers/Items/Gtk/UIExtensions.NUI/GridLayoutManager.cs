@@ -87,7 +87,7 @@ namespace Gtk.UIExtensions.NUI
 		/// <summary>
 		/// CollectionView that interact with layout manager
 		/// </summary>
-		public ICollectionViewController? CollectionView { get; set; }
+		public ICollectionViewController? Controller { get; set; }
 
 		double BaseItemSize
 		{
@@ -98,7 +98,7 @@ namespace Gtk.UIExtensions.NUI
 		{
 			get => IsHorizontal ? BaseItemBound.Height : BaseItemBound.Width;
 		}
-		
+
 		Size BaseItemBound
 		{
 			get
@@ -108,7 +108,7 @@ namespace Gtk.UIExtensions.NUI
 					if (_allocatedSize.Width <= 0 || _allocatedSize.Height <= 0)
 						return Size.Zero;
 
-					var itembound = CollectionView!.GetItemSize(ItemWidthConstraint, ItemHeightConstraint);
+					var itembound = Controller!.GetItemSize(ItemWidthConstraint, ItemHeightConstraint);
 					_baseItemBound = itembound;
 				}
 
@@ -168,7 +168,7 @@ namespace Gtk.UIExtensions.NUI
 
 		public Size GetScrollCanvasSize()
 		{
-			if (CollectionView!.Count == 0 || _allocatedSize.Width <= 0 || _allocatedSize.Height <= 0)
+			if (Controller!.Count == 0 || _allocatedSize.Width <= 0 || _allocatedSize.Height <= 0)
 				return _allocatedSize;
 
 			if (_scrollCanvasSize.Width > 0 && _scrollCanvasSize.Height > 0)
@@ -188,7 +188,7 @@ namespace Gtk.UIExtensions.NUI
 			}
 			else
 			{
-				totalItemSize = (int)Math.Ceiling(CollectionView!.Count / (double)Span) * (BaseItemSize + ItemSpacing) - ItemSpacing + ItemStartPoint + FooterSizeWithSpacing;
+				totalItemSize = (int)Math.Ceiling(Controller!.Count / (double)Span) * (BaseItemSize + ItemSpacing) - ItemSpacing + ItemStartPoint + FooterSizeWithSpacing;
 			}
 
 			if (IsHorizontal)
@@ -229,13 +229,13 @@ namespace Gtk.UIExtensions.NUI
 
 			int padding = Span;
 			int startIndex = Math.Max(GetStartIndex(bound) - padding * 2, 0);
-			int endIndex = Math.Min(GetEndIndex(bound) + padding * 2, CollectionView!.Count - 1);
+			int endIndex = Math.Min(GetEndIndex(bound) + padding * 2, Controller!.Count - 1);
 
 			foreach (var index in _realizedItem.Keys.ToList())
 			{
 				if (index < startIndex || index > endIndex)
 				{
-					CollectionView!.UnrealizeView(_realizedItem[index].Holder);
+					Controller!.UnrealizeView(_realizedItem[index].Holder);
 					_realizedItem.Remove(index);
 				}
 			}
@@ -246,7 +246,7 @@ namespace Gtk.UIExtensions.NUI
 
 				if (!_realizedItem.ContainsKey(i))
 				{
-					var holder = CollectionView!.RealizeView(i);
+					var holder = Controller!.RealizeView(i);
 
 					_realizedItem[i] = new RealizedItem(holder, i);
 					itemView = holder;
@@ -268,7 +268,7 @@ namespace Gtk.UIExtensions.NUI
 		{
 			Span = span;
 			InitializeMeasureCache();
-			CollectionView!.RequestLayoutItems();
+			Controller!.RequestLayoutItems();
 		}
 
 		public void ItemInserted(int inserted)
@@ -300,14 +300,14 @@ namespace Gtk.UIExtensions.NUI
 			UpdateInsertedSize(inserted);
 
 			_scrollCanvasSize = new Size(0, 0);
-			CollectionView!.ContentSizeUpdated();
+			Controller!.ContentSizeUpdated();
 		}
 
 		public void ItemRemoved(int removed)
 		{
 			if (_realizedItem.ContainsKey(removed))
 			{
-				CollectionView!.UnrealizeView(_realizedItem[removed].Holder);
+				Controller!.UnrealizeView(_realizedItem[removed].Holder);
 				_realizedItem.Remove(removed);
 			}
 
@@ -331,7 +331,7 @@ namespace Gtk.UIExtensions.NUI
 			UpdateRemovedSize(removed);
 
 			_scrollCanvasSize = new Size(0, 0);
-			CollectionView!.ContentSizeUpdated();
+			Controller!.ContentSizeUpdated();
 		}
 
 		public void ItemUpdated(int index)
@@ -339,8 +339,8 @@ namespace Gtk.UIExtensions.NUI
 			if (_realizedItem.ContainsKey(index))
 			{
 				var bound = _realizedItem[index].Holder.Bounds;
-				CollectionView!.UnrealizeView(_realizedItem[index].Holder);
-				var view = CollectionView!.RealizeView(index);
+				Controller!.UnrealizeView(_realizedItem[index].Holder);
+				var view = Controller!.RealizeView(index);
 				_realizedItem[index].Holder = view;
 				view.UpdateBounds(bound);
 			}
@@ -376,7 +376,7 @@ namespace Gtk.UIExtensions.NUI
 			{
 				var oldMaxItemSize = GetMaxItemSize(index);
 
-				var measured = CollectionView!.GetItemSize(index, ItemWidthConstraint, ItemHeightConstraint);
+				var measured = Controller!.GetItemSize(index, ItemWidthConstraint, ItemHeightConstraint);
 				itemSize = IsHorizontal ? measured.Width : measured.Height;
 
 				if (itemSize != _itemSizes[index])
@@ -410,7 +410,7 @@ namespace Gtk.UIExtensions.NUI
 						}
 					}
 
-					CollectionView!.ContentSizeUpdated();
+					Controller!.ContentSizeUpdated();
 				}
 
 				rowStartPoint = _accumulatedItemSizes[rowIndex] - updatedMaxItemSize + (updatedMaxItemSize - itemSize) / 2;
@@ -429,12 +429,12 @@ namespace Gtk.UIExtensions.NUI
 		{
 			foreach (var realizedItem in _realizedItem.Values.ToList())
 			{
-				CollectionView!.UnrealizeView(realizedItem.Holder);
+				Controller!.UnrealizeView(realizedItem.Holder);
 			}
 
 			_realizedItem.Clear();
 			_scrollCanvasSize = new Size(0, 0);
-			CollectionView!.ContentSizeUpdated();
+			Controller!.ContentSizeUpdated();
 		}
 
 		public void ItemSourceUpdated()
@@ -451,14 +451,14 @@ namespace Gtk.UIExtensions.NUI
 
 				if (_realizedItem.ContainsKey(index))
 				{
-					CollectionView!.RequestLayoutItems();
+					Controller!.RequestLayoutItems();
 				}
 			}
 			else if (index == 0) // MeasureFirstItem
 			{
 				// Reset item size to measure updated size
 				InitializeMeasureCache();
-				CollectionView!.RequestLayoutItems();
+				Controller!.RequestLayoutItems();
 			}
 		}
 
@@ -470,20 +470,20 @@ namespace Gtk.UIExtensions.NUI
 				return index;
 
 			if (_scrollCanvasSize.Width < x || _scrollCanvasSize.Height < y)
-				return CollectionView!.Count - 1;
+				return Controller!.Count - 1;
 
 			int first = 0;
 
 			if (!_hasUnevenRows)
 			{
-				first = Math.Min(Math.Max(0, (int)(((IsHorizontal ? x : y) - ItemStartPoint) / (BaseItemSize + ItemSpacing))), ((CollectionView!.Count - 1) / Span));
+				first = Math.Min(Math.Max(0, (int)(((IsHorizontal ? x : y) - ItemStartPoint) / (BaseItemSize + ItemSpacing))), ((Controller!.Count - 1) / Span));
 			}
 			else
 			{
 				first = _accumulatedItemSizes.FindIndex(current => (IsHorizontal ? x : y) <= current);
 
 				if (first == -1)
-					first = (CollectionView!.Count - 1) / Span;
+					first = (Controller!.Count - 1) / Span;
 			}
 
 			int second = (int)((IsHorizontal ? y : x) / (ColumnSize + ColumnSpacing));
@@ -493,10 +493,10 @@ namespace Gtk.UIExtensions.NUI
 
 			index = (first * Span) + second;
 
-			if (index < CollectionView!.Count)
+			if (index < Controller!.Count)
 				return index;
 
-			return CollectionView!.Count - 1;
+			return Controller!.Count - 1;
 		}
 
 		public void SetHeader(NView? header, Size size)
@@ -520,7 +520,7 @@ namespace Gtk.UIExtensions.NUI
 			if (contentSizeChanged)
 			{
 				InitializeMeasureCache();
-				CollectionView!.ContentSizeUpdated();
+				Controller!.ContentSizeUpdated();
 			}
 
 			if (_header != null)
@@ -561,7 +561,7 @@ namespace Gtk.UIExtensions.NUI
 			if (contentSizeChanged)
 			{
 				InitializeMeasureCache();
-				CollectionView!.ContentSizeUpdated();
+				Controller!.ContentSizeUpdated();
 			}
 
 			UpdateFooterPosition();
@@ -569,7 +569,7 @@ namespace Gtk.UIExtensions.NUI
 
 		public int NextRowItemIndex(int index)
 		{
-			return Math.Min(index + Span, CollectionView!.Count - 1);
+			return Math.Min(index + Span, Controller!.Count - 1);
 		}
 
 		public int PreviousRowItemIndex(int index)
@@ -618,12 +618,12 @@ namespace Gtk.UIExtensions.NUI
 
 			if (!_hasUnevenRows)
 			{
-				CollectionView!.ContentSizeUpdated();
+				Controller!.ContentSizeUpdated();
 
 				return;
 			}
 
-			int n = CollectionView!.Count;
+			int n = Controller!.Count;
 			_itemSizes = new List<double>();
 			_cached = new List<bool>();
 			_accumulatedItemSizes = new List<double>();
@@ -640,7 +640,7 @@ namespace Gtk.UIExtensions.NUI
 				}
 			}
 
-			CollectionView!.ContentSizeUpdated();
+			Controller!.ContentSizeUpdated();
 		}
 
 		void BuildAccumulatedSize()
@@ -814,21 +814,6 @@ namespace Gtk.UIExtensions.NUI
 			}
 
 			return start;
-		}
-
-		class RealizedItem
-		{
-
-			public RealizedItem(ViewHolder holder, int index)
-			{
-				Holder = holder;
-				Index = index;
-			}
-
-			public ViewHolder Holder { get; set; }
-
-			public int Index { get; set; }
-
 		}
 
 	}
