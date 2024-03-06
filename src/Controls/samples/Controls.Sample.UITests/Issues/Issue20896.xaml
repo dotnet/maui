@@ -10,6 +10,7 @@
                 <Setter Property="ImageSource" Value="groceries.png" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="TextColor" Value="Black" />
+                <Setter Property="HeightRequest" Value="36" />
             </Style>
         
         </ResourceDictionary>
@@ -18,21 +19,10 @@
         <StackLayout
             Padding="12">
             <Label 
-                Text="This is a manual test to verify the use of ContentLayout in Catalyst. Remember, edit the info.plist to a UIDeviceFamily = 6"/>
-            <Button 
-                Text="Default" /> 
+                Text="This is a manual test to verify the use of ContentLayout in Catalyst. Remember, edit the info.plist to a UIDeviceFamily = 6. If the icon is drawn, the test has passed."/>
             <Button
                 ContentLayout="Left, 24"
                 Text="Left - 24"/>   
-            <Button
-                ContentLayout="Top, 24"
-                Text="Top - 24"/>
-            <Button
-                ContentLayout="Right, 24"
-                Text="Right - 24"/>
-            <Button
-                ContentLayout="Bottom, 24"
-                Text="Bottom - 24"/>
         </StackLayout>
     </ScrollView>
 </ContentPage>
