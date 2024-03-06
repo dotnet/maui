@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			if (ItemsView != null)
+			{
 				ItemsView.Scrolled -= CarouselScrolled;
+			}
 
 			if (ListViewBase != null)
 			{
@@ -69,12 +71,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemsSource = ItemsView?.ItemsSource;
 
 			if (itemsSource == null)
+			{
 				return;
+			}
 
 			var itemTemplate = ItemsView?.ItemTemplate;
 
 			if (itemTemplate == null)
+			{
 				return;
+			}
 
 			base.UpdateItemsSource();
 		}
@@ -82,7 +88,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void UpdateItemTemplate()
 		{
 			if (Element == null || ListViewBase == null)
+			{
 				return;
+			}
 
 			ListViewBase.ItemTemplate = CarouselItemsViewTemplate;
 		}
@@ -212,7 +220,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateIsBounceEnabled()
 		{
 			if (_scrollViewer != null)
+			{
 				_scrollViewer.IsScrollInertiaEnabled = ItemsView.IsBounceEnabled;
+			}
 		}
 
 		void UpdateIsSwipeEnabled()
@@ -273,10 +283,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemSpacing = CarouselItemsLayout.ItemSpacing;
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			{
 				return new Thickness(itemSpacing, 0, 0, 0);
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+			{
 				return new Thickness(0, itemSpacing, 0, 0);
+			}
 
 			return new Thickness(0);
 		}
@@ -284,10 +298,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool IsValidPosition(int position)
 		{
 			if (ItemCount == 0)
+			{
 				return false;
+			}
 
 			if (position < 0 || position >= ItemCount)
+			{
 				return false;
+			}
 
 			return true;
 		}
@@ -300,21 +318,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			if (!IsValidPosition(position))
+			{
 				return;
+			}
 
 			var currentPosition = ItemsView.Position;
 
 			if (currentPosition != position)
+			{
 				ItemsView.Position = position;
+			}
 		}
 
 		void SetCarouselViewCurrentItem(int carouselPosition)
 		{
 			if (!IsValidPosition(carouselPosition))
+			{
 				return;
+			}
 
 			if (!(GetItem(carouselPosition) is ItemTemplateContext itemTemplateContext))
+			{
 				throw new InvalidOperationException("Visible item not found");
+			}
 
 			var item = itemTemplateContext.Item;
 			ItemsView.CurrentItem = item;
@@ -354,21 +380,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				if (ItemsView.CurrentItem != null)
+				{
 					UpdateCurrentItem();
+				}
 				else
+				{
 					UpdatePosition();
+				}
 			}
 		}
 
 		void UpdateCurrentItem()
 		{
 			if (CollectionViewSource == null)
+			{
 				return;
+			}
 
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 
 			if (currentItemPosition < 0 || currentItemPosition >= ItemCount)
+			{
 				return;
+			}
 
 			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
 		}
@@ -376,12 +410,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdatePosition()
 		{
 			if (CollectionViewSource == null)
+			{
 				return;
+			}
 
 			var carouselPosition = ItemsView.Position;
 
 			if (carouselPosition < 0 || carouselPosition >= ItemCount)
+			{
 				return;
+			}
 
 			SetCarouselViewCurrentItem(carouselPosition);
 		}
@@ -419,25 +457,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateSnapPointsType()
 		{
 			if (_scrollViewer == null || CarouselItemsLayout == null)
+			{
 				return;
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			{
 				_scrollViewer.HorizontalSnapPointsType = GetWindowsSnapPointsType(CarouselItemsLayout.SnapPointsType);
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+			{
 				_scrollViewer.VerticalSnapPointsType = GetWindowsSnapPointsType(CarouselItemsLayout.SnapPointsType);
+			}
 		}
 
 		void UpdateSnapPointsAlignment()
 		{
 			if (_scrollViewer == null || CarouselItemsLayout == null)
+			{
 				return;
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			{
 				_scrollViewer.HorizontalSnapPointsAlignment = GetWindowsSnapPointsAlignment(CarouselItemsLayout.SnapPointsAlignment);
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+			{
 				_scrollViewer.VerticalSnapPointsAlignment = GetWindowsSnapPointsAlignment(CarouselItemsLayout.SnapPointsAlignment);
+			}
 		}
 
 		void UpdateScrollBarVisibilityForLoop()

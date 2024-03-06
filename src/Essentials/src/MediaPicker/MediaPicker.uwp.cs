@@ -40,7 +40,10 @@ namespace Microsoft.Maui.Media
 
 			// set picker properties
 			foreach (var filter in defaultTypes.Select(t => t.TrimStart('*')))
+			{
 				picker.FileTypeFilter.Add(filter);
+			}
+
 			picker.SuggestedStartLocation = photo ? PickerLocationId.PicturesLibrary : PickerLocationId.VideosLibrary;
 			picker.ViewMode = PickerViewMode.Thumbnail;
 
@@ -49,7 +52,9 @@ namespace Microsoft.Maui.Media
 
 			// cancelled
 			if (result is null)
+			{
 				return null;
+			}
 
 			// picked
 			return new FileResult(result);
@@ -66,14 +71,20 @@ namespace Microsoft.Maui.Media
 			var captureUi = new WinUICameraCaptureUI();
 
 			if (photo)
+			{
 				captureUi.PhotoSettings.Format = CameraCaptureUIPhotoFormat.Jpeg;
+			}
 			else
+			{
 				captureUi.VideoSettings.Format = CameraCaptureUIVideoFormat.Mp4;
+			}
 
 			var file = await captureUi.CaptureFileAsync(photo ? CameraCaptureUIMode.Photo : CameraCaptureUIMode.Video);
 
 			if (file is not null)
+			{
 				return new FileResult(file);
+			}
 
 			return null;
 		}
@@ -128,7 +139,9 @@ namespace Microsoft.Maui.Media
 				global::Windows.ApplicationModel.DataTransfer.SharedStorageAccessManager.RemoveFile(token);
 
 				if (result.Status == LaunchUriStatus.Success && result.Result is not null)
+				{
 					return tempFile;
+				}
 
 				return null;
 			}

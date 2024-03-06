@@ -15,7 +15,150 @@ namespace Microsoft.Maui.Storage
 		public static async Task<FileResult[]> EnsurePhysicalFileResultsAsync(params NSUrl[] urls)
 		{
 			if (urls == null || urls.Length == 0)
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
 				return Array.Empty<FileResult>();
+
+			var opts = NSFileCoordinatorReadingOptions.WithoutChanges;
+			var intents = urls.Select(x => NSFileAccessIntent.CreateReadingIntent(x, opts)).ToArray();
+
+			using var coordinator = new NSFileCoordinator();
+
+			var tcs = new TaskCompletionSource<FileResult[]>();
+
+			coordinator.CoordinateAccess(intents, new NSOperationQueue(), error =>
+			{
+				if (error != null)
+				{
+					tcs.TrySetException(new NSErrorException(error));
+					return;
+				}
+
+				var bookmarks = new List<FileResult>();
+
+				foreach (var intent in intents)
+				{
+					var url = intent.Url;
+					var result = new BookmarkDataFileResult(url);
+					bookmarks.Add(result);
+				}
+
+				tcs.TrySetResult(bookmarks.ToArray());
+			});
+
+			return await tcs.Task;
+After:
+			{
+				return Array.Empty<FileResult>();
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+				return Array.Empty<FileResult>();
+
+			var opts = NSFileCoordinatorReadingOptions.WithoutChanges;
+			var intents = urls.Select(x => NSFileAccessIntent.CreateReadingIntent(x, opts)).ToArray();
+
+			using var coordinator = new NSFileCoordinator();
+
+			var tcs = new TaskCompletionSource<FileResult[]>();
+
+			coordinator.CoordinateAccess(intents, new NSOperationQueue(), error =>
+			{
+				if (error != null)
+				{
+					tcs.TrySetException(new NSErrorException(error));
+					return;
+				}
+
+				var bookmarks = new List<FileResult>();
+
+				foreach (var intent in intents)
+				{
+					var url = intent.Url;
+					var result = new BookmarkDataFileResult(url);
+					bookmarks.Add(result);
+				}
+
+				tcs.TrySetResult(bookmarks.ToArray());
+			});
+
+			return await tcs.Task;
+After:
+			{
+				return Array.Empty<FileResult>();
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+				return Array.Empty<FileResult>();
+
+			var opts = NSFileCoordinatorReadingOptions.WithoutChanges;
+			var intents = urls.Select(x => NSFileAccessIntent.CreateReadingIntent(x, opts)).ToArray();
+
+			using var coordinator = new NSFileCoordinator();
+
+			var tcs = new TaskCompletionSource<FileResult[]>();
+
+			coordinator.CoordinateAccess(intents, new NSOperationQueue(), error =>
+			{
+				if (error != null)
+				{
+					tcs.TrySetException(new NSErrorException(error));
+					return;
+				}
+
+				var bookmarks = new List<FileResult>();
+
+				foreach (var intent in intents)
+				{
+					var url = intent.Url;
+					var result = new BookmarkDataFileResult(url);
+					bookmarks.Add(result);
+				}
+
+				tcs.TrySetResult(bookmarks.ToArray());
+			});
+
+			return await tcs.Task;
+After:
+			{
+				return Array.Empty<FileResult>();
+*/
+			{
+				return Array.Empty<FileResult>();
+			}
+
+			var opts = NSFileCoordinatorReadingOptions.WithoutChanges;
+			var intents = urls.Select(x => NSFileAccessIntent.CreateReadingIntent(x, opts)).ToArray();
+
+			using var coordinator = new NSFileCoordinator();
+
+			var tcs = new TaskCompletionSource<FileResult[]>();
+
+			coordinator.CoordinateAccess(intents, new NSOperationQueue(), error =>
+			{
+				if (error != null)
+				{
+					tcs.TrySetException(new NSErrorException(error));
+					return;
+				}
+
+				var bookmarks = new List<FileResult>();
+
+				foreach (var intent in intents)
+				{
+					var url = intent.Url;
+					var result = new BookmarkDataFileResult(url);
+					bookmarks.Add(result);
+				}
+
+				tcs.TrySetResult(bookmarks.ToArray());
+			});
+
+			return await tcs.Task;
+			}
 
 			var opts = NSFileCoordinatorReadingOptions.WithoutChanges;
 			var intents = urls.Select(x => NSFileAccessIntent.CreateReadingIntent(x, opts)).ToArray();
@@ -61,7 +204,9 @@ namespace Microsoft.Maui.Storage
 
 				var newBookmark = url.CreateBookmarkData(0, Array.Empty<string>(), null, out var bookmarkError);
 				if (bookmarkError != null)
+				{
 					throw new NSErrorException(bookmarkError);
+				}
 
 				UpdateBookmark(url, newBookmark);
 			}
@@ -85,7 +230,9 @@ namespace Microsoft.Maui.Storage
 			var url = NSUrl.FromBookmarkData(bookmark, 0, null, out var isStale, out var error);
 
 			if (error != null)
+			{
 				throw new NSErrorException(error);
+			}
 
 			url.StartAccessingSecurityScopedResource();
 
@@ -93,7 +240,9 @@ namespace Microsoft.Maui.Storage
 			{
 				var newBookmark = url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, Array.Empty<string>(), null, out error);
 				if (error != null)
+				{
 					throw new NSErrorException(error);
+				}
 
 				UpdateBookmark(url, newBookmark);
 			}

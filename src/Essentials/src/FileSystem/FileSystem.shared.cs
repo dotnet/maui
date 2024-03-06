@@ -160,6 +160,9 @@ namespace Microsoft.Maui.Storage
 		internal static string Clean(string extension, bool trimLeadingPeriod = false)
 		{
 			if (string.IsNullOrWhiteSpace(extension))
+
+/* Unmerged change from project 'Essentials(net8.0)'
+Before:
 				return string.Empty;
 
 			extension = extension.TrimStart('*');
@@ -167,6 +170,237 @@ namespace Microsoft.Maui.Storage
 
 			if (!trimLeadingPeriod)
 				extension = "." + extension;
+After:
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+				return string.Empty;
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+				extension = "." + extension;
+After:
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.19041.0)'
+Before:
+				return string.Empty;
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+				extension = "." + extension;
+After:
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.20348.0)'
+Before:
+				return string.Empty;
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+				extension = "." + extension;
+After:
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0)'
+Before:
+				return string.Empty;
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+				extension = "." + extension;
+After:
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+				return string.Empty;
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+				extension = "." + extension;
+After:
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+				return string.Empty;
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+				extension = "." + extension;
+After:
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
+				return string.Empty;
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+				extension = "." + extension;
+After:
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.19041.0)'
+Before:
+				return string.Empty;
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+				extension = "." + extension;
+After:
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Before:
+				return string.Empty;
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+				extension = "." + extension;
+After:
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
+*/
+			{
+				return string.Empty;
+			}
+
+			extension = extension.TrimStart('*');
+			extension = extension.TrimStart('.');
+
+			if (!trimLeadingPeriod)
+			{
+				extension = "." + extension;
+			}
 
 			return extension;
 		}
@@ -189,11 +423,19 @@ namespace Microsoft.Maui.Storage
 		internal FileBase(string fullPath)
 		{
 			if (fullPath == null)
+			{
 				throw new ArgumentNullException(nameof(fullPath));
+			}
+
 			if (string.IsNullOrWhiteSpace(fullPath))
+			{
 				throw new ArgumentException("The file path cannot be an empty string.", nameof(fullPath));
+			}
+
 			if (string.IsNullOrWhiteSpace(Path.GetFileName(fullPath)))
+			{
 				throw new ArgumentException("The file path must be a file path.", nameof(fullPath));
+			}
 
 			FullPath = fullPath;
 		}
@@ -235,6 +477,9 @@ namespace Microsoft.Maui.Storage
 		{
 			// try the provided type
 			if (!string.IsNullOrWhiteSpace(contentType))
+
+/* Unmerged change from project 'Essentials(net8.0)'
+Before:
 				return contentType!;
 
 			// try get from the file extension
@@ -244,6 +489,277 @@ namespace Microsoft.Maui.Storage
 				var content = PlatformGetContentType(ext);
 				if (!string.IsNullOrWhiteSpace(content))
 					return content;
+After:
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+				return contentType!;
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+					return content;
+After:
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.19041.0)'
+Before:
+				return contentType!;
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+					return content;
+After:
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.20348.0)'
+Before:
+				return contentType!;
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+					return content;
+After:
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0)'
+Before:
+				return contentType!;
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+					return content;
+After:
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+				return contentType!;
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+					return content;
+After:
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+				return contentType!;
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+					return content;
+After:
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
+				return contentType!;
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+					return content;
+After:
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.19041.0)'
+Before:
+				return contentType!;
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+					return content;
+After:
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Before:
+				return contentType!;
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+					return content;
+After:
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
+*/
+			{
+				return contentType!;
+			}
+
+			// try get from the file extension
+			var ext = Path.GetExtension(FullPath);
+			if (!string.IsNullOrWhiteSpace(ext))
+			{
+				var content = PlatformGetContentType(ext);
+				if (!string.IsNullOrWhiteSpace(content))
+				{
+					return content;
+				}
 			}
 
 			return DefaultContentType;
@@ -264,11 +780,156 @@ namespace Microsoft.Maui.Storage
 		{
 			// try the provided file name
 			if (!string.IsNullOrWhiteSpace(fileName))
+
+/* Unmerged change from project 'Essentials(net8.0)'
+Before:
 				return fileName!;
+After:
+			{
+				return fileName!;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+				return fileName!;
+After:
+			{
+				return fileName!;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.19041.0)'
+Before:
+				return fileName!;
+After:
+			{
+				return fileName!;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.20348.0)'
+Before:
+				return fileName!;
+After:
+			{
+				return fileName!;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0)'
+Before:
+				return fileName!;
+After:
+			{
+				return fileName!;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+				return fileName!;
+After:
+			{
+				return fileName!;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+				return fileName!;
+After:
+			{
+				return fileName!;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
+				return fileName!;
+After:
+			{
+				return fileName!;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.19041.0)'
+Before:
+				return fileName!;
+After:
+			{
+				return fileName!;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Before:
+				return fileName!;
+After:
+			{
+				return fileName!;
+			}
+*/
+			{
+			{
+				return fileName!;
+
+/* Unmerged change from project 'Essentials(net8.0)'
+Added:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Added:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.19041.0)'
+Added:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.20348.0)'
+Added:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0)'
+Added:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Added:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Added:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Added:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.19041.0)'
+Added:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Added:
+			}
+*/
+			}
 
 			// try get from the path
 			if (!string.IsNullOrWhiteSpace(FullPath))
+			{
 				return Path.GetFileName(FullPath);
+			}
 
 			// this should never happen as the path is validated in the constructor
 			throw new InvalidOperationException($"Unable to determine the file name from '{FullPath}'.");

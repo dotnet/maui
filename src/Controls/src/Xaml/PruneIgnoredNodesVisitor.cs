@@ -22,15 +22,38 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				var propertyName = propertyKvp.Key;
 				if (!((propertyKvp.Value as ValueNode)?.Value is string propertyValue))
+				{
 					continue;
+				}
+
 				if (!propertyName.Equals(XamlParser.McUri, "Ignorable"))
+				{
 					continue;
+				}
+
 				var prefixes = propertyValue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
 				if (UseDesignProperties) //if we're in design mode for this file
 				{
 					for (var i = 0; i < prefixes.Count; i++)
+
+/* Unmerged change from project 'Controls.Xaml(net8.0-windows10.0.19041.0)'
+Before:
 						if (node.NamespaceResolver.LookupNamespace(prefixes[i]) == XamlParser.MauiDesignUri)
 							prefixes.RemoveAt(i--);
+After:
+					{
+						if (node.NamespaceResolver.LookupNamespace(prefixes[i]) == XamlParser.MauiDesignUri)
+						{
+							prefixes.RemoveAt(i--);
+						}
+					}
+*/
+					{
+						if (node.NamespaceResolver.LookupNamespace(prefixes[i]) == XamlParser.MauiDesignUri)
+						{
+							prefixes.RemoveAt(i--);
+						}
+					}
 				}
 
 				(parentNode.IgnorablePrefixes ?? (parentNode.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
@@ -41,11 +64,16 @@ namespace Microsoft.Maui.Controls.Xaml
 				// skip d:foo="bar"
 				var prefix = node.NamespaceResolver.LookupPrefix(propertyKvp.Key.NamespaceURI);
 				if (node.SkipPrefix(prefix))
+				{
 					node.Properties.Remove(propertyKvp.Key);
+				}
+
 				var propNs = (propertyKvp.Value as IElementNode)?.NamespaceURI ?? "";
 				var propPrefix = node.NamespaceResolver.LookupPrefix(propNs);
 				if (node.SkipPrefix(propPrefix))
+				{
 					node.Properties.Remove(propertyKvp.Key);
+				}
 			}
 
 			foreach (var prop in node.CollectionItems.ToList())
@@ -53,7 +81,9 @@ namespace Microsoft.Maui.Controls.Xaml
 				var propNs = (prop as IElementNode)?.NamespaceURI ?? "";
 				var propPrefix = node.NamespaceResolver.LookupPrefix(propNs);
 				if (node.SkipPrefix(propPrefix))
+				{
 					node.CollectionItems.Remove(prop);
+				}
 			}
 
 			if (node.SkipPrefix(node.NamespaceResolver.LookupPrefix(node.NamespaceURI)))
@@ -79,7 +109,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				var propNs = (prop as IElementNode)?.NamespaceURI ?? "";
 				var propPrefix = node.NamespaceResolver.LookupPrefix(propNs);
 				if (node.SkipPrefix(propPrefix))
+				{
+				{
 					node.CollectionItems.Remove(prop);
+				}
 			}
 		}
 

@@ -22,16 +22,20 @@ namespace Microsoft.Maui.Controls
 			if (newHandler == null)
 			{
 				foreach (var item in ToolbarItems)
+				{
 					item.PropertyChanged -= OnToolbarItemPropertyChanged;
+				}
 			}
 		}
 
 		internal void UpdateMenu()
 		{
 			if (Handler.PlatformView is not MauiToolbar wh)
+			{
 				return;
+			}
 
-			var commandBar = wh.CommandBar;
+			var commandBar = MauiToolbar.CommandBar;
 			if (commandBar == null)
 			{
 				return;
@@ -89,9 +93,11 @@ namespace Microsoft.Maui.Controls
 		internal void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (Handler.PlatformView is not MauiToolbar wh)
+			{
 				return;
+			}
 
-			var commandBar = wh.CommandBar;
+			var commandBar = MauiToolbar.CommandBar;
 			if (commandBar == null)
 			{
 				return;

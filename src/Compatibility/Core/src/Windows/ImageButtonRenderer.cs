@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (_image?.Source == null)
+			{
 				return new SizeRequest();
+			}
 
 			_measured = true;
 
@@ -104,23 +106,35 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				//TODO: We may want to revisit this strategy later. If a user wants to reset any of these to the default, the UI won't update.
 				if (Element.IsSet(VisualElement.BackgroundColorProperty) && Element.BackgroundColor != (Color)VisualElement.BackgroundColorProperty.DefaultValue)
+				{
 					UpdateImageButtonBackground();
+				}
 
 				if (Element.IsSet(VisualElement.BackgroundProperty) && Element.Background != (Brush)VisualElement.BackgroundProperty.DefaultValue)
+				{
 					UpdateImageButtonBackground();
+				}
 
 				if (Element.IsSet(ImageButton.BorderColorProperty) && Element.BorderColor != (Color)ImageButton.BorderColorProperty.DefaultValue)
+				{
 					UpdateBorderColor();
+				}
 
 				if (Element.IsSet(ImageButton.BorderWidthProperty) && Element.BorderWidth != (double)ImageButton.BorderWidthProperty.DefaultValue)
+				{
 					UpdateBorderWidth();
+				}
 
 				if (Element.IsSet(ImageButton.CornerRadiusProperty) && Element.CornerRadius != (int)ImageButton.CornerRadiusProperty.DefaultValue)
+				{
 					UpdateBorderRadius();
+				}
 
 				// By default Button loads width padding 8, 4, 8 ,4
 				if (Element.IsSet(Button.PaddingProperty))
+				{
 					UpdatePadding();
+				}
 
 				await TryUpdateSource().ConfigureAwait(false);
 
@@ -210,7 +224,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdatePadding();
 			}
 			else if (e.PropertyName == ImageButton.SourceProperty.PropertyName)
+			{
 				await TryUpdateSource().ConfigureAwait(false);
+			}
 		}
 
 		[PortHandler]
@@ -257,9 +273,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateImageButtonBackground()
 		{
 			if (Brush.IsNullOrEmpty(Element.Background))
+			{
 				Control.BackgroundColor = Element.BackgroundColor.IsNotDefault() ? Element.BackgroundColor.ToPlatform() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+			}
 			else
+			{
 				Control.BackgroundColor = Element.Background.ToBrush();
+			}
 		}
 
 		void UpdateBorderColor()

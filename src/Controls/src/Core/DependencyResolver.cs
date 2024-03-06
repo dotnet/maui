@@ -54,6 +54,9 @@ namespace Microsoft.Maui.Controls.Internals
 			var result = Resolve(type, args);
 
 			if (result != null)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return result;
 
 			if (args.Length > 0)
@@ -61,6 +64,134 @@ namespace Microsoft.Maui.Controls.Internals
 				if (visualType != _defaultVisualType)
 					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
 						return Activator.CreateInstance(type, new[] { args[0], source });
+After:
+			{
+				return result;
+			}
+
+			if (args.Length > 0)
+			{
+				if (visualType != _defaultVisualType)
+				{
+					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+					{
+						return Activator.CreateInstance(type, new[] { args[0], source });
+					}
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return result;
+
+			if (args.Length > 0)
+			{
+				if (visualType != _defaultVisualType)
+					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+						return Activator.CreateInstance(type, new[] { args[0], source });
+After:
+			{
+				return result;
+			}
+
+			if (args.Length > 0)
+			{
+				if (visualType != _defaultVisualType)
+				{
+					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+					{
+						return Activator.CreateInstance(type, new[] { args[0], source });
+					}
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return result;
+
+			if (args.Length > 0)
+			{
+				if (visualType != _defaultVisualType)
+					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+						return Activator.CreateInstance(type, new[] { args[0], source });
+After:
+			{
+				return result;
+			}
+
+			if (args.Length > 0)
+			{
+				if (visualType != _defaultVisualType)
+				{
+					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+					{
+						return Activator.CreateInstance(type, new[] { args[0], source });
+					}
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return result;
+
+			if (args.Length > 0)
+			{
+				if (visualType != _defaultVisualType)
+					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+						return Activator.CreateInstance(type, new[] { args[0], source });
+After:
+			{
+				return result;
+			}
+
+			if (args.Length > 0)
+			{
+				if (visualType != _defaultVisualType)
+				{
+					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+					{
+						return Activator.CreateInstance(type, new[] { args[0], source });
+					}
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return result;
+
+			if (args.Length > 0)
+			{
+				if (visualType != _defaultVisualType)
+					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+						return Activator.CreateInstance(type, new[] { args[0], source });
+After:
+			{
+				return result;
+			}
+
+			if (args.Length > 0)
+			{
+				if (visualType != _defaultVisualType)
+				{
+					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+					{
+						return Activator.CreateInstance(type, new[] { args[0], source });
+					}
+				}
+*/
+			{
+				return result;
+			}
+
+			if (args.Length > 0)
+			{
+				if (visualType != _defaultVisualType)
+				{
+					if (type.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == 2))
+					{
+						return Activator.CreateInstance(type, new[] { args[0], source });
+					}
+				}
 
 				// This is by no means a general solution to matching with the correct constructor, but it'll
 				// do for finding Android renderers which need Context (vs older custom renderers which may still use

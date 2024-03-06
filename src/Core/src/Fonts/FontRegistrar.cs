@@ -35,7 +35,9 @@ namespace Microsoft.Maui
 			_embeddedFonts[filename] = (filename, alias, assembly);
 
 			if (!string.IsNullOrWhiteSpace(alias))
+			{
 				_embeddedFonts[alias!] = (filename, alias, assembly);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -44,14 +46,20 @@ namespace Microsoft.Maui
 			_nativeFonts[filename] = (filename, alias);
 
 			if (!string.IsNullOrWhiteSpace(alias))
+			{
 				_nativeFonts[alias!] = (filename, alias);
+			}
 		}
 
 		/// <inheritdoc/>
 		public string? GetFont(string font)
 		{
 			if (_fontLookupCache.TryGetValue(font, out var foundResult))
+			{
+			{
 				return foundResult;
+			}
+			}
 
 			try
 			{
@@ -79,7 +87,9 @@ namespace Microsoft.Maui
 			var font = new EmbeddedFont { FontName = filename };
 
 			if (_fontLoader == null)
+			{
 				throw new InvalidOperationException("Font loader was not set on the font registrar.");
+			}
 
 			var result = _fontLoader.LoadFont(font);
 
@@ -91,7 +101,9 @@ namespace Microsoft.Maui
 			var font = new EmbeddedFont { FontName = filename, ResourceStream = stream };
 
 			if (_fontLoader == null)
+			{
 				throw new InvalidOperationException("Font loader was not set on the font registrar.");
+			}
 
 			var result = _fontLoader.LoadFont(font);
 
@@ -106,7 +118,9 @@ namespace Microsoft.Maui
 			foreach (var name in resourceNames)
 			{
 				if (name.EndsWith(searchName, StringComparison.CurrentCultureIgnoreCase))
+				{
 					return embeddedFont.Assembly.GetManifestResourceStream(name)!;
+				}
 			}
 
 			throw new FileNotFoundException($"Resource ending with {embeddedFont.Filename} not found.");

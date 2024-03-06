@@ -58,7 +58,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.OnAttachedToWindow();
 
 			if (Control != null)
+			{
 				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
+			}
 
 			_isAttached = true;
 			_adapter.IsAttachedToWindow = _isAttached;
@@ -218,27 +220,49 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == "HeaderElement")
+			{
 				UpdateHeader();
+			}
 			else if (e.PropertyName == "FooterElement")
+			{
 				UpdateFooter();
+			}
 			else if (e.PropertyName == "RefreshAllowed")
+			{
 				UpdateIsSwipeToRefreshEnabled();
+			}
 			else if (e.PropertyName == ListView.IsPullToRefreshEnabledProperty.PropertyName)
+			{
 				UpdateIsSwipeToRefreshEnabled();
+			}
 			else if (e.PropertyName == ListView.IsRefreshingProperty.PropertyName)
+			{
 				UpdateIsRefreshing();
+			}
 			else if (e.PropertyName == ListView.SeparatorColorProperty.PropertyName || e.PropertyName == ListView.SeparatorVisibilityProperty.PropertyName)
+			{
 				_adapter.NotifyDataSetChanged();
+			}
 			else if (e.PropertyName == PlatformConfiguration.AndroidSpecific.ListView.IsFastScrollEnabledProperty.PropertyName)
+			{
 				UpdateFastScrollEnabled();
+			}
 			else if (e.PropertyName == ListView.SelectionModeProperty.PropertyName)
+			{
 				UpdateSelectionMode();
+			}
 			else if (e.PropertyName == ListView.RefreshControlColorProperty.PropertyName)
+			{
 				UpdateSpinnerColor();
+			}
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateHorizontalScrollBarVisibility();
+			}
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateVerticalScrollBarVisibility();
+			}
 		}
 
 		/*
@@ -282,9 +306,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						int widthSpec;
 
 						if (double.IsInfinity(widthConstraint))
+						{
 							widthSpec = MeasureSpecMode.Unspecified.MakeMeasureSpec(0);
+						}
 						else
+						{
 							widthSpec = MeasureSpecMode.AtMost.MakeMeasureSpec((int)Context.ToPixels(widthConstraint));
+						}
 
 						listItem.Measure(widthSpec, MeasureSpecMode.Unspecified.MakeMeasureSpec(0));
 						totalHeight += Context.FromPixels(listItem.MeasuredHeight);
@@ -329,15 +357,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				int indexOfItem = results.Item2;
 
 				if (indexOfGroup == -1)
+				{
 					return;
+				}
 
 				int itemIndex = indexOfItem == -1 ? 0 : indexOfItem;
 
 				var group = templatedItems.GetGroup(indexOfGroup);
 				if (group.Count == 0)
+				{
 					cell = group.HeaderContent;
+				}
 				else
+				{
 					cell = group[itemIndex];
+				}
 
 				//Increment Scroll Position by 1 when Grouping is enabled. Android offsets position of cells when using header.
 				scrollPosition = templatedItems.GetGlobalIndexForGroup(group) + itemIndex + 1;
@@ -346,7 +380,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				scrollPosition = templatedItems.GetGlobalIndexOfItem(scrollArgs.Item);
 				if (scrollPosition == -1)
+				{
 					return;
+				}
 
 				cell = templatedItems[scrollPosition];
 			}
@@ -357,9 +393,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.Position == ScrollToPosition.MakeVisible)
 			{
 				if (e.ShouldAnimate)
+				{
 					Control.SmoothScrollToPosition(realPositionWithHeader);
+				}
 				else
+				{
 					Control.SetSelection(realPositionWithHeader);
+				}
+
 				return;
 			}
 
@@ -369,7 +410,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				int first = Control.FirstVisiblePosition;
 				if (first <= scrollPosition && scrollPosition <= Control.LastVisiblePosition)
+				{
 					cellHeight = Control.GetChildAt(scrollPosition - first).Height;
+				}
 				else
 				{
 					AView view = _adapter.GetView(scrollPosition, null, null);
@@ -383,14 +426,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var y = 0;
 
 			if (e.Position == ScrollToPosition.Center)
+			{
 				y = height / 2 - cellHeight / 2;
+			}
 			else if (e.Position == ScrollToPosition.End)
+			{
 				y = height - cellHeight;
+			}
 
 			if (e.ShouldAnimate)
+			{
 				Control.SmoothScrollToPositionFromTop(realPositionWithHeader, y);
+			}
 			else
+			{
 				Control.SetSelectionFromTop(realPositionWithHeader, y);
+			}
 		}
 
 		void UpdateFooter()
@@ -403,7 +454,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (footer == null || Registrar.Registered.GetHandlerTypeForObject(footer) != rendererType)
 				{
 					if (_footerView != null)
+					{
 						_footerView.Child = null;
+					}
 
 					_footerRenderer.VirtualView.Handler?.DisconnectHandler();
 					_footerRenderer = null;
@@ -411,15 +464,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			if (footer == null)
+			{
 				return;
+			}
 
 			if (_footerRenderer != null)
+			{
 				_footerRenderer.SetVirtualView(footer);
+			}
 			else
 			{
 				_ = footer.ToPlatform(Element.FindMauiContext());
 				if (_footerView != null)
+				{
 					_footerView.Child = (IPlatformViewHandler)footer.Handler;
+				}
 			}
 		}
 
@@ -433,22 +492,31 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (header == null || MauiContext.Handlers.GetHandlerType(header.GetType()) != rendererType)
 				{
 					if (_headerView != null)
+					{
 						_headerView.Child = null;
+					}
+
 					_headerRenderer.VirtualView.Handler?.DisconnectHandler();
 					_headerRenderer = null;
 				}
 			}
 
 			if (header == null)
+			{
 				return;
+			}
 
 			if (_headerRenderer != null)
+			{
 				_headerRenderer.SetVirtualView(header);
+			}
 			else
 			{
 				_ = header.ToPlatform(Element.FindMauiContext());
 				if (_headerView != null)
+				{
 					_headerView.Child = (IPlatformViewHandler)header.Handler;
+				}
 			}
 		}
 
@@ -463,13 +531,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_refresh.Post(() =>
 					{
 						if (_refresh.IsDisposed())
+						{
 							return;
+						}
 
 						_refresh.Refreshing = true;
 					});
 				}
 				else
+				{
 					_refresh.Refreshing = isRefreshing;
+				}
 
 				// Allow to disable SwipeToRefresh layout AFTER refresh is done
 				UpdateIsSwipeToRefreshEnabled();
@@ -487,7 +559,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					// cancel refresh animation. If not possible right now we will be called by UpdateIsRefreshing().
 					// For details see https://github.com/xamarin/Xamarin.Forms/issues/8384
 					if (isEnabled || !_refresh.Refreshing)
+					{
 						_refresh.Enabled = isEnabled;
+					}
 				});
 			}
 		}
@@ -519,7 +593,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateSpinnerColor()
 		{
 			if (_refresh != null && Element.RefreshControlColor != null)
+			{
 				_refresh.SetColorSchemeColors(Element.RefreshControlColor.ToPlatform());
+			}
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
@@ -542,12 +618,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == 0)
+			{
 				_defaultVerticalScrollVisibility = Control.VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+			}
 
 			var newVerticalScrollVisibility = Element.VerticalScrollBarVisibility;
 
 			if (newVerticalScrollVisibility == ScrollBarVisibility.Default)
+			{
 				newVerticalScrollVisibility = _defaultVerticalScrollVisibility;
+			}
 
 			Control.VerticalScrollBarEnabled = newVerticalScrollVisibility == ScrollBarVisibility.Always;
 		}
@@ -565,12 +645,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				set
 				{
 					if (_child != null)
+					{
 						RemoveView(_child.PlatformView);
+					}
 
 					_child = value;
 
 					if (value != null)
+					{
 						AddView(value.PlatformView);
+					}
 				}
 			}
 
@@ -612,7 +696,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override bool OnInterceptTouchEvent(MotionEvent ev)
 			{
 				if (ev.Action == MotionEventActions.Down)
+				{
 					_initialDownY = ev.GetAxisValue(Axis.Y);
+				}
 
 				var isBeingDragged = base.OnInterceptTouchEvent(ev);
 

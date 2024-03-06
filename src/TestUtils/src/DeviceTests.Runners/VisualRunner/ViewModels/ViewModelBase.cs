@@ -22,7 +22,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		protected bool Set<T>(ref T destination, T value, Action? onChanged = null, [CallerMemberName] string? propertyName = null)
 		{
 			if (EqualityComparer<T>.Default.Equals(destination, value))
+			{
 				return false;
+			}
 
 			destination = value;
 

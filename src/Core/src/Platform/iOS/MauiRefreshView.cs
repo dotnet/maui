@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Platform
 		public void UpdateContent(IView? content, IMauiContext? mauiContext)
 		{
 			if (_refreshControlParent != null)
+			{
 				TryRemoveRefresh(_refreshControlParent);
+			}
 
 			_contentView?.RemoveFromSuperview();
 
@@ -72,12 +74,18 @@ namespace Microsoft.Maui.Platform
 			if (view is UIScrollView scrollView)
 			{
 				if (scrollView.ContentOffset.Y < 0)
+				{
 					return true;
+				}
 
 				if (refreshing)
+				{
 					scrollView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY - _refreshControlHeight), true);
+				}
 				else
+				{
 					scrollView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY), true);
+				}
 
 				return true;
 			}
@@ -88,13 +96,17 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (view.Subviews == null)
+			{
 				return false;
+			}
 
 			for (int i = 0; i < view.Subviews.Length; i++)
 			{
 				var control = view.Subviews[i];
 				if (TryOffsetRefresh(control, refreshing))
+				{
 					return true;
+				}
 			}
 
 			return false;
@@ -105,24 +117,32 @@ namespace Microsoft.Maui.Platform
 			_refreshControlParent = view;
 
 			if (_refreshControl.Superview != null)
+			{
 				_refreshControl.RemoveFromSuperview();
+			}
 
 			if (view is UIScrollView scrollView)
 			{
 				if (CanUseRefreshControlProperty())
+				{
 					scrollView.RefreshControl = null;
+				}
 
 				return true;
 			}
 
 			if (view.Subviews == null)
+			{
 				return false;
+			}
 
 			for (int i = 0; i < view.Subviews.Length; i++)
 			{
 				var control = view.Subviews[i];
 				if (TryRemoveRefresh(control, i))
+				{
 					return true;
+				}
 			}
 
 			return false;
@@ -135,9 +155,13 @@ namespace Microsoft.Maui.Platform
 			if (view is UIScrollView scrollView)
 			{
 				if (CanUseRefreshControlProperty())
+				{
 					scrollView.RefreshControl = _refreshControl;
+				}
 				else
+				{
 					scrollView.InsertSubview(_refreshControl, index);
+				}
 
 				scrollView.AlwaysBounceVertical = true;
 
@@ -154,13 +178,17 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (view.Subviews == null)
+			{
 				return false;
+			}
 
 			for (int i = 0; i < view.Subviews.Length; i++)
 			{
 				var control = view.Subviews[i];
 				if (TryInsertRefresh(control, i))
+				{
 					return true;
+				}
 			}
 
 			return false;
@@ -173,7 +201,9 @@ namespace Microsoft.Maui.Platform
 			{
 				base.Bounds = value;
 				if (_contentView != null)
+				{
 					_contentView.Frame = value;
+				}
 			}
 		}
 
@@ -184,12 +214,18 @@ namespace Microsoft.Maui.Platform
 			UserInteractionEnabled = true;
 
 			if (IsRefreshing)
+			{
 				return;
+			}
 
 			if (isRefreshViewEnabled)
+			{
 				TryInsertRefresh(_refreshControlParent);
+			}
 			else
+			{
 				TryRemoveRefresh(_refreshControlParent);
+			}
 
 			UserInteractionEnabled = true;
 		}

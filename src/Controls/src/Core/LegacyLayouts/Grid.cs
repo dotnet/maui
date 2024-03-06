@@ -37,10 +37,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 			validateValue: (bindable, value) => value != null, propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
 				if (oldvalue != null)
+				{
 					((ColumnDefinitionCollection)oldvalue).ItemSizeChanged -= ((Grid)bindable).OnDefinitionChanged;
+				}
+
 				if (newvalue != null)
+				{
 					((ColumnDefinitionCollection)newvalue).ItemSizeChanged += ((Grid)bindable).OnDefinitionChanged;
-				((Grid)bindable).OnDefinitionChanged(bindable, EventArgs.Empty);
+				} ((Grid)bindable).OnDefinitionChanged(bindable, EventArgs.Empty);
 			}, defaultValueCreator: bindable =>
 			{
 				var colDef = new ColumnDefinitionCollection();
@@ -53,10 +57,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 			validateValue: (bindable, value) => value != null, propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
 				if (oldvalue != null)
+				{
 					((RowDefinitionCollection)oldvalue).ItemSizeChanged -= ((Grid)bindable).OnDefinitionChanged;
+				}
+
 				if (newvalue != null)
+				{
 					((RowDefinitionCollection)newvalue).ItemSizeChanged += ((Grid)bindable).OnDefinitionChanged;
-				((Grid)bindable).OnDefinitionChanged(bindable, EventArgs.Empty);
+				} ((Grid)bindable).OnDefinitionChanged(bindable, EventArgs.Empty);
 			}, defaultValueCreator: bindable =>
 			{
 				var rowDef = new RowDefinitionCollection();
@@ -204,7 +212,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (canFix)
+				{
 					result |= LayoutConstraint.VerticallyFixed;
+				}
 			}
 
 			if (hOptions.Alignment == LayoutAlignment.Fill)
@@ -231,7 +241,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (canFix)
+				{
 					result |= LayoutConstraint.HorizontallyFixed;
+				}
 			}
 
 			view.ComputedConstraint = result;
@@ -311,24 +323,44 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public void Add(View view, int left, int top)
 			{
 				if (left < 0)
+				{
 					throw new ArgumentOutOfRangeException("left");
+				}
+
 				if (top < 0)
+				{
 					throw new ArgumentOutOfRangeException("top");
+				}
+
 				Add(view, left, left + 1, top, top + 1);
 			}
 
 			public void Add(View view, int left, int right, int top, int bottom)
 			{
 				if (left < 0)
+				{
 					throw new ArgumentOutOfRangeException("left");
+				}
+
 				if (top < 0)
+				{
 					throw new ArgumentOutOfRangeException("top");
+				}
+
 				if (left >= right)
+				{
 					throw new ArgumentOutOfRangeException("right");
+				}
+
 				if (top >= bottom)
+				{
 					throw new ArgumentOutOfRangeException("bottom");
+				}
+
 				if (view == null)
+				{
 					throw new ArgumentNullException("view");
+				}
 
 				SetRow(view, top);
 				SetRowSpan(view, bottom - top);
@@ -341,7 +373,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public void AddHorizontal(IEnumerable<View> views)
 			{
 				if (views == null)
+				{
 					throw new ArgumentNullException("views");
+				}
 
 				views.ForEach(AddHorizontal);
 			}
@@ -349,14 +383,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public void AddHorizontal(View view)
 			{
 				if (view == null)
+				{
 					throw new ArgumentNullException("view");
+				}
 
 				var rows = RowCount();
 				var columns = ColumnCount();
 
 				// if no rows, create a row
 				if (rows == 0)
+				{
 					rows++;
+				}
 
 				Add(view, columns, columns + 1, 0, rows);
 			}
@@ -364,7 +402,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public void AddVertical(IEnumerable<View> views)
 			{
 				if (views == null)
+				{
 					throw new ArgumentNullException("views");
+				}
 
 				views.ForEach(AddVertical);
 			}
@@ -372,14 +412,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public void AddVertical(View view)
 			{
 				if (view == null)
+				{
 					throw new ArgumentNullException("view");
+				}
 
 				var rows = RowCount();
 				var columns = ColumnCount();
 
 				// if no columns, create a column
 				if (columns == 0)
+				{
 					columns++;
+				}
 
 				Add(view, 0, columns, rows, rows + 1);
 			}

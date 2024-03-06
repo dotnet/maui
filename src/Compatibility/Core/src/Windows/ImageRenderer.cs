@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (Control.Source == null)
+			{
 				return new SizeRequest();
+			}
 
 			_measured = true;
 
@@ -80,7 +82,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Image.SourceProperty.PropertyName)
+			{
 				await TryUpdateSource().ConfigureAwait(false);
+			}
 		}
 
 		void OnImageOpened(object sender, RoutedEventArgs routedEventArgs)

@@ -24,9 +24,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			CGAffineTransform transform;
 
 			if (renderTransform == null)
+			{
 				transform = CGAffineTransform.MakeIdentity();
+			}
 			else
+			{
 				transform = renderTransform.ToCGAffineTransform();
+			}
 
 			if (geometry is LineGeometry)
 			{
@@ -91,7 +95,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 							PointCollection points = polylineSegment.Points;
 
 							for (int i = 0; i < points.Count; i++)
+							{
 								pathData.Data.AddLineToPoint(transform, points[i].ToPointF());
+							}
 
 							lastPoint = points.Count > 0 ? points[points.Count - 1] : Point.Zero;
 						}
@@ -186,7 +192,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 							CGPoint[] cgpoints = new CGPoint[points.Count];
 
 							for (int i = 0; i < points.Count; i++)
+							{
 								cgpoints[i] = transform.TransformPoint(points[i].ToPointF());
+							}
 
 							pathData.Data.AddLines(cgpoints);
 
@@ -195,7 +203,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					}
 
 					if (pathFigure.IsClosed)
+					{
+					{
 						pathData.Data.CloseSubpath();
+					}
 				}
 			}
 

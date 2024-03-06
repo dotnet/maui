@@ -143,7 +143,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// The scheme and host are used unless local html content is what the webview is displaying,
 				// in which case the bundle file name is used.
 				if (webView.Url != null && webView.Url.AbsoluteString != $"file://{NSBundle.MainBundle.BundlePath}/")
+				{
 					return $"{webView.Url.Scheme}://{webView.Url.Host}";
+				}
 
 				return new NSString(NSBundle.MainBundle.BundlePath).LastPathComponent;
 			}
@@ -173,13 +175,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				var controller = UIAlertController.Create(GetJsAlertTitle(webView), message, UIAlertControllerStyle.Alert);
 
 				if (defaultText != null)
+				{
 					controller.AddTextField((textField) => textField.Text = defaultText);
+				}
 
 				if (okAction != null)
+				{
 					AddOkAction(controller, () => okAction(controller));
+				}
 
 				if (cancelAction != null)
+				{
 					AddCancelAction(controller, () => cancelAction(controller));
+				}
 
 #pragma warning disable CA1416, CA1422 // TODO:  'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later
 				GetTopViewController(UIApplication.SharedApplication.Windows.FirstOrDefault(m => m.IsKeyWindow)?.RootViewController)?
@@ -190,13 +198,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			private static UIViewController? GetTopViewController(UIViewController? viewController)
 			{
 				if (viewController is UINavigationController navigationController)
+				{
 					return GetTopViewController(navigationController.VisibleViewController);
+				}
 
 				if (viewController is UITabBarController tabBarController)
+				{
 					return GetTopViewController(tabBarController.SelectedViewController!);
+				}
 
 				if (viewController?.PresentedViewController != null)
+				{
 					return GetTopViewController(viewController.PresentedViewController);
+				}
 
 				return viewController;
 			}

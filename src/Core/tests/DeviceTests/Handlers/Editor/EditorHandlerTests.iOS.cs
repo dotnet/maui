@@ -230,7 +230,9 @@ namespace Microsoft.Maui.DeviceTests
 			foreach (var view in editor.Subviews)
 			{
 				if (view is UILabel label)
+				{
 					return label;
+				}
 			}
 			return null;
 		}
@@ -305,7 +307,9 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeEditor = GetNativeEditor(editorHandler);
 
 			if (nativeEditor != null && nativeEditor.SelectedTextRange != null)
+			{
 				return (int)nativeEditor.GetOffsetFromPosition(nativeEditor.BeginningOfDocument, nativeEditor.SelectedTextRange.Start);
+			}
 
 			return -1;
 		}
@@ -318,7 +322,9 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeEditor = GetNativeEditor(editorHandler);
 
 			if (nativeEditor != null && nativeEditor.SelectedTextRange != null)
+			{
 				return (int)nativeEditor.GetOffsetFromPosition(nativeEditor.SelectedTextRange.Start, nativeEditor.SelectedTextRange.End);
+			}
 
 			return -1;
 		}

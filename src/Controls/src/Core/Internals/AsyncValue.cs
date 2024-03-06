@@ -48,6 +48,9 @@ namespace Microsoft.Maui.Controls.Internals
 			TaskScheduler scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
 			if (_valueTask.IsCompleted)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				IsRunning = false;
 			else
 				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
@@ -77,6 +80,465 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				if (_valueTask.Status != TaskStatus.RanToCompletion)
 					return _defaultValue;
+After:
+			{
+				IsRunning = false;
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+			}
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+			{
+				OnPropertyChanged(nameof(Value));
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+			}
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+				{
+					return;
+				}
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+				{
+					return _defaultValue;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+				IsRunning = false;
+			else
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+				OnPropertyChanged(nameof(Value));
+			else
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+					return;
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+					return _defaultValue;
+After:
+			{
+				IsRunning = false;
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+			}
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+			{
+				OnPropertyChanged(nameof(Value));
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+			}
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+				{
+					return;
+				}
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+				{
+					return _defaultValue;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				IsRunning = false;
+			else
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+				OnPropertyChanged(nameof(Value));
+			else
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+					return;
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+					return _defaultValue;
+After:
+			{
+				IsRunning = false;
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+			}
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+			{
+				OnPropertyChanged(nameof(Value));
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+			}
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+				{
+					return;
+				}
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+				{
+					return _defaultValue;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				IsRunning = false;
+			else
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+				OnPropertyChanged(nameof(Value));
+			else
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+					return;
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+					return _defaultValue;
+After:
+			{
+				IsRunning = false;
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+			}
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+			{
+				OnPropertyChanged(nameof(Value));
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+			}
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+				{
+					return;
+				}
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+				{
+					return _defaultValue;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				IsRunning = false;
+			else
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+				OnPropertyChanged(nameof(Value));
+			else
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+					return;
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+					return _defaultValue;
+After:
+			{
+				IsRunning = false;
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+			}
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+			{
+				OnPropertyChanged(nameof(Value));
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+			}
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+				{
+					return;
+				}
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+				{
+					return _defaultValue;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				IsRunning = false;
+			else
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+				OnPropertyChanged(nameof(Value));
+			else
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+					return;
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+					return _defaultValue;
+After:
+			{
+				IsRunning = false;
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+			}
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+			{
+				OnPropertyChanged(nameof(Value));
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+			}
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+				{
+					return;
+				}
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+				{
+					return _defaultValue;
+				}
+*/
+			{
+				IsRunning = false;
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+			}
+
+			if (_valueTask.Status == TaskStatus.RanToCompletion)
+			{
+				OnPropertyChanged(nameof(Value));
+			}
+			else
+			{
+				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+			}
+		}
+
+		public bool IsRunning
+		{
+			get { return _isRunning; }
+			set
+			{
+				if (_isRunning == value)
+				{
+					return;
+				}
+
+				_isRunning = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public T Value
+		{
+			get
+			{
+				if (_valueTask.Status != TaskStatus.RanToCompletion)
+				{
+					return _defaultValue;
+				}
 
 				return _valueTask.Result;
 			}

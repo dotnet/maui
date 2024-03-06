@@ -66,10 +66,7 @@ namespace Maui.Controls.Sample.Issues
 						Text = "Push page",
 						AutomationId = "PushPage",
 						Command = new Command(async() => {
-							if (list.Count >= 2)
-								list.Clear();
-
-							var wref = new WeakReference(new LeakPage());
+							if (list.Count >= 2) { list.Clear(); } var wref = new WeakReference(new LeakPage());
 
 							await Navigation.PushAsync(wref.Target as Page);
 							await (wref.Target as Page).Navigation.PopAsync();

@@ -102,7 +102,9 @@ namespace Maui.Controls.Sample.Pages
 		static string SizeInBytes(Stream? stream)
 		{
 			if (stream is null)
+			{
 				return "<null>";
+			}
 
 			string[] sizes = { "B", "KB", "MB", "GB", "TB" };
 

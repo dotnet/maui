@@ -71,13 +71,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == TimePicker.TimeProperty.PropertyName || e.PropertyName == TimePicker.FormatProperty.PropertyName)
+			{
 				SetTime(Element.Time);
+			}
 			else if (e.PropertyName == TimePicker.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == TimePicker.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == TimePicker.FontAttributesProperty.PropertyName || e.PropertyName == TimePicker.FontFamilyProperty.PropertyName || e.PropertyName == TimePicker.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 		}
 
 		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -87,9 +95,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (e.Focus)
 			{
 				if (Clickable)
+				{
 					CallOnClick();
+				}
 				else
+				{
 					((IPickerRenderer)this)?.OnClick();
+				}
 			}
 			else if (_dialog != null)
 			{
@@ -121,7 +133,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (disposing)
 			{
 				if (_dialog.IsAlive())
+				{
 					_dialog.CancelEvent -= OnCancelButtonClicked;
+				}
 
 				_dialog?.Dispose();
 				_dialog = null;

@@ -12,7 +12,9 @@ namespace Microsoft.Maui
 		public FocusRequest(bool isFocused)
 		{
 			if (isFocused)
+			{
 				IsFocused = isFocused;
+			}
 		}
 
 		/// <summary>

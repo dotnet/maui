@@ -34,9 +34,14 @@ namespace Microsoft.Maui.Controls
 			}, o => IsValidParameter(o) && canExecute((T)o))
 		{
 			if (execute == null)
+			{
 				throw new ArgumentNullException(nameof(execute));
+			}
+
 			if (canExecute == null)
+			{
 				throw new ArgumentNullException(nameof(canExecute));
+			}
 		}
 
 		static bool IsValidParameter(object o)
@@ -71,7 +76,9 @@ namespace Microsoft.Maui.Controls
 		public Command(Action<object> execute)
 		{
 			if (execute == null)
+			{
 				throw new ArgumentNullException(nameof(execute));
+			}
 
 			_execute = execute;
 		}
@@ -80,14 +87,18 @@ namespace Microsoft.Maui.Controls
 		public Command(Action execute) : this(o => execute())
 		{
 			if (execute == null)
+			{
 				throw new ArgumentNullException(nameof(execute));
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][4]/Docs/*" />
 		public Command(Action<object> execute, Func<object, bool> canExecute) : this(execute)
 		{
 			if (canExecute == null)
+			{
 				throw new ArgumentNullException(nameof(canExecute));
+			}
 
 			_canExecute = canExecute;
 		}
@@ -96,16 +107,25 @@ namespace Microsoft.Maui.Controls
 		public Command(Action execute, Func<bool> canExecute) : this(o => execute(), o => canExecute())
 		{
 			if (execute == null)
+			{
 				throw new ArgumentNullException(nameof(execute));
+			}
+
 			if (canExecute == null)
+			{
 				throw new ArgumentNullException(nameof(canExecute));
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='CanExecute']/Docs/*" />
 		public bool CanExecute(object parameter)
 		{
 			if (_canExecute != null)
+			{
+			{
 				return _canExecute(parameter);
+			}
+			}
 
 			return true;
 		}

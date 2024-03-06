@@ -22,7 +22,10 @@ namespace Microsoft.Maui.Controls.Internals
 		public static string GetTransformedText(string source, TextTransform textTransform)
 		{
 			if (string.IsNullOrEmpty(source))
+			{
+			{
 				return string.Empty;
+			}
 
 			switch (textTransform)
 			{
@@ -46,17 +49,23 @@ namespace Microsoft.Maui.Controls.Internals
 		public static void SetPlainText(InputView inputView, string platformText)
 		{
 			if (inputView == null)
+			{
 				return;
+			}
 
 			var textTransform = inputView.TextTransform;
 			var platformTextWithTransform = inputView.UpdateFormsText(platformText, textTransform);
 			var formsText = inputView.UpdateFormsText(inputView.Text, textTransform);
 
 			if ((string.IsNullOrEmpty(formsText) && platformText.Length == 0))
+			{
 				return;
+			}
 
 			if (formsText == platformTextWithTransform)
+			{
 				return;
+			}
 
 			inputView.SetValueFromRenderer(InputView.TextProperty, platformText);
 		}

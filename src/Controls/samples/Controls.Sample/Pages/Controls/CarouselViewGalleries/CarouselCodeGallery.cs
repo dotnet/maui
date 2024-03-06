@@ -58,9 +58,85 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			};
 
 			if (orientation == ItemsLayoutOrientation.Horizontal)
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-maccatalyst)'
+Before:
 				carouselView.PeekAreaInsets = new Thickness(30, 0, 30, 0);
-			else
+After:
+			{
+				carouselView.PeekAreaInsets = new Thickness(30, 0, 30, 0);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-windows10.0.19041.0)'
+Before:
+				carouselView.PeekAreaInsets = new Thickness(30, 0, 30, 0);
+After:
+			{
+				carouselView.PeekAreaInsets = new Thickness(30, 0, 30, 0);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-windows10.0.20348.0)'
+Before:
+				carouselView.PeekAreaInsets = new Thickness(30, 0, 30, 0);
+After:
+			{
+				carouselView.PeekAreaInsets = new Thickness(30, 0, 30, 0);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0)'
+Before:
+				carouselView.PeekAreaInsets = new Thickness(30, 0, 30, 0);
+After:
+			{
+				carouselView.PeekAreaInsets = new Thickness(30, 0, 30, 0);
+			}
+*/
+			
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-maccatalyst)'
+Before:
 				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
+After:
+			{
+				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-windows10.0.19041.0)'
+Before:
+				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
+After:
+			{
+				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0-windows10.0.20348.0)'
+Before:
+				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
+After:
+			{
+				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
+			}
+*/
+
+/* Unmerged change from project 'Maui.Controls.Sample(net8.0)'
+Before:
+				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
+After:
+			{
+				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
+			}
+*/
+{
+				carouselView.PeekAreaInsets = new Thickness(30, 0, 30, 0);
+			}
+			else
+			{
+				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
+			}
 
 			carouselView.Scrolled += CarouselViewScrolled;
 
@@ -88,9 +164,13 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				var peek = padi.Value;
 
 				if (orientation == ItemsLayoutOrientation.Horizontal)
+				{
 					carouselView.PeekAreaInsets = new Thickness(peek, 0, peek, 0);
+				}
 				else
+				{
 					carouselView.PeekAreaInsets = new Thickness(0, peek, 0, peek);
+				}
 			};
 
 			stckPeek.Children.Add(padi);

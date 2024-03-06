@@ -9,7 +9,11 @@ namespace Microsoft.Maui.Graphics.Text
 		public static int GetEnd(this IAttributedTextRun run)
 		{
 			if (run == null)
+			{
+			{
 				return 0;
+			}
+			}
 
 			return run.Start + run.Length;
 		}
@@ -19,10 +23,230 @@ namespace Microsoft.Maui.Graphics.Text
 			IAttributedTextRun second)
 		{
 			if (first == null || second == null)
+
+/* Unmerged change from project 'Graphics(net8.0)'
+Before:
 				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.19041.0)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.19041.0)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+			{
+
+/* Unmerged change from project 'Graphics(net8.0)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.19041.0)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.19041.0)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+				return first.GetEnd() > second.Start;
+After:
+			{
+				return first.GetEnd() > second.Start;
+			}
+*/
+				return false;
+			}
 
 			if (first.Start < second.GetEnd())
+			{
 				return first.GetEnd() > second.Start;
+			}
 
 			return false;
 		}
@@ -33,11 +257,243 @@ namespace Microsoft.Maui.Graphics.Text
 			int length)
 		{
 			if (first == null)
+
+/* Unmerged change from project 'Graphics(net8.0)'
+Before:
 				return false;
 
 			var end = start + length;
 			if (first.Start < end)
 				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.19041.0)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.19041.0)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+				return false;
+
+			var end = start + length;
+			if (first.Start < end)
+				return first.GetEnd() > start;
+After:
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
+*/
+			{
+				return false;
+			}
+
+			var end = start + length;
+			if (first.Start < end)
+			{
+				return first.GetEnd() > start;
+			}
 
 			return false;
 		}
@@ -47,7 +503,11 @@ namespace Microsoft.Maui.Graphics.Text
 			IAttributedTextRun second)
 		{
 			if (first == null || second == null)
+			{
+			{
 				return false;
+			}
+			}
 
 			return first.Start == second.Start && first.Length == second.Length;
 		}
@@ -58,7 +518,11 @@ namespace Microsoft.Maui.Graphics.Text
 			int length)
 		{
 			if (first == null)
+			{
+			{
 				return false;
+			}
+			}
 
 			return first.Start == start && first.Length == length;
 		}
@@ -167,9 +631,58 @@ namespace Microsoft.Maui.Graphics.Text
 					var maxLength = textLength - start;
 					var length = Math.Min(run.Length, maxLength);
 					if (length > 0)
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
 						runs[i] = new AttributedTextRun(start, length, run.Attributes);
 					else
 						runs.RemoveAt(i--);
+After:
+					{
+						runs[i] = new AttributedTextRun(start, length, run.Attributes);
+					}
+					else
+					{
+						runs.RemoveAt(i--);
+					}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+						runs[i] = new AttributedTextRun(start, length, run.Attributes);
+					else
+						runs.RemoveAt(i--);
+After:
+					{
+						runs[i] = new AttributedTextRun(start, length, run.Attributes);
+					}
+					else
+					{
+						runs.RemoveAt(i--);
+					}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+						runs[i] = new AttributedTextRun(start, length, run.Attributes);
+					else
+						runs.RemoveAt(i--);
+After:
+					{
+						runs[i] = new AttributedTextRun(start, length, run.Attributes);
+					}
+					else
+					{
+						runs.RemoveAt(i--);
+					}
+*/
+					{
+						runs[i] = new AttributedTextRun(start, length, run.Attributes);
+					}
+					else
+					{
+						runs.RemoveAt(i--);
+					}
 				}
 			}
 

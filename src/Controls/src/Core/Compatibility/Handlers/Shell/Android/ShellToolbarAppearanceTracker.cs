@@ -35,12 +35,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			Toolbar shellToolbar = _shellContext?.Shell?.Toolbar;
 
 			if (shellToolbar is null)
+			{
 				return;
+			}
 
 			shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
 			shellToolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor);
@@ -57,7 +61,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 

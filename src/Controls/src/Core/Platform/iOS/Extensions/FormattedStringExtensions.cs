@@ -39,6 +39,9 @@ namespace Microsoft.Maui.Controls.Platform
 			TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			if (formattedString == null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				return new NSAttributedString(string.Empty);
 
 			var attributed = new NSMutableAttributedString();
@@ -47,6 +50,32 @@ namespace Microsoft.Maui.Controls.Platform
 				Span span = formattedString.Spans[i];
 				if (span.Text == null)
 					continue;
+After:
+			{
+				return new NSAttributedString(string.Empty);
+			}
+
+			var attributed = new NSMutableAttributedString();
+			for (int i = 0; i < formattedString.Spans.Count; i++)
+			{
+				Span span = formattedString.Spans[i];
+				if (span.Text == null)
+				{
+					continue;
+				}
+*/
+			{
+				return new NSAttributedString(string.Empty);
+			}
+
+			var attributed = new NSMutableAttributedString();
+			for (int i = 0; i < formattedString.Spans.Count; i++)
+			{
+				Span span = formattedString.Spans[i];
+				if (span.Text == null)
+				{
+					continue;
+				}
 
 				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform));
 			}
@@ -69,7 +98,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
 			if (text is null)
+			{
+			{
 				return new NSAttributedString(string.Empty);
+			}
+			}
 
 			var style = new NSMutableParagraphStyle();
 			var lineHeight = span.LineHeight >= 0
@@ -91,7 +124,28 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var font = span.ToFont(defaultFontSize);
 			if (font.IsDefault && defaultFont.HasValue)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				font = defaultFont.Value;
+
+			var hasUnderline = false;
+			var hasStrikethrough = false;
+			if (span.IsSet(Span.TextDecorationsProperty))
+			{
+After:
+			{
+*/
+			{
+				font = defaultFont.Value;
+			}
+
+			var hasUnderline = false;
+			var hasStrikethrough = false;
+			if (span.IsSet(Span.TextDecorationsProperty))
+			{
+				font = defaultFont.Value;
+			}
 
 			var hasUnderline = false;
 			var hasStrikethrough = false;
@@ -132,24 +186,55 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static void RecalculateSpanPositions(this UILabel control, Label element)
 		{
 			if (element is null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				return;
 
 			if (element.TextType == TextType.Html)
-				return;
-
+After:
+			{
+*/
+			
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 			if (element?.FormattedText?.Spans is null
 				|| element.FormattedText.Spans.Count == 0)
 				return;
 
 			var finalSize = control.Frame;
+After:
+			}
+*/
+{
+				return;
+			}
+
+			if (element.TextType == TextType.Html)
+			{
+				return;
+			}
+
+			if (element?.FormattedText?.Spans is null
+				|| element.FormattedText.Spans.Count == 0)
+			{
+				return;
+			}
+
+			var finalSize = control.Frame;
 
 			if (finalSize.Width <= 0 || finalSize.Height <= 0)
+			{
 				return;
+			}
 
 			var inline = control.AttributedText;
 
 			if (inline is null)
+			{
+			{
 				return;
+			}
 
 			NSTextStorage textStorage = new NSTextStorage();
 			textStorage.SetString(inline);
@@ -174,12 +259,17 @@ namespace Microsoft.Maui.Controls.Platform
 				var length = span.Text?.Length ?? 0;
 
 				if (length == 0 || span?.Text is null)
+				{
 					continue;
+				}
 
 				var startRect = GetCharacterBounds(new NSRange(location, 1), layoutManager, textContainer);
 				var endRect = GetCharacterBounds(new NSRange(location + length, 1), layoutManager, textContainer);
 
 				var defaultLineHeight = control.FindDefaultLineHeight(location, length);
+
+				var yaxis = startRect.Top;
+				var lineHeights = new List<double>();
 
 				var yaxis = startRect.Top;
 				var lineHeights = new List<double>();
@@ -204,9 +294,9 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				// if the span is multiline, we need to calculate the bounds for each line individually
-				if (lineHeights.Count > 1) 
+				if (lineHeights.Count > 1)
 				{
-					var spanRectangles = GetMultilinedBounds(new NSRange(location, length), layoutManager, textContainer, startRect, endRect, lineHeights, span.Text.EndsWith('\n') ||  span.Text.EndsWith("\r\n"));
+					var spanRectangles = GetMultilinedBounds(new NSRange(location, length), layoutManager, textContainer, startRect, endRect, lineHeights, span.Text.EndsWith('\n') || span.Text.EndsWith("\r\n"));
 					((ISpatialElement)span).Region = Region.FromRectangles(spanRectangles).Inflate(5);
 				}
 				else
@@ -237,16 +327,17 @@ namespace Microsoft.Maui.Controls.Platform
 				stop = false;
 			});
 
-			return CreateSpanRects (startRect, endRect, lineHeights, multilineRects, endsWithNewLine);
+			return CreateSpanRects(startRect, endRect, lineHeights, multilineRects, endsWithNewLine);
 		}
 
-		static Rect[] CreateSpanRects (CGRect startRect, CGRect endRect, List<double> lineHeights, List<CGRect> multilineRects, bool endsWithNewLine)
+		static Rect[] CreateSpanRects(CGRect startRect, CGRect endRect, List<double> lineHeights, List<CGRect> multilineRects, bool endsWithNewLine)
 		{
 			List<Rect> spanRectangles = new List<Rect>();
 			var curHeight = (double)startRect.Top;
 
 			// go through each line and create a Rect for the text contained
-			for (int i = 0; i < multilineRects.Count; i++){
+			for (int i = 0; i < multilineRects.Count; i++)
+			{
 				var rect = multilineRects[i];
 
 				// top line
@@ -279,12 +370,17 @@ namespace Microsoft.Maui.Controls.Platform
 		static double FindDefaultLineHeight(this UILabel control, int start, int length)
 		{
 			if (length == 0)
+			{
+			{
 				return 0.0;
+			}
 
 			var textStorage = new NSTextStorage();
 
 			if (control.AttributedText is not null)
+			{
 				textStorage.SetString(control.AttributedText.Substring(start, length));
+			}
 
 			var layoutManager = new NSLayoutManager();
 			textStorage.AddLayoutManager(layoutManager);

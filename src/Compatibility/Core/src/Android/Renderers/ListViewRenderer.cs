@@ -109,7 +109,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnAttachedToWindow();
 
 			if (Control != null)
+			{
 				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
+			}
 
 			_isAttached = true;
 			_adapter.IsAttachedToWindow = _isAttached;
@@ -230,27 +232,49 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == "HeaderElement")
+			{
 				UpdateHeader();
+			}
 			else if (e.PropertyName == "FooterElement")
+			{
 				UpdateFooter();
+			}
 			else if (e.PropertyName == "RefreshAllowed")
+			{
 				UpdateIsSwipeToRefreshEnabled();
+			}
 			else if (e.PropertyName == ListView.IsPullToRefreshEnabledProperty.PropertyName)
+			{
 				UpdateIsSwipeToRefreshEnabled();
+			}
 			else if (e.PropertyName == ListView.IsRefreshingProperty.PropertyName)
+			{
 				UpdateIsRefreshing();
+			}
 			else if (e.PropertyName == ListView.SeparatorColorProperty.PropertyName || e.PropertyName == ListView.SeparatorVisibilityProperty.PropertyName)
+			{
 				_adapter.NotifyDataSetChanged();
+			}
 			else if (e.PropertyName == PlatformConfiguration.AndroidSpecific.ListView.IsFastScrollEnabledProperty.PropertyName)
+			{
 				UpdateFastScrollEnabled();
+			}
 			else if (e.PropertyName == ListView.SelectionModeProperty.PropertyName)
+			{
 				UpdateSelectionMode();
+			}
 			else if (e.PropertyName == ListView.RefreshControlColorProperty.PropertyName)
+			{
 				UpdateSpinnerColor();
+			}
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateHorizontalScrollBarVisibility();
+			}
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateVerticalScrollBarVisibility();
+			}
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -284,15 +308,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				int indexOfItem = results.Item2;
 
 				if (indexOfGroup == -1)
+				{
 					return;
+				}
 
 				int itemIndex = indexOfItem == -1 ? 0 : indexOfItem;
 
 				var group = templatedItems.GetGroup(indexOfGroup);
 				if (group.Count == 0)
+				{
 					cell = group.HeaderContent;
+				}
 				else
+				{
 					cell = group[itemIndex];
+				}
 
 				//Increment Scroll Position by 1 when Grouping is enabled. Android offsets position of cells when using header.
 				scrollPosition = templatedItems.GetGlobalIndexForGroup(group) + itemIndex + 1;
@@ -301,7 +331,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				scrollPosition = templatedItems.GetGlobalIndexOfItem(scrollArgs.Item);
 				if (scrollPosition == -1)
+				{
 					return;
+				}
 
 				cell = templatedItems[scrollPosition];
 			}
@@ -312,9 +344,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (e.Position == ScrollToPosition.MakeVisible)
 			{
 				if (e.ShouldAnimate)
+				{
 					Control.SmoothScrollToPosition(realPositionWithHeader);
+				}
 				else
+				{
 					Control.SetSelection(realPositionWithHeader);
+				}
+
 				return;
 			}
 
@@ -324,7 +361,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				int first = Control.FirstVisiblePosition;
 				if (first <= scrollPosition && scrollPosition <= Control.LastVisiblePosition)
+				{
 					cellHeight = Control.GetChildAt(scrollPosition - first).Height;
+				}
 				else
 				{
 					AView view = _adapter.GetView(scrollPosition, null, null);
@@ -336,14 +375,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var y = 0;
 
 			if (e.Position == ScrollToPosition.Center)
+			{
 				y = height / 2 - cellHeight / 2;
+			}
 			else if (e.Position == ScrollToPosition.End)
+			{
 				y = height - cellHeight;
+			}
 
 			if (e.ShouldAnimate)
+			{
 				Control.SmoothScrollToPositionFromTop(realPositionWithHeader, y);
+			}
 			else
+			{
 				Control.SetSelectionFromTop(realPositionWithHeader, y);
+			}
 		}
 
 		void UpdateFooter()
@@ -356,7 +403,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (footer == null || Registrar.Registered.GetHandlerTypeForObject(footer) != rendererType)
 				{
 					if (_footerView != null)
+					{
 						_footerView.Child = null;
+					}
+
 					Platform.ClearRenderer(_footerRenderer.View);
 					_footerRenderer.Dispose();
 					_footerRenderer = null;
@@ -364,15 +414,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (footer == null)
+			{
 				return;
+			}
 
 			if (_footerRenderer != null)
+			{
 				_footerRenderer.SetElement(footer);
+			}
 			else
 			{
 				_footerRenderer = Platform.CreateRenderer(footer, Context);
 				if (_footerView != null)
+				{
 					_footerView.Child = _footerRenderer;
+				}
 			}
 
 			Platform.SetRenderer(footer, _footerRenderer);
@@ -388,7 +444,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (header == null || Registrar.Registered.GetHandlerTypeForObject(header) != rendererType)
 				{
 					if (_headerView != null)
+					{
 						_headerView.Child = null;
+					}
+
 					Platform.ClearRenderer(_headerRenderer.View);
 					_headerRenderer.Dispose();
 					_headerRenderer = null;
@@ -396,15 +455,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (header == null)
+			{
 				return;
+			}
 
 			if (_headerRenderer != null)
+			{
 				_headerRenderer.SetElement(header);
+			}
 			else
 			{
 				_headerRenderer = Platform.CreateRenderer(header, Context);
 				if (_headerView != null)
+				{
 					_headerView.Child = _headerRenderer;
+				}
 			}
 
 			Platform.SetRenderer(header, _headerRenderer);
@@ -421,20 +486,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_refresh.Post(() =>
 					{
 						if (_refresh.IsDisposed())
+						{
 							return;
+						}
 
 						_refresh.Refreshing = true;
 					});
 				}
 				else
+				{
 					_refresh.Refreshing = isRefreshing;
+				}
 			}
 		}
 
 		void UpdateIsSwipeToRefreshEnabled()
 		{
 			if (_refresh != null)
+			{
 				_refresh.Enabled = Element.IsPullToRefreshEnabled && (Element as IListViewController).RefreshAllowed;
+			}
 		}
 
 		void UpdateFastScrollEnabled()
@@ -464,7 +535,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateSpinnerColor()
 		{
 			if (_refresh != null && Element.RefreshControlColor != null)
+			{
 				_refresh.SetColorSchemeColors(Element.RefreshControlColor.ToAndroid());
+			}
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
@@ -487,12 +560,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == 0)
+			{
 				_defaultVerticalScrollVisibility = Control.VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+			}
 
 			var newVerticalScrollVisibility = Element.VerticalScrollBarVisibility;
 
 			if (newVerticalScrollVisibility == ScrollBarVisibility.Default)
+			{
 				newVerticalScrollVisibility = _defaultVerticalScrollVisibility;
+			}
 
 			Control.VerticalScrollBarEnabled = newVerticalScrollVisibility == ScrollBarVisibility.Always;
 		}
@@ -515,19 +592,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				set
 				{
 					if (_child != null)
+					{
 						RemoveView(_child.View);
+					}
 
 					_child = value;
 
 					if (value != null)
+					{
 						AddView(value.View);
+					}
 				}
 			}
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
 				if (_child == null)
+				{
 					return;
+				}
 
 				_child.UpdateLayout();
 			}
@@ -572,7 +655,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			public override bool OnInterceptTouchEvent(MotionEvent ev)
 			{
 				if (ev.Action == MotionEventActions.Down)
+				{
 					_initialDownY = ev.GetAxisValue(Axis.Y);
+				}
 
 				var isBeingDragged = base.OnInterceptTouchEvent(ev);
 

@@ -190,7 +190,9 @@ namespace Microsoft.Maui.Controls
 		{
 			ICommand cmd = PointerEnteredCommand;
 			if (cmd?.CanExecute(PointerEnteredCommandParameter) == true)
+			{
 				cmd.Execute(PointerEnteredCommandParameter);
+			}
 
 			EventHandler<PointerEventArgs>? handler = PointerEntered;
 			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
@@ -203,7 +205,9 @@ namespace Microsoft.Maui.Controls
 		{
 			ICommand cmd = PointerExitedCommand;
 			if (cmd?.CanExecute(PointerExitedCommandParameter) == true)
+			{
 				cmd.Execute(PointerExitedCommandParameter);
+			}
 
 			EventHandler<PointerEventArgs>? handler = PointerExited;
 			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
@@ -216,7 +220,9 @@ namespace Microsoft.Maui.Controls
 		{
 			ICommand cmd = PointerMovedCommand;
 			if (cmd?.CanExecute(PointerMovedCommandParameter) == true)
+			{
 				cmd.Execute(PointerMovedCommandParameter);
+			}
 
 			EventHandler<PointerEventArgs>? handler = PointerMoved;
 			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
@@ -229,7 +235,9 @@ namespace Microsoft.Maui.Controls
 		{
 			ICommand cmd = PointerPressedCommand;
 			if (cmd?.CanExecute(PointerPressedCommandParameter) == true)
+			{
 				cmd.Execute(PointerPressedCommandParameter);
+			}
 
 			EventHandler<PointerEventArgs>? handler = PointerPressed;
 			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
@@ -242,7 +250,9 @@ namespace Microsoft.Maui.Controls
 		{
 			ICommand cmd = PointerReleasedCommand;
 			if (cmd?.CanExecute(PointerReleasedCommandParameter) == true)
+			{
 				cmd.Execute(PointerReleasedCommandParameter);
+			}
 
 			EventHandler<PointerEventArgs>? handler = PointerReleased;
 			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));

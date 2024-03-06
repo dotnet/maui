@@ -190,8 +190,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Map.MapTypeProperty.PropertyName)
+			{
 				UpdateMapType();
-			else if (e.PropertyName == Map.IsShowingUserProperty.PropertyName)
+			}
+			
+/* Unmerged change from project 'Compatibility.Maps.iOS(net8.0-maccatalyst)'
+Before:
 				UpdateIsShowingUser();
 			else if (e.PropertyName == Map.IsScrollEnabledProperty.PropertyName)
 				UpdateIsScrollEnabled();
@@ -199,6 +203,40 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				UpdateIsZoomEnabled();
 			else if (e.PropertyName == Map.IsTrafficEnabledProperty.PropertyName)
 				UpdateTrafficEnabled();
+After:
+			{
+				UpdateIsShowingUser();
+			}
+			else if (e.PropertyName == Map.IsScrollEnabledProperty.PropertyName)
+			{
+				UpdateIsScrollEnabled();
+			}
+			else if (e.PropertyName == Map.IsZoomEnabledProperty.PropertyName)
+			{
+				UpdateIsZoomEnabled();
+			}
+			else if (e.PropertyName == Map.IsTrafficEnabledProperty.PropertyName)
+			{
+				UpdateTrafficEnabled();
+*/
+}
+			else if (e.PropertyName == Map.IsShowingUserProperty.PropertyName)
+			{
+				UpdateIsShowingUser();
+			}
+			else if (e.PropertyName == Map.IsScrollEnabledProperty.PropertyName)
+			{
+				UpdateIsScrollEnabled();
+			}
+			else if (e.PropertyName == Map.IsZoomEnabledProperty.PropertyName)
+			{
+				UpdateIsZoomEnabled();
+			}
+			else if (e.PropertyName == Map.IsTrafficEnabledProperty.PropertyName)
+			{
+				UpdateTrafficEnabled();
+			}
+			}
 			//else if (e.PropertyName == VisualElement.HeightProperty.PropertyName && ((Map)Element).LastMoveToRegion != null)
 			//	_shouldUpdateRegion = ((Map)Element).MoveToLastRegionOnLayoutChange;
 		}
@@ -234,7 +272,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=26416
 			var userLocationAnnotation = Runtime.GetNSObject(annotation.Handle) as MKUserLocation;
 			if (userLocationAnnotation != null)
+			{
 				return null;
+			}
 
 			const string defaultPinId = "defaultPin";
 			mapPin = mapView.DequeueReusableAnnotation(defaultPinId);
@@ -321,12 +361,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 			// pin not found. Must have been activated outside of forms
 			if (targetPin == null)
+			{
 				return;
+			}
 
 			// if the tap happened on the annotation view itself, skip because this is what happens when the callout is showing
 			// when the callout is already visible the tap comes in on a different view
 			if (_lastTouchedView is MKAnnotationView)
+			{
+			{
 				return;
+			}
 
 			targetPin.SendMarkerClick();
 
@@ -402,7 +447,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 		void MkMapViewOnRegionChanged(object sender, MKMapViewChangeEventArgs e)
 		{
 			if (Element == null)
+			{
+			{
 				return;
+			}
 
 			var mapModel = (Map)Element;
 			var mkMapView = (MKMapView)Control;
@@ -439,7 +487,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				case NotifyCollectionChangedAction.Reset:
 					var mapView = (MKMapView)Control;
 					if (mapView.Annotations?.Length > 0)
+					{
 						mapView.RemoveAnnotations(mapView.Annotations);
+					}
+
+					AddPins((IList)(Element as Map).Pins);
+					}
+
 					AddPins((IList)(Element as Map).Pins);
 					break;
 				case NotifyCollectionChangedAction.Move:

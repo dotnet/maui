@@ -32,13 +32,18 @@ namespace Microsoft.Maui.Controls
 		public bool Contains(T item)
 		{
 			lock (_list)
+			{
+			{
 				return _list.Contains(item);
+			}
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
 			lock (_list)
+			{
 				_list.CopyTo(array, arrayIndex);
+			}
 		}
 
 		public int Count
@@ -76,7 +81,9 @@ namespace Microsoft.Maui.Controls
 			if (snap == null)
 			{
 				lock (_list)
+				{
 					_snapshot = snap = new ReadOnlyCollection<T>(_list.ToList());
+				}
 			}
 
 			return snap.GetEnumerator();
@@ -85,7 +92,10 @@ namespace Microsoft.Maui.Controls
 		public int IndexOf(T item)
 		{
 			lock (_list)
+			{
+			{
 				return _list.IndexOf(item);
+			}
 		}
 
 		public void Insert(int index, T item)
@@ -103,10 +113,14 @@ namespace Microsoft.Maui.Controls
 			{
 				ReadOnlyCollection<T> snap = _snapshot;
 				if (snap != null)
+				{
 					return snap[index];
+				}
 
 				lock (_list)
+				{
 					return _list[index];
+				}
 			}
 
 			set

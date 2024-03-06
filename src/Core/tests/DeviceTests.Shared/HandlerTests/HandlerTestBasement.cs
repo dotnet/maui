@@ -159,7 +159,9 @@ namespace Microsoft.Maui.DeviceTests
 			where TCustomHandler : THandler, new()
 		{
 			if (element.Handler is TCustomHandler t)
+			{
 				return t;
+			}
 
 			mauiContext ??= MauiContext;
 			var handler = Activator.CreateInstance<TCustomHandler>();
@@ -173,7 +175,9 @@ namespace Microsoft.Maui.DeviceTests
 		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType, IMauiContext mauiContext)
 		{
 			if (view.Handler is IPlatformViewHandler t)
+			{
 				return t;
+			}
 
 			var handler = (IPlatformViewHandler)Activator.CreateInstance(handlerType);
 			InitializeViewHandler(view, handler, mauiContext);
@@ -236,7 +240,9 @@ namespace Microsoft.Maui.DeviceTests
 			}, MauiContext, (view) =>
 			{
 				if (view.Handler is IPlatformViewHandler platformViewHandler)
+				{
 					return Task.FromResult(platformViewHandler);
+				}
 
 				var handler = view.ToHandler(MauiContext);
 				InitializeViewHandler(view, handler, MauiContext);

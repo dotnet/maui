@@ -187,9 +187,13 @@ namespace Microsoft.Maui.Devices.Sensors
 			var args = new BarometerChangedEventArgs(reading);
 
 			if (UseSyncContext)
+			{
 				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(this, args));
+			}
 			else
+			{
 				ReadingChanged?.Invoke(this, args);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -198,10 +202,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void Start(SensorSpeed sensorSpeed)
 		{
 			if (!IsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (IsMonitoring)
+			{
 				throw new InvalidOperationException("Barometer has already been started.");
+			}
 
 			IsMonitoring = true;
 			SensorSpeed = sensorSpeed;
@@ -222,10 +230,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void Stop()
 		{
 			if (!IsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (!IsMonitoring)
+			{
 				return;
+			}
 
 			IsMonitoring = false;
 

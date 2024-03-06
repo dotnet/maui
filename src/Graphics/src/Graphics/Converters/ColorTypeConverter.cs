@@ -15,7 +15,10 @@ namespace Microsoft.Maui.Graphics.Converters
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (!(value is Color color) || color == null)
+			{
+			{
 				throw new NotSupportedException();
+			}
 
 			return color.ToRgbaHex();
 		}

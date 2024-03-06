@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.ConnectHandler(platformView);
 
 			if (platformView is MauiNavigationView mauiNavigationView)
+			{
 				mauiNavigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
+			}
 
 			platformView.Loaded += OnLoaded;
 			platformView.PaneOpened += OnPaneOpened;
@@ -49,7 +51,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.DisconnectHandler(platformView);
 
 			if (platformView is MauiNavigationView mauiNavigationView)
+			{
 				mauiNavigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+			}
 
 			platformView.Loaded -= OnLoaded;
 			platformView.PaneOpened -= OnPaneOpened;
@@ -63,15 +67,21 @@ namespace Microsoft.Maui.Controls.Handlers
 			var item = args.InvokedItemContainer?.DataContext;
 
 			if (item is NavigationViewItemViewModel nvm && nvm.Data is Element e)
+			{
 				(VirtualView as IShellController)?.OnFlyoutItemSelected(e);
+			}
 			else if (item is Element e2)
+			{
 				(VirtualView as IShellController)?.OnFlyoutItemSelected(e2);
+			}
 		}
 
 		void OnApplyTemplateFinished(object sender, System.EventArgs e)
 		{
 			if (PlatformView == null)
+			{
 				return;
+			}
 
 			_scrollViewer = PlatformView.MenuItemsScrollViewer;
 
@@ -103,15 +113,21 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.SetVirtualView(view);
 
 			if (PlatformView.Element != view)
+			{
 				PlatformView.SetElement((Shell)view);
+			}
 		}
 
 		public static void MapFlyoutBackdrop(ShellHandler handler, Shell view)
 		{
 			if (Brush.IsNullOrEmpty(view.FlyoutBackdrop))
+			{
 				handler.PlatformView.FlyoutBackdrop = null;
+			}
 			else
+			{
 				handler.PlatformView.FlyoutBackdrop = view.FlyoutBackdrop;
+			}
 		}
 
 		public static void MapCurrentItem(ShellHandler handler, Shell view)
@@ -143,9 +159,11 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static void MapFlyout(ShellHandler handler, IFlyoutView flyoutView)
 		{
 			if (handler.PlatformView is RootNavigationView rnv)
+			{
 				rnv.FlyoutView = flyoutView.Flyout;
+			}
 
-			handler.PlatformView.FlyoutCustomContent = flyoutView.Flyout?.ToPlatform(handler.MauiContext);
+			MauiNavigationView.FlyoutCustomContent = flyoutView.Flyout?.ToPlatform(handler.MauiContext);
 
 		}
 
@@ -154,7 +172,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			// WinUI Will close the pane inside of the apply template code
 			// so we wait until the control is loaded before applying IsPresented
 			if (handler.PlatformView.IsLoaded)
+			{
 				handler.PlatformView.IsPaneOpen = flyoutView.IsPresented;
+			}
 		}
 
 		public static void MapFlyoutWidth(ShellHandler handler, IFlyoutView flyoutView)
@@ -170,13 +190,17 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static void MapFlyoutFooter(ShellHandler handler, Shell view)
 		{
 			if (handler.PlatformView.PaneFooter == null)
+			{
 				handler.PlatformView.PaneFooter = new ShellFooterView(view);
+			}
 		}
 
 		public static void MapFlyoutHeader(ShellHandler handler, Shell view)
 		{
 			if (handler.PlatformView.PaneHeader == null)
+			{
 				handler.PlatformView.PaneHeader = new ShellHeaderView(view);
+			}
 		}
 
 		public static void MapFlyoutHeaderBehavior(ShellHandler handler, Shell view)
@@ -236,22 +260,32 @@ namespace Microsoft.Maui.Controls.Handlers
 		void OnScrollViewerViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
 			if (_scrollViewer == null)
+			{
 				return;
+			}
 
 			var flyoutHeader = PlatformView?.PaneHeader as ShellHeaderView;
 
 			if (flyoutHeader == null)
+			{
 				return;
+			}
 
 			if (_headerHeight == null)
+			{
 				_headerHeight = flyoutHeader.ActualHeight;
+			}
 
 			if (_headerOffset == null)
 			{
 				if (flyoutHeader.RenderTransform is CompositeTransform compositeTransform)
+				{
 					_headerOffset = compositeTransform.TranslateY;
+				}
 				else
+				{
 					_headerOffset = 0;
+				}
 			}
 
 			switch (VirtualView?.FlyoutHeaderBehavior)
@@ -265,7 +299,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				case FlyoutHeaderBehavior.CollapseOnScroll:
 
 					if (_topAreaHeight == null)
+					{
 						_topAreaHeight = Math.Max(PlatformView.TopNavArea?.ActualHeight ?? 0, _headerHeight.Value);
+					}
 
 					var calculatedHeight = _headerHeight.Value - _scrollViewer.VerticalOffset;
 					var collapseOnScrollHeight = calculatedHeight < _topAreaHeight.Value ? _topAreaHeight.Value : calculatedHeight;

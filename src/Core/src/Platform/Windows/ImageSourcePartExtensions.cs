@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Platform
 
 			var imageSource = image.Source;
 			if (imageSource == null)
+			{
 				return null;
+			}
 
 			var events = image as IImageSourcePartEvents;
 

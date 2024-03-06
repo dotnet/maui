@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		public void Visit(ValueNode node, INode parentNode)
 		{
 			if (!Context.Types.TryGetValue((IElementNode)parentNode, out var type) || !typeof(ResourceDictionary).IsAssignableFrom(type))
+			{
 				return;
+			}
 
 			node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
 		}
@@ -35,7 +37,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		public void Visit(ElementNode node, INode parentNode)
 		{
 			if (!Values.TryGetValue(node, out var value) && Context.ExceptionHandler != null)
+			{
 				return;
+			}
 
 			//Set RD to VE
 			if (typeof(ResourceDictionary).IsAssignableFrom(Context.Types[node]) && ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName propertyName))
@@ -54,11 +58,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
 				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
 				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+			{
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
+			}
 			else if (parentNode is ListNode
 					 && typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
 					 && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+			{
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
+			}
 		}
 
 		public void Visit(RootNode node, INode parentNode)
@@ -72,6 +80,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		public bool SkipChildren(INode node, INode parentNode)
 		{
 			if (!(node is ElementNode))
+
+/* Unmerged change from project 'Controls.Xaml(net8.0-ios)'
+Before:
 				return false;
 			if (parentNode is IElementNode
 				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
@@ -82,6 +93,45 @@ namespace Microsoft.Maui.Controls.Xaml
 				&& typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
 				&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				return true;
+After:
+			{
+				return false;
+			}
+
+			if (parentNode is IElementNode
+				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
+				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
+				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+			{
+				return true;
+			}
+
+			if (parentNode is ListNode
+				&& typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
+				&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+			{
+				return true;
+			}
+*/
+			{
+				return false;
+			}
+
+			if (parentNode is IElementNode
+				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
+				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
+				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+			{
+				return true;
+			}
+
+			if (parentNode is ListNode
+				&& typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
+				&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+			{
+				return true;
+			}
+
 			return false;
 		}
 

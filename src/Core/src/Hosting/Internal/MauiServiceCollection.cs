@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public int Count => _descriptors.Count;
 
-		public bool IsReadOnly => false;
+		public static bool IsReadOnly => false;
 
 		public ServiceDescriptor this[int index]
 		{
@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Hosting.Internal
 		public void Add(ServiceDescriptor item)
 		{
 			if (_descriptors.Contains(item))
+			{
 				return;
+			}
 
 			_descriptors.Add(item);
 			_descriptorDictionary[item.ServiceType] = item;
@@ -49,7 +51,10 @@ namespace Microsoft.Maui.Hosting.Internal
 		{
 			var success = _descriptors.Remove(item);
 			if (success)
+			{
 				_descriptorDictionary.Remove(item.ServiceType);
+			}
+
 			return success;
 		}
 

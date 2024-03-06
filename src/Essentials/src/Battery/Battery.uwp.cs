@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Devices
 				var full = finalReport.FullChargeCapacityInMilliwattHours;
 
 				if (remaining.HasValue && full.HasValue)
+				{
 					finalPercent = (double)remaining.Value / (double)full.Value;
+				}
 
 				return finalPercent;
 			}
@@ -57,14 +59,19 @@ namespace Microsoft.Maui.Devices
 						return BatteryState.Discharging;
 					case BatteryStatus.Idle:
 						if (ChargeLevel >= 1.0)
+						{
 							return BatteryState.Full;
+						}
+
 						return BatteryState.NotCharging;
 					case BatteryStatus.NotPresent:
 						return BatteryState.NotPresent;
 				}
 
 				if (ChargeLevel >= 1.0)
+				{
 					return BatteryState.Full;
+				}
 
 				return BatteryState.Unknown;
 			}

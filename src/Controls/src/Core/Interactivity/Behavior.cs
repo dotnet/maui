@@ -26,9 +26,15 @@ namespace Microsoft.Maui.Controls
 		void IAttachedObject.AttachTo(BindableObject bindable)
 		{
 			if (bindable == null)
+			{
 				throw new ArgumentNullException(nameof(bindable));
+			}
+
 			if (!AssociatedType.IsInstanceOfType(bindable))
+			{
 				throw new InvalidOperationException("bindable not an instance of AssociatedType");
+			}
+
 			OnAttachedTo(bindable);
 		}
 

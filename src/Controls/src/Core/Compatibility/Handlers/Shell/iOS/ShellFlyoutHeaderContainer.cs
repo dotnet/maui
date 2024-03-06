@@ -17,10 +17,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			get
 			{
 				if (View.IsSet(View.MarginProperty))
+				{
 					return View.Margin;
+				}
 
 				if (View is ISafeAreaView sav && sav.IgnoreSafeArea)
+				{
 					return Thickness.Zero;
+				}
 
 				var safeArea = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 
@@ -37,7 +41,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void LayoutSubviews()
 		{
 			if (!UpdateSafeAreaMargin())
+			{
 				base.LayoutSubviews();
+			}
 		}
 
 		public override void SafeAreaInsetsDidChange()

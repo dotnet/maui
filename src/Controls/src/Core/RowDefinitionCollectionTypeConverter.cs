@@ -27,7 +27,10 @@ namespace Microsoft.Maui.Controls
 				var converter = new GridLengthTypeConverter();
 				var definitions = new RowDefinition[lengths.Length];
 				for (var i = 0; i < lengths.Length; i++)
+				{
 					definitions[i] = new RowDefinition { Height = (GridLength)converter.ConvertFromInvariantString(lengths[i]) };
+				}
+
 				return new RowDefinitionCollection(definitions);
 			}
 
@@ -37,7 +40,10 @@ namespace Microsoft.Maui.Controls
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not RowDefinitionCollection rdc)
+			{
 				throw new NotSupportedException();
+			}
+
 			var converter = new GridLengthTypeConverter();
 			return string.Join(", ", rdc.Select(rd => converter.ConvertToInvariantString(rd.Height)));
 		}

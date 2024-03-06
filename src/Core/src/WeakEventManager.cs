@@ -17,10 +17,14 @@ namespace Microsoft.Maui
 			where TEventArgs : EventArgs
 		{
 			if (IsNullOrEmpty(eventName))
+			{
 				throw new ArgumentNullException(nameof(eventName));
+			}
 
 			if (handler == null)
+			{
 				throw new ArgumentNullException(nameof(handler));
+			}
 
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
@@ -28,10 +32,14 @@ namespace Microsoft.Maui
 		public void AddEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
+			{
 				throw new ArgumentNullException(nameof(eventName));
+			}
 
 			if (handler == null)
+			{
 				throw new ArgumentNullException(nameof(handler));
+			}
 
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
@@ -58,10 +66,14 @@ namespace Microsoft.Maui
 					object? subscriber = subscription.Subscriber?.Target;
 
 					if (subscriber == null)
+					{
 						// The subscriber was collected, so there's no need to keep this subscription around
 						toRemove.Add(subscription);
+					}
 					else
+					{
 						toRaise.Add((subscriber, subscription.Handler));
+					}
 				}
 
 				for (int i = 0; i < toRemove.Count; i++)
@@ -83,10 +95,14 @@ namespace Microsoft.Maui
 			where TEventArgs : EventArgs
 		{
 			if (IsNullOrEmpty(eventName))
+			{
 				throw new ArgumentNullException(nameof(eventName));
+			}
 
 			if (handler == null)
+			{
 				throw new ArgumentNullException(nameof(handler));
+			}
 
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
@@ -94,10 +110,14 @@ namespace Microsoft.Maui
 		public void RemoveEventHandler(Delegate? handler, [CallerMemberName] string eventName = "")
 		{
 			if (IsNullOrEmpty(eventName))
+			{
 				throw new ArgumentNullException(nameof(eventName));
+			}
 
 			if (handler == null)
+			{
 				throw new ArgumentNullException(nameof(handler));
+			}
 
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
@@ -123,7 +143,9 @@ namespace Microsoft.Maui
 		void RemoveEventHandler(string eventName, object? handlerTarget, MemberInfo methodInfo)
 		{
 			if (!_eventHandlers.TryGetValue(eventName, out List<Subscription>? subscriptions))
+			{
 				return;
+			}
 
 			for (int n = subscriptions.Count - 1; n >= 0; n--)
 			{

@@ -24,14 +24,20 @@ namespace Microsoft.Maui.Controls
 		internal static void MaterialCheck()
 		{
 			if (_isMaterialRegistered || _warnedAboutMaterial)
+			{
 				return;
+			}
 
 			var logger = Application.Current?.FindMauiContext()?.CreateLogger<IVisual>();
 			_warnedAboutMaterial = true;
 			if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.Tizen)
+			{
 				logger?.LogWarning("Material needs to be registered on {RuntimePlatform} by calling FormsMaterial.Init() after the Microsoft.Maui.Controls.Forms.Init method call.", DeviceInfo.Platform);
+			}
 			else
+			{
 				logger?.LogWarning("Material is currently not support on {RuntimePlatform}.", DeviceInfo.Platform);
+			}
 		}
 
 		internal sealed class MaterialVisual : IVisual { public MaterialVisual() { } }

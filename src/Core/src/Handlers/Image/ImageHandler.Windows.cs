@@ -57,7 +57,9 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(ImageSource? platformImage)
 			{
 				if (Handler?.PlatformView is not WImage image)
+				{
 					return;
+				}
 
 				image.Source = platformImage;
 			}

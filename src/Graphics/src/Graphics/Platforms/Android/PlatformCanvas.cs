@@ -207,7 +207,25 @@ namespace Microsoft.Maui.Graphics.Platform
 		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
 			if (paint == null)
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
 				paint = Colors.White.AsPaint();
+
+			if (_shader != null)
+			{
+				CurrentState.SetFillPaintShader(null);
+				_shader.Dispose();
+				_shader = null;
+			}
+After:
+			{
+				paint = Colors.White.AsPaint();
+			}
+*/
+			{
+				paint = Colors.White.AsPaint();
+			}
 
 			if (_shader != null)
 			{
@@ -270,7 +288,18 @@ namespace Microsoft.Maui.Graphics.Platform
 				float radius = (float)radialGradientPaint.Radius * Math.Max(rectangle.Height, rectangle.Width);
 
 				if (radius == 0)
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
 					radius = GeometryUtil.GetDistance(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+After:
+				{
+					radius = GeometryUtil.GetDistance(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+*/
+				{
+					radius = GeometryUtil.GetDistance(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+				}
+				}
 
 				try
 				{
@@ -340,7 +369,9 @@ namespace Microsoft.Maui.Graphics.Platform
 						}
 					}
 					else
+					{
 						FillColor = Colors.White;
+					}
 				}
 				else
 				{
@@ -348,7 +379,9 @@ namespace Microsoft.Maui.Graphics.Platform
 				}
 			}
 			else
+			{
 				FillColor = paint.BackgroundColor;
+			}
 
 			//System.Diagnostics.Debug.WriteLine("Gradient Set To: "+aPaint.PaintType);
 		}
@@ -453,7 +486,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			float strokeSize = CurrentState.ScaledStrokeSize;
 			if (strokeSize == 0)
+			{
 				return;
+			}
 
 			rectX = x;
 			rectY = y;
@@ -574,7 +609,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		public override void DrawString(string value, float x, float y, HorizontalAlignment horizAlignment)
 		{
 			if (horizAlignment == HorizontalAlignment.Left)
+			{
+			{
 				DrawString(value, x, y);
+			}
 			else if (horizAlignment == HorizontalAlignment.Right)
 			{
 				SizeF vSize = GetStringSize(
@@ -598,7 +636,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void DrawString(string value, float x, float y)
 		{
 			if (value == null)
+			{
 				return;
+			}
 
 			_canvas.Save();
 			_canvas.Translate(x, y - CurrentState.ScaledFontSize);
@@ -630,7 +670,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			float lineSpacingAdjustment = 0)
 		{
 			if (value == null || value.Length == 0 || width == 0 || height == 0)
+			{
 				return;
+			}
 
 			_canvas.Save();
 
@@ -725,7 +767,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			CurrentState.SetScale(Math.Abs(xFactor), Math.Abs(yFactor));
 			if (xFactor < 0 || yFactor < 0)
+			{
 				_canvas.Scale(xFactor < 0 ? -1 : 1, yFactor < 0 ? -1 : 1);
+			}
 		}
 
 		protected override void PlatformTranslate(float tx, float ty)

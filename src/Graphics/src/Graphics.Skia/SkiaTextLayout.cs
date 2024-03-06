@@ -52,7 +52,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		public void LayoutText()
 		{
 			if (string.IsNullOrEmpty(_value))
+			{
 				return;
+			}
 
 			var x = _rect.X;
 			var y = _rect.Y;
@@ -68,9 +70,13 @@ namespace Microsoft.Maui.Graphics.Skia
 			var bottom = y + height;
 
 			if (_textAttributes.HorizontalAlignment == HorizontalAlignment.Right)
+			{
 				_paint.TextAlign = SKTextAlign.Right;
+			}
 			else if (_textAttributes.HorizontalAlignment == HorizontalAlignment.Center)
+			{
 				_paint.TextAlign = SKTextAlign.Center;
+			}
 
 			var lines = CreateLines(y, bottom, width);
 			switch (_textAttributes.VerticalAlignment)
@@ -110,7 +116,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			// Figure out the center index of the list, and the center point to start drawing from.
 			var startIndex = (lines.Count / 2);
 			if (linesToDraw % 2 != 0)
+			{
 				y -= _lineHeight / 2;
+			}
 
 			// Figure out which index to draw first (of the range) and the point of the first line.
 			for (var i = 0; i < linesToDraw / 2; i++)
@@ -156,7 +164,9 @@ namespace Microsoft.Maui.Graphics.Skia
 				var line = lines[i];
 
 				if (_textFlow == TextFlow.ClipBounds && y - _lineHeight < top)
+				{
 					return;
+				}
 
 				var point = new PointF(x, y);
 				switch (_textAttributes.HorizontalAlignment)
@@ -213,7 +223,9 @@ namespace Microsoft.Maui.Graphics.Skia
 				y += _lineHeight;
 
 				if (_textFlow == TextFlow.ClipBounds && _textAttributes.VerticalAlignment == VerticalAlignment.Top && y > bottom)
+				{
 					return lines;
+				}
 
 				var count = (int)_paint.BreakText(_value.Substring(index), width, out var textWidth);
 
@@ -232,7 +244,10 @@ namespace Microsoft.Maui.Graphics.Skia
 
 				var line = _value.Substring(index, count);
 				if (found)
+				{
 					textWidth = _paint.MeasureText(line);
+				}
+
 				lines.Add(new TextLine(line, textWidth));
 
 				index += count;
@@ -244,7 +259,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		public void Dispose()
 		{
 			if (_disposePaint)
+			{
 				_paint?.Dispose();
+			}
 		}
 	}
 

@@ -18,7 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 		static Task<Graphics.Color> GetPlatformCancelButtonColor(SearchBarHandler handler) => InvokeOnMainThreadAsync(() =>
 		{
 			if (handler.PlatformView.TraitCollection.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+			{
 				return GetPlatformControl(handler).FindDescendantView<UIButton>().TintColor.ToColor();
+			}
 
 			return GetPlatformControl(handler).FindDescendantView<UIButton>().TitleColor(UIControlState.Normal).ToColor();
 		});

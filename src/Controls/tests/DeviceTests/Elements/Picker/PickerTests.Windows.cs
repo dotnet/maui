@@ -67,7 +67,9 @@ namespace Microsoft.Maui.DeviceTests
 						?.GetFirstDescendant<TextBlock>();
 
 				if (textBlock != null)
+				{
 					return textBlock.Text;
+				}
 
 				return platformView.SelectedItem?.ToString();
 			});

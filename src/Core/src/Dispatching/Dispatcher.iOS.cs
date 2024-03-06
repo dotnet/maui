@@ -64,7 +64,9 @@ namespace Microsoft.Maui.Dispatching
 		public void Start()
 		{
 			if (IsRunning)
+			{
 				return;
+			}
 
 			IsRunning = true;
 
@@ -76,7 +78,9 @@ namespace Microsoft.Maui.Dispatching
 		public void Stop()
 		{
 			if (!IsRunning)
+			{
 				return;
+			}
 
 			IsRunning = false;
 
@@ -87,7 +91,9 @@ namespace Microsoft.Maui.Dispatching
 		void OnTimerTick()
 		{
 			if (!IsRunning)
+			{
 				return;
+			}
 
 			Tick?.Invoke(this, EventArgs.Empty);
 
@@ -114,7 +120,11 @@ namespace Microsoft.Maui.Dispatching
 			var q = DispatchQueue.CurrentQueue;
 #pragma warning restore BI1234, CA1416, CA1422 // Type or member is obsolete
 			if (q != DispatchQueue.MainQueue)
+			{
+			{
 				return null;
+			}
+			}
 
 			return new Dispatcher(q);
 		}

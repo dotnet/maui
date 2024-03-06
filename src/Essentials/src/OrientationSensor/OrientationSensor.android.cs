@@ -33,7 +33,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStop()
 		{
 			if (listener == null || Sensor == null)
+			{
 				return;
+			}
 
 			SensorManager!.UnregisterListener(listener, Sensor);
 			listener.Dispose();
@@ -58,7 +60,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			var values = e?.Values ?? Array.Empty<float>();
 			if (values.Count < 3)
+			{
 				return;
+			}
 
 			OrientationSensorData? data;
 
@@ -66,9 +70,13 @@ namespace Microsoft.Maui.Devices.Sensors
 			// values[3], originally optional, will always be present from SDK Level 18 onwards. values[4] is a new value that has been added in SDK Level 18.
 
 			if (values.Count < 4)
+			{
 				data = new OrientationSensorData(values[0], values[1], values[2], -1);
+			}
 			else
+			{
 				data = new OrientationSensorData(values[0], values[1], values[2], values[3]);
+			}
 
 			Callback?.Invoke(data.Value);
 		}

@@ -39,25 +39,39 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				//TODO: We may want to revisit this strategy later. If a user wants to reset any of these to the default, the UI won't update.
 				if (Element.IsSet(VisualElement.BackgroundColorProperty) && Element.BackgroundColor != (Color)VisualElement.BackgroundColorProperty.DefaultValue)
+				{
 					UpdateBackgroundBrush();
+				}
 
 				if (Element.IsSet(VisualElement.BackgroundProperty) && !Element.Background.IsEmpty)
+				{
 					UpdateBackgroundBrush();
+				}
 
 				if (Element.IsSet(RadioButton.TextColorProperty) && Element.TextColor != (Color)RadioButton.TextColorProperty.DefaultValue)
+				{
 					UpdateTextColor();
+				}
 
 				if (Element.IsSet(RadioButton.BorderColorProperty) && Element.BorderColor != (Color)RadioButton.BorderColorProperty.DefaultValue)
+				{
 					UpdateBorderColor();
+				}
 
 				if (Element.IsSet(RadioButton.BorderWidthProperty) && Element.BorderWidth != (double)RadioButton.BorderWidthProperty.DefaultValue)
+				{
 					UpdateBorderWidth();
+				}
 
 				if (Element.IsSet(RadioButton.CornerRadiusProperty) && Element.CornerRadius != (int)RadioButton.CornerRadiusProperty.DefaultValue)
+				{
 					UpdateBorderRadius();
+				}
 
 				if (Element.IsSet(RadioButton.PaddingProperty) && Element.Padding != (Thickness)RadioButton.PaddingProperty.DefaultValue)
+				{
 					UpdatePadding();
+				}
 
 				UpdateFont();
 				UpdateCheck();
@@ -147,9 +161,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateBackgroundBrush()
 		{
 			if (Brush.IsNullOrEmpty(Element.Background))
+			{
 				Control.BackgroundColor = Element.BackgroundColor.IsNotDefault() ? Element.BackgroundColor.ToPlatform() : (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+			}
 			else
+			{
 				Control.BackgroundColor = Element.Background.ToBrush();
+			}
 		}
 
 		[PortHandler]
@@ -187,12 +205,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateFont()
 		{
 			if (Control == null || Element == null)
+			{
 				return;
+			}
 
 			Font font = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
 
 			if (font == Font.Default && !_fontApplied)
+			{
 				return;
+			}
 
 			Font fontToApply = font == Font.Default
 #pragma warning disable CS0612 // Type or member is obsolete

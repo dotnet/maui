@@ -26,16 +26,22 @@ namespace Microsoft.Maui.Handlers
 			static void OnCheckBoxLoaded(object sender, RoutedEventArgs e)
 			{
 				if (sender is not CheckBox checkBox)
+				{
 					return;
+				}
 
 				checkBox.Loaded -= OnCheckBoxLoaded;
 
 				if (VisualTreeHelper.GetChildrenCount(checkBox) <= 0)
+				{
 					return;
+				}
 
 				var root = VisualTreeHelper.GetChild(checkBox, 0);
 				if (root is not Grid rootGrid)
+				{
 					return;
+				}
 
 				var checkBoxHeight = Application.Current.Resources.TryGet<double>("CheckBoxHeight");
 				var checkBoxSize = Application.Current.Resources.TryGet<double>("CheckBoxSize");
@@ -74,7 +80,9 @@ namespace Microsoft.Maui.Handlers
 		void OnChecked(object sender, RoutedEventArgs e)
 		{
 			if (sender is CheckBox platformView && VirtualView != null)
+			{
 				VirtualView.IsChecked = platformView.IsChecked == true;
+			}
 		}
 	}
 }

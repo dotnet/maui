@@ -38,7 +38,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		private NSData CreateRepresentation(ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
+			{
 				throw new ArgumentOutOfRangeException(nameof(quality), "quality must be in the range of 0..1");
+			}
 
 			var previous = NSApplication.CheckForIllegalCrossThreadCalls;
 			NSApplication.CheckForIllegalCrossThreadCalls = false;
@@ -166,7 +168,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
 			if (stream == null)
+			{
 				return null;
+			}
 
 			var previous = NSApplication.CheckForIllegalCrossThreadCalls;
 			NSApplication.CheckForIllegalCrossThreadCalls = false;

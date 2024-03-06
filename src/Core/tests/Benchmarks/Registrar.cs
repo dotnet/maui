@@ -57,10 +57,14 @@ namespace Microsoft.Maui
 		bool isType(Type type, Type type2)
 		{
 			if (type == type2)
+			{
 				return true;
+			}
 
 			if (!type.IsGenericType)
+			{
 				return false;
+			}
 
 			var paramerter = type.GetGenericArguments();
 			return paramerter[0] == type2;
@@ -82,7 +86,9 @@ namespace Microsoft.Maui
 			{
 				var renderer = GetRenderer(t);
 				if (renderer != null)
+				{
 					return renderer;
+				}
 			}
 
 			throw new Exception($"Handler not found for {type}");
@@ -102,7 +108,9 @@ namespace Microsoft.Maui
 			foreach (var t in types)
 			{
 				if (_handler.TryGetValue(t, out var returnType))
+				{
 					return returnType;
+				}
 			}
 
 			throw new Exception($"Renderer Type not found  {type}");
@@ -114,7 +122,9 @@ namespace Microsoft.Maui
 			{
 				var newObject = handlerFactory?.Invoke(type) as TTypeRender;
 				if (newObject != null)
+				{
 					return newObject;
+				}
 			}
 
 			if (!_handler.TryGetValue(type, out var handler))
@@ -127,14 +137,18 @@ namespace Microsoft.Maui
 				var newObject = Activator.CreateInstance(handler);
 
 				if (newObject == null)
+				{
 					throw new ArgumentException($"No Handler found for type: {type}", nameof(type));
+				}
 
 				return (TTypeRender)newObject;
 			}
 			catch (Exception)
 			{
 				if (Debugger.IsAttached)
+				{
 					throw;
+				}
 			}
 
 			return default(TTypeRender);

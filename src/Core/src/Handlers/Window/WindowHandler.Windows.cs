@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 
 			if (platformView.Content is null)
+			{
 				platformView.Content = new WindowRootViewContainer();
+			}
 
 			// update the platform window with the user size/position
 			platformView.UpdatePosition(VirtualView);
@@ -63,7 +65,9 @@ namespace Microsoft.Maui.Handlers
 
 			var appWindow = platformView.GetAppWindow();
 			if (appWindow is not null)
+			{
 				appWindow.Changed -= OnWindowChanged;
+			}
 
 			base.DisconnectHandler(platformView);
 		}
@@ -84,13 +88,17 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView.Content is WindowRootViewContainer container)
 			{
 				if (previousRootView != null && previousRootView != windowManager.RootView)
+				{
 					container.RemovePage(previousRootView);
+				}
 
 				container.AddPage(windowManager.RootView);
 			}
 
 			if (window.VisualDiagnosticsOverlay != null)
+			{
 				window.VisualDiagnosticsOverlay.Initialize();
+			}
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
@@ -120,7 +128,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapToolbar(IWindowHandler handler, IWindow view)
 		{
 			if (view is IToolbarElement tb)
+			{
 				ViewHandler.MapToolbar(handler, tb);
+			}
 		}
 
 		public static void MapMenuBar(IWindowHandler handler, IWindow view)
@@ -141,28 +151,40 @@ namespace Microsoft.Maui.Handlers
 			var extended_style = PlatformMethods.GetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE);
 			long updated_style;
 			if (view.FlowDirection == FlowDirection.RightToLeft)
+			{
 				updated_style = extended_style | (long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL;
+			}
 			else
+			{
 				updated_style = extended_style & ~((long)PlatformMethods.ExtendedWindowStyles.WS_EX_LAYOUTRTL);
+			}
 
 			if (updated_style != extended_style)
+			{
 				PlatformMethods.SetWindowLongPtr(WindowHandle, PlatformMethods.WindowLongFlags.GWL_EXSTYLE, updated_style);
+			}
 		}
 
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
 		{
 			if (args is DisplayDensityRequest request)
+			{
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
+			}
 		}
 
 		internal static void MapTitleBarDragRectangles(IWindowHandler handler, IWindow window)
 		{
 			if (!AppWindowTitleBar.IsCustomizationSupported())
+			{
 				return;
+			}
 
 			var titleBar = handler.PlatformView.GetAppWindow()?.TitleBar;
 			if (titleBar is null)
+			{
 				return;
+			}
 
 			var titleBarRects = window.TitleBarDragRectangles;
 
@@ -191,7 +213,9 @@ namespace Microsoft.Maui.Handlers
 		void OnWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)
 		{
 			if (!args.DidSizeChange && !args.DidPositionChange)
+			{
 				return;
+			}
 
 			UpdateVirtualViewFrame(sender);
 		}

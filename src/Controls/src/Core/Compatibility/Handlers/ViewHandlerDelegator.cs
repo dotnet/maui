@@ -38,7 +38,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void UpdateProperty(string property)
 		{
 			if (_viewHandler.VirtualView != null)
+			{
 				_mapper.UpdateProperty(_viewHandler, _viewHandler.VirtualView, property);
+			}
 		}
 
 		public void Invoke(string command, object? args)
@@ -49,10 +51,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void DisconnectHandler()
 		{
 			if (_element == null)
+			{
+			{
 				return;
+			}
 
 			if (_element.Handler == _viewHandler)
+			{
 				_element.Handler = null;
+			}
 
 			_element = null;
 

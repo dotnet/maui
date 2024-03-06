@@ -40,7 +40,9 @@ namespace Microsoft.Maui.Handlers
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
 			if (VirtualView == view)
+			{
 				return;
+			}
 
 			var oldVirtualView = VirtualView;
 
@@ -50,14 +52,18 @@ namespace Microsoft.Maui.Handlers
 			PlatformView ??= CreatePlatformElement();
 
 			if (VirtualView.Handler != this)
+			{
 				VirtualView.Handler = this;
+			}
 
 			// We set the previous virtual view to null after setting it on the incoming virtual view.
 			// This makes it easier for the incoming virtual view to have influence
 			// on how the exchange of handlers happens.
 			// We will just set the handler to null ourselves as a last resort cleanup
 			if (oldVirtualView?.Handler != null)
+			{
 				oldVirtualView.Handler = null;
+			}
 
 			if (setupPlatformView)
 			{
@@ -82,7 +88,9 @@ namespace Microsoft.Maui.Handlers
 		public virtual void UpdateValue(string property)
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			_mapper?.UpdateProperty(this, VirtualView, property);
 		}
@@ -90,7 +98,9 @@ namespace Microsoft.Maui.Handlers
 		public virtual void Invoke(string command, object? args)
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			_commandMapper?.Invoke(this, VirtualView, command, args);
 		}
@@ -113,7 +123,9 @@ namespace Microsoft.Maui.Handlers
 
 			// VirtualView has already been changed over to a new handler
 			if (VirtualView != null && VirtualView.Handler == this)
+			{
 				VirtualView.Handler = null;
+			}
 
 			VirtualView = null;
 		}

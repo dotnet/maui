@@ -53,13 +53,17 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
 		{
 			if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
+			{
 				picker.SetDate(datePicker.Date.ToNSDate(), false);
+			}
 		}
 
 		public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 		{
 			if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
+			{
 				picker.SetDate(datePicker.Date.ToNSDate(), false);
+			}
 
 			string format = datePicker.Format ?? string.Empty;
 

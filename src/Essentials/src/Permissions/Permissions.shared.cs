@@ -55,7 +55,9 @@ namespace Microsoft.Maui.ApplicationModel
 			var status = await RequestAsync<TPermission>();
 
 			if (status != PermissionStatus.Granted)
+			{
 				throw new PermissionException($"{typeof(TPermission).Name} permission was not granted: {status}");
+			}
 		}
 
 		internal static async Task EnsureGrantedOrRestrictedAsync<TPermission>()
@@ -64,7 +66,9 @@ namespace Microsoft.Maui.ApplicationModel
 			var status = await RequestAsync<TPermission>();
 
 			if (status != PermissionStatus.Granted && status != PermissionStatus.Restricted)
+			{
 				throw new PermissionException($"{typeof(TPermission).Name} permission was not granted or restricted: {status}");
+			}
 		}
 
 		/// <summary>

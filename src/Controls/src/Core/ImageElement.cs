@@ -28,7 +28,10 @@ namespace Microsoft.Maui.Controls
 			var newSource = (ImageSource)newValue;
 			var image = (IImageElement)bindable;
 			if (newSource != null && image != null)
+			{
 				newSource.SourceChanged += image.OnImageSourceSourceChanged;
+			}
+
 			ImageSourceChanged(bindable, newSource);
 		}
 
@@ -38,7 +41,10 @@ namespace Microsoft.Maui.Controls
 			var image = (IImageElement)bindable;
 
 			if (oldSource != null && image != null)
+			{
 				oldSource.SourceChanged -= image.OnImageSourceSourceChanged;
+			}
+
 			ImageSourceChanging(oldSource);
 		}
 
@@ -51,7 +57,11 @@ namespace Microsoft.Maui.Controls
 			double desiredHeight = desiredSize.Request.Height;
 
 			if (desiredWidth == 0 || desiredHeight == 0)
+			{
+			{
 				return new SizeRequest(new Size(0, 0));
+			}
+			}
 
 			double width = desiredWidth;
 			double height = desiredHeight;
@@ -100,14 +110,19 @@ namespace Microsoft.Maui.Controls
 		public static void OnBindingContextChanged(IImageElement image, VisualElement visualElement)
 		{
 			if (image.Source != null)
+			{
 				BindableObject.SetInheritedBindingContext(image.Source, visualElement?.BindingContext);
+			}
 		}
 
 
 		public static void ImageSourceChanging(ImageSource oldImageSource)
 		{
 			if (oldImageSource == null)
+			{
 				return;
+			}
+
 			try
 			{
 				// This method generates are particularly unhappy async/await state-machine combined
@@ -138,16 +153,19 @@ namespace Microsoft.Maui.Controls
 		{
 			var imageElement = (VisualElement)bindable;
 			if (newSource != null)
+			{
 				newSource.Parent = imageElement;
+			}
+
 			imageElement?.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		public static void ImageSourceSourceChanged(object sender, EventArgs e)
 		{
 			if (sender is IImageElement imageController)
+			{
 				imageController.RaiseImageSourcePropertyChanged();
-
-			((VisualElement)sender).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			} ((VisualElement)sender).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 

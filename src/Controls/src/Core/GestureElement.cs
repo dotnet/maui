@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls
 				void RemoveItems()
 				{
 					foreach (IElementDefinition item in args.OldItems.OfType<IElementDefinition>())
+					{
 						item.Parent = null;
+					}
 				}
 
 				switch (args.Action)
@@ -47,7 +49,10 @@ namespace Microsoft.Maui.Controls
 						break;
 					case NotifyCollectionChangedAction.Reset:
 						foreach (IElementDefinition item in _gestureRecognizers.OfType<IElementDefinition>())
+						{
 							item.Parent = this;
+						}
+
 						break;
 				}
 

@@ -21,7 +21,10 @@ namespace Microsoft.Maui.Controls
 			// IMPORTANT! Update ImageSourceDesignTypeConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 			if (strValue != null)
+			{
+			{
 				return Uri.TryCreate(strValue, UriKind.Absolute, out Uri uri) && uri.Scheme != "file" ? ImageSource.FromUri(uri) : ImageSource.FromFile(strValue);
+			}
 
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(ImageSource)));
 		}
@@ -29,9 +32,65 @@ namespace Microsoft.Maui.Controls
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is FileImageSource fis)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return fis.File;
 			if (value is UriImageSource uis)
 				return uis.Uri.ToString();
+After:
+			{
+				return fis.Uri.ToString();
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return fis.File;
+			if (value is UriImageSource uis)
+				return uis.Uri.ToString();
+After:
+			{
+				return fis.Uri.ToString();
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return fis.File;
+			if (value is UriImageSource uis)
+				return uis.Uri.ToString();
+After:
+			{
+				return fis.Uri.ToString();
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return fis.File;
+			if (value is UriImageSource uis)
+				return uis.Uri.ToString();
+After:
+			{
+				return fis.Uri.ToString();
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return fis.File;
+			if (value is UriImageSource uis)
+				return uis.Uri.ToString();
+After:
+			{
+				return fis.Uri.ToString();
+*/
+			{
+				return fis.File;
+			}
+
+			if (value is UriImageSource uis)
+			{
+				return uis.Uri.ToString();
+			}
+
 			throw new NotSupportedException();
 		}
 	}

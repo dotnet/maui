@@ -26,12 +26,18 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			try
 			{
 				if (App.IsKeyboardShown())
+				{
 					App.DismissKeyboard();
+				}
 
 				if (hideOnTapped)
+				{
 					App.Click("HideSoftInputOnTappedTrue");
+				}
 				else
+				{
 					App.Click("HideSoftInputOnTappedFalse");
+				}
 
 				App.Click(control);
 
@@ -58,7 +64,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			try
 			{
 				if (App.IsKeyboardShown())
+				{
 					App.DismissKeyboard();
+				}
 
 				App.Click("HideSoftInputOnTappedFalse");
 

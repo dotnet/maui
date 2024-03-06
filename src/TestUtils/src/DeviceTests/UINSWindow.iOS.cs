@@ -14,7 +14,9 @@ public static class UIWindowExtensions
 	{
 		var nsWindow = UINSWindow.From(window);
 		if (nsWindow is null)
+		{
 			throw new InvalidOperationException("Unable to update frame of non-existant window.");
+		}
 
 		nsWindow.SetFrame(frame, display, animate);
 	}
@@ -76,6 +78,9 @@ public static class UIWindowExtensions
 		{
 			var nsapp = Runtime.GetNSObject(NSApplicationHandle);
 			if (nsapp is null)
+
+/* Unmerged change from project 'TestUtils.DeviceTests(net8.0-maccatalyst)'
+Before:
 				return null;
 
 			var sharedApp = nsapp.PerformSelector(SharedApplicationSelector);
@@ -93,6 +98,50 @@ public static class UIWindowExtensions
 
 					if (uiwin.Handle == uiWindow.Handle)
 						return new UINSWindow(nswin.Handle, uiWindow);
+After:
+			{
+				return null;
+			}
+
+			var sharedApp = nsapp.PerformSelector(SharedApplicationSelector);
+			var windows = sharedApp.PerformSelector(WindowsSelector) as NSArray;
+
+			for (nuint i = 0; i < windows!.Count; i++)
+			{
+				var nswin = windows.GetItem<NSObject>(i);
+
+				var uiwindows = nswin.PerformSelector(UIWindowsSelector) as NSArray;
+
+				for (nuint j = 0; j < uiwindows!.Count; j++)
+				{
+					var uiwin = uiwindows.GetItem<UIWindow>(j);
+
+					if (uiwin.Handle == uiWindow.Handle)
+					{
+						return new UINSWindow(nswin.Handle, uiWindow);
+					}
+*/
+			{
+				return null;
+			}
+
+			var sharedApp = nsapp.PerformSelector(SharedApplicationSelector);
+			var windows = sharedApp.PerformSelector(WindowsSelector) as NSArray;
+
+			for (nuint i = 0; i < windows!.Count; i++)
+			{
+				var nswin = windows.GetItem<NSObject>(i);
+
+				var uiwindows = nswin.PerformSelector(UIWindowsSelector) as NSArray;
+
+				for (nuint j = 0; j < uiwindows!.Count; j++)
+				{
+					var uiwin = uiwindows.GetItem<UIWindow>(j);
+
+					if (uiwin.Handle == uiWindow.Handle)
+					{
+						return new UINSWindow(nswin.Handle, uiWindow);
+					}
 				}
 			}
 

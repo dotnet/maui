@@ -65,16 +65,30 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			// check if latitude is in [-90, 90]
 			if (Math.Abs(latitude) > 90)
+			{
 				throw new ArgumentOutOfRangeException(nameof(latitude));
+			}
 			else
+			{
 				Latitude = latitude;
+			}
 
 			// make sure that longitude is in (-180, 180]
 			Longitude = longitude;
 			while (Longitude > 180)
+			{
 				Longitude -= 360;
+			}
+
+			while (Longitude > 180)
+			{
+				Longitude -= 360;
+			}
+
 			while (Longitude <= -180)
+			{
 				Longitude += 360;
+			}
 
 			Timestamp = timestamp;
 		}
@@ -98,7 +112,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		public Location(Location point)
 		{
 			if (point == null)
+			{
 				throw new ArgumentNullException(nameof(point));
+			}
 
 			Latitude = point.Latitude;
 			Longitude = point.Longitude;
@@ -252,9 +268,15 @@ namespace Microsoft.Maui.Devices.Sensors
 		public override bool Equals(object obj)
 		{
 			if (obj is null)
+			{
 				return false;
+			}
+
 			if (obj.GetType() != GetType())
+			{
 				return false;
+			}
+
 			var other = (Location)obj;
 			return Latitude == other.Latitude && Longitude == other.Longitude;
 		}

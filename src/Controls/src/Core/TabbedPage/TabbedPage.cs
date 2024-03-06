@@ -63,7 +63,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var page = new Page();
 			if (item != null)
+			{
 				page.Title = item.ToString();
+			}
 
 			return page;
 		}
@@ -115,16 +117,22 @@ namespace Microsoft.Maui.Controls
 				foreach (var page in Children)
 				{
 					if (wire)
+					{
 						page.PropertyChanged += OnPagePropertyChanged;
+					}
 					else
+					{
 						page.PropertyChanged -= OnPagePropertyChanged;
+					}
 				}
 			}
 
 			void OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == Page.TitleProperty.PropertyName)
+				{
 					Handler?.UpdateValue(TabbedPage.ItemsSourceProperty.PropertyName);
+				}
 			}
 		}
 	}

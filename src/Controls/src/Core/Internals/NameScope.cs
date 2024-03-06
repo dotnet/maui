@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls.Internals
 		void INameScope.RegisterName(string name, object scopedElement)
 		{
 			if (_names.ContainsKey(name))
+			{
 				throw new ArgumentException($"An element with the key '{name}' already exists in NameScope", nameof(name));
+			}
 
 			_names[name] = scopedElement;
 			_values[scopedElement] = name;
@@ -41,19 +43,27 @@ namespace Microsoft.Maui.Controls.Internals
 		public static void SetNameScope(BindableObject bindable, INameScope value)
 		{
 			if (bindable.GetValue(NameScopeProperty) == null)
+			{
 				bindable.SetValue(NameScopeProperty, value);
+			}
 		}
 
 		void INameScope.UnregisterName(string name)
 		{
 			if (name == null)
+			{
 				throw new ArgumentNullException(nameof(name));
+			}
 
 			if (name == "")
+			{
 				throw new ArgumentException("name was provided as empty string.", nameof(name));
+			}
 
 			if (!_names.ContainsKey(name))
+			{
 				throw new ArgumentException("name provided had not been registered.", nameof(name));
+			}
 
 			_values.Remove(_names[name]);
 			_names.Remove(name);

@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var v = (bool)value;
 			if (FalseIsVisible)
+			{
 				v = !v;
+			}
 
 			return v ? Visibility.Visible : Visibility.Collapsed;
 		}

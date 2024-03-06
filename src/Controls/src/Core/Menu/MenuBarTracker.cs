@@ -48,7 +48,9 @@ namespace Microsoft.Maui.Controls
 			{
 				var menuBarItems = ToolbarItems;
 				if (menuBarItems.Count == 0)
+				{
 					return null;
+				}
 
 				_menuBar.SyncMenuBarItemsFromPages(ToolbarItems);
 

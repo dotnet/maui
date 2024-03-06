@@ -205,10 +205,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void Start(SensorSpeed sensorSpeed)
 		{
 			if (!PlatformIsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (IsMonitoring)
+			{
 				throw new InvalidOperationException("Magnetometer has already been started.");
+			}
 
 			IsMonitoring = true;
 
@@ -226,10 +230,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void Stop()
 		{
 			if (!PlatformIsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (!IsMonitoring)
+			{
 				return;
+			}
 
 			IsMonitoring = false;
 
@@ -249,9 +257,13 @@ namespace Microsoft.Maui.Devices.Sensors
 			var args = new MagnetometerChangedEventArgs(data);
 
 			if (UseSyncContext)
+			{
 				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(this, args));
+			}
 			else
+			{
 				ReadingChanged?.Invoke(this, args);
+			}
 		}
 	}
 }

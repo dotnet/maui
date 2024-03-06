@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			if (base.OnTouchEvent(e))
+			{
 				return true;
+			}
 
 			return _motionEventHelper.HandleMotionEvent(Parent, e);
 		}
@@ -47,9 +49,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.IsOneOf(VisualElement.BackgroundColorProperty, VisualElement.BackgroundProperty, BoxView.ColorProperty))
+			{
 				UpdateBoxView();
+			}
 			else if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
+			{
 				UpdateCornerRadius();
+			}
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -75,7 +81,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (!Brush.IsNullOrEmpty(brushToSet))
 			{
 				if (_backgroundDrawable != null)
+				{
 					_backgroundDrawable.UpdateBackground(brushToSet, Height, Width);
+				}
 				else
 				{
 					_backgroundDrawable = new GradientDrawable();
@@ -88,21 +96,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Color colorToSet = Element.Color;
 
 				if (colorToSet == null)
+				{
 					colorToSet = Element.BackgroundColor;
+				}
 
 				if (_backgroundDrawable != null)
 				{
 					if (colorToSet != null)
+					{
 						_backgroundDrawable.SetColor(colorToSet.ToAndroid());
+					}
 					else
+					{
 						_backgroundDrawable.SetColor(colorToSet.ToAndroid(Colors.Transparent));
+					}
 
 					this.SetBackground(_backgroundDrawable);
 				}
 				else
 				{
 					if (colorToSet == null)
+					{
 						colorToSet = Element.BackgroundColor;
+					}
 
 					SetBackgroundColor(colorToSet.ToAndroid(Colors.Transparent));
 				}
@@ -112,7 +128,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -129,7 +147,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					Element.PropertyChanged -= OnElementPropertyChanged;
 
 					if (Platform.GetRenderer(Element) == this)
+					{
 						Element.ClearValue(Platform.RendererProperty);
+					}
 				}
 
 			}

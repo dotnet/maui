@@ -16,7 +16,10 @@ namespace Microsoft.Maui.Controls
 		internal Accelerator(string text)
 		{
 			if (string.IsNullOrEmpty(text))
+			{
 				throw new ArgumentNullException(nameof(text));
+			}
+
 			_text = text;
 		}
 

@@ -61,7 +61,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public IEnumerator<ISwipeItem> GetEnumerator()
 		{
 			foreach (ISwipeItem item in _swipeItems)
+			{
 				yield return item;
+			}
 		}
 
 		public int IndexOf(ISwipeItem item)

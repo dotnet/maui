@@ -58,7 +58,9 @@ namespace Microsoft.Maui.DeviceTests
 				foreach (var menuItem in navigationView.MenuItems)
 				{
 					if (menuItem is WNavigationViewItem item)
+					{
 						yield return item;
+					}
 				}
 			}
 			else if (navigationView.MenuItemsSource != null && navigationView.TopNavMenuItemsHost != null)
@@ -69,7 +71,9 @@ namespace Microsoft.Maui.DeviceTests
 					UI.Xaml.UIElement uIElement = navigationView.TopNavMenuItemsHost.TryGetElement(i);
 
 					if (uIElement is WNavigationViewItem item)
+					{
 						yield return item;
+					}
 				}
 			}
 		}
@@ -120,7 +124,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var navView = (RootNavigationView)GetMauiNavigationView(mauiContext);
 			if (navView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
+			{
 				return (MauiToolbar)navView.PaneFooter;
+			}
 
 			return (MauiToolbar)navView.Header;
 		}

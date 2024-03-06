@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Handlers
 			void onTimeSetCallback(object? obj, TimePickerDialog.TimeSetEventArgs args)
 			{
 				if (VirtualView == null || PlatformView == null)
+				{
 					return;
+				}
 
 				VirtualView.Time = new TimeSpan(args.HourOfDay, args.Minute, 0);
 				VirtualView.IsFocused = false;
@@ -88,7 +90,9 @@ namespace Microsoft.Maui.Handlers
 		void ShowPickerDialog()
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			var time = VirtualView.Time;
 			ShowPickerDialog(time.Hours, time.Minutes);

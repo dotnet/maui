@@ -47,9 +47,13 @@ namespace Maui.Controls.Sample.Pages
 			e.Data.Properties.Add("Source", sl);
 
 			if (sl == SLAllColors)
+			{
 				SLRainbow.Background = SolidColorBrush.LightBlue;
+			}
 			else
+			{
 				SLAllColors.Background = SolidColorBrush.LightBlue;
+			}
 		}
 
 		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
@@ -57,10 +61,13 @@ namespace Maui.Controls.Sample.Pages
 			var sl = (sender as Element)!.Parent as StackLayout;
 
 			if (sl == SLAllColors)
+			{
 				SLRainbow.Background = SolidColorBrush.White;
+			}
 			else
+			{
 				SLAllColors.Background = SolidColorBrush.White;
-
+			}
 		}
 
 		private void OnDragOver(object sender, DragEventArgs e)
@@ -68,7 +75,9 @@ namespace Maui.Controls.Sample.Pages
 			var sl = (StackLayout)(sender as Element)!.Parent;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
+			{
 				return;
+			}
 
 			DragTitle.IsVisible = true;
 			DragPositionLabel.Text = $"- Receiving layout X: {(int)e.GetPosition(sl)!.Value.X}, Y:{(int)e.GetPosition(sl)!.Value.Y}";
@@ -89,7 +98,9 @@ namespace Maui.Controls.Sample.Pages
 			var sl = (StackLayout)(sender as Element)!.Parent;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
+			{
 				return;
+			}
 
 			DragTitle.IsVisible = true;
 			DragPositionLabel.Text = $"- Receiving layout: Y:{(int)e.GetPosition(sl)!.Value.X}, Y:{(int)e.GetPosition(sl)!.Value.Y}";
@@ -110,7 +121,9 @@ namespace Maui.Controls.Sample.Pages
 			var sl = (sender as Element)!.Parent as StackLayout;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
+			{
 				return;
+			}
 
 			if (e.Data.Properties["Source"] == sl)
 			{

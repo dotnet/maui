@@ -102,7 +102,9 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			Action<T, T> onChanged = null)
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))
+			{
 				return false;
+			}
 
 			var oldValue = backingStore;
 			backingStore = value;

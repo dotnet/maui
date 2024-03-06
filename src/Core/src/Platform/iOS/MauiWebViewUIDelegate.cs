@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Platform
 		public override void SetContextMenuConfiguration(WKWebView webView, WKContextMenuElementInfo elementInfo, Action<UIContextMenuConfiguration> completionHandler)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				return;
+			}
 
 			foreach (var interaction in webView.Interactions)
 			{
@@ -28,7 +30,9 @@ namespace Microsoft.Maui.Platform
 				{
 					var contextMenu = cmi.GetConfigurationForMenu();
 					if (contextMenu != null)
+					{
 						completionHandler(contextMenu);
+					}
 
 					break;
 				}
@@ -77,7 +81,9 @@ namespace Microsoft.Maui.Platform
 			// in which case the bundle file name is used.
 
 			if (webView.Url != null && webView.Url.AbsoluteString != $"file://{NSBundle.MainBundle.BundlePath}/")
+			{
 				return $"{webView.Url.Scheme}://{webView.Url.Host}";
+			}
 
 			return new NSString(NSBundle.MainBundle.BundlePath).LastPathComponent;
 		}
@@ -107,21 +113,28 @@ namespace Microsoft.Maui.Platform
 			var controller = UIAlertController.Create(GetJsAlertTitle(webView), message, UIAlertControllerStyle.Alert);
 
 			if (defaultText != null)
+			{
 				controller.AddTextField((textField) => textField.Text = defaultText);
+			}
 
 			if (okAction != null)
+			{
 				AddOkAction(controller, () => okAction(controller));
+			}
 
 			if (cancelAction != null)
+			{
 				AddCancelAction(controller, () => cancelAction(controller));
-
+			}
 
 			var handler = (webView.UIDelegate as MauiWebViewUIDelegate)?.Handler;
 
 			UIViewController? rootViewController = null;
 
 			if (handler != null)
+			{
 				rootViewController = handler.MauiContext?.GetPlatformWindow()?.RootViewController;
+			}
 
 			rootViewController ??= UIApplication.SharedApplication?.GetKeyWindow()?.RootViewController;
 
@@ -135,13 +148,45 @@ namespace Microsoft.Maui.Platform
 		static UIViewController GetTopViewController(UIViewController viewController)
 		{
 			if (viewController is UINavigationController navigationController)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return GetTopViewController(navigationController.VisibleViewController);
 
 			if (viewController is UITabBarController tabBarController && tabBarController.SelectedViewController != null)
 				return GetTopViewController(tabBarController.SelectedViewController);
+After:
+			{
+				return GetTopViewController(navigationController.VisibleViewController);
+			}
+*/
+			{
+				return GetTopViewController(navigationController.VisibleViewController);
+			}
+
+			if (viewController is UITabBarController tabBarController && tabBarController.SelectedViewController != null)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return GetTopViewController(viewController.PresentedViewController);
+After:
+			{
+				return GetTopViewController(tabBarController.SelectedViewController);
+			}
 
 			if (viewController.PresentedViewController != null)
+			{
 				return GetTopViewController(viewController.PresentedViewController);
+			}
+*/
+			{
+				return GetTopViewController(tabBarController.SelectedViewController);
+			}
+
+			if (viewController.PresentedViewController != null)
+			{
+				return GetTopViewController(viewController.PresentedViewController);
+			}
 
 			return viewController;
 		}

@@ -27,7 +27,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task GetSetItems()
 		{
 			if (!AppActions.IsSupported)
+			{
+			{
 				return;
+			}
 
 			var actions = new List<AppAction>
 			{

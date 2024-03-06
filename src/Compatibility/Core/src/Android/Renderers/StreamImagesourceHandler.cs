@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (streamsource?.Stream != null)
 			{
 				using (Stream stream = await ((IStreamImageSource)streamsource).GetStreamAsync(cancelationToken).ConfigureAwait(false))
+				{
 					bitmap = await BitmapFactory.DecodeStreamAsync(stream).ConfigureAwait(false);
+				}
 			}
 
 			if (bitmap == null)

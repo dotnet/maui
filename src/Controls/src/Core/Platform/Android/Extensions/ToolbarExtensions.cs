@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Controls.Platform
 			bool showNavBar = toolbar.IsVisible;
 			var lp = nativeToolbar.LayoutParameters;
 			if (lp == null)
+			{
 				return;
+			}
 
 			if (!showNavBar)
 			{
@@ -41,9 +43,13 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				if (toolbar.BarHeight != null)
+				{
 					lp.Height = (int)nativeToolbar.Context.ToPixels(toolbar.BarHeight.Value);
+				}
 				else
+				{
 					lp.Height = nativeToolbar.Context?.GetActionBarHeight() ?? 0;
+				}
 			}
 
 			nativeToolbar.LayoutParameters = lp;
@@ -59,7 +65,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (source == null || source.IsEmpty)
 			{
 				if (nativeToolbar.GetChildAt(0) is ToolbarTitleIconImageView existingImageView)
+				{
 					nativeToolbar.RemoveView(existingImageView);
+				}
 
 				return;
 			}
@@ -86,7 +94,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!);
 				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+				{
 					iconDrawable.Progress = 1;
+				}
 
 				var backButtonTitle = toolbar.BackButtonTitle;
 				ImageSource image = toolbar.TitleIcon;
@@ -110,7 +120,9 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 				{
 					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+					{
 						iconDrawable.Progress = 0;
+					}
 
 					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
 				}
@@ -142,7 +154,9 @@ namespace Microsoft.Maui.Controls.Platform
 				nativeToolbar.UpdateBackground(barBackground);
 
 				if (Brush.IsNullOrEmpty(barBackground))
+				{
 					nativeToolbar.BackgroundTintMode = null;
+				}
 			}
 		}
 
@@ -150,13 +164,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var navIconColor = toolbar.IconColor;
 			if (navIconColor is null)
+			{
 				return;
+			}
 
 			var platformColor = navIconColor.ToPlatform();
 			if (nativeToolbar.NavigationIcon is Drawable navigationIcon)
 			{
 				if (navigationIcon is DrawerArrowDrawable dad)
+				{
 					dad.Color = AGraphics.Color.White;
+				}
 
 				navigationIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
 			}
@@ -214,10 +232,14 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void DisposeMenuItems(this AToolbar? toolbar, IEnumerable<ToolbarItem> toolbarItems, PropertyChangedEventHandler toolbarItemChanged)
 		{
 			if (toolbarItems == null)
+			{
 				return;
+			}
 
 			foreach (var item in toolbarItems)
+			{
 				item.PropertyChanged -= toolbarItemChanged;
+			}
 		}
 
 		public static void UpdateMenuItems(this AToolbar toolbar,
@@ -230,13 +252,17 @@ namespace Microsoft.Maui.Controls.Platform
 			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
 		{
 			if (sortedToolbarItems == null || previousMenuItems == null)
+			{
 				return;
+			}
 
 			var context = mauiContext.Context;
 			var menu = toolbar.Menu;
 
 			foreach (var toolbarItem in previousToolBarItems)
+			{
 				toolbarItem.PropertyChanged -= toolbarItemChanged;
+			}
 
 			int i = 0;
 			foreach (var item in sortedToolbarItems)
@@ -312,12 +338,16 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				if (previousMenuItems == null || previousMenuItems.Count < menuItemIndex.Value)
+				{
 					return;
+				}
 
 				menuitem = previousMenuItems[menuItemIndex.Value];
 
 				if (!menuitem.IsAlive())
+				{
 					return;
+				}
 
 				menuitem.SetTitle(newTitle);
 			}
@@ -326,14 +356,22 @@ namespace Microsoft.Maui.Controls.Platform
 			menuitem.SetTitleOrContentDescription(item);
 
 			if (updateMenuItemIcon != null)
+			{
 				updateMenuItemIcon(context, menuitem, item);
+			}
 			else
+			{
 				UpdateMenuItemIcon(mauiContext, menuitem, item, tintColor);
+			}
 
 			if (item.Order != ToolbarItemOrder.Secondary)
+			{
 				menuitem.SetShowAsAction(ShowAsAction.Always);
+			}
 			else
+			{
 				menuitem.SetShowAsAction(ShowAsAction.Never);
+			}
 
 			menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));
 
@@ -343,9 +381,13 @@ namespace Microsoft.Maui.Controls.Platform
 				if (view is ATextView textView)
 				{
 					if (item.IsEnabled)
+					{
 						textView.SetTextColor(tintColor.ToPlatform());
+					}
 					else
+					{
 						textView.SetTextColor(tintColor.MultiplyAlpha(0.302f).ToPlatform());
+					}
 				}
 			}
 		}
@@ -367,7 +409,9 @@ namespace Microsoft.Maui.Controls.Platform
 					using (var iconDrawable = newDrawable.Mutate())
 					{
 						if (tintColor != null)
+						{
 							iconDrawable.SetColorFilter(tintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+						}
 
 						if (!menuItem.IsEnabled)
 						{
@@ -393,10 +437,15 @@ namespace Microsoft.Maui.Controls.Platform
 			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
 		{
 			if (toolbarItems == null)
+			{
 				return;
+			}
 
 			if (!e.IsOneOf(MenuItem.TextProperty, MenuItem.IconImageSourceProperty, MenuItem.IsEnabledProperty))
+			{
 				return;
+			}
+
 			var context = mauiContext.Context;
 			int index = 0;
 
@@ -411,12 +460,18 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (index >= currentMenuItems.Count)
+			{
 				return;
+			}
 
 			if (currentMenuItems[index].IsAlive())
+			{
 				UpdateMenuItem(toolbar, toolbarItem, index, mauiContext, tintColor, toolbarItemChanged, currentMenuItems, currentToolbarItems, updateMenuItemIcon);
+			}
 			else
+			{
 				UpdateMenuItems(toolbar, toolbarItems, mauiContext, tintColor, toolbarItemChanged, currentMenuItems, currentToolbarItems, updateMenuItemIcon);
+			}
 		}
 	}
 }

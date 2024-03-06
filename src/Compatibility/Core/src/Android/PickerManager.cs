@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public static void OnFocusChanged(bool gainFocus, EditText sender, IPopupTrigger popupTrigger)
 		{
 			if (gainFocus && popupTrigger.ShowPopupOnFocus)
+			{
 				sender.CallOnClick();
+			}
 
 			popupTrigger.ShowPopupOnFocus = false;
 		}
@@ -62,7 +64,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public static ICharSequence GetTitle(Color titleColor, string title)
 		{
 			if (titleColor == null)
+			{
 				return new Java.Lang.String(title);
+			}
 
 			var spannableTitle = new SpannableString(title ?? "");
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
@@ -81,9 +85,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					picker.HideSoftInput();
 					if (picker?.Parent is IPickerRenderer renderer1)
+					{
 						renderer1.OnClick();
+					}
 					else if (picker?.Parent?.Parent?.Parent is IPickerRenderer renderer2)
+					{
 						renderer2.OnClick();
+					}
 				}
 			}
 		}

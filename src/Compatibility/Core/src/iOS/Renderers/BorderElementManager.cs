@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			IBorderElement backgroundView = (IBorderElement)renderer.Element;
 
 			if (e.PropertyName == Button.BorderWidthProperty.PropertyName || e.PropertyName == Button.CornerRadiusProperty.PropertyName || e.PropertyName == Button.BorderColorProperty.PropertyName)
+			{
 				UpdateBorder(renderer, backgroundView);
+			}
 		}
 
 		static void OnElementChanged(object sender, VisualElementChangedEventArgs e)
@@ -53,14 +55,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (ImageButton.BorderColor != null)
+			{
 				control.Layer.BorderColor = ImageButton.BorderColor.ToCGColor();
+			}
 
 			control.Layer.BorderWidth = Math.Max(0f, (float)ImageButton.BorderWidth);
 
 			nfloat cornerRadius = _defaultCornerRadius;
 
 			if (ImageButton.IsCornerRadiusSet() && ImageButton.CornerRadius != ImageButton.CornerRadiusDefaultValue)
+			{
 				cornerRadius = ImageButton.CornerRadius;
+			}
 
 			control.Layer.CornerRadius = cornerRadius;
 		}

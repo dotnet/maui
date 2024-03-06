@@ -18,7 +18,9 @@ namespace Microsoft.Maui
 		public static bool IsAlive([NotNullWhen(true)] this Java.Lang.Object? obj)
 		{
 			if (obj == null)
+			{
 				return false;
+			}
 
 			return !obj.IsDisposed();
 		}
@@ -26,7 +28,9 @@ namespace Microsoft.Maui
 		public static bool IsAlive([NotNullWhen(true)] this global::Android.Runtime.IJavaObject? obj)
 		{
 			if (obj == null)
+			{
 				return false;
+			}
 
 			return !obj.IsDisposed();
 		}

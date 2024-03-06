@@ -33,7 +33,9 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		void StopClipboardListeners()
 		{
 			if (observer is not null)
+			{
 				NSNotificationCenter.DefaultCenter.RemoveObserver(observer);
+			}
 		}
 
 		/// <summary>

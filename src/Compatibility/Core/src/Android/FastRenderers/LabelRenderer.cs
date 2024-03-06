@@ -61,7 +61,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			set
 			{
 				if (_element == value)
+				{
 					return;
+				}
 
 				Label oldElement = _element;
 				_element = value;
@@ -104,14 +106,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				}
 
 				if (canRecycleLast)
+				{
 					return _lastSizeRequest.Value;
+				}
 			}
 
 			//We need to clear the Hint or else it will interfere with the sizing of the Label
 			var hint = Control.Hint;
 			bool setHint = Control.LayoutParameters != null;
 			if (!string.IsNullOrEmpty(hint) && setHint)
+			{
 				Control.Hint = string.Empty;
+			}
 
 			var hc = MeasureSpec.GetSize(heightConstraint);
 
@@ -120,7 +126,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 			//Set Hint back after sizing
 			if (setHint)
+			{
 				Control.Hint = hint;
+			}
 
 			result.Minimum = new Size(Math.Min(Context.ToPixels(10), result.Request.Width), result.Request.Height);
 
@@ -129,9 +137,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			var measureIsChanged = !_lastSizeRequest.HasValue ||
 				(_lastSizeRequest.Value.Request.Height != MeasuredHeight || _lastSizeRequest.Value.Request.Width != MeasuredWidth);
 			if (measureIsChanged)
+			{
 				this.MaybeRequestLayout();
+			}
 			else
+			{
 				ForceLayout();
+			}
 
 			_lastConstraintWidth = widthConstraint;
 			_lastConstraintHeight = heightConstraint;
@@ -152,7 +164,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		{
 			var label = element as Label;
 			if (label == null)
+			{
 				throw new ArgumentException("Element must be of type Label");
+			}
 
 			Element = label;
 			_motionEventHelper.UpdateElement(element);
@@ -161,7 +175,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void IVisualElementRenderer.SetLabelFor(int? id)
 		{
 			if (_defaultLabelFor == null)
+			{
 				_defaultLabelFor = ViewCompat.GetLabelFor(this);
+			}
 
 			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
 		}
@@ -180,7 +196,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -209,7 +227,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				if (Element != null)
 				{
 					if (Platform.GetRenderer(Element) == this)
+					{
 						Element.ClearValue(Platform.RendererProperty);
+					}
 				}
 			}
 
@@ -252,11 +272,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				UpdateCharacterSpacing();
 				UpdateTextDecorations();
 				if (e.OldElement?.LineBreakMode != e.NewElement.LineBreakMode)
+				{
 					UpdateLineBreakMode();
+				}
+
 				if (e.OldElement?.HorizontalTextAlignment != e.NewElement.HorizontalTextAlignment || e.OldElement?.VerticalTextAlignment != e.NewElement.VerticalTextAlignment)
+				{
 					UpdateGravity();
+				}
+
 				if (e.OldElement?.MaxLines != e.NewElement.MaxLines)
+				{
 					UpdateMaxLines();
+				}
 
 				UpdatePadding();
 
@@ -274,42 +302,71 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			ElementPropertyChanged?.Invoke(this, e);
 
 			if (Control?.LayoutParameters == null && _hasLayoutOccurred)
+			{
 				return;
+			}
 
 			if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateGravity();
+			}
 			else if (e.PropertyName == Label.TextColorProperty.PropertyName ||
 				e.PropertyName == Label.TextTypeProperty.PropertyName)
+			{
 				UpdateText();
+			}
 			else if (e.IsOneOf(Label.FontAttributesProperty, Label.FontFamilyProperty, Label.FontSizeProperty))
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
+			{
 				UpdateLineBreakMode();
+			}
 			else if (e.PropertyName == Label.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == Label.TextDecorationsProperty.PropertyName)
+			{
 				UpdateTextDecorations();
+			}
 			else if (e.IsOneOf(Label.TextProperty, Label.FormattedTextProperty, Label.TextTransformProperty))
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
+			{
 				UpdateLineHeight();
+			}
 			else if (e.PropertyName == Label.MaxLinesProperty.PropertyName)
+			{
 				UpdateMaxLines();
+			}
 			else if (e.PropertyName == Label.PaddingProperty.PropertyName)
+			{
 				UpdatePadding();
+			}
 		}
 
 		void UpdateColor()
 		{
 			Color c = Element.TextColor;
 			if (c == _lastUpdateColor)
+			{
 				return;
+			}
+
 			_lastUpdateColor = c;
 
 			if (c == null)
+			{
 				SetTextColor(_labelTextColorDefault);
+			}
 			else
+			{
 				SetTextColor(c.ToAndroid());
+			}
 		}
 
 		[PortHandler]
@@ -336,19 +393,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void UpdateTextDecorations()
 		{
 			if (!Element.IsSet(Label.TextDecorationsProperty))
+			{
 				return;
+			}
 
 			var textDecorations = Element.TextDecorations;
 
 			if ((textDecorations & TextDecorations.Strikethrough) == 0)
+			{
 				PaintFlags &= ~PaintFlags.StrikeThruText;
+			}
 			else
+			{
 				PaintFlags |= PaintFlags.StrikeThruText;
+			}
 
 			if ((textDecorations & TextDecorations.Underline) == 0)
+			{
 				PaintFlags &= ~PaintFlags.UnderlineText;
+			}
 			else
+			{
 				PaintFlags |= PaintFlags.UnderlineText;
+			}
 		}
 
 		void UpdateGravity()
@@ -403,10 +470,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				{
 					case TextType.Html:
 						if (OperatingSystem.IsAndroidVersionAtLeast(24))
+						{
 							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty, FromHtmlOptions.ModeCompact), BufferType.Spannable);
+						}
 						else
+						{
 #pragma warning disable CS0618 // Type or member is obsolete
 							Control.SetText(Html.FromHtml(Element.Text ?? string.Empty), BufferType.Spannable);
+						}
 #pragma warning restore CS0618 // Type or member is obsolete
 						break;
 
@@ -427,14 +498,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void UpdateLineHeight()
 		{
 			if (_lineSpacingExtraDefault < 0)
+			{
 				_lineSpacingExtraDefault = LineSpacingExtra;
+			}
+
 			if (_lineSpacingMultiplierDefault < 0)
+			{
 				_lineSpacingMultiplierDefault = LineSpacingMultiplier;
+			}
 
 			if (Element.LineHeight == -1)
+			{
 				SetLineSpacing(_lineSpacingExtraDefault, _lineSpacingMultiplierDefault);
+			}
 			else if (Element.LineHeight >= 0)
+			{
 				SetLineSpacing(0, (float)Element.LineHeight);
+			}
 
 			_lastSizeRequest = null;
 		}

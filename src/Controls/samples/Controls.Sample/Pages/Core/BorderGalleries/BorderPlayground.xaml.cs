@@ -110,7 +110,9 @@ namespace Maui.Controls.Sample.Pages
 		void UpdateContentBackground()
 		{
 			if (BorderView.Content is View content)
+			{
 				content.BackgroundColor = ContentBackgroundCheckBox.IsChecked ? Color.FromArgb("#99FF0000") : Colors.Transparent;
+			}
 		}
 
 		void UpdateBorderContent()
@@ -175,7 +177,9 @@ namespace Maui.Controls.Sample.Pages
 			var borderDashArrayString = BorderDashArrayEntry.Text;
 
 			if (string.IsNullOrEmpty(borderDashArrayString))
+			{
 				BorderView.StrokeDashArray = new DoubleCollection();
+			}
 			else
 			{
 				var doubleCollectionConverter = new DoubleCollectionConverter();
@@ -228,7 +232,9 @@ namespace Maui.Controls.Sample.Pages
 		Color GetColorFromString(string value)
 		{
 			if (string.IsNullOrEmpty(value))
+			{
 				return Colors.Transparent;
+			}
 
 			try
 			{

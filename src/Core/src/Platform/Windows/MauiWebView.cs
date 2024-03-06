@@ -107,7 +107,9 @@ namespace Microsoft.Maui.Platform
 
 			// Kick off the initial navigation
 			if (_internalWebView.IsValid())
+			{
 				_internalWebView.NavigateToString(html);
+			}
 		}
 
 		public async void LoadUrl(string? url)
@@ -125,11 +127,15 @@ namespace Microsoft.Maui.Platform
 					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
 
 				if (!uri.IsAbsoluteUri)
+				{
 					uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
+				}
 			}
 
 			if (_handler?.TryGetTarget(out var handler) ?? false)
+			{
 				await handler.SyncPlatformCookies(uri.AbsoluteUri);
+			}
 
 			try
 			{
@@ -178,7 +184,9 @@ namespace Microsoft.Maui.Platform
 				uri.StartsWith(
 					dataUriBase64,
 					StringComparison.OrdinalIgnoreCase) == false)
+			{
 				return false;
+			}
 
 			string decodedHtml = Encoding.UTF8.GetString(
 				Convert.FromBase64String(

@@ -23,7 +23,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get
 			{
 				if (_cellCache == null)
+				{
 					FillCache();
+				}
+
 				return _cellCache;
 			}
 		}
@@ -33,7 +36,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get
 			{
 				if (_isHeaderCache == null)
+				{
 					FillCache();
+				}
+
 				return _isHeaderCache;
 			}
 		}
@@ -43,7 +49,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get
 			{
 				if (_nextIsHeaderCache == null)
+				{
 					FillCache();
+				}
+
 				return _nextIsHeaderCache;
 			}
 		}
@@ -93,7 +102,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get
 			{
 				if (position < 0 || position >= CellCache.Length)
+				{
 					return null;
+				}
 
 				return CellCache[position];
 			}
@@ -234,10 +245,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			ITableModel model = Controller.Model;
 
 			if (position < 0 || position >= CellCache.Length)
+			{
 				return;
+			}
 
 			if (IsHeaderCache[position])
+			{
 				return;
+			}
 
 			model.RowSelected(CellCache[position]);
 		}
@@ -248,7 +263,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			nextIsHeader = false;
 
 			if (position < 0 || position >= CellCache.Length)
+			{
 				return null;
+			}
 
 			isHeader = IsHeaderCache[position];
 			nextIsHeader = NextIsHeaderCache[position];
@@ -274,7 +291,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					Cell headerCell = model.GetHeaderCell(sectionIndex);
 					if (headerCell == null)
+					{
 						headerCell = new TextCell { Text = sectionTitle, TextColor = sectionTextColor };
+					}
+
 					headerCell.Parent = _view;
 
 					newIsHeaderCache.Add(true);

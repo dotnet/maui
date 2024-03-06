@@ -16,14 +16,32 @@ namespace Microsoft.Maui
 		public virtual bool Initialize()
 		{
 			if (IsPlatformViewInitialized)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return true;
 
 			var nativeLayer = Window?.ToPlatform();
 			if (nativeLayer is not UIWindow platformWindow)
 				return false;
+After:
+			{
+				return true;
+*/
+			{
+				return true;
+			}
+
+			var nativeLayer = Window?.ToPlatform();
+			if (nativeLayer is not UIWindow platformWindow)
+			{
+				return false;
+			}
 
 			if (platformWindow?.RootViewController?.View == null)
+			{
 				return false;
+			}
 
 			// Create a passthrough view for holding the canvas and other diagnostics tools.
 			_passthroughView = new PassthroughView(this, platformWindow.RootViewController.View.Frame);
@@ -98,23 +116,33 @@ namespace Microsoft.Maui
 			{
 				// If we don't have a UI event, return.
 				if (uievent == null)
+				{
 					return false;
+				}
 
 				if (uievent.Type == UIEventType.Hover)
+				{
 					return false;
+				}
 
 				// If we are not pressing down, return.
 				if (uievent.Type != UIEventType.Touches)
+				{
 					return false;
+				}
 
 				var disableTouchEvent = false;
 
 				if (_overlay.TryGetTarget(out var overlay))
 				{
 					if (overlay.DisableUITouchEventPassthrough)
+					{
 						disableTouchEvent = true;
+					}
 					else if (overlay.EnableDrawableTouchHandling)
+					{
 						disableTouchEvent = overlay.WindowElements.Any(n => n.Contains(new Point(point.X, point.Y)));
+					}
 
 					overlay.OnTappedInternal(new Point(point.X, point.Y));
 				}

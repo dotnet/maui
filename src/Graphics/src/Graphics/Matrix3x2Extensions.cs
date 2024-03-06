@@ -12,17 +12,53 @@ namespace Microsoft.Maui.Graphics
 		public static bool IsZero(this in Matrix3x2 matrix)
 		{
 			if (matrix.M11 != 0)
+			{
 				return false;
+			}
+
 			if (matrix.M12 != 0)
+			{
 				return false;
+			}
+
 			if (matrix.M21 != 0)
+			{
+			{
 				return false;
+			}
+
 			if (matrix.M22 != 0)
+			{
 				return false;
+			}
+
 			if (matrix.M31 != 0)
+			{
 				return false;
+			}
+
 			if (matrix.M32 != 0)
+			{
 				return false;
+			}
+
+			}
+
+			if (matrix.M22 != 0)
+			{
+				return false;
+			}
+
+			if (matrix.M31 != 0)
+			{
+				return false;
+			}
+
+			if (matrix.M32 != 0)
+			{
+				return false;
+			}
+
 			return true;
 		}
 
@@ -53,7 +89,11 @@ namespace Microsoft.Maui.Graphics
 			var sx = matrix.M12 == 0 ? Math.Abs(matrix.M11) : new Vector2(matrix.M11, matrix.M12).Length();
 			var sy = matrix.M21 == 0 ? Math.Abs(matrix.M22) : new Vector2(matrix.M21, matrix.M22).Length();
 			if (matrix.GetDeterminant() < 0)
+			{
+			{
 				sy = -sy;
+			}
+
 			return new Vector2(sx, sy);
 		}
 
@@ -167,7 +207,9 @@ namespace Microsoft.Maui.Graphics
 			scalex = value.M12 == 0 ? Math.Abs(value.M11) : new Vector2(value.M11, value.M12).Length();
 			scaley = value.M21 == 0 ? Math.Abs(value.M22) : new Vector2(value.M21, value.M22).Length();
 			if (det < 0)
+			{
 				scaley = -scaley;
+			}
 		}
 	}
 }

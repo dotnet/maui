@@ -39,14 +39,20 @@ namespace Microsoft.Maui.Controls
 			var uri = ShellUriHandler.CreateUri(location);
 
 			if (uri.IsAbsoluteUri)
+			{
 				uri = new Uri($"/{uri.PathAndQuery}", UriKind.Relative);
+			}
 
 			FullLocation = uri;
 
 			if (trimForUser)
+			{
 				Location = TrimDownImplicitAndDefaultPaths(FullLocation);
+			}
 			else
+			{
 				Location = FullLocation;
+			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
@@ -65,6 +71,9 @@ namespace Microsoft.Maui.Controls
 
 			// don't trim relative pushes
 			if (!uri.OriginalString.StartsWith("//", StringComparison.Ordinal))
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return uri;
 
 			string[] parts = uri.OriginalString.TrimEnd(Routing.PathSeparator[0]).Split(Routing.PathSeparator[0]);
@@ -84,6 +93,230 @@ namespace Microsoft.Maui.Controls
 					// shell content page as the route
 					if (toKeep.Count == 0)
 						toKeep.Add(parts[i]);
+				}
+			}
+
+			// Always include pushed pages
+			for (int i = 5; i < parts.Length; i++)
+			{
+				toKeep.Add(parts[i]);
+			}
+
+			toKeep.Insert(0, "");
+			toKeep.Insert(0, "");
+			return new Uri(string.Join(Routing.PathSeparator, toKeep), UriKind.Relative);
+After:
+			{
+				return uri;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return uri;
+
+			string[] parts = uri.OriginalString.TrimEnd(Routing.PathSeparator[0]).Split(Routing.PathSeparator[0]);
+
+			List<string> toKeep = new List<string>();
+
+			// iterate over the shellitem/section/content
+			for (int i = 2; i < 5 && i < parts.Length; i++)
+			{
+				if (!(Routing.IsDefault(parts[i])) && !(Routing.IsImplicit(parts[i])))
+				{
+					toKeep.Add(parts[i]);
+				}
+				else if (i == 4)
+				{
+					// if all the routes are default then just put the last
+					// shell content page as the route
+					if (toKeep.Count == 0)
+						toKeep.Add(parts[i]);
+				}
+			}
+
+			// Always include pushed pages
+			for (int i = 5; i < parts.Length; i++)
+			{
+				toKeep.Add(parts[i]);
+			}
+
+			toKeep.Insert(0, "");
+			toKeep.Insert(0, "");
+			return new Uri(string.Join(Routing.PathSeparator, toKeep), UriKind.Relative);
+After:
+			{
+				return uri;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return uri;
+
+			string[] parts = uri.OriginalString.TrimEnd(Routing.PathSeparator[0]).Split(Routing.PathSeparator[0]);
+
+			List<string> toKeep = new List<string>();
+
+			// iterate over the shellitem/section/content
+			for (int i = 2; i < 5 && i < parts.Length; i++)
+			{
+				if (!(Routing.IsDefault(parts[i])) && !(Routing.IsImplicit(parts[i])))
+				{
+					toKeep.Add(parts[i]);
+				}
+				else if (i == 4)
+				{
+					// if all the routes are default then just put the last
+					// shell content page as the route
+					if (toKeep.Count == 0)
+						toKeep.Add(parts[i]);
+				}
+			}
+
+			// Always include pushed pages
+			for (int i = 5; i < parts.Length; i++)
+			{
+				toKeep.Add(parts[i]);
+			}
+
+			toKeep.Insert(0, "");
+			toKeep.Insert(0, "");
+			return new Uri(string.Join(Routing.PathSeparator, toKeep), UriKind.Relative);
+After:
+			{
+				return uri;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return uri;
+
+			string[] parts = uri.OriginalString.TrimEnd(Routing.PathSeparator[0]).Split(Routing.PathSeparator[0]);
+
+			List<string> toKeep = new List<string>();
+
+			// iterate over the shellitem/section/content
+			for (int i = 2; i < 5 && i < parts.Length; i++)
+			{
+				if (!(Routing.IsDefault(parts[i])) && !(Routing.IsImplicit(parts[i])))
+				{
+					toKeep.Add(parts[i]);
+				}
+				else if (i == 4)
+				{
+					// if all the routes are default then just put the last
+					// shell content page as the route
+					if (toKeep.Count == 0)
+						toKeep.Add(parts[i]);
+				}
+			}
+
+			// Always include pushed pages
+			for (int i = 5; i < parts.Length; i++)
+			{
+				toKeep.Add(parts[i]);
+			}
+
+			toKeep.Insert(0, "");
+			toKeep.Insert(0, "");
+			return new Uri(string.Join(Routing.PathSeparator, toKeep), UriKind.Relative);
+After:
+			{
+				return uri;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return uri;
+
+			string[] parts = uri.OriginalString.TrimEnd(Routing.PathSeparator[0]).Split(Routing.PathSeparator[0]);
+
+			List<string> toKeep = new List<string>();
+
+			// iterate over the shellitem/section/content
+			for (int i = 2; i < 5 && i < parts.Length; i++)
+			{
+				if (!(Routing.IsDefault(parts[i])) && !(Routing.IsImplicit(parts[i])))
+				{
+					toKeep.Add(parts[i]);
+				}
+				else if (i == 4)
+				{
+					// if all the routes are default then just put the last
+					// shell content page as the route
+					if (toKeep.Count == 0)
+						toKeep.Add(parts[i]);
+				}
+			}
+
+			// Always include pushed pages
+			for (int i = 5; i < parts.Length; i++)
+			{
+				toKeep.Add(parts[i]);
+			}
+
+			toKeep.Insert(0, "");
+			toKeep.Insert(0, "");
+			return new Uri(string.Join(Routing.PathSeparator, toKeep), UriKind.Relative);
+After:
+			{
+				return uri;
+*/
+			{
+				return uri;
+			}
+
+			string[] parts = uri.OriginalString.TrimEnd(Routing.PathSeparator[0]).Split(Routing.PathSeparator[0]);
+
+			List<string> toKeep = new List<string>();
+
+			// iterate over the shellitem/section/content
+			for (int i = 2; i < 5 && i < parts.Length; i++)
+			{
+				if (!(Routing.IsDefault(parts[i])) && !(Routing.IsImplicit(parts[i])))
+				{
+					toKeep.Add(parts[i]);
+				}
+				else if (i == 4)
+				{
+					// if all the routes are default then just put the last
+					// shell content page as the route
+					if (toKeep.Count == 0)
+					{
+						toKeep.Add(parts[i]);
+					}
+				}
+			}
+
+			// Always include pushed pages
+			for (int i = 5; i < parts.Length; i++)
+			{
+				toKeep.Add(parts[i]);
+			}
+
+			toKeep.Insert(0, "");
+			toKeep.Insert(0, "");
+			return new Uri(string.Join(Routing.PathSeparator, toKeep), UriKind.Relative);
+			}
+
+			string[] parts = uri.OriginalString.TrimEnd(Routing.PathSeparator[0]).Split(Routing.PathSeparator[0]);
+
+			List<string> toKeep = new List<string>();
+
+			// iterate over the shellitem/section/content
+			for (int i = 2; i < 5 && i < parts.Length; i++)
+			{
+				if (!(Routing.IsDefault(parts[i])) && !(Routing.IsImplicit(parts[i])))
+				{
+					toKeep.Add(parts[i]);
+				}
+				else if (i == 4)
+				{
+					// if all the routes are default then just put the last
+					// shell content page as the route
+					if (toKeep.Count == 0)
+					{
+						toKeep.Add(parts[i]);
+					}
 				}
 			}
 

@@ -20,10 +20,14 @@ namespace Microsoft.Maui.Graphics
 			set
 			{
 				if (this._transform == value)
+				{
+				{
 					return;
+				}
 
 				this._transform = value;
 				value.DeconstructScales(out _scale, out _scaleX, out _scaleY);
+				TransformChanged();
 				TransformChanged();
 			}
 		}

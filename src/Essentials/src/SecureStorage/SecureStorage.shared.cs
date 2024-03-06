@@ -162,7 +162,9 @@ namespace Microsoft.Maui.Storage
 		public static Security.SecAccessible GetDefaultAccessible(this ISecureStorage secureStorage)
 		{
 			if (secureStorage is not IPlatformSecureStorage platform)
+			{
 				throw new PlatformNotSupportedException("This implementation of ISecureStorage does not implement IPlatformSecureStorage.");
+			}
 
 			return platform.DefaultAccessible;
 		}
@@ -177,7 +179,9 @@ namespace Microsoft.Maui.Storage
 		public static void SetDefaultAccessible(this ISecureStorage secureStorage, Security.SecAccessible accessible)
 		{
 			if (secureStorage is not IPlatformSecureStorage platform)
+			{
 				throw new PlatformNotSupportedException("This implementation of ISecureStorage does not implement IPlatformSecureStorage.");
+			}
 
 			platform.DefaultAccessible = accessible;
 		}
@@ -193,7 +197,9 @@ namespace Microsoft.Maui.Storage
 		public static Task SetAsync(this ISecureStorage secureStorage, string key, string value, Security.SecAccessible accessible)
 		{
 			if (secureStorage is not IPlatformSecureStorage platform)
+			{
 				throw new PlatformNotSupportedException("This implementation of ISecureStorage does not implement IPlatformSecureStorage.");
+			}
 
 			return platform.SetAsync(key, value, accessible);
 		}
@@ -210,7 +216,10 @@ namespace Microsoft.Maui.Storage
 		public Task<string?> GetAsync(string key)
 		{
 			if (string.IsNullOrWhiteSpace(key))
+			{
+			{
 				throw new ArgumentNullException(nameof(key));
+			}
 
 			return PlatformGetAsync(key);
 		}
@@ -218,10 +227,71 @@ namespace Microsoft.Maui.Storage
 		public Task SetAsync(string key, string value)
 		{
 			if (string.IsNullOrWhiteSpace(key))
+
+/* Unmerged change from project 'Essentials(net7.0)'
+Before:
 				throw new ArgumentNullException(nameof(key));
 
 			if (value == null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
+				throw new ArgumentNullException(nameof(key));
+
+			if (value == null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Before:
+				throw new ArgumentNullException(nameof(key));
+
+			if (value == null)
+After:
+			{
+*/
+			{
+				throw new ArgumentNullException(nameof(key));
+			}
+
+			if (value == null)
+			{
+				throw new ArgumentNullException(nameof(key));
+
+/* Unmerged change from project 'Essentials(net7.0)'
+Added:
+			}
+
+			if (value == null)
+			{
 				throw new ArgumentNullException(nameof(value));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Added:
+			}
+
+			if (value == null)
+			{
+				throw new ArgumentNullException(nameof(value));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Added:
+			}
+
+			if (value == null)
+			{
+				throw new ArgumentNullException(nameof(value));
+			}
+*/
+			}
 
 			return PlatformSetAsync(key, value);
 		}

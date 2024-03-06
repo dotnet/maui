@@ -12,7 +12,9 @@ namespace Samples.View
 		{
 			NavigationPage.SetBackButtonTitle(this, "Back");
 			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
+			{
 				NavigationPage.SetHasNavigationBar(this, false);
+			}
 
 			Loaded += OnLoaded;
 			Unloaded += OnUnloaded;

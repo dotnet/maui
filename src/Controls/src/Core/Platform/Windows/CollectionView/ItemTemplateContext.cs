@@ -24,13 +24,19 @@ namespace Microsoft.Maui.Controls.Platform
 			MauiContext = mauiContext;
 
 			if (height.HasValue)
+			{
 				ItemHeight = height.Value;
+			}
 
 			if (width.HasValue)
+			{
 				ItemWidth = width.Value;
+			}
 
 			if (itemSpacing.HasValue)
+			{
 				ItemSpacing = itemSpacing.Value;
+			}
 		}
 	}
 }

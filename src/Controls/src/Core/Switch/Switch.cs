@@ -65,9 +65,14 @@ namespace Microsoft.Maui.Controls
 		{
 			base.ChangeVisualState();
 			if (IsEnabled && IsToggled)
+			{
 				VisualStateManager.GoToState(this, SwitchOnVisualState);
+			}
 			else if (IsEnabled && !IsToggled)
+			{
 				VisualStateManager.GoToState(this, SwitchOffVisualState);
+			}
+			}
 		}
 
 		public event EventHandler<ToggledEventArgs> Toggled;
@@ -84,7 +89,11 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanged(propertyName);
 
 			if (propertyName == IsToggledProperty.PropertyName)
+			{
+			{
 				Handler?.UpdateValue(nameof(ISwitch.IsOn));
+			}
+			}
 		}
 
 		Color ISwitch.TrackColor
@@ -95,7 +104,9 @@ namespace Microsoft.Maui.Controls
 				return OnColor;
 #else
 				if (IsToggled)
+				{
 					return OnColor;
+				}
 
 				return null;
 #endif

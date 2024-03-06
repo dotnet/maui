@@ -40,9 +40,16 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_style == value)
+				{
+				{
 					return;
+				}
+
 				if (value != null && !value.TargetType.IsAssignableFrom(TargetType))
+				{
 					Application.Current?.FindMauiContext()?.CreateLogger<Style>()?.LogWarning("Style TargetType {FullName} is not compatible with element target type {TargetType}", value.TargetType.FullName, TargetType);
+				}
+
 				SetStyle(ImplicitStyle, ClassStyles, value);
 			}
 		}
@@ -53,11 +60,28 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_styleClass == value)
+				{
+				{
 					return;
+				}
 
 				if (_styleClass != null && _classStyleProperties != null)
+				{
 					foreach (var classStyleProperty in _classStyleProperties)
+					{
 						Target.RemoveDynamicResource(classStyleProperty);
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+						targetelement.ApplyStyleSheets();
+After:
+					}
+				}
 
 				_styleClass = value;
 
@@ -74,7 +98,159 @@ namespace Microsoft.Maui.Controls
 
 					//reapply the css stylesheets
 					if (Target is Element targetelement)
+					{
 						targetelement.ApplyStyleSheets();
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+						targetelement.ApplyStyleSheets();
+After:
+					}
+				}
+
+				_styleClass = value;
+
+				if (_styleClass != null)
+				{
+					_classStyleProperties = new List<BindableProperty>();
+					foreach (var styleClass in _styleClass)
+					{
+						var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
+							propertyChanged: (bindable, oldvalue, newvalue) => OnClassStyleChanged());
+						_classStyleProperties.Add(classStyleProperty);
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+					{
+						targetelement.ApplyStyleSheets();
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+						targetelement.ApplyStyleSheets();
+After:
+					}
+				}
+
+				_styleClass = value;
+
+				if (_styleClass != null)
+				{
+					_classStyleProperties = new List<BindableProperty>();
+					foreach (var styleClass in _styleClass)
+					{
+						var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
+							propertyChanged: (bindable, oldvalue, newvalue) => OnClassStyleChanged());
+						_classStyleProperties.Add(classStyleProperty);
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+					{
+						targetelement.ApplyStyleSheets();
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+						targetelement.ApplyStyleSheets();
+After:
+					}
+				}
+
+				_styleClass = value;
+
+				if (_styleClass != null)
+				{
+					_classStyleProperties = new List<BindableProperty>();
+					foreach (var styleClass in _styleClass)
+					{
+						var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
+							propertyChanged: (bindable, oldvalue, newvalue) => OnClassStyleChanged());
+						_classStyleProperties.Add(classStyleProperty);
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+					{
+						targetelement.ApplyStyleSheets();
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+						targetelement.ApplyStyleSheets();
+After:
+					}
+				}
+
+				_styleClass = value;
+
+				if (_styleClass != null)
+				{
+					_classStyleProperties = new List<BindableProperty>();
+					foreach (var styleClass in _styleClass)
+					{
+						var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
+							propertyChanged: (bindable, oldvalue, newvalue) => OnClassStyleChanged());
+						_classStyleProperties.Add(classStyleProperty);
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+					{
+						targetelement.ApplyStyleSheets();
+					}
+*/
+					}
+				}
+
+				_styleClass = value;
+
+				if (_styleClass != null)
+				{
+					_classStyleProperties = new List<BindableProperty>();
+					foreach (var styleClass in _styleClass)
+					{
+						var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
+							propertyChanged: (bindable, oldvalue, newvalue) => OnClassStyleChanged());
+						_classStyleProperties.Add(classStyleProperty);
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
+					}
+
+					//reapply the css stylesheets
+					if (Target is Element targetelement)
+					{
+						targetelement.ApplyStyleSheets();
+					}
 				}
 			}
 		}
@@ -103,9 +279,13 @@ namespace Microsoft.Maui.Controls
 			//NOTE specificity could be more fine grained (using distance)
 			ImplicitStyle?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 			if (ClassStyles != null)
+			{
 				foreach (var classStyle in ClassStyles)
+				{
 					//NOTE specificity could be more fine grained (using distance)
 					((IStyle)classStyle)?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 1, 0));
+				}
+			}
 			//NOTE specificity could be more fine grained (using distance)
 			Style?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 0, 0));
 		}
@@ -116,8 +296,13 @@ namespace Microsoft.Maui.Controls
 		{
 			Style?.UnApply(bindable);
 			if (ClassStyles != null)
+			{
 				foreach (var classStyle in ClassStyles)
+				{
 					((IStyle)classStyle)?.UnApply(bindable);
+				}
+			}
+
 			ImplicitStyle?.UnApply(bindable);
 		}
 
@@ -158,7 +343,10 @@ namespace Microsoft.Maui.Controls
 				Target.SetDynamicResource(implicitStyleProperty, type.FullName);
 				type = type.BaseType;
 				if (s_stopAtTypes.Contains(type))
+				{
+				{
 					return;
+				}
 			}
 		}
 
@@ -166,7 +354,10 @@ namespace Microsoft.Maui.Controls
 		{
 			//Clear old implicit Styles
 			for (var i = 0; i < _implicitStyles.Count; i++)
+			{
 				Target.RemoveDynamicResource(_implicitStyles[i]);
+			}
+
 			_implicitStyles.Clear();
 
 			//Register the fallback
@@ -187,12 +378,22 @@ namespace Microsoft.Maui.Controls
 			bool shouldReApplyImplicitStyle = implicitStyle != ImplicitStyle;
 
 			if (shouldReApplyStyle)
+			{
 				Style?.UnApply(Target);
+			}
+
 			if (shouldReApplyClassStyle && ClassStyles != null)
+			{
 				foreach (var classStyle in ClassStyles)
+				{
 					((IStyle)classStyle)?.UnApply(Target);
+				}
+			}
+
 			if (shouldReApplyImplicitStyle)
+			{
 				ImplicitStyle?.UnApply(Target);
+			}
 
 			_implicitStyle = implicitStyle;
 			_classStyles = classStyles;
@@ -200,15 +401,24 @@ namespace Microsoft.Maui.Controls
 
 			//FIXME compute specificity
 			if (shouldReApplyImplicitStyle)
+			{
 				ImplicitStyle?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+			}
 
 			if (shouldReApplyClassStyle && ClassStyles != null)
+			{
 				foreach (var classStyle in ClassStyles)
+				{
 					//FIXME compute specificity
 					((IStyle)classStyle)?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 1, 0));
+				}
+			}
+
 			if (shouldReApplyStyle)
+			{
 				//FIXME compute specificity
 				Style?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 0, 0));
+			}
 		}
 	}
 }

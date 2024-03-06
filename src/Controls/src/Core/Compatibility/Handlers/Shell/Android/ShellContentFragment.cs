@@ -54,9 +54,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
 			if (appearance == null)
+			{
 				ResetAppearance();
+			}
 			else
+			{
 				SetAppearance(appearance);
+			}
 		}
 
 		#endregion IAppearanceObserver
@@ -108,7 +112,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// the view exiting is animating a button press of some sort. This means lots of GPU
 			// transactions to update the texture.
 			if (enter)
+			{
 				View.SetLayerType(LayerType.Hardware, null);
+			}
 
 			// This is very strange what we are about to do. For whatever reason if you take this animation
 			// and wrap it into an animation set it will have a 1 frame glitch at the start where the
@@ -147,7 +153,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellPageContainer = new ShellPageContainer(Context, _viewhandler);
 
 			if (_root is ViewGroup vg)
+			{
 				vg.AddView(_shellPageContainer);
+			}
 
 			_toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
 			_toolbarTracker.SetToolbar(shellToolbar);
@@ -160,7 +168,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, _page);
 
 			if (_shellPageContainer.LayoutParameters is CoordinatorLayout.LayoutParams layoutParams)
+			{
 				layoutParams.Behavior = new AppBarLayout.ScrollingViewBehavior();
+			}
 
 			return _root;
 		}
@@ -180,7 +190,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_shellPageContainer.RemoveAllViews();
 
 				if (_root is ViewGroup vg)
+				{
 					vg.RemoveView(_shellPageContainer);
+				}
 
 				_shellPageContainer.Dispose();
 			}
@@ -203,7 +215,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 			if (disposing)

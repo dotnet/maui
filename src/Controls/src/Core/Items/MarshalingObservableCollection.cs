@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls
 		public MarshalingObservableCollection(IList list)
 		{
 			if (!(list is INotifyCollectionChanged incc))
+			{
 				throw new ArgumentException($"{nameof(list)} must implement {nameof(INotifyCollectionChanged)}");
+			}
 
 			_internalCollection = list;
 			_dispatcher = Dispatcher.GetForCurrentThread();

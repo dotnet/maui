@@ -72,18 +72,24 @@ namespace Microsoft.Maui.IntegrationTests
 
 			var artifactDir = Path.Combine(TestEnvironment.GetMauiDirectory(), "artifacts");
 			if (!Directory.Exists(artifactDir))
+			{
 				throw new DirectoryNotFoundException($"Build artifact directory '{artifactDir}' was not found.");
+			}
 
 			var extraPacksDir = Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "extra-packages");
 			if (Directory.Exists(extraPacksDir))
+			{
 				Directory.Delete(extraPacksDir, true);
+			}
 
 			Directory.CreateDirectory(extraPacksDir);
 
 			foreach (var searchPattern in NuGetOnlyPackages)
 			{
 				foreach (var pack in Directory.GetFiles(artifactDir, searchPattern))
+				{
 					File.Copy(pack, Path.Combine(extraPacksDir, Path.GetFileName(pack)));
+				}
 			}
 
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig, true);
@@ -96,7 +102,9 @@ namespace Microsoft.Maui.IntegrationTests
 		public void BuildTestSetUp()
 		{
 			if (Directory.Exists(TestDirectory))
+			{
 				Directory.Delete(TestDirectory, recursive: true);
+			}
 
 			Directory.CreateDirectory(TestDirectory);
 		}

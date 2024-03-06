@@ -88,9 +88,14 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (!HasShadow)
+				{
 					return null;
+				}
 
 				if (base.Shadow != null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
 					return base.Shadow;
 
 #if IOS
@@ -98,7 +103,50 @@ namespace Microsoft.Maui.Controls
 				// so on iOS we just return the shadow that was hard coded into the renderer
 				// On Android it sets the elevation on the CardView and on WinUI Forms just ignored HasShadow
 				if(HasShadow)
+After:
+				{
+					return base.Shadow;
+				}
+
+#if IOS
+				// The way the shadow is applied in .NET MAUI on iOS is the same way it was applied in Forms
+				// so on iOS we just return the shadow that was hard coded into the renderer
+				// On Android it sets the elevation on the CardView and on WinUI Forms just ignored HasShadow
+				if (HasShadow)
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return base.Shadow;
+
+#if IOS
+				// The way the shadow is applied in .NET MAUI on iOS is the same way it was applied in Forms
+				// so on iOS we just return the shadow that was hard coded into the renderer
+				// On Android it sets the elevation on the CardView and on WinUI Forms just ignored HasShadow
+				if(HasShadow)
+After:
+				{
+					return base.Shadow;
+				}
+
+#if IOS
+				// The way the shadow is applied in .NET MAUI on iOS is the same way it was applied in Forms
+				// so on iOS we just return the shadow that was hard coded into the renderer
+				// On Android it sets the elevation on the CardView and on WinUI Forms just ignored HasShadow
+				if (HasShadow)
+*/
+				{
+					return base.Shadow;
+				}
+
+#if IOS
+				// The way the shadow is applied in .NET MAUI on iOS is the same way it was applied in Forms
+				// so on iOS we just return the shadow that was hard coded into the renderer
+				// On Android it sets the elevation on the CardView and on WinUI Forms just ignored HasShadow
+				if(HasShadow)
+				{
 					return new Shadow() { Radius = 5, Opacity = 0.8f, Offset = new Point(0, 0), Brush = Brush.Black };
+				}
 #endif
 
 				return null;

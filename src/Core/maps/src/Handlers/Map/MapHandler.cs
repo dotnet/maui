@@ -50,7 +50,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapUpdateMapElement(IMapHandler handler, IMap map, object? arg)
 		{
 			if (arg is not MapElementHandlerUpdate args)
+			{
+			{
 				return;
+			}
 
 			handler.UpdateMapElement(args.MapElement);
 		}

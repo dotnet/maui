@@ -24,7 +24,9 @@ namespace Microsoft.Maui
 			base.BuildMenu(builder);
 
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				return;
+			}
 
 			MenuBuilder = builder;
 
@@ -60,7 +62,9 @@ namespace Microsoft.Maui
 						}
 					}
 					else
+					{
 						window = activeWindowScenes[0].KeyWindow;
+					}
 				}
 			}
 			else
@@ -77,16 +81,20 @@ namespace Microsoft.Maui
 		public override bool CanPerform(Selector action, NSObject? withSender)
 		{
 			if (action.Name.StartsWith("MenuItem", StringComparison.Ordinal))
+			{
+			{
 				return true;
+			}
+			}
 
 			return base.CanPerform(action, withSender);
 		}
 
 		[SupportedOSPlatform("ios13.0")]
 		[Export(KeyboardAcceleratorExtensions.MenuItemSelectedSelector)]
-		#pragma warning disable CA1822 // Selectors can't be static, or else it won't be found
+#pragma warning disable CA1822 // Selectors can't be static, or else it won't be found
 		internal void MenuItemSelected(UICommand uiCommand)
-		#pragma warning restore CA1822
+#pragma warning restore CA1822
 		{
 			uiCommand.SendClicked();
 		}

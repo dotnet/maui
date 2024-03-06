@@ -71,17 +71,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			int height = Bounds.Height();
 
 			if (width <= 0 || height <= 0)
+			{
 				return;
+			}
 
 			if (_normalBitmap == null ||
 				_normalBitmap?.IsDisposed() == true ||
 				_pressedBitmap?.IsDisposed() == true ||
 				_normalBitmap.Height != height ||
 				_normalBitmap.Width != width)
+			{
 				Reset();
+			}
 
 			if (!_drawOutlineWithBackground && BorderElement.BackgroundColor == null)
+			{
 				return;
+			}
 
 			Bitmap bitmap = null;
 			if (GetState().Contains(global::Android.Resource.Attribute.StatePressed))
@@ -151,12 +157,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
 			if (disposing)
+			{
 				Reset();
+			}
 
 			base.Dispose(disposing);
 		}
@@ -180,7 +190,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				DrawBackground(canvas, width, height, pressed);
 				if (_drawOutlineWithBackground)
+				{
 					DrawOutline(canvas, width, height);
+				}
 			}
 
 			return bitmap;
@@ -219,7 +231,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			int cornerRadius = DefaultCornerRadius;
 
 			if (BorderElement.IsCornerRadiusSet() && BorderElement.CornerRadius != (int)BorderElement.CornerRadiusDefaultValue)
+			{
 				cornerRadius = BorderElement.CornerRadius;
+			}
 
 			return _convertToPixels(cornerRadius);
 		}
@@ -276,7 +290,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void DrawOutline(Canvas canvas, int width, int height)
 		{
 			if (BorderElement.BorderWidth <= 0)
+			{
 				return;
+			}
 
 			using (var paint = new Paint { AntiAlias = true })
 			using (var path = new APath())

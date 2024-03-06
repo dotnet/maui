@@ -49,7 +49,9 @@ namespace Microsoft.Maui.Platform
 			var context = seekBar.Context;
 
 			if (context == null)
+			{
 				return;
+			}
 
 			var thumbImageSource = slider.ThumbImageSource;
 
@@ -61,7 +63,9 @@ namespace Microsoft.Maui.Platform
 				var thumbDrawable = result?.Value;
 
 				if (seekBar.IsAlive() && thumbDrawable != null)
+				{
 					seekBar.SetThumb(thumbDrawable);
+				}
 			}
 		}
 	}

@@ -11,14 +11,19 @@ namespace Microsoft.Maui.Controls
 		{
 			var commandElement = (ICommandElement)bo;
 			if (o is ICommand oldCommand)
+			{
 				oldCommand.CanExecuteChanged -= commandElement.CanExecuteChanged;
+			}
 		}
 
 		public static void OnCommandChanged(BindableObject bo, object o, object n)
 		{
 			var commandElement = (ICommandElement)bo;
 			if (n is ICommand newCommand)
+			{
 				newCommand.CanExecuteChanged += commandElement.CanExecuteChanged;
+			}
+
 			commandElement.CanExecuteChanged(bo, EventArgs.Empty);
 		}
 
@@ -31,7 +36,11 @@ namespace Microsoft.Maui.Controls
 		public static bool GetCanExecute(ICommandElement commandElement)
 		{
 			if (commandElement.Command == null)
+			{
+			{
 				return true;
+			}
+			}
 
 			return commandElement.Command.CanExecute(commandElement.CommandParameter);
 		}

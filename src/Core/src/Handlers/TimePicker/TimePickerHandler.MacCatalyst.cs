@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Handlers
 		void SetVirtualViewTime()
 		{
 			if (VirtualView == null || PlatformView == null)
+			{
 				return;
+			}
 
 			var datetime = PlatformView.Date.ToDateTime();
 			VirtualView.Time = new TimeSpan(datetime.Hour, datetime.Minute, 0);
@@ -101,13 +103,17 @@ namespace Microsoft.Maui.Handlers
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is ITimePicker virtualView)
+				{
 					virtualView.IsFocused = true;
+				}
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is ITimePicker virtualView)
+				{
 					virtualView.IsFocused = false;
+				}
 			}
 
 			void OnValueChanged(object? sender, EventArgs e)

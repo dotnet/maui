@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_cells != null)
 					{
 						foreach (var cell in _cells.Values)
+						{
 							cell.Disconnect(_context.Shell);
+						}
 					}
 
 					_cells = new Dictionary<Element, UIContainerCell>();
@@ -55,7 +57,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var newGroups = ((IShellController)_context.Shell).GenerateFlyoutGrouping();
 
 			if (newGroups == _groups)
+			{
 				return;
+			}
 
 			_groups = newGroups;
 			if (_cells == null)
@@ -81,7 +85,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			foreach (var cell in oldList.Values)
+			{
 				cell.Disconnect(_context.Shell);
+			}
 		}
 
 
@@ -95,7 +101,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_cells != null)
 				{
 					foreach (var cell in _cells.Values)
+					{
 						cell.Disconnect(_context.Shell);
+					}
 				}
 				_cells = new Dictionary<Element, UIContainerCell>();
 			}
@@ -108,6 +116,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var context = Groups[section][row];
 
 			if (!_cells.TryGetValue(context, out var view))
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				return UITableView.AutomaticDimension;
 
 			if (!view.View.IsVisible)
@@ -133,9 +144,57 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else
 					height = defaultHeight;
 			}
+After:
+			{
+				return UITableView.AutomaticDimension;
+			}
+
+			if (!view.View.IsVisible)
+			{
+				return 0;
+			}
+
+			nfloat defaultHeight = tableView.EstimatedRowHeight == -1 ? 0 : tableView.EstimatedRowHeight;
+			nfloat height = -1;
+*/
+			{
+				return UITableView.AutomaticDimension;
+			}
+
+			if (!view.View.IsVisible)
+			{
+				return 0;
+			}
+
+			nfloat defaultHeight = tableView.EstimatedRowHeight == -1 ? 0 : tableView.EstimatedRowHeight;
+			nfloat height = -1;
+
+			if (view.View.HeightRequest >= 0)
+			{
+				height = (float)view.View.HeightRequest;
+				(view.View as IView).Measure(tableView.Bounds.Width, view.View.HeightRequest);
+				(view.View.Handler as IPlatformViewHandler)
+					.PlatformView.Frame = new CoreGraphics.CGRect(0, 0, tableView.Bounds.Width, view.View.HeightRequest);
+
+			}
+			else
+			{
+				var request = (view.View as IView).Measure(tableView.Bounds.Width, double.PositiveInfinity);
+
+				if (request.Height > defaultHeight)
+				{
+					height = (float)request.Height;
+				}
+				else
+				{
+					height = defaultHeight;
+				}
+			}
 
 			if (height == -1)
+			{
 				height = defaultHeight;
+			}
 
 			return height;
 		}
@@ -150,12 +209,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (context is IMenuItemController)
 			{
 				if (DefaultMenuItemTemplate != null && _context.Shell.MenuItemTemplate == template)
+				{
 					template = DefaultMenuItemTemplate;
+				}
 			}
 			else
 			{
 				if (DefaultItemTemplate != null && _context.Shell.ItemTemplate == template)
+				{
 					template = DefaultItemTemplate;
+				}
 			}
 
 			var cellId = ((IDataTemplateController)template.SelectDataTemplate(context, _context.Shell)).IdString;
@@ -191,7 +254,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override nfloat GetHeightForFooter(UITableView tableView, nint section)
 		{
 			if (section < Groups.Count - 1)
+			{
+			{
 				return 1;
+			}
+			}
 
 			return 0;
 		}

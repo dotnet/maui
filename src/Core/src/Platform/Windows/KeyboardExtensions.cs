@@ -9,7 +9,9 @@ namespace Microsoft.Maui.Platform
 		public static InputScopeName ToInputScopeName(this Keyboard self)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException(nameof(self));
+			}
 
 			var name = new InputScopeName();
 
@@ -84,7 +86,9 @@ namespace Microsoft.Maui.Platform
 		public static InputScope ToInputScope(this Keyboard self)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException("self");
+			}
 
 			var result = new InputScope();
 			var name = new InputScopeName();

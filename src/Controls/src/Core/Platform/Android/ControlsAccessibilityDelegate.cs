@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Controls.Platform
 			base.OnInitializeAccessibilityNodeInfo(host, info);
 
 			if (Handler?.VirtualView is View v)
+			{
 				v.UpdateSemanticNodeInfo(info);
+			}
 		}
 	}
 }

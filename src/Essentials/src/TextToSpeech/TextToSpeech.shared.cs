@@ -156,22 +156,30 @@ namespace Microsoft.Maui.Media
 		public async Task SpeakAsync(string text, SpeechOptions? options = default, CancellationToken cancelToken = default)
 		{
 			if (string.IsNullOrEmpty(text))
+			{
 				throw new ArgumentNullException(nameof(text), "Text cannot be null or empty string");
+			}
 
 			if (options?.Volume.HasValue ?? false)
 			{
 				if (options.Volume.Value < VolumeMin || options.Volume.Value > VolumeMax)
+				{
 					throw new ArgumentOutOfRangeException($"Volume must be >= {VolumeMin} and <= {VolumeMax}");
+				}
 			}
 
 			if (options?.Pitch.HasValue ?? false)
 			{
 				if (options.Pitch.Value < PitchMin || options.Pitch.Value > PitchMax)
+				{
 					throw new ArgumentOutOfRangeException($"Pitch must be >= {PitchMin} and <= {PitchMin}");
+				}
 			}
 
 			if (semaphore == null)
+			{
 				semaphore = new SemaphoreSlim(1, 1);
+			}
 
 			try
 			{
@@ -181,7 +189,9 @@ namespace Microsoft.Maui.Media
 			finally
 			{
 				if (semaphore.CurrentCount == 0)
+				{
 					semaphore.Release();
+				}
 			}
 		}
 	}

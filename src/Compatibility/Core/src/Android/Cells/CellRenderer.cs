@@ -55,9 +55,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var holder = view.Tag as RendererHolder;
 			if (holder == null)
+			{
 				view.Tag = new RendererHolder(this);
+			}
 			else
+			{
 				holder.Renderer = this;
+			}
 
 			Cell.PropertyChanged += PropertyChangedHandler;
 			((ICellController)Cell).SendAppearing();
@@ -97,7 +101,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_onForceUpdateSizeRequested = (sender, e) =>
 			{
 				if (nativeCell.Handle == IntPtr.Zero)
+				{
 					return;
+				}
 				// RenderHeight may not be changed, but that's okay, since we
 				// don't actually use the height argument in the OnMeasure override.
 				nativeCell.Measure(nativeCell.Width, (int)cell.RenderHeight);

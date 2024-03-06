@@ -63,7 +63,9 @@ namespace Microsoft.Maui.DeviceTests
 					var queryEditor = searchView.GetFirstChildOfType<EditText>();
 
 					if (queryEditor is null)
+					{
 						throw new Exception("Unable to locate EditText on SearchView");
+					}
 
 					view = queryEditor;
 				}
@@ -82,7 +84,9 @@ namespace Microsoft.Maui.DeviceTests
 						view.FocusChange -= OnFocused;
 
 						if (!view.IsFocused)
+						{
 							throw;
+						}
 					}
 
 					// Even though the event fires focus hasn't fully been achieved
@@ -91,7 +95,9 @@ namespace Microsoft.Maui.DeviceTests
 					void OnFocused(object? sender, AView.FocusChangeEventArgs e)
 					{
 						if (!e.HasFocus)
+						{
 							return;
+						}
 
 						view.FocusChange -= OnFocused;
 						focusSource.SetResult();
@@ -101,9 +107,13 @@ namespace Microsoft.Maui.DeviceTests
 			catch (Exception ex)
 			{
 				if (!string.IsNullOrEmpty(message))
+				{
 					throw new Exception(message, ex);
+				}
 				else
+				{
 					throw;
+				}
 			}
 		}
 
@@ -123,7 +133,9 @@ namespace Microsoft.Maui.DeviceTests
 					view.FocusChange -= OnUnFocused;
 
 					if (view.IsFocused)
+					{
 						throw;
+					}
 				}
 
 				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
@@ -134,7 +146,9 @@ namespace Microsoft.Maui.DeviceTests
 				void OnUnFocused(object? sender, AView.FocusChangeEventArgs e)
 				{
 					if (e.HasFocus)
+					{
 						return;
+					}
 
 					view.FocusChange -= OnUnFocused;
 					focusSource.SetResult();
@@ -156,7 +170,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string? message = null)
 		{
 			if (view.IsSoftInputShowing())
+			{
 				return;
+			}
 
 			await view.FocusView(timeout);
 			await Task.Yield();
@@ -174,7 +190,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string? message = null)
 		{
 			if (!view.IsSoftInputShowing())
+			{
 				return;
+			}
 
 			view.HideSoftInput();
 			await Task.Yield();
@@ -237,7 +255,9 @@ namespace Microsoft.Maui.DeviceTests
 				var view = (AView)sender!;
 
 				if (view.Handle != IntPtr.Zero)
+				{
 					view.LayoutChange -= OnLayout;
+				}
 
 				// let the layout resolve after changing
 				tcs.TrySetResult(e != null);
@@ -310,7 +330,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static async Task<T> AttachAndRun<T>(this AView view, Func<Task<T>> action)
 		{
 			if (view.Parent is WrapperView wrapper)
+			{
 				view = wrapper;
+			}
 
 			if (view.Parent == null)
 			{
@@ -324,10 +346,14 @@ namespace Microsoft.Maui.DeviceTests
 				var height = view.Height;
 
 				if (width <= 0)
+				{
 					width = FrameLayout.LayoutParams.WrapContent;
+				}
 
 				if (height <= 0)
+				{
 					height = FrameLayout.LayoutParams.WrapContent;
+				}
 
 				view.LayoutParameters = new FrameLayout.LayoutParams(width, height)
 				{
@@ -379,7 +405,9 @@ namespace Microsoft.Maui.DeviceTests
 			return view.AttachAndRun(() =>
 			{
 				if (view.Parent is WrapperView wrapper)
+				{
 					view = wrapper;
+				}
 
 				var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888!)!;
 				using (var canvas = new Canvas(bitmap))
@@ -395,7 +423,9 @@ namespace Microsoft.Maui.DeviceTests
 			var actualColor = bitmap.ColorAtPoint(x, y);
 
 			if (!actualColor.IsEquivalent(expectedColor))
+			{
 				throw new XunitException(CreateColorAtPointError(bitmap, expectedColor, x, y));
+			}
 
 			return bitmap;
 		}
@@ -445,7 +475,9 @@ namespace Microsoft.Maui.DeviceTests
 			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
 
 			if (withinRectModifier is not null)
+			{
 				imageRect = withinRectModifier.Invoke(imageRect);
+			}
 
 			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 			{
@@ -466,7 +498,9 @@ namespace Microsoft.Maui.DeviceTests
 			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
 
 			if (withinRectModifier is not null)
+			{
 				imageRect = withinRectModifier.Invoke(imageRect);
+			}
 
 			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 			{
@@ -571,7 +605,9 @@ namespace Microsoft.Maui.DeviceTests
 					var second = bitmap2.ColorAtPoint(x, y, true);
 
 					if (!first.IsEquivalent(second))
+					{
 						return false;
+					}
 				}
 			}
 
@@ -597,9 +633,13 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
 			if (ex is null)
+			{
 				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error."));
+			}
 			else
+			{
 				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error: " + ex.Message), ex);
+			}
 		}
 
 		public static TextUtils.TruncateAt? ToPlatform(this LineBreakMode mode) =>
@@ -648,12 +688,18 @@ namespace Microsoft.Maui.DeviceTests
 			var navItemView = (AView?)GetTab(navigationView, tabText)?.GetFirstChildOfType<TextView>()?.Parent;
 
 			if (navItemView is null)
+			{
 				throw new Exception("Unable to locate Tab Item Text Container");
+			}
 
 			if (hasColor)
+			{
 				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), mauiContext);
+			}
 			else
+			{
 				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), mauiContext);
+			}
 		}
 
 		static async Task AssertTabItemIconColor(
@@ -663,12 +709,18 @@ namespace Microsoft.Maui.DeviceTests
 			var navItemView = (AView?)GetTab(navigationView, tabText)?.GetFirstChildOfType<ImageView>()?.Parent;
 
 			if (navItemView is null)
+			{
 				throw new Exception("Unable to locate Tab Item Icon Container");
+			}
 
 			if (hasColor)
+			{
 				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), mauiContext);
+			}
 			else
+			{
 				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), mauiContext);
+			}
 		}
 
 		static public Task AssertTabItemIconDoesNotContainColor(

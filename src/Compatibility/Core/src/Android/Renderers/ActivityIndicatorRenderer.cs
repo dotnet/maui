@@ -41,30 +41,42 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ActivityIndicator.IsRunningProperty.PropertyName)
+			{
 				UpdateVisibility();
+			}
 			else if (e.PropertyName == ActivityIndicator.ColorProperty.PropertyName)
+			{
 				UpdateColor();
+			}
 		}
 
 		[PortHandler]
 		void UpdateColor()
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
 
 			Color color = Element.Color;
 
 			if (color != null)
+			{
 				Control.IndeterminateDrawable?.SetColorFilter(color.ToAndroid(), FilterMode.SrcIn);
+			}
 			else
+			{
 				Control.IndeterminateDrawable?.ClearColorFilter();
+			}
 		}
 
 		[PortHandler]
 		void UpdateVisibility()
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
 
 			Control.Visibility = Element.IsRunning ? ViewStates.Visible : ViewStates.Invisible;
 		}

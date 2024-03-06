@@ -14,9 +14,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public void CenterIfNeeded(RecyclerView recyclerView, bool isHorizontal)
 		{
 			if (!(recyclerView.GetLayoutManager() is LinearLayoutManager linearLayoutManager))
+			{
 				return;
+			}
+
 			if (_itemsSource is null)
+			{
 				return;
+			}
 
 			var itemSourceCount = _itemsSource.Count;
 
@@ -25,19 +30,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var offSet = recyclerView.ComputeHorizontalScrollOffset();
 
 			if (!isHorizontal)
+			{
 				offSet = recyclerView.ComputeVerticalScrollOffset();
+			}
 
 			if (firstCompletelyItemVisible == 0)
+			{
 				linearLayoutManager.ScrollToPositionWithOffset(itemSourceCount, -offSet);
+			}
 		}
 
 		public void CheckPendingScrollToEvents(RecyclerView recyclerView)
 		{
 			if (recyclerView is not IMauiRecyclerView<ItemsView> mauiRecyclerView)
+			{
 				return;
+			}
 
 			if (_pendingScrollTo.TryDequeue(out ScrollToRequestEventArgs scrollToRequestEventArgs))
+			{
 				mauiRecyclerView.ScrollTo(scrollToRequestEventArgs);
+			}
 		}
 
 		public void AddPendingScrollTo(ScrollToRequestEventArgs args) => _pendingScrollTo.Enqueue(args);
@@ -45,9 +58,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public int GetGoToIndex(RecyclerView recyclerView, int carouselPosition, int newPosition)
 		{
 			if (!(recyclerView.GetLayoutManager() is LinearLayoutManager linearLayoutManager))
+			{
 				return -1;
+			}
+
 			if (_itemsSource is null)
+			{
 				return -1;
+			}
 
 			var currentCarouselPosition = carouselPosition;
 			var itemSourceCount = _itemsSource.Count;
@@ -57,7 +75,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var centerView = recyclerView.GetCenteredView();
 
 			if (centerView == null)
+			{
 				return -1;
+			}
 
 			var centerPosition = linearLayoutManager.GetPosition(centerView);
 			var increment = currentCarouselPosition - newPosition;
@@ -65,11 +85,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			int goToPosition;
 			if (diffToStart < incrementAbs)
+			{
 				goToPosition = centerPosition - diffToStart;
+			}
 			else if (diffToEnd < incrementAbs)
+			{
 				goToPosition = centerPosition + diffToEnd;
+			}
 			else
+			{
 				goToPosition = centerPosition - increment;
+			}
 
 			return goToPosition;
 		}

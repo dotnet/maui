@@ -87,7 +87,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			base.Draw(dirtyRect);
 
 			if (_drawable == null)
+			{
 				return;
+			}
 
 			var coreGraphics = UIGraphics.GetCurrentContext();
 

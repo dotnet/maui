@@ -25,7 +25,10 @@ namespace Microsoft.Maui.Controls
 			{
 				_first = new KeyValuePair<SetterSpecificity, object>(specificity, value);
 				if (_values is not null)
+				{
 					_values[specificity] = value;
+				}
+
 				return;
 			}
 
@@ -33,7 +36,10 @@ namespace Microsoft.Maui.Controls
 			{
 				_second = new KeyValuePair<SetterSpecificity, object>(specificity, value);
 				if (_values is not null)
+				{
 					_values[specificity] = value;
+				}
+
 				return;
 			}
 
@@ -55,16 +61,24 @@ namespace Microsoft.Maui.Controls
 		{
 			_values?.Remove(specificity);
 			if (_first is not null && _first.Value.Key == specificity)
+			{
 				_first = null;
+			}
+
 			if (_second is not null && _second.Value.Key == specificity)
+			{
 				_second = null;
+			}
 		}
 
 		public KeyValuePair<SetterSpecificity, object> GetSpecificityAndValue()
 		{
 			// Slow path calls SortedList.Last()
 			if (_values is not null)
+			{
+			{
 				return _values.Last();
+			}
 
 			// Fast path accesses _first and _second
 			if (_first is not null && _second is not null)
@@ -99,7 +113,10 @@ namespace Microsoft.Maui.Controls
 			{
 				var index = _values.IndexOfKey(clearedSpecificity);
 				if (index == _values.Count - 1) //last value will be cleared
+				{
 					return _values.Count >= 2 ? _values[_values.Keys[_values.Count - 2]] : null;
+				}
+
 				return _values.Last().Value;
 			}
 
@@ -107,7 +124,10 @@ namespace Microsoft.Maui.Controls
 			if (_first is not null && _second is not null)
 			{
 				if (_first.Value.Key == clearedSpecificity)
+				{
 					return _second.Value.Value;
+				}
+
 				return _first.Value.Value;
 			}
 			else if (_first is not null)

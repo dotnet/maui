@@ -27,7 +27,9 @@ namespace Microsoft.Maui
 		private protected virtual void InvokeCore(string key, IElementHandler viewHandler, IElement virtualView, object? args)
 		{
 			if (!viewHandler.CanInvokeMappers())
+			{
 				return;
+			}
 
 			var action = GetCommand(key);
 			action?.Invoke(viewHandler, virtualView, args);
@@ -36,17 +38,106 @@ namespace Microsoft.Maui
 		public virtual Command? GetCommand(string key)
 		{
 			if (_mapper.TryGetValue(key, out var action))
+			{
+			{
 				return action;
+			}
 			else if (Chained is not null)
+
+/* Unmerged change from project 'Core(net8.0)'
+Before:
 				return Chained.GetCommand(key);
 			else
+After:
+			{
+				return Chained.GetCommand(key);
+			}
+			else
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return Chained.GetCommand(key);
+			else
+After:
+			{
+				return Chained.GetCommand(key);
+			}
+			else
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+				return Chained.GetCommand(key);
+			else
+After:
+			{
+				return Chained.GetCommand(key);
+			}
+			else
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+				return Chained.GetCommand(key);
+			else
+After:
+			{
+				return Chained.GetCommand(key);
+			}
+			else
+			{
+*/
+			{
+				return Chained.GetCommand(key);
+
+/* Unmerged change from project 'Core(net8.0)'
+Before:
+		}
+After:
+			}
+		}
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+		}
+After:
+			}
+		}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+		}
+After:
+			}
+		}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+		}
+After:
+			}
+		}
+*/
+			}
+			else
+			{
 				return null;
+			}
 		}
 
 		public void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args)
 		{
 			if (virtualView == null)
+			{
 				return;
+			}
 
 			InvokeCore(property, viewHandler, virtualView, args);
 		}

@@ -69,7 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
 			if (e.OldElement != null)
+			{
 				((INotifyCollectionChanged)e.OldElement.Items).CollectionChanged -= RowsCollectionChanged;
+			}
 
 			if (e.NewElement != null)
 			{
@@ -91,7 +93,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					{
 						var s = (PickerSource)_picker.Model;
 						if (s.SelectedIndex == -1 && Element.Items != null && Element.Items.Count > 0)
+						{
 							UpdatePickerSelectedIndex(0);
+						}
+
 						UpdatePickerFromModel(s);
 						entry.ResignFirstResponder();
 						UpdateCharacterSpacing();
@@ -134,9 +139,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 			if (e.PropertyName == Picker.HorizontalTextAlignmentProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == Picker.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateVerticalTextAlignment();
+			}
+
 			if (e.PropertyName == Picker.TitleProperty.PropertyName || e.PropertyName == Picker.TitleColorProperty.PropertyName)
 			{
 				UpdatePicker();
@@ -146,16 +156,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdatePicker();
 			}
 			else if (e.PropertyName == Picker.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == Picker.TextColorProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == Picker.FontAttributesProperty.PropertyName || e.PropertyName == Picker.FontFamilyProperty.PropertyName ||
 					 e.PropertyName == Picker.FontSizeProperty.PropertyName)
 			{
 				UpdateFont();
 			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 		}
 
 		[PortHandler]
@@ -196,17 +212,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected void UpdateCharacterSpacing()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (textAttr != null)
+			{
 				Control.AttributedText = textAttr;
+			}
 
 			var placeHolder = Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (placeHolder != null)
+			{
 				UpdateAttributedPlaceholder(placeHolder);
+			}
 		}
 
 		[PortHandler]
@@ -221,7 +243,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var formatted = (FormattedString)Element.Title;
 
 			if (formatted == null)
+			{
 				return;
+			}
 
 			var targetColor = Element.TitleColor;
 
@@ -256,7 +280,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdatePickerNativeSize(oldText);
 			_picker.ReloadAllComponents();
 			if (items == null || items.Count == 0)
+			{
 				return;
+			}
 
 			UpdatePickerSelectedIndex(selectedIndex);
 			UpdateCharacterSpacing();
@@ -276,7 +302,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdatePickerNativeSize(string oldText)
 		{
 			if (oldText != Control.Text)
+			{
 				((IVisualElementController)Element).PlatformSizeChanged();
+			}
 		}
 
 		[PortHandler]
@@ -304,9 +332,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var textColor = Element.TextColor;
 
 			if (textColor == null || (!Element.IsEnabled && _useLegacyColorManagement))
+			{
 				Control.TextColor = _defaultTextColor;
+			}
 			else
+			{
 				Control.TextColor = textColor.ToPlatform();
+			}
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			Control.Text = Control.Text;
@@ -315,7 +347,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -344,7 +378,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 
 				if (Element != null)
+				{
 					((INotifyCollectionChanged)Element.Items).CollectionChanged -= RowsCollectionChanged;
+				}
 			}
 
 			base.Dispose(disposing);
@@ -394,18 +430,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 
 				if (_renderer.Element.On<PlatformConfiguration.iOS>().UpdateMode() == UpdateMode.Immediately)
+				{
 					_renderer.UpdatePickerFromModel(this);
+				}
 			}
 
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
+				{
 					return;
+				}
 
 				_disposed = true;
 
 				if (disposing)
+				{
 					_renderer = null;
+				}
 
 				base.Dispose(disposing);
 			}

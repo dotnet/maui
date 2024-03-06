@@ -32,9 +32,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 				default:
 					if (label.FormattedText != null)
+					{
 						platformControl.UpdateInlines(label);
+					}
 					else
+					{
 						platformControl.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					}
+
 					break;
 			}
 		}
@@ -61,15 +66,21 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateDetectReadingOrderFromContent(this TextBlock platformControl, Label label)
 		{
 			if (label.IsSet(Specifics.DetectReadingOrderFromContentProperty))
+			{
 				platformControl.SetTextReadingOrder(label.OnThisPlatform().GetDetectReadingOrderFromContent());
+			}
 		}
 
 		internal static void SetLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode, int? maxLines = null)
 		{
 			if (maxLines.HasValue && maxLines >= 0)
+			{
 				textBlock.MaxLines = maxLines.Value;
+			}
 			else
+			{
 				textBlock.MaxLines = 0;
+			}
 
 			switch (lineBreakMode)
 			{
@@ -103,7 +114,7 @@ namespace Microsoft.Maui.Controls.Platform
 					throw new ArgumentOutOfRangeException();
 			}
 		}
-	
+
 		internal static void SetTextReadingOrder(this TextBlock platformControl, bool detectReadingOrderFromContent) =>
 			platformControl.TextReadingOrder = detectReadingOrderFromContent
 				? TextReadingOrder.DetectFromContent

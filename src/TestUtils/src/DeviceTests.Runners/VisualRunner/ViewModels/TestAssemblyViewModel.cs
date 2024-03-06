@@ -60,11 +60,54 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 					{
 						case NotifyCollectionChangedAction.Add:
 							foreach (TestCaseViewModel item in args.NewItems!)
+							{
 								_results.Add(item);
+
+/* Unmerged change from project 'TestUtils.DeviceTests.Runners(net8.0-maccatalyst)'
+Before:
 							break;
 						case NotifyCollectionChangedAction.Remove:
 							foreach (TestCaseViewModel item in args.OldItems!)
 								_results.Remove(item);
+After:
+							}
+*/
+
+/* Unmerged change from project 'TestUtils.DeviceTests.Runners(net8.0-windows10.0.19041.0)'
+Before:
+							break;
+						case NotifyCollectionChangedAction.Remove:
+							foreach (TestCaseViewModel item in args.OldItems!)
+								_results.Remove(item);
+After:
+							}
+*/
+
+/* Unmerged change from project 'TestUtils.DeviceTests.Runners(net8.0-windows10.0.20348.0)'
+Before:
+							break;
+						case NotifyCollectionChangedAction.Remove:
+							foreach (TestCaseViewModel item in args.OldItems!)
+								_results.Remove(item);
+After:
+							}
+*/
+							}
+
+							break;
+						case NotifyCollectionChangedAction.Remove:
+							foreach (TestCaseViewModel item in args.OldItems!)
+							{
+								_results.Remove(item);
+							}
+
+							break;
+						case NotifyCollectionChangedAction.Remove:
+							foreach (TestCaseViewModel item in args.OldItems!)
+							{
+								_results.Remove(item);
+							}
+
 							break;
 						default:
 							throw new InvalidOperationException($"I can't work with {args.Action}");
@@ -188,7 +231,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		static bool IsTestFilterMatch(TestCaseViewModel test, FilterArgs query)
 		{
 			if (test == null)
+			{
 				throw new ArgumentNullException(nameof(test));
+			}
 
 			var state = query.State;
 			var pattern = query.Query;
@@ -204,7 +249,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			};
 
 			if (requiredTestState.HasValue && test.Result != requiredTestState.Value)
+			{
 				return false;
+			}
 
 			return
 				string.IsNullOrWhiteSpace(pattern) ||
@@ -240,7 +287,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		async void NavigateToResultExecute(TestCaseViewModel? testCase)
 		{
 			if (testCase == null)
+			{
 				return;
+			}
 
 			await _runner.RunAsync(testCase);
 

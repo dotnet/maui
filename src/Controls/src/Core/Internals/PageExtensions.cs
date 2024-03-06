@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			Element parent = page;
 			while (!Application.IsApplicationOrWindowOrNull(parent.RealParent))
+			{
 				parent = parent.RealParent;
+			}
 
 			return parent as Page;
 		}

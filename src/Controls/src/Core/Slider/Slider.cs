@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Controls
 		public Slider(double min, double max, double val) : this()
 		{
 			if (min >= max)
+			{
 				throw new ArgumentOutOfRangeException(nameof(min));
+			}
 
 			if (max > Minimum)
 			{

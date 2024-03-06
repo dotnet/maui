@@ -53,11 +53,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
+			{
 				UpdateItemsLayoutSpan();
+			}
 			else if (e.PropertyName == GridItemsLayout.HorizontalItemSpacingProperty.PropertyName || e.PropertyName == GridItemsLayout.VerticalItemSpacingProperty.PropertyName)
+			{
 				UpdateItemsLayoutItemSpacing();
+			}
 			else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
+			{
 				UpdateItemsLayoutItemSpacing();
+			}
 		}
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)

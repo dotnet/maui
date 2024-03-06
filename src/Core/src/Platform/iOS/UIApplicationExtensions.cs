@@ -11,16 +11,24 @@ namespace Microsoft.Maui.Platform
 			UIEdgeInsets safeAreaInsets;
 
 			if (!OperatingSystem.IsIOSVersionAtLeast(11))
+			{
 				safeAreaInsets = new UIEdgeInsets(UIApplication.SharedApplication.StatusBarFrame.Size.Height, 0, 0, 0);
+			}
 #pragma warning disable CA1422 // Validate platform compatibility
 			else if (application.GetKeyWindow() is UIWindow keyWindow)
+			{
 				safeAreaInsets = keyWindow.SafeAreaInsets;
+			}
 #pragma warning disable CA1416 // TODO: 'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later.
 			else if (application.Windows.Length > 0)
+			{
 				safeAreaInsets = application.Windows[0].SafeAreaInsets;
+			}
 #pragma warning restore CA1416
 			else
+			{
 				safeAreaInsets = UIEdgeInsets.Zero;
+			}
 #pragma warning restore CA1422 // Validate platform compatibility
 
 			return safeAreaInsets;
@@ -38,7 +46,9 @@ namespace Microsoft.Maui.Platform
 			{
 				var window = windows[i];
 				if (window.IsKeyWindow)
+				{
 					return window;
+				}
 			}
 
 			return null;
@@ -50,12 +60,18 @@ namespace Microsoft.Maui.Platform
 		public static IWindow? GetWindow(this UIWindow? platformWindow)
 		{
 			if (platformWindow is null)
+			{
+			{
 				return null;
+			}
+			}
 
 			foreach (var window in IPlatformApplication.Current?.Application?.Windows ?? Array.Empty<IWindow>())
 			{
 				if (window?.Handler?.PlatformView == platformWindow)
+				{
 					return window;
+				}
 			}
 
 			return null;
@@ -64,7 +80,9 @@ namespace Microsoft.Maui.Platform
 		public static IWindow? GetWindow(this UIWindowScene? windowScene)
 		{
 			if (windowScene is null)
+			{
 				return null;
+			}
 
 #pragma warning disable CA1416 // TODO: 'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later
 			foreach (var window in windowScene.Windows)
@@ -72,14 +90,22 @@ namespace Microsoft.Maui.Platform
 				var managedWindow = window.GetWindow();
 
 				if (managedWindow is not null)
+				{
 					return managedWindow;
+				}
 			}
 #pragma warning restore CA1416
 
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				return null;
+			}
 			else if (windowScene.Delegate is IUIWindowSceneDelegate sd)
+			{
+			{
 				return sd.GetWindow().GetWindow();
+			}
+			}
 
 			return null;
 		}

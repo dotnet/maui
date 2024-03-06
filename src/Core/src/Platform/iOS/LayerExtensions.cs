@@ -15,9 +15,13 @@ namespace Microsoft.Maui.Platform
 				var layer = control.Layer;
 
 				if (index > -1)
+				{
 					layer.InsertSublayer(backgroundLayer, index);
+				}
 				else
+				{
 					layer.AddSublayer(backgroundLayer);
+				}
 			}
 		}
 
@@ -26,7 +30,9 @@ namespace Microsoft.Maui.Platform
 			var layer = control.Layer;
 
 			if (layer == null)
+			{
 				return;
+			}
 
 			if (layer.Name == ViewExtensions.BackgroundLayerName)
 			{
@@ -35,7 +41,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (layer.Sublayers == null || layer.Sublayers.Length == 0)
+			{
 				return;
+			}
 
 			foreach (var subLayer in layer.Sublayers)
 			{

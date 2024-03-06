@@ -26,14 +26,21 @@ namespace Microsoft.Maui.Controls
 		protected override void OnPropertyChanged(string propertyName)
 		{
 			if (propertyName == StreamProperty.PropertyName)
+			{
 				OnSourceChanged();
+			}
+
 			base.OnPropertyChanged(propertyName);
 		}
 
 		async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken userToken)
 		{
 			if (IsEmpty)
+			{
+			{
 				return null;
+			}
+			}
 
 			OnLoadingStarted();
 			userToken.Register(CancellationTokenSource.Cancel);

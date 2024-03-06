@@ -62,7 +62,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
@@ -117,16 +119,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			}
 
 			if (e.PropertyName == Button.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateEnabled();
+			}
 			else if (e.PropertyName == FontElement.FontAttributesProperty.PropertyName
 					 || e.PropertyName == FontElement.FontAutoScalingEnabledProperty.PropertyName
 					 || e.PropertyName == FontElement.FontFamilyProperty.PropertyName
 					 || e.PropertyName == FontElement.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Button.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -135,7 +145,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		protected override void UpdateBackgroundColor()
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
 
 			_backgroundTracker?.UpdateDrawable();
 		}
@@ -162,7 +174,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			Font font = (button as ITextStyle).Font;
 
 			if (font == Font.Default && _defaultFontSize == 0f)
+			{
 				return;
+			}
 
 			if (_defaultFontSize == 0f)
 			{

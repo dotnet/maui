@@ -68,28 +68,44 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Context context;
 
 			if (Handler == null || !(_context.TryGetTarget(out context)) || !PlatformView.IsAlive())
+			{
 				return Graphics.Size.Zero;
+			}
 
 			if (View?.Handler == null)
+			{
 				return Graphics.Size.Zero;
+			}
 
 			var layoutParams = PlatformView.LayoutParameters;
 
 			if (height > maxHeight)
+			{
 				heightMeasureSpec = MeasureSpecMode.AtMost.MakeMeasureSpec(maxHeight.Value);
+			}
 
 			if (width > maxWidth)
+			{
 				widthMeasureSpec = MeasureSpecMode.AtMost.MakeMeasureSpec(maxWidth.Value);
+			}
 
 			if (layoutParams.Width != LP.MatchParent && width > 0)
+			{
 				layoutParams.Width = width;
+			}
 			else
+			{
 				widthMeasureSpec = MeasureSpecMode.Unspecified.MakeMeasureSpec(0);
+			}
 
 			if (layoutParams.Height != LP.MatchParent && height > 0)
+			{
 				layoutParams.Height = height;
+			}
 			else
+			{
 				heightMeasureSpec = MeasureSpecMode.Unspecified.MakeMeasureSpec(0);
+			}
 
 			PlatformView.LayoutParameters = layoutParams;
 
@@ -99,7 +115,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public void OnViewSet(IView view)
 		{
 			if (view == View)
+			{
 				return;
+			}
 
 			if (View != null && PlatformView.IsAlive())
 			{
@@ -113,7 +131,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Context context;
 
 				if (!(_context.TryGetTarget(out context)))
+				{
 					return;
+				}
 
 				PlatformView = view.ToPlatform(_mauiContext);
 				Handler = view.Handler;

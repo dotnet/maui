@@ -28,9 +28,15 @@ namespace Microsoft.Maui.Controls.Xaml
 		public override bool Equals(object obj)
 		{
 			if (obj == null)
+			{
 				return false;
+			}
+
 			if (obj.GetType() != typeof(XmlName))
+			{
 				return false;
+			}
+
 			var other = (XmlName)obj;
 			return NamespaceURI == other.NamespaceURI && LocalName == other.LocalName;
 		}
@@ -50,9 +56,14 @@ namespace Microsoft.Maui.Controls.Xaml
 					hashCode = (hashCode * 397) ^ LocalName.GetHashCode();
 #else
 				if (NamespaceURI != null)
+				{
 					hashCode = NamespaceURI.GetHashCode(StringComparison.Ordinal);
+				}
+
 				if (LocalName != null)
+				{
 					hashCode = (hashCode * 397) ^ LocalName.GetHashCode(StringComparison.Ordinal);
+				}
 #endif
 				return hashCode;
 			}

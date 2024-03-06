@@ -70,7 +70,9 @@ namespace Microsoft.Maui.Platform
 			_graphicsView?.MoveHoverInteraction(points);
 
 			if (_isTouching)
+			{
 				_graphicsView?.DragInteraction(points);
+			}
 		}
 
 		protected override void OnPointerPressed(PointerRoutedEventArgs e)

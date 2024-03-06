@@ -102,12 +102,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			base.OnHiddenChanged(hidden);
 
 			if (Page == null)
+			{
 				return;
+			}
 
 			if (hidden)
+			{
 				PageController?.SendDisappearing();
+			}
 			else
+			{
 				PageController?.SendAppearing();
+			}
 		}
 
 		public override void OnPause()
@@ -116,7 +122,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			bool shouldSendEvent = Application.Current.OnThisPlatform().GetSendDisappearingEventOnPause();
 			if (shouldSendEvent)
+			{
 				SendLifecycleEvent(false);
+			}
 
 			base.OnPause();
 		}
@@ -127,7 +135,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			bool shouldSendEvent = Application.Current.OnThisPlatform().GetSendAppearingEventOnResume();
 			if (shouldSendEvent)
+			{
 				SendLifecycleEvent(true);
+			}
 
 			base.OnResume();
 		}
@@ -139,12 +149,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			Page currentPage = pageContainer?.CurrentPage;
 
 			if (!(currentPage == null || currentPage == PageController))
+			{
 				return;
+			}
 
 			if (isAppearing && _isVisible)
+			{
 				PageController?.SendAppearing();
+			}
 			else if (!isAppearing)
+			{
 				PageController?.SendDisappearing();
+			}
 		}
 	}
 }

@@ -79,19 +79,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			if (Element == null)
+			{
 				return;
+			}
 
 			if (_defaultAutomationPropertiesLabeledBy == null)
+			{
 				_defaultAutomationPropertiesLabeledBy = (UIElement)Control.GetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.LabeledByProperty);
+			}
 
 			var elemValue = (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty);
 			var renderer = elemValue?.GetOrCreateRenderer();
 			var nativeElement = renderer?.GetNativeElement();
 
 			if (nativeElement != null)
+			{
 				Control.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, nativeElement);
+			}
 			else
+			{
 				Control.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
+			}
 		}
 
 		[PortHandler]

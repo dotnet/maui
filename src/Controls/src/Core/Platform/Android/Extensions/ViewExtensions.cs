@@ -27,7 +27,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static bool SetElevation(this AView view, float value)
 		{
 			if (!view.IsAlive())
+			{
 				return false;
+			}
 
 			view.Elevation = value;
 			return true;
@@ -36,7 +38,9 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static void MaybeRequestLayout(this AView view)
 		{
 			if (!view.IsInLayout && !view.IsLayoutRequested)
+			{
 				view.RequestLayout();
+			}
 		}
 	}
 }

@@ -104,11 +104,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ContentView.ContentProperty.PropertyName)
+			{
 				UpdateContent();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsSwipeEnabled();
+			}
 			else if (e.PropertyName == Specifics.SwipeTransitionModeProperty.PropertyName)
+			{
 				UpdateSwipeTransitionMode();
+			}
 		}
 
 		protected override Size MinimumSize() => new Size(40, 40);
@@ -116,9 +122,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void UpdateBackgroundColor()
 		{
 			if (Element.BackgroundColor != null)
+			{
 				SetBackgroundColor(Element.BackgroundColor.ToAndroid());
+			}
 			else
+			{
 				Control?.SetWindowBackground();
+			}
 		}
 
 		protected override void UpdateBackground()
@@ -126,7 +136,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Brush background = Element.Background;
 
 			if (Brush.IsNullOrEmpty(background))
+			{
 				return;
+			}
 
 			this.UpdateBackground(background);
 		}
@@ -136,7 +148,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnAttachedToWindow();
 
 			if (Control != null && Control.Parent != null && _viewPagerParent == null)
+			{
 				_viewPagerParent = Control.Parent.GetParentOfType<FormsViewPager>();
+			}
 
 			if (Element != null && _scrollParent == null)
 			{
@@ -168,7 +182,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -181,13 +197,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_scrollParent != null)
 				{
 					if (_scrollParent is ScrollView scrollView)
+					{
 						scrollView.Scrolled -= OnParentScrolled;
+					}
 
 					if (_scrollParent is ListView listView)
+					{
 						listView.Scrolled -= OnParentScrolled;
+					}
 
 					if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
+					{
 						collectionView.Scrolled -= OnParentScrolled;
+					}
 				}
 
 				if (_contentView != null)
@@ -221,7 +243,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnTouchEvent(e);
 
 			if (e.Action == MotionEventActions.Move && !ShouldInterceptTouch(e))
+			{
 				return true;
+			}
 
 			ProcessSwipingInteractions(e);
 
@@ -231,7 +255,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool ShouldInterceptTouch(MotionEvent e)
 		{
 			if (_initialPoint == null)
+			{
 				return false;
+			}
 
 			var interceptPoint = new Point(e.GetX() / _density, e.GetY() / _density);
 
@@ -241,14 +267,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SwipeDirection swipeDirection;
 
 			if (Math.Abs(diffX) > Math.Abs(diffY))
+			{
 				swipeDirection = diffX > 0 ? SwipeDirection.Right : SwipeDirection.Left;
+			}
 			else
+			{
 				swipeDirection = diffY > 0 ? SwipeDirection.Down : SwipeDirection.Up;
+			}
 
 			var items = GetSwipeItemsByDirection(swipeDirection);
 
 			if (items == null || items.Count == 0)
+			{
 				return false;
+			}
 
 			return ShouldInterceptScrollChildrenTouch(swipeDirection);
 		}
@@ -256,7 +288,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool ShouldInterceptScrollChildrenTouch(SwipeDirection swipeDirection)
 		{
 			if (!(_contentView is ViewGroup viewGroup))
+			{
 				return false;
+			}
 
 			int x = (int)(_initialPoint.X * _density);
 			int y = (int)(_initialPoint.Y * _density);
@@ -270,16 +304,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (IsViewInBounds(child, x, y))
 				{
 					if (child is AbsListView absListView)
+					{
 						return ShouldInterceptScrollChildrenTouch(absListView, isHorizontal);
+					}
 
 					if (child is RecyclerView recyclerView)
+					{
 						return ShouldInterceptScrollChildrenTouch(recyclerView, isHorizontal);
+					}
 
 					if (child is NestedScrollView scrollView)
+					{
 						return ShouldInterceptScrollChildrenTouch(scrollView, isHorizontal);
+					}
 
 					if (child is AWebView webView)
+					{
 						return ShouldInterceptScrollChildrenTouch(webView, isHorizontal);
+					}
 				}
 			}
 
@@ -293,9 +335,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (scrollViewContent != null)
 			{
 				if (isHorizontal)
+				{
 					return scrollView.ScrollX == 0 || scrollView.Width == scrollViewContent.Width + scrollView.PaddingLeft + scrollView.PaddingRight;
+				}
 				else
+				{
 					return scrollView.ScrollY == 0 || scrollView.Height == scrollViewContent.Height + scrollView.PaddingTop + scrollView.PaddingBottom;
+				}
 			}
 
 			return true;
@@ -331,7 +377,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var touchUpPoint = new APointF(e.GetX() / _density, e.GetY() / _density);
 
 				if (CanProcessTouchSwipeItems(touchUpPoint))
+				{
 					ProcessTouchSwipeItems(touchUpPoint);
+				}
 				else
 				{
 					ResetSwipe(e);
@@ -350,7 +398,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// When doing touch up, if the SwipeView is closed, we propagate the Touch to the parent. In this way, the parent
 			// element will manage the touch (SelectionChanged, etc.).
 			if (itemContentView != null && !((ISwipeViewController)Element).IsOpen)
+			{
 				itemContentView.ClickOn();
+			}
 		}
 
 		void UpdateContent()
@@ -363,9 +413,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (Element.Content == null)
+			{
 				_contentView = CreateEmptyContent();
+			}
 			else
+			{
 				_contentView = CreateContent();
+			}
 
 			AddView(_contentView);
 		}
@@ -389,7 +443,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		SwipeItems GetSwipeItemsByDirection()
 		{
 			if (_swipeDirection.HasValue)
+			{
 				return GetSwipeItemsByDirection(_swipeDirection.Value);
+			}
 
 			return null;
 		}
@@ -438,14 +494,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					handled = HandleTouchInteractions(GestureStatus.Started, point);
 
 					if (handled == true)
+					{
 						Parent.RequestDisallowInterceptTouchEvent(true);
+					}
 
 					break;
 				case MotionEventActions.Up:
 					handled = HandleTouchInteractions(GestureStatus.Completed, point);
 
 					if (Parent == null)
+					{
 						break;
+					}
 
 					Parent.RequestDisallowInterceptTouchEvent(false);
 					break;
@@ -453,7 +513,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					handled = HandleTouchInteractions(GestureStatus.Running, point);
 
 					if (handled == true || Parent == null)
+					{
 						break;
+					}
 
 					Parent.RequestDisallowInterceptTouchEvent(true);
 					break;
@@ -461,14 +523,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					handled = HandleTouchInteractions(GestureStatus.Canceled, point);
 
 					if (Parent == null)
+					{
 						break;
+					}
 
 					Parent.RequestDisallowInterceptTouchEvent(false);
 					break;
 			}
 
 			if (handled.HasValue)
+			{
 				return !handled.Value;
+			}
 
 			return false;
 		}
@@ -476,7 +542,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool HandleTouchInteractions(GestureStatus status, APointF point)
 		{
 			if (!_isSwipeEnabled)
+			{
 				return false;
+			}
 
 			switch (status)
 			{
@@ -498,7 +566,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool ProcessTouchDown(APointF point)
 		{
 			if (_isSwiping || _isTouchDown || _contentView == null)
+			{
 				return false;
+			}
 
 			_initialPoint = point;
 			_isTouchDown = true;
@@ -509,7 +579,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool ProcessTouchMove(APointF point)
 		{
 			if (_contentView == null || !TouchInsideContent(point))
+			{
 				return false;
+			}
 
 			if (!_isOpen)
 			{
@@ -527,7 +599,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (!ValidateSwipeDirection() || _isResettingSwipe)
+			{
 				return false;
+			}
 
 			EnableParentGesture(false);
 			_swipeOffset = GetSwipeOffset(_initialPoint, point);
@@ -536,7 +610,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdateSwipeItems();
 
 			if (Math.Abs(_swipeOffset) > double.Epsilon)
+			{
 				Swipe();
+			}
 
 			RaiseSwipeChanging();
 
@@ -550,14 +626,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EnableParentGesture(true);
 
 			if (!_isSwiping)
+			{
 				return false;
+			}
 
 			_isSwiping = false;
 
 			RaiseSwipeEnded();
 
 			if (_isResettingSwipe || !ValidateSwipeDirection())
+			{
 				return false;
+			}
 
 			ValidateSwipeThreshold();
 
@@ -569,10 +649,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// We only invoke the SwipeItem command if we tap on the SwipeItems area
 			// and the SwipeView is fully open.
 			if (TouchInsideContent(point))
+			{
 				return false;
+			}
 
 			if (_swipeOffset == _swipeThreshold)
+			{
 				return true;
+			}
 
 			return false;
 		}
@@ -580,7 +664,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool TouchInsideContent(APointF point)
 		{
 			if (_contentView == null)
+			{
 				return false;
+			}
 
 			bool touchContent = TouchInsideContent(_contentView.Left + _contentView.TranslationX, _contentView.Top + _contentView.TranslationY, _contentView.Width, _contentView.Height, _context.ToPixels(point.X), _context.ToPixels(point.Y));
 
@@ -590,7 +676,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool TouchInsideContent(double x1, double y1, double x2, double y2, double x, double y)
 		{
 			if (x > x1 && x < (x1 + x2) && y > y1 && y < (y1 + y2))
+			{
 				return true;
+			}
 
 			return false;
 		}
@@ -598,7 +686,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool ValidateSwipeDirection()
 		{
 			if (_swipeDirection == null)
+			{
 				return false;
+			}
 
 			var swipeItems = GetSwipeItemsByDirection();
 			return IsValidSwipeItems(swipeItems);
@@ -621,7 +711,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (swipeOffset == 0)
+			{
 				swipeOffset = GetSwipeContentOffset();
+			}
 
 			return swipeOffset;
 		}
@@ -651,17 +743,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateSwipeItems()
 		{
 			if (_contentView == null || _actionView != null)
+			{
 				return;
+			}
 
 			SwipeItems items = GetSwipeItemsByDirection();
 
 			if (items == null || items.Count == 0)
+			{
 				return;
+			}
 
 			_actionView = new LinearLayoutCompat(_context);
 
 			using (var layoutParams = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent))
+			{
 				_actionView.LayoutParameters = layoutParams;
+			}
 
 			_actionView.Orientation = LinearLayoutCompat.Horizontal;
 
@@ -704,12 +802,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void LayoutSwipeItems(List<AView> childs)
 		{
 			if (_actionView == null || childs == null)
+			{
 				return;
+			}
 
 			var items = GetSwipeItemsByDirection();
 
 			if (items == null || items.Count == 0)
+			{
 				return;
+			}
 
 			int i = 0;
 			int previousWidth = 0;
@@ -762,7 +864,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateIsVisibleSwipeItem(ISwipeItem item)
 		{
 			if (!_isOpen)
+			{
 				return;
+			}
 
 			_swipeItems.TryGetValue(item, out object view);
 
@@ -771,10 +875,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				bool hidden = false;
 
 				if (item is SwipeItem swipeItem)
+				{
 					hidden = !swipeItem.IsVisible;
+				}
 
 				if (item is SwipeItemView swipeItemView)
+				{
 					hidden = !swipeItemView.IsVisible;
+				}
 
 				_swipeThreshold = 0;
 				nativeView.Visibility = hidden ? ViewStates.Gone : ViewStates.Visible;
@@ -788,7 +896,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var swipeItems = new List<AView>();
 
 			for (int i = 0; i < _actionView.ChildCount; i++)
+			{
 				swipeItems.Add(_actionView.GetChildAt(i));
+			}
 
 			return swipeItems;
 		}
@@ -802,7 +912,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			};
 
 			if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
+			{
 				swipeButton.ContentDescription = formsSwipeItem.AutomationId;
+			}
 
 			var textColor = GetSwipeItemColor(formsSwipeItem.BackgroundColor);
 			swipeButton.SetTextColor(textColor.ToAndroid());
@@ -845,7 +957,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			swipeButton.Visibility = formsSwipeItem.IsVisible ? ViewStates.Visible : ViewStates.Gone;
 
 			if (!string.IsNullOrEmpty(formsSwipeItem.AutomationId))
+			{
 				swipeButton.ContentDescription = formsSwipeItem.AutomationId;
+			}
 
 			return swipeButton;
 		}
@@ -875,9 +989,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateSwipeTransitionMode()
 		{
 			if (Element.IsSet(Specifics.SwipeTransitionModeProperty))
+			{
 				_swipeTransitionMode = Element.OnThisPlatform().GetSwipeTransitionMode();
+			}
 			else
+			{
 				_swipeTransitionMode = SwipeTransitionMode.Reveal;
+			}
 		}
 
 		Color GetSwipeItemColor(Color backgroundColor)
@@ -892,15 +1010,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var items = GetSwipeItemsByDirection();
 
 			if (items == null)
+			{
 				return;
+			}
 
 			foreach (var item in items)
 			{
 				if (item is SwipeItem formsSwipeItem)
+				{
 					formsSwipeItem.PropertyChanged -= OnSwipeItemPropertyChanged;
+				}
 
 				if (item is SwipeItemView formsSwipeItemView)
+				{
 					formsSwipeItemView.PropertyChanged -= OnSwipeItemPropertyChanged;
+				}
 			}
 		}
 
@@ -986,14 +1110,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var touchPoint = new APointF(e.GetX() / _density, e.GetY() / _density);
 
 				if (TouchInsideContent(touchPoint))
+				{
 					ResetSwipe(animated);
+				}
 			}
 		}
 
 		void ResetSwipe(bool animated = true)
 		{
 			if (_contentView == null)
+			{
 				return;
+			}
 
 			_isResettingSwipe = true;
 			_isSwiping = false;
@@ -1011,7 +1139,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						_contentView.Animate().TranslationX(0).SetDuration(SwipeAnimationDuration).WithEndAction(new Java.Lang.Runnable(() =>
 						{
 							if (_swipeDirection == null)
+							{
 								DisposeSwipeItems();
+							}
 
 							_isResettingSwipe = false;
 						}));
@@ -1024,7 +1154,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						_contentView.Animate().TranslationY(0).SetDuration(SwipeAnimationDuration).WithEndAction(new Java.Lang.Runnable(() =>
 						{
 							if (_swipeDirection == null)
+							{
 								DisposeSwipeItems();
+							}
 
 							_isResettingSwipe = false;
 						}));
@@ -1106,43 +1238,71 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				case SwipeDirection.Left:
 					if (offset > 0)
+					{
 						offset = 0;
+					}
 
 					if (_isResettingSwipe && offset < 0)
+					{
 						offset = 0;
+					}
 
 					if (Math.Abs(offset) > swipeThreshold)
+					{
 						return -swipeThreshold;
+					}
+
 					break;
 				case SwipeDirection.Right:
 					if (offset < 0)
+					{
 						offset = 0;
+					}
 
 					if (_isResettingSwipe && offset > 0)
+					{
 						offset = 0;
+					}
 
 					if (Math.Abs(offset) > swipeThreshold)
+					{
 						return swipeThreshold;
+					}
+
 					break;
 				case SwipeDirection.Up:
 					if (offset > 0)
+					{
 						offset = 0;
+					}
 
 					if (_isResettingSwipe && offset < 0)
+					{
 						offset = 0;
+					}
 
 					if (Math.Abs(offset) > swipeThreshold)
+					{
 						return -swipeThreshold;
+					}
+
 					break;
 				case SwipeDirection.Down:
 					if (offset < 0)
+					{
 						offset = 0;
+					}
 
 					if (_isResettingSwipe && offset > 0)
+					{
 						offset = 0;
+					}
 
 					if (Math.Abs(offset) > swipeThreshold)
+					{
 						return swipeThreshold;
+					}
+
 					break;
 			}
 
@@ -1152,7 +1312,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void ValidateSwipeThreshold()
 		{
 			if (_swipeDirection == null)
+			{
 				return;
+			}
 
 			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
 
@@ -1161,35 +1323,49 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var swipeItems = GetSwipeItemsByDirection();
 
 				if (swipeItems == null)
+				{
 					return;
+				}
 
 				if (swipeItems.Mode == SwipeMode.Execute)
 				{
 					foreach (var swipeItem in swipeItems)
 					{
 						if (swipeItem.IsVisible)
+						{
 							ExecuteSwipeItem(swipeItem);
+						}
 					}
 
 					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
+					{
 						ResetSwipe();
+					}
 				}
 				else
+				{
 					SwipeToThreshold();
+				}
 			}
 			else
+			{
 				ResetSwipe();
+			}
 		}
 
 		float GetSwipeThreshold()
 		{
 			if (Math.Abs(_swipeThreshold) > double.Epsilon)
+			{
 				return _swipeThreshold;
+			}
 
 			var swipeItems = GetSwipeItemsByDirection();
 
 			if (swipeItems == null)
+			{
 				return 0;
+			}
 
 			_swipeThreshold = GetSwipeThreshold(swipeItems);
 
@@ -1201,7 +1377,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			double threshold = Element.Threshold;
 
 			if (threshold > 0)
+			{
 				return (float)threshold;
+			}
 
 			float swipeThreshold = 0;
 
@@ -1221,10 +1399,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					}
 				}
 				else
+				{
 					swipeThreshold = GetSwipeItemHeight();
+				}
 			}
 			else
+			{
 				swipeThreshold = CalculateSwipeThreshold();
+			}
 
 			return ValidateSwipeThreshold(swipeThreshold);
 		}
@@ -1240,7 +1422,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			foreach (var swipeItem in swipeItems)
 			{
 				if (swipeItem is SwipeItemView)
+				{
 					useSwipeItemsSize = true;
+				}
 
 				if (swipeItem.IsVisible)
 				{
@@ -1282,16 +1466,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			foreach (var swipeItem in swipeItems)
 			{
 				if (swipeItem is SwipeItemView)
+				{
 					hasSwipeItemView = true;
+				}
 
 				if (swipeItem.IsVisible)
 				{
 					var swipeItemSize = GetSwipeItemSize(swipeItem);
 
 					if (isHorizontal)
+					{
 						swipeItemsSize += (float)swipeItemSize.Width;
+					}
 					else
+					{
 						swipeItemsSize += (float)swipeItemSize.Height;
+					}
 				}
 			}
 
@@ -1325,13 +1515,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (isHorizontal)
 			{
 				if (swipeThreshold > contentWidth)
+				{
 					swipeThreshold = contentWidth;
+				}
 
 				return swipeThreshold;
 			}
 
 			if (swipeThreshold > contentHeight)
+			{
 				swipeThreshold = contentHeight;
+			}
 
 			return swipeThreshold;
 		}
@@ -1359,9 +1553,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					double swipeItemWidth;
 
 					if (swipeItemViewSizeRequest.Request.Width > 0)
+					{
 						swipeItemWidth = threshold > swipeItemViewSizeRequest.Request.Width ? threshold : (float)swipeItemViewSizeRequest.Request.Width;
+					}
 					else
+					{
 						swipeItemWidth = threshold > SwipeItemWidth ? threshold : SwipeItemWidth;
+					}
 
 					return new Size(swipeItemWidth, contentHeight);
 				}
@@ -1381,9 +1579,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					double swipeItemHeight;
 
 					if (swipeItemViewSizeRequest.Request.Width > 0)
+					{
 						swipeItemHeight = threshold > swipeItemViewSizeRequest.Request.Height ? threshold : (float)swipeItemViewSizeRequest.Request.Height;
+					}
 					else
+					{
 						swipeItemHeight = threshold > contentHeight ? threshold : contentHeight;
+					}
 
 					return new Size(contentWidth / items.Count, swipeItemHeight);
 				}
@@ -1419,12 +1621,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void ProcessTouchSwipeItems(APointF point)
 		{
 			if (_isResettingSwipe)
+			{
 				return;
+			}
 
 			var swipeItems = GetSwipeItemsByDirection();
 
 			if (swipeItems == null || _actionView == null)
+			{
 				return;
+			}
 
 			for (int i = 0; i < _actionView.ChildCount; i++)
 			{
@@ -1444,7 +1650,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						ExecuteSwipeItem(swipeItem);
 
 						if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
+						{
 							ResetSwipe();
+						}
 
 						break;
 					}
@@ -1455,30 +1663,42 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void ExecuteSwipeItem(ISwipeItem item)
 		{
 			if (item == null)
+			{
 				return;
+			}
 
 			bool isEnabled = true;
 
 			if (item is SwipeItem swipeItem)
+			{
 				isEnabled = swipeItem.IsEnabled;
+			}
 
 			if (item is SwipeItemView swipeItemView)
+			{
 				isEnabled = swipeItemView.IsEnabled;
+			}
 
 			if (isEnabled)
+			{
 				item.OnInvoked();
+			}
 		}
 
 		void EnableParentGesture(bool isGestureEnabled)
 		{
 			if (_viewPagerParent != null)
+			{
 				_viewPagerParent.EnableGesture = isGestureEnabled;
+			}
 		}
 
 		void OnOpenRequested(object sender, OpenRequestedEventArgs e)
 		{
 			if (_contentView == null)
+			{
 				return;
+			}
 
 			var openSwipeItem = e.OpenSwipeItem;
 			var animated = e.Animated;
@@ -1491,7 +1711,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (_isOpen)
 			{
 				if (_previousOpenSwipeItem == openSwipeItem)
+				{
 					return;
+				}
 
 				ResetSwipe(false);
 			}
@@ -1517,7 +1739,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var swipeItems = GetSwipeItemsByDirection();
 
 			if (swipeItems.Count == 0)
+			{
 				return;
+			}
 
 			var swipeThreshold = GetSwipeThreshold();
 			UpdateOffset(swipeThreshold);
@@ -1546,9 +1770,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateIsOpen(bool isOpen)
 		{
 			if (Element == null)
+			{
 				return;
-
-			((ISwipeViewController)Element).IsOpen = isOpen;
+			} ((ISwipeViewController)Element).IsOpen = isOpen;
 		}
 
 		void OnCloseRequested(object sender, CloseRequestedEventArgs e)
@@ -1564,7 +1788,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var verticalDelta = e.ScrollY - _previousScrollY;
 
 			if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
+			{
 				ResetSwipe();
+			}
 
 			_previousScrollX = e.ScrollX;
 			_previousScrollY = e.ScrollY;
@@ -1573,13 +1799,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void OnParentScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
 			if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
+			{
 				ResetSwipe();
+			}
 		}
 
 		void RaiseSwipeStarted()
 		{
 			if (_swipeDirection == null || !ValidateSwipeDirection())
+			{
 				return;
+			}
 
 			var swipeStartedEventArgs = new SwipeStartedEventArgs(_swipeDirection.Value);
 			((ISwipeViewController)Element).SendSwipeStarted(swipeStartedEventArgs);
@@ -1588,7 +1818,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void RaiseSwipeChanging()
 		{
 			if (_swipeDirection == null)
+			{
 				return;
+			}
 
 			var swipeChangingEventArgs = new SwipeChangingEventArgs(_swipeDirection.Value, _swipeOffset);
 			((ISwipeViewController)Element).SendSwipeChanging(swipeChangingEventArgs);
@@ -1597,14 +1829,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void RaiseSwipeEnded()
 		{
 			if (_swipeDirection == null || !ValidateSwipeDirection())
+			{
 				return;
+			}
 
 			bool isOpen = false;
 
 			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
 
 			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
+			{
 				isOpen = true;
+			}
 
 			var swipeEndedEventArgs = new SwipeEndedEventArgs(_swipeDirection.Value, isOpen);
 			((ISwipeViewController)Element).SendSwipeEnded(swipeEndedEventArgs);

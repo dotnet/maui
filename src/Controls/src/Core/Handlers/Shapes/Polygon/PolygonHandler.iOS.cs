@@ -9,7 +9,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override void ConnectHandler(MauiShapeView nativeView)
 		{
 			if (VirtualView is Polygon polygon)
+			{
 				polygon.Points.CollectionChanged += OnPointsCollectionChanged;
+			}
 
 			base.ConnectHandler(nativeView);
 		}
@@ -17,7 +19,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override void DisconnectHandler(MauiShapeView nativeView)
 		{
 			if (VirtualView is Polygon polygon)
+			{
 				polygon.Points.CollectionChanged -= OnPointsCollectionChanged;
+			}
 
 			base.DisconnectHandler(nativeView);
 		}
@@ -37,10 +41,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			IDrawable drawable = handler.PlatformView?.Drawable;
 
 			if (drawable == null)
+			{
 				return;
+			}
 
 			if (drawable is ShapeDrawable shapeDrawable)
+			{
 				shapeDrawable.UpdateWindingMode(polygon.FillRule == FillRule.EvenOdd ? WindingMode.EvenOdd : WindingMode.NonZero);
+			}
 
 			handler.PlatformView?.InvalidateShape(polygon);
 		}

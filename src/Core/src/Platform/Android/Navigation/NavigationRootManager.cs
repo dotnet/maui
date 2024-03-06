@@ -130,7 +130,9 @@ namespace Microsoft.Maui.Platform
 
 			var context = _mauiContext.Context;
 			if (context is null)
+			{
 				return;
+			}
 
 			if (view is null)
 			{
@@ -141,7 +143,9 @@ namespace Microsoft.Maui.Platform
 							.RunOrWaitForResume(context, fm =>
 							{
 								if (_viewFragment is null)
+								{
 									return;
+								}
 
 								fm
 									.BeginTransaction()
@@ -154,7 +158,9 @@ namespace Microsoft.Maui.Platform
 				}
 
 				if (FragmentManager.IsDestroyed(context))
+				{
 					_viewFragment = null;
+				}
 			}
 			else
 			{

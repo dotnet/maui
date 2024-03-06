@@ -51,7 +51,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				(oldValue as Geometry).PropertyChanged -= (bindable as Path).OnGeometryPropertyChanged;
 
 				if (oldValue is PathGeometry pathGeometry)
+				{
 					pathGeometry.InvalidatePathGeometryRequested -= (bindable as Path).OnInvalidatePathGeometryRequested;
+				}
 			}
 
 			if (newValue != null)
@@ -59,7 +61,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				(newValue as Geometry).PropertyChanged += (bindable as Path).OnGeometryPropertyChanged;
 
 				if (newValue is PathGeometry pathGeometry)
+				{
 					pathGeometry.InvalidatePathGeometryRequested += (bindable as Path).OnInvalidatePathGeometryRequested;
+				}
 			}
 		}
 
@@ -110,7 +114,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			var path = new PathF();
 
 			if (Data != null)
+			{
 				Data.AppendPath(path);
+			}
 
 			return path;
 		}

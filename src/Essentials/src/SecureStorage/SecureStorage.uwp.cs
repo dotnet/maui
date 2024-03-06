@@ -27,7 +27,9 @@ namespace Microsoft.Maui.Storage
 			var encBytes = await _secureStorage.GetAsync(key);
 
 			if (encBytes == null)
+			{
 				return null;
+			}
 
 			var provider = new DataProtectionProvider();
 
@@ -100,7 +102,11 @@ namespace Microsoft.Maui.Storage
 		{
 			var localSettings = ApplicationData.Current.LocalSettings;
 			if (!localSettings.Containers.ContainsKey(name))
+			{
+			{
 				localSettings.CreateContainer(name, ApplicationDataCreateDisposition.Always);
+			}
+
 			return localSettings.Containers[name];
 		}
 	}
@@ -119,7 +125,9 @@ namespace Microsoft.Maui.Storage
 		void Load()
 		{
 			if (!File.Exists(AppSecureStoragePath))
+			{
 				return;
+			}
 
 			try
 			{
@@ -133,7 +141,9 @@ namespace Microsoft.Maui.Storage
 				{
 					_secureStorage.Clear();
 					foreach (var pair in readPreferences)
+					{
 						_secureStorage.TryAdd(pair.Key, pair.Value);
+					}
 				}
 			}
 			catch (JsonException)
@@ -162,9 +172,14 @@ namespace Microsoft.Maui.Storage
 		public Task SetAsync(string key, byte[] value)
 		{
 			if (value is null)
+			{
 				_secureStorage.TryRemove(key, out _);
+			}
 			else
+			{
 				_secureStorage[key] = value;
+			}
+
 			Save();
 			return Task.CompletedTask;
 		}

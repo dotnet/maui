@@ -40,12 +40,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override void OnPageStarted(WView view, string url, Bitmap favicon)
 		{
 			if (_renderer?.Element == null || string.IsNullOrWhiteSpace(url) || url == WebViewRenderer.AssetBaseUrl)
+			{
 				return;
+			}
 
 			_renderer.SyncNativeCookiesToElement(url);
 			var cancel = false;
 			if (!url.Equals(_renderer.UrlCanceled, StringComparison.OrdinalIgnoreCase))
+			{
 				cancel = SendNavigatingCanceled(url);
+			}
+
 			_renderer.UrlCanceled = null;
 
 			if (cancel)
@@ -64,7 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override void OnPageFinished(WView view, string url)
 		{
 			if (_renderer?.Element == null || url == WebViewRenderer.AssetBaseUrl)
+			{
 				return;
+			}
 
 			var source = new UrlWebViewSource { Url = url };
 			_renderer.IgnoreSourceChanges = true;
@@ -96,7 +103,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				_navigationResult = WebNavigationResult.Failure;
 				if (errorCode == ClientError.Timeout)
+				{
 					_navigationResult = WebNavigationResult.Timeout;
+				}
 			}
 #pragma warning disable 618
 #pragma warning disable CA1416, CA1422 // Validate platform compatibility
@@ -113,7 +122,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				_navigationResult = WebNavigationResult.Failure;
 				if (error.ErrorCode == ClientError.Timeout)
+				{
 					_navigationResult = WebNavigationResult.Timeout;
+				}
 			}
 			base.OnReceivedError(view, request, error);
 		}
@@ -123,7 +134,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			base.Dispose(disposing);
 			if (disposing)
+			{
 				_renderer = null;
+			}
 		}
 	}
 }

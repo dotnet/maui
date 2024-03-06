@@ -70,7 +70,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementChanged(e);
 
 			if (e.NewElement == null)
+			{
 				return;
+			}
 
 			if (Control == null)
 			{
@@ -136,15 +138,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateCharacterSpacing();
 			}
 			else if (e.PropertyName == DatePicker.MinimumDateProperty.PropertyName)
+			{
 				UpdateMinimumDate();
+			}
 			else if (e.PropertyName == DatePicker.MaximumDateProperty.PropertyName)
+			{
 				UpdateMaximumDate();
+			}
 			else if (e.PropertyName == DatePicker.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == DatePicker.TextColorProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 			else if (e.PropertyName == DatePicker.FontAttributesProperty.PropertyName ||
 					 e.PropertyName == DatePicker.FontFamilyProperty.PropertyName || e.PropertyName == DatePicker.FontSizeProperty.PropertyName)
 			{
@@ -177,7 +189,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateDateFromModel(bool animate)
 		{
 			if (_picker.Date.ToDateTime().Date != Element.Date.Date)
+			{
 				_picker.SetDate(Element.Date.ToNSDate(), animate);
+			}
 
 			// Can't use Element.Format because it won't display the correct format if the region and language are set differently
 			if (string.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d", StringComparison.OrdinalIgnoreCase))
@@ -231,7 +245,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (textAttr != null)
+			{
 				Control.AttributedText = textAttr;
+			}
 		}
 
 		[PortHandler]
@@ -252,9 +268,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var textColor = Element.TextColor;
 
 			if (textColor == null || (!Element.IsEnabled && _useLegacyColorManagement))
+			{
 				Control.TextColor = _defaultTextColor;
+			}
 			else
+			{
 				Control.TextColor = textColor.ToPlatform();
+			}
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
 			Control.Text = Control.Text;
@@ -263,7 +283,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 

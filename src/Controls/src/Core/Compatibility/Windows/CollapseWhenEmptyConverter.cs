@@ -12,10 +12,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var s = value as string;
 			if (s != null)
+			{
 				length = s.Length;
+			}
 
 			if (value is int)
+			{
 				length = (int)value;
+			}
 
 			return length > 0 ? WVisibility.Visible : WVisibility.Collapsed;
 		}

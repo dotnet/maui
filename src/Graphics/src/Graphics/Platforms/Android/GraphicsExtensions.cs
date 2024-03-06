@@ -347,7 +347,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var pattern = patternPaint?.Pattern;
 			if (pattern == null)
+			{
+			{
 				return null;
+			}
 
 			using (var context = new PlatformBitmapExportContext((int)(pattern.Width * scale), (int)(pattern.Height * scale), scale, disposeBitmap: false))
 			{
@@ -365,7 +368,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var pattern = patternPaint?.Pattern;
 			if (pattern == null)
+			{
+			{
 				return null;
+			}
 
 			using (var context = new PlatformBitmapExportContext((int)(pattern.Width * scaleX), (int)(pattern.Height * scaleY), disposeBitmap: false))
 			{
@@ -383,7 +389,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			// We need to know if the static layout was created with a bounded width, as this is what
 			// StaticLayout.Width returns.
 			if (hasBoundedWidth)
+			{
+			{
 				return new SizeF(target.Width, target.Height);
+			}
+			}
 
 			float maxWidth = 0;
 			int lineCount = target.LineCount;
@@ -419,9 +429,26 @@ namespace Microsoft.Maui.Graphics.Platform
 				if (height > 0)
 				{
 					if (verticalAlignment == VerticalAlignment.Bottom)
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
 						vOffsetY = height - vTextFrameSize.Height;
 					else
+After:
+					{
+						vOffsetY = height - vTextFrameSize.Height;
+					}
+					else
+					{
+*/
+					{
+						vOffsetY = height - vTextFrameSize.Height;
+					}
+					else
+					{
 						vOffsetY = (height - vTextFrameSize.Height) / 2;
+					}
+					}
 				}
 
 				return new SizeF(x + vOffsetX, y + vOffsetY);

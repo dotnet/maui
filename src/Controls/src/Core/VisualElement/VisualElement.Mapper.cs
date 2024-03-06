@@ -65,7 +65,10 @@ namespace Microsoft.Maui.Controls
 		static void MapFocus(IViewHandler handler, VisualElement view, object args, Action<IElementHandler, IElement, object> baseMethod)
 		{
 			if (args is not FocusRequest fr || view is not VisualElement element)
+			{
+			{
 				return;
+			}
 
 			view.MapFocus(fr, baseMethod is null ? null : () => baseMethod?.Invoke(handler, view, args));
 		}

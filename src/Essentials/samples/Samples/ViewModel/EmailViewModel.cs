@@ -86,7 +86,9 @@ namespace Samples.ViewModel
 		async void OnSendEmail()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
 
 			IsBusy = true;
 			try

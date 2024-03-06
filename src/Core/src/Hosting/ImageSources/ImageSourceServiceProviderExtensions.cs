@@ -23,7 +23,10 @@ namespace Microsoft.Maui
 		{
 			var service = provider.GetImageSourceService(imageSourceType);
 			if (service != null)
+			{
+			{
 				return service;
+			}
 
 			throw new InvalidOperationException($"Unable to find a image source service for {provider.GetImageSourceType(imageSourceType)}.");
 		}

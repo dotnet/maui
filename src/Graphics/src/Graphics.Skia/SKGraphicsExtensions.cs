@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			var a = (byte)(target.Alpha * alpha * 255f);
 
 			if (a > 255)
+			{
 				a = 255;
+			}
 
 			var color = new SKColor(r, g, b, a);
 			return color;
@@ -170,7 +172,9 @@ namespace Microsoft.Maui.Graphics.Skia
 
 					startAngle *= -1;
 					if (!clockwise)
+					{
 						sweep *= -1;
+					}
 
 					platformPath.AddArc(rect, startAngle, sweep);
 				}
@@ -250,7 +254,9 @@ namespace Microsoft.Maui.Graphics.Skia
 
 				startAngle *= -1;
 				if (!clockwise)
+				{
 					sweep *= -1;
+				}
 
 				path.AddArc(rect, startAngle, sweep);
 			}
@@ -326,7 +332,9 @@ namespace Microsoft.Maui.Graphics.Skia
 
 					startAngle *= -1;
 					if (!clockwise)
+					{
 						sweep *= -1;
+					}
 
 					path.AddArc(rect, startAngle, sweep);
 				}
@@ -358,7 +366,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		{
 			var pattern = patternPaint?.Pattern;
 			if (pattern == null)
+			{
 				return null;
+			}
 
 			using (var context = new SkiaBitmapExportContext((int)(pattern.Width * scale), (int)(pattern.Height * scale), scale, disposeBitmap: false))
 			{
@@ -375,7 +385,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		{
 			var pattern = patternPaint?.Pattern;
 			if (pattern == null)
+			{
 				return null;
+			}
 
 			using (var context = new SkiaBitmapExportContext((int)(pattern.Width * scaleX), (int)(pattern.Height * scaleY), 1, disposeBitmap: false))
 			{

@@ -65,10 +65,104 @@ namespace Microsoft.Maui.Controls
 		public bool Focus()
 		{
 			if (IsFocused)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return true;
+After:
+			{
+				return true;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return true;
+After:
+			{
+				return true;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return true;
+After:
+			{
+				return true;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return true;
+After:
+			{
+				return true;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return true;
+After:
+			{
+				return true;
+			}
+*/
+			{
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+				return true;
+			}
 
 			if (FocusChangeRequested == null)
+			{
 				return false;
+			}
 
 			var arg = new FocusRequestArgs { Focus = true };
 			FocusChangeRequested(this, arg);
@@ -79,7 +173,9 @@ namespace Microsoft.Maui.Controls
 		public void Unfocus()
 		{
 			if (!IsFocused)
+			{
 				return;
+			}
 
 			FocusChangeRequested?.Invoke(this, new FocusRequestArgs());
 		}
@@ -282,7 +378,11 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_listProxy == value)
+				{
+				{
 					return;
+				}
+
 				var oldProxy = _listProxy;
 				_listProxy = value;
 				_listProxyChanged?.Invoke(this, new ListProxyChangedEventArgs(oldProxy, value));
@@ -642,9 +742,13 @@ namespace Microsoft.Maui.Controls
 		{
 			var self = (SearchHandler)bindable;
 			if (newValue == null)
+			{
 				self.ListProxy = null;
+			}
 			else
+			{
 				self.ListProxy = new ListProxy((IEnumerable)newValue, dispatcher: self.Dispatcher);
+			}
 		}
 
 		static void OnQueryChanged(BindableObject bindable, object oldValue, object newValue)
@@ -684,7 +788,9 @@ namespace Microsoft.Maui.Controls
 		void OnClearPlaceholderCommandParameterChanged()
 		{
 			if (ClearPlaceholderCommand != null)
+			{
 				ClearPlaceholderEnabledCore = ClearPlaceholderCommand.CanExecute(CommandParameter);
+			}
 		}
 
 		void OnCommandChanged(ICommand oldCommand, ICommand newCommand)
@@ -708,7 +814,9 @@ namespace Microsoft.Maui.Controls
 		void OnCommandParameterChanged()
 		{
 			if (Command != null)
+			{
 				IsSearchEnabledCore = Command.CanExecute(CommandParameter);
+			}
 		}
 
 		void UpdateAutomationProperties()
@@ -722,10 +830,14 @@ namespace Microsoft.Maui.Controls
 				var queryIconName = QueryIconName;
 				var queryIconHelpText = QueryIconHelpText;
 				if (queryIconName != null)
+				{
 					AutomationProperties.SetName(queryIcon, queryIconName);
+				}
 
 				if (queryIconHelpText != null)
+				{
 					AutomationProperties.SetHelpText(queryIcon, queryIconHelpText);
+				}
 			}
 
 			if (clearIcon != null)
@@ -733,10 +845,14 @@ namespace Microsoft.Maui.Controls
 				var clearIconName = ClearIconName;
 				var clearIconHelpText = ClearIconHelpText;
 				if (clearIconName != null)
+				{
 					AutomationProperties.SetName(clearIcon, clearIconName);
+				}
 
 				if (clearIconHelpText != null)
+				{
 					AutomationProperties.SetHelpText(clearIcon, clearIconHelpText);
+				}
 			}
 
 			if (clearPlaceholderIcon != null)
@@ -744,10 +860,14 @@ namespace Microsoft.Maui.Controls
 				var clearPlaceholderName = ClearPlaceholderName;
 				var clearPlacholderHelpText = ClearPlaceholderHelpText;
 				if (clearPlaceholderName != null)
+				{
 					AutomationProperties.SetName(clearPlaceholderIcon, clearPlaceholderName);
+				}
 
 				if (clearPlacholderHelpText != null)
+				{
 					AutomationProperties.SetHelpText(clearPlaceholderIcon, clearPlacholderHelpText);
+				}
 			}
 		}
 	}

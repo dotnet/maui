@@ -75,17 +75,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void Disconnect(VisualElement oldElement)
 		{
 			if (oldElement == null)
+			{
+			{
 				return;
+			}
 
 			oldElement.PropertyChanged -= _propertyChangedHandler;
 			oldElement.SizeChanged -= _sizeChangedEventHandler;
+			oldElement.BatchCommitted -= _batchCommittedHandler;
 			oldElement.BatchCommitted -= _batchCommittedHandler;
 		}
 
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -150,7 +157,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void OnRendererElementChanged(object s, VisualElementChangedEventArgs e)
 		{
 			if (_element == e.NewElement)
+			{
+			{
 				return;
+			}
 
 			SetElement(_element, e.NewElement);
 		}
@@ -161,7 +171,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var uiview = Renderer.NativeView;
 
 			if (view == null || view.Batched)
+			{
+			{
 				return;
+			}
 
 			bool shouldInteract;
 
@@ -218,21 +231,149 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			void update()
 			{
 				if (updateTarget != _updateCount)
+				{
 					return;
+				}
 #if __MOBILE__
 				var visualElement = view;
 #endif
 				var parent = view.RealParent;
 
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+				if (isVisible && caLayer.Hidden)
+After:
 				var shouldRelayoutSublayers = false;
 				if (isVisible && caLayer.Hidden)
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+						shouldRelayoutSublayers = true;
+After:
+					{
+						shouldRelayoutSublayers = true;
+					}
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+						caLayer.AnchorPoint = _originalAnchor;
+
+					caLayer.Transform = transform;
+					uiview.Frame = target;
+					if (shouldRelayoutSublayers)
+						caLayer.LayoutSublayers();
+After:
+					{
+						caLayer.AnchorPoint = _originalAnchor;
+					}
+
+					caLayer.Transform = transform;
+					uiview.Frame = target;
+					if (shouldRelayoutSublayers)
+					{
+						caLayer.LayoutSublayers();
+					}
+*/
+
+				var shouldRelayoutSublayers = false;
+				if (isVisible && caLayer.Hidden)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+					transform = transform.Translate((anchorX - .5f) * width, 0, 0);
+				if (Math.Abs(anchorY - .5) > epsilon)
+					transform = transform.Translate(0, (anchorY - .5f) * height, 0);
+#endif
+
+				if (Math.Abs(translationX) > epsilon || Math.Abs(translationY) > epsilon)
+					transform = transform.Translate(translationX, translationY, 0);
+
+				// not just an optimization, iOS will not "pixel align" a view which has M34 set
+				if (Math.Abs(rotationY % 180) > epsilon || Math.Abs(rotationX % 180) > epsilon)
+					transform.M34 = 1.0f / -400f;
+
+				if (Math.Abs(rotationX % 360) > epsilon)
+					transform = transform.Rotate(rotationX * (float)Math.PI / 180.0f, 1.0f, 0.0f, 0.0f);
+				if (Math.Abs(rotationY % 360) > epsilon)
+					transform = transform.Rotate(rotationY * (float)Math.PI / 180.0f, 0.0f, 1.0f, 0.0f);
+
+				transform = transform.Rotate(rotation * (float)Math.PI / 180.0f, 0.0f, 0.0f, 1.0f);
+
+				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
+					transform = transform.Scale(scaleX, scaleY, scale);
+After:
+				{
+					transform = transform.Translate((anchorX - .5f) * width, 0, 0);
+				}
+*/
 				{
 #if !__MOBILE__
 					uiview.Hidden = false;
 #endif
 					caLayer.Hidden = false;
 					if (!caLayer.Frame.IsEmpty)
+					
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+				if (Foundation.NSThread.IsMain)
+After:
+				if (Math.Abs(anchorY - .5) > epsilon)
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+					caLayer.Transform = transform;
+					return;
+				}
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+				{
+					caLayer.Transform = transform;
+				});
+			}
+
+#if __MOBILE__
+			if (thread)
+				view.Dispatcher.DispatchIfRequired(update);
+			else
+				update();
+#else
+			update();
+#endif
+
+			_lastBounds = view.Bounds;
+After:
+					transform = transform.Translate(0, (anchorY - .5f) * height, 0);
+				}
+#endif
+
+				if (Math.Abs(translationX) > epsilon || Math.Abs(translationY) > epsilon)
+				{
+					transform = transform.Translate(translationX, translationY, 0);
+				}
+
+				// not just an optimization, iOS will not "pixel align" a view which has M34 set
+				if (Math.Abs(rotationY % 180) > epsilon || Math.Abs(rotationX % 180) > epsilon)
+				{
+					transform.M34 = 1.0f / -400f;
+				}
+
+				if (Math.Abs(rotationX % 360) > epsilon)
+				{
+					transform = transform.Rotate(rotationX * (float)Math.PI / 180.0f, 1.0f, 0.0f, 0.0f);
+				}
+
+				if (Math.Abs(rotationY % 360) > epsilon)
+				{
+					transform = transform.Rotate(rotationY * (float)Math.PI / 180.0f, 0.0f, 1.0f, 0.0f);
+				}
+
+				transform = transform.Rotate(rotation * (float)Math.PI / 180.0f, 0.0f, 0.0f, 1.0f);
+*/
+{
 						shouldRelayoutSublayers = true;
+					}
 				}
 
 				if (!isVisible && !caLayer.Hidden)
@@ -269,19 +410,202 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 					// must reset transform prior to setting frame...
 					if (caLayer.AnchorPoint != _originalAnchor)
+					{
 						caLayer.AnchorPoint = _originalAnchor;
+					}
 
 					caLayer.Transform = transform;
 					uiview.Frame = target;
 					if (shouldRelayoutSublayers)
+					{
 						caLayer.LayoutSublayers();
+					}
 				}
 				else if (width <= 0 || height <= 0)
 				{
 					//TODO: FInd why it doesn't work
 #if __MOBILE__
 					caLayer.Hidden = true;
+
+				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
+				{
+					transform = transform.Scale(scaleX, scaleY, scale);
+				}
+
+				if (Foundation.NSThread.IsMain)
+				{
+					caLayer.Transform = transform;
+					return;
+				}
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+				{
+					caLayer.Transform = transform;
+				});
+			}
+
+#if __MOBILE__
+			if (thread)
+			{
+				view.Dispatcher.DispatchIfRequired(update);
+			}
+			else
+			{
+				update();
+			}
+#else
+			update();
 #endif
+
+			_lastBounds = view.Bounds;
+#
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+				return;
+
+			var element = Renderer.Element;
+			var uiview = Renderer.NativeView;
+
+			var formsGeometry = element.Clip;
+			var nativeGeometry = formsGeometry.ToCGPath();
+
+			var maskLayer = new CAShapeLayer
+			{
+				Name = ClipShapeLayer,
+				Path = nativeGeometry.Data,
+				FillRule = nativeGeometry.IsNonzeroFillRule ? CAShapeLayer.FillRuleNonZero : CAShapeLayer.FillRuleEvenOdd
+			};
+#if __MOBILE__
+After:
+			{
+				return;
+			}
+
+			var element = Renderer.Element;
+			var uiview = Renderer.NativeView;
+
+			var formsGeometry = element.Clip;
+			var nativeGeometry = formsGeometry.ToCGPath();
+
+			var maskLayer = new CAShapeLayer
+			{
+				Name = ClipShapeLayer,
+				Path = nativeGeometry.Data,
+				FillRule = nativeGeometry.IsNonzeroFillRule ? CAShapeLayer.FillRuleNonZero : CAShapeLayer.FillRuleEvenOdd
+			};
+#if __MOBILE__
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+					uiview.Layer.Mask = maskLayer;
+				else
+					uiview.Layer.Mask = null;
+After:
+				{
+					uiview.Layer.Mask = maskLayer;
+				}
+				else
+				{
+					uiview.Layer.Mask = null;
+				}
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+					uiview.MaskView = null;
+			}
+After:
+				{
+					uiview.MaskView = null;
+				}
+			}
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+				return false;
+
+			bool hasClipShapeLayer = false;
+#if __MOBILE__
+			if (Forms.IsiOS11OrNewer)
+				hasClipShapeLayer =
+					uiview.Layer != null &&
+					uiview.Layer.Mask != null &&
+					uiview.Layer.Mask?.Name == ClipShapeLayer;
+			else
+			{
+				hasClipShapeLayer =
+					uiview.MaskView != null &&
+					uiview.MaskView.Layer.Mask != null &&
+					uiview.MaskView.Layer.Mask?.Name == ClipShapeLayer;
+			}
+#else
+			hasClipShapeLayer =
+				uiview.Layer != null &&
+				uiview.Layer.Mask != null &&
+				uiview.Layer.Mask?.Name == ClipShapeLayer;
+#endif
+
+			var formsGeometry = element.Clip;
+
+			if (formsGeometry != null)
+				return true;
+After:
+			{
+				return false;
+			}
+
+			bool hasClipShapeLayer = false;
+#if __MOBILE__
+			if (Forms.IsiOS11OrNewer)
+			{
+				hasClipShapeLayer =
+					uiview.Layer != null &&
+					uiview.Layer.Mask != null &&
+					uiview.Layer.Mask?.Name == ClipShapeLayer;
+			}
+			else
+			{
+				hasClipShapeLayer =
+					uiview.MaskView != null &&
+					uiview.MaskView.Layer.Mask != null &&
+					uiview.MaskView.Layer.Mask?.Name == ClipShapeLayer;
+			}
+#else
+			hasClipShapeLayer =
+				uiview.Layer != null &&
+				uiview.Layer.Mask != null &&
+				uiview.Layer.Mask?.Name == ClipShapeLayer;
+#endif
+
+			var formsGeometry = element.Clip;
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+			if (formsGeometry == null && hasClipShapeLayer)
+				return true;
+After:
+			if (formsGeometry != null)
+			{
+				return true;
+			}
+
+			if (formsGeometry == null && hasClipShapeLayer)
+			{
+				return true;
+			}
+*/
+endif
 					return;
 				}
 #if !__MOBILE__
@@ -309,27 +633,43 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #else
 				// position is relative to anchor point
 				if (Math.Abs(anchorX - .5) > epsilon)
+				{
 					transform = transform.Translate((anchorX - .5f) * width, 0, 0);
+				}
+
 				if (Math.Abs(anchorY - .5) > epsilon)
+				{
 					transform = transform.Translate(0, (anchorY - .5f) * height, 0);
+				}
 #endif
 
 				if (Math.Abs(translationX) > epsilon || Math.Abs(translationY) > epsilon)
+				{
 					transform = transform.Translate(translationX, translationY, 0);
+				}
 
 				// not just an optimization, iOS will not "pixel align" a view which has M34 set
 				if (Math.Abs(rotationY % 180) > epsilon || Math.Abs(rotationX % 180) > epsilon)
+				{
 					transform.M34 = 1.0f / -400f;
+				}
 
 				if (Math.Abs(rotationX % 360) > epsilon)
+				{
 					transform = transform.Rotate(rotationX * (float)Math.PI / 180.0f, 1.0f, 0.0f, 0.0f);
+				}
+
 				if (Math.Abs(rotationY % 360) > epsilon)
+				{
 					transform = transform.Rotate(rotationY * (float)Math.PI / 180.0f, 0.0f, 1.0f, 0.0f);
+				}
 
 				transform = transform.Rotate(rotation * (float)Math.PI / 180.0f, 0.0f, 0.0f, 1.0f);
 
 				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
+				{
 					transform = transform.Scale(scaleX, scaleY, scale);
+				}
 
 				if (Foundation.NSThread.IsMain)
 				{
@@ -344,9 +684,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 #if __MOBILE__
 			if (thread)
+			{
 				view.Dispatcher.DispatchIfRequired(update);
+			}
 			else
+			{
 				update();
+			}
 #else
 			update();
 #endif
@@ -382,7 +726,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Performance.Start(out string reference);
 
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (_layer == null)
 			{
@@ -408,7 +754,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateClip()
 		{
 			if (!ShouldUpdateClip())
+			{
 				return;
+			}
 
 			var element = Renderer.Element;
 			var uiview = Renderer.NativeView;
@@ -426,9 +774,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (Forms.IsiOS11OrNewer)
 			{
 				if (formsGeometry != null)
+				{
 					uiview.Layer.Mask = maskLayer;
+				}
 				else
+				{
 					uiview.Layer.Mask = null;
+				}
 			}
 			else
 			{
@@ -444,7 +796,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					uiview.MaskView = maskView;
 				}
 				else
+				{
 					uiview.MaskView = null;
+				}
 			}
 #else
 			if (formsGeometry != null)
@@ -460,15 +814,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var uiview = Renderer?.NativeView;
 
 			if (element == null || uiview == null)
+			{
 				return false;
+			}
 
 			bool hasClipShapeLayer = false;
 #if __MOBILE__
 			if (Forms.IsiOS11OrNewer)
+			{
 				hasClipShapeLayer =
 					uiview.Layer != null &&
 					uiview.Layer.Mask != null &&
 					uiview.Layer.Mask?.Name == ClipShapeLayer;
+			}
 			else
 			{
 				hasClipShapeLayer =
@@ -486,10 +844,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var formsGeometry = element.Clip;
 
 			if (formsGeometry != null)
+			{
 				return true;
+			}
 
 			if (formsGeometry == null && hasClipShapeLayer)
+			{
 				return true;
+			}
 
 			return false;
 		}

@@ -79,13 +79,35 @@ namespace Microsoft.Maui.Devices
 				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter))
 				{
 					if (battery is null)
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
 						return -1; // Unknown
+After:
+					{
+						return -1; // Unknown
+					}
+*/
+					{
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
+						return 1.0;
+After:
+					{
+						return 1.0;
+					}
+*/
+						return -1; // Unknown
+					}
 
 					var level = battery.GetIntExtra(BatteryManager.ExtraLevel, -1);
 					var scale = battery.GetIntExtra(BatteryManager.ExtraScale, -1);
 
 					if (scale <= 0)
+					{
 						return 1.0;
+					}
 
 					return (double)level / (double)scale;
 				}
@@ -102,7 +124,9 @@ namespace Microsoft.Maui.Devices
 				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter))
 				{
 					if (battery is null)
+					{
 						return BatteryState.Unknown;
+					}
 
 					var status = battery.GetIntExtra(BatteryManager.ExtraStatus, -1);
 					switch (status)
@@ -132,18 +156,45 @@ namespace Microsoft.Maui.Devices
 				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter))
 				{
 					if (battery is null)
+					{
 						return BatteryPowerSource.Unknown;
+					}
 
 					var chargePlug = battery.GetIntExtra(BatteryManager.ExtraPlugged, -1);
 
 					if (chargePlug == (int)BatteryPlugged.Usb)
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
+						return BatteryPowerSource.Wireless;
+After:
+					{
 						return BatteryPowerSource.Usb;
+					}
 
 					if (chargePlug == (int)BatteryPlugged.Ac)
+					{
 						return BatteryPowerSource.AC;
+					}
 
 					if (chargePlug == (int)BatteryPlugged.Wireless)
+					{
 						return BatteryPowerSource.Wireless;
+					}
+*/
+					{
+						return BatteryPowerSource.Usb;
+					}
+
+					if (chargePlug == (int)BatteryPlugged.Ac)
+					{
+						return BatteryPowerSource.AC;
+					}
+
+					if (chargePlug == (int)BatteryPlugged.Wireless)
+					{
+						return BatteryPowerSource.Wireless;
+					}
 
 					return BatteryPowerSource.Battery;
 				}

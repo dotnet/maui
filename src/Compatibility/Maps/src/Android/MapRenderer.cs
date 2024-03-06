@@ -452,7 +452,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 					if (_markers != null)
 					{
 						for (int i = 0; i < _markers.Count; i++)
+						{
 							_markers[i].Remove();
+						}
 
 						_markers = null;
 					}
@@ -584,7 +586,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 					if (_polylines != null)
 					{
 						for (int i = 0; i < _polylines.Count; i++)
+						{
 							_polylines[i].Remove();
+						}
 
 						_polylines = null;
 					}
@@ -592,7 +596,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 					if (_polygons != null)
 					{
 						for (int i = 0; i < _polygons.Count; i++)
+						{
 							_polygons[i].Remove();
+						}
 
 						_polygons = null;
 					}
@@ -600,7 +606,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 					if (_circles != null)
 					{
 						for (int i = 0; i < _circles.Count; i++)
+						{
 							_circles[i].Remove();
+						}
 
 						_circles = null;
 					}
@@ -773,7 +781,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			opts.InvokeStrokeWidth(polygon.StrokeWidth);
 
 			if (!polygon.StrokeColor.IsDefault())
+			{
 				opts.InvokeFillColor(polygon.FillColor.ToAndroid());
+			}
 
 			// Will throw an exception when added to the map if Points is empty
 			if (polygon.Geopath.Count == 0)
@@ -833,7 +843,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 			var nativePolygon = GetNativePolygon(polygon);
 
 			if (nativePolygon == null)
+			{
 				return;
+			}
 
 			if (e.PropertyName == MapElement.StrokeColorProperty.PropertyName)
 			{
@@ -897,10 +909,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 				.InvokeStrokeWidth(circle.StrokeWidth);
 
 			if (!circle.StrokeColor.IsDefault())
+			{
 				opts.InvokeStrokeColor(circle.StrokeColor.ToAndroid());
+			}
 
 			if (!circle.FillColor.IsDefault())
+			{
 				opts.InvokeFillColor(circle.FillColor.ToAndroid());
+			}
 
 			return opts;
 		}

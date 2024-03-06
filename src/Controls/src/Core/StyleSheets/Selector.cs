@@ -29,14 +29,20 @@ namespace Microsoft.Maui.Controls.StyleSheets
 						reader.Read();
 						var className = reader.ReadIdent();
 						if (className == null)
+						{
 							return Invalid;
+						}
+
 						setCurrentSelector(new And(), new Class(className));
 						break;
 					case '#':
 						reader.Read();
 						var id = reader.ReadName();
 						if (id == null)
+						{
 							return Invalid;
+						}
+
 						setCurrentSelector(new And(), new Id(id));
 						break;
 					case '[':
@@ -65,7 +71,10 @@ namespace Microsoft.Maui.Controls.StyleSheets
 						reader.Read();
 						var element = reader.ReadIdent();
 						if (element == null)
+						{
 							return Invalid;
+						}
+
 						setCurrentSelector(new And(), new Base(element));
 						break;
 					case ' ':
@@ -91,17 +100,25 @@ namespace Microsoft.Maui.Controls.StyleSheets
 							break;
 						}
 						if (!processWs)
+						{
 							break;
+						}
+
 						setCurrentSelector(new Descendent(), All);
 						reader.SkipWhiteSpaces();
 						break;
 					default:
 						if (unchecked((char)p) == stopChar)
+						{
 							return root;
+						}
 
 						var elementName = reader.ReadIdent();
 						if (elementName == null)
+						{
 							return Invalid;
+						}
+
 						setCurrentSelector(new And(), new Element(elementName));
 						break;
 				}
@@ -117,10 +134,14 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			op.Right = sel;
 			workingRoot = op;
 			if (workingRootParent != null)
+			{
 				workingRootParent.Right = workingRoot;
+			}
 
 			if (updateRoot)
+			{
 				root = workingRoot;
+			}
 
 			if (workingRoot is Or)
 			{
@@ -146,12 +167,39 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 		sealed class Generic : UnarySelector
 		{
-			readonly Func<IStyleSelectable, bool> func;
-			public Generic(Func<IStyleSelectable, bool> func)
-			{
-				this.func = func;
-			}
 
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+					return false;
+				if (styleable.Parent == null)
+					return false;
+
+				int selfIndex = 0;
+				bool foundSelfInParent = false;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
+						foundSelfInParent = true;
+						break;
+					}
+					++selfIndex;
+				}
+
+				if (!foundSelfInParent)
+					return false;
+
+				int index = 0;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (index >= selfIndex)
+						return false;
+					if (Left.Matches(elem))
+						return true;
+After:
 			public override bool Matches(IStyleSelectable styleable) => func(styleable);
 		}
 
@@ -211,8 +259,13 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			public override bool Matches(IStyleSelectable styleable)
 			{
 				for (var i = 0; i < styleable.NameAndBases.Length; i++)
+				{
 					if (string.Equals(styleable.NameAndBases[i], ElementName, StringComparison.OrdinalIgnoreCase))
+					{
 						return true;
+					}
+				}
+
 				return false;
 			}
 		}
@@ -228,12 +281,18 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			public override bool Matches(IStyleSelectable styleable)
 			{
 				if (!Right.Matches(styleable))
+				{
 					return false;
+				}
+
 				var parent = styleable.Parent;
 				while (parent != null)
 				{
 					if (Left.Matches(parent))
+					{
 						return true;
+					}
+
 					parent = parent.Parent;
 				}
 				return false;
@@ -245,15 +304,23 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			public override bool Matches(IStyleSelectable styleable)
 			{
 				if (!Right.Matches(styleable))
+				{
 					return false;
+				}
+
 				if (styleable.Parent == null)
+				{
 					return false;
+				}
 
 				IStyleSelectable prev = null;
 				foreach (var elem in styleable.Parent.Children)
 				{
 					if (elem == styleable && prev != null)
+					{
 						return Left.Matches(prev);
+					}
+
 					prev = elem;
 				}
 				return false;
@@ -267,6 +334,51 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 		sealed class Sibling : Operator
 		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				int selfIndex = 0;
+				bool foundSelfInParent = false;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
+						foundSelfInParent = true;
+						break;
+					}
+					++selfIndex;
+				}
+
+				if (!foundSelfInParent)
+				{
+					return false;
+				}
+
+				int index = 0;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (index >= selfIndex)
+					{
+						return false;
+					}
+
+					if (Left.Matches(elem))
+					{
+						return true;
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 			public override bool Matches(IStyleSelectable styleable)
 			{
 				if (!Right.Matches(styleable))
@@ -296,6 +408,998 @@ namespace Microsoft.Maui.Controls.StyleSheets
 						return false;
 					if (Left.Matches(elem))
 						return true;
+After:
+			public override bool Matches(IStyleSelectable styleable) => func(styleable);
+		}
+
+		sealed class Class : UnarySelector
+		{
+			public Class(string className)
+			{
+				ClassName = className;
+			}
+
+			public string ClassName { get; }
+			public override bool Matches(IStyleSelectable styleable)
+				=> styleable.Classes != null && styleable.Classes.Contains(ClassName);
+		}
+
+		sealed class Id : UnarySelector
+		{
+			public Id(string id)
+			{
+				IdName = id;
+			}
+
+			public string IdName { get; }
+			public override bool Matches(IStyleSelectable styleable) => styleable.Id == IdName;
+		}
+
+		sealed class Or : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) => Right.Matches(styleable) || Left.Matches(styleable);
+		}
+
+		sealed class And : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) => Right.Matches(styleable) && Left.Matches(styleable);
+		}
+
+		sealed class Element : UnarySelector
+		{
+			public Element(string elementName)
+			{
+				ElementName = elementName;
+			}
+
+			public string ElementName { get; }
+			public override bool Matches(IStyleSelectable styleable) =>
+				string.Equals(styleable.NameAndBases[0], ElementName, StringComparison.OrdinalIgnoreCase);
+		}
+
+		sealed class Base : UnarySelector
+		{
+			public Base(string elementName)
+			{
+				ElementName = elementName;
+			}
+
+			public string ElementName { get; }
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				for (var i = 0; i < styleable.NameAndBases.Length; i++)
+				{
+					if (string.Equals(styleable.NameAndBases[i], ElementName, StringComparison.OrdinalIgnoreCase))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+		}
+
+		sealed class Child : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) =>
+				Right.Matches(styleable) && styleable.Parent != null && Left.Matches(styleable.Parent);
+		}
+
+		sealed class Descendent : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				var parent = styleable.Parent;
+				while (parent != null)
+				{
+					if (Left.Matches(parent))
+					{
+						return true;
+					}
+
+					parent = parent.Parent;
+				}
+				return false;
+			}
+		}
+
+		sealed class Adjacent : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				IStyleSelectable prev = null;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable && prev != null)
+					{
+						return Left.Matches(prev);
+					}
+
+					prev = elem;
+				}
+				return false;
+				//var index = styleable.Parent.Children.IndexOf(styleable);
+				//if (index == 0)
+				//	return false;
+				//var adjacent = styleable.Parent.Children[index - 1];
+				//return Left.Matches(adjacent);
+			}
+		}
+
+		sealed class Sibling : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				int selfIndex = 0;
+				bool foundSelfInParent = false;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
+						foundSelfInParent = true;
+						break;
+					}
+					++selfIndex;
+				}
+
+				if (!foundSelfInParent)
+				{
+					return false;
+				}
+
+				int index = 0;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (index >= selfIndex)
+					{
+						return false;
+					}
+
+					if (Left.Matches(elem))
+					{
+						return true;
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+					return false;
+				if (styleable.Parent == null)
+					return false;
+
+				int selfIndex = 0;
+				bool foundSelfInParent = false;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
+						foundSelfInParent = true;
+						break;
+					}
+					++selfIndex;
+				}
+
+				if (!foundSelfInParent)
+					return false;
+
+				int index = 0;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (index >= selfIndex)
+						return false;
+					if (Left.Matches(elem))
+						return true;
+After:
+			public override bool Matches(IStyleSelectable styleable) => func(styleable);
+		}
+
+		sealed class Class : UnarySelector
+		{
+			public Class(string className)
+			{
+				ClassName = className;
+			}
+
+			public string ClassName { get; }
+			public override bool Matches(IStyleSelectable styleable)
+				=> styleable.Classes != null && styleable.Classes.Contains(ClassName);
+		}
+
+		sealed class Id : UnarySelector
+		{
+			public Id(string id)
+			{
+				IdName = id;
+			}
+
+			public string IdName { get; }
+			public override bool Matches(IStyleSelectable styleable) => styleable.Id == IdName;
+		}
+
+		sealed class Or : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) => Right.Matches(styleable) || Left.Matches(styleable);
+		}
+
+		sealed class And : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) => Right.Matches(styleable) && Left.Matches(styleable);
+		}
+
+		sealed class Element : UnarySelector
+		{
+			public Element(string elementName)
+			{
+				ElementName = elementName;
+			}
+
+			public string ElementName { get; }
+			public override bool Matches(IStyleSelectable styleable) =>
+				string.Equals(styleable.NameAndBases[0], ElementName, StringComparison.OrdinalIgnoreCase);
+		}
+
+		sealed class Base : UnarySelector
+		{
+			public Base(string elementName)
+			{
+				ElementName = elementName;
+			}
+
+			public string ElementName { get; }
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				for (var i = 0; i < styleable.NameAndBases.Length; i++)
+				{
+					if (string.Equals(styleable.NameAndBases[i], ElementName, StringComparison.OrdinalIgnoreCase))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+		}
+
+		sealed class Child : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) =>
+				Right.Matches(styleable) && styleable.Parent != null && Left.Matches(styleable.Parent);
+		}
+
+		sealed class Descendent : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				var parent = styleable.Parent;
+				while (parent != null)
+				{
+					if (Left.Matches(parent))
+					{
+						return true;
+					}
+
+					parent = parent.Parent;
+				}
+				return false;
+			}
+		}
+
+		sealed class Adjacent : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				IStyleSelectable prev = null;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable && prev != null)
+					{
+						return Left.Matches(prev);
+					}
+
+					prev = elem;
+				}
+				return false;
+				//var index = styleable.Parent.Children.IndexOf(styleable);
+				//if (index == 0)
+				//	return false;
+				//var adjacent = styleable.Parent.Children[index - 1];
+				//return Left.Matches(adjacent);
+			}
+		}
+
+		sealed class Sibling : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				int selfIndex = 0;
+				bool foundSelfInParent = false;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
+						foundSelfInParent = true;
+						break;
+					}
+					++selfIndex;
+				}
+
+				if (!foundSelfInParent)
+				{
+					return false;
+				}
+
+				int index = 0;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (index >= selfIndex)
+					{
+						return false;
+					}
+
+					if (Left.Matches(elem))
+					{
+						return true;
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+					return false;
+				if (styleable.Parent == null)
+					return false;
+
+				int selfIndex = 0;
+				bool foundSelfInParent = false;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
+						foundSelfInParent = true;
+						break;
+					}
+					++selfIndex;
+				}
+
+				if (!foundSelfInParent)
+					return false;
+
+				int index = 0;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (index >= selfIndex)
+						return false;
+					if (Left.Matches(elem))
+						return true;
+After:
+			public override bool Matches(IStyleSelectable styleable) => func(styleable);
+		}
+
+		sealed class Class : UnarySelector
+		{
+			public Class(string className)
+			{
+				ClassName = className;
+			}
+
+			public string ClassName { get; }
+			public override bool Matches(IStyleSelectable styleable)
+				=> styleable.Classes != null && styleable.Classes.Contains(ClassName);
+		}
+
+		sealed class Id : UnarySelector
+		{
+			public Id(string id)
+			{
+				IdName = id;
+			}
+
+			public string IdName { get; }
+			public override bool Matches(IStyleSelectable styleable) => styleable.Id == IdName;
+		}
+
+		sealed class Or : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) => Right.Matches(styleable) || Left.Matches(styleable);
+		}
+
+		sealed class And : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) => Right.Matches(styleable) && Left.Matches(styleable);
+		}
+
+		sealed class Element : UnarySelector
+		{
+			public Element(string elementName)
+			{
+				ElementName = elementName;
+			}
+
+			public string ElementName { get; }
+			public override bool Matches(IStyleSelectable styleable) =>
+				string.Equals(styleable.NameAndBases[0], ElementName, StringComparison.OrdinalIgnoreCase);
+		}
+
+		sealed class Base : UnarySelector
+		{
+			public Base(string elementName)
+			{
+				ElementName = elementName;
+			}
+
+			public string ElementName { get; }
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				for (var i = 0; i < styleable.NameAndBases.Length; i++)
+				{
+					if (string.Equals(styleable.NameAndBases[i], ElementName, StringComparison.OrdinalIgnoreCase))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+		}
+
+		sealed class Child : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) =>
+				Right.Matches(styleable) && styleable.Parent != null && Left.Matches(styleable.Parent);
+		}
+
+		sealed class Descendent : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				var parent = styleable.Parent;
+				while (parent != null)
+				{
+					if (Left.Matches(parent))
+					{
+						return true;
+					}
+
+					parent = parent.Parent;
+				}
+				return false;
+			}
+		}
+
+		sealed class Adjacent : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				IStyleSelectable prev = null;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable && prev != null)
+					{
+						return Left.Matches(prev);
+					}
+
+					prev = elem;
+				}
+				return false;
+				//var index = styleable.Parent.Children.IndexOf(styleable);
+				//if (index == 0)
+				//	return false;
+				//var adjacent = styleable.Parent.Children[index - 1];
+				//return Left.Matches(adjacent);
+			}
+		}
+
+		sealed class Sibling : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				int selfIndex = 0;
+				bool foundSelfInParent = false;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
+						foundSelfInParent = true;
+						break;
+					}
+					++selfIndex;
+				}
+
+				if (!foundSelfInParent)
+				{
+					return false;
+				}
+
+				int index = 0;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (index >= selfIndex)
+					{
+						return false;
+					}
+
+					if (Left.Matches(elem))
+					{
+						return true;
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+					return false;
+				if (styleable.Parent == null)
+					return false;
+
+				int selfIndex = 0;
+				bool foundSelfInParent = false;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
+						foundSelfInParent = true;
+						break;
+					}
+					++selfIndex;
+				}
+
+				if (!foundSelfInParent)
+					return false;
+
+				int index = 0;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (index >= selfIndex)
+						return false;
+					if (Left.Matches(elem))
+						return true;
+After:
+			public override bool Matches(IStyleSelectable styleable) => func(styleable);
+		}
+
+		sealed class Class : UnarySelector
+		{
+			public Class(string className)
+			{
+				ClassName = className;
+			}
+
+			public string ClassName { get; }
+			public override bool Matches(IStyleSelectable styleable)
+				=> styleable.Classes != null && styleable.Classes.Contains(ClassName);
+		}
+
+		sealed class Id : UnarySelector
+		{
+			public Id(string id)
+			{
+				IdName = id;
+			}
+
+			public string IdName { get; }
+			public override bool Matches(IStyleSelectable styleable) => styleable.Id == IdName;
+		}
+
+		sealed class Or : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) => Right.Matches(styleable) || Left.Matches(styleable);
+		}
+
+		sealed class And : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) => Right.Matches(styleable) && Left.Matches(styleable);
+		}
+
+		sealed class Element : UnarySelector
+		{
+			public Element(string elementName)
+			{
+				ElementName = elementName;
+			}
+
+			public string ElementName { get; }
+			public override bool Matches(IStyleSelectable styleable) =>
+				string.Equals(styleable.NameAndBases[0], ElementName, StringComparison.OrdinalIgnoreCase);
+		}
+
+		sealed class Base : UnarySelector
+		{
+			public Base(string elementName)
+			{
+				ElementName = elementName;
+			}
+
+			public string ElementName { get; }
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				for (var i = 0; i < styleable.NameAndBases.Length; i++)
+				{
+					if (string.Equals(styleable.NameAndBases[i], ElementName, StringComparison.OrdinalIgnoreCase))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+		}
+
+		sealed class Child : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) =>
+				Right.Matches(styleable) && styleable.Parent != null && Left.Matches(styleable.Parent);
+		}
+
+		sealed class Descendent : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				var parent = styleable.Parent;
+				while (parent != null)
+				{
+					if (Left.Matches(parent))
+					{
+						return true;
+					}
+
+					parent = parent.Parent;
+				}
+				return false;
+			}
+		}
+
+		sealed class Adjacent : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				IStyleSelectable prev = null;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable && prev != null)
+					{
+						return Left.Matches(prev);
+					}
+
+					prev = elem;
+				}
+				return false;
+				//var index = styleable.Parent.Children.IndexOf(styleable);
+				//if (index == 0)
+				//	return false;
+				//var adjacent = styleable.Parent.Children[index - 1];
+				//return Left.Matches(adjacent);
+			}
+		}
+
+		sealed class Sibling : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				int selfIndex = 0;
+				bool foundSelfInParent = false;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
+						foundSelfInParent = true;
+						break;
+					}
+					++selfIndex;
+				}
+
+				if (!foundSelfInParent)
+				{
+					return false;
+				}
+
+				int index = 0;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (index >= selfIndex)
+					{
+						return false;
+					}
+
+					if (Left.Matches(elem))
+					{
+						return true;
+					}
+*/
+			readonly Func<IStyleSelectable, bool> func;
+			public Generic(Func<IStyleSelectable, bool> func)
+			{
+				this.func = func;
+			}
+
+			public override bool Matches(IStyleSelectable styleable) => func(styleable);
+		}
+
+		sealed class Class : UnarySelector
+		{
+			public Class(string className)
+			{
+				ClassName = className;
+			}
+
+			public string ClassName { get; }
+			readonly Func<IStyleSelectable, bool> func;
+			public Generic(Func<IStyleSelectable, bool> func)
+			{
+				this.func = func;
+			}
+
+			public override bool Matches(IStyleSelectable styleable)
+				=> styleable.Classes != null && styleable.Classes.Contains(ClassName);
+		}
+
+		sealed class Id : UnarySelector
+		{
+			public Id(string id)
+			{
+				IdName = id;
+			}
+
+			public string IdName { get; }
+			public override bool Matches(IStyleSelectable styleable) => styleable.Id == IdName;
+		}
+
+		sealed class Or : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) => Right.Matches(styleable) || Left.Matches(styleable);
+		}
+
+		sealed class And : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) => Right.Matches(styleable) && Left.Matches(styleable);
+		}
+
+		sealed class Element : UnarySelector
+		{
+			public Element(string elementName)
+			{
+				ElementName = elementName;
+			}
+
+			public string ElementName { get; }
+			public override bool Matches(IStyleSelectable styleable) =>
+				string.Equals(styleable.NameAndBases[0], ElementName, StringComparison.OrdinalIgnoreCase);
+		}
+
+		sealed class Base : UnarySelector
+		{
+			public Base(string elementName)
+			{
+				ElementName = elementName;
+			}
+
+			public string ElementName { get; }
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				for (var i = 0; i < styleable.NameAndBases.Length; i++)
+				{
+					if (string.Equals(styleable.NameAndBases[i], ElementName, StringComparison.OrdinalIgnoreCase))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+		}
+
+		sealed class Child : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable) =>
+				Right.Matches(styleable) && styleable.Parent != null && Left.Matches(styleable.Parent);
+		}
+
+		sealed class Descendent : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				var parent = styleable.Parent;
+				while (parent != null)
+				{
+					if (Left.Matches(parent))
+					{
+						return true;
+					}
+
+					parent = parent.Parent;
+				}
+				return false;
+			}
+		}
+
+		sealed class Adjacent : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				IStyleSelectable prev = null;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable && prev != null)
+					{
+						return Left.Matches(prev);
+					}
+
+					prev = elem;
+				}
+				return false;
+				//var index = styleable.Parent.Children.IndexOf(styleable);
+				//if (index == 0)
+				//	return false;
+				//var adjacent = styleable.Parent.Children[index - 1];
+				//return Left.Matches(adjacent);
+			}
+		}
+
+		sealed class Sibling : Operator
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (!Right.Matches(styleable))
+				{
+					return false;
+				}
+
+				if (styleable.Parent == null)
+				{
+					return false;
+				}
+
+				int selfIndex = 0;
+				bool foundSelfInParent = false;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (elem == styleable)
+					{
+						foundSelfInParent = true;
+						break;
+					}
+					++selfIndex;
+				}
+
+				if (!foundSelfInParent)
+				{
+					return false;
+				}
+
+				int index = 0;
+				foreach (var elem in styleable.Parent.Children)
+				{
+					if (index >= selfIndex)
+					{
+						return false;
+					}
+
+					if (Left.Matches(elem))
+					{
+						return true;
+					}
+
 					++index;
 				}
 

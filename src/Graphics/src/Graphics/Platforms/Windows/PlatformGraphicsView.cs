@@ -77,7 +77,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
 		{
 			if (_drawable == null)
+			{
+			{
 				return;
+			}
 
 			_dirty.X = 0f;
 			_dirty.Y = 0f;

@@ -166,7 +166,10 @@ namespace Microsoft.Maui.Platform
 			var sizeThatFits = SizeThatFits(fittingSize);
 			var availableSpace = Bounds.Height - sizeThatFits.Height * ZoomScale;
 			if (availableSpace <= 0)
+			{
 				return;
+			}
+
 			ContentOffset = VerticalTextAlignment switch
 			{
 				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),

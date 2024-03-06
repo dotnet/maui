@@ -205,7 +205,10 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_itemDisplayBinding == value)
+				{
+				{
 					return;
+				}
 
 				OnPropertyChanging();
 				var oldValue = value;
@@ -223,9 +226,343 @@ namespace Microsoft.Maui.Controls
 		string GetDisplayMember(object item)
 		{
 			if (ItemDisplayBinding == null)
+			{
+			{
 				return item == null ? string.Empty : item.ToString();
+			}
+			}
 
-			ItemDisplayBinding.Apply(item, this, s_displayProperty, false, SetterSpecificity.FromBinding);
+			ItemDisplayBinding.Apply(
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				UpdateSelectedItem(newIndex);
+After:
+			{
+				UpdateSelectedItem(newIndex);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				UpdateSelectedItem(newIndex);
+After:
+			{
+				UpdateSelectedItem(newIndex);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				UpdateSelectedItem(newIndex);
+After:
+			{
+				UpdateSelectedItem(newIndex);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				UpdateSelectedItem(newIndex);
+After:
+			{
+				UpdateSelectedItem(newIndex);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				UpdateSelectedItem(newIndex);
+After:
+			{
+				UpdateSelectedItem(newIndex);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				oldObservable.CollectionChanged -= CollectionChanged;
+After:
+			{
+				oldObservable.CollectionChanged -= CollectionChanged;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				oldObservable.CollectionChanged -= CollectionChanged;
+After:
+			{
+				oldObservable.CollectionChanged -= CollectionChanged;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				oldObservable.CollectionChanged -= CollectionChanged;
+After:
+			{
+				oldObservable.CollectionChanged -= CollectionChanged;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				oldObservable.CollectionChanged -= CollectionChanged;
+After:
+			{
+				oldObservable.CollectionChanged -= CollectionChanged;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				oldObservable.CollectionChanged -= CollectionChanged;
+After:
+			{
+				oldObservable.CollectionChanged -= CollectionChanged;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				return;
+			((LockableObservableListWrapper)Items).InternalClear();
+After:
+			{
+				return;
+			} ((LockableObservableListWrapper)Items).InternalClear();
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+			((LockableObservableListWrapper)Items).InternalClear();
+After:
+			{
+				return;
+			} ((LockableObservableListWrapper)Items).InternalClear();
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return;
+			((LockableObservableListWrapper)Items).InternalClear();
+After:
+			{
+				return;
+			} ((LockableObservableListWrapper)Items).InternalClear();
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return;
+			((LockableObservableListWrapper)Items).InternalClear();
+After:
+			{
+				return;
+			} ((LockableObservableListWrapper)Items).InternalClear();
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return;
+			((LockableObservableListWrapper)Items).InternalClear();
+After:
+			{
+				return;
+			} ((LockableObservableListWrapper)Items).InternalClear();
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			Handler?.UpdateValue(nameof(IPicker.Items));
+			UpdateSelectedItem(SelectedIndex);
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			}
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
+			UpdateSelectedItem(SelectedIndex);
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			Handler?.UpdateValue(nameof(IPicker.Items));
+			UpdateSelectedItem(SelectedIndex);
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			}
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
+			UpdateSelectedItem(SelectedIndex);
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			Handler?.UpdateValue(nameof(IPicker.Items));
+			UpdateSelectedItem(SelectedIndex);
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			}
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
+			UpdateSelectedItem(SelectedIndex);
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			Handler?.UpdateValue(nameof(IPicker.Items));
+			UpdateSelectedItem(SelectedIndex);
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			}
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
+			UpdateSelectedItem(SelectedIndex);
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			Handler?.UpdateValue(nameof(IPicker.Items));
+			UpdateSelectedItem(SelectedIndex);
+		}
+After:
+			{
+				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			}
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
+			UpdateSelectedItem(SelectedIndex);
+		}
+*/
+item, this, s_displayProperty, false, SetterSpecificity.FromBinding);
 			ItemDisplayBinding.Unapply();
 			return (string)GetValue(s_displayProperty);
 		}
@@ -249,7 +586,9 @@ namespace Microsoft.Maui.Controls
 			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
 			// If the index has not changed, still need to change the selected item
 			if (newIndex == oldIndex)
+			{
 				UpdateSelectedItem(newIndex);
+			}
 
 			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
@@ -263,7 +602,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var oldObservable = oldValue as INotifyCollectionChanged;
 			if (oldObservable != null)
+			{
 				oldObservable.CollectionChanged -= CollectionChanged;
+			}
 
 			var newObservable = newValue as INotifyCollectionChanged;
 			if (newObservable != null)
@@ -305,23 +646,31 @@ namespace Microsoft.Maui.Controls
 		{
 			int index = e.NewStartingIndex < 0 ? Items.Count : e.NewStartingIndex;
 			foreach (object newItem in e.NewItems)
+			{
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+			}
 		}
 
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
 		{
 			int index = e.OldStartingIndex < Items.Count ? e.OldStartingIndex : Items.Count;
 			foreach (object _ in e.OldItems)
+			{
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+			}
 		}
 
 		void ResetItems()
 		{
 			if (ItemsSource == null)
+			{
 				return;
-			((LockableObservableListWrapper)Items).InternalClear();
+			} ((LockableObservableListWrapper)Items).InternalClear();
 			foreach (object item in ItemsSource)
+			{
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+			}
+
 			Handler?.UpdateValue(nameof(IPicker.Items));
 			UpdateSelectedItem(SelectedIndex);
 		}
@@ -406,11 +755,135 @@ namespace Microsoft.Maui.Controls
 		string IItemDelegate<string>.GetItem(int index)
 		{
 			if (index < 0)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return string.Empty;
 			if (index < Items?.Count)
 				return GetItem(index);
 			if (index < ItemsSource?.Count)
 				return GetDisplayMember(ItemsSource[index]);
+After:
+			{
+				return string.Empty;
+			}
+
+			if (index < Items?.Count)
+			{
+				return GetItem(index);
+			}
+
+			if (index < ItemsSource?.Count)
+			{
+				return GetDisplayMember(ItemsSource[index]);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return string.Empty;
+			if (index < Items?.Count)
+				return GetItem(index);
+			if (index < ItemsSource?.Count)
+				return GetDisplayMember(ItemsSource[index]);
+After:
+			{
+				return string.Empty;
+			}
+
+			if (index < Items?.Count)
+			{
+				return GetItem(index);
+			}
+
+			if (index < ItemsSource?.Count)
+			{
+				return GetDisplayMember(ItemsSource[index]);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return string.Empty;
+			if (index < Items?.Count)
+				return GetItem(index);
+			if (index < ItemsSource?.Count)
+				return GetDisplayMember(ItemsSource[index]);
+After:
+			{
+				return string.Empty;
+			}
+
+			if (index < Items?.Count)
+			{
+				return GetItem(index);
+			}
+
+			if (index < ItemsSource?.Count)
+			{
+				return GetDisplayMember(ItemsSource[index]);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return string.Empty;
+			if (index < Items?.Count)
+				return GetItem(index);
+			if (index < ItemsSource?.Count)
+				return GetDisplayMember(ItemsSource[index]);
+After:
+			{
+				return string.Empty;
+			}
+
+			if (index < Items?.Count)
+			{
+				return GetItem(index);
+			}
+
+			if (index < ItemsSource?.Count)
+			{
+				return GetDisplayMember(ItemsSource[index]);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return string.Empty;
+			if (index < Items?.Count)
+				return GetItem(index);
+			if (index < ItemsSource?.Count)
+				return GetDisplayMember(ItemsSource[index]);
+After:
+			{
+				return string.Empty;
+			}
+
+			if (index < Items?.Count)
+			{
+				return GetItem(index);
+			}
+
+			if (index < ItemsSource?.Count)
+			{
+				return GetDisplayMember(ItemsSource[index]);
+			}
+*/
+			{
+				return string.Empty;
+			}
+
+			if (index < Items?.Count)
+			{
+				return GetItem(index);
+			}
+
+			if (index < ItemsSource?.Count)
+			{
+				return GetDisplayMember(ItemsSource[index]);
+			}
+
 			return string.Empty;
 		}
 

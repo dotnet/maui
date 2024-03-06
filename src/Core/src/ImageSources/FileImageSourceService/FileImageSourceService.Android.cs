@@ -63,7 +63,9 @@ namespace Microsoft.Maui
 						{
 							var d = context?.GetDrawable(id);
 							if (d is not null)
+							{
 								return Task.FromResult<IImageSourceServiceResult<Drawable>?>(new ImageSourceServiceResult(d));
+							}
 						}
 					}
 

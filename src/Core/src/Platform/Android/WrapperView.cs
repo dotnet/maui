@@ -50,7 +50,9 @@ namespace Microsoft.Maui.Platform
 			_borderView?.BringToFront();
 
 			if (ChildCount == 0 || GetChildAt(0) is not AView child)
+			{
 				return;
+			}
 
 			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
 			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(bottom - top);
@@ -101,7 +103,10 @@ namespace Microsoft.Maui.Platform
 			if (Border == null)
 			{
 				if (_borderView != null)
+				{
 					RemoveView(_borderView);
+				}
+
 				_borderView = null;
 				return;
 			}
@@ -135,15 +140,19 @@ namespace Microsoft.Maui.Platform
 		protected override void DrawShadow(Canvas canvas, int viewWidth, int viewHeight)
 		{
 			if (_shadowCanvas == null)
+			{
 				_shadowCanvas = new Canvas();
+			}
 
 			if (_shadowPaint == null)
+			{
 				_shadowPaint = new Android.Graphics.Paint
 				{
 					AntiAlias = true,
 					Dither = true,
 					FilterBitmap = true
 				};
+			}
 
 			Graphics.Color solidColor = null;
 
@@ -200,10 +209,14 @@ namespace Microsoft.Maui.Platform
 					var radius = Shadow.Radius;
 
 					if (radius <= 0)
+					{
 						radius = 0.01f;
+					}
 
 					if (radius > 100)
+					{
 						radius = MaximumRadius;
+					}
 
 					_shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
 
@@ -237,13 +250,17 @@ namespace Microsoft.Maui.Platform
 
 			// Reset alpha to draw child with full alpha
 			if (solidColor != null)
+			{
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 				_shadowPaint.Color = solidColor.ToPlatform();
+			}
 #pragma warning restore CA1416
 
 			// Draw shadow bitmap
 			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)
+			{
 				canvas.DrawBitmap(_shadowBitmap, 0.0F, 0.0F, _shadowPaint);
+			}
 		}
 
 		void ClearShadowResources()
@@ -279,7 +296,9 @@ namespace Microsoft.Maui.Platform
 		internal static void SetupContainer(AView platformView, Context context, AView containerView, Action<AView> setWrapperView)
 		{
 			if (context == null || platformView == null || containerView != null)
+			{
 				return;
+			}
 
 			var oldParent = (ViewGroup)platformView.Parent;
 
@@ -292,9 +311,13 @@ namespace Microsoft.Maui.Platform
 			((ViewGroup)containerView).AddView(platformView);
 
 			if (oldIndex is int idx && idx >= 0)
+			{
 				oldParent?.AddView(containerView, idx);
+			}
 			else
+			{
 				oldParent?.AddView(containerView);
+			}
 		}
 
 		internal static void RemoveContainer(AView platformView, Context context, AView containerView, Action clearWrapperView)
@@ -313,14 +336,20 @@ namespace Microsoft.Maui.Platform
 			CleanupContainerView(containerView, clearWrapperView);
 
 			if (oldIndex is int idx && idx >= 0)
+			{
 				oldParent?.AddView(platformView, idx);
+			}
 			else
+			{
 				oldParent?.AddView(platformView);
+			}
 
 			void CleanupContainerView(AView containerView, Action clearWrapperView)
 			{
 				if (containerView is ViewGroup vg)
+				{
 					vg.RemoveAllViews();
+				}
 
 				clearWrapperView.Invoke();
 			}

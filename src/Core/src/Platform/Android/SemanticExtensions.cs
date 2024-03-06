@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateSemanticNodeInfo(this View platformView, IView virtualView, AccessibilityNodeInfoCompat? info)
 		{
 			if (info == null || virtualView == null)
+			{
 				return;
+			}
 
 			var semantics = virtualView.Semantics;
 			var desc = semantics?.Description;
@@ -26,12 +28,18 @@ namespace Microsoft.Maui.Platform
 				if (platformView is EditText et)
 				{
 					if (!string.IsNullOrEmpty(et.Text))
+					{
 						newText = $"{desc}, {et.Text}";
+					}
 					else
+					{
 						newText = $"{desc}";
+					}
 				}
 				else
+				{
 					newContentDescription = desc;
+				}
 			}
 
 			if (!string.IsNullOrEmpty(hint))
@@ -42,7 +50,9 @@ namespace Microsoft.Maui.Platform
 					info.HintText = hint;
 
 					if (platformView is EditText)
+					{
 						info.ShowingHintText = false;
+					}
 				}
 				else
 				{
@@ -83,12 +93,18 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (!string.IsNullOrWhiteSpace(newContentDescription))
+			{
 				info.ContentDescription = newContentDescription;
+			}
 			else if (info.ContentDescription == virtualView.AutomationId)
+			{
 				info.ContentDescription = null;
+			}
 
 			if (!string.IsNullOrWhiteSpace(newText))
+			{
 				info.Text = newText;
+			}
 
 			if (!string.IsNullOrWhiteSpace(virtualView.AutomationId) &&
 				platformView?.Context != null)
@@ -104,7 +120,9 @@ namespace Microsoft.Maui.Platform
 			var semantics = view.Semantics;
 
 			if (semantics == null)
+			{
 				return;
+			}
 
 			ViewCompat.SetAccessibilityHeading(platformView, semantics.IsHeading);
 		}

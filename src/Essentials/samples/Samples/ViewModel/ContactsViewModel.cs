@@ -34,14 +34,19 @@ namespace Samples.ViewModel
 		async void OnGetContact()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
+
 			IsBusy = true;
 
 			try
 			{
 				var contact = await ContactsManager.PickContactAsync();
 				if (contact == null)
+				{
 					return;
+				}
 
 				var details = new ContactDetailsViewModel(contact);
 				await NavigateAsync(details);
@@ -59,10 +64,15 @@ namespace Samples.ViewModel
 		async void OnGetAllContact()
 		{
 			if (await Permissions.RequestAsync<Permissions.ContactsRead>() != PermissionStatus.Granted)
+			{
 				return;
+			}
 
 			if (IsBusy)
+			{
 				return;
+			}
+
 			IsBusy = true;
 
 			ContactsList.Clear();
@@ -91,7 +101,9 @@ namespace Samples.ViewModel
 		async void OnContactSelected()
 		{
 			if (SelectedContact == null)
+			{
 				return;
+			}
 
 			var details = new ContactDetailsViewModel(SelectedContact);
 

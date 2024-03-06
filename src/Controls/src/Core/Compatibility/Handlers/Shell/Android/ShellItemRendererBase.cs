@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (_shellSection == value)
+				{
 					return;
+				}
 
 				if (_shellSection != null)
 				{
@@ -68,7 +70,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (_displayedPage == value)
+				{
 					return;
+				}
 
 				Page oldPage = _displayedPage;
 				_displayedPage = value;
@@ -117,12 +121,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
 			if (disposing)
+			{
 				Destroy();
+			}
 
 			base.Dispose(disposing);
 		}
@@ -150,42 +158,66 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				case ShellNavigationSource.Push:
 					if (!_fragmentMap.ContainsKey(page))
+					{
 						_fragmentMap[page] = CreateFragmentForPage(page);
+					}
+
 					if (!isForCurrentTab)
+					{
 						return Task.FromResult(true);
+					}
+
 					break;
 				case ShellNavigationSource.Insert:
 					if (!isForCurrentTab)
+					{
 						return Task.FromResult(true);
+					}
+
 					break;
 
 				case ShellNavigationSource.Pop:
 					if (_fragmentMap.TryGetValue(page, out var frag))
 					{
 						if (frag.Fragment.IsAdded && !isForCurrentTab)
+						{
 							RemoveFragment(frag.Fragment);
+						}
+
 						_fragmentMap.Remove(page);
 					}
 					if (!isForCurrentTab)
+					{
 						return Task.FromResult(true);
+					}
+
 					break;
 
 				case ShellNavigationSource.Remove:
 					if (_fragmentMap.TryGetValue(page, out var removeFragment))
 					{
 						if (removeFragment.Fragment.IsAdded && !isForCurrentTab && removeFragment != _currentFragment)
+						{
 							RemoveFragment(removeFragment.Fragment);
+						}
+
 						_fragmentMap.Remove(page);
 					}
 
 					if (!isForCurrentTab && removeFragment != _currentFragment)
+					{
 						return Task.FromResult(true);
+					}
+
 					break;
 
 				case ShellNavigationSource.PopToRoot:
 					RemoveAllPushedPages(shellSection, isForCurrentTab);
 					if (!isForCurrentTab)
+					{
 						return Task.FromResult(true);
+					}
+
 					break;
 
 				case ShellNavigationSource.ShellSectionChanged:
@@ -211,21 +243,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				targetElement = stack[stack.Count - 1];
 				if (!_fragmentMap.ContainsKey(targetElement))
+				{
 					_fragmentMap[targetElement] = CreateFragmentForPage(targetElement as Page);
+				}
+
 				target = _fragmentMap[targetElement];
 			}
 
 			// Down here because of comment above
 			if (navSource == ShellNavigationSource.ShellSectionChanged)
+			{
 				RemoveAllButCurrent(target.Fragment);
+			}
 
 			if (target == _currentFragment)
+			{
 				return Task.FromResult(true);
+			}
 
 			var t = ChildFragmentManager.BeginTransactionEx();
 
 			if (animated)
+			{
 				SetupAnimation(navSource, t, page);
+			}
 
 			IShellObservableFragment trackFragment = null;
 			switch (navSource)
@@ -234,10 +275,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					trackFragment = target;
 
 					if (_currentFragment != null)
+					{
 						t.HideEx(_currentFragment.Fragment);
+					}
 
 					if (!target.Fragment.IsAdded)
+					{
 						t.AddEx(GetNavigationTarget().Id, target.Fragment);
+					}
+
 					t.ShowEx(target.Fragment);
 					break;
 
@@ -248,10 +294,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					trackFragment = _currentFragment;
 
 					if (_currentFragment != null)
+					{
 						t.RemoveEx(_currentFragment.Fragment);
+					}
 
 					if (!target.Fragment.IsAdded)
+					{
 						t.AddEx(GetNavigationTarget().Id, target.Fragment);
+					}
+
 					t.ShowEx(target.Fragment);
 					break;
 			}
@@ -320,7 +371,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == ShellItem.CurrentItemProperty.PropertyName)
+			{
 				ShellSection = ShellItem.CurrentItem;
+			}
 		}
 
 		protected virtual void OnShellItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -328,13 +381,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (e.OldItems != null)
 			{
 				foreach (ShellSection shellSection in e.OldItems)
+				{
 					UnhookChildEvents(shellSection);
+				}
 			}
 
 			if (e.NewItems != null)
 			{
 				foreach (ShellSection shellSection in e.NewItems)
+				{
 					HookChildEvents(shellSection);
+				}
 			}
 		}
 
@@ -390,7 +447,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var f = kvp.Value.Fragment;
 				if (kvp.Value == _currentFragment || kvp.Value.Fragment == skip || !f.IsAdded)
+				{
 					continue;
+				}
 
 				trans ??= ChildFragmentManager.BeginTransactionEx();
 				trans.Remove(f);
@@ -402,19 +461,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void RemoveAllPushedPages(ShellSection shellSection, bool keepCurrent)
 		{
 			if (shellSection.Stack.Count <= 1 || (keepCurrent && shellSection.Stack.Count == 2))
+			{
 				return;
+			}
 
 			var t = ChildFragmentManager.BeginTransactionEx();
 
 			foreach (var kvp in _fragmentMap.ToList())
 			{
 				if (kvp.Key.Parent != shellSection)
+				{
 					continue;
+				}
 
 				_fragmentMap.Remove(kvp.Key);
 
 				if (keepCurrent && kvp.Value.Fragment == _currentFragment)
+				{
 					continue;
+				}
 
 				t.RemoveEx(kvp.Value.Fragment);
 			}

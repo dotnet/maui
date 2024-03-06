@@ -43,14 +43,102 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_basedOnStyle == value)
+				{
+				{
 					return;
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				if (!ValidateBasedOn(value))
 					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+After:
+				}
+
+				if (!ValidateBasedOn(value))
+				{
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+				if (!ValidateBasedOn(value))
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+After:
+				}
+
+				if (!ValidateBasedOn(value))
+				{
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				if (!ValidateBasedOn(value))
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+After:
+				}
+
+				if (!ValidateBasedOn(value))
+				{
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				if (!ValidateBasedOn(value))
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+After:
+				}
+
+				if (!ValidateBasedOn(value))
+				{
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				if (!ValidateBasedOn(value))
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+After:
+				}
+
+				if (!ValidateBasedOn(value))
+				{
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				if (!ValidateBasedOn(value))
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+After:
+				}
+
+				if (!ValidateBasedOn(value))
+				{
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+				}
+*/
+				}
+
+				if (!ValidateBasedOn(value))
+				{
+					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+				}
+
 				Style oldValue = _basedOnStyle;
 				_basedOnStyle = value;
 				BasedOnChanged(oldValue, value);
 				if (value != null)
+				{
 					BaseResourceKey = null;
+				}
+				}
 			}
 		}
 
@@ -61,17 +149,27 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_baseResourceKey == value)
+				{
+				{
 					return;
+				}
+
 				_baseResourceKey = value;
 				//update all DynamicResources
 				foreach (var target in (IEnumerable<KeyValuePair<BindableObject, object>>)(object)_targets)
 				{
 					target.Key.RemoveDynamicResource(_basedOnResourceProperty);
 					if (value != null)
+					{
 						target.Key.SetDynamicResource(_basedOnResourceProperty, value);
+					}
 				}
 				if (value != null)
+				{
+				{
 					BasedOn = null;
+				}
+				}
 			}
 		}
 
@@ -103,7 +201,10 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (BaseResourceKey != null)
+			{
 				bindable.SetDynamicResource(_basedOnResourceProperty, BaseResourceKey);
+			}
+
 			ApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable), specificity);
 		}
 
@@ -123,14 +224,72 @@ namespace Microsoft.Maui.Controls
 		internal bool CanBeAppliedTo(Type targetType)
 		{
 			if (TargetType == targetType)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return true;
 			if (!ApplyToDerivedTypes)
 				return false;
+After:
+			{
+				return true;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return true;
+			if (!ApplyToDerivedTypes)
+				return false;
+After:
+			{
+				return true;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return true;
+			if (!ApplyToDerivedTypes)
+				return false;
+After:
+			{
+				return true;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return true;
+			if (!ApplyToDerivedTypes)
+				return false;
+After:
+			{
+				return true;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return true;
+			if (!ApplyToDerivedTypes)
+				return false;
+After:
+			{
+				return true;
+*/
+			{
+				return true;
+			}
+
+			if (!ApplyToDerivedTypes)
+			{
+				return false;
+			}
+
 			do
 			{
 				targetType = targetType.BaseType;
 				if (TargetType == targetType)
+				{
 					return true;
+				}
 			} while (targetType != typeof(Element));
 			return false;
 		}
@@ -150,9 +309,14 @@ namespace Microsoft.Maui.Controls
 		{
 			Style style = (bindable as IStyleElement).Style;
 			if (style == null)
+			{
 				return;
+			}
+
 			if (!style._targets.TryGetValue(bindable, out var objectspecificity))
+			{
 				return;
+			}
 
 			style.UnApplyCore(bindable, (Style)oldValue);
 			style.ApplyCore(bindable, (Style)newValue, (SetterSpecificity)objectspecificity);
@@ -163,7 +327,9 @@ namespace Microsoft.Maui.Controls
 		void ApplyCore(BindableObject bindable, Style basedOn, SetterSpecificity specificity)
 		{
 			if (basedOn != null)
+			{
 				((IStyle)basedOn).Apply(bindable, new SetterSpecificity(specificity.Style - 1, 0, 0, 0));
+			}
 
 #if NETSTANDARD2_0
 			specificities.Remove(bindable);
@@ -173,9 +339,9 @@ namespace Microsoft.Maui.Controls
 #endif
 
 			foreach (Setter setter in Setters)
+			{
 				setter.Apply(bindable, specificity);
-
-			((AttachedCollection<Behavior>)Behaviors).AttachTo(bindable);
+			} ((AttachedCollection<Behavior>)Behaviors).AttachTo(bindable);
 			((AttachedCollection<TriggerBase>)Triggers).AttachTo(bindable);
 		}
 
@@ -185,13 +351,19 @@ namespace Microsoft.Maui.Controls
 			((AttachedCollection<Behavior>)Behaviors).DetachFrom(bindable);
 
 			if (!specificities.TryGetValue(bindable, out var specificity))
+			{
 				return;
+			}
 
 			foreach (Setter setter in Setters)
+			{
 				setter.UnApply(bindable, (SetterSpecificity)specificity);
+			}
 
 			if (basedOn != null)
+			{
 				((IStyle)basedOn).UnApply(bindable);
+			}
 		}
 
 		bool ValidateBasedOn(Style value)

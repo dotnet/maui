@@ -225,7 +225,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var formsElement = _handler?.VirtualView as VisualElement;
 
 			if (formsElement == null)
+			{
 				return;
+			}
 
 			VisualStateManager.GoToState(formsElement, isSelected
 				? VisualStateManager.CommonStates.Selected
@@ -258,7 +260,9 @@ namespace Microsoft.Maui.Controls.Platform
 			// Because this is the root element of the ListViewItem we need to propagate
 			// the semantic properties from the root xplat element to this platform element
 			if (view == null)
+			{
 				return;
+			}
 
 			this.UpdateSemantics(view);
 
@@ -288,9 +292,13 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// Make sure we supply a real number for sizes otherwise virtualization won't function
 				if (double.IsFinite(availableSize.Width) && !double.IsFinite(availableSize.Height))
+				{
 					return new WSize(availableSize.Width, 32);
+				}
 				else if (!double.IsFinite(availableSize.Width) && double.IsFinite(availableSize.Height))
+				{
 					return new WSize(88, availableSize.Height);
+				}
 
 				return base.MeasureOverride(availableSize);
 			}
@@ -331,7 +339,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// Just in case this view is already parented to a wrapper that's been cycled out
 				if (platformView.Parent is ContentLayoutPanel clp)
+				{
 					clp.Children.Remove(platformView);
+				}
 
 				Children.Add(platformView);
 			}

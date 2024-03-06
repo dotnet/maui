@@ -39,10 +39,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var height = heightConstraint;
 
 			if (!double.IsInfinity(width))
+			{
 				width = Context.ToPixels(width);
+			}
 
 			if (!double.IsInfinity(height))
+			{
 				height = Context.ToPixels(height);
+			}
 
 			UpdateEmptyViewSize(width, height);
 

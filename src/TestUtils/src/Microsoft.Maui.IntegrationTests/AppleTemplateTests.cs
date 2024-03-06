@@ -11,7 +11,9 @@ namespace Microsoft.Maui.IntegrationTests
 		public void AppleTemplateSetup()
 		{
 			if (!TestEnvironment.IsMacOS)
+			{
 				Assert.Ignore("Running Apple templates is only supported on macOS.");
+			}
 
 			TestSimulator.Shutdown();
 			Assert.IsTrue(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");

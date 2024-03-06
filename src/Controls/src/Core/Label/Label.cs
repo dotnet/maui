@@ -78,7 +78,9 @@ namespace Microsoft.Maui.Controls
 
 				label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 				if (newvalue != null)
+				{
 					label.Text = null;
+				}
 			});
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextTransform']/Docs/*" />
@@ -127,7 +129,9 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 			if (FormattedText != null)
+			{
 				SetInheritedBindingContext(FormattedText, this.BindingContext);
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='FormattedText']/Docs/*" />
@@ -292,7 +296,10 @@ namespace Microsoft.Maui.Controls
 		void SetupSpanGestureRecognizers(IEnumerable gestureRecognizers)
 		{
 			foreach (GestureRecognizer gestureRecognizer in gestureRecognizers)
+			{
+			{
 				GestureController.CompositeGestureRecognizers.Add(new ChildGestureRecognizer() { GestureRecognizer = gestureRecognizer });
+			}
 		}
 
 
@@ -308,9 +315,15 @@ namespace Microsoft.Maui.Controls
 		void RemoveSpanGestureRecognizers(IEnumerable gestureRecognizers)
 		{
 			foreach (GestureRecognizer gestureRecognizer in gestureRecognizers)
+			{
 				foreach (var spanRecognizer in GestureController.CompositeGestureRecognizers.ToList())
+				{
 					if (spanRecognizer is ChildGestureRecognizer childGestureRecognizer && childGestureRecognizer.GestureRecognizer == gestureRecognizer)
+					{
 						GestureController.CompositeGestureRecognizers.Remove(spanRecognizer);
+					}
+				}
+			}
 		}
 
 
@@ -366,9 +379,14 @@ namespace Microsoft.Maui.Controls
 			bool isVerticallyFixed = (label.Constraint & LayoutConstraint.VerticallyFixed) != 0;
 			bool isSingleLine = !(breakMode == LineBreakMode.CharacterWrap || breakMode == LineBreakMode.WordWrap);
 			if (!isVerticallyFixed || !isSingleLine)
+			{
 				((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			}
+
 			if (newvalue != null)
+			{
 				((Label)bindable).FormattedText = null;
+			}
 		}
 
 		/// <inheritdoc/>
@@ -393,6 +411,9 @@ namespace Microsoft.Maui.Controls
 		public override IList<GestureElement> GetChildElements(Point point)
 		{
 			if (FormattedText?.Spans == null || FormattedText?.Spans.Count == 0)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return null;
 
 			var spans = new List<GestureElement>();
@@ -407,6 +428,228 @@ namespace Microsoft.Maui.Controls
 				for (var i = spans.Count - 1; i >= 0; i--)
 					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
 						spans.RemoveAt(i);
+After:
+			{
+				return null;
+			}
+
+			var spans = new List<GestureElement>();
+			for (int i = 0; i < FormattedText.Spans.Count; i++)
+			{
+				Span span = FormattedText.Spans[i];
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+				{
+					spans.Add(span);
+				}
+			}
+
+			if (!point.IsEmpty && spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+			{
+				for (var i = spans.Count - 1; i >= 0; i--)
+				{
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+					{
+						spans.RemoveAt(i);
+					}
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return null;
+
+			var spans = new List<GestureElement>();
+			for (int i = 0; i < FormattedText.Spans.Count; i++)
+			{
+				Span span = FormattedText.Spans[i];
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+					spans.Add(span);
+			}
+
+			if (!point.IsEmpty && spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+				for (var i = spans.Count - 1; i >= 0; i--)
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+						spans.RemoveAt(i);
+After:
+			{
+				return null;
+			}
+
+			var spans = new List<GestureElement>();
+			for (int i = 0; i < FormattedText.Spans.Count; i++)
+			{
+				Span span = FormattedText.Spans[i];
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+				{
+					spans.Add(span);
+				}
+			}
+
+			if (!point.IsEmpty && spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+			{
+				for (var i = spans.Count - 1; i >= 0; i--)
+				{
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+					{
+						spans.RemoveAt(i);
+					}
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return null;
+
+			var spans = new List<GestureElement>();
+			for (int i = 0; i < FormattedText.Spans.Count; i++)
+			{
+				Span span = FormattedText.Spans[i];
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+					spans.Add(span);
+			}
+
+			if (!point.IsEmpty && spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+				for (var i = spans.Count - 1; i >= 0; i--)
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+						spans.RemoveAt(i);
+After:
+			{
+				return null;
+			}
+
+			var spans = new List<GestureElement>();
+			for (int i = 0; i < FormattedText.Spans.Count; i++)
+			{
+				Span span = FormattedText.Spans[i];
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+				{
+					spans.Add(span);
+				}
+			}
+
+			if (!point.IsEmpty && spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+			{
+				for (var i = spans.Count - 1; i >= 0; i--)
+				{
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+					{
+						spans.RemoveAt(i);
+					}
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return null;
+
+			var spans = new List<GestureElement>();
+			for (int i = 0; i < FormattedText.Spans.Count; i++)
+			{
+				Span span = FormattedText.Spans[i];
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+					spans.Add(span);
+			}
+
+			if (!point.IsEmpty && spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+				for (var i = spans.Count - 1; i >= 0; i--)
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+						spans.RemoveAt(i);
+After:
+			{
+				return null;
+			}
+
+			var spans = new List<GestureElement>();
+			for (int i = 0; i < FormattedText.Spans.Count; i++)
+			{
+				Span span = FormattedText.Spans[i];
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+				{
+					spans.Add(span);
+				}
+			}
+
+			if (!point.IsEmpty && spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+			{
+				for (var i = spans.Count - 1; i >= 0; i--)
+				{
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+					{
+						spans.RemoveAt(i);
+					}
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return null;
+
+			var spans = new List<GestureElement>();
+			for (int i = 0; i < FormattedText.Spans.Count; i++)
+			{
+				Span span = FormattedText.Spans[i];
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+					spans.Add(span);
+			}
+
+			if (!point.IsEmpty && spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+				for (var i = spans.Count - 1; i >= 0; i--)
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+						spans.RemoveAt(i);
+After:
+			{
+				return null;
+			}
+
+			var spans = new List<GestureElement>();
+			for (int i = 0; i < FormattedText.Spans.Count; i++)
+			{
+				Span span = FormattedText.Spans[i];
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+				{
+					spans.Add(span);
+				}
+			}
+
+			if (!point.IsEmpty && spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+			{
+				for (var i = spans.Count - 1; i >= 0; i--)
+				{
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+					{
+						spans.RemoveAt(i);
+					}
+				}
+			}
+*/
+			{
+				return null;
+			}
+
+			var spans = new List<GestureElement>();
+			for (int i = 0; i < FormattedText.Spans.Count; i++)
+			{
+				Span span = FormattedText.Spans[i];
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+				{
+					spans.Add(span);
+				}
+			}
+
+			if (!point.IsEmpty && spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+			{
+				for (var i = spans.Count - 1; i >= 0; i--)
+				{
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+					{
+						spans.RemoveAt(i);
+					}
+				}
+			}
 
 			return spans;
 		}

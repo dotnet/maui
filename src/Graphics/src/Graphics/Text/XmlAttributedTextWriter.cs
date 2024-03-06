@@ -43,7 +43,9 @@ namespace Microsoft.Maui.Graphics.Text
 				if (attributedText.Runs != null && attributedText.Runs.Count > 0)
 				{
 					foreach (var run in attributedText.Runs)
+					{
 						WriteRun(run, writer);
+					}
 				}
 
 				writer.Write($"</{XmlNames.AttributedText}>");
@@ -69,7 +71,12 @@ namespace Microsoft.Maui.Graphics.Text
 				writer.Write("\"");
 
 				foreach (var entry in run.Attributes)
+				{
 					Write(attributes, entry.Key, null, writer);
+				}
+
+				writer.Write(" />");
+				}
 
 				writer.Write(" />");
 			}
@@ -84,7 +91,9 @@ namespace Microsoft.Maui.Graphics.Text
 			currentAttributes.TryGetValue(key, out var value);
 
 			if (!string.Equals(value, defaultValue, StringComparison.Ordinal))
+			{
 				WriteAttribute(writer, key.ToString(), value);
+			}
 		}
 
 		private void WriteAttribute(TextWriter writer, string attribute, string value)

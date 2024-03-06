@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Platform
 		internal static Rect[]? GetDefaultTitleBarDragRectangles(this UI.Xaml.Window platformWindow, IMauiContext mauiContext)
 		{
 			if (!AppWindowTitleBar.IsCustomizationSupported())
+			{
 				return null;
+			}
 
 			if (mauiContext?.GetNavigationRootManager()?.RootView is WindowRootView rootView &&
 				rootView.AppTitleBarContainer is FrameworkElement element)
@@ -62,7 +64,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var appWindow = platformWindow.GetAppWindow();
 			if (appWindow is null)
+			{
 				return;
+			}
 
 			var density = platformWindow.GetDisplayDensity();
 			var x = window.X;
@@ -81,7 +85,9 @@ namespace Microsoft.Maui.Platform
 				(int)y);
 
 			if (pos != currPos)
+			{
 				appWindow.Move(pos);
+			}
 		}
 
 		public static void UpdateWidth(this UI.Xaml.Window platformWindow, IWindow window) =>
@@ -94,7 +100,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var appWindow = platformWindow.GetAppWindow();
 			if (appWindow is null)
+			{
 				return;
+			}
 
 			var density = platformWindow.GetDisplayDensity();
 			var width = window.Width;
@@ -113,7 +121,9 @@ namespace Microsoft.Maui.Platform
 				(int)height);
 
 			if (size != currSize)
+			{
 				appWindow.Resize(size);
+			}
 		}
 
 		public static void UpdateMinimumWidth(this UI.Xaml.Window platformWindow, IWindow window) =>
@@ -125,7 +135,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMinimumSize(this UI.Xaml.Window platformWindow, IWindow window)
 		{
 			if (platformWindow is not IPlatformSizeRestrictedWindow restrictedWindow)
+			{
 				return;
+			}
 
 			var density = platformWindow.GetDisplayDensity();
 			var minWidth = window.MinimumWidth;
@@ -147,16 +159,26 @@ namespace Microsoft.Maui.Platform
 
 			var appWindow = platformWindow.GetAppWindow();
 			if (appWindow is null)
+			{
 				return;
+			}
 
 			var currentSize = appWindow.Size;
 			var temp = currentSize;
 			if (currentSize.Width < actualMinWidth)
+			{
 				temp.Width = actualMinWidth;
+			}
+
 			if (currentSize.Height < actualMinHeight)
+			{
 				temp.Height = actualMinHeight;
+			}
+
 			if (currentSize != temp)
+			{
 				appWindow.Resize(temp);
+			}
 		}
 
 		public static void UpdateMaximumWidth(this UI.Xaml.Window platformWindow, IWindow window) =>
@@ -168,7 +190,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMaximumSize(this UI.Xaml.Window platformWindow, IWindow window)
 		{
 			if (platformWindow is not IPlatformSizeRestrictedWindow restrictedWindow)
+			{
 				return;
+			}
 
 			var density = platformWindow.GetDisplayDensity();
 			var maxWidth = window.MaximumWidth;
@@ -190,16 +214,26 @@ namespace Microsoft.Maui.Platform
 
 			var appWindow = platformWindow.GetAppWindow();
 			if (appWindow is null)
+			{
 				return;
+			}
 
 			var currentSize = appWindow.Size;
 			var temp = currentSize;
 			if (currentSize.Width > actualMaxWidth)
+			{
 				temp.Width = actualMaxWidth;
+			}
+
 			if (currentSize.Height > actualMaxHeight)
+			{
 				temp.Height = actualMaxHeight;
+			}
+
 			if (currentSize != temp)
+			{
 				appWindow.Resize(temp);
+			}
 		}
 
 		public static IWindow? GetWindow(this UI.Xaml.Window platformWindow)
@@ -207,11 +241,15 @@ namespace Microsoft.Maui.Platform
 			foreach (var window in WindowExtensions.GetWindows())
 			{
 				if (window?.Handler?.PlatformView is UI.Xaml.Window win && win == platformWindow)
+				{
 					return window;
+				}
 			}
 
 			if (platformWindow is MauiWinUIWindow mauiWindow)
+			{
 				return mauiWindow?.Window;
+			}
 
 			return null;
 		}
@@ -221,7 +259,9 @@ namespace Microsoft.Maui.Platform
 			var hwnd = WindowNative.GetWindowHandle(platformWindow);
 
 			if (hwnd == IntPtr.Zero)
+			{
 				throw new NullReferenceException("The Window Handle is null.");
+			}
 
 			return hwnd;
 		}
@@ -264,7 +304,9 @@ namespace Microsoft.Maui.Platform
 			var hwnd = platformWindow.GetWindowHandle();
 
 			if (hwnd == IntPtr.Zero)
+			{
 				return null;
+			}
 
 			var windowId = UI.Win32Interop.GetWindowIdFromWindow(hwnd);
 			return UI.Windowing.AppWindow.GetFromWindowId(windowId);
@@ -273,20 +315,28 @@ namespace Microsoft.Maui.Platform
 		internal static DisplayOrientation GetOrientation(this IWindow? window)
 		{
 			if (window == null)
+			{
 				return DeviceDisplay.Current.MainDisplayInfo.Orientation;
+			}
 
 			var appWindow = window.Handler?.MauiContext?.GetPlatformWindow()?.GetAppWindow();
 
 			if (appWindow == null)
+			{
 				return DisplayOrientation.Unknown;
+			}
 
 			DisplayOrientations orientationEnum;
 			int theScreenWidth = appWindow.Size.Width;
 			int theScreenHeight = appWindow.Size.Height;
 			if (theScreenWidth > theScreenHeight)
+			{
 				orientationEnum = DisplayOrientations.Landscape;
+			}
 			else
+			{
 				orientationEnum = DisplayOrientations.Portrait;
+			}
 
 			return orientationEnum == DisplayOrientations.Landscape
 				? DisplayOrientation.Landscape

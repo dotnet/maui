@@ -201,10 +201,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void Start(SensorSpeed sensorSpeed)
 		{
 			if (!PlatformIsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (IsMonitoring)
+			{
 				throw new InvalidOperationException("Gyroscope has already been started.");
+			}
 
 			IsMonitoring = true;
 
@@ -222,10 +226,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void Stop()
 		{
 			if (!PlatformIsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (!IsMonitoring)
+			{
 				return;
+			}
 
 			IsMonitoring = false;
 
@@ -245,9 +253,13 @@ namespace Microsoft.Maui.Devices.Sensors
 			var args = new GyroscopeChangedEventArgs(data);
 
 			if (UseSyncContext)
+			{
 				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, args));
+			}
 			else
+			{
 				ReadingChanged?.Invoke(null, args);
+			}
 		}
 	}
 }

@@ -78,7 +78,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			RegisteredEffects.Add(typeof(TEffect), () =>
 			{
 				if (DependencyResolver.Resolve(typeof(TPlatformEffect)) is TPlatformEffect pe)
+				{
 					return pe;
+				}
 
 				return new TPlatformEffect();
 			});

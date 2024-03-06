@@ -51,9 +51,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Controller.Layout.InvalidateLayout();
 			}
 			else if (changedProperty.Is(CarouselView.IsSwipeEnabledProperty))
+			{
 				UpdateIsSwipeEnabled();
+			}
 			else if (changedProperty.Is(CarouselView.IsBounceEnabledProperty))
+			{
 				UpdateIsBounceEnabled();
+			}
 		}
 
 		protected override ItemsViewLayout SelectLayout() =>
@@ -76,7 +80,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateIsSwipeEnabled()
 		{
 			if (Carousel == null)
+			{
 				return;
+			}
 
 			Controller.CollectionView.ScrollEnabled = Carousel.IsSwipeEnabled;
 		}
@@ -84,7 +90,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateIsBounceEnabled()
 		{
 			if (Carousel == null)
+			{
 				return;
+			}
 
 			Controller.CollectionView.Bounces = Carousel.IsBounceEnabled;
 		}

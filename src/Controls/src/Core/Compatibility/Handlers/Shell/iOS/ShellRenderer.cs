@@ -29,7 +29,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				ShellSection shellSection = Shell?.CurrentItem?.CurrentItem;
 				if (shellSection == null)
+				{
 					return true;
+				}
+
 				return shellSection.Stack.Count <= 1;
 			}
 		}
@@ -99,7 +102,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void SetElement(VisualElement element)
 		{
 			if (Element != null)
+			{
 				throw new NotSupportedException("Reuse of the Shell Renderer is not supported");
+			}
+
 			Element = element;
 			OnElementSet((Shell)Element);
 
@@ -116,7 +122,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.ViewDidLayoutSubviews();
 			if (_currentShellItemRenderer != null)
+			{
 				_currentShellItemRenderer.ViewController.View.Frame = View.Bounds;
+			}
 
 			SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 		}
@@ -214,7 +222,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				?.Layer;
 
 			if (oldLayer?.AnimationKeys?.Length > 0)
+			{
 				oldLayer.RemoveAllAnimations();
+			}
 
 			await _activeTransition;
 			if (_currentShellItemRenderer?.ShellItem != currentItem)
@@ -239,7 +249,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateFlowDirection(bool readdViews = false)
 		{
 			if (_currentShellItemRenderer?.ViewController == null)
+			{
 				return;
+			}
 
 			var originalValue = _currentShellItemRenderer.ViewController.View.SemanticContentAttribute;
 			var originalViewValue = View.SemanticContentAttribute;
@@ -261,7 +273,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual void OnElementSet(Shell element)
 		{
 			if (element == null)
+			{
 				return;
+			}
 
 			element.PropertyChanged += OnElementPropertyChanged;
 		}
@@ -333,7 +347,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var color = Shell.BackgroundColor?.ToPlatform();
 			if (color == null)
+			{
 				color = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor;
+			}
 
 			FlyoutRenderer.View.BackgroundColor = color;
 		}

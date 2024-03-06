@@ -55,7 +55,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		public Task ComposeAsync(EmailMessage? message)
 		{
 			if (!IsComposeSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			return PlatformComposeAsync(message);
 		}
@@ -66,19 +68,29 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		static IEnumerable<string> Parameters(EmailMessage message)
 		{
 			if (message.To?.Count > 0)
+			{
 				yield return "to=" + Recipients(message.To);
+			}
 
 			if (message.Cc?.Count > 0)
+			{
 				yield return "cc=" + Recipients(message.Cc);
+			}
 
 			if (message.Bcc?.Count > 0)
+			{
 				yield return "bcc=" + Recipients(message.Bcc);
+			}
 
 			if (!string.IsNullOrWhiteSpace(message.Subject))
+			{
 				yield return "subject=" + Uri.EscapeDataString(message.Subject);
+			}
 
 			if (!string.IsNullOrWhiteSpace(message.Body))
+			{
 				yield return "body=" + Uri.EscapeDataString(message.Body);
+			}
 		}
 
 		static string Recipients(IEnumerable<string> addresses) =>

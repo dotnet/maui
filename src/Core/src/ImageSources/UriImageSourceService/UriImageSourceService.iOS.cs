@@ -20,7 +20,10 @@ namespace Microsoft.Maui
 		public async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IUriImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
+			{
+			{
 				return null;
+			}
 
 			try
 			{
@@ -28,9 +31,13 @@ namespace Microsoft.Maui
 
 				using var cgImageSource = imageData.GetPlatformImageSource();
 				if (cgImageSource is null)
+				{
 					throw new InvalidOperationException("Unable to load image file.");
-				
+				}
+
 				var image = cgImageSource.GetPlatformImage();
+
+				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 
@@ -53,7 +60,7 @@ namespace Microsoft.Maui
 			var pathToImageCache = Path.Combine(CacheDirectory, filename);
 
 			NSData? imageData;
-			
+
 			if (imageSource.CachingEnabled && IsImageCached(pathToImageCache))
 			{
 				imageData = GetCachedImage(pathToImageCache);
@@ -62,7 +69,9 @@ namespace Microsoft.Maui
 			{
 				imageData = await DownloadImageAsync(imageSource, cancellationToken);
 				if (imageSource.CachingEnabled)
+				{
 					CacheImage(imageData, pathToImageCache);
+				}
 			}
 
 			return imageData;
@@ -71,16 +80,22 @@ namespace Microsoft.Maui
 		internal static async Task<NSData> DownloadImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
 		{
 			if (imageSource is not IStreamImageSource streamImageSource)
+			{
 				throw new InvalidOperationException($"Unable to load image stream from image source type '{imageSource.GetType()}'.");
+			}
 
 			using var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 			if (stream is null)
+			{
 				throw new InvalidOperationException($"Unable to load image stream from URI '{imageSource.Uri}'.");
+			}
 
 			var imageData = NSData.FromStream(stream);
 
 			if (imageData is null)
+			{
 				throw new InvalidOperationException("Unable to load image stream data.");
+			}
 
 			return imageData;
 		}
@@ -91,7 +106,9 @@ namespace Microsoft.Maui
 			var directory = Path.GetDirectoryName(path);
 
 			if (string.IsNullOrEmpty(directory))
+			{
 				throw new InvalidOperationException($"Unable to get directory path name '{path}'.");
+			}
 
 			Directory.CreateDirectory(directory);
 
@@ -100,7 +117,9 @@ namespace Microsoft.Maui
 #pragma warning restore CA1416, CA1422
 
 			if (result == false)
+			{
 				throw new InvalidOperationException($"Unable to cache image at '{path}'.");
+			}
 		}
 
 		public bool IsImageCached(string path)
@@ -113,7 +132,9 @@ namespace Microsoft.Maui
 			var imageData = NSData.FromFile(path);
 
 			if (imageData == null)
+			{
 				throw new InvalidOperationException($"Unable to load image stream data from '{path}'.");
+			}
 
 			return imageData;
 		}

@@ -196,9 +196,13 @@ namespace Microsoft.Maui.DeviceTests
 				var foundTreeElement = nestedChild.GetVisualTreeElement(searchAncestors);
 
 				if (searchAncestors)
+				{
 					Assert.Equal(viewToLocate, foundTreeElement);
+				}
 				else
+				{
 					Assert.Null(foundTreeElement);
+				}
 			});
 		}
 

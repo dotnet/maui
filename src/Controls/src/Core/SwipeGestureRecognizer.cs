@@ -116,7 +116,9 @@ namespace Microsoft.Maui.Controls
 		{
 			ICommand cmd = Command;
 			if (cmd != null && cmd.CanExecute(CommandParameter))
+			{
 				cmd.Execute(CommandParameter);
+			}
 
 			Swiped?.Invoke(sender, new SwipedEventArgs(CommandParameter, direction));
 		}

@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			Uri commentUri = null;
 			if (nscookie.CommentUrl != null)
+			{
 				commentUri = nscookie.CommentUrl;
+			}
 
 			Cookie cookie = new Cookie()
 			{
@@ -33,7 +35,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			};
 
 			if (setDomain)
+			{
+			{
 				cookie.Domain = nscookie.Domain;
+			}
 
 			return cookie;
 		}

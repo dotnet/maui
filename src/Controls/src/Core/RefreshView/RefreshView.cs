@@ -33,7 +33,9 @@ namespace Microsoft.Maui.Controls
 			bool value = (bool)newValue;
 
 			if (!value)
+			{
 				return;
+			}
 
 			var refreshView = (RefreshView)bindable;
 			refreshView.Refreshing?.Invoke(bindable, EventArgs.Empty);
@@ -47,13 +49,159 @@ namespace Microsoft.Maui.Controls
 
 			// IsRefreshing can always be toggled to false
 			if (!newValue)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return value;
 
 			if (!view.IsEnabled)
 				return false;
+After:
+			{
+				return value;
+			}
+*/
 
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return value;
+
+			if (!view.IsEnabled)
+				return false;
+After:
+			{
+				return value;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return value;
+
+			if (!view.IsEnabled)
+				return false;
+After:
+			{
+				return value;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return value;
+
+			if (!view.IsEnabled)
+				return false;
+After:
+			{
+				return value;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return value;
+
+			if (!view.IsEnabled)
+				return false;
+After:
+			{
+				return value;
+			}
+*/
+			{
+				return 
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 			if (view.Command == null)
 				return value;
+After:
+			if (!view.IsEnabled)
+			{
+				return false;
+			}
+
+			if (view.Command == null)
+			{
+				return value;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			if (view.Command == null)
+				return value;
+After:
+			if (!view.IsEnabled)
+			{
+				return false;
+			}
+
+			if (view.Command == null)
+			{
+				return value;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			if (view.Command == null)
+				return value;
+After:
+			if (!view.IsEnabled)
+			{
+				return false;
+			}
+
+			if (view.Command == null)
+			{
+				return value;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+			if (view.Command == null)
+				return value;
+After:
+			if (!view.IsEnabled)
+			{
+				return false;
+			}
+
+			if (view.Command == null)
+			{
+				return value;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			if (view.Command == null)
+				return value;
+After:
+			if (!view.IsEnabled)
+			{
+				return false;
+			}
+
+			if (view.Command == null)
+			{
+				return value;
+			}
+*/
+value;
+			}
+
+			if (!view.IsEnabled)
+			{
+				return false;
+			}
+
+			if (view.Command == null)
+			{
+				return value;
+			}
 
 			return value;
 		}
@@ -73,10 +221,14 @@ namespace Microsoft.Maui.Controls
 		{
 			RefreshView refreshView = (RefreshView)bindable;
 			if (oldValue is ICommand oldCommand)
+			{
 				oldCommand.CanExecuteChanged -= refreshView.RefreshCommandCanExecuteChanged;
+			}
 
 			if (newValue is ICommand newCommand)
+			{
 				newCommand.CanExecuteChanged += refreshView.RefreshCommandCanExecuteChanged;
+			}
 
 			refreshView.RefreshCommandCanExecuteChanged(bindable, EventArgs.Empty);
 		}
@@ -106,7 +258,9 @@ namespace Microsoft.Maui.Controls
 		void RefreshCommandCanExecuteChanged(object sender, EventArgs eventArgs)
 		{
 			if (IsRefreshing)
+			{
 				return;
+			}
 
 			if (Command != null)
 			{

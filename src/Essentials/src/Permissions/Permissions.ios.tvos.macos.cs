@@ -74,7 +74,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = GetPhotoPermissionStatus(PHAccessLevel.AddOnly);
 				if (status == PermissionStatus.Granted)
+				{
 					return status;
+				}
 
 				EnsureMainThread();
 

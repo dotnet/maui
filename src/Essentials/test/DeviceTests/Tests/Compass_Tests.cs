@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasCompass)
+			{
 				return;
+			}
 
 			var tcs = new TaskCompletionSource<CompassData>();
 
@@ -47,7 +49,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasCompass)
+			{
 				return;
+			}
 
 			var tcs = new TaskCompletionSource<CompassData>();
 			Compass.ReadingChanged += Compass_ReadingChanged;
@@ -71,7 +75,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasCompass)
+			{
 				return;
+			}
 
 			var tcs = new TaskCompletionSource<CompassData>();
 			Compass.ReadingChanged += Compass_ReadingChanged;

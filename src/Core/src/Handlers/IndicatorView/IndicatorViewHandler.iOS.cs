@@ -80,7 +80,9 @@ namespace Microsoft.Maui.Handlers
 			void ClearIndicators()
 			{
 				foreach (var child in PlatformView.Subviews)
+				{
 					child.RemoveFromSuperview();
+				}
 			}
 		}
 	}

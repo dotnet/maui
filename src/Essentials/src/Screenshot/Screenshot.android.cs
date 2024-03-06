@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Media
 		public Task<IScreenshotResult> CaptureAsync()
 		{
 			if (WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
+			{
 				throw new UnauthorizedAccessException("Unable to take a screenshot of a secure window.");
+			}
 
 			var activity = ActivityStateManager.Default.GetCurrentActivity(true);
 
@@ -34,7 +36,9 @@ namespace Microsoft.Maui.Media
 		{
 			var view = activity?.Window?.DecorView?.RootView;
 			if (view == null)
+			{
 				throw new InvalidOperationException("Unable to find the main window.");
+			}
 
 			return CaptureAsync(view);
 		}
@@ -54,7 +58,9 @@ namespace Microsoft.Maui.Media
 			var bitmap = RenderUsingCanvasDrawing(view);
 
 			if (bitmap == null)
+			{
 				bitmap = RenderUsingDrawingCache(view);
+			}
 
 			return bitmap;
 		}
@@ -64,16 +70,23 @@ namespace Microsoft.Maui.Media
 			try
 			{
 				if (view?.LayoutParameters == null || Bitmap.Config.Argb8888 == null)
+				{
 					return null;
+				}
+
 				var width = view.Width;
 				var height = view.Height;
 
 				var bitmap = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888);
 				if (bitmap == null)
+				{
 					return null;
+				}
 
 				using (var canvas = new Canvas(bitmap))
+				{
 					view.Draw(canvas);
+				}
 
 				return bitmap;
 			}
@@ -95,7 +108,10 @@ namespace Microsoft.Maui.Media
 				view.BuildDrawingCache();
 				var cachedBitmap = view.DrawingCache;
 				if (cachedBitmap == null)
+				{
 					return null;
+				}
+
 				var bitmap = Bitmap.CreateBitmap(cachedBitmap);
 				view.DrawingCacheEnabled = enabled;
 				return bitmap;

@@ -183,7 +183,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Color backgroundColor = color ?? Element.BackgroundColor;
 
 			if (backgroundColor != null)
+			{
 				SetBackgroundColor(backgroundColor.ToAndroid());
+			}
 		}
 
 		void SetUpNewElement(IndicatorView newElement)
@@ -208,9 +210,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdateBackgroundColor();
 
 			if (IndicatorView.IndicatorTemplate != null)
+			{
 				UpdateIndicatorTemplate();
+			}
 			else
+			{
 				UpdateItemsSource();
+			}
 
 			ElevationHelper.SetElevation(this, newElement);
 
@@ -245,7 +251,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateIndicatorCount()
 		{
 			if (!IsVisible)
+			{
 				return;
+			}
 
 			var count = GetMaximumVisible();
 
@@ -255,9 +263,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var imageView = new ImageView(Context);
 				if (Orientation == Orientation.Horizontal)
+				{
 					imageView.SetPadding((int)Context.ToPixels(DefaultPadding), 0, (int)Context.ToPixels(DefaultPadding), 0);
+				}
 				else
+				{
 					imageView.SetPadding(0, (int)Context.ToPixels(DefaultPadding), 0, (int)Context.ToPixels(DefaultPadding));
+				}
 
 				imageView.SetImageDrawable(_selectedIndex == i ? _currentPageShape : _pageShape);
 				AddView(imageView);
@@ -275,7 +287,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void ResetIndicators()
 		{
 			if (!IsVisible)
+			{
 				return;
+			}
 
 			_pageIndicatorTintColor = IndicatorView.IndicatorColor.ToAndroid();
 			_currentPageIndicatorTintColor = IndicatorView.SelectedIndicatorColor.ToAndroid();
@@ -284,9 +298,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_currentPageShape = null;
 
 			if (IndicatorView.IndicatorTemplate == null)
+			{
 				UpdateShapes();
+			}
 			else
+			{
 				UpdateIndicatorTemplate();
+			}
 
 			UpdateIndicators();
 		}
@@ -294,7 +312,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateIndicatorTemplate()
 		{
 			if (IndicatorView.IndicatorLayout is not VisualElement indicatorLayout)
+			{
 				return;
+			}
 
 			var renderer = indicatorLayout.GetRenderer() ?? Platform.CreateRendererWithContext(indicatorLayout, Context);
 			Platform.SetRenderer(indicatorLayout, renderer);
@@ -309,17 +329,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateIndicators()
 		{
 			if (!IsVisible)
+			{
 				return;
+			}
 
 			var count = ChildCount;
 			for (int i = 0; i < count; i++)
 			{
 				ImageView view = GetChildAt(i) as ImageView;
 				if (view == null)
+				{
 					continue;
+				}
+
 				var drawableToUse = _selectedIndex == i ? _currentPageShape : _pageShape;
 				if (drawableToUse != view.Drawable)
+				{
 					view.SetImageDrawable(drawableToUse);
+				}
 			}
 		}
 
@@ -332,7 +359,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateShapes()
 		{
 			if (_currentPageShape != null)
+			{
 				return;
+			}
 
 			_currentPageShape = GetShape(_currentPageIndicatorTintColor);
 			_pageShape = GetShape(_pageIndicatorTintColor);
@@ -344,9 +373,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AShapeDrawable shape;
 
 			if (_shapeType == AShapeType.Oval)
+			{
 				shape = new AShapeDrawable(new AShapes.OvalShape());
+			}
 			else
+			{
 				shape = new AShapeDrawable(new AShapes.RectShape());
+			}
 
 			shape.SetIntrinsicHeight((int)Context.ToPixels(indicatorSize));
 			shape.SetIntrinsicWidth((int)Context.ToPixels(indicatorSize));
@@ -364,7 +397,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			bool hideSingle = IndicatorView.HideSingle;
 
 			if (maximumVisible == 1 && hideSingle)
+			{
 				maximumVisible = 0;
+			}
 
 			return maximumVisible;
 		}

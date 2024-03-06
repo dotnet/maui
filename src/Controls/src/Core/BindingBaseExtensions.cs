@@ -11,7 +11,11 @@ namespace Microsoft.Maui.Controls
 			var mode = self.Mode != BindingMode.Default ? self.Mode : property.DefaultBindingMode;
 
 			if (mode == BindingMode.TwoWay && property.IsReadOnly)
+			{
+			{
 				return BindingMode.OneWayToSource;
+			}
+			}
 
 			return mode;
 		}

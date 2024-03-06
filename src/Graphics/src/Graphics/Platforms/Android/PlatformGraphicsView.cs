@@ -54,7 +54,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		public override void Draw(Canvas androidCanvas)
 		{
 			if (_drawable == null)
+			{
 				return;
+			}
 
 			var dirtyRect = new RectF(0, 0, _width, _height);
 

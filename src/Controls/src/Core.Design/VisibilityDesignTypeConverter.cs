@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.Design
 		{
 			// MUST MATCH VisibilityConverter.ConvertFrom
 			if (value?.ToString()?.Trim() is string strValue)
+			{
 				return supportedValues.Contains(strValue);
+			}
 
 			return false;
 		}

@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public void SetElement(VisualElement element)
 		{
 			if (element == Element)
+			{
 				return;
+			}
 
 			var oldElement = Element;
 

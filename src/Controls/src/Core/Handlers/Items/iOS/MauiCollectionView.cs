@@ -12,6 +12,8 @@ internal class MauiCollectionView : UICollectionView
 	public override void ScrollRectToVisible(CGRect rect, bool animated)
 	{
 		if (!KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling)
+		{
 			base.ScrollRectToVisible(rect, animated);
+		}
 	}
 }

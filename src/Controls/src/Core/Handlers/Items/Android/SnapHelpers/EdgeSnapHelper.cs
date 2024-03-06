@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected static bool IsLayoutReversed(RecyclerView.LayoutManager layoutManager)
 		{
 			if (layoutManager.LayoutDirection == (int)(ALayoutDirection.Rtl))
+			{
 				return true;
+			}
 
 			if (layoutManager is LinearLayoutManager linearLayoutManager)
 			{

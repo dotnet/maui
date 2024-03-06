@@ -27,7 +27,10 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			var resString = DependencyService.Get<IResourcesLoader>().GetResource(resourcePath, assembly, styleSheet, lineInfo);
 			using (var textReader = new StringReader(resString))
 			using (var cssReader = new CssReader(textReader))
+			{
 				Parse(styleSheet, cssReader);
+			}
+
 			return styleSheet;
 		}
 
@@ -37,20 +40,31 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		public static StyleSheet FromString(string stylesheet)
 		{
 			if (stylesheet == null)
+			{
 				throw new ArgumentNullException(nameof(stylesheet));
+			}
+
 			using (var reader = new StringReader(stylesheet))
+			{
+			{
 				return FromReader(reader);
+			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.StyleSheets/StyleSheet.xml" path="//Member[@MemberName='FromReader']/Docs/*" />
 		public static StyleSheet FromReader(TextReader reader)
 		{
 			if (reader == null)
+			{
 				throw new ArgumentNullException(nameof(reader));
+			}
 
 			var sheet = new StyleSheet();
 			using (var cssReader = new CssReader(reader))
+			{
 				Parse(sheet, cssReader);
+			}
+
 			return sheet;
 		}
 
@@ -77,7 +91,10 @@ namespace Microsoft.Maui.Controls.StyleSheets
 					case '}':
 						reader.Read();
 						if (!inStyle)
+						{
 							throw new Exception();
+						}
+
 						inStyle = false;
 						sheet.Styles.Add(selector, style);
 						style = null;
@@ -95,20 +112,29 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		void IStyle.Apply(BindableObject bindable, SetterSpecificity setterspecificity)
 		{
 			if (!(bindable is Element styleable))
+			{
 				return;
+			}
+
 			Apply(styleable);
 		}
 
 		void Apply(Element styleable)
 		{
 			if (!(styleable is VisualElement visualStylable))
+			{
 				return;
+			}
+
 			foreach (var kvp in Styles)
 			{
 				var selector = kvp.Key;
 				var style = kvp.Value;
 				if (!selector.Matches(styleable))
+				{
 					continue;
+				}
+
 				style.Apply(visualStylable);
 			}
 		}

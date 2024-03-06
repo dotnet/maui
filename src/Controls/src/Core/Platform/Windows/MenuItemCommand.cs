@@ -31,13 +31,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			EventHandler changed = CanExecuteChanged;
 			if (changed != null)
+			{
 				changed(this, EventArgs.Empty);
+			}
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				OnCanExecuteChanged();
+			}
 		}
 	}
 }

@@ -31,19 +31,25 @@ namespace Microsoft.Maui.Storage
 			{
 				var fileList = await picker.PickMultipleFilesAsync();
 				if (fileList != null)
+				{
 					resultList.AddRange(fileList);
+				}
 			}
 			else
 			{
 				var file = await picker.PickSingleFileAsync();
 				if (file != null)
+				{
 					resultList.Add(file);
+				}
 			}
 
 			if (AppInfoUtils.IsPackagedApp)
 			{
 				foreach (var file in resultList)
+				{
 					StorageApplicationPermissions.FutureAccessList.Add(file);
+				}
 			}
 
 			return resultList.Select(storageFile => new FileResult(storageFile));
@@ -67,7 +73,9 @@ namespace Microsoft.Maui.Storage
 			}
 
 			if (!hasAtLeastOneType)
+			{
 				picker.FileTypeFilter.Add("*");
+			}
 		}
 	}
 

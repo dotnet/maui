@@ -43,7 +43,9 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						// Set success when we have a successful nav result
 						if (result == WebNavigationResult.Success)
+						{
 							tcsLoaded.TrySetResult(result == WebNavigationResult.Success);
+						}
 					};
 
 					// Load the new Source

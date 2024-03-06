@@ -12,15 +12,15 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
-using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -305,8 +305,10 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Shell.SetTitleView(shell, shellTitleView);
 
-				shell.CurrentItem = new ContentPage(){
-					Content = new VerticalStackLayout {
+				shell.CurrentItem = new ContentPage()
+				{
+					Content = new VerticalStackLayout
+					{
 						Background = Colors.Gray,
 						Children = { label }
 					}
@@ -331,7 +333,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		class CustomShellHandler : ShellRenderer
 		{
-			protected override IShellNavBarAppearanceTracker CreateNavBarAppearanceTracker() => new CustomShellNavBarAppearanceTracker(this, base.CreateNavBarAppearanceTracker()) {handler = this};
+			protected override IShellNavBarAppearanceTracker CreateNavBarAppearanceTracker() => new CustomShellNavBarAppearanceTracker(this, base.CreateNavBarAppearanceTracker()) { handler = this };
 
 			public CGRect PreviousFrame { get; set; }
 		}
@@ -508,12 +510,78 @@ namespace Microsoft.Maui.DeviceTests
 			await OnNavigatedToAsync(shell.CurrentPage);
 
 			if (shellItem != shell.CurrentItem)
+
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-maccatalyst)'
+Before:
 				throw new NotImplementedException();
 
 			if (shellSection != shell.CurrentItem.CurrentItem)
+After:
+			{
+*/
+			{
+				throw new NotImplementedException();
+			}
+
+			if (shellSection != shell.CurrentItem.CurrentItem)
+			{
 				throw new NotImplementedException();
 
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-maccatalyst)'
+Before:
 			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
+				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
+
+			var tabController = pagerParent.NextResponder as ShellItemRenderer;
+
+			var section = tabController.SelectedViewController as ShellSectionRenderer;
+
+			var rootCV = section.ViewControllers[0] as
+				ShellSectionRootRenderer;
+
+			var rootHeader = rootCV.ChildViewControllers
+				.OfType<ShellSectionRootHeader>()
+				.First();
+
+			var newIndex = shellSection.Items.IndexOf(shellContent);
+After:
+			}
+
+			if (shellSection != shell.CurrentItem.CurrentItem)
+			{
+				throw new NotImplementedException();
+			}
+
+			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
+				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
+*/
+			}
+
+			var pagerParent = 
+/* Unmerged change from project 'Controls.DeviceTests(net8.0-maccatalyst)'
+Before:
+			await Task.Delay(100);
+
+			rootHeader.ItemSelected(rootHeader.CollectionView, NSIndexPath.FromItemSection((int)newIndex, 0));
+
+			await OnNavigatedToAsync(page);
+After:
+			var tabController = pagerParent.NextResponder as ShellItemRenderer;
+
+			var section = tabController.SelectedViewController as ShellSectionRenderer;
+
+			var rootCV = section.ViewControllers[0] as
+				ShellSectionRootRenderer;
+
+			var rootHeader = rootCV.ChildViewControllers
+				.OfType<ShellSectionRootHeader>()
+				.First();
+
+			var newIndex = shellSection.Items.IndexOf(shellContent);
+
+			await Task.Delay(page);
+*/
+(shell.CurrentPage.Handler as IPlatformViewHandler)
 				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
 
 			var tabController = pagerParent.NextResponder as ShellItemRenderer;

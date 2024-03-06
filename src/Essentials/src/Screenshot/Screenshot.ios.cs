@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Media
 		{
 			var currentWindow = WindowStateManager.Default.GetCurrentUIWindow();
 			if (currentWindow == null)
+			{
 				throw new InvalidOperationException("Unable to find current window.");
+			}
 
 			return CaptureAsync(currentWindow);
 		}
@@ -116,7 +118,9 @@ namespace Microsoft.Maui.Media
 			try
 			{
 				if (skipChildren)
+				{
 					HideSublayers(layer, visibilitySnapshot);
+				}
 
 				layer.RenderInContext(ctx);
 
@@ -131,14 +135,18 @@ namespace Microsoft.Maui.Media
 			finally
 			{
 				if (skipChildren)
+				{
 					RestoreSublayers(layer, visibilitySnapshot);
+				}
 			}
 		}
 
 		static void HideSublayers(CALayer layer, Dictionary<CALayer, bool> visibilitySnapshot)
 		{
 			if (layer.Sublayers == null)
+			{
 				return;
+			}
 
 			foreach (var sublayer in layer.Sublayers)
 			{
@@ -152,7 +160,9 @@ namespace Microsoft.Maui.Media
 		static void RestoreSublayers(CALayer layer, Dictionary<CALayer, bool> visibilitySnapshot)
 		{
 			if (layer.Sublayers == null)
+			{
 				return;
+			}
 
 			foreach (var sublayer in visibilitySnapshot)
 			{

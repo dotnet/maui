@@ -28,10 +28,14 @@ namespace Microsoft.Maui.Handlers
 			StepperHandlerManager.CreateStepperButtons(this, out _downButton, out _upButton);
 
 			if (_downButton != null)
+			{
 				stepperLayout.AddView(_downButton, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.MatchParent, 1));
+			}
 
 			if (_upButton != null)
+			{
 				stepperLayout.AddView(_upButton, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.MatchParent, 1));
+			}
 
 			return stepperLayout;
 		}
@@ -64,7 +68,9 @@ namespace Microsoft.Maui.Handlers
 		AButton IAndroidStepperHandler.CreateButton()
 		{
 			if (Context == null)
+			{
 				throw new ArgumentException("Context is null or empty", nameof(Context));
+			}
 
 			var button = new AButton(Context);
 			button.SetHeight((int)Context.ToPixels(10.0));

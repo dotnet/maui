@@ -58,7 +58,9 @@ namespace Microsoft.Maui.Controls.Platform
 			TextDecorations defaultTextDecorations = TextDecorations.None)
 		{
 			if (formattedString == null)
+			{
 				return new SpannableString(string.Empty);
+			}
 
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
@@ -72,7 +74,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
 				if (text == null)
+				{
 					continue;
+				}
 
 				builder.Append(text);
 			}
@@ -85,7 +89,9 @@ namespace Microsoft.Maui.Controls.Platform
 				Span span = formattedString.Spans[i];
 				var text = span.Text;
 				if (text == null)
+				{
 					continue;
+				}
 
 				int start = c;
 				int end = start + text.Length;
@@ -94,38 +100,56 @@ namespace Microsoft.Maui.Controls.Platform
 				// TextColor
 				var textColor = span.TextColor ?? defaultColor;
 				if (textColor is not null)
+				{
 					spannable.SetSpan(new ForegroundColorSpan(textColor.ToPlatform()), start, end, SpanTypes.InclusiveExclusive);
+				}
 
 				// BackgroundColor
 				if (span.BackgroundColor is not null)
+				{
 					spannable.SetSpan(new BackgroundColorSpan(span.BackgroundColor.ToPlatform()), start, end, SpanTypes.InclusiveExclusive);
+				}
 
 				// LineHeight
 				if (span.LineHeight >= 0)
+				{
 					spannable.SetSpan(new LineHeightSpan(span.LineHeight), start, end, SpanTypes.InclusiveExclusive);
+				}
 
 				// CharacterSpacing
 				var characterSpacing = span.CharacterSpacing >= 0
 					? span.CharacterSpacing
 					: defaultCharacterSpacing;
 				if (characterSpacing >= 0)
+				{
 					spannable.SetSpan(new LetterSpacingSpan(characterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
+				}
 
 				// Font
 				var font = span.ToFont(defaultFontSize);
 				if (font.IsDefault && defaultFont.HasValue)
+				{
 					font = defaultFont.Value;
+				}
+
 				if (!font.IsDefault)
+				{
 					spannable.SetSpan(new FontSpan(font, fontManager, context), start, end, SpanTypes.InclusiveInclusive);
+				}
 
 				// TextDecorations
 				var textDecorations = span.IsSet(Span.TextDecorationsProperty)
 					? span.TextDecorations
 					: defaultTextDecorations;
 				if (textDecorations.HasFlag(TextDecorations.Strikethrough))
+				{
 					spannable.SetSpan(new StrikethroughSpan(), start, end, SpanTypes.InclusiveInclusive);
+				}
+
 				if (textDecorations.HasFlag(TextDecorations.Underline))
+				{
 					spannable.SetSpan(new UnderlineSpan(), start, end, SpanTypes.InclusiveInclusive);
+				}
 			}
 
 			return spannable;
@@ -134,18 +158,26 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void RecalculateSpanPositions(this TextView textView, Label element, SpannableString spannableString, SizeRequest finalSize)
 		{
 			if (element?.FormattedText?.Spans is null || element.FormattedText.Spans.Count == 0)
+			{
 				return;
+			}
 
 			var labelWidth = finalSize.Request.Width;
 			if (labelWidth <= 0 || finalSize.Request.Height <= 0)
+			{
 				return;
+			}
 
 			if (spannableString == null || spannableString.IsDisposed())
+			{
 				return;
+			}
 
 			var layout = textView.Layout;
 			if (layout == null)
+			{
 				return;
+			}
 
 			int next = 0;
 			int count = 0;
@@ -167,7 +199,9 @@ namespace Microsoft.Maui.Controls.Platform
 				count++;
 
 				if (string.IsNullOrEmpty(span.Text))
+				{
 					continue;
+				}
 
 				// Find the next span
 				next = spannableString.NextSpanTransition(i, spannableString.Length(), type);
@@ -176,7 +210,9 @@ namespace Microsoft.Maui.Controls.Platform
 				var spans = spannableString.GetSpans(i, next, type);
 
 				if (spans is null || spans.Length == 0)
+				{
 					continue;
+				}
 
 				var startSpan = spans[0];
 				var endSpan = spans[spans.Length - 1];
@@ -241,7 +277,9 @@ namespace Microsoft.Maui.Controls.Platform
 			public override void UpdateDrawState(TextPaint? tp)
 			{
 				if (tp != null)
+				{
 					Apply(tp);
+				}
 			}
 
 			public override void UpdateMeasureState(TextPaint p)
@@ -272,7 +310,9 @@ namespace Microsoft.Maui.Controls.Platform
 			public override void UpdateDrawState(TextPaint? tp)
 			{
 				if (tp != null)
+				{
 					Apply(tp);
+				}
 			}
 
 			public override void UpdateMeasureState(TextPaint p)
@@ -298,7 +338,9 @@ namespace Microsoft.Maui.Controls.Platform
 			public void ChooseHeight(Java.Lang.ICharSequence? text, int start, int end, int spanstartv, int lineHeight, Paint.FontMetricsInt? fm)
 			{
 				if (fm is null)
+				{
 					return;
+				}
 
 				fm.Ascent = (int)(fm.Top * _relativeLineHeight);
 			}

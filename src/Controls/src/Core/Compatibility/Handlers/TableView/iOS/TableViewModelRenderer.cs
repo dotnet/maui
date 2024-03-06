@@ -49,7 +49,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 		{
 			if (TableView is not TableView table)
+			{
+			{
 				return null;
+			}
+
+			}
+
 			var cell = table.Model.GetCell(indexPath.Section, indexPath.Row);
 			var nativeCell = CellTableViewCell.GetPlatformCell(tableView, cell);
 
@@ -59,9 +65,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override nfloat GetHeightForHeader(UITableView tableView, nint section)
 		{
 			if (TableView is not TableView table)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				return 0;
 			if (!_headerCells.ContainsKey((int)section))
 				_headerCells[section] = table.Model.GetHeaderCell((int)section);
+After:
+			{
+				return 0;
+			}
+
+			if (!_headerCells.ContainsKey((int)section))
+			{
+				_headerCells[section] = table.Model.GetHeaderCell((int)section);
+			}
+*/
+			{
+				return 0;
+			}
+
+			if (!_headerCells.ContainsKey((int)section))
+			{
+				_headerCells[section] = table.Model.GetHeaderCell((int)section);
+			}
 
 			var result = _headerCells[section];
 
@@ -71,9 +98,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override UIView GetViewForHeader(UITableView tableView, nint section)
 		{
 			if (TableView is not TableView table)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				return null;
 			if (!_headerCells.ContainsKey((int)section))
 				_headerCells[section] = table.Model.GetHeaderCell((int)section);
+After:
+			{
+				return null;
+			}
+
+			if (!_headerCells.ContainsKey((int)section))
+			{
+				_headerCells[section] = table.Model.GetHeaderCell((int)section);
+			}
+*/
+			{
+				return null;
+			}
+
+			if (!_headerCells.ContainsKey((int)section))
+			{
+				_headerCells[section] = table.Model.GetHeaderCell((int)section);
+			}
 
 			var result = _headerCells[section];
 
@@ -111,12 +159,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void LongPress(UILongPressGestureRecognizer gesture)
 		{
 			if (PlatformView is not UITableView tableView)
+			{
 				return;
+			}
 
 			var point = gesture.LocationInView(tableView);
 			var indexPath = tableView.IndexPathForRowAtPoint(point);
 			if (indexPath == null)
+			{
 				return;
+			}
 
 			TableView?.Model.RowLongPressed(indexPath.Section, indexPath.Row);
 		}
@@ -131,7 +183,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			TableView?.Model.RowSelected(indexPath.Section, indexPath.Row);
 			if (AutomaticallyDeselect)
+			{
 				tableView.DeselectRow(indexPath, true);
+			}
 		}
 
 		public override nint RowsInSection(UITableView tableview, nint section)
@@ -152,7 +206,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void BindGestures(UITableView tableview)
 		{
 			if (HasBoundGestures)
+			{
 				return;
+			}
 
 			HasBoundGestures = true;
 
@@ -182,6 +238,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
 		{
 			if (TableView is not TableView table)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				return 0;
 
 			var cell = table.Model.GetCell(indexPath.Section, indexPath.Row);
@@ -193,6 +252,39 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else if (h == -1)
 				return tableView.RowHeight;
+After:
+			{
+				return 0;
+			}
+
+			var cell = table.Model.GetCell(indexPath.Section, indexPath.Row);
+			var h = cell.Height;
+
+			if (table.RowHeight == -1 && h == -1 && cell is ViewCell)
+			{
+				return UITableView.AutomaticDimension;
+			}
+			else if (h == -1)
+			{
+				return tableView.RowHeight;
+			}
+*/
+			{
+				return 0;
+			}
+
+			var cell = table.Model.GetCell(indexPath.Section, indexPath.Row);
+			var h = cell.Height;
+
+			if (table.RowHeight == -1 && h == -1 && cell is ViewCell)
+			{
+				return UITableView.AutomaticDimension;
+			}
+			else if (h == -1)
+			{
+				return tableView.RowHeight;
+			}
+
 			return (nfloat)h;
 		}
 	}

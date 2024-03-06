@@ -26,11 +26,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static async Task<Microsoft.UI.Xaml.Controls.IconSource> ToWindowsIconSourceAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (source == null || source.IsEmpty)
+			{
 				return null;
+			}
 
 			var handler = Registrar.Registered.GetHandlerForObject<IIconElementHandler>(source);
 			if (handler == null)
+			{
 				return null;
+			}
 
 			try
 			{
@@ -52,11 +56,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static async Task<IconElement> ToWindowsIconElementAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (source == null || source.IsEmpty)
+			{
 				return null;
+			}
 
 			var handler = Registrar.Registered.GetHandlerForObject<IIconElementHandler>(source);
 			if (handler == null)
+			{
 				return null;
+			}
 
 			try
 			{
@@ -78,11 +86,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static async Task<WImageSource> ToWindowsImageSourceAsync(this ImageSource source, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (source == null || source.IsEmpty)
+			{
 				return null;
+			}
 
 			var handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source);
 			if (handler == null)
+			{
 				return null;
+			}
 
 			try
 			{

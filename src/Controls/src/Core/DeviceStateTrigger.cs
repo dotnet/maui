@@ -38,14 +38,20 @@ namespace Microsoft.Maui.Controls
 		void UpdateState()
 		{
 			if (string.IsNullOrEmpty(Device))
+			{
 				return;
+			}
 
 			var device = DevicePlatform.Create(Device);
 
 			if (device == DevicePlatform.Create("UWP"))
+			{
 				SetActive(DeviceInfo.Platform == DevicePlatform.WinUI);
+			}
 			else
+			{
 				SetActive(DeviceInfo.Platform == device);
+			}
 		}
 	}
 }

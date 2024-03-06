@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Controls
 						// it comes out later in the enumeration of MergedResources
 						// TryGetValue ensures we pull the up-to-date value for the key
 						if (!resources.ContainsKey(res.Key) && ve.Resources.TryGetValue(res.Key, out object value))
+						{
 							resources.Add(res.Key, value);
+						}
 						else if (res.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
 						{
 							var mergedClassStyles = new List<Style>(resources[res.Key] as List<Style>);
@@ -35,14 +37,18 @@ namespace Microsoft.Maui.Controls
 				{
 					resources = resources ?? new Dictionary<string, object>(8, StringComparer.Ordinal);
 					foreach (KeyValuePair<string, object> res in app.SystemResources)
+					{
 						if (!resources.ContainsKey(res.Key))
+						{
 							resources.Add(res.Key, res.Value);
+						}
 						else if (res.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
 						{
 							var mergedClassStyles = new List<Style>(resources[res.Key] as List<Style>);
 							mergedClassStyles.AddRange(res.Value as List<Style>);
 							resources[res.Key] = mergedClassStyles;
 						}
+					}
 				}
 				element = element.Parent;
 			}
@@ -54,15 +60,25 @@ namespace Microsoft.Maui.Controls
 			while (element != null)
 			{
 				if (element is IResourcesProvider ve && ve.IsResourcesCreated && ve.Resources.TryGetValue(key, out value))
+				{
 					return true;
+				}
+
 				if (element is Application app && app.SystemResources != null && app.SystemResources.TryGetValue(key, out value))
+				{
 					return true;
+				}
+
 				element = element.Parent;
 			}
 
 			//Fallback for the XF previewer
 			if (Application.Current != null && ((IResourcesProvider)Application.Current).IsResourcesCreated && Application.Current.Resources.TryGetValue(key, out value))
+			{
+			{
 				return true;
+			}
+			}
 
 			value = null;
 			return false;

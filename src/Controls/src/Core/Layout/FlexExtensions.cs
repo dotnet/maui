@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Controls
 			{
 				index++;
 				if (it == child)
+				{
 					return index;
+				}
 			}
 			return -1;
 		}
@@ -23,7 +25,10 @@ namespace Microsoft.Maui.Controls
 		{
 			var index = parent.IndexOf(child);
 			if (index < 0)
+			{
 				return;
+			}
+
 			parent.RemoveAt((uint)index);
 		}
 
@@ -40,11 +45,20 @@ namespace Microsoft.Maui.Controls
 			do
 			{
 				if (parent == null)
+				{
 					break;
+				}
+
 				if (widthConstraint < 0 && !float.IsNaN(parent.Width))
+				{
 					widthConstraint = (double)parent.Width;
+				}
+
 				if (heightConstraint < 0 && !float.IsNaN(parent.Height))
+				{
 					heightConstraint = (double)parent.Height;
+				}
+
 				parent = parent.Parent;
 			} while (widthConstraint < 0 || heightConstraint < 0);
 			return new Size(widthConstraint, heightConstraint);
@@ -53,9 +67,95 @@ namespace Microsoft.Maui.Controls
 		public static Flex.Basis ToFlexBasis(this FlexBasis basis)
 		{
 			if (basis.IsAuto)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return Flex.Basis.Auto;
 			if (basis.IsRelative)
 				return new Flex.Basis(basis.Length, isRelative: true);
+After:
+			{
+				return Flex.Basis.Auto;
+			}
+
+			if (basis.IsRelative)
+			{
+				return new Flex.Basis(basis.Length, isRelative: true);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return Flex.Basis.Auto;
+			if (basis.IsRelative)
+				return new Flex.Basis(basis.Length, isRelative: true);
+After:
+			{
+				return Flex.Basis.Auto;
+			}
+
+			if (basis.IsRelative)
+			{
+				return new Flex.Basis(basis.Length, isRelative: true);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return Flex.Basis.Auto;
+			if (basis.IsRelative)
+				return new Flex.Basis(basis.Length, isRelative: true);
+After:
+			{
+				return Flex.Basis.Auto;
+			}
+
+			if (basis.IsRelative)
+			{
+				return new Flex.Basis(basis.Length, isRelative: true);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return Flex.Basis.Auto;
+			if (basis.IsRelative)
+				return new Flex.Basis(basis.Length, isRelative: true);
+After:
+			{
+				return Flex.Basis.Auto;
+			}
+
+			if (basis.IsRelative)
+			{
+				return new Flex.Basis(basis.Length, isRelative: true);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return Flex.Basis.Auto;
+			if (basis.IsRelative)
+				return new Flex.Basis(basis.Length, isRelative: true);
+After:
+			{
+				return Flex.Basis.Auto;
+			}
+
+			if (basis.IsRelative)
+			{
+				return new Flex.Basis(basis.Length, isRelative: true);
+			}
+*/
+			{
+				return Flex.Basis.Auto;
+			}
+
+			if (basis.IsRelative)
+			{
+				return new Flex.Basis(basis.Length, isRelative: true);
+			}
+
 			return new Flex.Basis(basis.Length, isRelative: false);
 		}
 	}

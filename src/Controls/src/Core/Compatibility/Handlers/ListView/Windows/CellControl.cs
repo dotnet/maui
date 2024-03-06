@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnLoaded(object sender, RoutedEventArgs e)
 		{
 			if (Cell == null)
+			{
 				return;
+			}
 
 			// 🚀 subscribe topropertychanged
 			// make sure we do not subscribe twice (because this could happen in SetSource(Cell oldCell, Cell newCell))
@@ -64,7 +66,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnUnloaded(object sender, RoutedEventArgs e)
 		{
 			if (Cell == null)
+			{
 				return;
+			}
 
 			Cell.SendDisappearing();
 			// 🚀 unsubscribe from propertychanged
@@ -111,13 +115,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					{
 						var estimate = (double)lv.GetValue(MeasuredEstimateProperty);
 						if (estimate > -1)
+						{
 							return new global::Windows.Foundation.Size(availableSize.Width, estimate);
+						}
 					}
 					else
 					{
 						double rowHeight = lv.RowHeight;
 						if (rowHeight > -1)
+						{
 							return new global::Windows.Foundation.Size(availableSize.Width, rowHeight);
+						}
 					}
 				}
 
@@ -169,7 +177,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				SetupContextMenu();
 			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection(Cell);
+			}
 			else if (e.PropertyName == SwitchCell.OnProperty.PropertyName ||
 				e.PropertyName == SwitchCell.OnColorProperty.PropertyName)
 			{
@@ -180,7 +190,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateOnColor()
 		{
 			if (!(Cell is SwitchCell switchCell))
+			{
 				return;
+			}
 
 			var color = switchCell.OnColor.IsDefault()
 				? _defaultOnColor
@@ -191,7 +203,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// change fill color in switch rectangle
 			var rects = nativeSwitch.GetDescendantsByName<Microsoft.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
 			foreach (var rect in rects)
+			{
 				rect.Fill = color;
+			}
 
 			// change color in animation on PointerOver
 			var grid = nativeSwitch.GetFirstDescendant<Microsoft.UI.Xaml.Controls.Grid>();
@@ -206,7 +220,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 			if (vsGroup == null)
+			{
 				return;
+			}
 
 			Microsoft.UI.Xaml.VisualState vState = null;
 			foreach (var visualState in vsGroup.States)
@@ -218,7 +234,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 			if (vState == null)
+			{
 				return;
+			}
 
 			var visualStates = vState.Storyboard.Children;
 			foreach (var state in visualStates)
@@ -247,7 +265,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var nativeSwitch = this.GetFirstDescendant<ToggleSwitch>();
 				var rects = nativeSwitch.GetDescendantsByName<Microsoft.UI.Xaml.Shapes.Rectangle>("SwitchKnobBounds");
 				foreach (var rect in rects)
+				{
 					_defaultOnColor = rect.Fill;
+				}
+
 				UpdateOnColor();
 			}
 		}
@@ -265,16 +286,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
 		{
 			if (args.NewValue == null)
+			{
 				return;
+			}
 
 			// We don't want to set the Cell until the ListView is realized, just in case the 
 			// Cell has an ItemTemplate. Instead, we'll store the new data item, and it will be
 			// set on MeasureOverrideDelegate. However, if the parent is a TableView, we'll already 
 			// have a complete Cell object to work with, so we can move ahead.
 			if (_isListViewRealized || args.NewValue is Cell)
+			{
 				SetCell(args.NewValue);
+			}
 			else if (args.NewValue != null)
+			{
 				_newValue = args.NewValue;
+			}
 		}
 
 		private void OnCellContentRightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -292,12 +319,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var actions = Cell.ContextActions;
 				if (flyout.Items.Count != actions.Count)
+				{
 					return null;
+				}
 
 				for (int i = 0; i < flyout.Items.Count; i++)
 				{
 					if (flyout.Items[i].DataContext != actions[i])
+					{
 						return null;
+					}
 				}
 				return flyout;
 			}
@@ -338,7 +369,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (ReferenceEquals(Cell?.BindingContext, newContext))
+			{
 				return;
+			}
 
 			// If there is a ListView, load the Cell content from the ItemTemplate.
 			// Otherwise, the given Cell is already a templated Cell from a TableView.
@@ -380,7 +413,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else
 				{
 					if (isGroupHeader)
+					{
 						bindingContext = lv.GetDisplayTextFromGroup(bindingContext);
+					}
 
 					cell = lv.CreateDefaultCell(bindingContext);
 				}
@@ -401,7 +436,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// Note: The cleanup (SendDisappearing(), etc.) is done by the Cell propertychanged callback so we do not need to do any cleanup ourselves.
 
 			if (Cell != cell)
+			{
 				Cell = cell;
+			}
 
 			// 🚀 Even if the cell did not change, we **must** call SendDisappearing() and SendAppearing()
 			// because frameworks such as Reactive UI rely on this! (this.WhenActivated())
@@ -438,7 +475,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void SetupContextMenu()
 		{
 			if (CellContent == null || Cell == null)
+			{
 				return;
+			}
 
 			if (!Cell.HasContextActions)
 			{
@@ -490,7 +529,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateFlowDirection(Cell newCell)
 		{
 			if (newCell is ViewCell)
+			{
 				return;
+			}
 
 			this.UpdateFlowDirection(newCell.Parent as VisualElement);
 		}

@@ -23,7 +23,9 @@ namespace Maui.Controls.Sample
 			{
 				PageToAction[text] = tapped;
 				if (detail != null)
+				{
 					PageToAction[detail] = tapped;
+				}
 
 				var cell = new TextCell { Text = text, Detail = detail };
 				cell.Tapped += (s, e) => tapped();
@@ -214,7 +216,9 @@ namespace Maui.Controls.Sample
 			{
 				var issue = _issues.SingleOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
 				if (issue == null)
+				{
 					return false;
+				}
 
 				issue.Action();
 				return true;

@@ -56,7 +56,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			var isEmpty = reader.IsEmptyElement;
 
 			if (isEmpty)
+			{
 				return;
+			}
 
 			while (reader.Read())
 			{
@@ -71,49 +73,71 @@ namespace Microsoft.Maui.Controls.Xaml
 						{
 							XmlName name;
 							if (reader.Name.StartsWith(elementName + ".", StringComparison.Ordinal))
+							{
 								name = new XmlName(reader.NamespaceURI, reader.Name.Substring(elementName.Length + 1));
+							}
 							else //Attached BP
+							{
 								name = new XmlName(reader.NamespaceURI, reader.LocalName);
+							}
 
 							if (node.Properties.ContainsKey(name))
+							{
 								throw new XamlParseException($"'{reader.Name}' is a duplicate property name.", (IXmlLineInfo)reader);
+							}
 
 							INode prop = null;
 							if (reader.IsEmptyElement)
+							{
 								Debug.WriteLine($"Unexpected empty element '<{reader.Name} />'", (IXmlLineInfo)reader);
+							}
 							else
+							{
 								prop = ReadNode(reader);
+							}
 
 							if (prop != null)
+							{
 								node.Properties.Add(name, prop);
+							}
 						}
 						// 2. Xaml2009 primitives, x:Arguments, ...
 						else if (reader.NamespaceURI == X2009Uri && reader.LocalName == "Arguments")
 						{
 							if (node.Properties.ContainsKey(XmlName.xArguments))
+							{
 								throw new XamlParseException($"'x:Arguments' is a duplicate directive name.", (IXmlLineInfo)reader);
+							}
 
 							var prop = ReadNode(reader);
 							if (prop != null)
+							{
 								node.Properties.Add(XmlName.xArguments, prop);
+							}
 						}
 						// 3. DataTemplate (should be handled by 4.)
 						else if (node.XmlType.NamespaceUri == MauiUri &&
 								 (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
 						{
 							if (node.Properties.ContainsKey(XmlName._CreateContent))
+							{
 								throw new XamlParseException($"Multiple child elements in {node.XmlType.Name}", (IXmlLineInfo)reader);
+							}
 
 							var prop = ReadNode(reader, true);
 							if (prop != null)
+							{
 								node.Properties.Add(XmlName._CreateContent, prop);
+							}
 						}
 						// 4. Implicit content, implicit collection, or collection syntax. Add to CollectionItems, resolve case later.
 						else
 						{
 							var item = ReadNode(reader, true);
 							if (item != null)
+							{
 								node.CollectionItems.Add(item);
+							}
 						}
 						break;
 					case XmlNodeType.Whitespace:
@@ -121,9 +145,14 @@ namespace Microsoft.Maui.Controls.Xaml
 					case XmlNodeType.Text:
 					case XmlNodeType.CDATA:
 						if (node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode)
+						{
 							((ValueNode)node.CollectionItems[0]).Value += reader.Value.Trim();
+						}
 						else
+						{
 							node.CollectionItems.Add(new ValueNode(reader.Value.Trim(), (IXmlNamespaceResolver)reader));
+						}
+
 						break;
 					default:
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
@@ -149,9 +178,15 @@ namespace Microsoft.Maui.Controls.Xaml
 					case XmlNodeType.EndElement:
 						Debug.Assert(reader.Name == name);
 						if (nodes.Count == 0) //Empty element
+						{
 							return null;
+						}
+
 						if (nodes.Count == 1)
+						{
 							return nodes[0];
+						}
+
 						return new ListNode(nodes, (IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber,
 							((IXmlLineInfo)reader).LinePosition);
 					case XmlNodeType.Element:
@@ -173,7 +208,10 @@ namespace Microsoft.Maui.Controls.Xaml
 						ParseXamlElementFor((IElementNode)node, reader);
 						nodes.Add(node);
 						if (isEmpty || nested)
+						{
 							return node;
+						}
+
 						break;
 					case XmlNodeType.Text:
 					case XmlNodeType.CDATA:
@@ -218,16 +256,23 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				var namespaceUri = reader.NamespaceURI;
 				if (reader.LocalName.IndexOf(".", StringComparison.Ordinal) != -1 && namespaceUri == "")
+				{
 					namespaceUri = ((IXmlNamespaceResolver)reader).LookupNamespace("");
+				}
+
 				var propertyName = ParsePropertyName(new XmlName(namespaceUri, reader.LocalName));
 
 				if (propertyName.NamespaceURI == null && propertyName.LocalName == null)
+				{
 					continue;
+				}
 
 				object value = reader.Value;
 
 				if (propertyName == XmlName.xTypeArguments)
+				{
 					value = TypeArgumentsParser.ParseExpression((string)value, (IXmlNamespaceResolver)reader, (IXmlLineInfo)reader);
+				}
 
 				var propertyNode = GetValueNode(value, reader);
 				attributes.Add(new KeyValuePair<XmlName, INode>(propertyName, propertyNode));
@@ -292,7 +337,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				XmlnsHelper.ParseXmlns(kvp.Value, out _, out _, out _, out var targetPlatform);
 				if (targetPlatform == null)
+				{
 					continue;
+				}
 
 				try
 				{
@@ -300,7 +347,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					{
 						// Special case for Windows backward compatibility
 						if (targetPlatform == "Windows" && DeviceInfo.Platform == DevicePlatform.WinUI)
+						{
 							continue;
+						}
 
 						prefixes.Add(prefix);
 					}
@@ -363,7 +412,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		retry:
 			if (s_xmlnsDefinitions == null)
+			{
 				GatherXmlnsDefinitionAttributes();
+			}
 
 			Type type = xmlType.GetTypeReference(
 				s_xmlnsDefinitions,
@@ -372,7 +423,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					var t = Type.GetType($"{typeInfo.clrNamespace}.{typeInfo.typeName}, {typeInfo.assemblyName}");
 					if (t is not null && t.IsPublicOrVisibleInternal(currentAssembly))
+					{
 						return t;
+					}
+
 					return null;
 				});
 
@@ -423,7 +477,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			if (type == null)
+			{
 				exception = new XamlParseException($"Type {xmlType.Name} not found in xmlns {xmlType.NamespaceUri}", xmlInfo);
+			}
 
 			return type;
 		}
@@ -431,11 +487,20 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static bool IsPublicOrVisibleInternal(this Type type, Assembly assembly)
 		{
 			if (type.IsPublic || type.IsNestedPublic)
+			{
 				return true;
+			}
+
 			if (type.Assembly == assembly)
+			{
 				return true;
+			}
+
 			if (type.Assembly.IsVisibleInternal(assembly))
+			{
 				return true;
+			}
+
 			return false;
 		}
 

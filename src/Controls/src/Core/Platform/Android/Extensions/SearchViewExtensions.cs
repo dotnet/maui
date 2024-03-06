@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var newQuery = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
 
 			if (oldQuery != newQuery)
+			{
 				searchView.SetQuery(newQuery, false);
+			}
 		}
 	}
 }

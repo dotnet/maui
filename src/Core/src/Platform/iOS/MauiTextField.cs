@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Platform
 				base.Text = value;
 
 				if (old != value)
+				{
 					TextPropertySet?.Invoke(this, EventArgs.Empty);
+				}
 			}
 		}
 
@@ -48,7 +50,9 @@ namespace Microsoft.Maui.Platform
 				base.AttributedText = value;
 
 				if (old?.Value != value?.Value)
+				{
 					TextPropertySet?.Invoke(this, EventArgs.Empty);
+				}
 			}
 		}
 
@@ -62,7 +66,9 @@ namespace Microsoft.Maui.Platform
 				base.SelectedTextRange = value;
 
 				if (old?.Start != value?.Start || old?.End != value?.End)
+				{
 					SelectionChanged?.Invoke(this, EventArgs.Empty);
+				}
 			}
 		}
 

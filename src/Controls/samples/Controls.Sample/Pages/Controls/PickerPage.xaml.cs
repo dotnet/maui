@@ -134,7 +134,9 @@ namespace Maui.Controls.Sample.Pages
 		{
 			index++;
 			if (index == 4)
+			{
 				index = 0;
+			}
 		}
 
 		LayoutOptions GetLayoutOptions(int index)

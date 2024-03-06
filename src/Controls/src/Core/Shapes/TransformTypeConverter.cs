@@ -23,7 +23,10 @@ namespace Microsoft.Maui.Controls.Shapes
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not MatrixTransform mt)
+			{
 				throw new NotSupportedException();
+			}
+
 			var converter = new MatrixTypeConverter();
 			return converter.ConvertToInvariantString(mt.Matrix);
 		}

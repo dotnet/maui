@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AMatrix aMatrix = new AMatrix();
 
 			if (transform == null)
+			{
 				return aMatrix;
+			}
 
 			Matrix matrix = transform.Value;
 

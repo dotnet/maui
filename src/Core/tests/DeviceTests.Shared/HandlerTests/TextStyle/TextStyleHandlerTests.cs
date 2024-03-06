@@ -108,9 +108,13 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			string text = "Test";
 			if (stub is ITextInput ti)
+			{
 				ti.Text = text;
+			}
 			else
+			{
 				stub.GetType().GetProperty("Text").SetValue(stub, text);
+			}
 		}
 	}
 }

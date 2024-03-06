@@ -44,7 +44,11 @@ namespace Microsoft.Maui
 		bool Equals(CornerRadius other)
 		{
 			if (!_isParameterized && !other._isParameterized)
+			{
+			{
 				return true;
+			}
+			}
 
 			return TopLeft == other.TopLeft && TopRight == other.TopRight && BottomLeft == other.BottomLeft && BottomRight == other.BottomRight;
 		}
@@ -53,7 +57,11 @@ namespace Microsoft.Maui
 		public override bool Equals(object? obj)
 		{
 			if (obj is null)
+			{
+			{
 				return false;
+			}
+			}
 
 			return obj is CornerRadius cornerRadius && Equals(cornerRadius);
 		}

@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Platform
 		public static void CreatePlatformWindow(this UI.Xaml.Application platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
+			{
 				return;
+			}
 
 			var winuiWindow = new MauiWinUIWindow();
 

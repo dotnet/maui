@@ -48,7 +48,9 @@ namespace Microsoft.Maui.DeviceTests
 			var platformButton = GetPlatformImageButton(imageButtonHandler);
 
 			if (platformButton.Layer != null)
+			{
 				return new UIColor(platformButton.Layer.BorderColor);
+			}
 
 			return UIColor.Clear;
 		}

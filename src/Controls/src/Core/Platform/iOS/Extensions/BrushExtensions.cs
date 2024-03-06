@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBackground(this UIView control, Brush brush)
 		{
 			if (control == null)
+			{
 				return;
+			}
 
 			UIView view = ShouldUseParentView(control) ? control.Superview : control;
 
@@ -26,7 +28,9 @@ namespace Microsoft.Maui.Controls.Platform
 			RemoveBackgroundLayer(view);
 
 			if (Brush.IsNullOrEmpty(brush))
+			{
 				return;
+			}
 
 			var backgroundLayer = GetBackgroundLayer(control, brush);
 
@@ -40,6 +44,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static CALayer GetBackgroundLayer(this UIView control, Brush brush)
 		{
 			if (control == null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				return null;
 
 			if (brush is SolidColorBrush solidColorBrush)
@@ -55,6 +62,125 @@ namespace Microsoft.Maui.Controls.Platform
 				return linearGradientLayer;
 			}
 
+			if (brush is LinearGradientBrush linearGradientBrush)
+			{
+				var p1 = linearGradientBrush.StartPoint;
+				var p2 = linearGradientBrush.EndPoint;
+
+				var linearGradientLayer = new CAGradientLayer
+				{
+					Name = BackgroundLayer,
+					ContentsGravity = CALayer.GravityResizeAspectFill,
+					Frame = control.Bounds,
+					LayerType = CAGradientLayerType.Axial,
+					StartPoint = new CGPoint(p1.X, p1.Y),
+					EndPoint = new CGPoint(p2.X, p2.Y)
+				};
+
+				if (linearGradientBrush.GradientStops != null && linearGradientBrush.GradientStops.Count > 0)
+				{
+					var orderedStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+					linearGradientLayer.Colors = GetCAGradientLayerColors(orderedStops);
+					linearGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
+				}
+
+				return linearGradientLayer;
+After:
+			{
+				return null;
+*/
+			{
+				return null;
+			}
+
+			if (brush is SolidColorBrush solidColorBrush)
+			{
+				var linearGradientLayer = new CALayer
+				{
+					Name = BackgroundLayer,
+					ContentsGravity = CALayer.GravityResizeAspectFill,
+					Frame = control.Bounds,
+					BackgroundColor = solidColorBrush.Color.ToCGColor()
+				};
+
+				return linearGradientLayer;
+			}
+
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			if (brush is RadialGradientBrush radialGradientBrush)
+After:
+			if (brush is SolidColorBrush solidColorBrush)
+*/
+			if (brush is LinearGradientBrush linearGradientBrush)
+			{
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				var center = radialGradientBrush.Center;
+				var radius = radialGradientBrush.Radius;
+
+				var radialGradientLayer = new CAGradientLayer
+				{
+					Name = BackgroundLayer,
+					ContentsGravity = CALayer.GravityResizeAspectFill,
+					Frame = control.Bounds,
+#pragma warning disable CA1416 // TODO:  'CAGradientLayerType.Radial' is only supported on: 'ios' 12.0 and later
+					LayerType = CAGradientLayerType.Radial,
+#pragma warning restore CA1416
+					StartPoint = new CGPoint(center.X, center.Y),
+					EndPoint = GetRadialGradientBrushEndPoint(center, radius),
+					CornerRadius = (float)radius
+				};
+
+				if (radialGradientBrush.GradientStops != null && radialGradientBrush.GradientStops.Count > 0)
+				{
+					var orderedStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+					radialGradientLayer.Colors = GetCAGradientLayerColors(orderedStops);
+					radialGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
+				}
+
+				return radialGradientLayer;
+After:
+				var linearGradientLayer = new CALayer
+				{
+					Name = BackgroundLayer,
+					ContentsGravity = CALayer.GravityResizeAspectFill,
+					Frame = control.Bounds,
+					BackgroundColor = solidColorBrush.Color.ToCGColor()
+				};
+
+				return linearGradientLayer;
+*/
+				var p1 = linearGradientBrush.StartPoint;
+				var p2 = linearGradientBrush.EndPoint;
+
+				var linearGradientLayer = new CAGradientLayer
+				{
+					Name = BackgroundLayer,
+					ContentsGravity = CALayer.GravityResizeAspectFill,
+					Frame = control.Bounds,
+					LayerType = CAGradientLayerType.Axial,
+					StartPoint = new CGPoint(p1.X, p1.Y),
+					EndPoint = new CGPoint(p2.X, p2.Y)
+				};
+
+				if (linearGradientBrush.GradientStops != null && linearGradientBrush.GradientStops.Count > 0)
+				{
+					var orderedStops = linearGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+					linearGradientLayer.Colors = GetCAGradientLayerColors(orderedStops);
+					linearGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
+				}
+
+				return linearGradientLayer;
+			}
+
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			return null;
+After:
 			if (brush is LinearGradientBrush linearGradientBrush)
 			{
 				var p1 = linearGradientBrush.StartPoint;
@@ -109,11 +235,44 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			return null;
+*/
+			if (brush is RadialGradientBrush radialGradientBrush)
+			{
+				var center = radialGradientBrush.Center;
+				var radius = radialGradientBrush.Radius;
+
+				var radialGradientLayer = new CAGradientLayer
+				{
+					Name = BackgroundLayer,
+					ContentsGravity = CALayer.GravityResizeAspectFill,
+					Frame = control.Bounds,
+#pragma warning disable CA1416 // TODO:  'CAGradientLayerType.Radial' is only supported on: 'ios' 12.0 and later
+					LayerType = CAGradientLayerType.Radial,
+#pragma warning restore CA1416
+					StartPoint = new CGPoint(center.X, center.Y),
+					EndPoint = GetRadialGradientBrushEndPoint(center, radius),
+					CornerRadius = (float)radius
+				};
+
+				if (radialGradientBrush.GradientStops != null && radialGradientBrush.GradientStops.Count > 0)
+				{
+					var orderedStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
+					radialGradientLayer.Colors = GetCAGradientLayerColors(orderedStops);
+					radialGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
+				}
+
+				return radialGradientLayer;
+			}
+
+			return null;
 		}
 
 		public static UIImage GetBackgroundImage(this UIView control, Brush brush)
 		{
 			if (control == null || brush == null || brush.IsEmpty)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				return null;
 
 			var backgroundLayer = control.GetBackgroundLayer(brush);
@@ -122,9 +281,58 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 
 			UIGraphics.BeginImageContextWithOptions(backgroundLayer.Bounds.Size, false, UIScreen.MainScreen.Scale);
+After:
+			{
+				return null;
+			}
+
+			var backgroundLayer = control.GetBackgroundLayer(brush);
+*/
+			{
+				return null;
+			}
+
+			var backgroundLayer = control.GetBackgroundLayer(brush);
+
+			if (backgroundLayer == null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return null;
+
+			backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
+			UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return gradientImage;
+After:
+			{
+				return null;
+*/
+			{
+				return null;
+			}
+
+			UIGraphics.BeginImageContextWithOptions(backgroundLayer.Bounds.Size, false, UIScreen.MainScreen.Scale);
 
 			if (UIGraphics.GetCurrentContext() == null)
+			{
 				return null;
+			}
+
+			backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
+			UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return gradientImage;
+			}
+
+			UIGraphics.BeginImageContextWithOptions(backgroundLayer.Bounds.Size, false, UIScreen.MainScreen.Scale);
+
+			if (UIGraphics.GetCurrentContext() == null)
+			{
+				return null;
+			}
 
 			backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
 			UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
@@ -145,16 +353,22 @@ namespace Microsoft.Maui.Controls.Platform
 			if (backgroundLayer != null)
 			{
 				if (index > -1)
+				{
 					layer.InsertSublayer(backgroundLayer, index);
+				}
 				else
+				{
 					layer.AddSublayer(backgroundLayer);
+				}
 			}
 		}
 
 		public static void RemoveBackgroundLayer(this UIView view)
 		{
 			if (view != null)
+			{
 				RemoveBackgroundLayer(view.Layer);
+			}
 		}
 
 		public static void RemoveBackgroundLayer(this CALayer layer)
@@ -162,15 +376,22 @@ namespace Microsoft.Maui.Controls.Platform
 			if (layer != null)
 			{
 				if (layer.Name == BackgroundLayer)
+				{
 					layer?.RemoveFromSuperLayer();
+				}
 
 				if (layer.Sublayers == null || layer.Sublayers.Count() == 0)
+				{
+				{
 					return;
+				}
 
 				foreach (var subLayer in layer.Sublayers)
 				{
 					if (subLayer.Name == BackgroundLayer)
+					{
 						subLayer?.RemoveFromSuperLayer();
+					}
 				}
 			}
 		}
@@ -178,7 +399,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBackgroundLayer(this UIView view)
 		{
 			if (view == null || view.Frame.IsEmpty)
+			{
 				return;
+			}
 
 			var layer = view.Layer;
 
@@ -194,7 +417,9 @@ namespace Microsoft.Maui.Controls.Platform
 					UpdateBackgroundLayer(sublayer, bounds);
 
 					if (sublayer.Name == BackgroundLayer && sublayer.Frame != bounds)
+					{
 						sublayer.Frame = bounds;
+					}
 				}
 			}
 		}
@@ -204,18 +429,26 @@ namespace Microsoft.Maui.Controls.Platform
 			double x = startPoint.X == 1 ? (startPoint.X - radius) : (startPoint.X + radius);
 
 			if (x < 0)
+			{
 				x = 0;
+			}
 
 			if (x > 1)
+			{
 				x = 1;
+			}
 
 			double y = startPoint.Y == 1 ? (startPoint.Y - radius) : (startPoint.Y + radius);
 
 			if (y < 0)
+			{
 				y = 0;
+			}
 
 			if (y > 1)
+			{
 				y = 1;
+			}
 
 			return new CGPoint(x, y);
 		}
@@ -223,10 +456,32 @@ namespace Microsoft.Maui.Controls.Platform
 		static NSNumber[] GetCAGradientLayerLocations(List<GradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return Array.Empty<NSNumber>();
+After:
+			{
+				return Array.Empty<NSNumber>();
+			}
+*/
+			{
+			{
 				return Array.Empty<NSNumber>();
 
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			else
+After:
+			}
+			else
+*/
+			}
+
 			if (gradientStops.Count > 1 && gradientStops.Any(gt => gt.Offset != 0))
+			{
 				return gradientStops.Select(x => new NSNumber(x.Offset)).ToArray();
+			}
 			else
 			{
 				int itemCount = gradientStops.Count;
@@ -241,9 +496,13 @@ namespace Microsoft.Maui.Controls.Platform
 					bool setLocation = !gradientStops.Any(gt => gt.Offset > location);
 
 					if (gradientStop.Offset == 0 && setLocation)
+					{
 						locations[index] = new NSNumber(location);
+					}
 					else
+					{
 						locations[index] = new NSNumber(gradientStop.Offset);
+					}
 
 					index++;
 				}
@@ -255,6 +514,9 @@ namespace Microsoft.Maui.Controls.Platform
 		static CGColor[] GetCAGradientLayerColors(List<GradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				return Array.Empty<CGColor>();
 
 			CGColor[] colors = new CGColor[gradientStops.Count];
@@ -270,6 +532,46 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 					colors[index] = gradientStop.Color.ToCGColor();
+After:
+			{
+				return Array.Empty<CGColor>();
+			}
+
+			CGColor[] colors = new CGColor[gradientStops.Count];
+
+			int index = 0;
+			foreach (var gradientStop in gradientStops)
+			{
+				if (gradientStop.Color == Colors.Transparent)
+				{
+					var color = gradientStops[index == 0 ? index + 1 : index - 1].Color;
+					CGColor nativeColor = color.ToPlatform().ColorWithAlpha(0.0f).CGColor;
+					colors[index] = nativeColor;
+				}
+				else
+				{
+					colors[index] = gradientStop.Color.ToCGColor();
+				}
+*/
+			{
+				return Array.Empty<CGColor>();
+			}
+
+			CGColor[] colors = new CGColor[gradientStops.Count];
+
+			int index = 0;
+			foreach (var gradientStop in gradientStops)
+			{
+				if (gradientStop.Color == Colors.Transparent)
+				{
+					var color = gradientStops[index == 0 ? index + 1 : index - 1].Color;
+					CGColor nativeColor = color.ToPlatform().ColorWithAlpha(0.0f).CGColor;
+					colors[index] = nativeColor;
+				}
+				else
+				{
+					colors[index] = gradientStop.Color.ToCGColor();
+				}
 
 				index++;
 			}
@@ -280,7 +582,11 @@ namespace Microsoft.Maui.Controls.Platform
 		static bool ShouldUseParentView(UIView view)
 		{
 			if (view is UILabel)
+			{
+			{
 				return true;
+			}
+			}
 
 			return false;
 		}

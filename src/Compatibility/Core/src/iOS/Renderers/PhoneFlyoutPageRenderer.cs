@@ -47,14 +47,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			set
 			{
 				if (_presented == value)
+				{
 					return;
+				}
+
 				_presented = value;
 				LayoutChildren(true);
 
 				if (value)
+				{
 					AddClickOffView();
+				}
 				else
+				{
 					RemoveClickOffView();
+				}
 
 				ToggleAccessibilityElementsHidden();
 
@@ -95,7 +102,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (element != null)
+			{
 				element.SendViewInitialized(NativeView);
+			}
 		}
 
 		public void SetElementSize(Size size)
@@ -127,7 +136,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			// TODO MAUI: Is this correct?
 			if (Element.Width == -1 && Element.Height == -1)
+			{
 				Element.Layout(new Rect(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
+			}
 
 			LayoutChildren(false);
 		}
@@ -143,7 +154,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_tapGesture = new UITapGestureRecognizer(() =>
 			{
 				if (Presented)
+				{
 					Presented = false;
+				}
 			});
 			_clickOffView.AddGestureRecognizer(_tapGesture);
 
@@ -162,7 +175,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
 			if (!FlyoutPageController.ShouldShowSplitMode && _presented)
+			{
 				Presented = false;
+			}
 
 			base.WillRotate(toInterfaceOrientation, duration);
 		}
@@ -198,7 +213,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (_panGesture != null)
 				{
 					if (View != null && View.GestureRecognizers.Contains(_panGesture))
+					{
 						View.GestureRecognizers.Remove(_panGesture);
+					}
+
 					_panGesture.Dispose();
 				}
 
@@ -216,7 +234,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var changed = ElementChanged;
 			if (changed != null)
+			{
 				changed(this, e);
+			}
 		}
 
 		void AddClickOffView()
@@ -228,32 +248,50 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void EmptyContainers()
 		{
 			foreach (var child in _detailController.View.Subviews.Concat(_flyoutController.View.Subviews))
+			{
 				child.RemoveFromSuperview();
+			}
 
 			foreach (var vc in _detailController.ChildViewControllers.Concat(_flyoutController.ChildViewControllers))
+			{
 				vc.RemoveFromParentViewController();
+			}
 		}
 
 		void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
+			{
 				UpdateLeftBarButton();
+			}
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "Flyout" || e.PropertyName == "Detail")
+			{
 				UpdateFlyoutPageContainers();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty.PropertyName)
+			{
 				Presented = ((FlyoutPage)Element).IsPresented;
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.IsGestureEnabledProperty.PropertyName)
+			{
 				UpdatePanGesture();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.FlyoutPage.ApplyShadowProperty.PropertyName)
+			{
 				UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
+			}
 		}
 
 		void LayoutChildren(bool animated)
@@ -264,7 +302,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			flyoutFrame.Width = (int)(Math.Min(flyoutFrame.Width, flyoutFrame.Height) * 0.8);
 			var detailRenderer = Platform.GetRenderer(FlyoutPage.Detail);
 			if (detailRenderer == null)
+			{
 				return;
+			}
+
 			var detailView = detailRenderer.ViewController.View;
 
 			var isRTL = (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
@@ -280,7 +321,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				target.X += flyoutFrame.Width;
 				if (_applyShadow)
+				{
 					opacity = 0.5f;
+				}
 			}
 
 			if (isRTL)
@@ -310,7 +353,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			FlyoutPageController.DetailBounds = new Rect(0, 0, frame.Width, frame.Height);
 
 			if (Presented)
+			{
 				_clickOffView.Frame = _detailController.View.Frame;
+			}
 		}
 
 		void PackContainers()
@@ -338,19 +383,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_ = this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
 				if (bgImage != null)
+				{
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
+				}
 				else
 				{
 					Brush background = Element.Background;
 
 					if (!Brush.IsNullOrEmpty(background))
+					{
 						View.UpdateBackground(Element.Background);
+					}
 					else
 					{
 						if (Element.BackgroundColor == null)
+						{
 							View.BackgroundColor = UIColor.White;
+						}
 						else
+						{
 							View.BackgroundColor = Element.BackgroundColor.ToPlatform();
+						}
 					}
 				}
 			});
@@ -363,9 +416,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			EmptyContainers();
 
 			if (Platform.GetRenderer(((FlyoutPage)Element).Flyout) == null)
+			{
 				Platform.SetRenderer(((FlyoutPage)Element).Flyout, Platform.CreateRenderer(((FlyoutPage)Element).Flyout));
+			}
+
 			if (Platform.GetRenderer(((FlyoutPage)Element).Detail) == null)
+			{
 				Platform.SetRenderer(((FlyoutPage)Element).Detail, Platform.CreateRenderer(((FlyoutPage)Element).Detail));
+			}
 
 			var flyoutRenderer = Platform.GetRenderer(((FlyoutPage)Element).Flyout);
 			var detailRenderer = Platform.GetRenderer(((FlyoutPage)Element).Detail);
@@ -384,10 +442,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			SetNeedsStatusBarAppearanceUpdate();
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			}
 
 			if (detailRenderer.ViewController.View.Superview != null)
+			{
 				detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToPlatform();
+			}
 
 			ToggleAccessibilityElementsHidden();
 		}
@@ -396,14 +458,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var FlyoutPage = Element as FlyoutPage;
 			if (!(FlyoutPage?.Detail is NavigationPage))
+			{
 				return;
+			}
 
 			var detailRenderer = Platform.GetRenderer(FlyoutPage.Detail) as UINavigationController;
 
 			UIViewController firstPage = detailRenderer?.ViewControllers.FirstOrDefault();
 			if (firstPage != null)
+			{
 #pragma warning disable CS0618 // Type or member is obsolete
 				NavigationRenderer.SetFlyoutLeftBarButton(firstPage, FlyoutPage);
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
@@ -415,9 +481,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			if (((FlyoutPage)Element).Detail != null)
+			{
 				return Platform.GetRenderer(((FlyoutPage)Element).Detail).ViewController;
+			}
 			else
+			{
 				return base.ChildViewControllerForStatusBarHidden();
+			}
 		}
 
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden
@@ -425,9 +495,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			get
 			{
 				if (((FlyoutPage)Element).Detail != null)
+				{
 					return Platform.GetRenderer(((FlyoutPage)Element).Detail).ViewController;
+				}
 				else
+				{
 					return base.ChildViewControllerForStatusBarHidden();
+				}
 			}
 		}
 
@@ -435,11 +509,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var flyoutView = _flyoutController?.View;
 			if (flyoutView != null)
+			{
 				flyoutView.AccessibilityElementsHidden = !Presented;
+			}
 
 			var detailView = _detailController?.View;
 			if (detailView != null)
+			{
 				detailView.AccessibilityElementsHidden = Presented;
+			}
 		}
 
 		void UpdatePanGesture()
@@ -448,7 +526,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!model.IsGestureEnabled)
 			{
 				if (_panGesture != null)
+				{
 					View.RemoveGestureRecognizer(_panGesture);
+				}
+
 				return;
 			}
 
@@ -484,9 +565,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						var detailView = _detailController.View;
 						var targetFrame = detailView.Frame;
 						if (Presented)
+						{
 							targetFrame.X = (nfloat)Math.Max(0, _flyoutController.View.Frame.Width + Math.Min(0, motion));
+						}
 						else
+						{
 							targetFrame.X = (nfloat)Math.Min(_flyoutController.View.Frame.Width, Math.Max(0, motion));
+						}
 
 						targetFrame.X = targetFrame.X * directionModifier;
 						if (_applyShadow)
@@ -503,16 +588,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						if (Presented)
 						{
 							if (detailFrame.X * directionModifier < flyoutFrame.Width * .75)
+							{
 								Presented = false;
+							}
 							else
+							{
 								LayoutChildren(true);
+							}
 						}
 						else
 						{
 							if (detailFrame.X * directionModifier > flyoutFrame.Width * .25)
+							{
 								Presented = true;
+							}
 							else
+							{
 								LayoutChildren(true);
+							}
 						}
 						break;
 				}
@@ -526,10 +619,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		bool IsSwipeView(UIView view)
 		{
 			if (view == null)
+			{
 				return false;
+			}
 
 			if (view.Superview is SwipeViewRenderer)
+			{
 				return true;
+			}
 
 			return IsSwipeView(view.Superview);
 		}
@@ -539,7 +636,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public override void ViewDidLayoutSubviews()
 			{
 				foreach (var vc in ChildViewControllers)
+				{
 					vc.View.Frame = View.Bounds;
+				}
 			}
 		}
 

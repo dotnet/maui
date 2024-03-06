@@ -135,43 +135,77 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == SearchBar.PlaceholderProperty.PropertyName)
+			{
 				UpdatePlaceholder();
+			}
 			else if (e.IsOneOf(SearchBar.TextProperty, SearchBar.TextTransformProperty))
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == SearchBar.CancelButtonColorProperty.PropertyName)
+			{
 				UpdateCancelButtonColor();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateEnabled();
+			}
 			else if (e.PropertyName == SearchBar.FontAttributesProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == SearchBar.FontFamilyProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == SearchBar.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == SearchBar.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == SearchBar.HorizontalTextAlignmentProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == SearchBar.VerticalOptionsProperty.PropertyName)
+			{
 				UpdateVerticalTextAlignment();
+			}
 			else if (e.PropertyName == SearchBar.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == SearchBar.PlaceholderColorProperty.PropertyName)
+			{
 				UpdatePlaceholderColor();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+			{
 				UpdateMaxLength();
+			}
 			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
+			{
 				UpdateInputType();
+			}
 			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
 				UpdateInputType();
+			}
 		}
 
 		internal override void OnNativeFocusChanged(bool hasFocus)
 		{
 			if (hasFocus && !Element.IsEnabled)
+			{
 				ClearFocus(Control);
+			}
 		}
 
 		[PortHandler]
@@ -180,7 +214,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_editText = _editText ?? Control.GetChildrenOfType<AppCompatAutoCompleteTextView>().FirstOrDefault();
 
 			if (_editText == null)
+			{
 				return;
+			}
 
 			_editText.UpdateHorizontalAlignment(Element.HorizontalTextAlignment, Microsoft.Maui.TextAlignment.Center.ToVerticalGravityFlags());
 		}
@@ -191,7 +227,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_editText = _editText ?? Control.GetChildrenOfType<AppCompatAutoCompleteTextView>().FirstOrDefault();
 
 			if (_editText == null)
+			{
 				return;
+			}
 
 			_editText.UpdateVerticalAlignment(Element.VerticalTextAlignment, Microsoft.Maui.TextAlignment.Center.ToVerticalGravityFlags());
 		}
@@ -205,9 +243,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (image != null && image.Drawable != null)
 				{
 					if (Element.CancelButtonColor != null)
+					{
 						image.Drawable.SetColorFilter(Element.CancelButtonColor, FilterMode.SrcIn);
+					}
 					else
+					{
 						image.Drawable.ClearColorFilter();
+					}
 				}
 			}
 		}
@@ -224,7 +266,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				control.InputType = (int)InputTypes.Null;
 			}
 			else
+			{
 				control.InputType = (int)_inputType;
+			}
 
 			if (_editText != null)
 			{
@@ -243,7 +287,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_editText = _editText ?? Control.GetChildrenOfType<AppCompatAutoCompleteTextView>().FirstOrDefault();
 
 			if (_editText == null)
+			{
 				return;
+			}
 
 			_editText.Typeface = Element.ToTypeface();
 			_editText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
@@ -267,7 +313,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			string query = Control.Query;
 			var text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 			if (query != text)
+			{
 				Control.SetQuery(text, false);
+			}
 		}
 
 		[PortHandler]
@@ -308,7 +356,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var currentControlText = Control.Query;
 
 			if (currentControlText.Length > Element.MaxLength)
+			{
 				Control.SetQuery(currentControlText.Substring(0, Element.MaxLength), false);
+			}
 		}
 
 		void UpdateInputType()
@@ -324,7 +374,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if ((_inputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
 					{
 						if (!model.IsSpellCheckEnabled)
+						{
 							_inputType = _inputType | InputTypes.TextFlagNoSuggestions;
+						}
 					}
 				}
 			}
@@ -335,7 +387,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				_editText = _editText ?? Control.GetChildrenOfType<AppCompatAutoCompleteTextView>().FirstOrDefault();
 				if (_editText != null)
+				{
 					_editText.KeyListener = GetDigitsKeyListener(_inputType);
+				}
 			}
 		}
 
@@ -350,7 +404,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 

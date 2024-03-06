@@ -15,14 +15,20 @@ namespace Microsoft.Maui.Platform
 				AView? child = viewGroup.GetChildAt(i);
 
 				if (child is T typedChild)
+				{
 					yield return typedChild;
+				}
 
 				if (child is AViewGroup)
 				{
 					IEnumerable<T>? myChildren = (child as AViewGroup)?.GetChildrenOfType<T>();
 					if (myChildren != null)
+					{
 						foreach (T nextChild in myChildren)
+						{
 							yield return nextChild;
+						}
+					}
 				}
 			}
 		}
@@ -34,7 +40,9 @@ namespace Microsoft.Maui.Platform
 				AView? child = viewGroup.GetChildAt(i);
 
 				if (child is T typedChild)
+				{
 					return typedChild;
+				}
 
 				if (child is AViewGroup vg)
 				{
@@ -58,7 +66,9 @@ namespace Microsoft.Maui.Platform
 		internal static T? GetChildAt<T>(this AView view, int index) where T : AView
 		{
 			if (view is AViewGroup viewGroup && viewGroup.ChildCount < index)
+			{
 				return (T?)viewGroup.GetChildAt(index);
+			}
 
 			return null;
 		}

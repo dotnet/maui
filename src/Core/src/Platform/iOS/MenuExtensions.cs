@@ -27,10 +27,14 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateMenuElementAttributes(this UIMenuElement uiMenuElement, bool isEnabled)
 		{
 			if (uiMenuElement is UIAction action)
+			{
 				action.Attributes = isEnabled.ToUIMenuElementAttributes();
+			}
 
 			if (uiMenuElement is UICommand command)
+			{
 				command.Attributes = isEnabled.ToUIMenuElementAttributes();
+			}
 		}
 
 		internal static UIMenuElementAttributes ToUIMenuElementAttributes(this bool isEnabled)
@@ -41,10 +45,34 @@ namespace Microsoft.Maui.Platform
 		internal static UIImage? GetPlatformMenuImage(this IImageSource? imageSource, IMauiContext mauiContext)
 		{
 			if (imageSource == null)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return null;
 
 			if (imageSource is IFileImageSource fileImageSource)
 				return fileImageSource.GetPlatformImage();
+After:
+			{
+				return null;
+			}
+*/
+			{
+				return null;
+			}
+
+			if (imageSource is IFileImageSource fileImageSource)
+			{
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				var fontManager = mauiContext.Services.GetRequiredService<IFontManager>();
+				return fontImageSource.GetPlatformImage(fontManager, 1);
+After:
+				return fileImageSource.GetPlatformImage(fontManager, 1);
+*/
+				return fileImageSource.GetPlatformImage();
+			}
 
 			if (imageSource is IFontImageSource fontImageSource)
 			{
@@ -96,7 +124,9 @@ namespace Microsoft.Maui.Platform
 			IUIMenuBuilder? uIMenuBuilder)
 		{
 			if (String.IsNullOrWhiteSpace(title))
+			{
 				throw new ArgumentNullException(nameof(title), $"{menuElements} requires title text.");
+			}
 
 			uIMenuBuilder = uIMenuBuilder ??
 				MauiUIApplicationDelegate.Current.MenuBuilder!;

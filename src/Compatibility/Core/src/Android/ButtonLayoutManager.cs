@@ -98,9 +98,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// if the measure of the view has changed then trigger a request for layout
 			// if the measure hasn't changed then force a layout of the button
 			if (previousHeight != View.MeasuredHeight || previousWidth != View.MeasuredWidth)
+			{
 				View.MaybeRequestLayout();
+			}
 			else
+			{
 				View.ForceLayout();
+			}
 
 			return new SizeRequest(new Size(View.MeasuredWidth, View.MeasuredHeight), Size.Zero);
 		}
@@ -108,11 +112,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			AButton view = View;
 			if (view == null)
+			{
 				return;
+			}
 
 			Drawable drawable = null;
 			Drawable[] drawables = TextViewCompat.GetCompoundDrawablesRelative(view);
@@ -150,7 +158,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 						// if text is transformed, add that transformation to to ensure correct calculation of icon padding
 						if (view.TransformationMethod != null)
+						{
 							buttonText = view.TransformationMethod.GetTransformationFormatted(buttonText, view);
+						}
 
 						var measuredTextWidth = view.Paint.MeasureText(buttonText, 0, buttonText.Length());
 						var textWidth = Math.Min((int)measuredTextWidth, view.Layout.Width);
@@ -158,9 +168,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 						var newLeft = (view.MeasuredWidth - contentsWidth) / 2;
 						if (_element.ContentLayout.Position == Button.ButtonContentLayout.ImagePosition.Right)
+						{
 							newLeft = -newLeft;
+						}
+
 						if (ViewCompat.GetLayoutDirection(view) == ViewCompat.LayoutDirectionRtl)
+						{
 							newLeft = -newLeft;
+						}
 
 						_drawableBounds.Set(newLeft, _drawableBounds.Top, newLeft + iconWidth, _drawableBounds.Bottom);
 						drawable.Bounds = _drawableBounds;
@@ -183,7 +198,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void Update()
 		{
 			if (View?.LayoutParameters == null && _hasLayoutOccurred)
+			{
 				return;
+			}
 
 			if (View != null && !_elementAlreadyChanged)
 			{
@@ -192,7 +209,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (!UpdateTextAndImage())
+			{
 				UpdateImage();
+			}
 
 			UpdatePadding();
 			UpdateLineBreakMode();
@@ -218,18 +237,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			if (e.PropertyName == Button.PaddingProperty.PropertyName)
+			{
 				UpdatePadding();
+			}
 			else if (e.PropertyName == Button.ImageSourceProperty.PropertyName || e.PropertyName == Button.ContentLayoutProperty.PropertyName)
+			{
 				UpdateImage();
+			}
 			else if (e.IsOneOf(Button.TextProperty, VisualElement.IsVisibleProperty, Button.TextTransformProperty))
+			{
 				UpdateTextAndImage();
+			}
 			else if (e.PropertyName == Button.BorderWidthProperty.PropertyName && _borderAdjustsPadding)
+			{
 				_element.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
+			}
 			else if (e.PropertyName == Button.LineBreakModeProperty.PropertyName)
+			{
 				UpdateLineBreakMode();
+			}
 		}
 
 		[PortHandler]
@@ -237,25 +268,35 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			AButton view = View;
 			if (view == null)
+			{
 				return;
+			}
 
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			if (!_defaultPaddingPix.HasValue)
+			{
 				_defaultPaddingPix = new Thickness(view.PaddingLeft, view.PaddingTop, view.PaddingRight, view.PaddingBottom);
+			}
 
 			// Currently the Padding Bindable property uses a creator factory so once it is set it can't become unset
 			// I would say this is currently a bug but it's a bug that exists already in the code base.
 			// Having this comment and this code more accurately demonstrates behavior then
 			// having an else clause for when the PaddingProperty isn't set
 			if (!_element.IsSet(Button.PaddingProperty))
+			{
 				return;
+			}
 
 			var padding = _element.Padding;
 			var adjustment = 0.0;
 			if (_borderAdjustsPadding && _element is IBorderElement borderElement && borderElement.IsBorderWidthSet() && borderElement.BorderWidth != borderElement.BorderWidthDefaultValue)
+			{
 				adjustment = borderElement.BorderWidth;
+			}
 
 			var defaultPadding = _preserveInitialPadding && _defaultPaddingPix.HasValue
 				? _defaultPaddingPix.Value
@@ -272,14 +313,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 
 			if (_disposed || _renderer?.View == null || _element == null)
+			{
 				return false;
+			}
 
 			if (View?.LayoutParameters == null && _hasLayoutOccurred)
+			{
 				return false;
+			}
 
 			AButton view = View;
 			if (view == null)
+			{
 				return false;
+			}
 
 			UpdateTransformationMethod(view);
 
@@ -300,19 +347,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			// Use defaults only when user hasn't specified alternative TextTransform settings
 			if (_element.TextTransform == TextTransform.Default)
+			{
 				view.TransformationMethod = _defaultTransformationMethod;
+			}
 			else
+			{
 				view.TransformationMethod = null;
+			}
 		}
 
 		void UpdateImage()
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			AButton view = View;
 			if (view == null)
+			{
 				return;
+			}
 
 			ImageSource elementImage = _element.ImageSource;
 
@@ -329,25 +384,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var layout = string.IsNullOrEmpty(_element.Text) ? _imageOnlyLayout : _element.ContentLayout;
 
 			if (_maintainLegacyMeasurements)
+			{
 				view.CompoundDrawablePadding = (int)layout.Spacing;
+			}
 			else
+			{
 				view.CompoundDrawablePadding = (int)Context.ToPixels(layout.Spacing);
+			}
 
 			Drawable existingImage = null;
 			var images = TextViewCompat.GetCompoundDrawablesRelative(view);
 			for (int i = 0; i < images.Length; i++)
+			{
 				if (images[i] != null)
 				{
 					existingImage = images[i];
 					break;
 				}
+			}
 
 			if (_renderer is IVisualElementRenderer visualElementRenderer)
 			{
 				visualElementRenderer.ApplyDrawableAsync(Button.ImageSourceProperty, Context, image =>
 				{
 					if (image == existingImage)
+					{
 						return;
+					}
 
 					switch (layout.Position)
 					{
@@ -367,7 +430,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					}
 
 					if (_hasLayoutOccurred)
+					{
 						_element?.InvalidateMeasureNonVirtual(InvalidationTrigger.MeasureChanged);
+					}
 				});
 			}
 		}
@@ -378,7 +443,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AButton view = View;
 
 			if (view == null || _element == null || _renderer?.View == null)
+			{
 				return;
+			}
 
 			view.SetLineBreakMode(_element);
 			UpdateTransformationMethod(view);

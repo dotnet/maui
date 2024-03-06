@@ -36,11 +36,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var gestures = GetView()?.GestureRecognizers;
 			if (gestures == null || gestures.Count == 0)
+			{
 				return false;
+			}
 
 			foreach (var gesture in gestures)
+			{
 				if (gesture is DragGestureRecognizer)
+				{
 					return true;
+				}
+			}
 
 			return false;
 		}
@@ -49,11 +55,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var gestures = GetView()?.GestureRecognizers;
 			if (gestures == null || gestures.Count == 0)
+			{
 				return false;
+			}
 
 			foreach (var gesture in gestures)
+			{
 				if (gesture is DropGestureRecognizer)
+				{
 					return true;
+				}
+			}
 
 			return false;
 		}
@@ -61,15 +73,21 @@ namespace Microsoft.Maui.Controls.Platform
 		public void SetupHandlerForDrop()
 		{
 			if (HasAnyDropGestures())
+			{
 				GetControl()?.SetOnDragListener(this);
+			}
 			else
+			{
 				GetControl()?.SetOnDragListener(null);
+			}
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
@@ -92,7 +110,9 @@ namespace Microsoft.Maui.Controls.Platform
 			view = view ?? GetView();
 
 			if (view == null)
+			{
 				return;
+			}
 
 			var gestures =
 				view
@@ -100,7 +120,9 @@ namespace Microsoft.Maui.Controls.Platform
 					.OfType<TRecognizer>();
 
 			if (gestures == null)
+			{
 				return;
+			}
 
 			foreach (var gesture in gestures)
 			{
@@ -172,7 +194,9 @@ namespace Microsoft.Maui.Controls.Platform
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
 				if (!rec.AllowDrop)
+				{
 					return;
+				}
 
 				rec.SendDragLeave(dragEventArgs);
 				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
@@ -190,7 +214,9 @@ namespace Microsoft.Maui.Controls.Platform
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
 				if (!rec.AllowDrop)
+				{
 					return;
+				}
 
 				rec.SendDragOver(dragEventArgs);
 				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
@@ -203,7 +229,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandleDrop(DragEvent e, CustomLocalStateData customLocalStateData, PlatformDropEventArgs platformArgs)
 		{
 			if (customLocalStateData.AcceptedOperation == DataPackageOperation.None)
+			{
 				return;
+			}
 
 			var datapackage = customLocalStateData.DataPackage;
 			if (e.LocalState == null)
@@ -215,9 +243,13 @@ namespace Microsoft.Maui.Controls.Platform
 					var control = GetControl();
 
 					if (control?.Context != null)
+					{
 						text = clipData.CoerceToText(control?.Context);
+					}
 					else
+					{
 						text = clipData.Text;
+					}
 				}
 				else
 				{
@@ -225,17 +257,23 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				if (String.IsNullOrWhiteSpace(datapackage.Text))
+				{
 					datapackage.Text = text;
+				}
 
 				if (datapackage.Image == null)
+				{
 					datapackage.Image = text;
+				}
 			}
 
 			var args = new DropEventArgs(datapackage?.View, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformArgs);
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
+				{
 					return;
+				}
 
 				try
 				{
@@ -251,12 +289,16 @@ namespace Microsoft.Maui.Controls.Platform
 		public void OnLongPress(MotionEvent e)
 		{
 			if (!HasAnyDragGestures())
+			{
 				return;
+			}
 
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
 				if (!rec.CanDrag)
+				{
 					return;
+				}
 
 				var element = GetView();
 				// TODO MAUI FIX FOR COMPAT
@@ -264,12 +306,16 @@ namespace Microsoft.Maui.Controls.Platform
 				var v = (AView)element.Handler.PlatformView;
 
 				if (v.Handle == IntPtr.Zero)
+				{
 					return;
+				}
 
 				var args = rec.SendDragStarting(element, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), new PlatformDragStartingEventArgs(v, e));
 
 				if (args.Cancel)
+				{
 					return;
+				}
 
 				CustomLocalStateData customLocalStateData = new CustomLocalStateData();
 				customLocalStateData.DataPackage = args.Data;
@@ -310,10 +356,14 @@ namespace Microsoft.Maui.Controls.Platform
 						var dataPackage = args.Data;
 						ClipData.Item userItem = null;
 						if (dataPackage.Image != null)
+						{
 							userItem = ConvertToClipDataItem(dataPackage.Image, mimeTypes);
+						}
 
 						if (dataPackage.Text != null)
+						{
 							userItem = new ClipData.Item(dataPackage.Text);
+						}
 
 						if (item == null)
 						{
@@ -324,7 +374,9 @@ namespace Microsoft.Maui.Controls.Platform
 						data = new ClipData(clipDescription, mimeTypes.ToArray(), item);
 
 						if (userItem != null)
+						{
 							data.AddItem(userItem);
+						}
 					}
 
 					else
@@ -342,16 +394,26 @@ namespace Microsoft.Maui.Controls.Platform
 #pragma warning disable CS0618, CA1416 // DragFlags.Global added in API 24: https://developer.android.com/reference/android/view/View#DRAG_FLAG_GLOBAL
 				int dragFlags;
 				if (args.PlatformArgs?.DragFlags is ADragFlags d)
+				{
 					dragFlags = (int)d;
+				}
 				else if (OperatingSystem.IsAndroidVersionAtLeast(24))
+				{
 					dragFlags = (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead;
+				}
 				else
+				{
 					dragFlags = 256 | 1; // use the value of enums since the enums are not supported here
+				}
 
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
+				{
 					v.StartDragAndDrop(data, dragShadowBuilder, localData, dragFlags);
+				}
 				else
+				{
 					v.StartDrag(data, dragShadowBuilder, localData, dragFlags);
+				}
 #pragma warning restore CS0618, CA1416
 			});
 		}
@@ -361,7 +423,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (source is UriImageSource uriImageSource)
 			{
 				if (!mimeTypes.Contains(ClipDescription.MimetypeTextUrilist))
+				{
 					mimeTypes.Add(ClipDescription.MimetypeTextUrilist);
+				}
 
 				var aUri = AUri.Parse(uriImageSource.Uri.ToString());
 				return new ClipData.Item(aUri);

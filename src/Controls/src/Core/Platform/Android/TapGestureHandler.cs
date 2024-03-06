@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			// only handle click if we don't have double tap registered
 			if (TapGestureRecognizers(2).Any())
+			{
 				return;
+			}
 
 			OnTap(1, null);
 		}
@@ -32,14 +34,20 @@ namespace Microsoft.Maui.Controls.Platform
 			Point point;
 
 			if (e == null)
+			{
 				point = new Point(-1, -1);
+			}
 			else
+			{
 				point = new Point(e.GetX(), e.GetY());
+			}
 
 			var view = GetView();
 
 			if (view == null)
+			{
 				return false;
+			}
 
 			var captured = false;
 
@@ -50,7 +58,9 @@ namespace Microsoft.Maui.Controls.Platform
 				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>(recognizer => recognizer.NumberOfTapsRequired == count))
 				{
 					if (!CheckButtonMask(recognizer, e))
+					{
 						continue;
+					}
 
 					recognizer.SendTapped(view, (view) => e.CalculatePosition(GetView(), view));
 					captured = true;
@@ -58,13 +68,17 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (captured)
+			{
 				return captured;
+			}
 
 			IEnumerable<TapGestureRecognizer> gestureRecognizers = TapGestureRecognizers(count);
 			foreach (var gestureRecognizer in gestureRecognizers)
 			{
 				if (!CheckButtonMask(gestureRecognizer, e))
+				{
 					continue;
+				}
 
 				gestureRecognizer.SendTapped(view, (view) => e.CalculatePosition(GetView(), view));
 				captured = true;
@@ -98,7 +112,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var view = GetView();
 			if (view == null)
+			{
 				return Enumerable.Empty<TapGestureRecognizer>();
+			}
 
 			return view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(recognizer => recognizer.NumberOfTapsRequired == count);
 		}

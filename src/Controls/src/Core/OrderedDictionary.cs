@@ -74,10 +74,14 @@ namespace Cadenza.Collections
 		public OrderedDictionary(ICollection<KeyValuePair<TKey, TValue>> dictionary, IEqualityComparer<TKey> equalityComparer) : this(dictionary != null ? dictionary.Count : 0, equalityComparer)
 		{
 			if (dictionary == null)
+			{
 				throw new ArgumentNullException("dictionary");
+			}
 
 			foreach (KeyValuePair<TKey, TValue> kvp in dictionary)
+			{
 				Add(kvp.Key, kvp.Value);
+			}
 		}
 
 		/// <summary>
@@ -124,11 +128,19 @@ namespace Cadenza.Collections
 		void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
 		{
 			if (array == null)
+			{
 				throw new ArgumentNullException("array");
+			}
+
 			if (Count > array.Length - arrayIndex)
+			{
 				throw new ArgumentException("Not enough space in array to copy");
+			}
+
 			if (arrayIndex < 0)
+			{
 				throw new ArgumentOutOfRangeException("arrayIndex");
+			}
 
 			for (var i = 0; i < _keyOrder.Count; ++i)
 			{
@@ -191,7 +203,9 @@ namespace Cadenza.Collections
 			set
 			{
 				if (!_dict.ContainsKey(key))
+				{
 					_keyOrder.Add(key);
+				}
 
 				_dict[key] = value;
 			}
@@ -244,7 +258,9 @@ namespace Cadenza.Collections
 		public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
 		{
 			foreach (TKey key in _keyOrder)
+			{
 				yield return new KeyValuePair<TKey, TValue>(key, this[key]);
+			}
 		}
 
 		int IList<KeyValuePair<TKey, TValue>>.IndexOf(KeyValuePair<TKey, TValue> item)
@@ -296,7 +312,9 @@ namespace Cadenza.Collections
 		public int IndexOf(TKey key)
 		{
 			if (key == null)
+			{
 				throw new ArgumentNullException("key");
+			}
 
 			return _keyOrder.IndexOf(key);
 		}
@@ -312,7 +330,9 @@ namespace Cadenza.Collections
 		public int IndexOf(TKey key, int startIndex)
 		{
 			if (key == null)
+			{
 				throw new ArgumentNullException("key");
+			}
 
 			return _keyOrder.IndexOf(key, startIndex);
 		}
@@ -335,7 +355,9 @@ namespace Cadenza.Collections
 		public int IndexOf(TKey key, int startIndex, int count)
 		{
 			if (key == null)
+			{
 				throw new ArgumentNullException("key");
+			}
 
 			return _keyOrder.IndexOf(key, startIndex, count);
 		}
@@ -391,14 +413,24 @@ namespace Cadenza.Collections
 			public void CopyTo(TValue[] array, int arrayIndex)
 			{
 				if (array == null)
+				{
 					throw new ArgumentNullException("array");
+				}
+
 				if (Count > array.Length - arrayIndex)
+				{
 					throw new ArgumentException("Not enough space in array to copy");
+				}
+
 				if (arrayIndex < 0 || arrayIndex > array.Length)
+				{
 					throw new ArgumentOutOfRangeException("arrayIndex");
+				}
 
 				for (var i = 0; i < _odict.Count; ++i)
+				{
 					array[arrayIndex++] = _odict[i];
+				}
 			}
 
 			public int Count
@@ -424,7 +456,9 @@ namespace Cadenza.Collections
 			public IEnumerator<TValue> GetEnumerator()
 			{
 				for (var i = 0; i < _odict._keyOrder.Count; ++i)
+				{
 					yield return _odict[i];
+				}
 			}
 
 			public int IndexOf(TValue item)

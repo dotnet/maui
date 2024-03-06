@@ -13,7 +13,9 @@ namespace Microsoft.Maui.IntegrationTests
 		public void AndroidTemplateFxtSetUp()
 		{
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
+			{
 				TestAvd.Abi = "arm64-v8a";
+			}
 
 			TestAvd.InstallAvd();
 		}
@@ -35,7 +37,9 @@ namespace Microsoft.Maui.IntegrationTests
 			{
 				Adb.Run("kill-server", deviceId: TestAvd.Id);
 				foreach (var p in Process.GetProcessesByName("adb.exe"))
+				{
 					p.Kill();
+				}
 			}
 		}
 

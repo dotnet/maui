@@ -488,7 +488,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var vsl = new VerticalStackLayout()
 			{
-				collectionView				
+				collectionView
 			};
 
 			vsl.HeightRequest = 500;

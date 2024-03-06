@@ -97,7 +97,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			var result = _buttonLayoutManager.GetDesiredSize(widthConstraint, heightConstraint);
 
 			if (setHint)
+			{
 				Control.Hint = hint;
+			}
 
 			return result;
 		}
@@ -148,9 +150,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			canvas.ClipShape(Context, Element);
 
 			if (_backgroundTracker?.BackgroundDrawable != null)
+			{
 				_backgroundTracker.BackgroundDrawable.DrawCircle(canvas, canvas.Width, canvas.Height, base.Draw);
+			}
 			else
+			{
 				base.Draw(canvas);
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -185,7 +191,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				if (Element != null)
 				{
 					if (Platform.GetRenderer(Element) == this)
+					{
 						Element.ClearValue(Platform.RendererProperty);
+					}
 				}
 			}
 
@@ -195,7 +203,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			if (!Enabled || (_inputTransparent && Enabled))
+			{
 				return false;
+			}
 
 			return base.OnTouchEvent(e);
 		}
@@ -384,7 +394,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> OnThisPlatform()
 		{
 			if (_platformElementConfiguration == null)
+			{
 				_platformElementConfiguration = Button.OnThisPlatform();
+			}
 
 			return _platformElementConfiguration;
 		}

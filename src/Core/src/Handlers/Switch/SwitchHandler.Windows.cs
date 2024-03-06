@@ -15,13 +15,17 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
 		{
 			if (handler is SwitchHandler)
+			{
 				handler.PlatformView?.UpdateTrackColor(view);
+			}
 		}
 
 		public static void MapThumbColor(ISwitchHandler handler, ISwitch view)
 		{
 			if (handler is SwitchHandler)
+			{
 				handler.PlatformView?.UpdateThumbColor(view);
+			}
 		}
 
 		protected override void DisconnectHandler(ToggleSwitch platformView)
@@ -39,7 +43,9 @@ namespace Microsoft.Maui.Handlers
 		void OnToggled(object sender, UI.Xaml.RoutedEventArgs e)
 		{
 			if (VirtualView is null || PlatformView is null || VirtualView.IsOn == PlatformView.IsOn)
+			{
 				return;
+			}
 
 			VirtualView.IsOn = PlatformView.IsOn;
 		}

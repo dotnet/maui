@@ -76,24 +76,40 @@ namespace Microsoft.Maui.Controls
 								 CoerceValueDelegate coerceValue = null, BindablePropertyBindingChanging bindingChanging = null, bool isReadOnly = false, CreateDefaultValueDelegate defaultValueCreator = null)
 		{
 			if (propertyName == null)
+			{
 				throw new ArgumentNullException(nameof(propertyName));
+			}
+
 			if (returnType is null)
+			{
 				throw new ArgumentNullException(nameof(returnType));
+			}
+
 			if (declaringType is null)
+			{
 				throw new ArgumentNullException(nameof(declaringType));
+			}
 
 			// don't use Enum.IsDefined as its redonkulously expensive for what it does
 			if (defaultBindingMode != BindingMode.Default && defaultBindingMode != BindingMode.OneWay && defaultBindingMode != BindingMode.OneWayToSource && defaultBindingMode != BindingMode.TwoWay && defaultBindingMode != BindingMode.OneTime)
+			{
 				throw new ArgumentException($"Not a valid type of BindingMode. Property: {returnType} {declaringType.Name}.{propertyName}. Default binding mode: {defaultBindingMode}", nameof(defaultBindingMode));
+			}
 
 			if (defaultValue == null && Nullable.GetUnderlyingType(returnType) == null && returnType.IsValueType)
+			{
 				defaultValue = Activator.CreateInstance(returnType);
+			}
 
 			if (defaultValue != null && !returnType.IsInstanceOfType(defaultValue))
+			{
 				throw new ArgumentException($"Default value did not match return type. Property: {returnType} {declaringType.Name}.{propertyName} Default value type: {defaultValue.GetType().Name}, ", nameof(defaultValue));
+			}
 
 			if (defaultBindingMode == BindingMode.Default)
+			{
 				defaultBindingMode = BindingMode.OneWay;
+			}
 
 			PropertyName = propertyName;
 			ReturnType = returnType;
@@ -126,7 +142,7 @@ namespace Microsoft.Maui.Controls
 		public string PropertyName { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='ReturnType']/Docs/*" />
-		[DynamicallyAccessedMembers(ReturnTypeMembers)] 
+		[DynamicallyAccessedMembers(ReturnTypeMembers)]
 		public Type ReturnType { get; }
 
 		internal BindablePropertyBindingChanging BindingChanging { get; private set; }
@@ -197,7 +213,11 @@ namespace Microsoft.Maui.Controls
 		internal object GetDefaultValue(BindableObject bindable)
 		{
 			if (DefaultValueCreator != null)
+			{
+			{
 				return DefaultValueCreator(bindable);
+			}
+			}
 
 			return DefaultValue;
 		}
@@ -207,6 +227,9 @@ namespace Microsoft.Maui.Controls
 			Type returnType = ReturnType;
 
 			if (value == null)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
 
 			Type valueType = value.GetType();
@@ -228,6 +251,198 @@ namespace Microsoft.Maui.Controls
 			}
 			if (returnType.IsAssignableFrom(valueType))
 				return true;
+
+			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+After:
+			{
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+			}
+
+			Type valueType = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+
+			Type valueType = value.GetType();
+
+			// already the same type, no need to convert
+			if (returnType == valueType)
+				return true;
+
+			// Dont support arbitrary IConvertible by limiting which types can use this
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, returnType) != -1)
+			{
+				value = Convert.ChangeType(value, returnType);
+				return true;
+			}
+			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			{
+				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
+				return true;
+			}
+			if (returnType.IsAssignableFrom(valueType))
+				return true;
+
+			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+After:
+			{
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+			}
+
+			Type valueType = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+
+			Type valueType = value.GetType();
+
+			// already the same type, no need to convert
+			if (returnType == valueType)
+				return true;
+
+			// Dont support arbitrary IConvertible by limiting which types can use this
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, returnType) != -1)
+			{
+				value = Convert.ChangeType(value, returnType);
+				return true;
+			}
+			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			{
+				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
+				return true;
+			}
+			if (returnType.IsAssignableFrom(valueType))
+				return true;
+
+			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+After:
+			{
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+			}
+
+			Type valueType = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+
+			Type valueType = value.GetType();
+
+			// already the same type, no need to convert
+			if (returnType == valueType)
+				return true;
+
+			// Dont support arbitrary IConvertible by limiting which types can use this
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, returnType) != -1)
+			{
+				value = Convert.ChangeType(value, returnType);
+				return true;
+			}
+			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			{
+				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
+				return true;
+			}
+			if (returnType.IsAssignableFrom(valueType))
+				return true;
+
+			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+After:
+			{
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+			}
+
+			Type valueType = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+
+			Type valueType = value.GetType();
+
+			// already the same type, no need to convert
+			if (returnType == valueType)
+				return true;
+
+			// Dont support arbitrary IConvertible by limiting which types can use this
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, returnType) != -1)
+			{
+				value = Convert.ChangeType(value, returnType);
+				return true;
+			}
+			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			{
+				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
+				return true;
+			}
+			if (returnType.IsAssignableFrom(valueType))
+				return true;
+
+			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+After:
+			{
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+			}
+
+			Type valueType = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+*/
+			{
+				return !returnType.IsValueType || returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Nullable<>);
+			}
+
+			Type valueType = value.GetType();
+
+			// already the same type, no need to convert
+			if (returnType == valueType)
+			{
+				return true;
+			}
+
+			// Dont support arbitrary IConvertible by limiting which types can use this
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, returnType) != -1)
+			{
+				value = Convert.ChangeType(value, returnType);
+				return true;
+			}
+			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			{
+				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
+				return true;
+			}
+			if (returnType.IsAssignableFrom(valueType))
+			{
+				return true;
+			}
+
+			var cast = value.GetType();
+
+			// already the same type, no need to convert
+			if (returnType == valueType)
+			{
+				return true;
+			}
+
+			// Dont support arbitrary IConvertible by limiting which types can use this
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, returnType) != -1)
+			{
+				value = Convert.ChangeType(value, returnType);
+				return true;
+			}
+			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			{
+				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
+				return true;
+			}
+			if (returnType.IsAssignableFrom(valueType))
+			{
+				return true;
+			}
 
 			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
 			if (cast != null)

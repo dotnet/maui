@@ -16,21 +16,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static partial void ProcessAutoPackage(Maui.IElement element)
 		{
 			if (element?.Handler?.PlatformView is not UIView viewGroup)
+			{
 				return;
+			}
 
 			viewGroup.ClearSubviews();
 
 			if (element is not IVisualTreeElement vte)
+			{
 				return;
+			}
 
 			var mauiContext = element?.Handler?.MauiContext;
 			if (mauiContext == null)
+			{
 				return;
+			}
 
 			foreach (var child in vte.GetVisualChildren())
 			{
 				if (child is Maui.IElement childElement)
+				{
 					viewGroup.AddSubview(childElement.ToPlatform(mauiContext));
+				}
 			}
 		}
 

@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Controls
 		{
 			// If the user hasn't set IsInAccessibleTree then just don't do anything
 			if (!element.IsSet(AutomationProperties.IsInAccessibleTreeProperty))
+			{
 				return;
+			}
 
 			var Control = handler.PlatformView as UIView;
 
@@ -33,7 +35,9 @@ namespace Microsoft.Maui.Controls
 		public static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, Element view)
 		{
 			if (!view.IsSet(AutomationProperties.ExcludedWithChildrenProperty))
+			{
 				return;
+			}
 
 			var Control = handler.PlatformView as UIView;
 
@@ -44,13 +48,17 @@ namespace Microsoft.Maui.Controls
 		static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, IElement element)
 		{
 			if (element is Element e)
+			{
 				MapAutomationPropertiesIsInAccessibleTree(handler, e);
+			}
 		}
 
 		static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, IElement element)
 		{
 			if (element is Element e)
+			{
 				MapAutomationPropertiesExcludedWithChildren(handler, e);
+			}
 		}
 	}
 }

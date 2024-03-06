@@ -18,7 +18,10 @@ namespace Microsoft.Maui.Controls
 		{
 			var strValue = value?.ToString();
 			if (strValue != null)
+			{
+			{
 				return (FileImageSource)ImageSource.FromFile(strValue);
+			}
 
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FileImageSource)));
 		}
@@ -26,7 +29,10 @@ namespace Microsoft.Maui.Controls
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FileImageSource fis)
+			{
 				throw new NotSupportedException();
+			}
+
 			return fis.File;
 		}
 	}

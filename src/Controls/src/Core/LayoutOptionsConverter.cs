@@ -27,7 +27,10 @@ namespace Microsoft.Maui.Controls
 			{
 				var parts = strValue.Split('.');
 				if (parts.Length > 2 || (parts.Length == 2 && parts[0] != "LayoutOptions"))
+				{
 					throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LayoutOptions)}");
+				}
+
 				strValue = parts[parts.Length - 1];
 				switch (strValue)
 				{
@@ -50,7 +53,9 @@ namespace Microsoft.Maui.Controls
 				}
 				FieldInfo field = typeof(LayoutOptions).GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == strValue);
 				if (field != null)
+				{
 					return (LayoutOptions)field.GetValue(null);
+				}
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LayoutOptions)}");
@@ -60,15 +65,30 @@ namespace Microsoft.Maui.Controls
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not LayoutOptions options)
+			{
 				throw new NotSupportedException();
+			}
+
 			if (options.Alignment == LayoutAlignment.Start)
+			{
 				return $"{nameof(LayoutAlignment.Start)}{(options.Expands ? "AndExpand" : "")}";
+			}
+
 			if (options.Alignment == LayoutAlignment.Center)
+			{
 				return $"{nameof(LayoutAlignment.Center)}{(options.Expands ? "AndExpand" : "")}";
+			}
+
 			if (options.Alignment == LayoutAlignment.End)
+			{
 				return $"{nameof(LayoutAlignment.End)}{(options.Expands ? "AndExpand" : "")}";
+			}
+
 			if (options.Alignment == LayoutAlignment.Fill)
+			{
 				return $"{nameof(LayoutAlignment.Fill)}{(options.Expands ? "AndExpand" : "")}";
+			}
+
 			throw new NotSupportedException();
 		}
 

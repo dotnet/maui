@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasAccelerometer)
+			{
 				return;
+			}
 
 			var tcs = new TaskCompletionSource<AccelerometerData>();
 			Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
@@ -46,7 +48,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasAccelerometer)
+			{
 				return;
+			}
 
 			var tcs = new TaskCompletionSource<AccelerometerData>();
 			Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
@@ -70,7 +74,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasAccelerometer)
+			{
 				return;
+			}
 
 			var tcs = new TaskCompletionSource<AccelerometerData>();
 

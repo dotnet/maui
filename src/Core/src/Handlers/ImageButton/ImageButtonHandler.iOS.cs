@@ -58,10 +58,15 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(UIImage? platformImage)
 			{
 				if (Handler?.PlatformView is not UIButton button)
+				{
+				{
 					return;
+				}
 
 				if (platformImage?.Images is not null && platformImage.Images.Length > 0)
+				{
 					platformImage = platformImage.Images[0];
+				}
 
 				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 

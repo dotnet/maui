@@ -57,7 +57,9 @@ namespace Microsoft.Maui.Devices
 		async Task CheckSupportAsync()
 		{
 			if (!IsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			await Permissions.EnsureGrantedAsync<Permissions.Flashlight>();
 		}
@@ -92,7 +94,9 @@ namespace Microsoft.Maui.Devices
 						if (camera == null)
 						{
 							if (surface == null)
+							{
 								surface = new SurfaceTexture(0);
+							}
 
 #pragma warning disable CS0618 // Camera types are deprecated in Android 10+
 #pragma warning disable CA1416 // Validate platform compatibility

@@ -58,7 +58,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -78,24 +80,44 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == IndicatorSizeProperty.PropertyName)
+			{
 				UpdateIndicatorSize();
+			}
+
 			if (e.PropertyName == IndicatorsShapeProperty.PropertyName ||
 				e.PropertyName == ItemsSourceProperty.PropertyName)
+			{
 				UpdateIndicator();
+			}
 			else if (e.PropertyName == IndicatorTemplateProperty.PropertyName)
+			{
 				UpdateIndicatorTemplate();
+			}
+
 			if (e.PropertyName == IndicatorColorProperty.PropertyName)
+			{
 				UpdatePagesIndicatorTintColor();
+			}
 			else if (e.PropertyName == SelectedIndicatorColorProperty.PropertyName)
+			{
 				UpdateCurrentPagesIndicatorTintColor();
+			}
 			else if (e.PropertyName == CountProperty.PropertyName)
+			{
 				UpdatePages();
+			}
 			else if (e.PropertyName == HideSingleProperty.PropertyName)
+			{
 				UpdateHidesForSinglePage();
+			}
 			else if (e.Is(PositionProperty))
+			{
 				UpdateCurrentPage();
+			}
 			else if (e.Is(MaximumVisibleProperty))
+			{
 				UpdateMaximumVisible();
+			}
 		}
 
 		protected override UIView CreateNativeControl()
@@ -131,15 +153,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void ClearIndicators()
 		{
 			foreach (var child in View.Subviews)
+			{
 				child.RemoveFromSuperview();
+			}
 		}
 
 		void UpdateIndicator()
 		{
 			if (Element.IndicatorTemplate == null)
+			{
 				UpdateIndicatorShape();
+			}
 			else
+			{
 				UpdateIndicatorTemplate();
+			}
 		}
 
 		void UpdateIndicatorShape()
@@ -159,7 +187,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateIndicatorTemplate()
 		{
 			if (Element.IndicatorLayout is not VisualElement indicatorLayout)
+			{
 				return;
+			}
 
 			ClearIndicators();
 			var control = (UIView)indicatorLayout.GetRenderer();
@@ -172,7 +202,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UIPagerValueChanged(object sender, System.EventArgs e)
 		{
 			if (_updatingPosition || UIPager == null)
+			{
 				return;
+			}
 
 			Element.Position = (int)UIPager.CurrentPage;
 		}
@@ -180,7 +212,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateCurrentPage()
 		{
 			if (UIPager == null)
+			{
 				return;
+			}
 
 			_updatingPosition = true;
 			var maxVisible = GetMaximumVisible();
@@ -194,7 +228,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdatePages()
 		{
 			if (UIPager == null)
+			{
 				return;
+			}
 
 			UIPager.Pages = GetMaximumVisible();
 
@@ -204,7 +240,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateHidesForSinglePage()
 		{
 			if (UIPager == null)
+			{
 				return;
+			}
 
 			UIPager.HidesForSinglePage = Element.HideSingle;
 		}
@@ -212,7 +250,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdatePagesIndicatorTintColor()
 		{
 			if (UIPager == null)
+			{
 				return;
+			}
 
 			var color = Element.IndicatorColor;
 			UIPager.PageIndicatorTintColor = color?.ToPlatform() ?? _defaultPagesIndicatorTintColor;
@@ -221,7 +261,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateCurrentPagesIndicatorTintColor()
 		{
 			if (UIPager == null)
+			{
 				return;
+			}
 
 			var color = Element.SelectedIndicatorColor;
 			UIPager.CurrentPageIndicatorTintColor = color?.ToPlatform() ?? _defaultCurrentPagesIndicatorTintColor;
@@ -257,7 +299,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			Transform = newTransform;
 			if (Subviews.Length == 0)
+			{
 				return;
+			}
 
 			foreach (var view in Subviews)
 			{

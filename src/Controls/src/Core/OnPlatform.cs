@@ -38,9 +38,15 @@ namespace Microsoft.Maui.Controls
 				foreach (var onPlat in onPlatform.Platforms)
 				{
 					if (onPlat.Platform == null)
+					{
 						continue;
+					}
+
 					if (!onPlat.Platform.Contains(DeviceInfo.Platform.ToString()))
+					{
 						continue;
+					}
+
 					return (T)s_valueConverter.Convert(onPlat.Value, typeof(T), null, null);
 				}
 
@@ -48,7 +54,9 @@ namespace Microsoft.Maui.Controls
 				foreach (var onPlat in onPlatform.Platforms)
 				{
 					if (onPlat.Platform != null && onPlat.Platform.Contains("UWP") && DeviceInfo.Platform == DevicePlatform.WinUI)
+					{
 						return (T)s_valueConverter.Convert(onPlat.Value, typeof(T), null, null);
+					}
 				}
 			}
 

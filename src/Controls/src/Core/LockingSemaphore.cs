@@ -15,7 +15,10 @@ namespace Microsoft.Maui.Controls
 		public LockingSemaphore(int initialCount)
 		{
 			if (initialCount < 0)
+			{
 				throw new ArgumentOutOfRangeException("initialCount");
+			}
+
 			_currentCount = initialCount;
 		}
 
@@ -25,12 +28,18 @@ namespace Microsoft.Maui.Controls
 			lock (_waiters)
 			{
 				if (_waiters.Count > 0)
+				{
 					toRelease = _waiters.Dequeue();
+				}
 				else
+				{
 					++_currentCount;
+				}
 			}
 			if (toRelease != null)
+			{
 				toRelease.TrySetResult(true);
+			}
 		}
 
 		public Task WaitAsync(CancellationToken token)

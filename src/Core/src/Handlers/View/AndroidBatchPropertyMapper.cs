@@ -47,8 +47,12 @@ namespace Microsoft.Maui.Handlers
 			if (Chained is not null)
 			{
 				foreach (var chain in Chained)
+				{
 					foreach (var key in chain.GetKeys())
+					{
 						yield return key;
+					}
+				}
 			}
 		}
 	}

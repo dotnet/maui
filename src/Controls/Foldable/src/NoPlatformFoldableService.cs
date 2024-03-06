@@ -61,7 +61,9 @@ namespace Microsoft.Maui.Foldable
 		public object WatchForChangesOnLayout(VisualElement visualElement, Action action)
 		{
 			if (action == null)
+			{
 				return null;
+			}
 
 			EventHandler<EventArg<VisualElement>> layoutUpdated = (_, __) =>
 			{
@@ -75,7 +77,9 @@ namespace Microsoft.Maui.Foldable
 		public void StopWatchingForChangesOnLayout(VisualElement visualElement, object handle)
 		{
 			if (handle is EventHandler<EventArg<VisualElement>> handler)
+			{
 				visualElement.BatchCommitted -= handler;
+			}
 		}
 
 		void OnDeviceInfoChanged(object sender, DisplayInfoChangedEventArgs e)

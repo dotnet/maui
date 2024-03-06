@@ -31,9 +31,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var controller = renderer.Element as IImageElement;
 
 			if (e.PropertyName == Image.AspectProperty.PropertyName)
+			{
 				UpdateAspect(renderer, controller);
+			}
 			else if (e.PropertyName == Image.IsAnimationPlayingProperty.PropertyName)
+			{
 				StartStopAnimation(renderer, controller);
+			}
 		}
 
 		static void StartStopAnimation(IImageVisualElementRenderer renderer, IImageElement controller)
@@ -44,14 +48,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			if (controller.IsLoading)
+			{
 				return;
+			}
 
 			if (renderer.GetImage()?.Source is BitmapImage bitmapImage)
 			{
 				if (controller.IsAnimationPlaying && !bitmapImage.IsPlaying)
+				{
 					bitmapImage.Play();
+				}
 				else if (!controller.IsAnimationPlaying && bitmapImage.IsPlaying)
+				{
 					bitmapImage.Stop();
+				}
 
 				bitmapImage.RegisterPropertyChangedCallback(BitmapImage.IsPlayingProperty, OnIsPlaying);
 			}
@@ -140,13 +150,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				var imagesource = await imageElement.Source.ToWindowsImageSourceAsync();
 
 				if (renderer.IsDisposed)
+				{
 					return;
+				}
 
 				if (imagesource is BitmapImage bitmapImage)
+				{
 					bitmapImage.AutoPlay = false;
+				}
 
 				if (Control != null)
+				{
 					renderer.SetImage(imagesource);
+				}
 
 				RefreshImage(renderer);
 			}
@@ -159,10 +175,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static internal void RefreshImage(IImageVisualElementRenderer renderer)
 		{
 			if (renderer.Element is IViewController element)
+			{
 				element?.InvalidateMeasure(InvalidationTrigger.RendererReady);
+			}
 
 			if (renderer.Element is IImageElement controller)
+			{
 				StartStopAnimation(renderer, controller);
+			}
 		}
 	}
 }

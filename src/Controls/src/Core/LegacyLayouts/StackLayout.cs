@@ -69,7 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				var child = (View)LogicalChildrenInternal[i];
 				if (child.IsVisible && layoutInformationCopy.Plots != null)
+				{
 					LayoutChildIntoBoundingRegion(child, layoutInformationCopy.Plots[i], layoutInformationCopy.Requests[i]);
+				}
 			}
 		}
 
@@ -103,7 +105,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			for (var i = 0; i < layout.Plots?.Length; i++)
 			{
 				if (!((View)LogicalChildrenInternal[i]).IsVisible)
+				{
 					continue;
+				}
+
 				if (orientation == StackOrientation.Vertical)
 				{
 					layout.Plots[i].Width = widthConstraint;
@@ -153,7 +158,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					var child = (View)LogicalChildrenInternal[i];
 					if (!child.IsVisible)
+					{
+					{
 						continue;
+					}
 
 					if (child.VerticalOptions.Expands)
 					{
@@ -180,7 +188,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				minimumHeight -= spacing;
 				if (expander != null)
+				{
 					ComputeConstraintForView(expander, layout.Expanders == 1); // warning : slightly obtuse, but we either need to setup the expander or clear the last one
+				}
 			}
 			else
 			{
@@ -189,7 +199,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					var child = (View)LogicalChildrenInternal[i];
 					if (!child.IsVisible)
+					{
+					{
 						continue;
+					}
 
 					if (child.HorizontalOptions.Expands)
 					{
@@ -215,7 +228,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				minimumWidth -= spacing;
 				if (expander != null)
+				{
 					ComputeConstraintForView(expander, layout.Expanders == 1);
+				}
 			}
 
 			layout.Bounds = new Rect(x, y, boundsWidth, boundsHeight);
@@ -240,7 +255,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				var child = (View)LogicalChildrenInternal[i];
 				if (!child.IsVisible)
+				{
 					continue;
+				}
 
 				Size minimum = layout.Requests[i].Minimum;
 
@@ -249,7 +266,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				Rect plot = layout.Plots[i];
 				double availableSpace = plot.Width - minimum.Width;
 				if (availableSpace <= 0)
+				{
 					continue;
+				}
 
 				compressionSpace -= availableSpace;
 
@@ -282,7 +301,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		void CompressNaiveLayout(LayoutInformation layout, StackOrientation orientation, double widthConstraint, double heightConstraint)
 		{
 			if (layout.CompressionSpace <= 0)
+			{
 				return;
+			}
 
 			if (orientation == StackOrientation.Vertical)
 			{
@@ -312,7 +333,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				var child = (View)LogicalChildrenInternal[i];
 				if (!child.IsVisible)
+				{
 					continue;
+				}
 
 				Size minimum = layout.Requests[i].Minimum;
 
@@ -321,7 +344,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				Rect plot = layout.Plots[i];
 				double availableSpace = plot.Height - minimum.Height;
 				if (availableSpace <= 0)
+				{
 					continue;
+				}
 
 				compressionSpace -= availableSpace;
 
@@ -397,7 +422,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				var child = (VisualElement)InternalChildren[index];
 				if (child.IsVisible)
+				{
 					return true;
+				}
 			}
 			return false;
 		}
@@ -405,13 +432,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 		void ProcessExpanders(LayoutInformation layout, StackOrientation orientation, double x, double y, double widthConstraint, double heightConstraint)
 		{
 			if (layout.Expanders <= 0)
+			{
 				return;
+			}
 
 			if (orientation == StackOrientation.Vertical)
 			{
 				double extraSpace = heightConstraint - layout.Bounds.Height;
 				if (extraSpace <= 0)
+				{
+				{
 					return;
+				}
 
 				double spacePerExpander = extraSpace / layout.Expanders;
 				double yOffset = 0;
@@ -420,7 +452,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					var child = (View)LogicalChildrenInternal[i];
 					if (!child.IsVisible)
+					{
+					{
 						continue;
+					}
+
 					Rect plot = layout.Plots[i];
 					plot.Y += yOffset;
 
@@ -439,7 +475,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				double extraSpace = widthConstraint - layout.Bounds.Width;
 				if (extraSpace <= 0)
+				{
+				{
 					return;
+				}
 
 				double spacePerExpander = extraSpace / layout.Expanders;
 				double xOffset = 0;
@@ -448,7 +487,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					var child = (View)LogicalChildrenInternal[i];
 					if (!child.IsVisible)
+					{
+					{
 						continue;
+					}
+
 					Rect plot = layout.Plots[i];
 					plot.X += xOffset;
 

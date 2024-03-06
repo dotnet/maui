@@ -40,7 +40,9 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 				activityController.PopoverPresentationController.SourceView = vc.View;
 
 				if (request.PresentationSourceBounds != Rect.Zero || OperatingSystem.IsIOSVersionAtLeast(13, 0))
+				{
 					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
+				}
 			}
 
 			await vc.PresentViewControllerAsync(activityController, true);
@@ -76,7 +78,9 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 				activityController.PopoverPresentationController.SourceView = vc.View;
 
 				if (request.PresentationSourceBounds != Rect.Zero || OperatingSystem.IsIOSVersionAtLeast(13, 0))
+				{
 					activityController.PopoverPresentationController.SourceRect = request.PresentationSourceBounds.AsCGRect();
+				}
 			}
 
 			await vc.PresentViewControllerAsync(activityController, true);
@@ -111,9 +115,14 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		{
 			var meta = new LPLinkMetadata();
 			if (!string.IsNullOrWhiteSpace(title))
+			{
 				meta.Title = title;
+			}
+
 			if (item is NSUrl url)
+			{
 				meta.Url = url;
+			}
 
 			return meta;
 		}

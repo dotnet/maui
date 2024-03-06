@@ -141,14 +141,19 @@ namespace Microsoft.Maui.Controls
 
 			object bc = BindingContext;
 			foreach (T child in _children)
+			{
 				SetInheritedBindingContext(child, bc);
+			}
 		}
 
 		void OnChildrenChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
 			// We need to hook up the binding context for new items.
 			if (notifyCollectionChangedEventArgs.NewItems == null)
+			{
 				return;
+			}
+
 			object bc = BindingContext;
 			foreach (BindableObject item in notifyCollectionChangedEventArgs.NewItems)
 			{

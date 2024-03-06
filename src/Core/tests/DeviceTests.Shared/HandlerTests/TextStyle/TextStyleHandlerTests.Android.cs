@@ -41,9 +41,13 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(nativeFont, nativeTypeFace);
 
 			if (string.IsNullOrEmpty(family))
+			{
 				Assert.Equal(fontManager.DefaultTypeface, nativeTypeFace);
+			}
 			else
+			{
 				Assert.NotEqual(fontManager.DefaultTypeface, nativeTypeFace);
+			}
 		}
 
 		protected double GetNativeUnscaledFontSize(THandler handler, bool autoScalingEnabled)
@@ -53,7 +57,9 @@ namespace Microsoft.Maui.DeviceTests
 			var scaleFactor = textView.Resources.DisplayMetrics.Density;
 
 			if (autoScalingEnabled)
+			{
 				scaleFactor = scaleFactor * textView.Context.Resources.Configuration.FontScale;
+			}
 
 			double returnValue = textView.TextSize / scaleFactor;
 

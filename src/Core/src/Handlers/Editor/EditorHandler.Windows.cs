@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 
 			if (!_set)
+			{
 				PlatformView.SelectionChanged += OnSelectionChanged;
+			}
 
 			_set = true;
 		}
@@ -40,7 +42,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.LostFocus -= OnLostFocus;
 
 			if (_set)
+			{
 				platformView.SelectionChanged -= OnSelectionChanged;
+			}
 
 			_set = false;
 		}
@@ -108,10 +112,14 @@ namespace Microsoft.Maui.Handlers
 			var selectedTextLength = PlatformView.SelectionLength;
 
 			if (VirtualView.CursorPosition != cursorPosition)
+			{
 				VirtualView.CursorPosition = cursorPosition;
+			}
 
 			if (VirtualView.SelectionLength != selectedTextLength)
+			{
 				VirtualView.SelectionLength = selectedTextLength;
+			}
 		}
 	}
 }

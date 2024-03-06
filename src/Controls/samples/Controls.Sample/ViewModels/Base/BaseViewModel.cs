@@ -12,7 +12,9 @@ namespace Maui.Controls.Sample.ViewModels.Base
 		Action? onChanged = null)
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))
+			{
 				return false;
+			}
 
 			backingStore = value;
 			onChanged?.Invoke();

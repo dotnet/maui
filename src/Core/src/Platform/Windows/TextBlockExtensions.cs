@@ -44,14 +44,22 @@ namespace Microsoft.Maui.Platform
 			var elementTextDecorations = label.TextDecorations;
 
 			if ((elementTextDecorations & TextDecorations.Underline) == 0)
+			{
 				platformControl.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Underline;
+			}
 			else
+			{
 				platformControl.TextDecorations |= global::Windows.UI.Text.TextDecorations.Underline;
+			}
 
 			if ((elementTextDecorations & TextDecorations.Strikethrough) == 0)
+			{
 				platformControl.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Strikethrough;
+			}
 			else
+			{
 				platformControl.TextDecorations |= global::Windows.UI.Text.TextDecorations.Strikethrough;
+			}
 
 			// TextDecorations are not updated in the UI until the text changes
 			if (platformControl.Inlines != null && platformControl.Inlines.Count > 0)
@@ -131,7 +139,9 @@ namespace Microsoft.Maui.Platform
 		static XElement? ParseXhtml(string? html)
 		{
 			if (string.IsNullOrEmpty(html))
+			{
 				return null;
+			}
 
 			XmlNameTable nt = new NameTable();
 			XmlNamespaceManager nsmgr = new XmlNamespaceManager(nt);

@@ -45,7 +45,10 @@ namespace Microsoft.Maui.Controls
 		void OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (_currentPage != sender)
+			{
+			{
 				return;
+			}
 
 			OnPropertyChanged(sender, e);
 		}
@@ -53,7 +56,10 @@ namespace Microsoft.Maui.Controls
 		void OnPageAppearing(object sender, EventArgs e)
 		{
 			if (sender is not ContentPage cp)
+			{
+			{
 				return;
+			}
 
 			_currentPage = cp;
 			_currentNavigationPage = _currentPage.FindParentOfType<NavigationPage>();
@@ -77,14 +83,18 @@ namespace Microsoft.Maui.Controls
 			// all the nav stacks look like for things like BackButton Visibility
 			var parentNavigationPage = _currentNavigationPage.FindParentOfType<NavigationPage>();
 			if (parentNavigationPage != null)
+			{
 				_navigationPagesStack.Insert(0, parentNavigationPage);
+			}
 
 			while (parentNavigationPage != null)
 			{
 				parentNavigationPage = parentNavigationPage.FindParentOfType<NavigationPage>();
 
 				if (parentNavigationPage != null)
+				{
 					_navigationPagesStack.Insert(0, parentNavigationPage);
+				}
 			}
 
 			foreach (var navPage in _navigationPagesStack)
@@ -109,7 +119,11 @@ namespace Microsoft.Maui.Controls
 		bool GetBackButtonVisible()
 		{
 			if (_currentPage == null)
+			{
+			{
 				return false;
+			}
+			}
 
 			return NavigationPage.GetHasBackButton(_currentPage) && GetBackButtonVisibleCalculated(false).Value;
 		}
@@ -123,12 +137,18 @@ namespace Microsoft.Maui.Controls
 		bool? GetBackButtonVisibleCalculated(bool? defaultValue = null)
 		{
 			if (_currentPage == null || _currentNavigationPage == null)
+			{
+			{
 				return defaultValue;
+			}
+			}
 
 			foreach (var navPage in _navigationPagesStack)
 			{
 				if (navPage.Navigation.NavigationStack.Count == 0)
+				{
 					return defaultValue;
+				}
 
 				if (navPage.Navigation.NavigationStack.Count > 1)
 				{
@@ -142,19 +162,369 @@ namespace Microsoft.Maui.Controls
 		void UpdateBackButton()
 		{
 			if (_currentPage == null || _currentNavigationPage == null)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return;
 
 			var anyPagesPushed = GetBackButtonVisibleCalculated();
 
 			if (anyPagesPushed == null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
 				return;
 
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return;
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return;
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return;
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+After:
+			{
+*/
+			{
+				return;
+			}
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+			{
+				return;
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 			// Set this before BackButtonVisible triggers an update to the handler
 			// This way all useful information is present
 			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
 				_drawerToggleVisible = true;
 			else
 				_drawerToggleVisible = false;
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+After:
+			}
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+			{
+				return;
+			}
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+			{
+				_drawerToggleVisible = true;
+			}
+			else
+			{
+				_drawerToggleVisible = false;
+			}
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+				_drawerToggleVisible = true;
+			else
+				_drawerToggleVisible = false;
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+After:
+			}
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+			{
+				return;
+			}
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+			{
+				_drawerToggleVisible = true;
+			}
+			else
+			{
+				_drawerToggleVisible = false;
+			}
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+				_drawerToggleVisible = true;
+			else
+				_drawerToggleVisible = false;
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+After:
+			}
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+			{
+				return;
+			}
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+			{
+				_drawerToggleVisible = true;
+			}
+			else
+			{
+				_drawerToggleVisible = false;
+			}
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+				_drawerToggleVisible = true;
+			else
+				_drawerToggleVisible = false;
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+After:
+			}
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+			{
+				return;
+			}
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+			{
+				_drawerToggleVisible = true;
+			}
+			else
+			{
+				_drawerToggleVisible = false;
+			}
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+				_drawerToggleVisible = true;
+			else
+				_drawerToggleVisible = false;
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+After:
+			}
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+			{
+				return;
+			}
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+			{
+				_drawerToggleVisible = true;
+			}
+			else
+			{
+				_drawerToggleVisible = false;
+			}
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+				_drawerToggleVisible = true;
+			else
+				_drawerToggleVisible = false;
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+After:
+			}
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+			{
+				return;
+			}
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+			{
+				_drawerToggleVisible = true;
+			}
+			else
+			{
+				_drawerToggleVisible = false;
+			}
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.	
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+*/
+			}
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+			{
+				_drawerToggleVisible = true;
+			}
+			else
+			{
+				_drawerToggleVisible = false;
+			}
 
 			// Once we have better logic inside core to handle backbutton visiblity this
 			// code should all go away.
@@ -189,32 +559,121 @@ namespace Microsoft.Maui.Controls
 		void ApplyChanges(NavigationPage navigationPage)
 		{
 			if (_currentPage == null)
+			{
 				return;
+			}
 
 			var stack = navigationPage.Navigation.NavigationStack;
 			if (stack.Count == 0)
+			{
 				return;
+			}
 
 			var currentPage = _currentPage;
 
 			Page previousPage = null;
 			if (stack.Count > 1)
+			{
 				previousPage = stack[stack.Count - 1];
+			}
 
 			ToolbarItems = _toolbarTracker.ToolbarItems;
 			IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
 
 			UpdateBackButton();
 
-			if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
-				BarHeight = PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.GetBarHeight(navigationPage);
-			else
-				BarHeight = null;
 
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
 			if (previousPage != null)
 				BackButtonTitle = NavigationPage.GetBackButtonTitle(previousPage);
 			else
 				BackButtonTitle = null;
+
+			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
+
+			BarBackground = navigationPage.BarBackground;
+			if (Brush.IsNullOrEmpty(BarBackground) &&
+				navigationPage.BarBackgroundColor != null)
+			{
+				BarBackground = new SolidColorBrush(navigationPage.BarBackgroundColor);
+			}
+
+#if WINDOWS
+After:
+			if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
+			{
+				BarHeight = PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.GetBarHeight(navigationPage);
+			}
+			else
+			{
+				BarHeight = null;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			if (previousPage != null)
+				BackButtonTitle = NavigationPage.GetBackButtonTitle(previousPage);
+			else
+				BackButtonTitle = null;
+
+			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
+
+			BarBackground = navigationPage.BarBackground;
+			if (Brush.IsNullOrEmpty(BarBackground) &&
+				navigationPage.BarBackgroundColor != null)
+			{
+				BarBackground = new SolidColorBrush(navigationPage.BarBackgroundColor);
+			}
+
+#if WINDOWS
+After:
+			if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
+			{
+				BarHeight = PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.GetBarHeight(navigationPage);
+			}
+			else
+			{
+				BarHeight = null;
+			}
+*/
+			if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
+			{
+				BarHeight = PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.GetBarHeight(navigationPage);
+			}
+			else
+			{
+				BarHeight = null;
+			}
+
+			if (previousPage != null)
+			{
+				BackButtonTitle = NavigationPage.GetBackButtonTitle(previousPage);
+			}
+			else
+			{
+				BackButtonTitle = null;
+			}
+
+			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
+
+			BarBackground = navigationPage.BarBackground;
+			if (Brush.IsNullOrEmpty(BarBackground) &&
+				navigationPage.BarBackgroundColor != null)
+			{
+				BarBackground = new SolidColorBrush(navigationPage.BarBackgroundColor);
+			}
+
+#if WINDOWS
+			if (previousPage != null)
+			{
+				BackButtonTitle = NavigationPage.GetBackButtonTitle(previousPage);
+			}
+			else
+			{
+				BackButtonTitle = null;
+			}
 
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 

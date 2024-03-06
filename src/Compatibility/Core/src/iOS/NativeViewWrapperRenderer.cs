@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (Element?.GetDesiredSizeDelegate == null)
+			{
 				return base.GetDesiredSize(widthConstraint, heightConstraint);
+			}
 
 			// The user has specified a different implementation of GetDesiredSize
 			var result = Element.GetDesiredSizeDelegate(this, widthConstraint, heightConstraint);
@@ -57,7 +59,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (Element?.SizeThatFitsDelegate == null)
+			{
 				return base.SizeThatFits(size);
+			}
 
 			// The user has specified a different implementation of SizeThatFits
 			var result = Element.SizeThatFitsDelegate(size);
@@ -92,7 +96,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			base.OnElementChanged(e);
 
 			if (e.OldElement == null)
+			{
+			{
 				SetNativeControl(Element.NativeView);
+			}
+			}
 		}
 
 		/// <summary>

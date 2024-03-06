@@ -34,12 +34,16 @@ namespace Microsoft.Maui.Platform
 		void SetView(IElement? view, bool forceRefresh = false)
 		{
 			if (view == _view && !forceRefresh)
+			{
 				return;
+			}
 
 			_view = view;
 
 			if (view is ITitledElement page)
+			{
 				Title = page.Title;
+			}
 
 			if (_view is IHotReloadableView ihr)
 			{
@@ -51,7 +55,9 @@ namespace Microsoft.Maui.Platform
 			currentPlatformView = null;
 
 			if (IsViewLoaded && _view != null)
+			{
 				LoadPlatformView(_view);
+			}
 		}
 
 		internal UIView LoadFirstView(IElement view)
@@ -64,7 +70,9 @@ namespace Microsoft.Maui.Platform
 		{
 			base.LoadView();
 			if (_view != null && Context != null)
+			{
 				LoadPlatformView(_view);
+			}
 		}
 
 		void LoadPlatformView(IElement view)
@@ -75,7 +83,9 @@ namespace Microsoft.Maui.Platform
 			View!.AddSubview(currentPlatformView);
 
 			if (view is IView v && v.Background == null)
+			{
 				View.BackgroundColor = ColorExtensions.BackgroundColor;
+			}
 		}
 
 		protected virtual UIView CreatePlatformView(IElement view)
@@ -90,7 +100,10 @@ namespace Microsoft.Maui.Platform
 		{
 			base.ViewDidLayoutSubviews();
 			if (currentPlatformView == null)
+			{
 				return;
+			}
+
 			currentPlatformView.Frame = View!.Bounds;
 		}
 

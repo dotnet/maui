@@ -14,7 +14,9 @@ namespace Maui.Controls.Sample
 		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
 			if (string.IsNullOrEmpty(value?.ToString()))
+			{
 				return null;
+			}
 
 			var color = GetColorFromString(value!.ToString()!);
 			return new SolidColorBrush(color);
@@ -27,7 +29,9 @@ namespace Maui.Controls.Sample
 		Color GetColorFromString(string value)
 		{
 			if (string.IsNullOrEmpty(value))
+			{
 				return Colors.Transparent;
+			}
 
 			try
 			{

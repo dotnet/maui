@@ -24,7 +24,11 @@
 			get
 			{
 				if (BackgroundColor == null || BackgroundColor.Alpha < 1)
+				{
+				{
 					return true;
+				}
+				}
 
 				return ForegroundColor.Alpha < 1;
 			}

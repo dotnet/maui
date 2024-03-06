@@ -31,12 +31,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #endif
 				var view = bindable as VisualElement;
 				if (view != null)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 					view.IsPlatformEnabled = newvalue != null;
+After:
+				{
+					view.IsPlatformEnabled = newvalue != null;
+				}
+*/
+				{
+					view.IsPlatformEnabled = newvalue != null;
+				}
 
 				if (bindable is IView mauiView)
 				{
 					if (mauiView.Handler == null && newvalue is IVisualElementRenderer ver)
+					{
+					{
 						mauiView.Handler = new RendererToHandlerShim(ver);
+					}
 				}
 			});
 
@@ -95,7 +109,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			get
 			{
 				if (_disposed)
+				{
 					return new List<Page>();
+				}
 
 				return _modals;
 			}
@@ -130,14 +146,39 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var controller = GetRenderer(modal) as UIViewController;
 
 			if (_modals.Count >= 1 && controller != null)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				await controller.DismissViewControllerAsync(animated);
-			else
+After:
+			{
+				await controller.DismissViewControllerAsync(animated);
+			}
+*/
+			
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				await _renderer.DismissViewControllerAsync(animated);
+
+			modal.DisposeModalAndChildRenderers();
+After:
+			{
+				await _renderer.DisposeModalAndChildRenderers();
+*/
+{
+				await controller.DismissViewControllerAsync(animated);
+			}
+			else
+			{
+				await _renderer.DismissViewControllerAsync(animated);
+			}
 
 			modal.DisposeModalAndChildRenderers();
 
 			if (!IsModalPresentedFullScreen(modal))
+			{
 				Page.GetCurrentPage()?.SendAppearing();
+			}
 
 			return modal;
 		}
@@ -180,7 +221,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Forms.IsiOS13OrNewer)
 			{
 				if (presentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
+				{
 					shouldFire = false; // This is mainly for backwards compatibility
+				}
 			}
 			else
 			{
@@ -189,22 +232,51 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// for readability I decided to only take this part out
 #pragma warning disable CA1416 // TODO: 'UIModalPresentationStyle.Automatic' is only supported on: 'ios' 13.0 and later
 				if (presentationStyle == UIKit.UIModalPresentationStyle.Automatic)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 #pragma warning restore CA1416
 					shouldFire = false;
+After:
+				{
+#pragma warning restore CA1416
+					shouldFire = false;
+				}
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+					shouldFire = false; // This is mainly for backwards compatibility
+After:
+				{
+					shouldFire = false; // This is mainly for backwards compatibility
+				}
+*/
+				{
+#pragma warning restore CA1416
+					shouldFire = false;
+				}
 
 				if (presentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
+				{
 					shouldFire = false; // This is mainly for backwards compatibility
+				}
 			}
 
 			if (_appeared && shouldFire)
+			{
 				Page.GetCurrentPage()?.SendDisappearing();
+			}
 
 			_modals.Add(modal);
 
 			modal.DescendantRemoved += HandleChildRemoved;
 
 			if (_appeared)
+			{
 				return PresentModal(modal, _animateModals && animated);
+			}
+
 			return Task.FromResult<object>(null);
 		}
 
@@ -284,7 +356,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					}
 				}
 				else if (handler is IVisualElementRenderer ver)
+				{
 					renderer = ver;
+				}
 				else if (handler is IPlatformViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
@@ -322,15 +396,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UIEdgeInsets safeAreaInsets;
 
 				if (!Forms.IsiOS11OrNewer)
+				{
+				{
 					safeAreaInsets = new UIEdgeInsets(UIApplication.SharedApplication.StatusBarFrame.Size.Height, 0, 0, 0);
+				}
+				}
 				else if (UIApplication.SharedApplication.GetKeyWindow() != null)
+				{
+				{
 					safeAreaInsets = UIApplication.SharedApplication.GetKeyWindow().SafeAreaInsets;
+				}
 #pragma warning disable CA1416, CA1422  // TODO: UIApplication.Windows is unsupported on: 'ios' 15.0 and later
 				else if (UIApplication.SharedApplication.Windows.Length > 0)
+				{
 					safeAreaInsets = UIApplication.SharedApplication.Windows[0].SafeAreaInsets;
+				}
 #pragma warning restore CA1416, CA1422
 				else
+				{
 					safeAreaInsets = UIEdgeInsets.Zero;
+				}
 
 				return safeAreaInsets;
 			}
@@ -346,12 +431,39 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal void LayoutSubviews()
 		{
 			if (Page == null)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				return;
 
 			var rootRenderer = GetRenderer(Page);
 
 			if (rootRenderer == null)
+After:
+			{
+*/
+			{
 				return;
+			}
+
+			var rootRenderer = GetRenderer(Page);
+
+			if (rootRenderer == null)
+			{
+				return;
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Added:
+			}
+
+			var rootRenderer = GetRenderer(Page);
+
+			if (rootRenderer == null)
+			{
+				return;
+			}
+*/
+			}
 
 			rootRenderer.SetElementSize(new Size(_renderer.View.Bounds.Width, _renderer.View.Bounds.Height));
 		}
@@ -359,14 +471,35 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal void SetPage(Page newRoot)
 		{
 			if (newRoot == null)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				return;
 			if (Page != null)
 				throw new NotImplementedException();
 			Page = newRoot;
 
 			if (_appeared == false)
+After:
+			{
+*/
+			{
+				return;
+			}
+
+			if (Page != null)
+			{
+				throw new NotImplementedException();
+			}
+
+			Page = newRoot;
+
+			if (_appeared == false)
+			{
 				return;
 
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 			AddChild(Page);
 
 			Page.DescendantRemoved += HandleChildRemoved;
@@ -563,27 +696,287 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			await _renderer.PresentViewControllerAsync(wrapper, animated);
 			await Task.Delay(5);
-		}
+After:
+			}
 
-		void EndEditing()
-		{
-			// If any text entry controls have focus, we need to end their editing session
-			// so that they are not the first responder; if we don't some things (like the activity indicator
-			// on pull-to-refresh) will not work correctly. 
-
-			// The topmost modal on the stack will have the Window; we can use that to end any current
-			// editing that's going on 
-			if (_modals.Count > 0)
+			if (Page != null)
 			{
-				var uiViewController = GetRenderer(_modals[_modals.Count - 1]) as UIViewController;
-				uiViewController?.View?.Window?.EndEditing(true);
+				throw new NotImplementedException();
+			}
+
+			Page = newRoot;
+
+			if (_appeared == false)
+			{
 				return;
 			}
 
-			// If there aren't any modals, then the platform renderer will have the Window
-			_renderer.View?.Window?.EndEditing(true);
+			AddChild(Page);
+
+			Page.DescendantRemoved += HandleChildRemoved;
+
+			Application.Current.NavigationProxy.Inner = this;
 		}
 
+		internal void WillAppear()
+		{
+			if (_appeared)
+			{
+				return;
+			}
+
+			_renderer.View.BackgroundColor = ColorExtensions.BackgroundColor;
+			_renderer.View.ContentMode = UIViewContentMode.Redraw;
+
+			AddChild(Page);
+
+			Page.DescendantRemoved += HandleChildRemoved;
+
+			_appeared = true;
+*/
+			}
+
+			AddChild(Page);
+
+			Page.DescendantRemoved += HandleChildRemoved;
+
+			Application.Current.NavigationProxy.Inner = this;
+		}
+
+		internal void WillAppear()
+		{
+			if (_appeared)
+			{
+				return;
+			}
+
+			_renderer.View.BackgroundColor = ColorExtensions.BackgroundColor;
+			_renderer.View.ContentMode = UIViewContentMode.Redraw;
+
+			AddChild(Page);
+
+			Page.DescendantRemoved += HandleChildRemoved;
+
+			_appeared = true;
+		}
+
+		void AddChild(VisualElement view)
+		{
+			if (!Application.IsApplicationOrNull(view.RealParent))
+			{
+				Console.Error.WriteLine("Tried to add parented view to canvas directly");
+			}
+
+			if (GetRenderer(view) == null)
+			{
+				var viewRenderer = CreateRenderer(view);
+				SetRenderer(view, viewRenderer);
+
+				var nativeView = viewRenderer.NativeView;
+
+				_renderer.View.AddSubview(nativeView);
+				if (viewRenderer.ViewController != null)
+				{
+					_renderer.AddChildViewController(viewRenderer.ViewController);
+				}
+
+				viewRenderer.NativeView.Frame = new CGRect(0, 0, _renderer.View.Bounds.Width, _renderer.View.Bounds.Height);
+				viewRenderer.SetElementSize(new Size(_renderer.View.Bounds.Width, _renderer.View.Bounds.Height));
+			}
+			else
+			{
+				Console.Error.WriteLine("Potential view double add");
+			}
+		}
+
+		static void HandleChildRemoved(object sender, ElementEventArgs e)
+		{
+			var view = e.Element;
+			view?.DisposeModalAndChildRenderers();
+		}
+
+		bool PageIsChildOfPlatform(Page page)
+		{
+			var parent = page.AncestorToRoot();
+			return Page == parent || _modals.Contains(parent);
+		}
+
+		// Creates a UIAlertAction which includes a call to hide the presenting UIWindow at the end
+		UIAlertAction CreateActionWithWindowHide(string text, UIAlertActionStyle style, Action setResult, UIWindow window)
+		{
+			return UIAlertAction.Create(text, style,
+					a =>
+					{
+						window.Hidden = true;
+						setResult();
+					});
+		}
+
+		void PresentAlert(AlertArguments arguments)
+		{
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
+
+			var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
+			var oldFrame = alert.View.Frame;
+			alert.View.Frame = new CGRect(oldFrame.X, oldFrame.Y, oldFrame.Width, oldFrame.Height - _alertPadding * 2);
+
+			if (arguments.Cancel != null)
+			{
+				alert.AddAction(CreateActionWithWindowHide(arguments.Cancel, UIAlertActionStyle.Cancel,
+					() => arguments.SetResult(false), window));
+			}
+
+			if (arguments.Accept != null)
+			{
+				alert.AddAction(CreateActionWithWindowHide(arguments.Accept, UIAlertActionStyle.Default,
+					() => arguments.SetResult(true), window));
+			}
+
+			PresentPopUp(window, alert);
+		}
+
+		void PresentPrompt(PromptArguments arguments)
+		{
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
+
+			var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
+			alert.AddTextField(uiTextField =>
+			{
+				uiTextField.Placeholder = arguments.Placeholder;
+				uiTextField.Text = arguments.InitialValue;
+				uiTextField.ShouldChangeCharacters = (field, range, replacementString) => arguments.MaxLength <= -1 || field.Text.Length + replacementString.Length - range.Length <= arguments.MaxLength;
+				uiTextField.ApplyKeyboard(arguments.Keyboard);
+			});
+			var oldFrame = alert.View.Frame;
+			alert.View.Frame = new CGRect(oldFrame.X, oldFrame.Y, oldFrame.Width, oldFrame.Height - _alertPadding * 2);
+
+			alert.AddAction(CreateActionWithWindowHide(arguments.Cancel, UIAlertActionStyle.Cancel, () => arguments.SetResult(null), window));
+			alert.AddAction(CreateActionWithWindowHide(arguments.Accept, UIAlertActionStyle.Default, () => arguments.SetResult(alert.TextFields[0].Text), window));
+
+			PresentPopUp(window, alert);
+		}
+
+		void PresentActionSheet(ActionSheetArguments arguments)
+		{
+			var alert = UIAlertController.Create(arguments.Title, null, UIAlertControllerStyle.ActionSheet);
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
+
+			// Clicking outside of an ActionSheet is an implicit cancel on iPads. If we don't handle it, it freezes the app.
+			if (arguments.Cancel != null || UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+			{
+				alert.AddAction(CreateActionWithWindowHide(arguments.Cancel ?? "", UIAlertActionStyle.Cancel, () => arguments.SetResult(arguments.Cancel), window));
+			}
+
+			if (arguments.Destruction != null)
+			{
+				alert.AddAction(CreateActionWithWindowHide(arguments.Destruction, UIAlertActionStyle.Destructive, () => arguments.SetResult(arguments.Destruction), window));
+			}
+
+			foreach (var label in arguments.Buttons)
+			{
+				if (label == null)
+				{
+					continue;
+				}
+
+				var blabel = label;
+
+				alert.AddAction(CreateActionWithWindowHide(blabel, UIAlertActionStyle.Default, () => arguments.SetResult(blabel), window));
+			}
+
+			PresentPopUp(window, alert, arguments);
+		}
+
+		static void PresentPopUp(UIWindow window, UIAlertController alert, ActionSheetArguments arguments = null)
+		{
+			window.RootViewController = new UIViewController();
+			window.RootViewController.View.BackgroundColor = Colors.Transparent.ToPlatform();
+			window.WindowLevel = UIWindowLevel.Alert + 1;
+			window.MakeKeyAndVisible();
+
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && arguments != null)
+			{
+				UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
+				var observer = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification,
+					n => { alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds; });
+
+				arguments.Result.Task.ContinueWith(t =>
+				{
+					NSNotificationCenter.DefaultCenter.RemoveObserver(observer);
+					UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
+				}, TaskScheduler.FromCurrentSynchronizationContext());
+
+				alert.PopoverPresentationController.SourceView = window.RootViewController.View;
+				alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds;
+				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
+			}
+
+			window.RootViewController.PresentViewController(alert, true, null);
+		}
+
+		async Task PresentModal(Page modal, bool animated)
+		{
+			var modalRenderer = GetRenderer(modal);
+			if (modalRenderer == null)
+			{
+				modalRenderer = CreateRenderer(modal);
+				SetRenderer(modal, modalRenderer);
+			}
+
+			var wrapper = new ControlsModalWrapper(modalRenderer.Element.Handler as IPlatformViewHandler);
+
+			if (_modals.Count > 1)
+			{
+				var topPage = _modals[_modals.Count - 2];
+				var controller = GetRenderer(topPage) as UIViewController;
+				if (controller != null)
+				{
+					await controller.PresentViewControllerAsync(wrapper, animated);
+					await Task.Delay(5);
+					return;
+				}
+			}
+
+			// One might wonder why these delays are here... well thats a great question. It turns out iOS will claim the 
+			// presentation is complete before it really is. It does not however inform you when it is really done (and thus 
+			// would be safe to dismiss the VC). Fortunately this is almost never an issue
+
+			await _renderer.PresentViewControllerAsync(wrapper, animated);
+			await Task.Delay(5);
+		}
+
+		void AddChild(VisualElement view)
+		{
+			if (!Application.IsApplicationOrNull(view.RealParent))
+			{
+				Console.Error.WriteLine("Tried to add parented view to canvas directly");
+			}
+
+			if (GetRenderer(view) == null)
+			{
+				var viewRenderer = CreateRenderer(view);
+				SetRenderer(view, viewRenderer);
+
+				var nativeView = viewRenderer.NativeView;
+
+				_renderer.View.AddSubview(nativeView);
+				if (viewRenderer.ViewController != null)
+				{
+					_renderer.AddChildViewController(viewRenderer.ViewController);
+				}
+
+				viewRenderer.NativeView.Frame = new CGRect(0, 0, _renderer.View.Bounds.Width, _renderer.View.Bounds.Height);
+				viewRenderer.SetElementSize(new Size(_renderer.View.Bounds.Width, _renderer.View.Bounds.Height));
+			}
+			else
+			{
+				Console.Error.WriteLine("Potential view double add");
+			}
+		}
+
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 		[System.Obsolete]
 		internal class DefaultRenderer : VisualElementRenderer<VisualElement>
 		{
@@ -701,6 +1094,461 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		internal void UnsubscribeFromAlertsAndActionsSheets()
+After:
+		static void UnsubscribeFromAlertsAndActionsSheets()
+*/
+		[System.Obsolete]
+		internal class DefaultRenderer : VisualElementRenderer<VisualElement>
+		{
+			public override UIView HitTest(CGPoint point, UIEvent uievent)
+			{
+				if (!UserInteractionEnabled)
+				{
+					// This view can't interact, and neither can its children
+					return null;
+				}
+
+				// UIview hit testing ignores objects which have an alpha of less than 0.01 
+				// (see https://developer.apple.com/reference/uikit/uiview/1622469-hittest)
+				// To prevent layouts with low opacity from being implicitly input transparent, 
+				// we need to temporarily bump their alpha value during the actual hit testing,
+				// then restore it. If the opacity is high enough or user interaction is disabled, 
+				// we don't have to worry about it.
+
+				nfloat old = Alpha;
+				if (UserInteractionEnabled && old <= 0.01)
+				{
+					Alpha = (nfloat)0.011;
+				}
+
+				var result = base.HitTest(point, uievent);
+
+				if (UserInteractionEnabled && old <= 0.01)
+				{
+					Alpha = old;
+				}
+
+				if (UserInteractionEnabled && Element is Layout layout && !layout.CascadeInputTransparent)
+				{
+					// This is a Layout with 'InputTransparent = true' and 'InputTransparentInherited = false'
+					if (this.Equals(result))
+					{
+						// If the hit is on the Layout (and not a child control), then ignore it
+						return null;
+					}
+				}
+
+				return result;
+			}
+		}
+
+		internal static string ResolveMsAppDataUri(Uri uri)
+		{
+			if (uri.Scheme == "ms-appdata")
+			{
+				string filePath = string.Empty;
+
+				if (uri.LocalPath.StartsWith("/local"))
+				{
+					var libraryPath = NSFileManager.DefaultManager.GetUrls(NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User)[0].Path;
+					filePath = IOPath.Combine(libraryPath, uri.LocalPath.Substring(7));
+				}
+				else if (uri.LocalPath.StartsWith("/temp"))
+				{
+					filePath = IOPath.Combine(IOPath.GetTempPath(), uri.LocalPath.Substring(6));
+				}
+				else
+				{
+					throw new ArgumentException("Invalid Uri", "Source");
+				}
+
+				return filePath;
+			}
+			else
+			{
+				throw new ArgumentException("uri");
+			}
+		}
+
+		internal void SubscribeToAlertsAndActionSheets()
+		{
+			var busyCount = 0;
+			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+				{
+					return;
+				}
+
+				busyCount = Math.Max(0, enabled ? busyCount + 1 : busyCount - 1);
+#pragma warning disable CA1416, CA1422  // TODO: 'UIApplication.NetworkActivityIndicatorVisible' is unsupported on: 'ios' 13.0 and later
+				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = busyCount > 0;
+#pragma warning restore CA1416, CA1422
+			});
+
+			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+				{
+					return;
+				}
+
+				PresentAlert(arguments);
+			});
+
+			MessagingCenter.Subscribe(this, Page.PromptSignalName, (Page sender, PromptArguments arguments) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+				{
+					return;
+				}
+
+				PresentPrompt(arguments);
+			});
+
+			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments arguments) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+				{
+					return;
+				}
+
+				PresentActionSheet(arguments);
+			});
+		}
+
+		static bool IsModalPresentedFullScreen(Page modal)
+		{
+			var elementConfiguration = modal as IElementConfiguration<Page>;
+			var presentationStyle = elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle();
+			return presentationStyle != null && presentationStyle == PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.FullScreen;
+		}
+
+		internal void HandleChildRemoved(object sender, ElementEventArgs e)
+		{
+			var view = e.Element;
+			view?.DisposeModalAndChildRenderers();
+		}
+
+		bool PageIsChildOfPlatform(Page page)
+		{
+			var parent = page.AncestorToRoot();
+			return Page == parent || _modals.Contains(parent);
+		}
+
+		// Creates a UIAlertAction which includes a call to hide the presenting UIWindow at the end
+		UIAlertAction CreateActionWithWindowHide(string text, UIAlertActionStyle style, Action setResult, UIWindow window)
+		{
+			return UIAlertAction.Create(text, style,
+					a =>
+					{
+						window.Hidden = true;
+						setResult();
+					});
+		}
+
+		void PresentAlert(AlertArguments arguments)
+		{
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
+
+			var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
+			var oldFrame = alert.View.Frame;
+			alert.View.Frame = new CGRect(oldFrame.X, oldFrame.Y, oldFrame.Width, oldFrame.Height - _alertPadding * 2);
+
+			if (arguments.Cancel != null)
+			{
+				alert.AddAction(CreateActionWithWindowHide(arguments.Cancel, UIAlertActionStyle.Cancel,
+					() => arguments.SetResult(false), window));
+			}
+
+			if (arguments.Accept != null)
+			{
+				alert.AddAction(CreateActionWithWindowHide(arguments.Accept, UIAlertActionStyle.Default,
+					() => arguments.SetResult(true), window));
+			}
+
+			PresentPopUp(window, alert);
+		}
+
+		void PresentPrompt(PromptArguments arguments)
+		{
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
+
+			var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
+			alert.AddTextField(uiTextField =>
+			{
+				uiTextField.Placeholder = arguments.Placeholder;
+				uiTextField.Text = arguments.InitialValue;
+				uiTextField.ShouldChangeCharacters = (field, range, replacementString) => arguments.MaxLength <= -1 || field.Text.Length + replacementString.Length - range.Length <= arguments.MaxLength;
+				uiTextField.ApplyKeyboard(arguments.Keyboard);
+			});
+			var oldFrame = alert.View.Frame;
+			alert.View.Frame = new CGRect(oldFrame.X, oldFrame.Y, oldFrame.Width, oldFrame.Height - _alertPadding * 2);
+
+			alert.AddAction(CreateActionWithWindowHide(arguments.Cancel, UIAlertActionStyle.Cancel, () => arguments.SetResult(null), window));
+			alert.AddAction(CreateActionWithWindowHide(arguments.Accept, UIAlertActionStyle.Default, () => arguments.SetResult(alert.TextFields[0].Text), window));
+
+			PresentPopUp(window, alert);
+		}
+
+		void PresentActionSheet(ActionSheetArguments arguments)
+		{
+			var alert = UIAlertController.Create(arguments.Title, null, UIAlertControllerStyle.ActionSheet);
+			var window = new UIWindow { BackgroundColor = Colors.Transparent.ToPlatform() };
+
+			// Clicking outside of an ActionSheet is an implicit cancel on iPads. If we don't handle it, it freezes the app.
+			if (arguments.Cancel != null || UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+			{
+				alert.AddAction(CreateActionWithWindowHide(arguments.Cancel ?? "", UIAlertActionStyle.Cancel, () => arguments.SetResult(arguments.Cancel), window));
+			}
+
+			if (arguments.Destruction != null)
+			{
+				alert.AddAction(CreateActionWithWindowHide(arguments.Destruction, UIAlertActionStyle.Destructive, () => arguments.SetResult(arguments.Destruction), window));
+			}
+
+			foreach (var label in arguments.Buttons)
+			{
+				if (label == null)
+				{
+					continue;
+				}
+
+				var blabel = label;
+
+				alert.AddAction(CreateActionWithWindowHide(blabel, UIAlertActionStyle.Default, () => arguments.SetResult(blabel), window));
+			}
+
+			PresentPopUp(window, alert, arguments);
+		}
+
+		static void PresentPopUp(UIWindow window, UIAlertController alert, ActionSheetArguments arguments = null)
+		{
+			window.RootViewController = new UIViewController();
+			window.RootViewController.View.BackgroundColor = Colors.Transparent.ToPlatform();
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+			foreach (var modal in (_previousModals ?? _modals))
+				modal.DisposeModalAndChildRenderers();
+
+			_previousModals?.Clear();
+			_modals.Clear();
+
+			(Page.Parent as IDisposable)?.Dispose();
+After:
+			window.WindowLevel = UIWindowLevel.Alert + 1;
+			window.MakeKeyAndVisible();
+*/
+
+			foreach (var modal in (_previousModals ?? _modals))
+			{
+				modal.DisposeModalAndChildRenderers();
+			}
+
+			_previousModals?.Clear();
+
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && arguments != null)
+			{
+				UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
+				var observer = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification,
+					n => { alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds; });
+
+				arguments.Result.Task.ContinueWith(t =>
+				{
+					NSNotificationCenter.DefaultCenter.RemoveObserver(observer);
+					UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
+				}, TaskScheduler.FromCurrentSynchronizationContext());
+
+				alert.PopoverPresentationController.SourceView = window.RootViewController.View;
+				alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds;
+				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
+			}
+
+			window.RootViewController.PresentViewController(alert, true, null);
+			_modals.Clear();
+
+			(Page.Parent as IDisposable)?.Dispose();
+		}
+
+		async Task PresentModal(Page modal, bool animated)
+		{
+			var modalRenderer = GetRenderer(modal);
+			if (modalRenderer == null)
+			{
+				modalRenderer = CreateRenderer(modal);
+				SetRenderer(modal, modalRenderer);
+			}
+
+			var wrapper = new ControlsModalWrapper(modalRenderer.Element.Handler as IPlatformViewHandler);
+
+			if (_modals.Count > 1)
+			{
+				var topPage = _modals[_modals.Count - 2];
+				var controller = GetRenderer(topPage) as UIViewController;
+				if (controller != null)
+				{
+					await controller.PresentViewControllerAsync(wrapper, animated);
+					await Task.Delay(5);
+					return;
+				}
+			}
+
+			// One might wonder why these delays are here... well thats a great question. It turns out iOS will claim the 
+			// presentation is complete before it really is. It does not however inform you when it is really done (and thus 
+			// would be safe to dismiss the VC). Fortunately this is almost never an issue
+
+			await _renderer.PresentViewControllerAsync(wrapper, animated);
+			await Task.Delay(5);
+		}
+
+		void EndEditing()
+		{
+			// If any text entry controls have focus, we need to end their editing session
+			// so that they are not the first responder; if we don't some things (like the activity indicator
+			// on pull-to-refresh) will not work correctly. 
+
+			// The topmost modal on the stack will have the Window; we can use that to end any current
+			// editing that's going on 
+			if (_modals.Count > 0)
+			{
+				var uiViewController = GetRenderer(_modals[_modals.Count - 1]) as UIViewController;
+				uiViewController?.View?.Window?.EndEditing(true);
+				return;
+			}
+
+			// If there aren't any modals, then the platform renderer will have the Window
+			_renderer.View?.Window?.EndEditing(true);
+		}
+
+		[System.Obsolete]
+		internal class DefaultRenderer : VisualElementRenderer<VisualElement>
+		{
+			public override UIView HitTest(CGPoint point, UIEvent uievent)
+			{
+				if (!UserInteractionEnabled)
+				{
+					// This view can't interact, and neither can its children
+					return null;
+				}
+
+				// UIview hit testing ignores objects which have an alpha of less than 0.01 
+				// (see https://developer.apple.com/reference/uikit/uiview/1622469-hittest)
+				// To prevent layouts with low opacity from being implicitly input transparent, 
+				// we need to temporarily bump their alpha value during the actual hit testing,
+				// then restore it. If the opacity is high enough or user interaction is disabled, 
+				// we don't have to worry about it.
+
+				nfloat old = Alpha;
+				if (UserInteractionEnabled && old <= 0.01)
+				{
+					Alpha = (nfloat)0.011;
+				}
+
+				var result = base.HitTest(point, uievent);
+
+				if (UserInteractionEnabled && old <= 0.01)
+				{
+					Alpha = old;
+				}
+
+				if (UserInteractionEnabled && Element is Layout layout && !layout.CascadeInputTransparent)
+				{
+					// This is a Layout with 'InputTransparent = true' and 'InputTransparentInherited = false'
+					if (this.Equals(result))
+					{
+						// If the hit is on the Layout (and not a child control), then ignore it
+						return null;
+					}
+				}
+
+				return result;
+			}
+		}
+
+		internal static string ResolveMsAppDataUri(Uri uri)
+		{
+			if (uri.Scheme == "ms-appdata")
+			{
+				string filePath = string.Empty;
+
+				if (uri.LocalPath.StartsWith("/local"))
+				{
+					var libraryPath = NSFileManager.DefaultManager.GetUrls(NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User)[0].Path;
+					filePath = IOPath.Combine(libraryPath, uri.LocalPath.Substring(7));
+				}
+				else if (uri.LocalPath.StartsWith("/temp"))
+				{
+					filePath = IOPath.Combine(IOPath.GetTempPath(), uri.LocalPath.Substring(6));
+				}
+				else
+				{
+					throw new ArgumentException("Invalid Uri", "Source");
+				}
+
+				return filePath;
+			}
+			else
+			{
+				throw new ArgumentException("uri");
+			}
+		}
+
+		internal void SubscribeToAlertsAndActionSheets()
+		{
+			var busyCount = 0;
+			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+				{
+					return;
+				}
+
+				busyCount = Math.Max(0, enabled ? busyCount + 1 : busyCount - 1);
+#pragma warning disable CA1416, CA1422  // TODO: 'UIApplication.NetworkActivityIndicatorVisible' is unsupported on: 'ios' 13.0 and later
+				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = busyCount > 0;
+#pragma warning restore CA1416, CA1422
+			});
+
+			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+				{
+					return;
+				}
+
+				PresentAlert(arguments);
+			});
+
+			MessagingCenter.Subscribe(this, Page.PromptSignalName, (Page sender, PromptArguments arguments) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+				{
+					return;
+				}
+
+				PresentPrompt(arguments);
+			});
+
+			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments arguments) =>
+			{
+				if (!PageIsChildOfPlatform(sender))
+				{
+					return;
+				}
+
+				PresentActionSheet(arguments);
+			});
+		}
+
+		static bool IsModalPresentedFullScreen(Page modal)
+		{
+			var elementConfiguration = modal as IElementConfiguration<Page>;
+			var presentationStyle = elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle();
+			return presentationStyle != null && presentationStyle == PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.FullScreen;
+		}
+
+		internal void UnsubscribeFromAlertsAndActionsSheets()
 		{
 			MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName);
 			MessagingCenter.Unsubscribe<Page, AlertArguments>(this, Page.AlertSignalName);
@@ -721,7 +1569,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Page.DisposeModalAndChildRenderers();
 
 			foreach (var modal in (_previousModals ?? _modals))
+			{
 				modal.DisposeModalAndChildRenderers();
+			}
 
 			_previousModals?.Clear();
 			_modals.Clear();

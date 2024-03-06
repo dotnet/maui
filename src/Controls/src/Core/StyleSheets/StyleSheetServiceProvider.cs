@@ -21,9 +21,65 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		public object GetService(Type serviceType)
 		{
 			if (serviceType == typeof(IProvideValueTarget))
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return vtProvider;
 			if (serviceType == typeof(IConverterOptions))
 				return convOptions;
+After:
+			{
+				return vtProvider;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return vtProvider;
+			if (serviceType == typeof(IConverterOptions))
+				return convOptions;
+After:
+			{
+				return vtProvider;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return vtProvider;
+			if (serviceType == typeof(IConverterOptions))
+				return convOptions;
+After:
+			{
+				return vtProvider;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return vtProvider;
+			if (serviceType == typeof(IConverterOptions))
+				return convOptions;
+After:
+			{
+				return vtProvider;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return vtProvider;
+			if (serviceType == typeof(IConverterOptions))
+				return convOptions;
+After:
+			{
+				return vtProvider;
+*/
+			{
+				return vtProvider;
+			}
+
+			if (serviceType == typeof(IConverterOptions))
+			{
+				return convOptions;
+			}
+
 			return null;
 		}
 

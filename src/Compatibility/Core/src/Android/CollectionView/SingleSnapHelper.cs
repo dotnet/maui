@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected static bool IsLayoutReversed(RecyclerView.LayoutManager layoutManager)
 		{
 			if (layoutManager.LayoutDirection == (int)(ALayoutDirection.Rtl))
+			{
 				return true;
+			}
 
 			if (layoutManager is LinearLayoutManager linearLayoutManager)
 			{

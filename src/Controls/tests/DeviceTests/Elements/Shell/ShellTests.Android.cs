@@ -47,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Shell.SetNavBarHasShadow(contentPage, navBarHasShadow);
 			});
-			
+
 			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
 				await Task.Delay(100);
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 				var platformToolbar = GetPlatformToolbar(handler);
 				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
 
-				if(navBarHasShadow)
+				if (navBarHasShadow)
 					Assert.True(appBar.Elevation > 0);
 				else
 					Assert.True(appBar.Elevation == 0);

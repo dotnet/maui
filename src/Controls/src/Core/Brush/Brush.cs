@@ -14,7 +14,389 @@ namespace Microsoft.Maui.Controls
 		public static implicit operator Brush(Paint paint)
 		{
 			if (paint is SolidPaint solidPaint)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return new SolidColorBrush { Color = solidPaint.Color };
+
+			if (paint is GradientPaint gradientPaint)
+			{
+				var gradientStopCollection = gradientPaint.GradientStops;
+
+				GradientStopCollection gradientStops = new GradientStopCollection();
+
+				for (int i = 0; i < gradientStopCollection.Length; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
+				}
+
+				if (gradientPaint is LinearGradientPaint linearGradientPaint)
+				{
+					var startPoint = linearGradientPaint.StartPoint;
+					var endPoint = linearGradientPaint.EndPoint;
+
+					return new LinearGradientBrush { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientPaint is RadialGradientPaint radialGradientPaint)
+				{
+					var center = radialGradientPaint.Center;
+					var radius = radialGradientPaint.Radius;
+
+					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+After:
+			{
+				return new SolidColorBrush { Color = solidPaint.Color };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return new SolidColorBrush { Color = solidPaint.Color };
+
+			if (paint is GradientPaint gradientPaint)
+			{
+				var gradientStopCollection = gradientPaint.GradientStops;
+
+				GradientStopCollection gradientStops = new GradientStopCollection();
+
+				for (int i = 0; i < gradientStopCollection.Length; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
+				}
+
+				if (gradientPaint is LinearGradientPaint linearGradientPaint)
+				{
+					var startPoint = linearGradientPaint.StartPoint;
+					var endPoint = linearGradientPaint.EndPoint;
+
+					return new LinearGradientBrush { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientPaint is RadialGradientPaint radialGradientPaint)
+				{
+					var center = radialGradientPaint.Center;
+					var radius = radialGradientPaint.Radius;
+
+					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+After:
+			{
+				return new SolidColorBrush { Color = solidPaint.Color };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return new SolidColorBrush { Color = solidPaint.Color };
+
+			if (paint is GradientPaint gradientPaint)
+			{
+				var gradientStopCollection = gradientPaint.GradientStops;
+
+				GradientStopCollection gradientStops = new GradientStopCollection();
+
+				for (int i = 0; i < gradientStopCollection.Length; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
+				}
+
+				if (gradientPaint is LinearGradientPaint linearGradientPaint)
+				{
+					var startPoint = linearGradientPaint.StartPoint;
+					var endPoint = linearGradientPaint.EndPoint;
+
+					return new LinearGradientBrush { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientPaint is RadialGradientPaint radialGradientPaint)
+				{
+					var center = radialGradientPaint.Center;
+					var radius = radialGradientPaint.Radius;
+
+					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+After:
+			{
+				return new SolidColorBrush { Color = solidPaint.Color };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return new SolidColorBrush { Color = solidPaint.Color };
+
+			if (paint is GradientPaint gradientPaint)
+			{
+				var gradientStopCollection = gradientPaint.GradientStops;
+
+				GradientStopCollection gradientStops = new GradientStopCollection();
+
+				for (int i = 0; i < gradientStopCollection.Length; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
+				}
+
+				if (gradientPaint is LinearGradientPaint linearGradientPaint)
+				{
+					var startPoint = linearGradientPaint.StartPoint;
+					var endPoint = linearGradientPaint.EndPoint;
+
+					return new LinearGradientBrush { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientPaint is RadialGradientPaint radialGradientPaint)
+				{
+					var center = radialGradientPaint.Center;
+					var radius = radialGradientPaint.Radius;
+
+					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+After:
+			{
+				return new SolidColorBrush { Color = solidPaint.Color };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return new SolidColorBrush { Color = solidPaint.Color };
+
+			if (paint is GradientPaint gradientPaint)
+			{
+				var gradientStopCollection = gradientPaint.GradientStops;
+
+				GradientStopCollection gradientStops = new GradientStopCollection();
+
+				for (int i = 0; i < gradientStopCollection.Length; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
+				}
+
+				if (gradientPaint is LinearGradientPaint linearGradientPaint)
+				{
+					var startPoint = linearGradientPaint.StartPoint;
+					var endPoint = linearGradientPaint.EndPoint;
+
+					return new LinearGradientBrush { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientPaint is RadialGradientPaint radialGradientPaint)
+				{
+					var center = radialGradientPaint.Center;
+					var radius = radialGradientPaint.Radius;
+
+					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+After:
+			{
+				return new SolidColorBrush { Color = solidPaint.Color };
+*/
+			
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+				return new ImageBrush { ImageSource = imageSource };
+After:
+			if (paint is GradientPaint gradientPaint)
+			{
+				var gradientStopCollection = gradientPaint.GradientStops;
+
+				GradientStopCollection gradientStops = new GradientStopCollection();
+
+				for (int i = 0; i < gradientStopCollection.Length; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
+				}
+
+				if (gradientPaint is LinearGradientPaint linearGradientPaint)
+				{
+					var startPoint = linearGradientPaint.StartPoint;
+					var endPoint = linearGradientPaint.EndPoint;
+
+					return new LinearGradientBrush { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientPaint is RadialGradientPaint radialGradientPaint)
+				{
+					var center = radialGradientPaint.Center;
+					var radius = radialGradientPaint.Radius;
+
+					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+			}
+
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+			{
+				return new ImageBrush { ImageSource = imageSource };
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+				return new ImageBrush { ImageSource = imageSource };
+After:
+			if (paint is GradientPaint gradientPaint)
+			{
+				var gradientStopCollection = gradientPaint.GradientStops;
+
+				GradientStopCollection gradientStops = new GradientStopCollection();
+
+				for (int i = 0; i < gradientStopCollection.Length; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
+				}
+
+				if (gradientPaint is LinearGradientPaint linearGradientPaint)
+				{
+					var startPoint = linearGradientPaint.StartPoint;
+					var endPoint = linearGradientPaint.EndPoint;
+
+					return new LinearGradientBrush { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientPaint is RadialGradientPaint radialGradientPaint)
+				{
+					var center = radialGradientPaint.Center;
+					var radius = radialGradientPaint.Radius;
+
+					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+			}
+
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+			{
+				return new ImageBrush { ImageSource = imageSource };
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+				return new ImageBrush { ImageSource = imageSource };
+After:
+			if (paint is GradientPaint gradientPaint)
+			{
+				var gradientStopCollection = gradientPaint.GradientStops;
+
+				GradientStopCollection gradientStops = new GradientStopCollection();
+
+				for (int i = 0; i < gradientStopCollection.Length; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
+				}
+
+				if (gradientPaint is LinearGradientPaint linearGradientPaint)
+				{
+					var startPoint = linearGradientPaint.StartPoint;
+					var endPoint = linearGradientPaint.EndPoint;
+
+					return new LinearGradientBrush { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientPaint is RadialGradientPaint radialGradientPaint)
+				{
+					var center = radialGradientPaint.Center;
+					var radius = radialGradientPaint.Radius;
+
+					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+			}
+
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+			{
+				return new ImageBrush { ImageSource = imageSource };
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+				return new ImageBrush { ImageSource = imageSource };
+After:
+			if (paint is GradientPaint gradientPaint)
+			{
+				var gradientStopCollection = gradientPaint.GradientStops;
+
+				GradientStopCollection gradientStops = new GradientStopCollection();
+
+				for (int i = 0; i < gradientStopCollection.Length; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
+				}
+
+				if (gradientPaint is LinearGradientPaint linearGradientPaint)
+				{
+					var startPoint = linearGradientPaint.StartPoint;
+					var endPoint = linearGradientPaint.EndPoint;
+
+					return new LinearGradientBrush { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientPaint is RadialGradientPaint radialGradientPaint)
+				{
+					var center = radialGradientPaint.Center;
+					var radius = radialGradientPaint.Radius;
+
+					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+			}
+
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+			{
+				return new ImageBrush { ImageSource = imageSource };
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+				return new ImageBrush { ImageSource = imageSource };
+After:
+			if (paint is GradientPaint gradientPaint)
+			{
+				var gradientStopCollection = gradientPaint.GradientStops;
+
+				GradientStopCollection gradientStops = new GradientStopCollection();
+
+				for (int i = 0; i < gradientStopCollection.Length; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops.Insert(i, new GradientStop(gs.Color, gs.Offset));
+				}
+
+				if (gradientPaint is LinearGradientPaint linearGradientPaint)
+				{
+					var startPoint = linearGradientPaint.StartPoint;
+					var endPoint = linearGradientPaint.EndPoint;
+
+					return new LinearGradientBrush { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientPaint is RadialGradientPaint radialGradientPaint)
+				{
+					var center = radialGradientPaint.Center;
+					var radius = radialGradientPaint.Radius;
+
+					return new RadialGradientBrush { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+			}
+
+			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+			{
+				return new ImageBrush { ImageSource = imageSource };
+			}
+*/
+{
+				return new SolidColorBrush { Color = solidPaint.Color };
+			}
 
 			if (paint is GradientPaint gradientPaint)
 			{
@@ -46,7 +428,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (paint is ImageSourcePaint imageSourcePaint && imageSourcePaint.ImageSource is ImageSource imageSource)
+			{
 				return new ImageBrush { ImageSource = imageSource };
+			}
 
 			return null;
 		}
@@ -54,7 +438,389 @@ namespace Microsoft.Maui.Controls
 		public static implicit operator Paint(Brush brush)
 		{
 			if (brush is SolidColorBrush solidColorBrush)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return new SolidPaint { Color = solidColorBrush.Color };
+
+			if (brush is GradientBrush gradientBrush)
+			{
+				var gradientStopCollection = gradientBrush.GradientStops;
+
+				GraphicsGradientStop[] gradientStops = new GraphicsGradientStop[gradientStopCollection.Count];
+
+				for (int i = 0; i < gradientStopCollection.Count; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+				}
+
+				if (gradientBrush is LinearGradientBrush linearGradientBrush)
+				{
+					var startPoint = linearGradientBrush.StartPoint;
+					var endPoint = linearGradientBrush.EndPoint;
+
+					return new LinearGradientPaint { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientBrush is RadialGradientBrush radialGradientBrush)
+				{
+					var center = radialGradientBrush.Center;
+					var radius = radialGradientBrush.Radius;
+
+					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+After:
+			{
+				return new SolidPaint { Color = solidColorBrush.Color };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return new SolidPaint { Color = solidColorBrush.Color };
+
+			if (brush is GradientBrush gradientBrush)
+			{
+				var gradientStopCollection = gradientBrush.GradientStops;
+
+				GraphicsGradientStop[] gradientStops = new GraphicsGradientStop[gradientStopCollection.Count];
+
+				for (int i = 0; i < gradientStopCollection.Count; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+				}
+
+				if (gradientBrush is LinearGradientBrush linearGradientBrush)
+				{
+					var startPoint = linearGradientBrush.StartPoint;
+					var endPoint = linearGradientBrush.EndPoint;
+
+					return new LinearGradientPaint { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientBrush is RadialGradientBrush radialGradientBrush)
+				{
+					var center = radialGradientBrush.Center;
+					var radius = radialGradientBrush.Radius;
+
+					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+After:
+			{
+				return new SolidPaint { Color = solidColorBrush.Color };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return new SolidPaint { Color = solidColorBrush.Color };
+
+			if (brush is GradientBrush gradientBrush)
+			{
+				var gradientStopCollection = gradientBrush.GradientStops;
+
+				GraphicsGradientStop[] gradientStops = new GraphicsGradientStop[gradientStopCollection.Count];
+
+				for (int i = 0; i < gradientStopCollection.Count; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+				}
+
+				if (gradientBrush is LinearGradientBrush linearGradientBrush)
+				{
+					var startPoint = linearGradientBrush.StartPoint;
+					var endPoint = linearGradientBrush.EndPoint;
+
+					return new LinearGradientPaint { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientBrush is RadialGradientBrush radialGradientBrush)
+				{
+					var center = radialGradientBrush.Center;
+					var radius = radialGradientBrush.Radius;
+
+					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+After:
+			{
+				return new SolidPaint { Color = solidColorBrush.Color };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return new SolidPaint { Color = solidColorBrush.Color };
+
+			if (brush is GradientBrush gradientBrush)
+			{
+				var gradientStopCollection = gradientBrush.GradientStops;
+
+				GraphicsGradientStop[] gradientStops = new GraphicsGradientStop[gradientStopCollection.Count];
+
+				for (int i = 0; i < gradientStopCollection.Count; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+				}
+
+				if (gradientBrush is LinearGradientBrush linearGradientBrush)
+				{
+					var startPoint = linearGradientBrush.StartPoint;
+					var endPoint = linearGradientBrush.EndPoint;
+
+					return new LinearGradientPaint { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientBrush is RadialGradientBrush radialGradientBrush)
+				{
+					var center = radialGradientBrush.Center;
+					var radius = radialGradientBrush.Radius;
+
+					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+After:
+			{
+				return new SolidPaint { Color = solidColorBrush.Color };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return new SolidPaint { Color = solidColorBrush.Color };
+
+			if (brush is GradientBrush gradientBrush)
+			{
+				var gradientStopCollection = gradientBrush.GradientStops;
+
+				GraphicsGradientStop[] gradientStops = new GraphicsGradientStop[gradientStopCollection.Count];
+
+				for (int i = 0; i < gradientStopCollection.Count; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+				}
+
+				if (gradientBrush is LinearGradientBrush linearGradientBrush)
+				{
+					var startPoint = linearGradientBrush.StartPoint;
+					var endPoint = linearGradientBrush.EndPoint;
+
+					return new LinearGradientPaint { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientBrush is RadialGradientBrush radialGradientBrush)
+				{
+					var center = radialGradientBrush.Center;
+					var radius = radialGradientBrush.Radius;
+
+					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+After:
+			{
+				return new SolidPaint { Color = solidColorBrush.Color };
+*/
+			
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+			if (brush is ImageBrush imageBrush)
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+After:
+			if (brush is GradientBrush gradientBrush)
+			{
+				var gradientStopCollection = gradientBrush.GradientStops;
+
+				GraphicsGradientStop[] gradientStops = new GraphicsGradientStop[gradientStopCollection.Count];
+
+				for (int i = 0; i < gradientStopCollection.Count; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+				}
+
+				if (gradientBrush is LinearGradientBrush linearGradientBrush)
+				{
+					var startPoint = linearGradientBrush.StartPoint;
+					var endPoint = linearGradientBrush.EndPoint;
+
+					return new LinearGradientPaint { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientBrush is RadialGradientBrush radialGradientBrush)
+				{
+					var center = radialGradientBrush.Center;
+					var radius = radialGradientBrush.Radius;
+
+					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+			}
+
+			if (brush is ImageBrush imageBrush)
+			{
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			if (brush is ImageBrush imageBrush)
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+After:
+			if (brush is GradientBrush gradientBrush)
+			{
+				var gradientStopCollection = gradientBrush.GradientStops;
+
+				GraphicsGradientStop[] gradientStops = new GraphicsGradientStop[gradientStopCollection.Count];
+
+				for (int i = 0; i < gradientStopCollection.Count; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+				}
+
+				if (gradientBrush is LinearGradientBrush linearGradientBrush)
+				{
+					var startPoint = linearGradientBrush.StartPoint;
+					var endPoint = linearGradientBrush.EndPoint;
+
+					return new LinearGradientPaint { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientBrush is RadialGradientBrush radialGradientBrush)
+				{
+					var center = radialGradientBrush.Center;
+					var radius = radialGradientBrush.Radius;
+
+					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+			}
+
+			if (brush is ImageBrush imageBrush)
+			{
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			if (brush is ImageBrush imageBrush)
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+After:
+			if (brush is GradientBrush gradientBrush)
+			{
+				var gradientStopCollection = gradientBrush.GradientStops;
+
+				GraphicsGradientStop[] gradientStops = new GraphicsGradientStop[gradientStopCollection.Count];
+
+				for (int i = 0; i < gradientStopCollection.Count; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+				}
+
+				if (gradientBrush is LinearGradientBrush linearGradientBrush)
+				{
+					var startPoint = linearGradientBrush.StartPoint;
+					var endPoint = linearGradientBrush.EndPoint;
+
+					return new LinearGradientPaint { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientBrush is RadialGradientBrush radialGradientBrush)
+				{
+					var center = radialGradientBrush.Center;
+					var radius = radialGradientBrush.Radius;
+
+					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+			}
+
+			if (brush is ImageBrush imageBrush)
+			{
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+			if (brush is ImageBrush imageBrush)
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+After:
+			if (brush is GradientBrush gradientBrush)
+			{
+				var gradientStopCollection = gradientBrush.GradientStops;
+
+				GraphicsGradientStop[] gradientStops = new GraphicsGradientStop[gradientStopCollection.Count];
+
+				for (int i = 0; i < gradientStopCollection.Count; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+				}
+
+				if (gradientBrush is LinearGradientBrush linearGradientBrush)
+				{
+					var startPoint = linearGradientBrush.StartPoint;
+					var endPoint = linearGradientBrush.EndPoint;
+
+					return new LinearGradientPaint { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientBrush is RadialGradientBrush radialGradientBrush)
+				{
+					var center = radialGradientBrush.Center;
+					var radius = radialGradientBrush.Radius;
+
+					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+			}
+
+			if (brush is ImageBrush imageBrush)
+			{
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			if (brush is ImageBrush imageBrush)
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+After:
+			if (brush is GradientBrush gradientBrush)
+			{
+				var gradientStopCollection = gradientBrush.GradientStops;
+
+				GraphicsGradientStop[] gradientStops = new GraphicsGradientStop[gradientStopCollection.Count];
+
+				for (int i = 0; i < gradientStopCollection.Count; i++)
+				{
+					var gs = gradientStopCollection[i];
+					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+				}
+
+				if (gradientBrush is LinearGradientBrush linearGradientBrush)
+				{
+					var startPoint = linearGradientBrush.StartPoint;
+					var endPoint = linearGradientBrush.EndPoint;
+
+					return new LinearGradientPaint { GradientStops = gradientStops, StartPoint = startPoint, EndPoint = endPoint };
+				}
+
+				if (gradientBrush is RadialGradientBrush radialGradientBrush)
+				{
+					var center = radialGradientBrush.Center;
+					var radius = radialGradientBrush.Radius;
+
+					return new RadialGradientPaint { GradientStops = gradientStops, Center = center, Radius = radius };
+				}
+			}
+
+			if (brush is ImageBrush imageBrush)
+			{
+				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+			}
+*/
+{
+				return new SolidPaint { Color = solidColorBrush.Color };
+			}
 
 			if (brush is GradientBrush gradientBrush)
 			{
@@ -86,7 +852,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (brush is ImageBrush imageBrush)
+			{
 				return new ImageSourcePaint { ImageSource = imageBrush.ImageSource };
+			}
 
 			return null;
 		}

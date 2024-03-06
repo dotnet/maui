@@ -72,19 +72,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
+			{
 				UpdateSelectedIndex();
+			}
 			else if (e.PropertyName == Picker.TitleProperty.PropertyName || e.PropertyName == Picker.TitleColorProperty.PropertyName)
+			{
 				UpdateTitle();
+			}
 			else if (e.PropertyName == Picker.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == Picker.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == Picker.FontAttributesProperty.PropertyName || e.PropertyName == Picker.FontFamilyProperty.PropertyName || e.PropertyName == Picker.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Picker.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == Picker.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateVerticalTextAlignment();
+			}
 		}
 
 		void ControlOnLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -130,7 +144,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (Element != null)
+			{
 				Element.SelectedIndex = Control.SelectedIndex;
+			}
 		}
 
 		void OnDropDownOpenStateChanged(object sender, object o)
@@ -185,12 +201,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateFont()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			Picker picker = Element;
 
 			if (picker == null)
+			{
 				return;
+			}
 
 			bool pickerIsDefault =
 				picker.FontFamily == null &&
@@ -200,7 +220,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				picker.FontAttributes == FontAttributes.None;
 
 			if (pickerIsDefault && !_fontApplied)
+			{
 				return;
+			}
 
 			if (pickerIsDefault)
 			{

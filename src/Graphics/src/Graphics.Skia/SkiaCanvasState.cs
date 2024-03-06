@@ -82,9 +82,13 @@ namespace Microsoft.Maui.Graphics.Skia
 			{
 				_fontColor = value;
 				if (value != null)
+				{
 					FontPaint.Color = _fontColor.AsSKColor();
+				}
 				else
+				{
 					FontPaint.Color = SKColors.Black;
+				}
 			}
 		}
 
@@ -93,11 +97,17 @@ namespace Microsoft.Maui.Graphics.Skia
 			set
 			{
 				if (value == LineCap.Butt)
+				{
 					StrokePaint.StrokeCap = SKStrokeCap.Butt;
+				}
 				else if (value == LineCap.Round)
+				{
 					StrokePaint.StrokeCap = SKStrokeCap.Round;
+				}
 				else if (value == LineCap.Square)
+				{
 					StrokePaint.StrokeCap = SKStrokeCap.Square;
+				}
 			}
 		}
 
@@ -106,11 +116,17 @@ namespace Microsoft.Maui.Graphics.Skia
 			set
 			{
 				if (value == LineJoin.Miter)
+				{
 					StrokePaint.StrokeJoin = SKStrokeJoin.Miter;
+				}
 				else if (value == LineJoin.Round)
+				{
 					StrokePaint.StrokeJoin = SKStrokeJoin.Round;
+				}
 				else if (value == LineJoin.Bevel)
+				{
 					StrokePaint.StrokeJoin = SKStrokeJoin.Bevel;
+				}
 			}
 		}
 
@@ -133,7 +149,10 @@ namespace Microsoft.Maui.Graphics.Skia
 				{
 					var scaledPattern = new float[pattern.Length];
 					for (var i = 0; i < pattern.Length; i++)
+					{
 						scaledPattern[i] = pattern[i] * scaledStrokeSize;
+					}
+
 					StrokePaint.PathEffect = SKPathEffect.CreateDash(scaledPattern, 0);
 				}
 				else
@@ -169,11 +188,19 @@ namespace Microsoft.Maui.Graphics.Skia
 					_blurFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, _blurRadius);
 
 					if (_fillPaint != null)
+					{
 						_fillPaint.MaskFilter = _blurFilter;
+					}
+
 					if (_strokePaint != null)
+					{
 						_strokePaint.MaskFilter = _blurFilter;
+					}
+
 					if (_fontPaint != null)
+					{
 						_fontPaint.MaskFilter = _blurFilter;
+					}
 				}
 				else
 				{
@@ -181,11 +208,19 @@ namespace Microsoft.Maui.Graphics.Skia
 					_blurRadius = 0;
 
 					if (_fillPaint != null)
+					{
 						_fillPaint.MaskFilter = null;
+					}
+
 					if (_strokePaint != null)
+					{
 						_strokePaint.MaskFilter = null;
+					}
+
 					if (_fontPaint != null)
+					{
 						_fontPaint.MaskFilter = null;
+					}
 				}
 			}
 		}
@@ -412,7 +447,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 
 			if (_isBlurred)
+			{
 				imagePaint.MaskFilter = _blurFilter;
+			}
 
 			return imagePaint;
 		}

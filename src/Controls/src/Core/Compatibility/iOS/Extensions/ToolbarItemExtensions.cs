@@ -19,7 +19,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false)
 		{
 			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
+			{
+			{
 				return new SecondaryToolbarItem(item);
+			}
+
+			}
+
 			return new PrimaryToolbarItem(item, forceName);
 		}
 
@@ -34,16 +40,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_item = item;
 
 				if (item.IconImageSource != null && !item.IconImageSource.IsEmpty && !forceName)
+				{
 					UpdateIconAndStyle();
+				}
 				else
+				{
 					UpdateTextAndStyle();
+				}
+
 				UpdateIsEnabled();
 
 				Clicked += (sender, e) => ((IMenuItemController)_item).Activate();
 				item.PropertyChanged += OnPropertyChanged;
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
+				{
 					AccessibilityIdentifier = item.AutomationId;
+				}
 
 				this.SetAccessibilityHint(item);
 				this.SetAccessibilityLabel(item);
@@ -52,34 +65,49 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			protected override void Dispose(bool disposing)
 			{
 				if (disposing)
+				{
 					_item.PropertyChanged -= OnPropertyChanged;
+				}
+
 				base.Dispose(disposing);
 			}
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
+				{
 					UpdateIsEnabled();
+				}
 				else if (e.PropertyName == MenuItem.TextProperty.PropertyName)
 				{
 					if (_item.IconImageSource == null || _item.IconImageSource.IsEmpty || _forceName)
+					{
 						UpdateTextAndStyle();
+					}
 				}
 				else if (e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
 				{
 					if (!_forceName)
 					{
 						if (_item.IconImageSource != null && !_item.IconImageSource.IsEmpty)
+						{
 							UpdateIconAndStyle();
+						}
 						else
+						{
 							UpdateTextAndStyle();
+						}
 					}
 				}
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+				{
 					this.SetAccessibilityHint(_item);
+				}
 				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+				{
 					this.SetAccessibilityLabel(_item);
+				}
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
@@ -130,7 +158,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				item.PropertyChanged += OnPropertyChanged;
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
+				{
 					AccessibilityIdentifier = item.AutomationId;
+				}
 
 				this.SetAccessibilityHint(item);
 				this.SetAccessibilityLabel(item);
@@ -139,24 +169,38 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			protected override void Dispose(bool disposing)
 			{
 				if (disposing)
+				{
 					_item.PropertyChanged -= OnPropertyChanged;
+				}
+
 				base.Dispose(disposing);
 			}
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == MenuItem.TextProperty.PropertyName)
+				{
 					UpdateText();
+				}
 				else if (e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
+				{
 					UpdateIcon();
+				}
 				else if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
+				{
 					UpdateIsEnabled();
+				}
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+				{
+				{
 					this.SetAccessibilityHint(_item);
+				}
 				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+				{
 #pragma warning restore CS0618 // Type or member is obsolete
 					this.SetAccessibilityLabel(_item);
+				}
 			}
 
 			void UpdateIcon()

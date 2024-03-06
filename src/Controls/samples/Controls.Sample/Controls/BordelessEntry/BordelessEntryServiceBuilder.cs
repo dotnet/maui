@@ -31,9 +31,13 @@ namespace Maui.Controls.Sample.Controls
 			where TTypeRender : IViewHandler
 		{
 			if (HandlersCollection == null)
+			{
 				PendingHandlers[typeof(TType)] = typeof(TTypeRender);
+			}
 			else
+			{
 				HandlersCollection.TryAddHandler<TType, TTypeRender>();
+			}
 		}
 	}
 

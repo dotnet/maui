@@ -32,7 +32,9 @@ namespace Microsoft.Maui
 			foreach (var scrollBar in _scrollViews.Values)
 			{
 				if (!scrollBar.IsDisposed())
+				{
 					scrollBar.ScrollChange -= OnScrollChange;
+				}
 			}
 
 			_scrollViews.Clear();
@@ -43,7 +45,9 @@ namespace Microsoft.Maui
 			base.HandleUIChange();
 
 			if (GraphicsView != null)
+			{
 				Offset = GenerateAdornerOffset(GraphicsView);
+			}
 		}
 
 		void OnScrollChange(object? sender, View.ScrollChangeEventArgs e)
@@ -59,10 +63,14 @@ namespace Microsoft.Maui
 		static Point GenerateAdornerOffset(View graphicsView)
 		{
 			if (graphicsView == null || graphicsView.Context?.GetActivity() is not Activity nativeActivity)
+			{
 				return new Point();
+			}
 
 			if (nativeActivity.Resources == null || nativeActivity.Resources.DisplayMetrics == null)
+			{
 				return new Point();
+			}
 
 			var decorView = nativeActivity.Window?.DecorView;
 			var rectangle = new Android.Graphics.Rect();

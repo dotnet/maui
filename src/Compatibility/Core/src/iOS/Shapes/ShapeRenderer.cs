@@ -67,23 +67,51 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				UpdateSize();
 			}
 			else if (args.PropertyName == Shape.AspectProperty.PropertyName)
+			{
+			{
 				UpdateAspect();
+			}
+			}
 			else if (args.PropertyName == Shape.FillProperty.PropertyName)
+			{
 				UpdateFill();
+			}
+			}
 			else if (args.PropertyName == Shape.StrokeProperty.PropertyName)
+			{
 				UpdateStroke();
+			}
+			}
 			else if (args.PropertyName == Shape.StrokeThicknessProperty.PropertyName)
+			{
 				UpdateStrokeThickness();
+			}
+			}
 			else if (args.PropertyName == Shape.StrokeDashArrayProperty.PropertyName)
+			{
 				UpdateStrokeDashArray();
+			}
+			}
 			else if (args.PropertyName == Shape.StrokeDashOffsetProperty.PropertyName)
+			{
 				UpdateStrokeDashOffset();
+			}
+			}
 			else if (args.PropertyName == Shape.StrokeLineCapProperty.PropertyName)
+			{
 				UpdateStrokeLineCap();
+			}
+			}
 			else if (args.PropertyName == Shape.StrokeLineJoinProperty.PropertyName)
+			{
 				UpdateStrokeLineJoin();
+			}
+			}
 			else if (args.PropertyName == Shape.StrokeMiterLimitProperty.PropertyName)
+			{
 				UpdateStrokeMiterLimit();
+			}
+			}
 		}
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -124,7 +152,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateStrokeDashArray()
 		{
 			if (Element.StrokeDashArray == null || Element.StrokeDashArray.Count == 0)
+			{
+			{
 				Control.ShapeLayer.UpdateStrokeDash(Array.Empty<nfloat>());
+			}
+			}
 			else
 			{
 				nfloat[] dashArray;
@@ -147,7 +179,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				double thickness = Element.StrokeThickness;
 
 				for (int i = 0; i < array.Length; i++)
+				{
 					dashArray[i] = new nfloat(thickness * array[i]);
+				}
 
 				Control.ShapeLayer.UpdateStrokeDash(dashArray);
 			}
@@ -286,9 +320,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			_path = path;
 
 			if (_path != null)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				_pathFillBounds = _path.PathBoundingBox;
-			else
+After:
+			{
+				_pathFillBounds = _path.PathBoundingBox;
+			}
+*/
+			
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				_pathFillBounds = new CGRect();
+After:
+			{
+				_pathFillBounds = new CGRect();
+			}
+*/
+{
+				_pathFillBounds = _path.PathBoundingBox;
+			}
+			else
+			{
+				_pathFillBounds = new CGRect();
+			}
 
 			UpdatePathStrokeBounds();
 		}
@@ -444,9 +500,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					nfloat height = Bounds.Height;
 
 					if (_pathStrokeBounds.Width > Bounds.Width)
+					{
 						width = Bounds.Width - adjustX;
+					}
+
 					if (_pathStrokeBounds.Height > Bounds.Height)
+					{
 						height = Bounds.Height - adjustY;
+					}
+
+					Frame = new CGRect(adjustX, adjustY, width, height);
+					}
 
 					Frame = new CGRect(adjustX, adjustY, width, height);
 					var transform = new CGAffineTransform(Bounds.Width / width, 0, 0, Bounds.Height / height, -adjustX, -adjustY);
@@ -470,11 +534,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void RenderShape(CGContext graphics)
 		{
 			if (_path == null)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				return;
 
 			if (_stroke == null && _fill == null)
+After:
+			{
+*/
+			{
+				return;
+			}
+
+			if (_stroke == null && _fill == null)
+			{
 				return;
 
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 			CATransaction.Begin();
 			CATransaction.DisableActions = true;
 
@@ -483,9 +561,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			graphics.SetLineCap(_strokeLineCap);
 			graphics.SetLineJoin(_strokeLineJoin);
 			graphics.SetMiterLimit(_strokeMiterLimit * _strokeWidth / 4);
+After:
+			}
+*/
+			}
 
+			CATransaction.Begin();
+			CATransaction.DisableActions = true;
+
+			graphics.SetLineWidth(_strokeWidth);
+			graphics.SetLineDash(_
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 			if (_fill is GradientBrush fillGradientBrush)
-			{
+After:
+			if (_stroke == null && _fill == null)
+*/
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				graphics.AddPath(_renderPath);
 
 				if (_fillMode)
@@ -535,12 +629,152 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 
 			CATransaction.Commit();
+After:
+				return;
+			}
+
+			CATransaction.Begin();
+			CATransaction.DisableActions = true;
+
+			graphics.SetLineWidth(_strokeWidth);
+*/
+dashOffset * _strokeWidth, _strokeDash);
+			graphics.SetLineCap(_strokeLineCap);
+			graphics.SetLineJoin(_strokeLineJoin);
+			graphics.SetMiterLimit(_strokeMiterLimit * _strokeWidth / 4);
+
+			if (_fill is GradientBrush fillGradientBrush)
+			{
+				graphics.AddPath(_renderPath);
+
+				if (_fillMode)
+				{
+					graphics.Clip();
+				}
+				else
+				{
+					graphics.EOClip();
+				}
+
+				RenderBrush(graphics, _renderPathFill, fillGradientBrush);
+			}
+			else
+			{
+				CGColor fillColor =
+#if __MOBILE__
+					UIColor.Clear.CGColor;
+#else
+					NSColor.Clear.CGColor;
+#endif
+				if (_fill is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
+				{
+					fillColor = solidColorBrush.Color.ToCGColor();
+				}
+
+				graphics.AddPath(_renderPath);
+			graphics.SetLineDash(_dashOffset * _strokeWidth, _strokeDash);
+			graphics.SetLineCap(_strokeLineCap);
+			graphics.SetLineJoin(_strokeLineJoin);
+			graphics.SetMiterLimit(_strokeMiterLimit * _strokeWidth / 4);
+
+			if (_fill is GradientBrush fillGradientBrush)
+			{
+				graphics.AddPath(_renderPath);
+
+				if (_fillMode)
+				{
+					graphics.Clip();
+				}
+				else
+				{
+					graphics.EOClip();
+				}
+
+				RenderBrush(graphics, _renderPathFill, fillGradientBrush);
+			}
+			else
+			{
+				CGColor fillColor =
+#if __MOBILE__
+					UIColor.Clear.CGColor;
+#else
+					NSColor.Clear.CGColor;
+#endif
+				if (_fill is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
+				{
+					fillColor = solidColorBrush.Color.ToCGColor();
+				}
+
+				graphics.AddPath(_renderPath);
+				graphics.SetFillColor(fillColor);
+				graphics.DrawPath(_fillMode ? CGPathDrawingMode.FillStroke : CGPathDrawingMode.EOFillStroke);
+			}
+
+			if (_stroke is GradientBrush strokeGradientBrush)
+			{
+				graphics.AddPath(_renderPath);
+				graphics.ReplacePathWithStrokedPath();
+				graphics.Clip();
+				RenderBrush(graphics, _renderPathStroke, strokeGradientBrush);
+			}
+			else
+			{
+				CGColor strokeColor =
+#if __MOBILE__
+					UIColor.Clear.CGColor;
+#else
+					NSColor.Clear.CGColor;
+#endif
+				if (_stroke is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
+				{
+					strokeColor = solidColorBrush.Color.ToCGColor();
+				}
+
+				graphics.AddPath(_renderPath);
+				graphics.SetStrokeColor(strokeColor);
+				graphics.DrawPath(CGPathDrawingMode.Stroke);
+			}
+
+			CATransaction.Commit();
+				graphics.SetFillColor(fillColor);
+				graphics.DrawPath(_fillMode ? CGPathDrawingMode.FillStroke : CGPathDrawingMode.EOFillStroke);
+			}
+
+			if (_stroke is GradientBrush strokeGradientBrush)
+			{
+				graphics.AddPath(_renderPath);
+				graphics.ReplacePathWithStrokedPath();
+				graphics.Clip();
+				RenderBrush(graphics, _renderPathStroke, strokeGradientBrush);
+			}
+			else
+			{
+				CGColor strokeColor =
+#if __MOBILE__
+					UIColor.Clear.CGColor;
+#else
+					NSColor.Clear.CGColor;
+#endif
+				if (_stroke is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
+				{
+					strokeColor = solidColorBrush.Color.ToCGColor();
+				}
+
+				graphics.AddPath(_renderPath);
+				graphics.SetStrokeColor(strokeColor);
+				graphics.DrawPath(CGPathDrawingMode.Stroke);
+			}
+
+			CATransaction.Commit();
 		}
 
 		void RenderBrush(CGContext graphics, CGRect pathBounds, GradientBrush brush)
 		{
 			if (brush == null)
+			{
+			{
 				return;
+			}
 
 			using (CGColorSpace rgb = CGColorSpace.CreateDeviceRGB())
 			{
@@ -581,9 +815,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdatePathStrokeBounds()
 		{
 			if (_path != null)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				_pathStrokeBounds = _path.CopyByStrokingPath(_strokeWidth, _strokeLineCap, _strokeLineJoin, _strokeMiterLimit).PathBoundingBox;
-			else
+After:
+			{
+				_pathStrokeBounds = _path.CopyByStrokingPath(_strokeWidth, _strokeLineCap, _strokeLineJoin, _strokeMiterLimit).PathBoundingBox;
+			}
+*/
+			
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				_pathStrokeBounds = new CGRect();
+After:
+			{
+				_pathStrokeBounds = new CGRect();
+			}
+*/
+{
+				_pathStrokeBounds = _path.CopyByStrokingPath(_strokeWidth, _strokeLineCap, _strokeLineJoin, _strokeMiterLimit).PathBoundingBox;
+			}
+			else
+			{
+				_pathStrokeBounds = new CGRect();
+			}
 
 			BuildRenderPath();
 		}

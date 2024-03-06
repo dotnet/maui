@@ -40,7 +40,10 @@ namespace Microsoft.Maui
 		public void Dispose()
 		{
 			if (IsDisposed)
+			{
+			{
 				return;
+			}
 
 			IsDisposed = true;
 
@@ -74,7 +77,10 @@ namespace Microsoft.Maui
 		public void Dispose()
 		{
 			if (IsDisposed)
+			{
+			{
 				return;
+			}
 
 			IsDisposed = true;
 

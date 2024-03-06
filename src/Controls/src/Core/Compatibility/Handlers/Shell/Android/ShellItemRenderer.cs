@@ -40,9 +40,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellAppearance = appearance;
 
 			if (appearance is not null)
+			{
 				SetAppearance(appearance);
+			}
 			else
+			{
 				ResetAppearance();
+			}
 		}
 
 		#endregion IAppearanceObserver
@@ -78,10 +82,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_bottomView = PlatformInterop.CreateNavigationBar(context, Resource.Attribute.bottomNavigationViewStyle, _outerLayout, this);
 
 			if (ShellItem is null)
+			{
 				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
+			}
 
 			if (ShellItem.CurrentItem is null)
+			{
 				throw new InvalidOperationException($"Content not found for active {ShellItem}. Title: {ShellItem.Title}. Route: {ShellItem.Route}.");
+			}
 
 			HookEvents(ShellItem);
 			SetupMenu();
@@ -97,9 +105,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void Destroy()
 		{
 			if (ShellItem is not null)
+			{
 				UnhookEvents(ShellItem);
-
-			((IShellController)ShellContext?.Shell)?.RemoveAppearanceObserver(this);
+			} ((IShellController)ShellContext?.Shell)?.RemoveAppearanceObserver(this);
 
 			if (_bottomSheetDialog is not null)
 			{
@@ -129,11 +137,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 			if (disposing)
+			{
 				Destroy();
+			}
 
 			base.Dispose(disposing);
 		}
@@ -182,7 +194,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var bottomSheetDialog = new BottomSheetDialog(Context);
 			var bottomSheetLayout = new LinearLayout(Context);
 			using (var bottomShellLP = new LP(LP.MatchParent, LP.WrapContent))
+			{
 				bottomSheetLayout.LayoutParameters = bottomShellLP;
+			}
+
 			bottomSheetLayout.Orientation = Orientation.Vertical;
 
 			// handle the more tab
@@ -199,7 +214,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					innerLayout.SetPadding(0, (int)Context.ToPixels(6), 0, (int)Context.ToPixels(6));
 					innerLayout.Orientation = Orientation.Horizontal;
 					using (var param = new LP(LP.MatchParent, LP.WrapContent))
+					{
 						innerLayout.LayoutParameters = param;
+					}
 
 					// technically the unhook isn't needed
 					// we dont even unhook the events that dont fire
@@ -207,7 +224,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					{
 						selectCallback(closure_i, bottomSheetDialog);
 						if (!innerLayout.IsDisposed())
+						{
 							innerLayout.Click -= clickCallback;
+						}
 					}
 
 					innerLayout.Click += clickCallback;
@@ -281,9 +300,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				index = Math.Min(index, menu.Size() - 1);
 				if (index < 0)
+				{
 					return;
+				}
+
 				using (var menuItem = menu.GetItem(index))
+				{
 					menuItem.SetChecked(true);
+				}
 			}
 		}
 
@@ -292,10 +316,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.OnDisplayedPageChanged(newPage, oldPage);
 
 			if (oldPage is not null)
+			{
 				oldPage.PropertyChanged -= OnDisplayedElementPropertyChanged;
+			}
 
 			if (newPage is not null)
+			{
 				newPage.PropertyChanged += OnDisplayedElementPropertyChanged;
+			}
 
 			if (newPage is not null && !_menuSetup)
 			{
@@ -342,7 +370,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			dialog.Dismiss(); //should trigger OnMoreSheetDismissed, which will clean up the dialog
 			if (dialog != _bottomSheetDialog) //should never be true, but just in case, prevent a leak
+			{
 				dialog.Dispose();
+			}
 		}
 
 		List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList(ShellItem shellItem)
@@ -468,7 +498,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (DisplayedPage is null)
+			{
 				return;
+			}
 
 			if (ShellItemController.ShowTabs)
 			{
@@ -504,7 +536,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			bool tabEnabled = shellSection.IsEnabled;
 			if (menuItem.IsEnabled != tabEnabled)
+			{
 				menuItem.SetEnabled(tabEnabled);
+			}
 		}
 
 		void OnDisplayedElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -512,7 +546,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 			{
 				if (!_menuSetup)
+				{
 					SetupMenu();
+				}
 
 				UpdateTabBarVisibility();
 			}
@@ -521,13 +557,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void SetupMenu()
 		{
 			using (var menu = _bottomView.Menu)
+			{
 				SetupMenu(menu, _bottomView.MaxItemCount, ShellItem);
+			}
 		}
 
 		protected virtual void UpdateTabBarVisibility()
 		{
 			if (DisplayedPage is null)
+			{
 				return;
+			}
 
 			_bottomView.Visibility = ShellItemController.ShowTabs ? ViewStates.Visible : ViewStates.Gone;
 

@@ -11,23 +11,31 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsPassword(this TextBox platformControl, IEntry entry)
 		{
 			if (platformControl is MauiPasswordTextBox passwordTextBox)
-				passwordTextBox.IsPassword = entry.IsPassword;
+			{
+				MauiPasswordTextBox.IsPassword = entry.IsPassword;
+			}
 		}
 
 		public static void UpdateText(this TextBox platformControl, ITextInput textInput)
 		{
 			var newText = textInput.Text;
 
-			if (platformControl is MauiPasswordTextBox passwordTextBox && passwordTextBox.Password == newText)
+			if (platformControl is MauiPasswordTextBox passwordTextBox && MauiPasswordTextBox.Password == newText)
+			{
 				return;
+			}
 
 			if (platformControl.Text == newText)
+			{
 				return;
+			}
 
 			platformControl.Text = newText ?? string.Empty;
 
 			if (!string.IsNullOrEmpty(platformControl.Text))
+			{
 				platformControl.Select(platformControl.Text.Length, 0);
+			}
 		}
 
 		public static void UpdateBackground(this TextBox textBox, IView view)
@@ -35,9 +43,13 @@ namespace Microsoft.Maui.Platform
 			var brush = view.Background?.ToPlatform();
 
 			if (brush is null)
+			{
 				textBox.Resources.RemoveKeys(BackgroundResourceKeys);
+			}
 			else
+			{
 				textBox.Resources.SetValueForAllKey(BackgroundResourceKeys, brush);
+			}
 
 			textBox.RefreshThemeResources();
 		}
@@ -55,9 +67,13 @@ namespace Microsoft.Maui.Platform
 			var brush = textStyle.TextColor?.ToPlatform();
 
 			if (brush is null)
+			{
 				textBox.Resources.RemoveKeys(TextColorResourceKeys);
+			}
 			else
+			{
 				textBox.Resources.SetValueForAllKey(TextColorResourceKeys, brush);
+			}
 
 			textBox.RefreshThemeResources();
 		}
@@ -134,19 +150,27 @@ namespace Microsoft.Maui.Platform
 			var maxLength = textInput.MaxLength;
 
 			if (maxLength == 0)
+			{
 				textBox.IsReadOnly = true;
+			}
 			else
+			{
 				textBox.IsReadOnly = textInput.IsReadOnly;
+			}
 
 			if (maxLength == -1)
+			{
 				maxLength = int.MaxValue;
+			}
 
 			textBox.MaxLength = maxLength;
 
 			var currentControlText = textBox.Text;
 
 			if (currentControlText.Length > maxLength)
+			{
 				textBox.Text = currentControlText.Substring(0, maxLength);
+			}
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this TextBox textBox, ITextInput textInput)
@@ -180,7 +204,9 @@ namespace Microsoft.Maui.Platform
 			var inputScope = new InputScope();
 
 			if (textInput is IEntry entry && entry.ReturnType == ReturnType.Search)
+			{
 				inputScope.Names.Add(new InputScopeName(InputScopeNameValue.Search));
+			}
 
 			inputScope.Names.Add(textInput.Keyboard?.ToInputScopeName() ?? new InputScopeName(InputScopeNameValue.Default));
 
@@ -204,7 +230,9 @@ namespace Microsoft.Maui.Platform
 			entry.CursorPosition = Math.Min(entry.CursorPosition, textBox.Text.Length);
 
 			if (textBox.SelectionStart != entry.CursorPosition)
+			{
 				textBox.SelectionStart = entry.CursorPosition;
+			}
 		}
 
 		public static void UpdateSelectionLength(this TextBox textBox, ITextInput entry)
@@ -213,7 +241,9 @@ namespace Microsoft.Maui.Platform
 			entry.SelectionLength = Math.Min(entry.SelectionLength, textBox.Text.Length - textBox.SelectionStart);
 
 			if (textBox.SelectionLength != entry.SelectionLength)
+			{
 				textBox.SelectionLength = entry.SelectionLength;
+			}
 		}
 
 		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes

@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static IVisualElementRenderer GetOrCreateRenderer(this VisualElement self)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException("self");
+			}
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(self);
 			if (renderer == null)
@@ -25,7 +27,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		internal static void Cleanup(this VisualElement self)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException("self");
+			}
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(self);
 
@@ -33,7 +37,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				var visual = element as VisualElement;
 				if (visual == null)
+				{
 					continue;
+				}
 
 				IVisualElementRenderer childRenderer = Platform.GetRenderer(visual);
 				if (childRenderer != null)

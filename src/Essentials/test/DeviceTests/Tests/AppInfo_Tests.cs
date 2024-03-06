@@ -30,9 +30,23 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 #if __IOS__
 			if (DeviceInfo.Version.Major >= 13)
+
+/* Unmerged change from project 'Essentials.DeviceTests(net8.0-maccatalyst)'
+Before:
 				Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
+After:
+			{
+				Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
+			}
+*/
+			{
+				Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
+			}
 			else
+			{
+			{
 				Assert.Equal(AppTheme.Unspecified, AppInfo.RequestedTheme);
+			}
 #elif WINDOWS_UWP || WINDOWS || __ANDROID__
 			Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
 #else

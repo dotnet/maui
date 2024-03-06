@@ -26,14 +26,22 @@ namespace Microsoft.Maui.Platform
 		bool RespondsToSafeArea()
 		{
 			if (_respondsToSafeArea.HasValue)
+			{
+			{
 				return _respondsToSafeArea.Value;
+			}
+
+			}
+
 			return (bool)(_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets")));
 		}
 
 		protected CGRect AdjustForSafeArea(CGRect bounds)
 		{
 			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
+			{
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
+			}
 
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
 			{
@@ -69,7 +77,9 @@ namespace Microsoft.Maui.Platform
 			base.SafeAreaInsetsDidChange();
 
 			if (View is ISafeAreaView2 isav2)
+			{
 				isav2.SafeAreaInsets = this.SafeAreaInsets.ToThickness();
+			}
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout

@@ -12,15 +12,21 @@ namespace Microsoft.Maui
 		internal static void UpdateTitle(this Activity platformWindow, IWindow window)
 		{
 			if (string.IsNullOrEmpty(window.Title))
+			{
 				platformWindow.Title = ApplicationModel.AppInfo.Current.Name;
+			}
 			else
+			{
 				platformWindow.Title = window.Title;
+			}
 		}
 
 		internal static DisplayOrientation GetOrientation(this IWindow? window)
 		{
 			if (window == null)
+			{
 				return DeviceDisplay.Current.MainDisplayInfo.Orientation;
+			}
 
 			return window.Handler?.MauiContext?.GetPlatformWindow()?.Resources?.Configuration?.Orientation switch
 			{

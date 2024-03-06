@@ -120,16 +120,22 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			if (isClipped is bool clipped)
+			{
 				frame.IsClippedToBounds = clipped!;
+			}
 
 			await InvokeOnMainThreadAsync(() =>
 				frame.ToPlatform(MauiContext).AttachAndRun(() =>
 				{
 					var handler = frame.ToHandler(MauiContext);
 					if (isClipped == false)
+					{
 						Assert.False(handler.PlatformView.ClipsToBounds);
+					}
 					else
+					{
 						Assert.True(handler.PlatformView.ClipsToBounds);
+					}
 				}));
 		}
 
@@ -142,15 +148,21 @@ namespace Microsoft.Maui.DeviceTests
 			if (layer is not null)
 			{
 				if (layer.Name == BackgroundLayer)
+				{
 					return layer;
+				}
 
 				if (layer.Sublayers == null || layer.Sublayers.Length == 0)
+				{
 					return null;
+				}
 
 				foreach (var subLayer in layer.Sublayers)
 				{
 					if (subLayer.Name == BackgroundLayer)
+					{
 						return subLayer;
+					}
 				}
 			}
 

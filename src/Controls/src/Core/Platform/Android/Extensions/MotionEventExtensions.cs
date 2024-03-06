@@ -20,10 +20,14 @@ internal static class MotionEventExtensions
 		var context = sourceElement?.Handler?.MauiContext?.Context;
 
 		if (context == null)
+		{
 			return null;
+		}
 
 		if (e == null)
+		{
 			return null;
+		}
 
 		if (relativeElement == null)
 		{

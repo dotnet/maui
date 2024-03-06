@@ -35,13 +35,123 @@ namespace Microsoft.Maui
 		internal static SwipeDirection GetSwipeDirectionFromAngle(double angle)
 		{
 			if (IsAngleInRange(angle, 45, 135))
+
+/* Unmerged change from project 'Core(net8.0)'
+Before:
 				return SwipeDirection.Up;
 
 			if (IsAngleInRange(angle, 0, 45) || IsAngleInRange(angle, 315, 360))
 				return SwipeDirection.Right;
+After:
+			{
+				return SwipeDirection.Up;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return SwipeDirection.Up;
+
+			if (IsAngleInRange(angle, 0, 45) || IsAngleInRange(angle, 315, 360))
+				return SwipeDirection.Right;
+After:
+			{
+				return SwipeDirection.Up;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+				return SwipeDirection.Up;
+
+			if (IsAngleInRange(angle, 0, 45) || IsAngleInRange(angle, 315, 360))
+				return SwipeDirection.Right;
+After:
+			{
+				return SwipeDirection.Up;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+				return SwipeDirection.Up;
+
+			if (IsAngleInRange(angle, 0, 45) || IsAngleInRange(angle, 315, 360))
+				return SwipeDirection.Right;
+After:
+			{
+				return SwipeDirection.Up;
+			}
+*/
+			{
+				return SwipeDirection.Up;
+			}
+
+			if (IsAngleInRange(angle, 0, 45) || IsAngleInRange(angle, 315, 360))
+
+/* Unmerged change from project 'Core(net8.0)'
+Before:
+				return SwipeDirection.Down;
+After:
+			{
+				return SwipeDirection.Right;
+			}
 
 			if (IsAngleInRange(angle, 225, 315))
+			{
 				return SwipeDirection.Down;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return SwipeDirection.Down;
+After:
+			{
+				return SwipeDirection.Right;
+			}
+
+			if (IsAngleInRange(angle, 225, 315))
+			{
+				return SwipeDirection.Down;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+				return SwipeDirection.Down;
+After:
+			{
+				return SwipeDirection.Right;
+			}
+
+			if (IsAngleInRange(angle, 225, 315))
+			{
+				return SwipeDirection.Down;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+				return SwipeDirection.Down;
+After:
+			{
+				return SwipeDirection.Right;
+			}
+
+			if (IsAngleInRange(angle, 225, 315))
+			{
+				return SwipeDirection.Down;
+			}
+*/
+			{
+				return SwipeDirection.Right;
+			}
+
+			if (IsAngleInRange(angle, 225, 315))
+			{
+				return SwipeDirection.Down;
+			}
 
 			return SwipeDirection.Left;
 		}

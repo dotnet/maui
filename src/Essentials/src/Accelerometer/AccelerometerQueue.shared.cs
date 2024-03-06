@@ -26,17 +26,23 @@ namespace Microsoft.Maui.Devices.Sensors
 			added.Next = null;
 
 			if (newest != null)
+			{
 				newest.Next = added;
+			}
 
 			newest = added;
 
 			if (oldest == null)
+			{
 				oldest = added;
+			}
 
 			sampleCount++;
 
 			if (accelerating)
+			{
 				acceleratingCount++;
+			}
 		}
 
 		internal void Clear()
@@ -60,13 +66,17 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				var removed = oldest;
 				if (removed.IsAccelerating)
+				{
 					acceleratingCount--;
+				}
 
 				sampleCount--;
 				oldest = removed.Next;
 
 				if (oldest == null)
+				{
 					newest = null;
+				}
 
 				pool.Release(removed);
 			}
@@ -95,9 +105,13 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				var aquired = head;
 				if (aquired == null)
+				{
 					aquired = new AccelerometerSample();
+				}
 				else
+				{
 					head = aquired.Next;
+				}
 
 				return aquired;
 			}

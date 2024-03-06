@@ -50,7 +50,9 @@ namespace Microsoft.Maui.ApplicationModel
 			var canOpen = await PlatformCanOpenAsync(uri);
 
 			if (canOpen)
+			{
 				await PlatformOpenAsync(uri);
+			}
 
 			return canOpen;
 		}

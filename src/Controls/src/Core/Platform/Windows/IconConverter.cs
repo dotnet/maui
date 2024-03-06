@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
 			if (value is not ImageSource source)
+			{
 				return null;
+			}
 
 			var context = source.FindMauiContext(true);
 			return source.ToIconSource(context).CreateIconElement();

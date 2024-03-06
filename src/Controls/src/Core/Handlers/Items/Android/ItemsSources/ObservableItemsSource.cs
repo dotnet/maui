@@ -218,24 +218,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal int ItemsCount()
 		{
 			if (_itemsSource is IList list)
+			{
 				return list.Count;
+			}
 
 			int count = 0;
 			foreach (var item in _itemsSource)
+			{
 				count++;
+			}
+
 			return count;
 		}
 
 		internal object ElementAt(int index)
 		{
 			if (_itemsSource is IList list)
+			{
 				return list[index];
+			}
 
 			int count = 0;
 			foreach (var item in _itemsSource)
 			{
 				if (count == index)
+				{
 					return item;
+				}
+
 				count++;
 			}
 
@@ -245,13 +255,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal int IndexOf(object item)
 		{
 			if (_itemsSource is IList list)
+			{
 				return list.IndexOf(item);
+			}
 
 			int count = 0;
 			foreach (var i in _itemsSource)
 			{
 				if (i == item)
+				{
 					return count;
+				}
+
 				count++;
 			}
 

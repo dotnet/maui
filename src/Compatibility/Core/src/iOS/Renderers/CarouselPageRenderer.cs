@@ -69,7 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			if (element != null)
+			{
 				element.SendViewInitialized(NativeView);
+			}
 
 			_previousPage = Carousel?.CurrentPage;
 		}
@@ -95,7 +97,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidAppear(animated);
 
 			if (_appeared || _disposed)
+			{
 				return;
+			}
 
 			_appeared = true;
 			PageController.SendAppearing();
@@ -106,7 +110,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidDisappear(animated);
 
 			if (!_appeared || _disposed)
+			{
 				return;
+			}
 
 			_appeared = false;
 			PageController.SendDisappearing();
@@ -142,7 +148,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Element element = ElementController.LogicalChildren[i];
 				var child = element as ContentPage;
 				if (child != null)
+				{
 					InsertPage(child, i);
+				}
 			}
 
 			PositionChildren();
@@ -158,7 +166,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidUnload();
 
 			if (_scrollView != null)
+			{
 				_scrollView.DecelerationEnded -= OnDecelerationEnded;
+			}
 
 			if (Carousel != null)
 			{
@@ -179,7 +189,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_previousPage = null;
 
 				if (_scrollView != null)
+				{
 					_scrollView.DecelerationEnded -= OnDecelerationEnded;
+				}
 
 				if (Carousel != null)
 				{
@@ -221,7 +233,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			EventHandler<VisualElementChangedEventArgs> changed = ElementChanged;
 			if (changed != null)
+			{
 				changed(this, e);
+			}
 		}
 
 		void Clear()
@@ -260,13 +274,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_scrollView.InsertSubview(container, index);
 
 			if ((index == 0 && SelectedIndex == 0) || (index < SelectedIndex))
+			{
 				ScrollToPage(SelectedIndex + 1, false);
+			}
 		}
 
 		void OnDecelerationEnded(object sender, EventArgs eventArgs)
 		{
 			if (_ignoreNativeScrolling || SelectedIndex >= ElementController.LogicalChildren.Count)
+			{
 				return;
+			}
 
 			var currentPage = (ContentPage)ElementController.LogicalChildren[SelectedIndex];
 			if (_previousPage != currentPage)
@@ -291,7 +309,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				int index = Carousel.CurrentPage != null ? CarouselPage.GetIndex(Carousel.CurrentPage) : 0;
 				if (index < 0)
+				{
 					index = 0;
+				}
 
 				ScrollToPage(index);
 			}
@@ -300,11 +320,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "CurrentPage")
+			{
 				UpdateCurrentPage();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 		}
 
 		void PositionChildren()
@@ -331,7 +357,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(page);
 			if (renderer == null)
+			{
 				return;
+			}
 
 			renderer.ViewController.RemoveFromParentViewController();
 			renderer.NativeView.RemoveFromSuperview();
@@ -346,14 +374,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Element element = ElementController.LogicalChildren[i];
 				var child = element as ContentPage;
 				if (child != null)
+				{
 					InsertPage(child, i);
+				}
 			}
 		}
 
 		void ScrollToPage(int index, bool animated = true)
 		{
 			if (_scrollView.ContentOffset.X == index * _scrollView.Frame.Width)
+			{
 				return;
+			}
 
 			_scrollView.SetContentOffset(new PointF(index * _scrollView.Frame.Width, 0), animated);
 		}
@@ -363,15 +395,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
 				if (bgImage != null)
+				{
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
+				}
 				else if (Element.BackgroundColor == null)
+				{
 					View.BackgroundColor = ColorExtensions.BackgroundColor;
+				}
 				else
 				{
 					if (Element.BackgroundColor == null)
+					{
 						View.BackgroundColor = UIColor.White;
+					}
 					else
+					{
 						View.BackgroundColor = Element.BackgroundColor.ToPlatform();
+					}
 
 					Brush background = Element.Background;
 					View.UpdateBackground(background);
@@ -383,7 +423,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			ContentPage current = Carousel.CurrentPage;
 			if (current != null)
+			{
 				ScrollToPage(CarouselPage.GetIndex(current), animated);
+			}
 		}
 
 		class CarouselPageContainer : UIView
@@ -400,7 +442,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				base.LayoutSubviews();
 
 				if (Subviews.Length > 0)
+				{
 					Subviews[0].Frame = new RectangleF(0, 0, (float)Element.Width, (float)Element.Height);
+				}
 			}
 		}
 

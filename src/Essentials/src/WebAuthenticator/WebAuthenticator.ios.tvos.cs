@@ -44,11 +44,67 @@ namespace Microsoft.Maui.Authentication
 			var prefersEphemeralWebBrowserSession = webAuthenticatorOptions?.PrefersEphemeralWebBrowserSession ?? false;
 
 			if (!VerifyHasUrlSchemeOrDoesntRequire(callbackUrl.Scheme))
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
 				throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist.");
 
 			// Cancel any previous task that's still pending
 			if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
 				tcsResponse.TrySetCanceled();
+After:
+			{
+				throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist.");
+			}
+
+			// Cancel any previous task that's still pending
+			if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
+			{
+				tcsResponse.TrySetCanceled();
+			}
+*/
+			{
+				throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist.");
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+					OpenUrlCallback(cbUrl);
+After:
+				{
+					OpenUrlCallback(cbUrl);
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+					tcsResponse.TrySetCanceled();
+After:
+				{
+					tcsResponse.TrySetCanceled();
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+					tcsResponse.TrySetCanceled();
+				else
+					tcsResponse.TrySetException(new NSErrorException(error));
+After:
+				{
+					tcsResponse.TrySetCanceled();
+				}
+				else
+				{
+					tcsResponse.TrySetException(new NSErrorException(error));
+				}
+*/
+			}
+
+			// Cancel any previous task that's still pending
+			if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
+			{
+				tcsResponse.TrySetCanceled();
+			}
 
 			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
 			redirectUri = callbackUrl;
@@ -58,13 +114,21 @@ namespace Microsoft.Maui.Authentication
 			void AuthSessionCallback(NSUrl cbUrl, NSError error)
 			{
 				if (error == null)
+				{
 					OpenUrlCallback(cbUrl);
+				}
 				else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
+				{
 					tcsResponse.TrySetCanceled();
+				}
 				else if (error.Domain == sfAuthenticationErrorDomain && error.Code == sfAuthenticationErrorCanceledLogin)
+				{
 					tcsResponse.TrySetCanceled();
+				}
 				else
+				{
 					tcsResponse.TrySetException(new NSErrorException(error));
+				}
 
 				was = null;
 				sf = null;
@@ -95,10 +159,50 @@ namespace Microsoft.Maui.Authentication
 			}
 
 			if (prefersEphemeralWebBrowserSession)
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
 				ClearCookies();
 
 #pragma warning disable CA1422 // 'SFAuthenticationSession' is obsoleted on: 'ios' 12.0 and later
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+After:
+			{
+*/
+			{
+				ClearCookies();
+			}
+
+#pragma warning disable CA1422 // 'SFAuthenticationSession' is obsoleted on: 'ios' 12.0 and later
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				ClearCookies();
+			}
+
+#pragma warning disable CA1422 // 'SFAuthenticationSession' is obsoleted on: 'ios' 12.0 and later
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+				{
+					sf.Start();
+					return await tcsResponse.Task;
+				}
+			}
+#pragma warning restore CA1422
+
+			// This is only on iOS9+ but we only support 10+ in Essentials anyway
+			var controller = new SFSafariViewController(WebUtils.GetNativeUrl(url), false)
+			{
+				Delegate = new NativeSFSafariViewControllerDelegate
+				{
+					DidFinishHandler = (svc) =>
+					{
+						// Cancel our task if it wasn't already marked as completed
+						if (!(tcsResponse?.Task?.IsCompleted ?? true))
+							tcsResponse.TrySetCanceled();
+After:
 			{
 				sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 				using (sf)
@@ -118,7 +222,29 @@ namespace Microsoft.Maui.Authentication
 					{
 						// Cancel our task if it wasn't already marked as completed
 						if (!(tcsResponse?.Task?.IsCompleted ?? true))
+						{
 							tcsResponse.TrySetCanceled();
+						}
+*/
+				{
+					sf.Start();
+					return await tcsResponse.Task;
+				}
+			}
+#pragma warning restore CA1422
+
+			// This is only on iOS9+ but we only support 10+ in Essentials anyway
+			var controller = new SFSafariViewController(WebUtils.GetNativeUrl(url), false)
+			{
+				Delegate = new NativeSFSafariViewControllerDelegate
+				{
+					DidFinishHandler = (svc) =>
+					{
+						// Cancel our task if it wasn't already marked as completed
+						if (!(tcsResponse?.Task?.IsCompleted ?? true))
+						{
+							tcsResponse.TrySetCanceled();
+						}
 					}
 				},
 			};
@@ -158,6 +284,9 @@ namespace Microsoft.Maui.Authentication
 		{
 			// If we aren't waiting on a task, don't handle the url
 			if (tcsResponse?.Task?.IsCompleted ?? true)
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
 				return false;
 
 			try
@@ -165,6 +294,66 @@ namespace Microsoft.Maui.Authentication
 				// If we can't handle the url, don't
 				if (!WebUtils.CanHandleCallback(redirectUri, uri))
 					return false;
+After:
+			{
+				return false;
+			}
+
+			try
+			{
+				// If we can't handle the url, don't
+				if (!WebUtils.CanHandleCallback(redirectUri, uri))
+				{
+					return false;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+				return false;
+After:
+			{
+				return false;
+			}
+*/
+			
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+					return false;
+After:
+				{
+					return false;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+					return false;
+After:
+				{
+					return false;
+				}
+*/
+{
+				return false;
+			}
+
+			try
+			{
+				// If we can't handle the url, don't
+				if (!WebUtils.CanHandleCallback(redirectUri, uri))
+				{
+					return false;
+				}
 
 				currentViewController?.DismissViewControllerAsync(true);
 				currentViewController = null;
@@ -184,7 +373,9 @@ namespace Microsoft.Maui.Authentication
 		{
 			// iOS11+ uses sfAuthenticationSession which handles its own url routing
 			if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsTvOSVersionAtLeast(11, 0))
+			{
 				return true;
+			}
 
 			return AppInfoImplementation.VerifyHasUrlScheme(scheme);
 		}

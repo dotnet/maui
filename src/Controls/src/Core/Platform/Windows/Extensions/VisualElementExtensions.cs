@@ -9,18 +9,24 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateAccessKey(this FrameworkElement platformView, IView view)
 		{
 			if (platformView is not null && view is VisualElement element)
+			{
 				AccessKeyHelper.UpdateAccessKey(platformView, element);
+			}
 		}
 
 		internal static void Cleanup(this Element self)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException("self");
+			}
 
 			foreach (Element element in self.Descendants())
 			{
 				if (element is Maui.IElement mauiElement)
+				{
 					mauiElement.Handler?.DisconnectHandler();
+				}
 			}
 
 			self.Handler?.DisconnectHandler();

@@ -12,18 +12,24 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			IElementController controller = oldElement;
 			if (controller != null && controller.EffectControlProvider == self)
+			{
 				controller.EffectControlProvider = null;
+			}
 
 			controller = newElement;
 			if (controller != null)
+			{
 				controller.EffectControlProvider = self;
+			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/EffectUtilities.xml" path="//Member[@MemberName='UnregisterEffectControlProvider']/Docs/*" />
 		public static void UnregisterEffectControlProvider(IEffectControlProvider self, IElementController element)
 		{
 			if (element?.EffectControlProvider == self)
+			{
 				element.EffectControlProvider = null;
+			}
 		}
 	}
 }

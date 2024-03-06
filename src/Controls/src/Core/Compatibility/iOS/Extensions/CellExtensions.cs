@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal static NSIndexPath GetIndexPath(this Cell self)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException("self");
+			}
 
 			NSIndexPath path;
 
@@ -19,7 +21,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var section = 0;
 				var til = self.GetGroup<ItemsView<Cell>, Cell>();
 				if (til != null)
+				{
 					section = til.HeaderContent.GetIndex<ItemsView<Cell>, Cell>();
+				}
 
 				var row = self.GetIndex<ItemsView<Cell>, Cell>();
 				path = NSIndexPath.FromRowSection(row, section);
@@ -30,7 +34,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				path = NSIndexPath.FromRowSection(tmPath.Item2, tmPath.Item1);
 			}
 			else
+			{
 				throw new NotSupportedException("Unknown cell parent type");
+			}
 
 			return path;
 		}

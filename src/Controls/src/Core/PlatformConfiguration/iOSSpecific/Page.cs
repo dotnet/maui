@@ -51,11 +51,75 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static void SetPreferredStatusBarUpdateAnimation(BindableObject element, UIStatusBarAnimation value)
 		{
 			if (value == UIStatusBarAnimation.Fade)
+			{
+			{
 				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
 			else if (value == UIStatusBarAnimation.Slide)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+After:
+			{
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+After:
+			{
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+After:
+			{
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+After:
+			{
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+After:
+			{
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+After:
+			{
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
+*/
+			{
+				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
 			else
+			{
+			{
+			{
 				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
+			}
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='PreferredStatusBarUpdateAnimation']/Docs/*" />

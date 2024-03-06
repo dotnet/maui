@@ -68,7 +68,9 @@ namespace Microsoft.Maui.Handlers
 			void OnValueChanged(object? sender, EventArgs e)
 			{
 				if (VirtualView is IStepper virtualView && sender is UIStepper platformView)
+				{
 					virtualView.Value = platformView.Value;
+				}
 			}
 		}
 	}

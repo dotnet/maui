@@ -16,7 +16,10 @@ namespace Microsoft.Maui.Controls.Internals
 			get
 			{
 				if (_navTree.Count > 0)
+				{
 					return _navTree.Last().Last();
+				}
+
 				return null;
 			}
 		}
@@ -26,7 +29,9 @@ namespace Microsoft.Maui.Controls.Internals
 			get
 			{
 				if (_navTree.Count == 0)
+				{
 					return null;
+				}
 
 				return _navTree.Last()[0];
 			}
@@ -71,7 +76,9 @@ namespace Microsoft.Maui.Controls.Internals
 			int index = currentStack.IndexOf(before);
 
 			if (index == -1)
+			{
 				throw new ArgumentException("before must be in the current navigation context");
+			}
 
 			currentStack.Insert(index, page);
 		}
@@ -85,7 +92,10 @@ namespace Microsoft.Maui.Controls.Internals
 				if (stack.Contains(ancestralNav))
 				{
 					if (stack.Count <= 1)
+					{
 						throw new InvalidNavigationException("Cannot pop final item in stack");
+					}
+
 					Page result = stack.Last();
 					stack.Remove(result);
 					return result;
@@ -99,7 +109,9 @@ namespace Microsoft.Maui.Controls.Internals
 		public Page PopModal()
 		{
 			if (_navTree.Count <= 1)
+			{
 				throw new InvalidNavigationException("Can't pop modal without any modals pushed");
+			}
 
 			var previousPage = CurrentPage;
 			Page modal = _navTree.Last()[0];
@@ -153,7 +165,10 @@ namespace Microsoft.Maui.Controls.Internals
 				if (stack.Contains(ancestralNav))
 				{
 					if (stack.Count <= 1)
+					{
 						throw new InvalidNavigationException("Cannot pop final item in stack");
+					}
+
 					stack.RemoveRange(1, stack.Count - 1);
 					return;
 				}
@@ -168,7 +183,10 @@ namespace Microsoft.Maui.Controls.Internals
 			if (ancestralNav == null)
 			{
 				if (_navTree.Count > 0)
+				{
 					throw new InvalidNavigationException("Ancestor must be provided for all pushes except first");
+				}
+
 				_navTree.Add(new List<Page> { page });
 				return;
 			}

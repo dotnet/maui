@@ -110,11 +110,7 @@ namespace Maui.Controls.Sample.Issues
 						Text = "Toggle Command Being Set",
 						Command = new Command(() =>
 						{
-							if(_refreshView.Command != null)
-								_refreshView.Command = null;
-							else
-								_refreshView.Command = _refreshCommand;
-						}),
+							if(_refreshView.Command != null) { _refreshView.Command = null; } else { _refreshView.Command = _refreshCommand; } }),
 						AutomationId = "ToggleCommandBeingSet"
 					},
 					_refreshView

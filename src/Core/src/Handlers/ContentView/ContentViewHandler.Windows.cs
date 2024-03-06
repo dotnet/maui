@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.Children.Clear();
 
 			if (handler.VirtualView.PresentedContent is IView view)
+			{
 				handler.PlatformView.Children.Add(view.ToPlatform(handler.MauiContext));
+			}
 		}
 
 		protected override ContentPanel CreatePlatformView()

@@ -688,9 +688,13 @@ namespace Microsoft.Maui.DeviceTests
 				var keyboardHeight = KeyboardAutoManagerScroll.FindKeyboardHeight();
 
 				if (cursorRect is CGRect rect)
+				{
 					Assert.True(rect.Y < keyboardHeight, "cursor position");
+				}
 				else
+				{
 					Assert.Fail("CursorRect should not be null");
+				}
 
 				uiTextField.ResignFirstResponder();
 				await uiTextField.WaitForKeyboardToHide();
@@ -715,9 +719,13 @@ namespace Microsoft.Maui.DeviceTests
 				var keyboardHeight = KeyboardAutoManagerScroll.FindKeyboardHeight();
 
 				if (cursorRect is CGRect rect)
+				{
 					Assert.True(rect.Y < keyboardHeight, "cursor position");
+				}
 				else
+				{
 					Assert.Fail("CursorRect should not be null");
+				}
 
 				nextUIText.ResignFirstResponder();
 				await nextUIText.WaitForKeyboardToHide();
@@ -820,7 +828,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = GetNativeEntry(entryHandler);
 
 			if (textField != null && textField.SelectedTextRange != null)
+			{
 				return (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, textField.SelectedTextRange.Start);
+			}
 
 			return -1;
 		}
@@ -830,7 +840,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = GetNativeEntry(entryHandler);
 
 			if (textField != null && textField.SelectedTextRange != null)
+			{
 				return (int)textField.GetOffsetFromPosition(textField.SelectedTextRange.Start, textField.SelectedTextRange.End);
+			}
 
 			return -1;
 		}

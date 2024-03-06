@@ -370,9 +370,13 @@ namespace Microsoft.Maui.DeviceTests
 
 				// The Flyout Footer doesn't automatically offset from the top safe area so we don't need to account for it
 				if (shell.FlyoutFooter != null)
+				{
 					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top)) - 30);
+				}
 				else
+				{
 					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top - GetSafeArea().Top)) - 30);
+				}
 
 				Assert.True(leftDiff < 0.2, $"{partTesting} Left Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}");
 
@@ -400,7 +404,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				action(shell);
 				if (shell.Items.Count == 0)
+				{
 					shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() } };
+				}
 			});
 
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>

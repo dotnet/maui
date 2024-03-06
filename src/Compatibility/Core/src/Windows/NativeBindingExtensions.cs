@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				NativePropertyListener nativePropertyListener = null;
 				if (bindingBase.Mode == BindingMode.TwoWay)
+				{
 					nativePropertyListener = new NativePropertyListener(view, propertyName);
+				}
 
 				PlatformBindingHelpers.SetBinding(view, propertyName, bindingBase, nativePropertyListener as INotifyPropertyChanged);
 				return;
@@ -26,7 +28,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			NativeEventWrapper eventE = null;
 			if (binding.Mode == BindingMode.TwoWay && !(view is INotifyPropertyChanged))
+			{
 				eventE = new NativeEventWrapper(view, propertyName, updateSourceEventName);
+			}
 
 			PlatformBindingHelpers.SetBinding(view, propertyName, binding, eventE);
 		}

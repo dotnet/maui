@@ -15,12 +15,16 @@ namespace Microsoft.Maui.Controls
 		public void AddRange(IEnumerable<T> range)
 		{
 			if (range == null)
+			{
 				throw new ArgumentNullException("range");
+			}
 
 			List<T> items = range.ToList();
 			int index = Items.Count;
 			foreach (T item in items)
+			{
 				Items.Add(item);
+			}
 
 			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, index));
 		}
@@ -28,10 +32,11 @@ namespace Microsoft.Maui.Controls
 		public void InsertRange(int index, IEnumerable<T> range)
 		{
 			if (index < 0 || index > Count)
+			{
 				throw new ArgumentOutOfRangeException("index");
-			if (range == null)
-				throw new ArgumentNullException("range");
 
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 			int originalIndex = index;
 
 			List<T> items = range.ToList();
@@ -86,6 +91,863 @@ namespace Microsoft.Maui.Controls
 			List<T> items = range.ToList();
 			foreach (T item in items)
 				Items.Remove(item);
+After:
+			}
+
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Insert(index++, item);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("oldIndex");
+			}
+
+			if (newIndex < 0 || newIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("newIndex");
+			}
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+			{
+				index -= items.Count - 1;
+			}
+
+			for (var i = 0; i < items.Count; i++)
+			{
+				Items.Insert(index + i, items[i]);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+			{
+				Items.RemoveAt(i);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Remove(item);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+				Items.Insert(index++, item);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+				throw new ArgumentOutOfRangeException("oldIndex");
+			if (newIndex < 0 || newIndex + count > Count)
+				throw new ArgumentOutOfRangeException("newIndex");
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+				index -= items.Count - 1;
+
+			for (var i = 0; i < items.Count; i++)
+				Items.Insert(index + i, items[i]);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+				throw new ArgumentOutOfRangeException("index");
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+				Items.RemoveAt(i);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+				throw new ArgumentNullException("range");
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+				Items.Remove(item);
+After:
+			}
+
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Insert(index++, item);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("oldIndex");
+			}
+
+			if (newIndex < 0 || newIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("newIndex");
+			}
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+			{
+				index -= items.Count - 1;
+			}
+
+			for (var i = 0; i < items.Count; i++)
+			{
+				Items.Insert(index + i, items[i]);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+			{
+				Items.RemoveAt(i);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Remove(item);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+				Items.Insert(index++, item);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+				throw new ArgumentOutOfRangeException("oldIndex");
+			if (newIndex < 0 || newIndex + count > Count)
+				throw new ArgumentOutOfRangeException("newIndex");
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+				index -= items.Count - 1;
+
+			for (var i = 0; i < items.Count; i++)
+				Items.Insert(index + i, items[i]);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+				throw new ArgumentOutOfRangeException("index");
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+				Items.RemoveAt(i);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+				throw new ArgumentNullException("range");
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+				Items.Remove(item);
+After:
+			}
+
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Insert(index++, item);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("oldIndex");
+			}
+
+			if (newIndex < 0 || newIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("newIndex");
+			}
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+			{
+				index -= items.Count - 1;
+			}
+
+			for (var i = 0; i < items.Count; i++)
+			{
+				Items.Insert(index + i, items[i]);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+			{
+				Items.RemoveAt(i);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Remove(item);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+				Items.Insert(index++, item);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+				throw new ArgumentOutOfRangeException("oldIndex");
+			if (newIndex < 0 || newIndex + count > Count)
+				throw new ArgumentOutOfRangeException("newIndex");
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+				index -= items.Count - 1;
+
+			for (var i = 0; i < items.Count; i++)
+				Items.Insert(index + i, items[i]);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+				throw new ArgumentOutOfRangeException("index");
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+				Items.RemoveAt(i);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+				throw new ArgumentNullException("range");
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+				Items.Remove(item);
+After:
+			}
+
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Insert(index++, item);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("oldIndex");
+			}
+
+			if (newIndex < 0 || newIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("newIndex");
+			}
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+			{
+				index -= items.Count - 1;
+			}
+
+			for (var i = 0; i < items.Count; i++)
+			{
+				Items.Insert(index + i, items[i]);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+			{
+				Items.RemoveAt(i);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Remove(item);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+				Items.Insert(index++, item);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+				throw new ArgumentOutOfRangeException("oldIndex");
+			if (newIndex < 0 || newIndex + count > Count)
+				throw new ArgumentOutOfRangeException("newIndex");
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+				index -= items.Count - 1;
+
+			for (var i = 0; i < items.Count; i++)
+				Items.Insert(index + i, items[i]);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+				throw new ArgumentOutOfRangeException("index");
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+				Items.RemoveAt(i);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+				throw new ArgumentNullException("range");
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+				Items.Remove(item);
+After:
+			}
+
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Insert(index++, item);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("oldIndex");
+			}
+
+			if (newIndex < 0 || newIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("newIndex");
+			}
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+			{
+				index -= items.Count - 1;
+			}
+
+			for (var i = 0; i < items.Count; i++)
+			{
+				Items.Insert(index + i, items[i]);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+			{
+				Items.RemoveAt(i);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Remove(item);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+				Items.Insert(index++, item);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+				throw new ArgumentOutOfRangeException("oldIndex");
+			if (newIndex < 0 || newIndex + count > Count)
+				throw new ArgumentOutOfRangeException("newIndex");
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+				index -= items.Count - 1;
+
+			for (var i = 0; i < items.Count; i++)
+				Items.Insert(index + i, items[i]);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+				throw new ArgumentOutOfRangeException("index");
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+				Items.RemoveAt(i);
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+				throw new ArgumentNullException("range");
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+				Items.Remove(item);
+After:
+			}
+
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Insert(index++, item);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("oldIndex");
+			}
+
+			if (newIndex < 0 || newIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("newIndex");
+			}
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+			{
+				index -= items.Count - 1;
+			}
+
+			for (var i = 0; i < items.Count; i++)
+			{
+				Items.Insert(index + i, items[i]);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+			{
+				Items.RemoveAt(i);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Remove(item);
+			}
+*/
+			}
+
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			int originalIndex = index;
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Insert(index++, item);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items, originalIndex));
+		}
+
+		public void Move(int oldIndex, int newIndex, int count)
+		{
+			if (oldIndex < 0 || oldIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("oldIndex");
+			}
+
+			if (newIndex < 0 || newIndex + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("newIndex");
+			}
+
+			var items = new List<T>(count);
+			for (var i = 0; i < count; i++)
+			{
+				T item = Items[oldIndex];
+				items.Add(item);
+				Items.RemoveAt(oldIndex);
+			}
+
+			int index = newIndex;
+			if (newIndex > oldIndex)
+			{
+				index -= items.Count - 1;
+			}
+
+			for (var i = 0; i < items.Count; i++)
+			{
+				Items.Insert(index + i, items[i]);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, items, newIndex, oldIndex));
+		}
+
+		public void RemoveAt(int index, int count)
+		{
+			if (index < 0 || index + count > Count)
+			{
+				throw new ArgumentOutOfRangeException("index");
+			}
+
+			T[] items = Items.Skip(index).Take(count).ToArray();
+			for (int i = index; i < count; i++)
+			{
+				Items.RemoveAt(i);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items, index));
+		}
+
+		public void RemoveRange(IEnumerable<T> range)
+		{
+			if (range == null)
+			{
+				throw new ArgumentNullException("range");
+			}
+
+			List<T> items = range.ToList();
+			foreach (T item in items)
+			{
+				Items.Remove(item);
+			}
 
 			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, items));
 		}
@@ -93,12 +955,16 @@ namespace Microsoft.Maui.Controls
 		public void ReplaceRange(int startIndex, IEnumerable<T> items)
 		{
 			if (items == null)
+			{
 				throw new ArgumentNullException("items");
+			}
 
 			T[] ritems = items.ToArray();
 
 			if (startIndex < 0 || startIndex + ritems.Length > Count)
+			{
 				throw new ArgumentOutOfRangeException("startIndex");
+			}
 
 			var oldItems = new T[ritems.Length];
 			for (var i = 0; i < ritems.Length; i++)

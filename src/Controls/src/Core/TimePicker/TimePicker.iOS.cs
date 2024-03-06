@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Controls
 		public static void MapUpdateMode(ITimePickerHandler handler, TimePicker timePicker)
 		{
 			if (handler is TimePickerHandler h)
+			{
 				h.UpdateImmediately = timePicker.OnThisPlatform().UpdateMode() == UpdateMode.Immediately;
+			}
 		}
 	}
 }

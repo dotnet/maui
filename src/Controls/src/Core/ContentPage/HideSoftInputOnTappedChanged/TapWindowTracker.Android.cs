@@ -69,7 +69,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (!_hasFocus || _platformView is null || this is null || e is null)
+			{
 				return;
+			}
 
 			_gestureDetector?.OnTouchEvent(e);
 		}
@@ -115,7 +117,9 @@ namespace Microsoft.Maui.Controls
 			{
 				var context = _platformView?.Context;
 				if (context is null || _platformView is null)
+				{
 					return false;
+				}
 
 				var location = _platformView.GetBoundingBox();
 
@@ -126,10 +130,14 @@ namespace Microsoft.Maui.Controls
 					);
 
 				if (location.Contains(point))
+				{
 					return true;
+				}
 
 				if (_platformView.IsSoftInputShowing())
+				{
 					_platformView.HideSoftInput();
+				}
 
 				return true;
 			}

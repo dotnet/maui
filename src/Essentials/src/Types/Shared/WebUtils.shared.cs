@@ -11,15 +11,21 @@ namespace Microsoft.Maui.ApplicationModel
 			var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
 
 			if (uri == null)
+			{
 				return parameters;
+			}
 
 			// Note: Uri.Query starts with a '?'
 			if (!string.IsNullOrEmpty(uri.Query))
+			{
 				UnpackParameters(uri.Query.AsSpan(1), parameters);
+			}
 
 			// Note: Uri.Fragment starts with a '#'
 			if (!string.IsNullOrEmpty(uri.Fragment))
+			{
 				UnpackParameters(uri.Fragment.AsSpan(1), parameters);
+			}
 
 			return parameters;
 		}
@@ -61,7 +67,12 @@ namespace Microsoft.Maui.ApplicationModel
 						var chars = new char[span.Length];
 
 						for (int i = 0; i < span.Length; i++)
+						{
 							chars[i] = span[i] == '+' ? ' ' : span[i];
+						}
+
+						value = new string(chars);
+						}
 
 						value = new string(chars);
 					}
@@ -81,7 +92,10 @@ namespace Microsoft.Maui.ApplicationModel
 		internal static Uri EscapeUri(Uri uri)
 		{
 			if (uri == null)
+			{
+			{
 				throw new ArgumentNullException(nameof(uri));
+			}
 
 			var idn = new global::System.Globalization.IdnMapping();
 			return new Uri(uri.Scheme + "://" + idn.GetAscii(uri.Authority) + uri.PathAndQuery + uri.Fragment);
@@ -90,12 +104,18 @@ namespace Microsoft.Maui.ApplicationModel
 		internal static bool CanHandleCallback(Uri expectedUrl, Uri callbackUrl)
 		{
 			if (!callbackUrl.Scheme.Equals(expectedUrl.Scheme, StringComparison.OrdinalIgnoreCase))
+			{
+			{
 				return false;
+			}
+			}
 
 			if (!string.IsNullOrEmpty(expectedUrl.Host))
 			{
 				if (!callbackUrl.Host.Equals(expectedUrl.Host, StringComparison.OrdinalIgnoreCase))
+				{
 					return false;
+				}
 			}
 
 			return true;

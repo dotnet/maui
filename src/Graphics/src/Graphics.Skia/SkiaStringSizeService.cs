@@ -7,7 +7,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		public SizeF GetStringSize(string value, IFont font, float fontSize)
 		{
 			if (string.IsNullOrEmpty(value))
+			{
 				return new SizeF();
+			}
 
 			var paint = new SKPaint
 			{
@@ -22,7 +24,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		public SizeF GetStringSize(string value, IFont font, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
 			if (string.IsNullOrEmpty(value))
+			{
 				return new SizeF();
+			}
 
 			var paint = new SKPaint
 			{

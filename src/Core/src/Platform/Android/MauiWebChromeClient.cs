@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Platform
 		public void UnregisterCallbacks()
 		{
 			if (_requestCodes == null || _requestCodes.Count == 0 || !_activityRef.TryGetTarget(out Activity _))
+			{
 				return;
+			}
 
 			foreach (int requestCode in _requestCodes)
 			{
@@ -43,12 +45,16 @@ namespace Microsoft.Maui.Platform
 		protected bool ChooseFile(IValueCallback filePathCallback, Intent intent, string title)
 		{
 			if (!_activityRef.TryGetTarget(out Activity activity))
+			{
 				return false;
+			}
 
 			Action<Result, Intent> callback = (resultCode, intentData) =>
 			{
 				if (filePathCallback == null)
+				{
 					return;
+				}
 
 				Object result = ParseResult(resultCode, intentData);
 				filePathCallback.OnReceiveValue(result);
@@ -68,7 +74,9 @@ namespace Microsoft.Maui.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				UnregisterCallbacks();
+			}
 
 			base.Dispose(disposing);
 		}
@@ -89,7 +97,9 @@ namespace Microsoft.Maui.Platform
 			var activity = (handler?.MauiContext?.Context?.GetActivity()) ?? ApplicationModel.Platform.CurrentActivity;
 
 			if (activity == null)
+			{
 				handler?.MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning($"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
+			}
 
 			_activityRef = new WeakReference<Activity>(activity);
 		}

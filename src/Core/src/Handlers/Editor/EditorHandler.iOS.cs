@@ -167,7 +167,9 @@ namespace Microsoft.Maui.Handlers
 				platformView.Ended -= OnEnded;
 				platformView.TextSetOrChanged -= OnTextPropertySet;
 				if (_set)
+				{
 					platformView.SelectionChanged -= OnSelectionChanged;
+				}
 
 				_set = false;
 			}
@@ -175,7 +177,10 @@ namespace Microsoft.Maui.Handlers
 			public void SetVirtualView(MauiTextView platformView)
 			{
 				if (!_set)
+				{
 					platformView.SelectionChanged += OnSelectionChanged;
+				}
+
 				_set = true;
 			}
 
@@ -187,10 +192,15 @@ namespace Microsoft.Maui.Handlers
 					var selectedTextLength = platformView.GetSelectedTextLength();
 
 					if (virtualView.CursorPosition != cursorPosition)
+					{
 						virtualView.CursorPosition = cursorPosition;
+					}
 
 					if (virtualView.SelectionLength != selectedTextLength)
+					{
+					{
 						virtualView.SelectionLength = selectedTextLength;
+					}
 				}
 			}
 
@@ -200,7 +210,10 @@ namespace Microsoft.Maui.Handlers
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is IEditor virtualView)
+				{
 					virtualView.IsFocused = true;
+				}
+				}
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)

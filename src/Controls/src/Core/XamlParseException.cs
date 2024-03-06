@@ -56,7 +56,13 @@ namespace Microsoft.Maui.Controls.Xaml
 		static string FormatMessage(string message, IXmlLineInfo xmlinfo)
 		{
 			if (xmlinfo == null || !xmlinfo.HasLineInfo())
+			{
+			{
 				return message;
+			}
+
+			}
+
 			return string.Format("Position {0}:{1}. {2}", xmlinfo.LineNumber, xmlinfo.LinePosition, message);
 		}
 

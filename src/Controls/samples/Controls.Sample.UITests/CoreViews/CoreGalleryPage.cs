@@ -97,7 +97,9 @@ namespace Maui.Controls.Sample
 			}));
 
 			if (SupportsTapGestureRecognizer)
+			{
 				Add(gestureRecognizerEventViewContainer);
+			}
 
 			Add(new LayeredViewContainer<T>(Test.VisualElement.InputTransparent, new T { InputTransparent = true }));
 			Add(new LayeredViewContainer<T>(Test.VisualElement.NotInputTransparent, new T { InputTransparent = false }));

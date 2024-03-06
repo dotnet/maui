@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var textColor = textStyle.TextColor;
 			if (textColor != null)
+			{
 				textField.TextColor = textColor.ToPlatform(ColorExtensions.LabelColor);
+			}
 		}
 
 		public static void UpdateIsPassword(this UITextField textField, IEntry entry)
@@ -31,7 +33,9 @@ namespace Microsoft.Maui.Platform
 				textField.BecomeFirstResponder();
 			}
 			else
+			{
 				textField.SecureTextEntry = entry.IsPassword;
+			}
 		}
 
 		public static void UpdateHorizontalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
@@ -47,24 +51,34 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsTextPredictionEnabled(this UITextField textField, IEntry entry)
 		{
 			if (entry.IsTextPredictionEnabled)
+			{
 				textField.AutocorrectionType = UITextAutocorrectionType.Yes;
+			}
 			else
+			{
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
+			}
 		}
 
 		public static void UpdateIsSpellCheckEnabled(this UITextField textField, IEntry entry)
 		{
 			if (entry.IsSpellCheckEnabled)
+			{
 				textField.SpellCheckingType = UITextSpellCheckingType.Yes;
+			}
 			else
+			{
 				textField.SpellCheckingType = UITextSpellCheckingType.No;
+			}
 		}
 
 		public static void UpdateMaxLength(this UITextField textField, IEntry entry)
 		{
 			var newText = textField.AttributedText.TrimToMaxLength(entry.MaxLength);
 			if (newText != null && textField.AttributedText != newText)
+			{
 				textField.AttributedText = newText;
+			}
 		}
 
 		public static void UpdatePlaceholder(this UITextField textField, IEntry entry, Color? defaultPlaceholderColor = null)
@@ -106,11 +120,15 @@ namespace Microsoft.Maui.Platform
 		{
 			var textAttr = textField.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
 			if (textAttr != null)
+			{
 				textField.AttributedText = textAttr;
+			}
 
 			textAttr = textField.AttributedPlaceholder?.WithCharacterSpacing(textStyle.CharacterSpacing);
 			if (textAttr != null)
+			{
 				textField.AttributedPlaceholder = textAttr;
+			}
 		}
 
 		public static void UpdateKeyboard(this UITextField textField, IEntry entry)
@@ -132,18 +150,28 @@ namespace Microsoft.Maui.Platform
 		{
 			var selectedTextRange = textField.SelectedTextRange;
 			if (selectedTextRange == null)
+			{
 				return;
+			}
+
 			if (textField.GetOffsetFromPosition(textField.BeginningOfDocument, selectedTextRange.Start) != entry.CursorPosition)
+			{
 				UpdateCursorSelection(textField, entry);
+			}
 		}
 
 		public static void UpdateSelectionLength(this UITextField textField, IEntry entry)
 		{
 			var selectedTextRange = textField.SelectedTextRange;
 			if (selectedTextRange == null)
+			{
 				return;
+			}
+
 			if (textField.GetOffsetFromPosition(selectedTextRange.Start, selectedTextRange.End) != entry.SelectionLength)
+			{
 				UpdateCursorSelection(textField, entry);
+			}
 		}
 
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
@@ -166,7 +194,9 @@ namespace Microsoft.Maui.Platform
 			startOffset = Math.Max(0, (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, start));
 
 			if (startOffset != cursorPosition)
+			{
 				entry.CursorPosition = startOffset;
+			}
 
 			return start;
 		}
@@ -181,7 +211,9 @@ namespace Microsoft.Maui.Platform
 
 			int newSelectionLength = Math.Max(0, endOffset - startOffset);
 			if (newSelectionLength != selectionLength)
+			{
 				entry.SelectionLength = newSelectionLength;
+			}
 
 			return end;
 		}
@@ -194,7 +226,9 @@ namespace Microsoft.Maui.Platform
 				textField.UpdateClearButtonColor(entry);
 			}
 			else
+			{
 				textField.ClearButtonMode = UITextFieldViewMode.Never;
+			}
 		}
 
 		internal static void UpdateClearButtonColor(this UITextField textField, IEntry entry)
@@ -226,7 +260,10 @@ namespace Microsoft.Maui.Platform
 			UIGraphics.BeginImageContextWithOptions(size, false, UIScreen.MainScreen.Scale);
 
 			if (UIGraphics.GetCurrentContext() == null)
+			{
+			{
 				return null;
+			}
 
 			var context = UIGraphics.GetCurrentContext();
 

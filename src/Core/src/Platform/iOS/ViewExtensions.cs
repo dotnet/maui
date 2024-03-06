@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsEnabled(this UIView platformView, IView view)
 		{
 			if (platformView is not UIControl uiControl)
+			{
 				return;
+			}
 
 			uiControl.Enabled = view.IsEnabled;
 		}
@@ -77,9 +79,13 @@ namespace Microsoft.Maui.Platform
 			if (paint.IsNullOrEmpty())
 			{
 				if (platformView is LayoutView)
+				{
 					platformView.BackgroundColor = null;
+				}
 				else
+				{
 					return;
+				}
 			}
 
 
@@ -88,9 +94,13 @@ namespace Microsoft.Maui.Platform
 				Color backgroundColor = solidPaint.Color;
 
 				if (backgroundColor == null)
+				{
 					platformView.BackgroundColor = ColorExtensions.BackgroundColor;
+				}
 				else
+				{
 					platformView.BackgroundColor = backgroundColor.ToPlatform();
+				}
 
 				return;
 			}
@@ -205,7 +215,10 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateClip(this UIView platformView, IView view)
 		{
 			if (platformView is WrapperView wrapper)
+			{
+			{
 				wrapper.Clip = view.Clip;
+			}
 		}
 
 		public static void UpdateShadow(this UIView platformView, IView view)
@@ -217,27 +230,39 @@ namespace Microsoft.Maui.Platform
 			if (clip == null)
 			{
 				if (shadow == null)
+				{
 					platformView.ClearShadow();
+				}
 				else
+				{
 					platformView.SetShadow(shadow);
+				}
 			}
 			else
 			{
 				if (platformView is WrapperView wrapperView)
+				{
 					wrapperView.Shadow = view.Shadow;
+				}
 			}
 		}
 		public static void UpdateBorder(this UIView platformView, IView view)
 		{
 			var border = (view as IBorder)?.Border;
 			if (platformView is WrapperView wrapperView)
+			{
 				wrapperView.Border = border;
+			}
 		}
 
 		internal static T? GetChildAt<T>(this UIView view, int index) where T : UIView
 		{
 			if (index < view.Subviews.Length)
+			{
+			{
 				return (T?)view.Subviews[index];
+			}
+			}
 
 			return null;
 		}
@@ -248,12 +273,16 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackgroundLayerFrame(this UIView view)
 		{
 			if (view == null || view.Frame.IsEmpty)
+			{
 				return;
+			}
 
 			var layer = view.Layer;
 
 			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
+			{
 				return;
+			}
 
 			foreach (var sublayer in layer.Sublayers)
 			{
@@ -319,7 +348,9 @@ namespace Microsoft.Maui.Platform
 		public static async Task UpdateBackgroundImageSourceAsync(this UIView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			if (provider == null)
+			{
 				return;
+			}
 
 			if (imageSource != null)
 			{
@@ -330,7 +361,10 @@ namespace Microsoft.Maui.Platform
 				var backgroundImage = result?.Value;
 
 				if (backgroundImage == null)
+				{
+				{
 					return;
+				}
 
 				platformView.BackgroundColor = UIColor.FromPatternImage(backgroundImage);
 			}
@@ -339,7 +373,11 @@ namespace Microsoft.Maui.Platform
 		public static int IndexOfSubview(this UIView platformView, UIView subview)
 		{
 			if (platformView.Subviews.Length == 0)
+			{
+			{
 				return -1;
+			}
+			}
 
 			return Array.IndexOf(platformView.Subviews, subview);
 		}
@@ -358,7 +396,11 @@ namespace Microsoft.Maui.Platform
 		{
 			var rootController = view.Window?.RootViewController;
 			if (rootController is UINavigationController nc)
+			{
+			{
 				return nc;
+			}
+			}
 
 			return rootController?.NavigationController;
 		}
@@ -419,7 +461,9 @@ namespace Microsoft.Maui.Platform
 		internal static Rect GetPlatformViewBounds(this UIView platformView)
 		{
 			if (platformView == null)
+			{
 				return new Rect();
+			}
 
 			var superview = platformView;
 			while (superview.Superview is not null)
@@ -441,7 +485,13 @@ namespace Microsoft.Maui.Platform
 		{
 			var platformView = view?.ToPlatform();
 			if (platformView == null)
+			{
+			{
 				return new Matrix4x4();
+			}
+
+			}
+
 			return platformView.Layer.GetViewTransform();
 		}
 
@@ -454,7 +504,11 @@ namespace Microsoft.Maui.Platform
 		internal static Point? GetLocationOnScreen(this IElement element)
 		{
 			if (element.Handler?.MauiContext == null)
+			{
+			{
 				return null;
+			}
+			}
 
 			return (element.ToPlatform())?.GetLocationOnScreen();
 		}
@@ -465,7 +519,32 @@ namespace Microsoft.Maui.Platform
 		internal static Graphics.Rect GetBoundingBox(this UIView? platformView)
 		{
 			if (platformView == null)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return new Rect();
+			var nvb = platformView.GetPlatformViewBounds();
+			var transform = platformView.GetViewTransform();
+			var radians = transform.ExtractAngleInRadians();
+			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);
+			CGAffineTransform.CGRectApplyAffineTransform(nvb, rotation);
+			return new Rect(nvb.X, nvb.Y, nvb.Width, nvb.Height);
+After:
+			{
+				return new Rect(nvb.X, nvb.Y, nvb.Width, nvb.Height);
+*/
+			{
+				return new Rect();
+			}
+
+			var nvb = platformView.GetPlatformViewBounds();
+			var transform = platformView.GetViewTransform();
+			var radians = transform.ExtractAngleInRadians();
+			var rotation = CoreGraphics.CGAffineTransform.MakeRotation((nfloat)radians);
+			CGAffineTransform.CGRectApplyAffineTransform(nvb, rotation);
+			return new Rect();
+			}
+
 			var nvb = platformView.GetPlatformViewBounds();
 			var transform = platformView.GetViewTransform();
 			var radians = transform.ExtractAngleInRadians();
@@ -497,7 +576,9 @@ namespace Microsoft.Maui.Platform
 			var platformFrame = new CGRect(0, 0, size.Width, size.Height);
 
 			if (view.Handler is IPlatformViewHandler viewHandler && viewHandler.PlatformView != null)
+			{
 				viewHandler.PlatformView.Frame = platformFrame;
+			}
 
 			view.Arrange(platformFrame.ToRectangle());
 			return size;
@@ -583,7 +664,11 @@ namespace Microsoft.Maui.Platform
 		internal static bool IsLoaded(this UIView uiView)
 		{
 			if (uiView == null)
+			{
+			{
 				return false;
+			}
+			}
 
 			return uiView.Window != null;
 		}
@@ -728,16 +813,24 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateLayerBorder(this CoreAnimation.CALayer layer, IButtonStroke? stroke)
 		{
 			if (stroke == null)
+			{
 				return;
+			}
 
 			if (stroke.StrokeColor != null)
+			{
 				layer.BorderColor = stroke.StrokeColor.ToCGColor();
+			}
 
 			if (stroke.StrokeThickness >= 0)
+			{
 				layer.BorderWidth = (float)stroke.StrokeThickness;
+			}
 
 			if (stroke.CornerRadius >= 0)
+			{
 				layer.CornerRadius = stroke.CornerRadius;
+			}
 		}
 
 		internal static T? FindResponder<T>(this UIView view) where T : UIResponder
@@ -748,7 +841,9 @@ namespace Microsoft.Maui.Platform
 				nextResponder = nextResponder.NextResponder;
 
 				if (nextResponder is T responder)
+				{
 					return responder;
+				}
 			}
 			return null;
 		}
@@ -761,7 +856,9 @@ namespace Microsoft.Maui.Platform
 				nextResponder = nextResponder.NextResponder;
 
 				if (nextResponder is T responder && responder != controller)
+				{
 					return responder;
+				}
 			}
 			return null;
 		}
@@ -776,7 +873,9 @@ namespace Microsoft.Maui.Platform
 				tempController = tempController.FindResponder<T>();
 
 				if (tempController is not null)
+				{
 					bestController = tempController;
+				}
 			}
 
 			return bestController;
@@ -791,7 +890,9 @@ namespace Microsoft.Maui.Platform
 				var siblings = view.Superview?.Subviews;
 
 				if (siblings is null)
+				{
 					break;
+				}
 
 				// TableView and ListView cells may not be in order so handle separately
 				if (view.FindResponder<UITableView>() is UITableView tableView)
@@ -799,11 +900,15 @@ namespace Microsoft.Maui.Platform
 					nextView = view.FindNextInTableView(tableView, isValidType);
 
 					if (nextView is null)
+					{
 						view = tableView;
+					}
 				}
 
 				else
+				{
 					nextView = view.FindNextView(siblings.IndexOf(view) + 1, isValidType);
+				}
 
 				view = view.Superview;
 			}
@@ -820,7 +925,11 @@ namespace Microsoft.Maui.Platform
 			var siblings = view is UITableView table ? table.VisibleCells : view?.Superview?.Subviews;
 
 			if (siblings is null)
+			{
+			{
 				return null;
+			}
+			}
 
 			for (int i = index; i < siblings.Length; i++)
 			{
@@ -830,11 +939,15 @@ namespace Microsoft.Maui.Platform
 				{
 					var childVal = sibling.Subviews[0].FindNextView(0, isValidType);
 					if (childVal is not null)
+					{
 						return childVal;
+					}
 				}
 
 				if (isValidType(sibling))
+				{
 					return sibling;
+				}
 			}
 
 			return null;
@@ -860,7 +973,9 @@ namespace Microsoft.Maui.Platform
 			for (int i = 0; i < cells.Length; i++)
 			{
 				if (cells[i] == viewCell)
+				{
 					return i;
+				}
 			}
 			return -1;
 		}
@@ -868,10 +983,13 @@ namespace Microsoft.Maui.Platform
 		internal static void ChangeFocusedView(this UIView view, UIView? newView)
 		{
 			if (newView is null)
+			{
 				view.ResignFirstResponder();
-
+			}
 			else
+			{
 				newView.BecomeFirstResponder();
+			}
 		}
 
 		internal static UIView? GetContainerView(this UIView? startingPoint)
@@ -879,12 +997,34 @@ namespace Microsoft.Maui.Platform
 			var rootView = startingPoint?.FindResponder<ContainerViewController>()?.View;
 
 			if (rootView is not null)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return rootView;
+After:
+			{
+				return rootView;
+			}
+*/
+			{
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return firstViewController.ViewIfLoaded.FindDescendantView<ContentView>();
+After:
+			{
+				return firstViewController.ViewIfLoaded.FindDescendantView<ContentView>();
+			}
+*/
+				return rootView;
+			}
 
 			var firstViewController = startingPoint?.FindTopController<UIViewController>();
 
 			if (firstViewController?.ViewIfLoaded is not null)
+			{
 				return firstViewController.ViewIfLoaded.FindDescendantView<ContentView>();
+			}
 
 			return null;
 		}
@@ -892,16 +1032,49 @@ namespace Microsoft.Maui.Platform
 		internal static UIView? FindFirstResponder(this UIView? superview)
 		{
 			if (superview is null)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return null;
+After:
+			{
+				return null;
+			}
+*/
+			{
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return superview;
+After:
+			{
+				return superview;
+			}
+*/
+				return 
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+					return subviewFirstResponder;
+After:
+				{
+					return subviewFirstResponder;
+				}
+*/
+null;
+			}
 
 			if (superview.IsFirstResponder)
+			{
 				return superview;
+			}
 
 			foreach (var subview in superview.Subviews)
 			{
 				var subviewFirstResponder = subview.FindFirstResponder();
 				if (subviewFirstResponder is not null)
+				{
 					return subviewFirstResponder;
+				}
 			}
 
 			return null;

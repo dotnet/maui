@@ -53,20 +53,14 @@ namespace Microsoft.Maui.Controls.Internals
 		internal TemplatedItemsList(TView itemsView, BindableProperty itemSourceProperty, BindableProperty itemTemplateProperty)
 		{
 			if (itemsView == null)
+			{
 				throw new ArgumentNullException("itemsView");
+			}
+
 			if (itemSourceProperty == null)
-				throw new ArgumentNullException("itemSourceProperty");
-			if (itemTemplateProperty == null)
-				throw new ArgumentNullException("itemTemplateProperty");
 
-			_itemsView = itemsView;
-			_itemsView.PropertyChanged += BindableOnPropertyChanged;
-
-			_itemSourceProperty = itemSourceProperty;
-			_itemTemplateProperty = itemTemplateProperty;
-
-			IEnumerable source = GetItemsViewSource();
-			if (source != null)
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
 			else
 				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
@@ -195,18 +189,1121 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		internal IListProxy ListProxy
-		{
-			get { return (IListProxy)GetValue(ListProxyPropertyKey.BindableProperty); }
-			private set { SetValue(ListProxyPropertyKey, value); }
+After:
+			{
+				throw new ArgumentNullException("itemSourceProperty");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+
+			_itemSourceProperty = itemSourceProperty;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			IEnumerable source = GetItemsViewSource();
+			if (source != null)
+			{
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
 		}
 
-		IListProxy ITemplatedItemsList<TItem>.ListProxy
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
 		{
-			get { return ListProxy; }
+			if (itemsView == null)
+			{
+				throw new ArgumentNullException("itemsView");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
 		}
 
-		DataTemplate ItemTemplate
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
 		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			else
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+				throw new ArgumentNullException("itemsView");
+			if (itemTemplateProperty == null)
+				throw new ArgumentNullException("itemTemplateProperty");
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+		{
+			get { return _groupDisplayBinding; }
+			set
+			{
+				_groupDisplayBinding = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public DataTemplate GroupHeaderTemplate
+		{
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+					return;
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+		{
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+		{
+			get { return _shortNames; }
+		}
+
+		internal ListViewCachingStrategy CachingStrategy
+		{
+			get
+			{
+				var listView = _itemsView as ListView;
+				if (listView == null)
+					return ListViewCachingStrategy.RetainElement;
+
+				return listView.CachingStrategy;
+			}
+		}
+
+		internal IListProxy ListProxy
+After:
+			{
+				throw new ArgumentNullException("itemSourceProperty");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+
+			_itemSourceProperty = itemSourceProperty;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			IEnumerable source = GetItemsViewSource();
+			if (source != null)
+			{
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+			{
+				throw new ArgumentNullException("itemsView");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			else
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+				throw new ArgumentNullException("itemsView");
+			if (itemTemplateProperty == null)
+				throw new ArgumentNullException("itemTemplateProperty");
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+		{
+			get { return _groupDisplayBinding; }
+			set
+			{
+				_groupDisplayBinding = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public DataTemplate GroupHeaderTemplate
+		{
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+					return;
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+		{
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+		{
+			get { return _shortNames; }
+		}
+
+		internal ListViewCachingStrategy CachingStrategy
+		{
+			get
+			{
+				var listView = _itemsView as ListView;
+				if (listView == null)
+					return ListViewCachingStrategy.RetainElement;
+
+				return listView.CachingStrategy;
+			}
+		}
+
+		internal IListProxy ListProxy
+After:
+			{
+				throw new ArgumentNullException("itemSourceProperty");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+
+			_itemSourceProperty = itemSourceProperty;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			IEnumerable source = GetItemsViewSource();
+			if (source != null)
+			{
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+			{
+				throw new ArgumentNullException("itemsView");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			else
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+				throw new ArgumentNullException("itemsView");
+			if (itemTemplateProperty == null)
+				throw new ArgumentNullException("itemTemplateProperty");
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+		{
+			get { return _groupDisplayBinding; }
+			set
+			{
+				_groupDisplayBinding = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public DataTemplate GroupHeaderTemplate
+		{
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+					return;
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+		{
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+		{
+			get { return _shortNames; }
+		}
+
+		internal ListViewCachingStrategy CachingStrategy
+		{
+			get
+			{
+				var listView = _itemsView as ListView;
+				if (listView == null)
+					return ListViewCachingStrategy.RetainElement;
+
+				return listView.CachingStrategy;
+			}
+		}
+
+		internal IListProxy ListProxy
+After:
+			{
+				throw new ArgumentNullException("itemSourceProperty");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+
+			_itemSourceProperty = itemSourceProperty;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			IEnumerable source = GetItemsViewSource();
+			if (source != null)
+			{
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+			{
+				throw new ArgumentNullException("itemsView");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			else
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+				throw new ArgumentNullException("itemsView");
+			if (itemTemplateProperty == null)
+				throw new ArgumentNullException("itemTemplateProperty");
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+		{
+			get { return _groupDisplayBinding; }
+			set
+			{
+				_groupDisplayBinding = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public DataTemplate GroupHeaderTemplate
+		{
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+					return;
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+		{
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+		{
+			get { return _shortNames; }
+		}
+
+		internal ListViewCachingStrategy CachingStrategy
+		{
+			get
+			{
+				var listView = _itemsView as ListView;
+				if (listView == null)
+					return ListViewCachingStrategy.RetainElement;
+
+				return listView.CachingStrategy;
+			}
+		}
+
+		internal IListProxy ListProxy
+After:
+			{
+				throw new ArgumentNullException("itemSourceProperty");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+
+			_itemSourceProperty = itemSourceProperty;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			IEnumerable source = GetItemsViewSource();
+			if (source != null)
+			{
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+			{
+				throw new ArgumentNullException("itemsView");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			else
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+				throw new ArgumentNullException("itemsView");
+			if (itemTemplateProperty == null)
+				throw new ArgumentNullException("itemTemplateProperty");
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+		{
+			get { return _groupDisplayBinding; }
+			set
+			{
+				_groupDisplayBinding = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public DataTemplate GroupHeaderTemplate
+		{
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+					return;
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+		{
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+		{
+			get { return _shortNames; }
+		}
+
+		internal ListViewCachingStrategy CachingStrategy
+		{
+			get
+			{
+				var listView = _itemsView as ListView;
+				if (listView == null)
+					return ListViewCachingStrategy.RetainElement;
+
+				return listView.CachingStrategy;
+			}
+		}
+
+		internal IListProxy ListProxy
+After:
+			{
+				throw new ArgumentNullException("itemSourceProperty");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+
+			_itemSourceProperty = itemSourceProperty;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			IEnumerable source = GetItemsViewSource();
+			if (source != null)
+			{
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+			{
+				throw new ArgumentNullException("itemsView");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+*/
+			{
+				throw new ArgumentNullException("itemSourceProperty");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+
+			_itemSourceProperty = itemSourceProperty;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			IEnumerable source = GetItemsViewSource();
+			if (source != null)
+			{
+				ListProxy = new ListProxy(source, dispatcher: _itemsView.Dispatcher);
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
+		{
+			if (itemsView == null)
+			{
+				throw new ArgumentNullException("itemsView");
+			}
+
+			if (itemTemplateProperty == null)
+			{
+				throw new ArgumentNullException("itemTemplateProperty");
+			}
+
+			Parent = parent;
+
+			_itemsView = itemsView;
+			_itemsView.PropertyChanged += BindableOnPropertyChanged;
+			_itemTemplateProperty = itemTemplateProperty;
+
+			if (itemSource != null)
+			{
+				ListProxy = new ListProxy(itemSource, windowSize, _itemsView.Dispatcher);
+				ListProxy.CollectionChanged += OnProxyCollectionChanged;
+			}
+			else
+			{
+				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		public BindingBase GroupDisplayBinding
+		{
+			get { return _groupDisplayBinding; }
+			set
+			{
+				_groupDisplayBinding = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public DataTemplate GroupHeaderTemplate
+		{
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 			get { return (DataTemplate)_itemsView.GetValue(_itemTemplateProperty); }
 		}
 
@@ -514,7 +1611,2020 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public event NotifyCollectionChangedEventHandler GroupedCollectionChanged;
 		event NotifyCollectionChangedEventHandler ITemplatedItemsList<TItem>.GroupedCollectionChanged
+After:
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+				{
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+				}
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+				{
+					return;
+				}
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
 		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+			get { return (DataTemplate)_itemsView.GetValue(_itemTemplateProperty); }
+		}
+
+		bool ProgressiveLoading
+		{
+			get { return (ProgressiveLoadingProperty != null) && (bool)_itemsView.GetValue(ProgressiveLoadingProperty); }
+		}
+
+		void ICollection.CopyTo(Array array, int arrayIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		bool ICollection.IsSynchronized
+		{
+			get { return false; }
+		}
+
+		object ICollection.SyncRoot
+		{
+			get { return this; }
+		}
+
+		public void Dispose()
+		{
+			if (_disposed)
+				return;
+
+			_itemsView.PropertyChanged -= BindableOnPropertyChanged;
+
+			TItem header = HeaderContent;
+			if (header != null)
+				UnhookItem(header);
+
+			for (var i = 0; i < _templatedObjects.Count; i++)
+			{
+				TItem item = _templatedObjects[i];
+				if (item != null)
+					UnhookItem(item);
+			}
+
+			_disposed = true;
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			if (IsGroupingEnabled)
+				return _groupedItems.Values.GetEnumerator();
+
+			return GetEnumerator();
+		}
+
+		public IEnumerator<TItem> GetEnumerator()
+		{
+			var i = 0;
+			foreach (object item in ListProxy)
+				yield return GetOrCreateContent(i++, item);
+		}
+
+		int IList.Add(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.Contains(object item)
+		{
+			throw new NotImplementedException();
+		}
+
+		int IList.IndexOf(object item)
+		{
+			if (IsGroupingEnabled)
+			{
+				var til = item as TemplatedItemsList<TView, TItem>;
+				if (til != null)
+					return _groupedItems.Values.IndexOf(til);
+			}
+
+			return IndexOf((TItem)item);
+		}
+
+		void IList.Insert(int index, object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.IsFixedSize
+		{
+			get { return false; }
+		}
+
+		bool IList.IsReadOnly
+		{
+			get { return true; }
+		}
+
+		object IList.this[int index]
+		{
+			get
+			{
+				if (IsGroupingEnabled)
+					return GetGroup(index);
+
+				return this[index];
+			}
+			set { throw new NotSupportedException(); }
+		}
+
+		void IList.Remove(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.RemoveAt(int index)
+		{
+			throw new NotSupportedException();
+		}
+
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+		public int Count
+		{
+			get { return ListProxy.Count; }
+		}
+
+		public TItem this[int index]
+		{
+			get { return GetOrCreateContent(index, ListProxy[index]); }
+		}
+
+		public int GetDescendantCount()
+		{
+			if (!IsGroupingEnabled)
+				return Count;
+
+			if (_groupedItems == null)
+				return 0;
+
+			int count = Count;
+			foreach (TemplatedItemsList<TView, TItem> group in _groupedItems.Values)
+				count += group.GetDescendantCount();
+
+			return count;
+		}
+
+		public int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group)
+		{
+			if (group == null)
+				throw new ArgumentNullException("group");
+
+			int groupIndex = _groupedItems.Values.IndexOf(group);
+
+			var index = 0;
+			for (var i = 0; i < groupIndex; i++)
+				index += _groupedItems[i].GetDescendantCount() + 1;
+
+			return index;
+		}
+
+		public int GetGlobalIndexOfGroup(object item)
+		{
+			var count = 0;
+			if (IsGroupingEnabled && _groupedItems != null)
+			{
+				foreach (object group in _groupedItems.Keys)
+				{
+					if (group == item)
+						return count;
+					count++;
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object item)
+		{
+			if (!IsGroupingEnabled)
+				return ListProxy.IndexOf(item);
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					count++;
+
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+						return count + index;
+
+					count += children.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+				return ListProxy.IndexOf(item);
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (KeyValuePair<object, TemplatedItemsList<TView, TItem>> kvp in _groupedItems)
+				{
+					count++;
+
+					if (ReferenceEquals(group, kvp.Key))
+					{
+						int index = kvp.Value.GetGlobalIndexOfItem(item);
+						if (index != -1)
+							return count + index;
+					}
+
+					count += kvp.Value.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object item)
+		{
+			if (item == null)
+				return new Tuple<int, int>(-1, -1);
+			if (!IsGroupingEnabled)
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+
+			var group = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+						return new Tuple<int, int>(group, index);
+
+					group++;
+				}
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+			if (_groupedItems == null)
+				return new Tuple<int, int>(-1, -1);
+
+			var groupIndex = 0;
+			foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+			{
+				if (ReferenceEquals(children.BindingContext, group) || group == null)
+				{
+					for (var i = 0; i < children.Count; i++)
+					{
+						if (ReferenceEquals(children[i].BindingContext, item))
+							return new Tuple<int, int>(groupIndex, i);
+					}
+
+					if (group != null)
+						return new Tuple<int, int>(groupIndex, -1);
+				}
+
+				groupIndex++;
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public int GetGroupIndexFromGlobal(int globalIndex, out int leftOver)
+		{
+			leftOver = 0;
+
+			var index = 0;
+			for (var i = 0; i < _groupedItems.Count; i++)
+			{
+				if (index == globalIndex)
+					return i;
+
+				TemplatedItemsList<TView, TItem> group = _groupedItems[i];
+				int count = group.GetDescendantCount();
+
+				if (index + count >= globalIndex)
+				{
+					leftOver = globalIndex - index;
+					return i;
+				}
+
+				index += count + 1;
+			}
+
+			return -1;
+		}
+
+		public event NotifyCollectionChangedEventHandler GroupedCollectionChanged;
+		event NotifyCollectionChangedEventHandler ITemplatedItemsList<TItem>.GroupedCollectionChanged
+After:
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+				{
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+				}
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+				{
+					return;
+				}
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			get { return (DataTemplate)_itemsView.GetValue(_itemTemplateProperty); }
+		}
+
+		bool ProgressiveLoading
+		{
+			get { return (ProgressiveLoadingProperty != null) && (bool)_itemsView.GetValue(ProgressiveLoadingProperty); }
+		}
+
+		void ICollection.CopyTo(Array array, int arrayIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		bool ICollection.IsSynchronized
+		{
+			get { return false; }
+		}
+
+		object ICollection.SyncRoot
+		{
+			get { return this; }
+		}
+
+		public void Dispose()
+		{
+			if (_disposed)
+				return;
+
+			_itemsView.PropertyChanged -= BindableOnPropertyChanged;
+
+			TItem header = HeaderContent;
+			if (header != null)
+				UnhookItem(header);
+
+			for (var i = 0; i < _templatedObjects.Count; i++)
+			{
+				TItem item = _templatedObjects[i];
+				if (item != null)
+					UnhookItem(item);
+			}
+
+			_disposed = true;
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			if (IsGroupingEnabled)
+				return _groupedItems.Values.GetEnumerator();
+
+			return GetEnumerator();
+		}
+
+		public IEnumerator<TItem> GetEnumerator()
+		{
+			var i = 0;
+			foreach (object item in ListProxy)
+				yield return GetOrCreateContent(i++, item);
+		}
+
+		int IList.Add(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.Contains(object item)
+		{
+			throw new NotImplementedException();
+		}
+
+		int IList.IndexOf(object item)
+		{
+			if (IsGroupingEnabled)
+			{
+				var til = item as TemplatedItemsList<TView, TItem>;
+				if (til != null)
+					return _groupedItems.Values.IndexOf(til);
+			}
+
+			return IndexOf((TItem)item);
+		}
+
+		void IList.Insert(int index, object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.IsFixedSize
+		{
+			get { return false; }
+		}
+
+		bool IList.IsReadOnly
+		{
+			get { return true; }
+		}
+
+		object IList.this[int index]
+		{
+			get
+			{
+				if (IsGroupingEnabled)
+					return GetGroup(index);
+
+				return this[index];
+			}
+			set { throw new NotSupportedException(); }
+		}
+
+		void IList.Remove(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.RemoveAt(int index)
+		{
+			throw new NotSupportedException();
+		}
+
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+		public int Count
+		{
+			get { return ListProxy.Count; }
+		}
+
+		public TItem this[int index]
+		{
+			get { return GetOrCreateContent(index, ListProxy[index]); }
+		}
+
+		public int GetDescendantCount()
+		{
+			if (!IsGroupingEnabled)
+				return Count;
+
+			if (_groupedItems == null)
+				return 0;
+
+			int count = Count;
+			foreach (TemplatedItemsList<TView, TItem> group in _groupedItems.Values)
+				count += group.GetDescendantCount();
+
+			return count;
+		}
+
+		public int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group)
+		{
+			if (group == null)
+				throw new ArgumentNullException("group");
+
+			int groupIndex = _groupedItems.Values.IndexOf(group);
+
+			var index = 0;
+			for (var i = 0; i < groupIndex; i++)
+				index += _groupedItems[i].GetDescendantCount() + 1;
+
+			return index;
+		}
+
+		public int GetGlobalIndexOfGroup(object item)
+		{
+			var count = 0;
+			if (IsGroupingEnabled && _groupedItems != null)
+			{
+				foreach (object group in _groupedItems.Keys)
+				{
+					if (group == item)
+						return count;
+					count++;
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object item)
+		{
+			if (!IsGroupingEnabled)
+				return ListProxy.IndexOf(item);
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					count++;
+
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+						return count + index;
+
+					count += children.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+				return ListProxy.IndexOf(item);
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (KeyValuePair<object, TemplatedItemsList<TView, TItem>> kvp in _groupedItems)
+				{
+					count++;
+
+					if (ReferenceEquals(group, kvp.Key))
+					{
+						int index = kvp.Value.GetGlobalIndexOfItem(item);
+						if (index != -1)
+							return count + index;
+					}
+
+					count += kvp.Value.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object item)
+		{
+			if (item == null)
+				return new Tuple<int, int>(-1, -1);
+			if (!IsGroupingEnabled)
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+
+			var group = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+						return new Tuple<int, int>(group, index);
+
+					group++;
+				}
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+			if (_groupedItems == null)
+				return new Tuple<int, int>(-1, -1);
+
+			var groupIndex = 0;
+			foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+			{
+				if (ReferenceEquals(children.BindingContext, group) || group == null)
+				{
+					for (var i = 0; i < children.Count; i++)
+					{
+						if (ReferenceEquals(children[i].BindingContext, item))
+							return new Tuple<int, int>(groupIndex, i);
+					}
+
+					if (group != null)
+						return new Tuple<int, int>(groupIndex, -1);
+				}
+
+				groupIndex++;
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public int GetGroupIndexFromGlobal(int globalIndex, out int leftOver)
+		{
+			leftOver = 0;
+
+			var index = 0;
+			for (var i = 0; i < _groupedItems.Count; i++)
+			{
+				if (index == globalIndex)
+					return i;
+
+				TemplatedItemsList<TView, TItem> group = _groupedItems[i];
+				int count = group.GetDescendantCount();
+
+				if (index + count >= globalIndex)
+				{
+					leftOver = globalIndex - index;
+					return i;
+				}
+
+				index += count + 1;
+			}
+
+			return -1;
+		}
+
+		public event NotifyCollectionChangedEventHandler GroupedCollectionChanged;
+		event NotifyCollectionChangedEventHandler ITemplatedItemsList<TItem>.GroupedCollectionChanged
+After:
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+				{
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+				}
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+				{
+					return;
+				}
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			get { return (DataTemplate)_itemsView.GetValue(_itemTemplateProperty); }
+		}
+
+		bool ProgressiveLoading
+		{
+			get { return (ProgressiveLoadingProperty != null) && (bool)_itemsView.GetValue(ProgressiveLoadingProperty); }
+		}
+
+		void ICollection.CopyTo(Array array, int arrayIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		bool ICollection.IsSynchronized
+		{
+			get { return false; }
+		}
+
+		object ICollection.SyncRoot
+		{
+			get { return this; }
+		}
+
+		public void Dispose()
+		{
+			if (_disposed)
+				return;
+
+			_itemsView.PropertyChanged -= BindableOnPropertyChanged;
+
+			TItem header = HeaderContent;
+			if (header != null)
+				UnhookItem(header);
+
+			for (var i = 0; i < _templatedObjects.Count; i++)
+			{
+				TItem item = _templatedObjects[i];
+				if (item != null)
+					UnhookItem(item);
+			}
+
+			_disposed = true;
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			if (IsGroupingEnabled)
+				return _groupedItems.Values.GetEnumerator();
+
+			return GetEnumerator();
+		}
+
+		public IEnumerator<TItem> GetEnumerator()
+		{
+			var i = 0;
+			foreach (object item in ListProxy)
+				yield return GetOrCreateContent(i++, item);
+		}
+
+		int IList.Add(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.Contains(object item)
+		{
+			throw new NotImplementedException();
+		}
+
+		int IList.IndexOf(object item)
+		{
+			if (IsGroupingEnabled)
+			{
+				var til = item as TemplatedItemsList<TView, TItem>;
+				if (til != null)
+					return _groupedItems.Values.IndexOf(til);
+			}
+
+			return IndexOf((TItem)item);
+		}
+
+		void IList.Insert(int index, object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.IsFixedSize
+		{
+			get { return false; }
+		}
+
+		bool IList.IsReadOnly
+		{
+			get { return true; }
+		}
+
+		object IList.this[int index]
+		{
+			get
+			{
+				if (IsGroupingEnabled)
+					return GetGroup(index);
+
+				return this[index];
+			}
+			set { throw new NotSupportedException(); }
+		}
+
+		void IList.Remove(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.RemoveAt(int index)
+		{
+			throw new NotSupportedException();
+		}
+
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+		public int Count
+		{
+			get { return ListProxy.Count; }
+		}
+
+		public TItem this[int index]
+		{
+			get { return GetOrCreateContent(index, ListProxy[index]); }
+		}
+
+		public int GetDescendantCount()
+		{
+			if (!IsGroupingEnabled)
+				return Count;
+
+			if (_groupedItems == null)
+				return 0;
+
+			int count = Count;
+			foreach (TemplatedItemsList<TView, TItem> group in _groupedItems.Values)
+				count += group.GetDescendantCount();
+
+			return count;
+		}
+
+		public int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group)
+		{
+			if (group == null)
+				throw new ArgumentNullException("group");
+
+			int groupIndex = _groupedItems.Values.IndexOf(group);
+
+			var index = 0;
+			for (var i = 0; i < groupIndex; i++)
+				index += _groupedItems[i].GetDescendantCount() + 1;
+
+			return index;
+		}
+
+		public int GetGlobalIndexOfGroup(object item)
+		{
+			var count = 0;
+			if (IsGroupingEnabled && _groupedItems != null)
+			{
+				foreach (object group in _groupedItems.Keys)
+				{
+					if (group == item)
+						return count;
+					count++;
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object item)
+		{
+			if (!IsGroupingEnabled)
+				return ListProxy.IndexOf(item);
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					count++;
+
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+						return count + index;
+
+					count += children.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+				return ListProxy.IndexOf(item);
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (KeyValuePair<object, TemplatedItemsList<TView, TItem>> kvp in _groupedItems)
+				{
+					count++;
+
+					if (ReferenceEquals(group, kvp.Key))
+					{
+						int index = kvp.Value.GetGlobalIndexOfItem(item);
+						if (index != -1)
+							return count + index;
+					}
+
+					count += kvp.Value.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object item)
+		{
+			if (item == null)
+				return new Tuple<int, int>(-1, -1);
+			if (!IsGroupingEnabled)
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+
+			var group = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+						return new Tuple<int, int>(group, index);
+
+					group++;
+				}
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+			if (_groupedItems == null)
+				return new Tuple<int, int>(-1, -1);
+
+			var groupIndex = 0;
+			foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+			{
+				if (ReferenceEquals(children.BindingContext, group) || group == null)
+				{
+					for (var i = 0; i < children.Count; i++)
+					{
+						if (ReferenceEquals(children[i].BindingContext, item))
+							return new Tuple<int, int>(groupIndex, i);
+					}
+
+					if (group != null)
+						return new Tuple<int, int>(groupIndex, -1);
+				}
+
+				groupIndex++;
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public int GetGroupIndexFromGlobal(int globalIndex, out int leftOver)
+		{
+			leftOver = 0;
+
+			var index = 0;
+			for (var i = 0; i < _groupedItems.Count; i++)
+			{
+				if (index == globalIndex)
+					return i;
+
+				TemplatedItemsList<TView, TItem> group = _groupedItems[i];
+				int count = group.GetDescendantCount();
+
+				if (index + count >= globalIndex)
+				{
+					leftOver = globalIndex - index;
+					return i;
+				}
+
+				index += count + 1;
+			}
+
+			return -1;
+		}
+
+		public event NotifyCollectionChangedEventHandler GroupedCollectionChanged;
+		event NotifyCollectionChangedEventHandler ITemplatedItemsList<TItem>.GroupedCollectionChanged
+After:
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+				{
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+				}
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+				{
+					return;
+				}
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+			get { return (DataTemplate)_itemsView.GetValue(_itemTemplateProperty); }
+		}
+
+		bool ProgressiveLoading
+		{
+			get { return (ProgressiveLoadingProperty != null) && (bool)_itemsView.GetValue(ProgressiveLoadingProperty); }
+		}
+
+		void ICollection.CopyTo(Array array, int arrayIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		bool ICollection.IsSynchronized
+		{
+			get { return false; }
+		}
+
+		object ICollection.SyncRoot
+		{
+			get { return this; }
+		}
+
+		public void Dispose()
+		{
+			if (_disposed)
+				return;
+
+			_itemsView.PropertyChanged -= BindableOnPropertyChanged;
+
+			TItem header = HeaderContent;
+			if (header != null)
+				UnhookItem(header);
+
+			for (var i = 0; i < _templatedObjects.Count; i++)
+			{
+				TItem item = _templatedObjects[i];
+				if (item != null)
+					UnhookItem(item);
+			}
+
+			_disposed = true;
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			if (IsGroupingEnabled)
+				return _groupedItems.Values.GetEnumerator();
+
+			return GetEnumerator();
+		}
+
+		public IEnumerator<TItem> GetEnumerator()
+		{
+			var i = 0;
+			foreach (object item in ListProxy)
+				yield return GetOrCreateContent(i++, item);
+		}
+
+		int IList.Add(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.Contains(object item)
+		{
+			throw new NotImplementedException();
+		}
+
+		int IList.IndexOf(object item)
+		{
+			if (IsGroupingEnabled)
+			{
+				var til = item as TemplatedItemsList<TView, TItem>;
+				if (til != null)
+					return _groupedItems.Values.IndexOf(til);
+			}
+
+			return IndexOf((TItem)item);
+		}
+
+		void IList.Insert(int index, object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.IsFixedSize
+		{
+			get { return false; }
+		}
+
+		bool IList.IsReadOnly
+		{
+			get { return true; }
+		}
+
+		object IList.this[int index]
+		{
+			get
+			{
+				if (IsGroupingEnabled)
+					return GetGroup(index);
+
+				return this[index];
+			}
+			set { throw new NotSupportedException(); }
+		}
+
+		void IList.Remove(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.RemoveAt(int index)
+		{
+			throw new NotSupportedException();
+		}
+
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+		public int Count
+		{
+			get { return ListProxy.Count; }
+		}
+
+		public TItem this[int index]
+		{
+			get { return GetOrCreateContent(index, ListProxy[index]); }
+		}
+
+		public int GetDescendantCount()
+		{
+			if (!IsGroupingEnabled)
+				return Count;
+
+			if (_groupedItems == null)
+				return 0;
+
+			int count = Count;
+			foreach (TemplatedItemsList<TView, TItem> group in _groupedItems.Values)
+				count += group.GetDescendantCount();
+
+			return count;
+		}
+
+		public int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group)
+		{
+			if (group == null)
+				throw new ArgumentNullException("group");
+
+			int groupIndex = _groupedItems.Values.IndexOf(group);
+
+			var index = 0;
+			for (var i = 0; i < groupIndex; i++)
+				index += _groupedItems[i].GetDescendantCount() + 1;
+
+			return index;
+		}
+
+		public int GetGlobalIndexOfGroup(object item)
+		{
+			var count = 0;
+			if (IsGroupingEnabled && _groupedItems != null)
+			{
+				foreach (object group in _groupedItems.Keys)
+				{
+					if (group == item)
+						return count;
+					count++;
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object item)
+		{
+			if (!IsGroupingEnabled)
+				return ListProxy.IndexOf(item);
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					count++;
+
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+						return count + index;
+
+					count += children.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+				return ListProxy.IndexOf(item);
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (KeyValuePair<object, TemplatedItemsList<TView, TItem>> kvp in _groupedItems)
+				{
+					count++;
+
+					if (ReferenceEquals(group, kvp.Key))
+					{
+						int index = kvp.Value.GetGlobalIndexOfItem(item);
+						if (index != -1)
+							return count + index;
+					}
+
+					count += kvp.Value.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object item)
+		{
+			if (item == null)
+				return new Tuple<int, int>(-1, -1);
+			if (!IsGroupingEnabled)
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+
+			var group = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+						return new Tuple<int, int>(group, index);
+
+					group++;
+				}
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+			if (_groupedItems == null)
+				return new Tuple<int, int>(-1, -1);
+
+			var groupIndex = 0;
+			foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+			{
+				if (ReferenceEquals(children.BindingContext, group) || group == null)
+				{
+					for (var i = 0; i < children.Count; i++)
+					{
+						if (ReferenceEquals(children[i].BindingContext, item))
+							return new Tuple<int, int>(groupIndex, i);
+					}
+
+					if (group != null)
+						return new Tuple<int, int>(groupIndex, -1);
+				}
+
+				groupIndex++;
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public int GetGroupIndexFromGlobal(int globalIndex, out int leftOver)
+		{
+			leftOver = 0;
+
+			var index = 0;
+			for (var i = 0; i < _groupedItems.Count; i++)
+			{
+				if (index == globalIndex)
+					return i;
+
+				TemplatedItemsList<TView, TItem> group = _groupedItems[i];
+				int count = group.GetDescendantCount();
+
+				if (index + count >= globalIndex)
+				{
+					leftOver = globalIndex - index;
+					return i;
+				}
+
+				index += count + 1;
+			}
+
+			return -1;
+		}
+
+		public event NotifyCollectionChangedEventHandler GroupedCollectionChanged;
+		event NotifyCollectionChangedEventHandler ITemplatedItemsList<TItem>.GroupedCollectionChanged
+After:
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+				{
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+				}
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+				{
+					return;
+				}
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			get { return (DataTemplate)_itemsView.GetValue(_itemTemplateProperty); }
+		}
+
+		bool ProgressiveLoading
+		{
+			get { return (ProgressiveLoadingProperty != null) && (bool)_itemsView.GetValue(ProgressiveLoadingProperty); }
+		}
+
+		void ICollection.CopyTo(Array array, int arrayIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		bool ICollection.IsSynchronized
+		{
+			get { return false; }
+		}
+
+		object ICollection.SyncRoot
+		{
+			get { return this; }
+		}
+
+		public void Dispose()
+		{
+			if (_disposed)
+				return;
+
+			_itemsView.PropertyChanged -= BindableOnPropertyChanged;
+
+			TItem header = HeaderContent;
+			if (header != null)
+				UnhookItem(header);
+
+			for (var i = 0; i < _templatedObjects.Count; i++)
+			{
+				TItem item = _templatedObjects[i];
+				if (item != null)
+					UnhookItem(item);
+			}
+
+			_disposed = true;
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			if (IsGroupingEnabled)
+				return _groupedItems.Values.GetEnumerator();
+
+			return GetEnumerator();
+		}
+
+		public IEnumerator<TItem> GetEnumerator()
+		{
+			var i = 0;
+			foreach (object item in ListProxy)
+				yield return GetOrCreateContent(i++, item);
+		}
+
+		int IList.Add(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.Contains(object item)
+		{
+			throw new NotImplementedException();
+		}
+
+		int IList.IndexOf(object item)
+		{
+			if (IsGroupingEnabled)
+			{
+				var til = item as TemplatedItemsList<TView, TItem>;
+				if (til != null)
+					return _groupedItems.Values.IndexOf(til);
+			}
+
+			return IndexOf((TItem)item);
+		}
+
+		void IList.Insert(int index, object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.IsFixedSize
+		{
+			get { return false; }
+		}
+
+		bool IList.IsReadOnly
+		{
+			get { return true; }
+		}
+
+		object IList.this[int index]
+		{
+			get
+			{
+				if (IsGroupingEnabled)
+					return GetGroup(index);
+
+				return this[index];
+			}
+			set { throw new NotSupportedException(); }
+		}
+
+		void IList.Remove(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.RemoveAt(int index)
+		{
+			throw new NotSupportedException();
+		}
+
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+		public int Count
+		{
+			get { return ListProxy.Count; }
+		}
+
+		public TItem this[int index]
+		{
+			get { return GetOrCreateContent(index, ListProxy[index]); }
+		}
+
+		public int GetDescendantCount()
+		{
+			if (!IsGroupingEnabled)
+				return Count;
+
+			if (_groupedItems == null)
+				return 0;
+
+			int count = Count;
+			foreach (TemplatedItemsList<TView, TItem> group in _groupedItems.Values)
+				count += group.GetDescendantCount();
+
+			return count;
+		}
+
+		public int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group)
+		{
+			if (group == null)
+				throw new ArgumentNullException("group");
+
+			int groupIndex = _groupedItems.Values.IndexOf(group);
+
+			var index = 0;
+			for (var i = 0; i < groupIndex; i++)
+				index += _groupedItems[i].GetDescendantCount() + 1;
+
+			return index;
+		}
+
+		public int GetGlobalIndexOfGroup(object item)
+		{
+			var count = 0;
+			if (IsGroupingEnabled && _groupedItems != null)
+			{
+				foreach (object group in _groupedItems.Keys)
+				{
+					if (group == item)
+						return count;
+					count++;
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object item)
+		{
+			if (!IsGroupingEnabled)
+				return ListProxy.IndexOf(item);
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					count++;
+
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+						return count + index;
+
+					count += children.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+				return ListProxy.IndexOf(item);
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (KeyValuePair<object, TemplatedItemsList<TView, TItem>> kvp in _groupedItems)
+				{
+					count++;
+
+					if (ReferenceEquals(group, kvp.Key))
+					{
+						int index = kvp.Value.GetGlobalIndexOfItem(item);
+						if (index != -1)
+							return count + index;
+					}
+
+					count += kvp.Value.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object item)
+		{
+			if (item == null)
+				return new Tuple<int, int>(-1, -1);
+			if (!IsGroupingEnabled)
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+
+			var group = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+						return new Tuple<int, int>(group, index);
+
+					group++;
+				}
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+			if (_groupedItems == null)
+				return new Tuple<int, int>(-1, -1);
+
+			var groupIndex = 0;
+			foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+			{
+				if (ReferenceEquals(children.BindingContext, group) || group == null)
+				{
+					for (var i = 0; i < children.Count; i++)
+					{
+						if (ReferenceEquals(children[i].BindingContext, item))
+							return new Tuple<int, int>(groupIndex, i);
+					}
+
+					if (group != null)
+						return new Tuple<int, int>(groupIndex, -1);
+				}
+
+				groupIndex++;
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public int GetGroupIndexFromGlobal(int globalIndex, out int leftOver)
+		{
+			leftOver = 0;
+
+			var index = 0;
+			for (var i = 0; i < _groupedItems.Count; i++)
+			{
+				if (index == globalIndex)
+					return i;
+
+				TemplatedItemsList<TView, TItem> group = _groupedItems[i];
+				int count = group.GetDescendantCount();
+
+				if (index + count >= globalIndex)
+				{
+					leftOver = globalIndex - index;
+					return i;
+				}
+
+				index += count + 1;
+			}
+
+			return -1;
+		}
+
+		public event NotifyCollectionChangedEventHandler GroupedCollectionChanged;
+		event NotifyCollectionChangedEventHandler ITemplatedItemsList<TItem>.GroupedCollectionChanged
+After:
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+				{
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+				}
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+				{
+					return;
+				}
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+*/
+			get
+			{
+				DataTemplate groupHeader = null;
+				if (GroupHeaderTemplateProperty != null)
+				{
+					groupHeader = (DataTemplate)_itemsView.GetValue(GroupHeaderTemplateProperty);
+				}
+
+				return groupHeader ?? _groupHeaderTemplate;
+			}
+
+			set
+			{
+				if (_groupHeaderTemplate == value)
+				{
+					return;
+				}
+
+				_groupHeaderTemplate = value;
+				OnHeaderTemplateChanged();
+			}
+		}
+
+		public BindableProperty GroupHeaderTemplateProperty { get; set; }
+
+		public BindingBase GroupShortNameBinding
+		{
+			get { return _groupShortNameBinding; }
+			set
+			{
+				_groupShortNameBinding = value;
+				OnShortNameBindingChanged();
+			}
+		}
+
+		public TItem HeaderContent
+		{
+			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
+			private set { SetValue(HeaderContentPropertyKey, value); }
+		}
+
+		public bool IsGroupingEnabled
+		{
+			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
+		}
+
+		public BindableProperty IsGroupingEnabledProperty { get; set; }
+
+		public IEnumerable ItemsSource
+		{
+			get { return ListProxy.ProxiedEnumerable; }
+		}
+
+		public string Name
+		{
+			get { return (string)GetValue(NameProperty); }
+			set { SetValue(NameProperty, value); }
+		}
+
+		public TemplatedItemsList<TView, TItem> Parent { get; }
+
+		public BindableProperty ProgressiveLoadingProperty { get; set; }
+
+		public string ShortName
+		{
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 			add { GroupedCollectionChanged += value; }
 			remove { GroupedCollectionChanged -= value; }
 		}
@@ -564,6 +3674,764 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		internal void ForceUpdate()
+After:
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+			add { GroupedCollectionChanged += value; }
+			remove { GroupedCollectionChanged -= value; }
+		}
+
+		public int IndexOf(TItem item)
+		{
+			TemplatedItemsList<TView, TItem> group = GetGroup(item);
+			if (group != null && group != this)
+				return -1;
+
+			return GetIndex(item);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public DataTemplate SelectDataTemplate(object item)
+		{
+			return ItemTemplate.SelectDataTemplate(item, _itemsView);
+		}
+
+		public TItem ActivateContent(int index, object item)
+		{
+			if (ItemTemplate?.CreateContent(item, _itemsView) is not TItem content)
+			{
+				content = _itemsView.CreateDefault(item);
+			}
+			content = UpdateContent(content, index, item);
+
+			return content;
+		}
+
+		public TItem CreateContent(int index, object item, bool insert = false)
+		{
+			var content = ActivateContent(index, item);
+
+			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
+				return content;
+
+			for (int i = _templatedObjects.Count; i <= index; i++)
+				_templatedObjects.Add(null);
+
+			if (!insert)
+				_templatedObjects[index] = content;
+			else
+				_templatedObjects.Insert(index, content);
+
+			return content;
+		}
+
+		internal void ForceUpdate()
+After:
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			add { GroupedCollectionChanged += value; }
+			remove { GroupedCollectionChanged -= value; }
+		}
+
+		public int IndexOf(TItem item)
+		{
+			TemplatedItemsList<TView, TItem> group = GetGroup(item);
+			if (group != null && group != this)
+				return -1;
+
+			return GetIndex(item);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public DataTemplate SelectDataTemplate(object item)
+		{
+			return ItemTemplate.SelectDataTemplate(item, _itemsView);
+		}
+
+		public TItem ActivateContent(int index, object item)
+		{
+			if (ItemTemplate?.CreateContent(item, _itemsView) is not TItem content)
+			{
+				content = _itemsView.CreateDefault(item);
+			}
+			content = UpdateContent(content, index, item);
+
+			return content;
+		}
+
+		public TItem CreateContent(int index, object item, bool insert = false)
+		{
+			var content = ActivateContent(index, item);
+
+			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
+				return content;
+
+			for (int i = _templatedObjects.Count; i <= index; i++)
+				_templatedObjects.Add(null);
+
+			if (!insert)
+				_templatedObjects[index] = content;
+			else
+				_templatedObjects.Insert(index, content);
+
+			return content;
+		}
+
+		internal void ForceUpdate()
+After:
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			add { GroupedCollectionChanged += value; }
+			remove { GroupedCollectionChanged -= value; }
+		}
+
+		public int IndexOf(TItem item)
+		{
+			TemplatedItemsList<TView, TItem> group = GetGroup(item);
+			if (group != null && group != this)
+				return -1;
+
+			return GetIndex(item);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public DataTemplate SelectDataTemplate(object item)
+		{
+			return ItemTemplate.SelectDataTemplate(item, _itemsView);
+		}
+
+		public TItem ActivateContent(int index, object item)
+		{
+			if (ItemTemplate?.CreateContent(item, _itemsView) is not TItem content)
+			{
+				content = _itemsView.CreateDefault(item);
+			}
+			content = UpdateContent(content, index, item);
+
+			return content;
+		}
+
+		public TItem CreateContent(int index, object item, bool insert = false)
+		{
+			var content = ActivateContent(index, item);
+
+			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
+				return content;
+
+			for (int i = _templatedObjects.Count; i <= index; i++)
+				_templatedObjects.Add(null);
+
+			if (!insert)
+				_templatedObjects[index] = content;
+			else
+				_templatedObjects.Insert(index, content);
+
+			return content;
+		}
+
+		internal void ForceUpdate()
+After:
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+			add { GroupedCollectionChanged += value; }
+			remove { GroupedCollectionChanged -= value; }
+		}
+
+		public int IndexOf(TItem item)
+		{
+			TemplatedItemsList<TView, TItem> group = GetGroup(item);
+			if (group != null && group != this)
+				return -1;
+
+			return GetIndex(item);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public DataTemplate SelectDataTemplate(object item)
+		{
+			return ItemTemplate.SelectDataTemplate(item, _itemsView);
+		}
+
+		public TItem ActivateContent(int index, object item)
+		{
+			if (ItemTemplate?.CreateContent(item, _itemsView) is not TItem content)
+			{
+				content = _itemsView.CreateDefault(item);
+			}
+			content = UpdateContent(content, index, item);
+
+			return content;
+		}
+
+		public TItem CreateContent(int index, object item, bool insert = false)
+		{
+			var content = ActivateContent(index, item);
+
+			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
+				return content;
+
+			for (int i = _templatedObjects.Count; i <= index; i++)
+				_templatedObjects.Add(null);
+
+			if (!insert)
+				_templatedObjects[index] = content;
+			else
+				_templatedObjects.Insert(index, content);
+
+			return content;
+		}
+
+		internal void ForceUpdate()
+After:
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			add { GroupedCollectionChanged += value; }
+			remove { GroupedCollectionChanged -= value; }
+		}
+
+		public int IndexOf(TItem item)
+		{
+			TemplatedItemsList<TView, TItem> group = GetGroup(item);
+			if (group != null && group != this)
+				return -1;
+
+			return GetIndex(item);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public DataTemplate SelectDataTemplate(object item)
+		{
+			return ItemTemplate.SelectDataTemplate(item, _itemsView);
+		}
+
+		public TItem ActivateContent(int index, object item)
+		{
+			if (ItemTemplate?.CreateContent(item, _itemsView) is not TItem content)
+			{
+				content = _itemsView.CreateDefault(item);
+			}
+			content = UpdateContent(content, index, item);
+
+			return content;
+		}
+
+		public TItem CreateContent(int index, object item, bool insert = false)
+		{
+			var content = ActivateContent(index, item);
+
+			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
+				return content;
+
+			for (int i = _templatedObjects.Count; i <= index; i++)
+				_templatedObjects.Add(null);
+
+			if (!insert)
+				_templatedObjects[index] = content;
+			else
+				_templatedObjects.Insert(index, content);
+
+			return content;
+		}
+
+		internal void ForceUpdate()
+After:
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+*/
+			get { return (string)GetValue(ShortNameProperty); }
+			set { SetValue(ShortNameProperty, value); }
+		}
+
+		public IReadOnlyList<string> ShortNames
+		{
+			get { return _shortNames; }
+		}
+
+		internal ListViewCachingStrategy CachingStrategy
+		{
+			get
+			{
+				var listView = _itemsView as ListView;
+				if (listView == null)
+				{
+					return ListViewCachingStrategy.RetainElement;
+				}
+
+				return listView.CachingStrategy;
+			}
+		}
+
+		internal IListProxy ListProxy
+		{
+			get { return (IListProxy)GetValue(ListProxyPropertyKey.BindableProperty); }
+			private set { SetValue(ListProxyPropertyKey, value); }
+		}
+
+		IListProxy ITemplatedItemsList<TItem>.ListProxy
+		{
+			get { return ListProxy; }
+		}
+
+		DataTemplate ItemTemplate
+		{
+			get { return (DataTemplate)_itemsView.GetValue(_itemTemplateProperty); }
+		}
+
+		bool ProgressiveLoading
+		{
+			get { return (ProgressiveLoadingProperty != null) && (bool)_itemsView.GetValue(ProgressiveLoadingProperty); }
+		}
+
+		void ICollection.CopyTo(Array array, int arrayIndex)
+		{
+			throw new NotImplementedException();
+		}
+
+		bool ICollection.IsSynchronized
+		{
+			get { return false; }
+		}
+
+		object ICollection.SyncRoot
+		{
+			get { return this; }
+		}
+
+		public void Dispose()
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_itemsView.PropertyChanged -= BindableOnPropertyChanged;
+
+			TItem header = HeaderContent;
+			if (header != null)
+			{
+				UnhookItem(header);
+			}
+
+			for (var i = 0; i < _templatedObjects.Count; i++)
+			{
+				TItem item = _templatedObjects[i];
+				if (item != null)
+				{
+					UnhookItem(item);
+				}
+			}
+
+			_disposed = true;
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			if (IsGroupingEnabled)
+			{
+				return _groupedItems.Values.GetEnumerator();
+			}
+
+			return GetEnumerator();
+		}
+
+		public IEnumerator<TItem> GetEnumerator()
+		{
+			var i = 0;
+			foreach (object item in ListProxy)
+			{
+				yield return GetOrCreateContent(i++, item);
+			}
+		}
+
+		int IList.Add(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.Clear()
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.Contains(object item)
+		{
+			throw new NotImplementedException();
+		}
+
+		int IList.IndexOf(object item)
+		{
+			if (IsGroupingEnabled)
+			{
+				var til = item as TemplatedItemsList<TView, TItem>;
+				if (til != null)
+				{
+					return _groupedItems.Values.IndexOf(til);
+				}
+			}
+
+			return IndexOf((TItem)item);
+		}
+
+		void IList.Insert(int index, object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		bool IList.IsFixedSize
+		{
+			get { return false; }
+		}
+
+		bool IList.IsReadOnly
+		{
+			get { return true; }
+		}
+
+		object IList.this[int index]
+		{
+			get
+			{
+				if (IsGroupingEnabled)
+				{
+					return GetGroup(index);
+				}
+
+				return this[index];
+			}
+			set { throw new NotSupportedException(); }
+		}
+
+		void IList.Remove(object item)
+		{
+			throw new NotSupportedException();
+		}
+
+		void IList.RemoveAt(int index)
+		{
+			throw new NotSupportedException();
+		}
+
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+		public int Count
+		{
+			get { return ListProxy.Count; }
+		}
+
+		public TItem this[int index]
+		{
+			get { return GetOrCreateContent(index, ListProxy[index]); }
+		}
+
+		public int GetDescendantCount()
+		{
+			if (!IsGroupingEnabled)
+			{
+				return Count;
+			}
+
+			if (_groupedItems == null)
+			{
+				return 0;
+			}
+
+			int count = Count;
+			foreach (TemplatedItemsList<TView, TItem> group in _groupedItems.Values)
+			{
+				count += group.GetDescendantCount();
+			}
+
+			return count;
+		}
+
+		public int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group)
+		{
+			if (group == null)
+			{
+				throw new ArgumentNullException("group");
+			}
+
+			int groupIndex = _groupedItems.Values.IndexOf(group);
+
+			var index = 0;
+			for (var i = 0; i < groupIndex; i++)
+			{
+				index += _groupedItems[i].GetDescendantCount() + 1;
+			}
+
+			return index;
+		}
+
+		public int GetGlobalIndexOfGroup(object item)
+		{
+			var count = 0;
+			if (IsGroupingEnabled && _groupedItems != null)
+			{
+				foreach (object group in _groupedItems.Keys)
+				{
+					if (group == item)
+					{
+						return count;
+					}
+
+					count++;
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object item)
+		{
+			if (!IsGroupingEnabled)
+			{
+				return ListProxy.IndexOf(item);
+			}
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					count++;
+
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+					{
+						return count + index;
+					}
+
+					count += children.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public int GetGlobalIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+			{
+				return ListProxy.IndexOf(item);
+			}
+
+			var count = 0;
+			if (_groupedItems != null)
+			{
+				foreach (KeyValuePair<object, TemplatedItemsList<TView, TItem>> kvp in _groupedItems)
+				{
+					count++;
+
+					if (ReferenceEquals(group, kvp.Key))
+					{
+						int index = kvp.Value.GetGlobalIndexOfItem(item);
+						if (index != -1)
+						{
+							return count + index;
+						}
+					}
+
+					count += kvp.Value.GetDescendantCount();
+				}
+			}
+
+			return -1;
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object item)
+		{
+			if (item == null)
+			{
+				return new Tuple<int, int>(-1, -1);
+			}
+
+			if (!IsGroupingEnabled)
+			{
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+			}
+
+			var group = 0;
+			if (_groupedItems != null)
+			{
+				foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+				{
+					int index = children.GetGlobalIndexOfItem(item);
+					if (index != -1)
+					{
+						return new Tuple<int, int>(group, index);
+					}
+
+					group++;
+				}
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public Tuple<int, int> GetGroupAndIndexOfItem(object group, object item)
+		{
+			if (!IsGroupingEnabled)
+			{
+				return new Tuple<int, int>(0, GetGlobalIndexOfItem(item));
+			}
+
+			if (_groupedItems == null)
+			{
+				return new Tuple<int, int>(-1, -1);
+			}
+
+			var groupIndex = 0;
+			foreach (TemplatedItemsList<TView, TItem> children in _groupedItems.Values)
+			{
+				if (ReferenceEquals(children.BindingContext, group) || group == null)
+				{
+					for (var i = 0; i < children.Count; i++)
+					{
+						if (ReferenceEquals(children[i].BindingContext, item))
+						{
+							return new Tuple<int, int>(groupIndex, i);
+						}
+					}
+
+					if (group != null)
+					{
+						return new Tuple<int, int>(groupIndex, -1);
+					}
+				}
+
+				groupIndex++;
+			}
+
+			return new Tuple<int, int>(-1, -1);
+		}
+
+		public int GetGroupIndexFromGlobal(int globalIndex, out int leftOver)
+		{
+			leftOver = 0;
+
+			var index = 0;
+			for (var i = 0; i < _groupedItems.Count; i++)
+			{
+				if (index == globalIndex)
+				{
+					return i;
+				}
+
+				TemplatedItemsList<TView, TItem> group = _groupedItems[i];
+				int count = group.GetDescendantCount();
+
+				if (index + count >= globalIndex)
+				{
+					leftOver = globalIndex - index;
+					return i;
+				}
+
+				index += count + 1;
+			}
+
+			return -1;
+		}
+
+		public event NotifyCollectionChangedEventHandler GroupedCollectionChanged;
+		event NotifyCollectionChangedEventHandler ITemplatedItemsList<TItem>.GroupedCollectionChanged
+		{
+			add { GroupedCollectionChanged += value; }
+			remove { GroupedCollectionChanged -= value; }
+		}
+
+		public int IndexOf(TItem item)
+		{
+			TemplatedItemsList<TView, TItem> group = GetGroup(item);
+			if (group != null && group != this)
+			{
+				return -1;
+			}
+
+			return GetIndex(item);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public DataTemplate SelectDataTemplate(object item)
+		{
+			return ItemTemplate.SelectDataTemplate(item, _itemsView);
+		}
+
+		public TItem ActivateContent(int index, object item)
+		{
+			if (ItemTemplate?.CreateContent(item, _itemsView) is not TItem content)
+			{
+				content = _itemsView.CreateDefault(item);
+			}
+			content = UpdateContent(content, index, item);
+
+			return content;
+		}
+
+		public TItem CreateContent(int index, object item, bool insert = false)
+		{
+			var content = ActivateContent(index, item);
+
+			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
+			{
+				return content;
+			}
+
+			for (int i = _templatedObjects.Count; i <= index; i++)
+			{
+				_templatedObjects.Add(null);
+			}
+
+			if (!insert)
+			{
+				_templatedObjects[index] = content;
+			}
+			else
+			{
+				_templatedObjects.Insert(index, content);
+			}
+
+			return content;
+		}
+
+		internal void ForceUpdate()
 		{
 			ListProxy.Clear();
 		}
@@ -571,7 +4439,9 @@ namespace Microsoft.Maui.Controls.Internals
 		internal TemplatedItemsList<TView, TItem> GetGroup(int index)
 		{
 			if (!IsGroupingEnabled)
+			{
 				return this;
+			}
 
 			return _groupedItems[index];
 		}
@@ -584,7 +4454,9 @@ namespace Microsoft.Maui.Controls.Internals
 		internal static TemplatedItemsList<TView, TItem> GetGroup(TItem item)
 		{
 			if (item == null)
+			{
 				throw new ArgumentNullException("item");
+			}
 
 			return (TemplatedItemsList<TView, TItem>)item.GetValue(GroupProperty);
 		}
@@ -592,7 +4464,9 @@ namespace Microsoft.Maui.Controls.Internals
 		internal static int GetIndex(TItem item)
 		{
 			if (item == null)
+			{
 				throw new ArgumentNullException("item");
+			}
 
 			return (int)item.GetValue(IndexProperty);
 		}
@@ -606,7 +4480,9 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			TItem content;
 			if (_templatedObjects.Count <= index || (content = _templatedObjects[index]) == null)
+			{
 				content = CreateContent(index, item);
+			}
 
 			return content;
 		}
@@ -621,7 +4497,9 @@ namespace Microsoft.Maui.Controls.Internals
 			content.BindingContext = item;
 
 			if (Parent != null)
+			{
 				SetGroup(content, this);
+			}
 
 			SetIndex(content, index);
 
@@ -665,15 +4543,25 @@ namespace Microsoft.Maui.Controls.Internals
 		void BindableOnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_itemSourceProperty != null && e.PropertyName == _itemSourceProperty.PropertyName)
+			{
 				OnItemsSourceChanged();
+			}
 			else if (e.PropertyName == _itemTemplateProperty.PropertyName)
+			{
 				OnItemTemplateChanged();
+			}
 			else if (ProgressiveLoadingProperty != null && e.PropertyName == ProgressiveLoadingProperty.PropertyName)
+			{
 				OnInfiniteScrollingChanged();
+			}
 			else if (GroupHeaderTemplateProperty != null && e.PropertyName == GroupHeaderTemplateProperty.PropertyName)
+			{
 				OnHeaderTemplateChanged();
+			}
 			else if (IsGroupingEnabledProperty != null && e.PropertyName == IsGroupingEnabledProperty.PropertyName)
+			{
 				OnGroupingEnabledChanged();
+			}
 		}
 
 		IList ConvertContent(int startingIndex, IList items, bool forceCreate = false, bool setIndex = false)
@@ -684,7 +4572,9 @@ namespace Microsoft.Maui.Controls.Internals
 				int index = i + startingIndex;
 				TItem content = !forceCreate ? GetOrCreateContent(index, items[i]) : CreateContent(index, items[i]);
 				if (setIndex)
+				{
 					SetIndex(content, index);
+				}
 
 				contentItems.Add(content);
 			}
@@ -721,7 +4611,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 			var i = 0;
 			foreach (object item in ListProxy)
+			{
 				InsertGrouped(item, i++);
+			}
 
 			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 		}
@@ -732,12 +4624,18 @@ namespace Microsoft.Maui.Controls.Internals
 
 			var groupProxy = new TemplatedItemsList<TView, TItem>(this, children, _itemsView, _itemTemplateProperty);
 			if (GroupDisplayBinding != null)
+			{
 				groupProxy.SetBinding(NameProperty, GroupDisplayBinding.Clone());
+			}
 			else if (GroupHeaderTemplate == null && item != null)
+			{
 				groupProxy.Name = item.ToString();
+			}
 
 			if (GroupShortNameBinding != null)
+			{
 				groupProxy.SetBinding(ShortNameProperty, GroupShortNameBinding.Clone());
+			}
 
 			groupProxy.BindingContext = item;
 
@@ -775,13 +4673,17 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			NotifyCollectionChangedEventHandler changed = CollectionChanged;
 			if (changed != null)
+			{
 				changed(this, e);
+			}
 		}
 
 		void OnCollectionChangedGrouped(NotifyCollectionChangedEventArgs e)
 		{
 			if (_groupedItems == null)
+			{
 				_groupedItems = new OrderedDictionary<object, TemplatedItemsList<TView, TItem>>();
+			}
 
 			List<TemplatedItemsList<TView, TItem>> newItems = null, oldItems = null;
 
@@ -789,10 +4691,14 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				case NotifyCollectionChangedAction.Add:
 					if (e.NewStartingIndex == -1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					for (int i = e.NewStartingIndex; i < _templatedObjects.Count; i++)
+					{
 						SetIndex(_templatedObjects[i], i + e.NewItems.Count);
+					}
 
 					newItems = new List<TemplatedItemsList<TView, TItem>>(e.NewItems.Count);
 
@@ -808,11 +4714,15 @@ namespace Microsoft.Maui.Controls.Internals
 
 				case NotifyCollectionChangedAction.Remove:
 					if (e.OldStartingIndex == -1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					int removeIndex = e.OldStartingIndex;
 					for (int i = removeIndex + e.OldItems.Count; i < _templatedObjects.Count; i++)
+					{
 						SetIndex(_templatedObjects[i], removeIndex++);
+					}
 
 					oldItems = new List<TemplatedItemsList<TView, TItem>>(e.OldItems.Count);
 					for (var i = 0; i < e.OldItems.Count; i++)
@@ -832,7 +4742,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 				case NotifyCollectionChangedAction.Replace:
 					if (e.OldStartingIndex == -1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					oldItems = new List<TemplatedItemsList<TView, TItem>>(e.OldItems.Count);
 					newItems = new List<TemplatedItemsList<TView, TItem>>(e.NewItems.Count);
@@ -858,7 +4770,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 				case NotifyCollectionChangedAction.Move:
 					if (e.OldStartingIndex == -1 || e.NewStartingIndex == -1)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					bool movingForward = e.OldStartingIndex < e.NewStartingIndex;
 
@@ -866,7 +4780,9 @@ namespace Microsoft.Maui.Controls.Internals
 					{
 						int moveIndex = e.OldStartingIndex;
 						for (int i = moveIndex + e.OldItems.Count; i <= e.NewStartingIndex; i++)
+						{
 							SetIndex(_templatedObjects[i], moveIndex++);
+						}
 					}
 					else
 					{
@@ -889,7 +4805,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 					int insertIndex = e.NewStartingIndex;
 					if (e.OldStartingIndex < e.NewStartingIndex)
+					{
 						insertIndex -= e.OldItems.Count - 1;
+					}
 
 					for (var i = 0; i < oldItems.Count; i++)
 					{
@@ -912,7 +4830,9 @@ namespace Microsoft.Maui.Controls.Internals
 		void OnGroupingEnabledChanged()
 		{
 			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
+			{
 				_templatedObjects.Clear();
+			}
 
 			OnItemsSourceChanged(true);
 
@@ -922,7 +4842,9 @@ namespace Microsoft.Maui.Controls.Internals
 				_shortNames = null;
 			}
 			else
+			{
 				OnShortNameBindingChanged();
+			}
 		}
 
 		void OnHeaderTemplateChanged()
@@ -944,9 +4866,13 @@ namespace Microsoft.Maui.Controls.Internals
 
 			IEnumerable itemSource = GetItemsViewSource();
 			if (itemSource == null)
+			{
 				ListProxy = new ListProxy(Array.Empty<object>(), dispatcher: _itemsView.Dispatcher);
+			}
 			else
+			{
 				ListProxy = new ListProxy(itemSource, dispatcher: _itemsView.Dispatcher);
+			}
 
 			ListProxy.CollectionChanged += OnProxyCollectionChanged;
 			OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -955,7 +4881,9 @@ namespace Microsoft.Maui.Controls.Internals
 		void OnItemTemplateChanged()
 		{
 			if (ListProxy.Count == 0)
+			{
 				return;
+			}
 
 			OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 		}
@@ -983,15 +4911,25 @@ namespace Microsoft.Maui.Controls.Internals
 			int count = Count;
 			var ex = e as NotifyCollectionChangedEventArgsEx;
 			if (ex != null)
+			{
 				count = ex.Count;
+			}
 
 			var maxindex = 0;
 			if (e.NewStartingIndex >= 0 && e.NewItems != null)
+			{
 				maxindex = Math.Max(maxindex, e.NewStartingIndex + e.NewItems.Count);
+			}
+
 			if (e.OldStartingIndex >= 0 && e.OldItems != null)
+			{
 				maxindex = Math.Max(maxindex, e.OldStartingIndex + e.OldItems.Count);
+			}
+
 			if (maxindex > _templatedObjects.Count)
+			{
 				_templatedObjects.InsertRange(_templatedObjects.Count, Enumerable.Repeat<TItem>(null, maxindex - _templatedObjects.Count));
+			}
 
 			switch (e.Action)
 			{
@@ -999,7 +4937,9 @@ namespace Microsoft.Maui.Controls.Internals
 					if (e.NewStartingIndex >= 0)
 					{
 						for (int i = e.NewStartingIndex; i < _templatedObjects.Count; i++)
+						{
 							SetIndex(_templatedObjects[i], i + e.NewItems.Count);
+						}
 
 						_templatedObjects.InsertRange(e.NewStartingIndex, Enumerable.Repeat<TItem>(null, e.NewItems.Count));
 
@@ -1015,7 +4955,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 				case NotifyCollectionChangedAction.Move:
 					if (e.NewStartingIndex < 0 || e.OldStartingIndex < 0)
+					{
 						goto case NotifyCollectionChangedAction.Reset;
+					}
 
 					bool movingForward = e.OldStartingIndex < e.NewStartingIndex;
 
@@ -1023,7 +4965,9 @@ namespace Microsoft.Maui.Controls.Internals
 					{
 						int moveIndex = e.OldStartingIndex;
 						for (int i = moveIndex + e.OldItems.Count; i <= e.NewStartingIndex; i++)
+						{
 							SetIndex(_templatedObjects[i], moveIndex++);
+						}
 					}
 					else
 					{
@@ -1031,7 +4975,9 @@ namespace Microsoft.Maui.Controls.Internals
 						{
 							TItem item = _templatedObjects[i + e.NewStartingIndex];
 							if (item != null)
+							{
 								SetIndex(item, GetIndex(item) + e.OldItems.Count);
+							}
 						}
 					}
 
@@ -1040,7 +4986,9 @@ namespace Microsoft.Maui.Controls.Internals
 					_templatedObjects.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
 					_templatedObjects.InsertRange(e.NewStartingIndex, itemsToMove);
 					for (var i = 0; i < itemsToMove.Length; i++)
+					{
 						SetIndex(itemsToMove[i], e.NewStartingIndex + i);
+					}
 
 					e = new NotifyCollectionChangedEventArgsEx(count, NotifyCollectionChangedAction.Move, itemsToMove, e.NewStartingIndex, e.OldStartingIndex);
 					break;
@@ -1050,14 +4998,18 @@ namespace Microsoft.Maui.Controls.Internals
 					{
 						int removeIndex = e.OldStartingIndex;
 						for (int i = removeIndex + e.OldItems.Count; i < _templatedObjects.Count; i++)
+						{
 							SetIndex(_templatedObjects[i], removeIndex++);
+						}
 
 						var items = new TItem[e.OldItems.Count];
 						for (var i = 0; i < items.Length; i++)
 						{
 							TItem item = _templatedObjects[e.OldStartingIndex + i];
 							if (item == null)
+							{
 								continue;
+							}
 
 							UnhookItem(item);
 							items[i] = item;
@@ -1107,10 +5059,14 @@ namespace Microsoft.Maui.Controls.Internals
 		void OnShortNameBindingChanged()
 		{
 			if (!IsGroupingEnabled)
+			{
 				return;
+			}
 
 			if (GroupShortNameBinding != null && _shortNames == null)
+			{
 				_shortNames = new ShortNamesProxy(this);
+			}
 			else if (GroupShortNameBinding == null && _shortNames != null)
 			{
 				_shortNames.Dispose();
@@ -1122,13 +5078,17 @@ namespace Microsoft.Maui.Controls.Internals
 				if (GroupShortNameBinding == null)
 				{
 					foreach (TemplatedItemsList<TView, TItem> list in _groupedItems.Values)
+					{
 						list.SetValue(ShortNameProperty, null);
+					}
 
 					return;
 				}
 
 				foreach (TemplatedItemsList<TView, TItem> list in _groupedItems.Values)
+				{
 					list.SetBinding(ShortNameProperty, GroupShortNameBinding.Clone());
+				}
 			}
 
 			_shortNames?.Reset();
@@ -1137,7 +5097,9 @@ namespace Microsoft.Maui.Controls.Internals
 		static void SetGroup(TItem item, TemplatedItemsList<TView, TItem> group)
 		{
 			if (item == null)
+			{
 				throw new ArgumentNullException("item");
+			}
 
 			item.SetValue(GroupProperty, group);
 		}
@@ -1145,7 +5107,9 @@ namespace Microsoft.Maui.Controls.Internals
 		static void SetIndex(TItem item, int index)
 		{
 			if (item == null)
+			{
 				return;
+			}
 
 			item.SetValue(IndexProperty, index);
 		}
@@ -1156,28 +5120,40 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				case NotifyCollectionChangedAction.Add:
 					if (e.NewStartingIndex < 0)
+					{
 						goto default;
+					}
 
 					for (var i = 0; i < e.NewItems.Count; i++)
+					{
 						OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, e.NewItems[i], e.NewStartingIndex + i));
+					}
 
 					break;
 
 				case NotifyCollectionChangedAction.Remove:
 					if (e.OldStartingIndex < 0)
+					{
 						goto default;
+					}
 
 					for (var i = 0; i < e.OldItems.Count; i++)
+					{
 						OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, e.OldItems[i], e.OldStartingIndex + i));
+					}
 
 					break;
 
 				case NotifyCollectionChangedAction.Replace:
 					if (e.OldStartingIndex < 0)
+					{
 						goto default;
+					}
 
 					for (var i = 0; i < e.OldItems.Count; i++)
+					{
 						OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, e.NewItems[i], e.OldItems[i], e.OldStartingIndex + i));
+					}
 
 					break;
 
@@ -1193,7 +5169,9 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				TItem item = _templatedObjects[i];
 				if (item == null)
+				{
 					continue;
+				}
 
 				UnhookItem(item);
 			}
@@ -1209,7 +5187,10 @@ namespace Microsoft.Maui.Controls.Internals
 			//Hack: the cell could still be visible on iOS because the cells are reloaded after this unhook 
 			//this causes some visual updates caused by a null datacontext and default values like IsVisible
 			if (DeviceInfo.Platform == DevicePlatform.iOS && CachingStrategy == ListViewCachingStrategy.RetainElement)
+			{
 				await Task.Delay(100);
+			}
+
 			item.BindingContext = null;
 		}
 
@@ -1231,7 +5212,10 @@ namespace Microsoft.Maui.Controls.Internals
 			public void Dispose()
 			{
 				if (_disposed)
+				{
 					return;
+				}
+
 				_disposed = true;
 
 				_itemsList.CollectionChanged -= OnItemsListCollectionChanged;
@@ -1247,7 +5231,9 @@ namespace Microsoft.Maui.Controls.Internals
 			public IEnumerator<string> GetEnumerator()
 			{
 				if (_itemsList._groupedItems == null)
+				{
 					yield break;
+				}
 
 				foreach (TemplatedItemsList<TView, TItem> item in _itemsList._groupedItems.Values)
 				{
@@ -1282,7 +5268,9 @@ namespace Microsoft.Maui.Controls.Internals
 			void AttachList(TemplatedItemsList<TView, TItem> list)
 			{
 				if (_attachedItems.Contains(list))
+				{
 					return;
+				}
 
 				list.PropertyChanging += OnChildListPropertyChanging;
 				list.PropertyChanged += OnChildListPropertyChanged;
@@ -1299,7 +5287,9 @@ namespace Microsoft.Maui.Controls.Internals
 			void OnChildListPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName != ShortNameProperty.PropertyName)
+				{
 					return;
+				}
 
 				var list = (TemplatedItemsList<TView, TItem>)sender;
 				string old = _oldNames[list];
@@ -1313,7 +5303,9 @@ namespace Microsoft.Maui.Controls.Internals
 			void OnChildListPropertyChanging(object sender, PropertyChangingEventArgs e)
 			{
 				if (e.PropertyName != ShortNameProperty.PropertyName)
+				{
 					return;
+				}
 
 				var list = (TemplatedItemsList<TView, TItem>)sender;
 				_oldNames[list] = list.ShortName;
@@ -1323,7 +5315,9 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				NotifyCollectionChangedEventHandler changed = CollectionChanged;
 				if (changed != null)
+				{
 					changed(this, e);
+				}
 			}
 
 			void OnItemsListCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -1361,7 +5355,9 @@ namespace Microsoft.Maui.Controls.Internals
 				_attachedItems.Clear();
 
 				if (raiseReset)
+				{
 					OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+				}
 			}
 		}
 	}

@@ -35,10 +35,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		void ValidateMapServiceToken()
 		{
 			if (string.IsNullOrWhiteSpace(MapServiceToken) && string.IsNullOrWhiteSpace(MapService.ServiceToken))
+			{
 				throw new ArgumentNullException(nameof(MapServiceToken), "Please set the map service token to be able to use this API.");
+			}
 
 			if (!string.IsNullOrWhiteSpace(MapServiceToken))
+			{
 				MapService.ServiceToken = MapServiceToken;
+			}
 		}
 	}
 }

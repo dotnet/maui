@@ -44,11 +44,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					case NamedSize.Default:
 						if (typeof(Button).IsAssignableFrom(targetElementType))
+						{
 							return _buttonDefaultSize;
+						}
+
 						if (typeof(Label).IsAssignableFrom(targetElementType))
+						{
 							return _labelDefaultSize;
+						}
+
 						if (typeof(Editor).IsAssignableFrom(targetElementType) || typeof(Entry).IsAssignableFrom(targetElementType) || typeof(SearchBar).IsAssignableFrom(targetElementType))
+						{
 							return _editTextDefaultSize;
+						}
+
 						return 14;
 					case NamedSize.Micro:
 						return 10;
@@ -76,11 +85,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				case NamedSize.Default:
 					if (typeof(Button).IsAssignableFrom(targetElementType))
+					{
 						return _buttonDefaultSize;
+					}
+
 					if (typeof(Label).IsAssignableFrom(targetElementType))
+					{
 						return _labelDefaultSize;
+					}
+
 					if (typeof(Editor).IsAssignableFrom(targetElementType) || typeof(Entry).IsAssignableFrom(targetElementType))
+					{
 						return _editTextDefaultSize;
+					}
+
 					return _mediumSize;
 				case NamedSize.Micro:
 					return _microSize;
@@ -110,9 +128,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			double myValue;
 
 			if (TryGetTextAppearance(themeDefault, out myValue) && myValue > 0)
+			{
 				return myValue;
+			}
+
 			if (TryGetTextAppearance(deviceDefault, out myValue) && myValue > 0)
+			{
 				return myValue;
+			}
+
 			return defaultValue;
 		}
 

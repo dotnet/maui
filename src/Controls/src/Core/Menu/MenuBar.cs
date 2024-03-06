@@ -47,22 +47,30 @@ namespace Microsoft.Maui.Controls
 			{
 				var menuBarItem = menuBarItems[i];
 				if (this.Count > i && this[i] == menuBarItem)
+				{
 					continue;
+				}
 
 				if (this.Contains(menuBarItem))
+				{
 					Remove(menuBarItem);
+				}
 
 				Insert(i, menuBarItem);
 			}
 
 			while (this.Count > menuBarItems.Count)
+			{
 				RemoveAt(this.Count - 1);
+			}
 		}
 
 		public void Clear()
 		{
 			for (int i = _menus.Count - 1; i >= 0; i--)
+			{
 				RemoveAt(i);
+			}
 		}
 
 		public bool Contains(IMenuBarItem item)
@@ -98,7 +106,9 @@ namespace Microsoft.Maui.Controls
 			NotifyHandler(nameof(IMenuBarHandler.Remove), index, item);
 
 			if (item is Element e)
+			{
 				e.Parent = null;
+			}
 
 			return result;
 		}
@@ -108,13 +118,17 @@ namespace Microsoft.Maui.Controls
 			var item = _menus[index];
 
 			if (index < 0)
+			{
 				return;
+			}
 
 			_menus.RemoveAt(index);
 			NotifyHandler(nameof(IMenuBarHandler.Remove), index, item);
 
 			if (item is Element e)
+			{
 				e.Parent = null;
+			}
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

@@ -145,9 +145,13 @@ namespace Maui.Controls.Sample.Pages
 				Command = new Command(() =>
 				{
 					if (singleTapLabel.GestureRecognizers.Count > 0)
+					{
 						singleTapLabel.GestureRecognizers.RemoveAt(0);
+					}
 					else
+					{
 						singleTapLabel.GestureRecognizers.Add(singleTapGesture);
+					}
 				})
 			};
 

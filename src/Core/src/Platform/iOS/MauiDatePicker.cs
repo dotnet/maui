@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Platform
 		static void OnDoneClicked(object obj)
 		{
 			if (obj is MauiDatePicker mdp)
+			{
 				mdp.MauiDatePickerDelegate?.DoneClicked();
+			}
 		}
 
 		void OnEnded(object? sender, EventArgs e) =>

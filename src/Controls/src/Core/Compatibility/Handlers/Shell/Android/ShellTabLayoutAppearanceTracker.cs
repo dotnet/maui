@@ -54,7 +54,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 			_shellContext = null;

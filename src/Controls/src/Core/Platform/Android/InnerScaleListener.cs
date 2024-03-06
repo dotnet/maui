@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Controls.Platform
 			float last = detector.PreviousSpan;
 
 			if (Math.Abs(cur - last) < 10)
+			{
 				return false;
+			}
 
 			return _pinchDelegate(detector.ScaleFactor, new Point(_fromPixels(detector.FocusX), _fromPixels(detector.FocusY)));
 		}

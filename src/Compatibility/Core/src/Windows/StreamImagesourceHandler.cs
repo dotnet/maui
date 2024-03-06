@@ -19,7 +19,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				using (Stream stream = await ((IStreamImageSource)streamsource).GetStreamAsync(cancellationToken))
 				{
 					if (stream == null)
+					{
 						return null;
+					}
+
 					bitmapimage = new BitmapImage();
 					await bitmapimage.SetSourceAsync(stream.AsRandomAccessStream());
 				}

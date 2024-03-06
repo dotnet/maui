@@ -108,7 +108,11 @@ namespace Microsoft.Maui.Authentication
 		static IPlatformWebAuthenticatorCallback AsPlatformCallback(this IWebAuthenticator webAuthenticator)
 		{
 			if (webAuthenticator is not IPlatformWebAuthenticatorCallback platform)
+			{
+			{
 				throw new PlatformNotSupportedException("This implementation of IWebAuthenticator does not implement IPlatformWebAuthenticatorCallback.");
+			}
+
 			return platform;
 		}
 
@@ -147,7 +151,11 @@ namespace Microsoft.Maui.Authentication
 		{
 			var uri = userActivity?.WebPageUrl?.AbsoluteString;
 			if (string.IsNullOrEmpty(uri))
+			{
+			{
 				return false;
+			}
+			}
 
 			return webAuthenticator.OpenUrl(new Uri(uri));
 		}

@@ -21,7 +21,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var strValue = value?.ToString();
 			if (strValue == null)
+			{
+			{
 				return null;
+			}
+			}
 
 			return strValue.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
 		}
@@ -29,7 +33,10 @@ namespace Microsoft.Maui.Controls
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not List<string> list)
+			{
 				throw new NotSupportedException();
+			}
+
 			return string.Join(", ", list);
 		}
 	}

@@ -22,9 +22,15 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			var set = new HashSet<string>();
 			foreach (var item in FirstList)
+			{
 				set.Add(item);
+			}
+
 			foreach (var item in SecondList)
+			{
 				set.Add(item);
+			}
+
 			return set;
 		}
 	}

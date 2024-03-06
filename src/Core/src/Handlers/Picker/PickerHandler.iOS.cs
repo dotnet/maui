@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			var paddingTitle = 0;
 			if (!string.IsNullOrEmpty(VirtualView.Title))
+			{
 				paddingTitle += 25;
+			}
 
 			var pickerHeight = 240;
 			var frame = new RectangleF(0, paddingTitle, 269, pickerHeight);
@@ -163,16 +165,23 @@ namespace Microsoft.Maui.Handlers
 		void UpdatePickerFromPickerSource(PickerSource? pickerSource)
 		{
 			if (VirtualView == null || PlatformView == null || pickerSource == null)
+			{
+			{
 				return;
+			}
 
 			PlatformView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
+			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
 			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
 		}
 
 		void UpdatePickerSelectedIndex(UIPickerView? pickerView, int formsIndex)
 		{
 			if (VirtualView == null || pickerView == null)
+			{
+			{
 				return;
+			}
 
 			var source = (PickerSource)pickerView.Model;
 			source.SelectedIndex = formsIndex;
@@ -184,9 +193,12 @@ namespace Microsoft.Maui.Handlers
 			var pickerSource = pickerView?.Model as PickerSource;
 			var count = VirtualView?.GetCount() ?? 0;
 			if (pickerSource != null && pickerSource.SelectedIndex == -1 && count > 0)
+			{
 				UpdatePickerSelectedIndex(pickerView, 0);
+			}
 
 			UpdatePickerFromPickerSource(pickerSource);
+			textField.ResignFirstResponder();
 			textField.ResignFirstResponder();
 		}
 
@@ -226,7 +238,9 @@ namespace Microsoft.Maui.Handlers
 			bool OnShouldBeginEditing (UITextField textField)
 			{
 				if (Handler is not PickerHandler handler)
+				{
 					return false;
+				}
 
 
 				// The PlatformView will always be a MauiPicker (which derives from UITextfield) by definition, but we're forced to use
@@ -247,13 +261,19 @@ namespace Microsoft.Maui.Handlers
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is IPicker virtualView)
+				{
 					virtualView.IsFocused = true;
+				}
+				}
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
 				if (Handler is not PickerHandler handler || handler._pickerView is not UIPickerView pickerView)
+				{
+				{
 					return;
+				}
 
 				PickerSource? model = (PickerSource)pickerView.Model;
 				if (model.SelectedIndex != -1 && model.SelectedIndex != pickerView.SelectedRowInComponent(0))
@@ -261,13 +281,19 @@ namespace Microsoft.Maui.Handlers
 					pickerView.Select(model.SelectedIndex, 0, false);
 				}
 				if (VirtualView is IPicker virtualView)
+				{
 					virtualView.IsFocused = false;
+				}
+				}
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)
 			{
 				if (sender is not MauiPicker platformView || VirtualView is not IPicker virtualView)
+				{
+				{
 					return;
+				}
 
 				// Reset the TextField's Text so it appears as if typing with a keyboard does not work.
 				var selectedIndex = virtualView.SelectedIndex;
@@ -294,7 +320,9 @@ namespace Microsoft.Maui.Handlers
 			get
 			{
 				if (_weakReference?.TryGetTarget(out PickerHandler? target) == true)
+				{
 					return target;
+				}
 
 				return null;
 			}
@@ -302,7 +330,10 @@ namespace Microsoft.Maui.Handlers
 			{
 				_weakReference = null;
 				if (value == null)
+				{
+				{
 					return;
+				}
 
 				_weakReference = new WeakReference<PickerHandler>(value);
 			}
@@ -328,7 +359,10 @@ namespace Microsoft.Maui.Handlers
 				var platformView = Handler?.PlatformView;
 
 				if (virtualView == null || platformView == null)
+				{
+				{
 					return;
+				}
 
 				platformView.UpdatePicker(virtualView, SelectedIndex);
 			}

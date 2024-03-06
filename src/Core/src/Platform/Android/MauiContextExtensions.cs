@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Platform
 				var activity = mauiContext.Context.GetActivity();
 
 				if (activity != null)
+				{
 					layoutInflater = LayoutInflater.From(activity);
+				}
 			}
 
 			return layoutInflater ?? throw new InvalidOperationException("LayoutInflater Not Found");
@@ -51,18 +53,26 @@ namespace Microsoft.Maui.Platform
 			var scopedContext = new MauiContext(mauiContext.Services);
 
 			if (layoutInflater != null)
+			{
 				scopedContext.AddWeakSpecific(layoutInflater);
+			}
 
 			if (fragmentManager != null)
+			{
 				scopedContext.AddWeakSpecific(fragmentManager);
+			}
 
 			if (context != null)
+			{
 				scopedContext.AddWeakSpecific(context);
+			}
 
 			if (registerNewNavigationRoot)
 			{
 				if (fragmentManager == null)
+				{
 					throw new InvalidOperationException("If you're creating a new Navigation Root you need to use a new Fragment Manager");
+				}
 
 				scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
 			}
@@ -99,7 +109,9 @@ namespace Microsoft.Maui.Platform
 		internal static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
 			if (IPlatformApplication.Current?.Services is not null)
+			{
 				return IPlatformApplication.Current.Services;
+			}
 
 			throw new InvalidOperationException("Unable to find Application Services");
 		}

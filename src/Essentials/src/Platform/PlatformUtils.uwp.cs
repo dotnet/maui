@@ -21,7 +21,9 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var context = SynchronizationContext.Current;
 			if (context == null)
+			{
 				return;
+			}
 
 			self.ContinueWith(
 				t =>

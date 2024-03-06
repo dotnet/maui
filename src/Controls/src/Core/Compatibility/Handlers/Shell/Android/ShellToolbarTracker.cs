@@ -40,12 +40,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
 			if (_flyoutBehavior == behavior)
+			{
 				return;
+			}
 
 			_flyoutBehavior = behavior;
 
 			if (Page != null)
+			{
 				UpdateLeftBarButtonItem();
+			}
 		}
 
 		#endregion IFlyoutBehaviorObserver
@@ -95,14 +99,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			get
 			{
 				if (_page?.Navigation?.NavigationStack?.Count > 1)
+				{
 					return true;
+				}
 
 				return _canNavigateBack;
 			}
 			set
 			{
 				if (_canNavigateBack == value)
+				{
 					return;
+				}
 
 				_canNavigateBack = value;
 			}
@@ -114,7 +122,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (_page == value)
+				{
 					return;
+				}
+
 				var oldPage = _page;
 				_page = value;
 				OnPageChanged(oldPage, _page);
@@ -141,7 +152,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (value == _searchHandler)
+				{
 					return;
+				}
 
 				var oldValue = _searchHandler;
 				_searchHandler = value;
@@ -157,18 +170,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (isEnabled)
 			{
 				if (backButtonHandler?.Command != null)
+				{
 					backButtonHandler.Command.Execute(backButtonHandler.CommandParameter);
+				}
 				else if (CanNavigateBack)
+				{
 					OnNavigateBack();
+				}
 				else
+				{
 					ShellContext.Shell.FlyoutIsPresented = !ShellContext.Shell.FlyoutIsPresented;
+				}
 			}
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -177,9 +198,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_globalLayoutListener.Invalidate();
 
 				if (_backButtonBehavior != null)
+				{
 					_backButtonBehavior.PropertyChanged -= OnBackButtonBehaviorChanged;
-
-				((IShellController)ShellContext.Shell)?.RemoveFlyoutBehaviorObserver(this);
+				} ((IShellController)ShellContext.Shell)?.RemoveFlyoutBehaviorObserver(this);
 				ShellContext.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
 				ShellContext.Shell.Navigated -= OnShellNavigated;
 				UpdateTitleView(ShellContext.AndroidContext, _platformToolbar, null);
@@ -236,7 +257,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (oldPage != null)
 			{
 				if (_backButtonBehavior != null)
+				{
 					_backButtonBehavior.PropertyChanged -= OnBackButtonBehaviorChanged;
+				}
 
 				oldPage.PropertyChanged -= OnPagePropertyChanged;
 				((INotifyCollectionChanged)oldPage.ToolbarItems).CollectionChanged -= OnPageToolbarItemsChanged;
@@ -248,9 +271,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_backButtonBehavior = Shell.GetBackButtonBehavior(newPage);
 
 				if (_backButtonBehavior != null)
+				{
 					_backButtonBehavior.PropertyChanged += OnBackButtonBehaviorChanged;
-
-				((INotifyCollectionChanged)newPage.ToolbarItems).CollectionChanged += OnPageToolbarItemsChanged;
+				} ((INotifyCollectionChanged)newPage.ToolbarItems).CollectionChanged += OnPageToolbarItemsChanged;
 
 				UpdatePageTitle(_platformToolbar, newPage);
 				UpdateLeftBarButtonItem();
@@ -270,7 +293,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
 		{
 			if (_disposed || Page == null)
+			{
 				return;
+			}
 
 			if (ShellContext?.Shell?.Toolbar is ShellToolbar &&
 				Page == ShellContext?.Shell?.GetCurrentShellPage())
@@ -284,34 +309,50 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.TitleProperty.PropertyName)
+			{
 				UpdatePageTitle(_platformToolbar, Page);
+			}
 			else if (e.PropertyName == Shell.SearchHandlerProperty.PropertyName)
+			{
 				UpdateToolbarItems();
+			}
 			else if (e.PropertyName == Shell.NavBarIsVisibleProperty.PropertyName)
+			{
 				UpdateNavBarVisible(_platformToolbar, Page);
+			}
 			else if (e.PropertyName == Shell.NavBarHasShadowProperty.PropertyName)
+			{
 				UpdateNavBarHasShadow(Page);
+			}
 			else if (e.PropertyName == Shell.BackButtonBehaviorProperty.PropertyName)
 			{
 				var backButtonHandler = Shell.GetBackButtonBehavior(Page);
 
 				if (_backButtonBehavior != null)
+				{
 					_backButtonBehavior.PropertyChanged -= OnBackButtonBehaviorChanged;
+				}
 
 				UpdateLeftBarButtonItem();
 
 				_backButtonBehavior = backButtonHandler;
 				if (_backButtonBehavior != null)
+				{
 					_backButtonBehavior.PropertyChanged += OnBackButtonBehaviorChanged;
+				}
 			}
 			else if (e.PropertyName == Shell.TitleViewProperty.PropertyName)
+			{
 				UpdateTitleView();
+			}
 		}
 
 		void OnBackButtonBehaviorChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (!e.Is(BackButtonBehavior.CommandParameterProperty))
+			{
 				UpdateLeftBarButtonItem();
+			}
 		}
 
 
@@ -394,7 +435,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var tintColor = Colors.White;
 			if (TintColor != null)
+			{
 				tintColor = TintColor;
+			}
 
 			if (image != null)
 			{
@@ -402,9 +445,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Drawable customIcon;
 
 				if (fid?.IconBitmapSource == image)
+				{
 					customIcon = fid.IconBitmap;
+				}
 				else
+				{
 					customIcon = (await image.GetPlatformImageAsync(MauiContext))?.Value;
+				}
 
 				if (customIcon != null)
 				{
@@ -438,14 +485,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (icon != null)
+			{
 				icon.Progress = (CanNavigateBack) ? 1 : 0;
+			}
 
 			if (command != null || CanNavigateBack)
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 
 				if (backButtonVisible)
+				{
 					toolbar.NavigationIcon = icon;
+				}
 			}
 			else if (_flyoutBehavior == FlyoutBehavior.Flyout || !defaultDrawerArrowDrawable)
 			{
@@ -518,9 +569,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				toolbar.SetNavigationContentDescription(image) == null)
 			{
 				if (CanNavigateBack)
+				{
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
+				}
 				else
+				{
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
+				}
 			}
 		}
 
@@ -559,12 +614,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateNavBarHasShadow(Page page)
 		{
 			if (page == null || !_appBar.IsAlive())
+			{
 				return;
+			}
 
 			if (Shell.GetNavBarHasShadow(page))
 			{
 				if (_appBarElevation <= 0)
+				{
 					_appBarElevation = _appBar.Context.ToPixels(4);
+				}
 
 				_appBar.SetElevation(_appBarElevation);
 			}
@@ -591,7 +650,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void UpdateTitleView(Context context, AToolbar toolbar, View titleView)
 		{
 			if (_toolbar != null && ShellContext?.Shell?.GetCurrentShellPage() == Page)
+			{
 				_toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
+			}
 		}
 
 		protected virtual void UpdateToolbarItems(AToolbar toolbar, Page page)
@@ -622,11 +683,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					item.SetEnabled(SearchHandler.IsSearchEnabled);
 					item.SetIcon(Resource.Drawable.abc_ic_search_api_material);
 					using (var icon = item.Icon)
+					{
 						icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+					}
+
 					item.SetShowAsAction(ShowAsAction.IfRoom | ShowAsAction.CollapseActionView);
 
 					if (_searchView.View.Parent != null)
+					{
 						_searchView.View.RemoveFromParent();
+					}
 
 					item.SetActionView(_searchView.View);
 					item.Dispose();
@@ -634,7 +700,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
 				{
 					if (_searchView.View.Parent != _platformToolbar)
+					{
 						_platformToolbar.AddView(_searchView.View);
+					}
 				}
 			}
 			else
@@ -656,7 +724,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			// We only need to do this tint hack when using collapsed search handlers
 			if (SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Collapsible)
+			{
 				return;
+			}
 
 			for (int i = 0; i < _platformToolbar.ChildCount; i++)
 			{

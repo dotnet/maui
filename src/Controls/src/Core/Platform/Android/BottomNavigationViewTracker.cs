@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public void Dispose()
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 		}

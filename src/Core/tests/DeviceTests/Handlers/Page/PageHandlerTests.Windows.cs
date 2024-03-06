@@ -12,7 +12,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				childCount = view.Children.Count;
 				if (childCount == 1)
+				{
 					return view.Children[0];
+				}
 			}
 
 			Assert.Equal(1, childCount);

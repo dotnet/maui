@@ -39,9 +39,11 @@ namespace Microsoft.Maui.IntegrationTests
 			EnableTizen(projectFile);
 
 			if (shouldPack)
+			{
 				FileUtilities.ReplaceInFile(projectFile,
 					"</Project>",
 					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
+			}
 
 			string target = shouldPack ? "Pack" : "";
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true),
@@ -87,7 +89,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", "Project Space", "projectspace")]
 		[TestCase("maui-blazor", "Project Space", "projectspace")]
 		[TestCase("mauilib", "Project Space", "projectspace")]
-  		// with invalid characters
+		// with invalid characters
 		[TestCase("maui", "Project@Symbol", "projectsymbol")]
 		[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
 		[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
@@ -142,9 +144,11 @@ namespace Microsoft.Maui.IntegrationTests
 			EnableTizen(projectFile);
 
 			if (shouldPack)
+			{
 				FileUtilities.ReplaceInFile(projectFile,
 					"</Project>",
 					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
+			}
 
 			// set <MauiVersion> in the csproj as that is the reccommended place
 			var mv = framework == DotNetPrevious ? MauiVersionPrevious : MauiVersionCurrent;
@@ -190,7 +194,9 @@ namespace Microsoft.Maui.IntegrationTests
 		public void BuildWindowsAppSDKSelfContained(string id, bool wasdkself, bool netself)
 		{
 			if (TestEnvironment.IsMacOS)
+			{
 				Assert.Ignore("This test is designed for testing a windows build.");
+			}
 
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -218,7 +224,9 @@ namespace Microsoft.Maui.IntegrationTests
 		public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 		{
 			if (!TestEnvironment.IsMacOS)
+			{
 				Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
+			}
 
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -240,7 +248,9 @@ namespace Microsoft.Maui.IntegrationTests
 		public void PublishNativeAOTCheckWarnings(string id, string framework, string runtimeIdentifier)
 		{
 			if (!TestEnvironment.IsMacOS)
+			{
 				Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
+			}
 
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -269,7 +279,9 @@ namespace Microsoft.Maui.IntegrationTests
 		public void PublishUnpackaged(string id, string framework, string config)
 		{
 			if (!TestEnvironment.IsWindows)
+			{
 				Assert.Ignore("Running Windows templates is only supported on Windows.");
+			}
 
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -392,7 +404,9 @@ namespace Microsoft.Maui.IntegrationTests
 		public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework)
 		{
 			if (TestEnvironment.IsWindows)
+			{
 				Assert.Ignore("Running MacCatalyst templates is only supported on Mac.");
+			}
 
 			string projectDir = TestDirectory;
 			string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");

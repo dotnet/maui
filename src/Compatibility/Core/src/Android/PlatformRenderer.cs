@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (e.Action != MotionEventActions.Up)
+			{
 				return base.DispatchTouchEvent(e);
+			}
 
 			global::Android.Views.View currentView = Context.GetActivity().CurrentFocus;
 			bool result = base.DispatchTouchEvent(e);
@@ -38,17 +40,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			do
 			{
 				if (!(currentView is EditText))
+				{
 					break;
+				}
 
 				global::Android.Views.View newCurrentView = Context.GetActivity().CurrentFocus;
 
 				if (currentView != newCurrentView)
+				{
 					break;
+				}
 
 				double distance = _downPosition.Distance(new Point(e.RawX, e.RawY));
 
 				if (distance > Context.ToPixels(20) || DateTime.UtcNow - _downTime > TimeSpan.FromMilliseconds(200))
+				{
 					break;
+				}
 
 				var location = new int[2];
 				currentView.GetLocationOnScreen(location);
@@ -59,7 +67,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var rect = new Rect(currentView.Left, currentView.Top, currentView.Width, currentView.Height);
 
 				if (rect.Contains(x, y))
+				{
 					break;
+				}
 
 				Context.HideKeyboard(currentView);
 				Context.GetActivity().Window.DecorView.ClearFocus();

@@ -193,15 +193,21 @@ namespace Microsoft.Maui.Controls.Design
 			var str = value?.ToString();
 
 			if (string.IsNullOrWhiteSpace(str))
+			{
 				return false;
+			}
 
 			// Any named colors are ok. Surrounding white spaces are ok.
 			if (knowValuesSet.Contains(str.Trim()))
+			{
 				return true;
+			}
 
 			// Check for HEX Color string
 			if (RxColorHex.Value.IsMatch(str))
+			{
 				return true;
+			}
 
 			var match = RxFuncExpr.Value.Match(str);
 
@@ -212,7 +218,9 @@ namespace Microsoft.Maui.Controls.Design
 			{
 				// ie: argb() needs 4 parameters:
 				if (funcValues.Count == funcName.Length)
+				{
 					return true;
+				}
 			}
 
 			return false;

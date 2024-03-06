@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var elemValue = (string)Element?.GetValue(AutomationProperties.NameProperty);
 			if (string.IsNullOrWhiteSpace(elemValue) && Control?.AccessibilityLabel == Control?.Title(UIControlState.Normal))
+			{
 				return;
+			}
 
 			base.SetAccessibilityLabel();
 		}
@@ -89,7 +91,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -104,7 +108,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void OnElementChanged(ElementChangedEventArgs<CheckBox> e)
 		{
 			if (e.OldElement != null)
+			{
 				e.OldElement.CheckedChanged -= OnElementCheckedChanged;
+			}
 
 			if (e.NewElement != null)
 			{
@@ -129,7 +135,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected virtual void UpdateTintColor()
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			Control.CheckBoxTintColor = Element.Color;
 		}
@@ -150,7 +158,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.Is(CheckBox.ColorProperty))
+			{
 				UpdateTintColor();
+			}
 		}
 	}
 }

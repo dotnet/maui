@@ -86,13 +86,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			if (_previousFrame != Frame)
+			{
+			{
 				_previousFrame = Frame;
+			}
+			}
 		}
 
 		protected override void SetBackground(Brush brush)
 		{
 			if (Control == null)
+			{
+			{
 				return;
+			}
 
 			BrushExtensions.RemoveBackgroundLayer(_backgroundUIView);
 
@@ -109,9 +116,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					var backgroundColor = solidColorBrush.Color;
 
 					if (backgroundColor == null)
+					{
 						_backgroundUIView.BackgroundColor = UIColor.White;
+					}
 					else
+					{
 						_backgroundUIView.BackgroundColor = backgroundColor.ToPlatform();
+					}
 				}
 				else
 				{
@@ -129,7 +140,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -171,12 +185,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				var headerView = ListView?.HeaderElement as VisualElement;
 				if (headerView != null)
+				{
 					headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
+				}
+
 				Control?.TableHeaderView?.Dispose();
 
 				var footerView = ListView?.FooterElement as VisualElement;
 				if (footerView != null)
+				{
 					footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
+				}
+
 				Control?.TableFooterView?.Dispose();
 			}
 
@@ -194,11 +214,39 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var listView = e.OldElement;
 				var headerView = (VisualElement)listView.HeaderElement;
 				if (headerView != null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 					headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
+After:
+				{
+					headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
+				}
+*/
+				
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
+
+				listView.ScrollToRequested -= OnScrollToRequested;
+				var templatedItems = ((ITemplatedItemsView<Cell>)e.OldElement).TemplatedItems;
+After:
+				{
+					footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
+				}
+
+				listView.ScrollToRequested -= OnScrollToRequested;
+				var templatedItems = ((ITemplatedItemsView<Cell>)e.OldElement).TemplatedItems;
+*/
+{
+					headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
+				}
 
 				var footerView = (VisualElement)listView.FooterElement;
 				if (footerView != null)
+				{
 					footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
+				}
 
 				listView.ScrollToRequested -= OnScrollToRequested;
 				var templatedItems = ((ITemplatedItemsView<Cell>)e.OldElement).TemplatedItems;
@@ -228,7 +276,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						|| OperatingSystem.IsTvOSVersionAtLeast(15)
 #endif
 					)
+					{
 						_tableViewController.TableView.SectionHeaderTopPadding = new nfloat(0);
+					}
 
 					_backgroundUIView = _tableViewController.TableView.BackgroundView;
 				}
@@ -258,7 +308,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				var selected = e.NewElement.SelectedItem;
 				if (selected != null)
+				{
 					_dataSource.OnItemSelected(null, new SelectedItemChangedEventArgs(selected, templatedItems.GetGlobalIndexOfItem(selected)));
+				}
 			}
 
 			base.OnElementChanged(e);
@@ -268,36 +320,68 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.OnElementPropertyChanged(sender, e);
 			if (e.PropertyName == Microsoft.Maui.Controls.ListView.RowHeightProperty.PropertyName)
+			{
 				UpdateRowHeight();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.ListView.IsGroupingEnabledProperty.PropertyName)
+			{
 				_dataSource.UpdateGrouping();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.ListView.HasUnevenRowsProperty.PropertyName)
 			{
 				Control.Source = _dataSource = Element.HasUnevenRows ? new UnevenListViewDataSource(_dataSource) : new ListViewDataSource(_dataSource);
 				ReloadData();
 			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.ListView.IsPullToRefreshEnabledProperty.PropertyName)
+			{
+			{
 				UpdatePullToRefreshEnabled();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.ListView.IsRefreshingProperty.PropertyName)
+			{
 				UpdateIsRefreshing();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.ListView.SeparatorColorProperty.PropertyName)
+			{
 				UpdateSeparatorColor();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.ListView.SeparatorVisibilityProperty.PropertyName)
+			{
 				UpdateSeparatorVisibility();
+			}
 			else if (e.PropertyName == "HeaderElement")
+			{
 				UpdateHeader();
+			}
 			else if (e.PropertyName == "FooterElement")
+			{
 				UpdateFooter();
+			}
 			else if (e.PropertyName == "RefreshAllowed")
+			{
+			{
 				UpdatePullToRefreshEnabled();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.ListView.SelectionModeProperty.PropertyName)
+			{
+			{
 				UpdateSelectionMode();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.ListView.RefreshControlColorProperty.PropertyName)
+			{
+			{
 				UpdateSpinnerColor();
+			}
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateVerticalScrollBarVisibility();
+			}
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
+			{
+			{
 				UpdateHorizontalScrollBarVisibility();
+			}
+			}
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -307,14 +391,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the cells adhere to changes UI theme
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			{
+			{
 				ReloadData();
+			}
+			}
 		}
 
 		NSIndexPath[] GetPaths(int section, int index, int count)
 		{
 			var paths = new NSIndexPath[count];
 			for (var i = 0; i < paths.Length; i++)
+			{
 				paths[i] = NSIndexPath.FromRowSection(index + i, section);
+			}
 
 			return paths;
 		}
@@ -344,7 +434,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			Control.TableFooterView = null;
 			if (Bounds.Width * Bounds.Height == 0)
+			{
+			{
 				return;
+			}
 
 			var size = _footerRenderer.VirtualView.Measure(Bounds.Width, double.PositiveInfinity);
 			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
@@ -355,7 +448,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			BeginInvokeOnMainThread(() =>
 			{
 				if (_footerRenderer != null)
+				{
 					Control.TableFooterView = _footerRenderer.PlatformView;
+				}
+			});
+			Control.TableFooterView = _footerRenderer.PlatformView;
+
+			BeginInvokeOnMainThread(() =>
+			{
+				if (_footerRenderer != null)
+				{
+					Control.TableFooterView = _footerRenderer.PlatformView;
+				}
 			});
 		}
 
@@ -364,7 +468,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Control.TableHeaderView = null;
 
 			if (Bounds.Width * Bounds.Height == 0)
+			{
+			{
 				return;
+			}
 
 			var size = _headerRenderer.VirtualView.Measure(Bounds.Width, double.PositiveInfinity);
 			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
@@ -383,7 +490,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			BeginInvokeOnMainThread(() =>
 			{
 				if (_headerRenderer != null)
+				{
 					Control.TableHeaderView = _headerRenderer.PlatformView;
+				}
+			});
+			Control.TableHeaderView = _headerRenderer.PlatformView;
+
+			// Time for another story with Jason. Gather round children because the following Math.Ceiling will look like it's completely useless.
+			// You will remove it and test and find everything is fiiiiiine, but it is not fine, no it is far from fine. See iOS, or at least iOS 8
+			// has an issue where-by if the TableHeaderView happens to NOT be an integer height, it will add padding to the space between the content
+			// of the UITableView and the TableHeaderView to the tune of the difference between Math.Ceiling (height) - height. Now this seems fine
+			// and when you test it will be, EXCEPT that it does this every time you toggle the visibility of the UITableView causing the spacing to
+			// grow a little each time, which you weren't testing at all were you? So there you have it, the stupid reason we integer align here.
+			//
+			// The same technically applies to the footer, though that could hardly matter less. We just do it for fun.
+			BeginInvokeOnMainThread(() =>
+			{
+				if (_headerRenderer != null)
+				{
+					Control.TableHeaderView = _headerRenderer.PlatformView;
+				}
 			});
 		}
 
@@ -422,7 +548,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var result = templatedItems.GetGroupAndIndexOfItem(scrollArgs.Group, scrollArgs.Item);
 				if (result.Item1 != -1 && result.Item2 != -1)
+				{
 					Control.ScrollToRow(NSIndexPath.FromRowSection(result.Item2, result.Item1), position, e.ShouldAnimate);
+				}
+				}
 			}
 			else
 			{
@@ -432,13 +561,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					Control.Layer.RemoveAllAnimations();
 					//iOS11 hack
 					if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
+					{
 						this.BeginInvokeOnMainThread(() =>
 						{
 							if (Control != null /*&& !_disposed*/)
+							{
 								Control.ScrollToRow(NSIndexPath.FromRowSection(index, 0), position, e.ShouldAnimate);
+							}
 						});
+					}
 					else
+					{
 						Control.ScrollToRow(NSIndexPath.FromRowSection(index, 0), position, e.ShouldAnimate);
+					}
 				}
 			}
 		}
@@ -524,13 +659,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var refreshing = Element.IsRefreshing;
 			if (_tableViewController != null)
+			{
 				_tableViewController.UpdateIsRefreshing(refreshing);
+			}
+			}
 		}
 
 		void UpdateItems(NotifyCollectionChangedEventArgs e, int section, bool resetWhenGrouped)
 		{
 			var exArgs = e as NotifyCollectionChangedEventArgsEx;
 			if (exArgs != null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				_dataSource.Counts[section] = exArgs.Count;
 
 			// This means the UITableView hasn't rendered any cells yet
@@ -543,7 +684,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// We can't do this check on grouped lists because the index doesn't match the number of rows in a section.
 			// Likewise, we can't do this check on lists using RecycleElement because the number of rows in a section will remain constant because they are reused.
 			if (!groupReset && Element.CachingStrategy == ListViewCachingStrategy.RetainElement)
+After:
 			{
+				_dataSource.Counts[section] = exArgs.Count;
+			}
+
+			// This means the UITableView hasn't rendered any cells yet
+			// so there's no need to synchronize the rows on the UITableView
+			if (Control.IndexPathsForVisibleRows == null && e.Action != NotifyCollectionChangedAction.Reset)
+*/
+			
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				var lastIndex = Control.NumberOfRowsInSection(section);
 				if (e.NewStartingIndex > lastIndex || e.OldStartingIndex > lastIndex)
 					throw new ArgumentException(
@@ -590,6 +742,289 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (e.OldStartingIndex == 0)
 						InvalidateCellCache();
+After:
+				return;
+			}
+
+			var groupReset = resetWhenGrouped && Element.IsGroupingEnabled;
+
+			// We can't do this check on grouped lists because the index doesn't match the number of rows in a section.
+			// Likewise, we can't do this check on lists using RecycleElement because the number of rows in a section will remain constant because they are reused.
+			if (!groupReset && Element.CachingStrategy == ListViewCachingStrategy.RetainElement)
+			{
+				var lastIndex = Control.NumberOfRowsInSection(section);
+				if (e.NewStartingIndex > lastIndex || e.OldStartingIndex > lastIndex)
+				{
+					throw new ArgumentException(
+						$"Index '{Math.Max(e.NewStartingIndex, e.OldStartingIndex)}' is greater than the number of rows '{lastIndex}'.");
+				}
+			}
+
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					if (e.NewStartingIndex == -1 || groupReset)
+					{
+						goto case NotifyCollectionChangedAction.Reset;
+					}
+
+					InsertRows(e.NewStartingIndex, e.NewItems.Count, section);
+
+					break;
+
+				case NotifyCollectionChangedAction.Remove:
+					if (e.OldStartingIndex == -1 || groupReset)
+					{
+						goto case NotifyCollectionChangedAction.Reset;
+					}
+
+					DeleteRows(e.OldStartingIndex, e.OldItems.Count, section);
+
+					if (TemplatedItemsView.TemplatedItems.Count == 0)
+					{
+						InvalidateCellCache();
+					}
+
+					break;
+
+				case NotifyCollectionChangedAction.Move:
+					if (e.OldStartingIndex == -1 || e.NewStartingIndex == -1 || groupReset)
+					{
+						goto case NotifyCollectionChangedAction.Reset;
+					}
+
+					MoveRows(e.NewStartingIndex, e.OldStartingIndex, e.OldItems.Count, section);
+
+					if (e.OldStartingIndex == 0)
+					{
+						InvalidateCellCache();
+					}
+
+					break;
+
+				case NotifyCollectionChangedAction.Replace:
+					if (e.OldStartingIndex == -1 || groupReset)
+					{
+						goto case NotifyCollectionChangedAction.Reset;
+					}
+
+					ReloadRows(e.OldStartingIndex, e.OldItems.Count, section);
+
+					if (e.OldStartingIndex == 0)
+					{
+						InvalidateCellCache();
+					}
+*/
+{
+				_dataSource.Counts[section] = exArgs.Count;
+			}
+
+			// This means the UITableView hasn't rendered any cells yet
+			// so there's no need to synchronize the rows on the UITableView
+			if (Control.IndexPathsForVisibleRows == null && e.Action != NotifyCollectionChangedAction.Reset)
+			{
+				return;
+			}
+
+			var groupReset = resetWhenGrouped && Element.IsGroupingEnabled;
+
+			// We can't do this check on grouped lists because the index doesn't match the number of rows in a section.
+			// Likewise, we can't do this check on lists using RecycleElement because the number of rows in a section will remain constant because they are reused.
+			if (!groupReset && Element.CachingStrategy == ListViewCachingStrategy.RetainElement)
+			{
+				var lastIndex = Control.NumberOfRowsInSection(section);
+				if (e.NewStartingIndex > lastIndex || e.OldStartingIndex > lastIndex)
+				{
+					throw new ArgumentException(
+						$"Index '{Math.Max(e.NewStartingIndex, e.OldStartingIndex)}' is greater than the number of rows '{lastIndex}'.");
+				}
+			}
+
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					if (e.NewStartingIndex == -1 || groupReset)
+					{
+						goto case NotifyCollectionChangedAction.Reset;
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				action.Invoke();
+After:
+			{
+				action.Invoke();
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				PerformWithoutAnimation(() => { action.Invoke(); });
+		}
+After:
+			{
+				PerformWithoutAnimation(() => { action.Invoke(); });
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				action.Invoke();
+After:
+			{
+				action.Invoke();
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				PerformWithoutAnimation(() => { action.Invoke(); });
+		}
+After:
+			{
+				PerformWithoutAnimation(() => { action.Invoke(); });
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				action.Invoke();
+After:
+			{
+				action.Invoke();
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				PerformWithoutAnimation(() => { action.Invoke(); });
+		}
+After:
+			{
+				PerformWithoutAnimation(() => { action.Invoke(); });
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				action.Invoke();
+After:
+			{
+				action.Invoke();
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				PerformWithoutAnimation(() => { action.Invoke(); });
+		}
+After:
+			{
+				PerformWithoutAnimation(() => { action.Invoke(); });
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				Control.ReloadData();
+After:
+			{
+				Control.ReloadData();
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				PerformWithoutAnimation(() => { Control.ReloadData(); });
+		}
+After:
+			{
+				PerformWithoutAnimation(() => { Control.ReloadData(); });
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				Control.RowHeight = UITableView.AutomaticDimension;
+After:
+			{
+				Control.RowHeight = UITableView.AutomaticDimension;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
+		}
+After:
+			{
+				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
+			}
+		}
+*/
+					}
+
+					InsertRows(e.NewStartingIndex, e.NewItems.Count, section);
+
+					break;
+
+				case NotifyCollectionChangedAction.Remove:
+					if (e.OldStartingIndex == -1 || groupReset)
+					{
+						goto case NotifyCollectionChangedAction.Reset;
+					}
+
+					DeleteRows(e.OldStartingIndex, e.OldItems.Count, section);
+
+					if (TemplatedItemsView.TemplatedItems.Count == 0)
+					{
+						InvalidateCellCache();
+					}
+
+					break;
+
+				case NotifyCollectionChangedAction.Move:
+					if (e.OldStartingIndex == -1 || e.NewStartingIndex == -1 || groupReset)
+					{
+						goto case NotifyCollectionChangedAction.Reset;
+					}
+
+					MoveRows(e.NewStartingIndex, e.OldStartingIndex, e.OldItems.Count, section);
+
+					if (e.OldStartingIndex == 0)
+					{
+						InvalidateCellCache();
+				
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					Control.DeselectRow(selectedIndexPath, false);
+			}
+After:
+				{
+					Control.DeselectRow(selectedIndexPath, false);
+				}
+			}
+*/
+	}
+
+					break;
+
+				case NotifyCollectionChangedAction.Replace:
+					if (e.OldStartingIndex == -1 || groupReset)
+					{
+						goto case NotifyCollectionChangedAction.Reset;
+					}
+
+					ReloadRows(e.OldStartingIndex, e.OldItems.Count, section);
+
+					if (e.OldStartingIndex == 0)
+					{
+						InvalidateCellCache();
+					}
 
 					break;
 
@@ -609,10 +1044,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Control.EndUpdates();
 			});
 
-			if (Element.OnThisPlatform().RowAnimationsEnabled())
+			if (
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToPlatform());
+After:
+			{
+				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToPlatform());
+*/
+Element.OnThisPlatform().RowAnimationsEnabled())
+			{
 				action.Invoke();
+			}
+			}
 			else
+			{
 				PerformWithoutAnimation(() => { action.Invoke(); });
+			}
 		}
 
 		void DeleteRows(int oldStartingIndex, int oldItemsCount, int section)
@@ -625,9 +1073,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			});
 
 			if (Element.OnThisPlatform().RowAnimationsEnabled())
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				_defaultVerticalScrollVisibility = Control.ShowsVerticalScrollIndicator;
+After:
+			{
+				_defaultVerticalScrollVisibility = Control.ShowsVerticalScrollIndicator;
+			}
+*/
+			{
 				action.Invoke();
+			}
 			else
+			{
 				PerformWithoutAnimation(() => { action.Invoke(); });
+			}
 		}
 
 		void MoveRows(int newStartingIndex, int oldStartingIndex, int oldItemsCount, int section)
@@ -652,12 +1113,465 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			});
 
 			if (Element.OnThisPlatform().RowAnimationsEnabled())
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				_defaultHorizontalScrollVisibility = Control.ShowsHorizontalScrollIndicator;
+After:
+			{
+				_defaultHorizontalScrollVisibility = Control.ShowsHorizontalScrollIndicator;
+			}
+*/
+			{
 				action.Invoke();
+			
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					templatedItems = templatedItems.GetGroup(0);
+After:
+				{
+					templatedItems = templatedItems.GetGroup(0);
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return DefaultRowHeight;
+After:
+				{
+					return DefaultRowHeight;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					tableView.EstimatedRowHeight = estimatedRowHeight;
+			}
+After:
+				{
+					tableView.EstimatedRowHeight = estimatedRowHeight;
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					itemTypeOrDataTemplate = GetDataTemplateForPath(indexPath);
+After:
+				{
+					itemTypeOrDataTemplate = GetDataTemplateForPath(indexPath);
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					itemTypeOrDataTemplate = GetItemTypeForPath(indexPath);
+
+				else // ListViewCachingStrategy.RetainElement
+					return GetCellForPath(indexPath);
+
+				if (itemTypeOrDataTemplate == null)
+					itemTypeOrDataTemplate = typeof(TextCell);
+After:
+				{
+					itemTypeOrDataTemplate = GetItemTypeForPath(indexPath);
+				}
+				else // ListViewCachingStrategy.RetainElement
+				{
+					return GetCellForPath(indexPath);
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out Cell protoCell))
+After:
+				if (itemTypeOrDataTemplate == null)
+				{
+					itemTypeOrDataTemplate = typeof(TextCell);
+				}
+
+				if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out Cell protoCell))
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return DefaultRowHeight;
+After:
+				{
+					return DefaultRowHeight;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return UITableView.AutomaticDimension;
+After:
+				{
+					return UITableView.AutomaticDimension;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+						_prototype = target.ToHandler(cell.FindMauiContext());
+After:
+					{
+						_prototype = target.ToHandler(cell.FindMauiContext());
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+						_prototype.SetVirtualView(target);
+After:
+					{
+						_prototype.SetVirtualView(target);
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+After:
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+After:
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+After:
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					throw new NotSupportedException();
+After:
+				{
+					throw new NotSupportedException();
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+						height = _defaultSectionHeight;
+After:
+					{
+						height = _defaultSectionHeight;
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return null;
+After:
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					throw new NotSupportedException("Header cells do not support context actions");
+After:
+				{
+					throw new NotSupportedException("Header cells do not support context actions");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+After:
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return TemplatedItemsView.TemplatedItems.Count;
+After:
+				{
+					return TemplatedItemsView.TemplatedItems.Count;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+After:
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+								animate = false;
+After:
+							{
+								animate = false;
+							}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+						_uiTableView.DeselectRow(selectedIndexPath, animate);
+After:
+					{
+						_uiTableView.DeselectRow(selectedIndexPath, animate);
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+After:
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+After:
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					formsCell = (Cell)((INativeElementView)cell).Element;
+
+				SetCellBackgroundColor(cell, UIColor.Clear);
+
+				if (List.SelectionMode == ListViewSelectionMode.None)
+					tableView.DeselectRow(indexPath, false);
+
+				_selectionFromNative = true;
+
+				tableView.EndEditing(true);
+				List.NotifyRowTapped(indexPath.Section, indexPath.Row, formsCell);
+			}
+After:
+				{
+					formsCell = (Cell)((INativeElementView)cell).Element;
+				}
+
+				SetCellBackgroundColor(cell, UIColor.Clear);
+
+				if (List.SelectionMode == ListViewSelectionMode.None)
+				{
+					tableView.DeselectRow(indexPath, false);
+				}
+
+				_selectionFromNative = true;
+
+				tableView.EndEditing(true);
+				List.NotifyRowTapped(indexPath.Section, indexPath.Row, formsCell);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return null;
+After:
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					_uiTableView.ReloadData();
+				else
+After:
+				{
+					_uiTableView.ReloadData();
+				}
+				else
+				{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			}
+After:
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+After:
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+						return false;
+After:
+					{
+						return false;
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath.Section];
+After:
+				{
+					templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath.Section];
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					_uiTableView.ReloadSectionIndexTitles();
+				else
+After:
+				{
+					_uiTableView.ReloadSectionIndexTitles();
+				}
+				else
+				{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			}
+After:
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					contextCell.ContentCell.BackgroundColor = color;
+			}
+After:
+				{
+					contextCell.ContentCell.BackgroundColor = color;
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return DefaultItemTemplateId;
+
+				var templatedList = GetTemplatedItemsListForPath(indexPath);
+				var item = templatedList.ListProxy[indexPath.Row];
+
+				itemTemplate = selector.SelectTemplate(item, List);
+				int key;
+				if (!_templateToId.TryGetValue(itemTemplate, out key))
+				{
+					s_dataTemplateIncrementer++;
+					key = s_dataTemplateIncrementer;
+					_templateToId[itemTemplate] = key;
+				}
+				return key;
+			}
+After:
+				{
+					return DefaultItemTemplateId;
+				}
+
+				var templatedList = GetTemplatedItemsListForPath(indexPath);
+				var item = templatedList.ListProxy[indexPath.Row];
+
+				itemTemplate = selector.SelectTemplate(item, List);
+				int key;
+				if (!_templateToId.TryGetValue(itemTemplate, out key))
+				{
+					s_dataTemplateIncrementer++;
+					key = s_dataTemplateIncrementer;
+					_templateToId[itemTemplate] = key;
+				}
+				return key;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					tableView.EstimatedRowHeight = 0;
+			}
+After:
+				{
+					tableView.EstimatedRowHeight = 0;
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+After:
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+After:
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+						PreserveActivityIndicatorState(childElement);
+				}
+After:
+					{
+						PreserveActivityIndicatorState(childElement);
+					}
+				}
+*/
+}
 			else
+			{
 				PerformWithoutAnimation(() => { action.Invoke(); });
+			}
 		}
 
-		void ReloadRows(int oldStartingIndex, int oldItemsCount, int section)
+		void ReloadRows(
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+			_tableViewCell?.RemoveFromSuperview();
+After:
+			{
+				return;
+			}
+
+			_tableViewCell?.RemoveFromSuperview();
+*/
+int oldStartingIndex, int oldItemsCount, int section)
 		{
 			var action = new Action(() =>
 			{
@@ -667,17 +1581,243 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			});
 
 			if (Element.OnThisPlatform().RowAnimationsEnabled())
+			{
 				action.Invoke();
+			}
 			else
+			{
 				PerformWithoutAnimation(() => { action.Invoke(); });
+			}
 		}
 
 		void ReloadData()
 		{
-			if (Element.OnThisPlatform().RowAnimationsEnabled())
+			
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				item.Frame = Bounds;
+		}
+After:
+			{
+				item.Frame = Bounds;
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+							return;
+After:
+						{
+							return;
+						}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+							StartRefreshing();
+
+
+						//hack: when we don't have cells in our UITableView the spinner fails to appear
+						CheckContentSize();
+						TableView.ScrollRectToVisible(new RectangleF(0, 0, _refresh.Bounds.Width, _refresh.Bounds.Height), true);
+					});
+After:
+						{
+							StartRefreshing();
+						}
+
+
+						//hack: when we don't have cells in our UITableView the spinner fails to appear
+						CheckContentSize();
+						TableView.ScrollRectToVisible(new RectangleF(0, 0, _refresh.Bounds.Width, _refresh.Bounds.Height), true);
+					});
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return;
+
+				EndRefreshing();
+
+				UpdateContentOffset(-1);
+After:
+				{
+					return;
+				}
+
+				EndRefreshing();
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				_isRefreshing = false;
+After:
+				UpdateContentOffset(-1);
+
+				_isRefreshing = false;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					RemoveRefresh();
+			}
+After:
+				{
+					RemoveRefresh();
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+			if (!_refresh.Refreshing && !_isRefreshing)
+After:
+			{
+				return;
+			}
+
+			if (!_refresh.Refreshing && !_isRefreshing)
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				RemoveRefresh();
+After:
+			{
+				RemoveRefresh();
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				UpdateIsRefreshing(_list.IsRefreshing);
+		}
+After:
+			{
+				UpdateIsRefreshing(_list.IsRefreshing);
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+
+			// Restart the refreshing to get the animation to trigger
+			UpdateIsRefreshing(false);
+			UpdateIsRefreshing(true);
+		}
+After:
+			{
+				return;
+			}
+
+			// Restart the refreshing to get the animation to trigger
+			UpdateIsRefreshing(false);
+			UpdateIsRefreshing(true);
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				RefreshControl.TintColor = color;
+		}
+After:
+			{
+				RefreshControl.TintColor = color;
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				TableView.ContentSize = new SizeF(contentSize.Width, 1);
+		}
+After:
+			{
+				TableView.ContentSize = new SizeF(contentSize.Width, 1);
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				_list.SendRefreshing();
+After:
+			{
+				_list.SendRefreshing();
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				EndRefreshing();
+
+			RefreshControl = null;
+			_refreshAdded = false;
+			_isRefreshing = false;
+After:
+			{
+				EndRefreshing();
+			}
+
+			RefreshControl = false;
+*/
+if (Element.OnThisPlatform().RowAnimationsEnabled())
+			{
 				Control.ReloadData();
+			}
 			else
+			{
 				PerformWithoutAnimation(() => { Control.ReloadData(); });
+			}
 		}
 
 		void InvalidateCellCache()
@@ -699,9 +1839,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var rowHeight = Element.RowHeight;
 
 			if (Element.HasUnevenRows && rowHeight == -1)
+			{
 				Control.RowHeight = UITableView.AutomaticDimension;
+			}
 			else
+			{
 				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
+			}
 		}
 
 		void UpdateSeparatorColor()
@@ -736,7 +1880,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Element.SelectedItem = null;
 				var selectedIndexPath = Control.IndexPathForSelectedRow;
 				if (selectedIndexPath != null)
+				{
 					Control.DeselectRow(selectedIndexPath, false);
+				}
 			}
 		}
 
@@ -745,13 +1891,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var color = Element.RefreshControlColor;
 
 			if (_tableViewController != null)
+			{
 				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToPlatform());
+			}
 		}
 
 		void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == null)
+			{
 				_defaultVerticalScrollVisibility = Control.ShowsVerticalScrollIndicator;
+			}
 
 			switch (Element.VerticalScrollBarVisibility)
 			{
@@ -770,7 +1920,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateHorizontalScrollBarVisibility()
 		{
 			if (_defaultHorizontalScrollVisibility == null)
+			{
 				_defaultHorizontalScrollVisibility = Control.ShowsHorizontalScrollIndicator;
+			}
 
 			switch (Element.HorizontalScrollBarVisibility)
 			{
@@ -821,11 +1973,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var isGroupingEnabled = List.IsGroupingEnabled;
 
 				if (isGroupingEnabled)
+				{
 					templatedItems = templatedItems.GetGroup(0);
+				}
 
 				object item = null;
 				if (templatedItems == null || templatedItems.ListProxy.TryGetValue(0, out item) == false)
+				{
 					return DefaultRowHeight;
+				}
 
 				var firstCell = templatedItems.ActivateContent(0, item);
 
@@ -856,7 +2012,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				//if we are providing 0 we are disabling EstimatedRowHeight,
 				//this works fine on newer versions, but iOS10 it will cause a crash so we leave the default value
 				if (estimatedRowHeight > 0 || (estimatedRowHeight == 0 && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))))
+				{
 					tableView.EstimatedRowHeight = estimatedRowHeight;
+				}
 			}
 
 			internal Cell GetPrototypicalCell(NSIndexPath indexPath)
@@ -865,16 +2023,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				var cachingStrategy = List.CachingStrategy;
 				if (cachingStrategy == ListViewCachingStrategy.RecycleElement)
+				{
 					itemTypeOrDataTemplate = GetDataTemplateForPath(indexPath);
-
+				}
 				else if (cachingStrategy == ListViewCachingStrategy.RecycleElementAndDataTemplate)
+				{
 					itemTypeOrDataTemplate = GetItemTypeForPath(indexPath);
-
+				}
 				else // ListViewCachingStrategy.RetainElement
+				{
 					return GetCellForPath(indexPath);
+				}
 
 				if (itemTypeOrDataTemplate == null)
+				{
 					itemTypeOrDataTemplate = typeof(TextCell);
+				}
 
 				if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out Cell protoCell))
 				{
@@ -892,12 +2056,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				// iOS may ask for a row we have just deleted and hence cannot rebind in order to measure height.
 				if (!IsValidIndexPath(indexPath))
+				{
 					return DefaultRowHeight;
+				}
 
 				var cell = GetPrototypicalCell(indexPath);
 
 				if (List.RowHeight == -1 && cell.Height == -1 && cell is ViewCell)
+				{
 					return UITableView.AutomaticDimension;
+				}
 
 				var renderHeight = cell.RenderHeight;
 				return renderHeight > 0 ? (nfloat)renderHeight : DefaultRowHeight;
@@ -910,9 +2078,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					var target = viewCell.View;
 					if (_prototype == null)
+					{
 						_prototype = target.ToHandler(cell.FindMauiContext());
+					}
 					else
+					{
 						_prototype.SetVirtualView(target);
+					}
 
 					var req = target.Measure(tableView.Frame.Width, double.PositiveInfinity);
 					target.Handler?.DisconnectHandler();
@@ -939,7 +2111,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
+				{
 					return;
+				}
 
 				_disposed = true;
 
@@ -1033,10 +2207,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			void SetupSelection(UITableViewCell platformCell, UITableView tableView)
 			{
 				if (!(platformCell is ContextActionsCell))
+				{
 					return;
+				}
 
 				if (_setupSelection)
+				{
 					return;
+				}
 
 				ContextActionsCell.SetupSelection(tableView);
 
@@ -1078,7 +2256,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 				}
 				else
+				{
 					throw new NotSupportedException();
+				}
 
 				SetupSelection(platformCell, tableView);
 
@@ -1105,7 +2285,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					var cell = TemplatedItemsView.TemplatedItems[(int)section];
 					nfloat height = (float)cell.RenderHeight;
 					if (height == -1)
+					{
 						height = _defaultSectionHeight;
+					}
 
 					return height;
 				}
@@ -1116,11 +2298,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override UIView GetViewForHeader(UITableView tableView, nint section)
 			{
 				if (!List.IsGroupingEnabled)
+				{
 					return null;
+				}
 
 				var cell = TemplatedItemsView.TemplatedItems[(int)section];
 				if (cell.HasContextActions)
+				{
 					throw new NotSupportedException("Header cells do not support context actions");
+				}
 
 				const string reuseIdentifier = "HeaderWrapper";
 				var header = (HeaderWrapperView)tableView.DequeueReusableHeaderFooterView(reuseIdentifier) ?? new HeaderWrapperView(reuseIdentifier);
@@ -1139,7 +2325,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void HeaderViewDisplayingEnded(UITableView tableView, UIView headerView, nint section)
 			{
 				if (!List.IsGroupingEnabled)
+				{
 					return;
+				}
 
 				if (headerView is HeaderWrapperView wrapper)
 				{
@@ -1151,7 +2339,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override nint NumberOfSections(UITableView tableView)
 			{
 				if (List.IsGroupingEnabled)
+				{
 					return TemplatedItemsView.TemplatedItems.Count;
+				}
 
 				return 1;
 			}
@@ -1165,7 +2355,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				if (List == null)
+				{
 					return;
+				}
 
 				var location = TemplatedItemsView.TemplatedItems.GetGroupAndIndexOfItem(eventArg.SelectedItem);
 				if (location.Item1 == -1 || location.Item2 == -1)
@@ -1181,12 +2373,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						{
 							cell.PrepareForDeselect();
 							if (cell.IsOpen)
+							{
 								animate = false;
+							}
 						}
 					}
 
 					if (selectedIndexPath != null)
+					{
 						_uiTableView.DeselectRow(selectedIndexPath, animate);
+					}
+
 					return;
 				}
 
@@ -1197,7 +2394,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var cell = tableView.CellAt(indexPath);
 				if (cell == null)
+				{
 					return;
+				}
 
 				SetCellBackgroundColor(cell, DefaultBackgroundColor);
 			}
@@ -1207,16 +2406,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var cell = tableView.CellAt(indexPath);
 
 				if (cell == null)
+				{
 					return;
+				}
 
 				Cell formsCell = null;
 				if ((List.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
+				{
 					formsCell = (Cell)((INativeElementView)cell).Element;
+				}
 
 				SetCellBackgroundColor(cell, UIColor.Clear);
 
 				if (List.SelectionMode == ListViewSelectionMode.None)
+				{
 					tableView.DeselectRow(indexPath, false);
+				}
 
 				_selectionFromNative = true;
 
@@ -1277,7 +2482,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				if (templatedItems.ShortNames == null)
+				{
 					return null;
+				}
 
 				return templatedItems.ShortNames.ToArray();
 			}
@@ -1293,15 +2500,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateShortNameListener();
 
 				if (List.OnThisPlatform().RowAnimationsEnabled())
+				{
 					_uiTableView.ReloadData();
+				}
 				else
+				{
 					PerformWithoutAnimation(() => { _uiTableView.ReloadData(); });
+				}
 			}
 
 			public void DetermineEstimatedRowHeight()
 			{
 				if (_estimatedRowHeight)
+				{
 					return;
+				}
 
 				UpdateEstimatedRowHeight(_uiTableView);
 
@@ -1315,7 +2528,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					var section = indexPath.Section;
 					if (section < 0 || section >= templatedItems.Count)
+					{
 						return false;
+					}
 
 					templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath.Section];
 				}
@@ -1327,7 +2542,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				if (List.IsGroupingEnabled)
+				{
 					templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath.Section];
+				}
 
 				return templatedItems;
 			}
@@ -1356,9 +2573,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			void OnShortNamesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 			{
 				if (List.OnThisPlatform().RowAnimationsEnabled())
+				{
 					_uiTableView.ReloadSectionIndexTitles();
+				}
 				else
+				{
 					PerformWithoutAnimation(() => { _uiTableView.ReloadSectionIndexTitles(); });
+				}
 			}
 
 			static void SetCellBackgroundColor(UITableViewCell cell, UIColor color)
@@ -1366,7 +2587,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var contextCell = cell as ContextActionsCell;
 				cell.BackgroundColor = color;
 				if (contextCell != null)
+				{
 					contextCell.ContentCell.BackgroundColor = color;
+				}
 			}
 
 			int TemplateIdForPath(NSIndexPath indexPath)
@@ -1374,7 +2597,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var itemTemplate = List.ItemTemplate;
 				var selector = itemTemplate as DataTemplateSelector;
 				if (selector == null)
+				{
 					return DefaultItemTemplateId;
+				}
 
 				var templatedList = GetTemplatedItemsListForPath(indexPath);
 				var item = templatedList.ListProxy[indexPath.Row];
@@ -1425,13 +2650,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				// if even rows OR uneven rows but user specified a row height anyway...
 				if (!List.HasUnevenRows || List.RowHeight != -1)
+				{
 					tableView.EstimatedRowHeight = 0;
+				}
 			}
 
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
+				{
 					return;
+				}
 
 				if (disposing)
 				{
@@ -1455,7 +2684,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			void PreserveActivityIndicatorState(Element element)
 			{
 				if (element == null)
+				{
 					return;
+				}
 
 				var activityIndicator = element as ActivityIndicator;
 				if (activityIndicator != null)
@@ -1467,7 +2698,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 				{
 					foreach (Element childElement in (element as IElementController).LogicalChildren)
+					{
 						PreserveActivityIndicatorState(childElement);
+					}
 				}
 			}
 		}
@@ -1486,7 +2719,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void SetTableViewCell(UITableViewCell value)
 		{
 			if (ReferenceEquals(_tableViewCell, value))
+			{
 				return;
+			}
+
 			_tableViewCell?.RemoveFromSuperview();
 			_tableViewCell = value;
 			AddSubview(value);
@@ -1496,7 +2732,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.LayoutSubviews();
 			foreach (var item in Subviews)
+			{
 				item.Frame = Bounds;
+			}
 		}
 	}
 
@@ -1544,10 +2782,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UpdateContentOffset(TableView.ContentOffset.Y - _refresh.Frame.Height, () =>
 					{
 						if (_refresh == null || _disposed)
+						{
 							return;
+						}
 
 						if (_isStartRefreshingPending)
+						{
 							StartRefreshing();
+						}
 
 
 						//hack: when we don't have cells in our UITableView the spinner fails to appear
@@ -1559,7 +2801,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 			{
 				if (RefreshControl == null)
+				{
 					return;
+				}
 
 				EndRefreshing();
 
@@ -1567,7 +2811,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				_isRefreshing = false;
 				if (!_list.IsPullToRefreshEnabled)
+				{
 					RemoveRefresh();
+				}
 			}
 		}
 
@@ -1575,7 +2821,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_isStartRefreshingPending = false;
 			if (_refresh?.Refreshing == true)
+			{
 				return;
+			}
 
 			_refresh.BeginRefreshing();
 		}
@@ -1584,7 +2832,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_isStartRefreshingPending = false;
 			if (_refresh?.Refreshing == false)
+			{
 				return;
+			}
 
 			_refresh.EndRefreshing();
 		}
@@ -1614,7 +2864,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void ForceRefreshing()
 		{
 			if (!_list.IsPullToRefreshEnabled)
+			{
 				return;
+			}
+
 			if (!_refresh.Refreshing && !_isRefreshing)
 			{
 				_isRefreshing = true;
@@ -1626,19 +2879,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void UpdateShowHideRefresh(bool shouldHide)
 		{
 			if (_list.IsPullToRefreshEnabled)
+			{
 				return;
+			}
 
 			if (shouldHide)
+			{
 				RemoveRefresh();
+			}
 			else
+			{
 				UpdateIsRefreshing(_list.IsRefreshing);
+			}
 		}
 
 		public override void ViewWillAppear(bool animated)
 		{
 			(TableView?.Source as ListViewRenderer.ListViewDataSource)?.Cleanup();
 			if (!_list.IsRefreshing || !_refresh.Refreshing)
+			{
 				return;
+			}
 
 			// Restart the refreshing to get the animation to trigger
 			UpdateIsRefreshing(false);
@@ -1653,13 +2914,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void UpdateRefreshControlColor(UIColor color)
 		{
 			if (RefreshControl != null)
+			{
 				RefreshControl.TintColor = color;
+			}
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -1684,13 +2949,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			//adding a default height of at least 1 pixel tricks iOS to show the spinner
 			var contentSize = TableView.ContentSize;
 			if (contentSize.Height == 0)
+			{
 				TableView.ContentSize = new SizeF(contentSize.Width, 1);
+			}
 		}
 
 		void OnRefreshingChanged(object sender, EventArgs eventArgs)
 		{
 			if (_refresh.Refreshing)
+			{
 				_list.SendRefreshing();
+			}
 
 			_isRefreshing = _refresh.Refreshing;
 		}
@@ -1698,12 +2967,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void RemoveRefresh()
 		{
 			if (!_refreshAdded)
+			{
 				return;
+			}
 
 			if (_refresh.Refreshing || _isRefreshing)
+			{
 				EndRefreshing();
+			}
 
 			RefreshControl = null;
+			_refreshAdded = false;
+			_isRefreshing = null;
 			_refreshAdded = false;
 			_isRefreshing = false;
 		}
@@ -1735,7 +3010,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				//hack: ahahah take that UIKit!
 				//when using pull to refresh with Large tiles sometimes iOS tries to hide the UIRefreshControl
 				if (_usingLargeTitles && value && Refreshing)
+				{
+				{
 					return;
+				}
+
 				base.Hidden = value;
 			}
 		}
@@ -1744,7 +3023,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.BeginRefreshing();
 			if (!_usingLargeTitles)
+			{
+			{
 				return;
+			}
+
 			Hidden = false;
 		}
 	}

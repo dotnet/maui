@@ -56,12 +56,16 @@ namespace Microsoft.Maui.Graphics
 			IShape? shape = ShapeView?.Shape;
 
 			if (shape == null)
+			{
 				return;
+			}
 
 			PathF? path = shape.PathForBounds(rect);
 
 			if (path == null)
+			{
 				return;
+			}
 
 			ApplyTransform(path);
 
@@ -72,7 +76,9 @@ namespace Microsoft.Maui.Graphics
 		void DrawStrokePath(ICanvas canvas, RectF dirtyRect, PathF path)
 		{
 			if (ShapeView == null || ShapeView.Shape == null || ShapeView.StrokeThickness <= 0 || ShapeView.Stroke == null)
+			{
 				return;
+			}
 
 			canvas.SaveState();
 
@@ -115,7 +121,9 @@ namespace Microsoft.Maui.Graphics
 		void DrawFillPath(ICanvas canvas, RectF dirtyRect, PathF path)
 		{
 			if (ShapeView == null || ShapeView.Shape == null)
+			{
 				return;
+			}
 
 			canvas.SaveState();
 
@@ -127,7 +135,9 @@ namespace Microsoft.Maui.Graphics
 			var fillPaint = ShapeView.Fill ?? ShapeView.Background;
 
 			if (fillPaint != null)
+			{
 				canvas.SetFillPaint(fillPaint, dirtyRect);
+			}
 
 			canvas.FillPath(path);
 
@@ -142,7 +152,9 @@ namespace Microsoft.Maui.Graphics
 		void ApplyTransform(PathF path)
 		{
 			if (RenderTransform == null)
+			{
 				return;
+			}
 
 			path.Transform(RenderTransform.Value);
 		}

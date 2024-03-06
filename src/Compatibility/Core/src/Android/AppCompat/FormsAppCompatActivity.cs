@@ -77,7 +77,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 #pragma warning restore 809
 		{
 			if (BackPressed != null && BackPressed(this, EventArgs.Empty))
+			{
 				return;
+			}
 #pragma warning disable CA1416, CA1422 // Validate platform compatibility
 			base.OnBackPressed();
 #pragma warning restore CA1416, CA1422 // Validate platform compatibility
@@ -94,7 +96,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool OnOptionsItemSelected(IMenuItem item)
 		{
 			if (item.ItemId == global::Android.Resource.Id.Home)
+			{
 				BackPressed?.Invoke(this, EventArgs.Empty);
+			}
 
 			return base.OnOptionsItemSelected(item);
 		}
@@ -155,7 +159,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			Profile.FramePartition("SetSoftInputMode");
 			if (Microsoft.Maui.Controls.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust() != WindowSoftInputModeAdjust.Unspecified)
+			{
 				SetSoftInputMode();
+			}
 
 			Profile.FramePartition("CheckForAppLink");
 			CheckForAppLink(Intent);
@@ -231,7 +237,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 
 				if (bar == null)
+				{
 					throw new InvalidOperationException("ToolbarResource must be set to a androidx.appcompat.widget.Toolbar");
+				}
 			}
 			else
 			{
@@ -396,9 +404,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (args.PropertyName == nameof(_application.MainPage))
+			{
 				SetMainPage();
+			}
+
 			if (args.PropertyName == PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName)
+			{
 				SetSoftInputMode();
+			}
 		}
 
 		void AppOnPropertyChanging(object sender, PropertyChangingEventArgs args)
@@ -420,7 +433,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			string action = intent.Action;
 			string strLink = intent.DataString;
 			if (Intent.ActionView != action || string.IsNullOrWhiteSpace(strLink))
+			{
 				return;
+			}
 
 			var link = new Uri(strLink);
 			_application?.SendOnAppLinkRequestReceived(link);
@@ -429,7 +444,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void InternalSetPage(Page page)
 		{
 			if (!Forms.IsInitialized)
+			{
 				throw new InvalidOperationException("Call Forms.Init (Activity, Bundle) before this");
+			}
 
 			if (Platform != null)
 			{
@@ -448,14 +465,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void OnStateChanged()
 		{
 			if (_application == null)
+			{
 				return;
+			}
 
 			if (_previousState == AndroidApplicationLifecycleState.OnCreate && _currentState == AndroidApplicationLifecycleState.OnStart)
+			{
 				_application.SendStart();
+			}
 			else if (_previousState == AndroidApplicationLifecycleState.OnRestart && _currentState == AndroidApplicationLifecycleState.OnStart)
+			{
 				_application.SendResume();
+			}
 			else if (_previousState == AndroidApplicationLifecycleState.OnPause && _currentState == AndroidApplicationLifecycleState.OnStop)
+			{
 				_application.SendSleep();
+			}
 		}
 
 		// This is currently being used by the previewer please do not change or remove this
@@ -513,7 +538,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			get
 			{
 				if (_tabLayoutResource == 0)
+				{
 					return Resource.Layout.tabbar;
+				}
 
 				return _tabLayoutResource;
 			}
@@ -526,7 +553,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			get
 			{
 				if (_toolbarResource == 0)
+				{
 					return Resource.Layout.toolbar;
+				}
 
 				return _toolbarResource;
 			}

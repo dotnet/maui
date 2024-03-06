@@ -110,17 +110,25 @@ namespace Microsoft.Maui.Platform
 			var maxLength = searchBar.MaxLength;
 
 			if (maxLength == -1)
+			{
 				maxLength = int.MaxValue;
+			}
 
 			if (maxLength == 0)
+			{
 				MauiAutoSuggestBox.SetIsReadOnly(platformControl, true);
+			}
 			else
+			{
 				MauiAutoSuggestBox.SetIsReadOnly(platformControl, searchBar.IsReadOnly);
+			}
 
 			var currentControlText = platformControl.Text;
 
 			if (currentControlText.Length > maxLength)
+			{
 				platformControl.Text = currentControlText.Substring(0, maxLength);
+			}
 		}
 
 		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -133,7 +141,9 @@ namespace Microsoft.Maui.Platform
 			var textBox = platformControl.GetFirstDescendant<TextBox>();
 
 			if (textBox is null)
+			{
 				return;
+			}
 
 			textBox.UpdateIsTextPredictionEnabled(searchBar);
 		}
@@ -143,7 +153,9 @@ namespace Microsoft.Maui.Platform
 			var textBox = platformControl.GetFirstDescendant<TextBox>();
 
 			if (textBox is null)
+			{
 				return;
+			}
 
 			textBox.UpdateIsSpellCheckEnabled(searchBar);
 		}
@@ -153,7 +165,9 @@ namespace Microsoft.Maui.Platform
 			var queryTextBox = platformControl.GetFirstDescendant<TextBox>();
 
 			if (queryTextBox == null)
+			{
 				return;
+			}
 
 			queryTextBox.UpdateInputScope(searchBar);
 		}
@@ -170,7 +184,9 @@ namespace Microsoft.Maui.Platform
 			var cancelButton = platformControl.GetDescendantByName<Button>("DeleteButton");
 
 			if (cancelButton is null)
+			{
 				return;
+			}
 
 			cancelButton.UpdateTextColor(searchBar.CancelButtonColor, CancelButtonColorKeys);
 		}

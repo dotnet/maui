@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					true)
 				{
 					if (_layoutOccured)
+					{
 						LayoutSidebar(false, true);
+					}
 				}
 			}
 
@@ -69,14 +71,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			PanGestureRecognizer.ShouldReceiveTouch += (sender, touch) =>
 			{
 				if (!context.AllowFlyoutGesture || _flyoutBehavior != FlyoutBehavior.Flyout)
+				{
 					return false;
+				}
+
 				var view = View;
 				CGPoint loc = touch.LocationInView(View);
 				if (touch.View is UISlider ||
 					touch.View is MPVolumeView ||
 					IsSwipeView(touch.View) ||
 					(loc.X > view.Frame.Width * 0.1 && !IsOpen))
+				{
 					return false;
+				}
 
 				return true;
 			};
@@ -88,7 +95,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool IsSwipeView(UIView view)
 		{
 			if (view == null)
+			{
+			{
 				return false;
+			}
+			}
 
 			// TODO MAUI
 			//if (view is SwipeView)
@@ -105,9 +116,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_flyoutBehavior = behavior;
 			if (behavior == FlyoutBehavior.Locked)
+			{
 				IsOpen = true;
+			}
 			else if (behavior == FlyoutBehavior.Disabled)
+			{
 				IsOpen = false;
+			}
+
 			LayoutSidebar(false);
 			UpdateFlyoutAccessibility();
 		}
@@ -153,7 +169,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (_isOpen == value)
+				{
 					return;
+				}
 
 				_isOpen = value;
 				Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, value);
@@ -188,10 +206,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (Flyout?.ViewController?.View != null)
+			{
 				Flyout.ViewController.View.AccessibilityElementsHidden = flyoutElementsHidden;
+			}
 
 			if (Detail?.View != null)
+			{
 				Detail.View.AccessibilityElementsHidden = detailsElementsHidden;
+			}
 		}
 
 		UIPanGestureRecognizer PanGestureRecognizer { get; set; }
@@ -207,7 +229,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLayoutSubviews();
 
 			if (_flyoutAnimation == null)
+			{
 				LayoutSidebar(false);
+			}
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -289,23 +313,33 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (update && readdViews)
 			{
 				if (Detail?.View != null)
+				{
 					Detail.View.RemoveFromSuperview();
+				}
 
 				if (Flyout?.ViewController?.View != null)
+				{
 					Flyout.ViewController.View.RemoveFromSuperview();
+				}
 
 				if (Detail?.View != null)
+				{
 					View.AddSubview(Detail.View);
+				}
 
 				if (Flyout?.ViewController?.View != null)
+				{
 					View.AddSubview(Flyout.ViewController.View);
+				}
 			}
 		}
 
 		void UpdateTapoffViewBackgroundColor()
 		{
 			if (TapoffView == null)
+			{
 				return;
+			}
 
 			TapoffView.UpdateBackground(_backdropBrush);
 
@@ -325,7 +359,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void AddTapoffView()
 		{
 			if (TapoffView != null)
+			{
 				return;
+			}
 
 			TapoffView = new UIView(View.Bounds);
 			TapoffView.Layer.Opacity = 0;
@@ -370,6 +406,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_gestureActive = true;
 
 					if (TapoffView == null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 						AddTapoffView();
 
 					if (_flyoutAnimation != null)
@@ -390,6 +429,56 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					{
 						if (openProgress < .8)
 							IsOpen = false;
+After:
+					{
+						AddTapoffView();
+					}
+
+					if (_flyoutAnimation != null)
+					{
+						TapoffView.Layer.RemoveAllAnimations();
+						_flyoutAnimation?.StopAnimation(true);
+						_flyoutAnimation = null;
+					}
+
+					TapoffView.Layer.Opacity = (float)openProgress;
+
+					FlyoutTransition.LayoutViews(View.Bounds, (nfloat)openProgress, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
+					break;
+
+				case UIGestureRecognizerState.Ended:
+					_gestureActive = false;
+					if (IsOpen)
+					{
+						if (openProgress < .8)
+						{
+							IsOpen = false;
+						}
+*/
+					{
+						AddTapoffView();
+					}
+
+					if (_flyoutAnimation != null)
+					{
+						TapoffView.Layer.RemoveAllAnimations();
+						_flyoutAnimation?.StopAnimation(true);
+						_flyoutAnimation = null;
+					}
+
+					TapoffView.Layer.Opacity = (float)openProgress;
+
+					FlyoutTransition.LayoutViews(View.Bounds, (nfloat)openProgress, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
+					break;
+
+				case UIGestureRecognizerState.Ended:
+					_gestureActive = false;
+					if (IsOpen)
+					{
+						if (openProgress < .8)
+						{
+							IsOpen = false;
+						}
 					}
 					else
 					{
@@ -407,7 +496,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_layoutOccured = true;
 			if (_gestureActive)
+			{
 				return;
+			}
 
 			if (cancelExisting && _flyoutAnimation != null)
 			{
@@ -416,7 +507,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (animate && _flyoutAnimation != null)
+			{
 				return;
+			}
 
 			if (!animate && _flyoutAnimation != null)
 			{
@@ -425,7 +518,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (IsOpen)
+			{
 				UpdateTapoffView();
+			}
 
 			if (animate && TapoffView != null)
 			{
@@ -483,16 +578,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			void UpdateTapoffView()
 			{
 				if (IsOpen && _flyoutBehavior == FlyoutBehavior.Flyout)
+				{
 					AddTapoffView();
+				}
 				else
+				{
 					RemoveTapoffView();
+				}
 			}
 		}
 
 		void RemoveTapoffView()
 		{
 			if (TapoffView == null)
+			{
 				return;
+			}
 
 			TapoffView.RemoveFromSuperview();
 			TapoffView = null;

@@ -13,7 +13,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		public virtual object? ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (Name == null)
+			{
 				return null;
+			}
 
 			var resourceName = "." + Name.Trim().Replace('/', '.').Replace('\\', '.');
 
@@ -21,7 +23,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			foreach (var name in assembly.GetManifestResourceNames())
 			{
 				if (name.EndsWith(resourceName, StringComparison.InvariantCultureIgnoreCase))
+				{
 					return assembly.GetManifestResourceStream(name);
+				}
 			}
 
 			return null;

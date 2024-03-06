@@ -62,7 +62,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			get
 			{
 				if (_childrenInSolveOrder != null)
+				{
 					return _childrenInSolveOrder;
+				}
 
 				var result = new List<View>();
 				var solveTable = new Dictionary<View, bool>();
@@ -87,7 +89,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 						}
 					}
 					if (!solvedChild)
+					{
 						throw new UnsolvableConstraintsException("Constraints as specified contain an unsolvable loop.");
+					}
 				}
 
 				_childrenInSolveOrder = result;
@@ -105,7 +109,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		void UpdateBoundsConstraint(View view)
 		{
 			if (GetBoundsConstraint(view) == null)
+			{
 				return; // Bounds constraint hasn't been calculated yet, no need to update just yet
+			}
 
 			CreateBoundsFromConstraints(view, GetXConstraint(view), GetYConstraint(view), GetWidthConstraint(view), GetHeightConstraint(view));
 
@@ -218,7 +224,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			foreach (View child in ChildrenInSolveOrder)
+			{
 				child.UnmockBounds();
+			}
 
 			UnmockBounds();
 
@@ -236,10 +244,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 			parents.AddRange(boundsConstraint.RelativeTo);
 			// expressions probably referenced the base layout somewhere
 			while (parents.Remove(this)) // because winphone does not have RemoveAll...
+			{
 				;
+			}
 
 			if (!parents.Any())
+			{
 				return true;
+			}
 
 			for (var i = 0; i < parents.Count; i++)
 			{
@@ -252,7 +264,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (!solvable)
+				{
 					return false;
+				}
 			}
 
 			return true;
@@ -267,20 +281,28 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				x = () => xConstraint.Compute(this);
 				if (xConstraint.RelativeTo != null)
+				{
 					parents.AddRange(xConstraint.RelativeTo);
+				}
 			}
 			else
+			{
 				x = () => 0;
+			}
 
 			Func<double> y;
 			if (yConstraint != null)
 			{
 				y = () => yConstraint.Compute(this);
 				if (yConstraint.RelativeTo != null)
+				{
 					parents.AddRange(yConstraint.RelativeTo);
+				}
 			}
 			else
+			{
 				y = () => 0;
+			}
 
 			Func<double> width;
 			Func<double> height = null;
@@ -289,19 +311,27 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				width = () => widthConstraint.Compute(this);
 				if (widthConstraint.RelativeTo != null)
+				{
 					parents.AddRange(widthConstraint.RelativeTo);
+				}
 			}
 			else
+			{
 				width = () => view.Measure(Width, heightConstraint != null ? height() : Height, MeasureFlags.IncludeMargins).Request.Width;
+			}
 
 			if (heightConstraint != null)
 			{
 				height = () => heightConstraint.Compute(this);
 				if (heightConstraint.RelativeTo != null)
+				{
 					parents.AddRange(heightConstraint.RelativeTo);
+				}
 			}
 			else
+			{
 				height = () => view.Measure(widthConstraint != null ? width() : Width, Height, MeasureFlags.IncludeMargins).Request.Height;
+			}
 
 			BoundsConstraint bounds = BoundsConstraint.FromExpression(() => new Rect(x(), y(), width(), height()), parents.Distinct().ToArray());
 			SetBoundsConstraint(view, bounds);
@@ -342,7 +372,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public void Add(View view, Expression<Func<Rect>> bounds)
 			{
 				if (bounds == null)
+				{
 					throw new ArgumentNullException(nameof(bounds));
+				}
+
 				SetBoundsConstraint(view, BoundsConstraint.FromExpression(bounds, fromExpression: true));
 
 				base.Add(view);

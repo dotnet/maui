@@ -38,7 +38,9 @@ namespace Microsoft.Maui.Devices
 #pragma warning disable CA1422 // Validate platform compatibility
 			var captureDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video);
 			if (captureDevice == null || !(captureDevice.HasFlash || captureDevice.HasTorch))
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			captureDevice.LockForConfiguration(out var error);
 
@@ -47,16 +49,26 @@ namespace Microsoft.Maui.Devices
 				if (on)
 				{
 					if (captureDevice.HasTorch)
+					{
 						captureDevice.SetTorchModeLevel(AVCaptureDevice.MaxAvailableTorchLevel, out var torchErr);
+					}
+
 					if (captureDevice.HasFlash)
+					{
 						captureDevice.FlashMode = AVCaptureFlashMode.On;
+					}
 				}
 				else
 				{
 					if (captureDevice.HasTorch)
+					{
 						captureDevice.TorchMode = AVCaptureTorchMode.Off;
+					}
+
 					if (captureDevice.HasFlash)
+					{
 						captureDevice.FlashMode = AVCaptureFlashMode.Off;
+					}
 				}
 			}
 

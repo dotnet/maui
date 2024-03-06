@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					if (renderer.ViewController != null)
 					{
 						if (renderer.ViewController.ParentViewController is ModalWrapper modalWrapper)
+						{
 							modalWrapper.Dispose();
+						}
 					}
 #endif
 					renderer.NativeView.RemoveFromSuperview();
@@ -50,10 +52,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		internal static void DisposeRendererAndChildren(this IVisualElementRenderer rendererToRemove)
 		{
 			if (rendererToRemove == null)
+			{
+			{
 				return;
+			}
 
 			if (rendererToRemove.Element != null && Platform.GetRenderer(rendererToRemove.Element) == rendererToRemove)
+			{
 				rendererToRemove.Element.ClearValue(Platform.RendererProperty);
+			}
 
 			if (rendererToRemove.NativeView != null)
 			{
@@ -61,7 +68,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				for (var i = 0; i < subviews.Length; i++)
 				{
 					if (subviews[i] is IVisualElementRenderer childRenderer)
+					{
 						DisposeRendererAndChildren(childRenderer);
+					}
 				}
 				rendererToRemove.NativeView.RemoveFromSuperview();
 			}

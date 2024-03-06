@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			IEnumerable<KeyValuePair<TKey, TValue>> collection)
 		{
 			foreach (var kvp in collection)
+			{
 				dictionary.Add(kvp);
+			}
 		}
 	}
 }

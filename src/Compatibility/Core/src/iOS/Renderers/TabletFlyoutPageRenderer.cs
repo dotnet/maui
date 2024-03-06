@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override void ViewDidLayoutSubviews()
 		{
 			foreach (var vc in ChildViewControllers)
+			{
 				vc.View.Frame = View.Bounds;
+			}
 		}
 	}
 
@@ -108,9 +110,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_previousIsCollapsed = IsCollapsed;
 
 					if (IsCollapsed)
+					{
 						WillDisappear?.Invoke(this, EventArgs.Empty);
+					}
 					else
+					{
 						DidAppear?.Invoke(this, EventArgs.Empty);
+					}
 				}
 			}
 		}
@@ -224,7 +230,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (element != null)
+			{
 				element.SendViewInitialized(NativeView);
+			}
 		}
 
 		public void SetElementSize(Size size)
@@ -278,23 +286,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var flyoutBounds = _flyoutController.View.Frame;
 
 				if (Forms.IsiOS13OrNewer)
+				{
 					_flyoutWidth = flyoutBounds.Width;
+				}
 				else
+				{
 					_flyoutWidth = (nfloat)Math.Max(_flyoutWidth, flyoutBounds.Width);
+				}
 
 				if (!flyoutBounds.IsEmpty)
+				{
 					FlyoutPageController.FlyoutBounds = new Rect(0, 0, _flyoutWidth, flyoutBounds.Height);
+				}
 			}
 
 			if (layoutDetails)
 			{
 				var detailsBounds = _detailController.View.Frame;
 				if (!detailsBounds.IsEmpty)
+				{
 					FlyoutPageController.DetailBounds = new Rect(0, 0, detailsBounds.Width, detailsBounds.Height);
+				}
 			}
 
 			if (_previousViewDidLayoutSize == CGSize.Empty)
+			{
 				_previousViewDidLayoutSize = View.Bounds.Size;
+			}
 
 			// Is this being called from a rotation
 			if (_previousViewDidLayoutSize != View.Bounds.Size)
@@ -303,7 +321,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				// make sure IsPresented matches state of Flyout View
 				if (FlyoutPageController.CanChangeIsPresented && FlyoutPage.IsPresented != IsFlyoutVisible)
+				{
 					ElementController.SetValueFromRenderer(Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty, IsFlyoutVisible);
+				}
 			}
 
 			if (_previousDisplayMode != PreferredDisplayMode)
@@ -312,7 +332,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				// make sure IsPresented matches state of Flyout View
 				if (FlyoutPageController.CanChangeIsPresented && FlyoutPage.IsPresented != IsFlyoutVisible)
+				{
+				{
 					ElementController.SetValueFromRenderer(Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty, IsFlyoutVisible);
+				}
 			}
 		}
 
@@ -331,7 +354,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			FlyoutPage flyoutDetailPage = _flyoutPage ?? Element as FlyoutPage;
 
 			if (flyoutDetailPage == null)
+			{
 				return;
+			}
 
 			bool isPortrait = newBounds.Height > newBounds.Width;
 			var previous = PreferredDisplayMode;
@@ -358,10 +383,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (previous == PreferredDisplayMode)
+			{
 				return;
+			}
 
 			if (!FlyoutPageController.ShouldShowSplitMode)
+			{
 				FlyoutPageController.CanChangeIsPresented = true;
+			}
 
 			FlyoutPage.UpdateFlyoutLayoutBehavior();
 		}
@@ -369,7 +398,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override void ViewWillDisappear(bool animated)
 		{
 			if (IsFlyoutVisible && !FlyoutPageController.ShouldShowSplitMode)
+			{
 				PerformButtonSelector();
+			}
 
 			base.ViewWillDisappear(animated);
 		}
@@ -383,9 +414,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			if (((FlyoutPage)Element).Detail != null)
+			{
 				return (UIViewController)Platform.GetRenderer(((FlyoutPage)Element).Detail);
+			}
 			else
+			{
 				return base.ChildViewControllerForStatusBarHidden();
+			}
 		}
 
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden
@@ -393,10 +428,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			get
 			{
 				if (((FlyoutPage)Element).Detail != null)
+				{
 					return (UIViewController)Platform.GetRenderer(((FlyoutPage)Element).Detail);
+				}
 				else
+				{
 #pragma warning disable CA1416 // TODO: UIViewController.ChildViewControllerForHomeIndicatorAutoHidden' is only supported on: 'ios' 11.0 and late
 					return base.ChildViewControllerForHomeIndicatorAutoHidden;
+				}
 #pragma warning restore CA1416
 			}
 		}
@@ -404,14 +443,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
 		{
 			if (e.OldElement != null)
+			{
 				e.OldElement.PropertyChanged -= HandlePropertyChanged;
+			}
 
 			if (e.NewElement != null)
+			{
 				e.NewElement.PropertyChanged += HandlePropertyChanged;
+			}
 
 			var changed = ElementChanged;
 			if (changed != null)
+			{
 				changed(this, e);
+			}
 
 			_flyoutWidth = 0;
 		}
@@ -434,28 +479,44 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
+			{
 #pragma warning disable CS0618 // Type or member is obsolete
 				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_tracker == null)
+			{
 				return;
+			}
 
 			if (e.PropertyName == "Flyout" || e.PropertyName == "Detail")
+			{
 				UpdateControllers();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty.PropertyName)
+			{
 				ToggleFlyout();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.IsGestureEnabledProperty.PropertyName)
+			{
 				base.PresentsWithGesture = this.FlyoutPage.IsGestureEnabled;
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 			else if (e.Is(Microsoft.Maui.Controls.FlyoutPage.FlyoutLayoutBehaviorProperty))
+			{
 				UpdateFlyoutLayoutBehavior(base.View.Bounds.Size);
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
@@ -476,13 +537,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void FlyoutControllerDidAppear(object sender, EventArgs e)
 		{
 			if (FlyoutPageController.CanChangeIsPresented && IsFlyoutVisible)
+			{
 				ElementController.SetValueFromRenderer(Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty, true);
+			}
 		}
 
 		void FlyoutControllerWillDisappear(object sender, EventArgs e)
 		{
 			if (FlyoutPageController.CanChangeIsPresented && !IsFlyoutVisible)
+			{
 				ElementController.SetValueFromRenderer(Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty, false);
+			}
 		}
 
 		void PerformButtonSelector()
@@ -493,7 +558,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void ToggleFlyout()
 		{
 			if (IsFlyoutVisible == FlyoutPage.IsPresented || FlyoutPageController.ShouldShowSplitMode)
+			{
 				return;
+			}
 
 			PerformButtonSelector();
 		}
@@ -503,19 +570,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_ = this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
 				if (bgImage != null)
+				{
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
+				}
 				else
 				{
 					Brush background = Element.Background;
 
 					if (!Brush.IsNullOrEmpty(background))
+					{
 						View.UpdateBackground(Element.Background);
+					}
 					else
 					{
 						if (Element.BackgroundColor == null)
+						{
 							View.BackgroundColor = UIColor.White;
+						}
 						else
+						{
 							View.BackgroundColor = Element.BackgroundColor.ToPlatform();
+						}
 					}
 				}
 			});
@@ -526,9 +601,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			FlyoutPage.Flyout.PropertyChanged -= HandleFlyoutPropertyChanged;
 
 			if (Platform.GetRenderer(FlyoutPage.Flyout) == null)
+			{
 				Platform.SetRenderer(FlyoutPage.Flyout, Platform.CreateRenderer(FlyoutPage.Flyout));
+			}
+
 			if (Platform.GetRenderer(FlyoutPage.Detail) == null)
+			{
 				Platform.SetRenderer(FlyoutPage.Detail, Platform.CreateRenderer(FlyoutPage.Detail));
+			}
 
 			ClearControllers();
 

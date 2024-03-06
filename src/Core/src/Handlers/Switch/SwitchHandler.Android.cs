@@ -40,7 +40,9 @@ namespace Microsoft.Maui.Handlers
 				int width = (int)widthConstraint;
 
 				if (widthConstraint <= 0)
+				{
 					width = Context != null ? (int)Context.GetThemeAttributeDp(global::Android.Resource.Attribute.SwitchMinWidth) : 0;
+				}
 
 				size = new Size(width, size.Height);
 			}
@@ -56,19 +58,25 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
 		{
 			if (handler is SwitchHandler platformHandler)
+			{
 				handler.PlatformView?.UpdateTrackColor(view);
+			}
 		}
 
 		public static void MapThumbColor(ISwitchHandler handler, ISwitch view)
 		{
 			if (handler is SwitchHandler platformHandler)
+			{
 				handler.PlatformView?.UpdateThumbColor(view);
+			}
 		}
 
 		void OnCheckedChanged(bool isOn)
 		{
 			if (VirtualView is null || VirtualView.IsOn == isOn)
+			{
 				return;
+			}
 
 			VirtualView.IsOn = isOn;
 		}

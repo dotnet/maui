@@ -148,7 +148,10 @@ namespace Microsoft.Maui.Media
 		public static Task<IScreenshotResult> CaptureAsync()
 		{
 			if (!IsCaptureSupported)
+			{
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			return Default.CaptureAsync();
 		}
@@ -173,7 +176,10 @@ namespace Microsoft.Maui.Media
 		static IPlatformScreenshot AsPlatform(this IScreenshot screenshot)
 		{
 			if (screenshot is not IPlatformScreenshot platform)
+			{
+			{
 				throw new PlatformNotSupportedException("This implementation of IScreenshot does not implement IPlatformScreenshot.");
+			}
 
 			return platform;
 		}

@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var scrollName = "ContentScrollViewer";
 
 			if (GetTemplateChild(scrollName) is ScrollViewer contentScrollViewer)
+			{
 				contentScrollViewer.VerticalScrollBarVisibility = VerticalScrollBarVisibility;
+			}
 		}
 	}
 }

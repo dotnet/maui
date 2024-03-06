@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var imageLoader = imagesource as UriImageSource;
 
 			if (imageLoader?.Uri == null)
+			{
 				return null;
+			}
 
 			IconElement image = new BitmapIcon { UriSource = imageLoader?.Uri };
 
@@ -30,7 +32,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var imageLoader = imagesource as UriImageSource;
 
 			if (imageLoader?.Uri == null)
+			{
 				return null;
+			}
 
 			Microsoft.UI.Xaml.Controls.IconSource image = new Microsoft.UI.Xaml.Controls.BitmapIconSource { UriSource = imageLoader?.Uri };
 
@@ -42,7 +46,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var imageLoader = imagesource as UriImageSource;
 
 			if (imageLoader?.Uri == null)
+			{
 				return null;
+			}
 
 			Stream streamImage = await ((IStreamImageSource)imageLoader).GetStreamAsync(cancellationToken);
 

@@ -9,7 +9,10 @@ namespace Microsoft.Maui.Graphics
 		public static byte[] AsBytes(this IImage target, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (target == null)
+			{
+			{
 				return null;
+			}
 
 			using (var stream = new MemoryStream())
 			{
@@ -21,7 +24,11 @@ namespace Microsoft.Maui.Graphics
 		public static Stream AsStream(this IImage target, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (target == null)
+			{
+			{
 				return null;
+			}
+			}
 
 			var stream = new MemoryStream();
 			target.Save(stream, format, quality);
@@ -33,7 +40,10 @@ namespace Microsoft.Maui.Graphics
 		public static async Task<byte[]> AsBytesAsync(this IImage target, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (target == null)
+			{
+			{
 				return null;
+			}
 
 			using (var stream = new MemoryStream())
 			{
@@ -45,7 +55,11 @@ namespace Microsoft.Maui.Graphics
 		public static string AsBase64(this IImage target, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (target == null)
+			{
+			{
 				return null;
+			}
+			}
 
 			var bytes = target.AsBytes(format, quality);
 			return Convert.ToBase64String(bytes);
@@ -54,7 +68,11 @@ namespace Microsoft.Maui.Graphics
 		public static Paint AsPaint(this IImage target)
 		{
 			if (target == null)
+			{
+			{
 				return null;
+			}
+			}
 
 			return new ImagePaint { Image = target };
 		}

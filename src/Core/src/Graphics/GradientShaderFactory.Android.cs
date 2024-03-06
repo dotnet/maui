@@ -16,10 +16,14 @@ namespace Microsoft.Maui.Graphics
 		public override Shader? Resize(int width, int height)
 		{
 			if (width == 0 && height == 0)
+			{
 				return null;
+			}
 
 			if (_data.Colors == null || _data.Colors.Length < 2)
+			{
 				return null;
+			}
 
 			return new LinearGradient(
 				width * _data.X1,
@@ -44,10 +48,14 @@ namespace Microsoft.Maui.Graphics
 		public override Shader? Resize(int width, int height)
 		{
 			if (width == 0 && height == 0)
+			{
 				return null;
+			}
 
 			if (_data.Colors == null || _data.Colors.Length < 2)
+			{
 				return null;
+			}
 
 			return new RadialGradient(
 				width * _data.CenterX,

@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Devices
 					{
 						var feedback = FindFeedback(controller, ConvertType(type));
 						if (feedback != null)
+						{
 							controller.SendHapticFeedback(feedback);
+						}
 					}
 				}
 			}
@@ -40,7 +42,9 @@ namespace Microsoft.Maui.Devices
 			foreach (var feedback in controller.SupportedFeedback)
 			{
 				if (feedback.Waveform == type)
+				{
 					return feedback;
+				}
 			}
 			return null;
 		}

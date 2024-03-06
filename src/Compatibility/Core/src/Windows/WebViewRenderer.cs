@@ -223,7 +223,9 @@ if(bases.length == 0){
 			if (e.PropertyName == WebView.SourceProperty.PropertyName)
 			{
 				if (!_updating)
+				{
 					Load();
+				}
 			}
 			else if (e.Is(PlatformConfiguration.WindowsSpecific.WebView.ExecutionModeProperty))
 			{
@@ -238,17 +240,23 @@ if(bases.length == 0){
 		Uri CreateUriForCookies(string url)
 		{
 			if (url == null)
+			{
 				return null;
+			}
 
 			Uri uri;
 
 			if (url.Length > 2000)
+			{
 				url = url.Substring(0, 2000);
+			}
 
 			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
 			{
 				if (String.IsNullOrWhiteSpace(uri.Host))
+				{
 					return null;
+				}
 
 				return uri;
 			}
@@ -271,12 +279,16 @@ if(bases.length == 0){
 		{
 			var myCookieJar = Element.Cookies;
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			var uri = new Uri(url);
 
 			if (!_loadedCookies.Add(uri.Host))
+			{
 				return;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 
@@ -286,7 +298,9 @@ if(bases.length == 0){
 				foreach (HttpCookie cookie in existingCookies)
 				{
 					if (cookies[cookie.Name] == null)
+					{
 						myCookieJar.SetCookies(uri, cookie.ToString());
+					}
 				}
 			}
 		}
@@ -296,12 +310,16 @@ if(bases.length == 0){
 		{
 			var myCookieJar = Element.Cookies;
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
@@ -315,9 +333,13 @@ if(bases.length == 0){
 					.FirstOrDefault(x => x.Name == cookie.Name);
 
 				if (httpCookie == null)
+				{
 					cookie.Expired = true;
+				}
 				else
+				{
 					cookie.Value = httpCookie.Value;
+				}
 			}
 
 			SyncNativeCookies(url);
@@ -328,16 +350,22 @@ if(bases.length == 0){
 		{
 			var uri = CreateUriForCookies(url);
 			if (uri == null)
+			{
 				return;
+			}
 
 			var myCookieJar = Element.Cookies;
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
 			if (cookies == null)
+			{
 				return;
+			}
 
 			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
 
@@ -352,7 +380,9 @@ if(bases.length == 0){
 			foreach (HttpCookie cookie in retrieveCurrentWebCookies)
 			{
 				if (cookies[cookie.Name] != null)
+				{
 					continue;
+				}
 
 				filter.CookieManager.DeleteCookie(cookie);
 			}
@@ -361,7 +391,9 @@ if(bases.length == 0){
 		void Load()
 		{
 			if (Element.Source != null)
+			{
 				Element.Source.Load(this);
+			}
 
 			UpdateCanGoBackForward();
 		}
@@ -423,13 +455,16 @@ if(bases.length == 0){
 			//	SendNavigated(new UrlWebViewSource { Url = e.Uri.AbsoluteUri }, _eventState, WebNavigationResult.Success);
 			Uri uri = sender.Source;
 			if (uri != null)
+			{
 				SendNavigated(new UrlWebViewSource { Url = uri.AbsoluteUri }, _eventState, WebNavigationResult.Success);
+			}
 
 			UpdateCanGoBackForward();
 
 			if (Element.OnThisPlatform().IsJavaScriptAlertEnabled())
+			{
 				await Control.ExecuteScriptAsync("window.alert = function(message){ window.external.notify(message); };");
-
+			}
 		}
 
 		[PortHandler]
@@ -437,23 +472,30 @@ if(bases.length == 0){
 		{
 			Uri uri = sender.Source;
 			if (uri != null)
+			{
 				SendNavigated(new UrlWebViewSource { Url = uri.AbsoluteUri }, _eventState, WebNavigationResult.Failure);
-
+			}
 		}
 
 		void OnNavigationCompleted(WWebView sender, Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
 		{
 			if (e.IsSuccess)
+			{
 				NavigationSucceeded(sender, e);
+			}
 			else
+			{
 				NavigationFailed(sender, e);
+			}
 		}
 
 		[PortHandler]
 		async void OnWebMessageReceived(WWebView sender, Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
 		{
 			if (Element.OnThisPlatform().IsJavaScriptAlertEnabled())
+			{
 				await new global::Windows.UI.Popups.MessageDialog(e.TryGetWebMessageAsString()).ShowAsync();
+			}
 		}
 
 		[PortHandler]
@@ -475,7 +517,9 @@ if(bases.length == 0){
 
 				// reset in this case because this is the last event we will get
 				if (args.Cancel)
+				{
 					_eventState = WebNavigationEvent.NewPage;
+				}
 			}
 		}
 

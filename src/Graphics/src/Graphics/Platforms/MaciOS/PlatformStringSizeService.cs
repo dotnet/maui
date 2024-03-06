@@ -96,7 +96,9 @@ namespace Microsoft.Maui.Graphics.Platform
 				var lineWidth = (float)line.GetTypographicBounds(out var ascent, out var descent, out var leading);
 
 				if (lineWidth > width)
+				{
 					width = lineWidth;
+				}
 
 				var origin = origins[i];
 

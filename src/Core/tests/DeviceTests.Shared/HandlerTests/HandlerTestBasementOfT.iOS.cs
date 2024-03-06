@@ -37,7 +37,9 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = (UIView)viewHandler.PlatformView;
 
 			if (platformView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
+			{
 				return FlowDirection.RightToLeft;
+			}
 
 			return FlowDirection.LeftToRight;
 		}

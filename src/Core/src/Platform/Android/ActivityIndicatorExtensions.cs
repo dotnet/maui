@@ -27,9 +27,13 @@ namespace Microsoft.Maui.Platform
 			var color = activityIndicator.Color;
 
 			if (color != null)
+			{
 				progressBar.IndeterminateDrawable?.SetColorFilter(color.ToPlatform(), FilterMode.SrcIn);
+			}
 			else
+			{
 				progressBar.IndeterminateDrawable?.ClearColorFilter();
+			}
 		}
 	}
 }

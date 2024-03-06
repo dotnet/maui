@@ -28,7 +28,10 @@ namespace Microsoft.Maui.Networking
 		void StopListeners()
 		{
 			if (listener == null)
+			{
+			{
 				return;
+			}
 
 			listener.ReachabilityChanged -= OnConnectivityChanged;
 			listener.Dispose();
@@ -48,11 +51,44 @@ namespace Microsoft.Maui.Networking
 #endif
 				var internetStatus = Reachability.InternetConnectionStatus();
 				if ((internetStatus == NetworkStatus.ReachableViaCarrierDataNetwork && !restricted) || internetStatus == NetworkStatus.ReachableViaWiFiNetwork)
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
 					return NetworkAccess.Internet;
+After:
+				{
+					return NetworkAccess.Internet;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+					return NetworkAccess.Internet;
+After:
+				{
+					return NetworkAccess.Internet;
+				}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+					return NetworkAccess.Internet;
+After:
+				{
+					return NetworkAccess.Internet;
+				}
+*/
+				{
+				{
+					return NetworkAccess.Internet;
+				}
+				}
 
 				var remoteHostStatus = Reachability.RemoteHostStatus();
 				if ((remoteHostStatus == NetworkStatus.ReachableViaCarrierDataNetwork && !restricted) || remoteHostStatus == NetworkStatus.ReachableViaWiFiNetwork)
+				{
 					return NetworkAccess.Internet;
+				}
 
 				return NetworkAccess.None;
 			}

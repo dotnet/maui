@@ -23,7 +23,9 @@ namespace Microsoft.Maui.LifecycleEvents
 			where TDelegate : Delegate
 		{
 			if (!_mapper.TryGetValue(eventName, out var delegates) && delegates == null)
+			{
 				_mapper[eventName] = delegates = new List<Delegate>();
+			}
 
 			delegates.Add(action);
 		}
@@ -32,7 +34,11 @@ namespace Microsoft.Maui.LifecycleEvents
 			where TDelegate : Delegate
 		{
 			if (_mapper.TryGetValue(eventName, out var delegates) && delegates != null)
+			{
+			{
 				return delegates.OfType<TDelegate>();
+			}
+			}
 
 			return Enumerable.Empty<TDelegate>();
 		}

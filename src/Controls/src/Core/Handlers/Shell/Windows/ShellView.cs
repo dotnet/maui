@@ -41,7 +41,9 @@ namespace Microsoft.Maui.Controls.Platform
 			// We can't reliably set IsPaneOpen to true until the control has loaded
 			// If we set it earlier than this then WinUI will transition it back to false
 			if (IsPaneOpen != Element.FlyoutIsPresented)
+			{
 				IsPaneOpen = Element.FlyoutIsPresented;
+			}
 
 			UpdateFlyoutBackdrop();
 		}
@@ -50,16 +52,22 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.UpdateFlyoutCustomContent();
 
-			if (FlyoutCustomContent == null)
+			if (MauiNavigationView.FlyoutCustomContent == null)
+			{
 				MenuItemsSource = FlyoutItems;
+			}
 			else
+			{
 				MenuItemsSource = null;
+			}
 		}
 
 		internal void SetElement(VisualElement element)
 		{
 			if (Element != null && element != null)
+			{
 				throw new NotSupportedException("Reuse of the Shell Renderer is not supported");
+			}
 
 			Element = (Shell)element;
 			ShellController.AddAppearanceObserver(this, Element);
@@ -80,27 +88,35 @@ namespace Microsoft.Maui.Controls.Platform
 		internal void UpdateFlyoutPosition()
 		{
 			if (Element.FlyoutBehavior == FlyoutBehavior.Disabled)
+			{
 				return;
+			}
 
 			var splitView = _shellSplitView;
 			if (splitView != null)
 			{
 				_shellSplitView.SetFlyoutSizes(_flyoutHeight, _flyoutWidth);
 				if (IsPaneOpen)
+				{
 					_shellSplitView.RefreshFlyoutPosition();
+				}
 			}
 		}
 
 		internal void UpdateFlyoutBackdrop()
 		{
 			if (RootSplitView != null && Element.FlyoutBehavior != FlyoutBehavior.Flyout)
+			{
 				return;
+			}
 
 			var splitView = _shellSplitView;
 			if (splitView != null)
 			{
 				if (IsPaneOpen)
+				{
 					_shellSplitView.RefreshFlyoutBackdrop();
+				}
 			}
 		}
 
@@ -111,7 +127,9 @@ namespace Microsoft.Maui.Controls.Platform
 				_flyoutBackdrop = value;
 
 				if (_shellSplitView != null)
+				{
 					_shellSplitView.FlyoutBackdrop = value;
+				}
 			}
 		}
 
@@ -135,12 +153,16 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var item = FlyoutItems[i];
 					if (!newItems.Contains(item))
+					{
 						FlyoutItems.RemoveAt(i);
+					}
 				}
 			}
 
 			if (!FlyoutItems.Contains(SelectedItem))
+			{
 				SelectedItem = null;
+			}
 		}
 
 		IEnumerable<object> IterateItems(List<List<Element>> groups)
@@ -201,26 +223,38 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Routing.IsImplicit(newItem))
 			{
 				if (Routing.IsImplicit(newItem.CurrentItem))
+				{
 					SelectedItem = navItems.GetWithData(newItem.CurrentItem.CurrentItem);
+				}
 				else
+				{
 					SelectedItem = navItems.GetWithData(newItem.CurrentItem);
+				}
 			}
 			else
 			{
 				if (navItems.TryGetWithData(newItem, out NavigationViewItemViewModel vm1))
+				{
 					SelectedItem = vm1;
+				}
 				else if (newItem.CurrentItem is not null)
 				{
 					if (navItems.TryGetWithData(newItem.CurrentItem, out NavigationViewItemViewModel vm2))
+					{
 						SelectedItem = vm2;
+					}
 					else if (navItems.TryGetWithData(newItem.CurrentItem.CurrentItem, out NavigationViewItemViewModel vm3))
+					{
 						SelectedItem = vm3;
+					}
 				}
 			}
 
 			var handler = CreateShellItemView();
 			if (handler.VirtualView != newItem)
+			{
 				handler.SetVirtualView(newItem);
+			}
 		}
 
 		#region IAppearanceObserver
@@ -233,9 +267,14 @@ namespace Microsoft.Maui.Controls.Platform
 			if (appearance != null)
 			{
 				if (!appearance.BackgroundColor.IsDefault())
+				{
 					backgroundColor = appearance.BackgroundColor.ToWindowsColor();
+				}
+
 				if (!appearance.TitleColor.IsDefault())
+				{
 					titleColor = appearance.TitleColor.ToWindowsColor();
+				}
 
 				_flyoutWidth = appearance.FlyoutWidth;
 				_flyoutHeight = appearance.FlyoutHeight;
@@ -265,10 +304,14 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (ItemRenderer.PlatformView != (Content as FrameworkElement))
+			{
 				Content = ItemRenderer.PlatformView;
+			}
 
 			if (ItemRenderer.VirtualView != Element.CurrentItem)
+			{
 				ItemRenderer.SetVirtualView(Element.CurrentItem);
+			}
 
 			return ItemRenderer;
 		}

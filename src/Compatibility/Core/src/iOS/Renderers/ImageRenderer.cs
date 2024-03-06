@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -62,7 +64,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementChanged(e);
 
 			if (e.NewElement != null)
+			{
 				await TrySetImage(e.OldElement as Image);
+			}
 		}
 
 		protected override async void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -70,7 +74,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Image.SourceProperty.PropertyName)
+			{
 				await TrySetImage().ConfigureAwait(false);
+			}
 		}
 
 		protected virtual async Task TrySetImage(Image previous = null)
@@ -129,7 +135,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var filesource = imagesource as FileImageSource;
 			var file = filesource?.File;
 			if (!string.IsNullOrEmpty(file))
+			{
 				image = File.Exists(file) ? new UIImage(file) : UIImage.FromBundle(file);
+			}
 
 			if (image == null)
 			{
@@ -167,7 +175,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				using (var streamImage = await ((IStreamImageSource)streamsource).GetStreamAsync(cancelationToken).ConfigureAwait(false))
 				{
 					if (streamImage != null)
+					{
 						image = UIImage.LoadFromData(NSData.FromStream(streamImage), scale);
+					}
 				}
 			}
 
@@ -267,7 +277,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UIGraphics.EndImageContext();
 
 				if (image != null && iconcolor != _defaultColor)
+				{
 					image = image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+				}
 			}
 			return Task.FromResult(image);
 

@@ -9,13 +9,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		internal static IMenuItem FindMenuItemByNameOrIcon(this IMenu menu, string menuName, string iconName)
 		{
 			if (menu.Size() == 1)
+			{
 				return menu.GetItem(0);
+			}
 
 			for (var i = 0; i < menu.Size(); i++)
 			{
 				IMenuItem menuItem = menu.GetItem(i);
 				if (menuItem.TitleFormatted != null && menuName == menuItem.TitleFormatted.ToString())
+				{
 					return menuItem;
+				}
 
 				if (!string.IsNullOrEmpty(iconName))
 				{

@@ -28,9 +28,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				int color;
 				if (ShellRenderer.IsDarkTheme)
+				{
 					color = DarkBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundDark);
+				}
 				else
+				{
 					color = LightBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundLight);
+				}
 
 				child.PlatformView.SetBackgroundColor(new AColor(color));
 			}
@@ -44,7 +48,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var height = b - t;
 
 			if (Child.PlatformView is AView aView)
+			{
 				aView.Layout(0, 0, width, height);
+			}
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -55,7 +61,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				SetMeasuredDimension(aView.MeasuredWidth, aView.MeasuredHeight);
 			}
 			else
+			{
 				SetMeasuredDimension(0, 0);
+			}
 		}
 	}
 }

@@ -9,7 +9,9 @@ namespace Microsoft.Maui
 			where T : class
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException(nameof(self));
+			}
 
 			target = (T?)self.Target;
 			return target != null;
@@ -19,10 +21,16 @@ namespace Microsoft.Maui
 			where T : class
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException(nameof(self));
+			}
 
 			if (self.TryGetTarget(out var target))
+			{
+			{
 				return target;
+			}
+			}
 
 			return default;
 		}

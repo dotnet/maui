@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Graphics
 		public static CALayer? ToCALayer(this Paint paint, CGRect frame = default)
 		{
 			if (paint is SolidPaint solidPaint)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return solidPaint.CreateCALayer(frame);
 
 			if (paint is LinearGradientPaint linearGradientPaint)
@@ -22,9 +25,60 @@ namespace Microsoft.Maui.Graphics
 
 			if (paint is ImagePaint imagePaint)
 				return imagePaint.CreateCALayer(frame);
+After:
+			{
+				return solidPaint.CreateCALayer(frame);
+			}
+*/
+			{
+				return solidPaint.CreateCALayer(frame);
+			}
 
+			if (paint is LinearGradientPaint linearGradientPaint)
+			
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 			if (paint is PatternPaint patternPaint)
 				return patternPaint.CreateCALayer(frame);
+After:
+			if (paint is LinearGradientPaint linearGradientPaint)
+			{
+				return linearGradientPaint.CreateCALayer(frame);
+			}
+
+			if (paint is RadialGradientPaint radialGradientPaint)
+			{
+				return radialGradientPaint.CreateCALayer(frame);
+			}
+
+			if (paint is ImagePaint imagePaint)
+			{
+				return imagePaint.CreateCALayer(frame);
+			}
+
+			if (paint is PatternPaint patternPaint)
+			{
+				return patternPaint.CreateCALayer(frame);
+			}
+*/
+{
+				return linearGradientPaint.CreateCALayer(frame);
+			}
+
+			if (paint is RadialGradientPaint radialGradientPaint)
+			{
+				return radialGradientPaint.CreateCALayer(frame);
+			}
+
+			if (paint is ImagePaint imagePaint)
+			{
+				return imagePaint.CreateCALayer(frame);
+			}
+
+			if (paint is PatternPaint patternPaint)
+			{
+				return patternPaint.CreateCALayer(frame);
+			}
 
 			return null;
 		}
@@ -44,10 +98,32 @@ namespace Microsoft.Maui.Graphics
 		public static CALayer? CreateCALayer(this GradientPaint gradientPaint, CGRect frame = default)
 		{
 			if (gradientPaint is LinearGradientPaint linearGradientPaint)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return linearGradientPaint.CreateCALayer(frame);
+After:
+			{
+				return linearGradientPaint.CreateCALayer(frame);
+			}
+*/
+			{
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return radialGradientPaint.CreateCALayer(frame);
+After:
+			{
+				return radialGradientPaint.CreateCALayer(frame);
+			}
+*/
+				return linearGradientPaint.CreateCALayer(frame);
+			}
 
 			if (gradientPaint is RadialGradientPaint radialGradientPaint)
+			{
 				return radialGradientPaint.CreateCALayer(frame);
+			}
 
 			return null;
 		}
@@ -118,18 +194,26 @@ namespace Microsoft.Maui.Graphics
 			double x = startPoint.X == 1 ? (startPoint.X - radius) : (startPoint.X + radius);
 
 			if (x < 0)
+			{
 				x = 0;
+			}
 
 			if (x > 1)
+			{
 				x = 1;
+			}
 
 			double y = startPoint.Y == 1 ? (startPoint.Y - radius) : (startPoint.Y + radius);
 
 			if (y < 0)
+			{
 				y = 0;
+			}
 
 			if (y > 1)
+			{
 				y = 1;
+			}
 
 			return new CGPoint(x, y);
 		}
@@ -137,10 +221,32 @@ namespace Microsoft.Maui.Graphics
 		static NSNumber[] GetCAGradientLayerLocations(List<PaintGradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return Array.Empty<NSNumber>();
+After:
+			{
+				return Array.Empty<NSNumber>();
+			}
+*/
+			{
+			{
 				return Array.Empty<NSNumber>();
 
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+			else
+After:
+			}
+			else
+*/
+			}
+
 			if (gradientStops.Count > 1 && gradientStops.Any(gt => gt.Offset != 0))
+			{
 				return gradientStops.Select(x => new NSNumber(x.Offset)).ToArray();
+			}
 			else
 			{
 				int itemCount = gradientStops.Count;
@@ -155,9 +261,13 @@ namespace Microsoft.Maui.Graphics
 					bool setLocation = !gradientStops.Any(gt => gt.Offset > location);
 
 					if (gradientStop.Offset == 0 && setLocation)
+					{
 						locations[index] = new NSNumber(location);
+					}
 					else
+					{
 						locations[index] = new NSNumber(gradientStop.Offset);
+					}
 
 					index++;
 				}
@@ -169,6 +279,9 @@ namespace Microsoft.Maui.Graphics
 		static CGColor[] GetCAGradientLayerColors(List<PaintGradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return Array.Empty<CGColor>();
 
 			CGColor[] colors = new CGColor[gradientStops.Count];
@@ -184,6 +297,46 @@ namespace Microsoft.Maui.Graphics
 				}
 				else
 					colors[index] = gradientStop.Color.ToCGColor();
+After:
+			{
+				return Array.Empty<CGColor>();
+			}
+
+			CGColor[] colors = new CGColor[gradientStops.Count];
+
+			int index = 0;
+			foreach (var gradientStop in gradientStops)
+			{
+				if (gradientStop.Color == Colors.Transparent)
+				{
+					var color = gradientStops[index == 0 ? index + 1 : index - 1].Color;
+					CGColor nativeColor = color.ToPlatform().ColorWithAlpha(0.0f).CGColor;
+					colors[index] = nativeColor;
+				}
+				else
+				{
+					colors[index] = gradientStop.Color.ToCGColor();
+				}
+*/
+			{
+				return Array.Empty<CGColor>();
+			}
+
+			CGColor[] colors = new CGColor[gradientStops.Count];
+
+			int index = 0;
+			foreach (var gradientStop in gradientStops)
+			{
+				if (gradientStop.Color == Colors.Transparent)
+				{
+					var color = gradientStops[index == 0 ? index + 1 : index - 1].Color;
+					CGColor nativeColor = color.ToPlatform().ColorWithAlpha(0.0f).CGColor;
+					colors[index] = nativeColor;
+				}
+				else
+				{
+					colors[index] = gradientStop.Color.ToCGColor();
+				}
 
 				index++;
 			}

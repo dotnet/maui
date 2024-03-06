@@ -42,7 +42,9 @@ namespace Samples.ViewModel
 		void OnSpeak(bool multiple)
 		{
 			if (IsBusy)
+			{
 				return;
+			}
 
 			IsBusy = true;
 
@@ -79,7 +81,9 @@ namespace Samples.ViewModel
 		void OnCancel()
 		{
 			if (!IsBusy && (cts?.IsCancellationRequested ?? true))
+			{
 				return;
+			}
 
 			cts.Cancel();
 

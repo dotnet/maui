@@ -67,7 +67,11 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			var store = new CNContactStore();
 			var containers = store.GetContainers(null, out _);
 			if (containers == null)
+			{
+			{
 				return Task.FromResult<IEnumerable<Contact>>(Array.Empty<Contact>());
+			}
+			}
 
 			return Task.FromResult(GetEnumerable());
 
@@ -78,7 +82,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 					using var pred = CNContact.GetPredicateForContactsInContainer(container.Identifier);
 					var contacts = store.GetUnifiedContacts(pred, keys, out var error);
 					if (contacts == null)
+					{
 						continue;
+					}
 
 					foreach (var contact in contacts)
 					{
@@ -91,7 +97,11 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		internal static Contact ConvertContact(CNContact contact)
 		{
 			if (contact == null)
+			{
+			{
 				return default;
+			}
+			}
 
 			var phones = contact.PhoneNumbers?.Select(
 				item => new ContactPhone(item?.Value?.StringValue));

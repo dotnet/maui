@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Foldable
 		public SurfaceOrientation GetRotation()
 		{
 			if (_activity.TryGetTarget(out var activity))
+			{
 				return GetRotation(activity);
+			}
 
 			return SurfaceOrientation.Rotation0;
 		}
@@ -85,7 +87,10 @@ namespace Microsoft.Maui.Foldable
 			var wm = activity.GetSystemService(Context.WindowService).JavaCast<IWindowManager>();
 			var rotation = SurfaceOrientation.Rotation0;
 			if (wm != null)
+			{
 				rotation = wm.DefaultDisplay.Rotation;
+			}
+
 			return rotation;
 		}
 
@@ -101,7 +106,9 @@ namespace Microsoft.Maui.Foldable
 		double PixelsToDip(double px)
 		{
 			if (_activity.TryGetTarget(out var activity))
+			{
 				return activity.FromPixels(px);
+			}
 
 			return px;
 		}

@@ -36,9 +36,16 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_eventname == value)
+				{
+				{
 					return;
+				}
+
 				if (IsSealed)
+				{
 					throw new InvalidOperationException("Event cannot be changed once the Trigger has been applied");
+				}
+
 				OnPropertyChanging();
 				_eventname = value;
 				OnPropertyChanged();
@@ -49,7 +56,10 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnAttachedTo(bindable);
 			if (!string.IsNullOrEmpty(Event))
+			{
 				AttachHandlerTo(bindable);
+			}
+
 			_associatedObjects.Add(bindable);
 		}
 
@@ -78,13 +88,19 @@ namespace Microsoft.Maui.Controls
 				Application.Current?.FindMauiContext()?.CreateLogger<EventTrigger>()?.LogWarning("Cannot attach EventTrigger to {Type}.{Event}. Check if the handler exists and if the signature is right.", bindable.GetType(), Event);
 			}
 			if (_eventinfo != null && _handlerdelegate != null)
+			{
+			{
 				_eventinfo.AddEventHandler(bindable, _handlerdelegate);
+			}
 		}
 
 		void DetachHandlerFrom(BindableObject bindable)
 		{
 			if (_eventinfo != null && _handlerdelegate != null)
+			{
+			{
 				_eventinfo.RemoveEventHandler(bindable, _handlerdelegate);
+			}
 		}
 
 		[Preserve]
@@ -92,7 +108,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var bindable = (BindableObject)sender;
 			foreach (TriggerAction action in Actions)
+			{
 				action.DoInvoke(bindable);
+			}
 		}
 	}
 }

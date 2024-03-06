@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -59,7 +61,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				if (_element != null)
 				{
 					if (Platform.GetRenderer(_element) == this)
+					{
 						_element.ClearValue(Platform.RendererProperty);
+					}
 				}
 			}
 
@@ -125,11 +129,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void IVisualElementRenderer.SetElement(VisualElement element)
 		{
 			if (element == null)
+			{
 				throw new ArgumentNullException(nameof(element));
+			}
 
 			var image = element as Image;
 			if (image == null)
+			{
 				throw new ArgumentException("Element is not of type " + typeof(Image), nameof(element));
+			}
 
 			Image oldElement = _element;
 			_element = image;
@@ -137,7 +145,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			Performance.Start(out string reference);
 
 			if (oldElement != null)
+			{
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
+			}
 
 			element.PropertyChanged += OnElementPropertyChanged;
 
@@ -163,7 +173,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void IVisualElementRenderer.SetLabelFor(int? id)
 		{
 			if (_defaultLabelFor == null)
+			{
 				_defaultLabelFor = ViewCompat.GetLabelFor(this);
+			}
 
 			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
 		}
@@ -187,11 +199,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void IImageRendererController.SetFormsAnimationDrawable(IFormsAnimationDrawable value)
 		{
 			if (_formsAnimationDrawable != null)
+			{
 				_formsAnimationDrawable.AnimationStopped -= OnAnimationStopped;
+			}
 
 			_formsAnimationDrawable = value;
 			if (_formsAnimationDrawable != null)
+			{
 				_formsAnimationDrawable.AnimationStopped += OnAnimationStopped;
+			}
 		}
 
 		bool ILayoutChanges.HasLayoutOccurred => _hasLayoutOccurred;

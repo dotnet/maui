@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Platform
 
 			// Setting the Slider SmallChange property to 0 would throw an System.ArgumentException.
 			if (difference != 0)
+			{
 				stepping = Math.Min((difference) / 1000, 1);
+			}
 
 			nativeSlider.StepFrequency = stepping;
 		}
@@ -39,7 +41,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateValue(this Slider nativeSlider, ISlider slider)
 		{
 			if (nativeSlider.Value != slider.Value)
+			{
 				nativeSlider.Value = slider.Value;
+			}
 		}
 
 		public static void UpdateMinimumTrackColor(this Slider platformSlider, ISlider slider)
@@ -47,9 +51,13 @@ namespace Microsoft.Maui.Platform
 			var brush = slider.MinimumTrackColor?.ToPlatform();
 
 			if (brush is null)
+			{
 				platformSlider.Resources.RemoveKeys(MinimumTrackColorResourceKeys);
+			}
 			else
+			{
 				platformSlider.Resources.SetValueForAllKey(MinimumTrackColorResourceKeys, brush);
+			}
 
 			platformSlider.RefreshThemeResources();
 		}
@@ -67,9 +75,13 @@ namespace Microsoft.Maui.Platform
 			var brush = slider.MaximumTrackColor?.ToPlatform();
 
 			if (brush == null)
+			{
 				platformSlider.Resources.RemoveKeys(MaximumTrackColorResourceKeys);
+			}
 			else
+			{
 				platformSlider.Resources.SetValueForAllKey(MaximumTrackColorResourceKeys, brush);
+			}
 
 			platformSlider.RefreshThemeResources();
 		}
@@ -87,9 +99,13 @@ namespace Microsoft.Maui.Platform
 			var brush = slider.ThumbColor?.ToPlatform();
 
 			if (brush is null)
+			{
 				platformSlider.Resources.RemoveKeys(ThumbColorResourceKeys);
+			}
 			else
+			{
 				platformSlider.Resources.SetValueForAllKey(ThumbColorResourceKeys, brush);
+			}
 
 			platformSlider.RefreshThemeResources();
 		}
@@ -108,7 +124,7 @@ namespace Microsoft.Maui.Platform
 
 			if (thumbImageSource == null)
 			{
-				nativeSlider.ThumbImageSource = null;
+				MauiSlider.ThumbImageSource = null;
 
 				var thumb = nativeSlider.GetFirstDescendant<Thumb>();
 
@@ -144,11 +160,13 @@ namespace Microsoft.Maui.Platform
 						}
 
 						if (nativeSlider.Parent is FrameworkElement frameworkElement)
+						{
 							frameworkElement.InvalidateMeasure();
+						}
 					};
 				}
 
-				nativeSlider.ThumbImageSource = nativeThumbImageSource?.Value;
+				MauiSlider.ThumbImageSource = nativeThumbImageSource?.Value;
 			}
 		}
 	}

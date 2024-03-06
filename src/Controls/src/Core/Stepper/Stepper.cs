@@ -57,7 +57,10 @@ namespace Microsoft.Maui.Controls
 		public Stepper(double min, double max, double val, double increment) : this()
 		{
 			if (min >= max)
+			{
 				throw new ArgumentOutOfRangeException(nameof(min));
+			}
+
 			if (max > Minimum)
 			{
 				Maximum = max;

@@ -68,14 +68,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var heightFits = heightConstraint >= _perfectSize.Request.Height;
 
 			if (widthFits && heightFits)
+			{
 				return _perfectSize;
+			}
 
 			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
 			var tinyWidth = Math.Min(10, result.Request.Width);
 			result.Minimum = new Size(tinyWidth, result.Request.Height);
 
 			if (widthFits || Element.LineBreakMode == LineBreakMode.NoWrap)
+			{
 				return result;
+			}
 
 			bool containerIsNotInfinitelyWide = !double.IsInfinity(widthConstraint);
 
@@ -106,9 +110,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 
 			if (Control == null)
+			{
+			{
 				return;
+			}
 
 			SizeF fitSize;
+			nfloat labelHeight;
 			nfloat labelHeight;
 			switch (Element.VerticalTextAlignment)
 			{
@@ -198,11 +206,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
+			}
 			else if (e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateLayout();
+			}
+			}
 			else if (e.PropertyName == Label.TextColorProperty.PropertyName)
+			{
+			{
 				UpdateTextColor();
+			}
+			}
 			else if (e.PropertyName == Label.FontAttributesProperty.PropertyName || e.PropertyName == Label.FontFamilyProperty.PropertyName || e.PropertyName == Label.FontSizeProperty.PropertyName)
 			{
 				UpdateText();
@@ -216,28 +234,59 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				UpdateCharacterSpacing();
 			}
 			else if (e.PropertyName == Label.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
+			}
 			else if (e.PropertyName == Label.TextDecorationsProperty.PropertyName)
+			{
+			{
 				UpdateTextDecorations();
+			}
+			}
 			else if (e.PropertyName == Label.FormattedTextProperty.PropertyName)
 			{
 				UpdateText();
 				UpdateTextDecorations();
 			}
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
+			{
 				UpdateLineBreakMode();
+			}
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
+			}
 			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
+			{
+			{
 				UpdateText();
+			}
+			}
 			else if (e.PropertyName == Label.MaxLinesProperty.PropertyName)
+			{
 				UpdateMaxLines();
+			}
+			}
 			else if (e.PropertyName == Label.PaddingProperty.PropertyName)
+			{
 				UpdatePadding();
+			}
+			}
 			else if (e.PropertyName == Label.TextTypeProperty.PropertyName)
+			{
+			{
 				UpdateText();
+			}
+			}
 			else if (e.PropertyName == Label.TextTransformProperty.PropertyName)
+			{
+			{
 				UpdateText();
+			}
+			}
 		}
 
 		protected override NativeLabel CreateNativeControl()
@@ -252,18 +301,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void ElementPropertyChanging(object sender, PropertyChangingEventArgs e)
 		{
 			if (s_perfectSizeSet.Contains(e.PropertyName))
+			{
+			{
 				_perfectSizeValid = false;
+			}
+			}
 		}
 
 		[PortHandler]
 		void UpdateTextDecorations()
 		{
 			if (IsElementOrControlEmpty)
+
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 				return;
 
 			if (Element?.TextType != TextType.Text)
-				return;
-
+After:
+			{
+*/
+			
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 #if __MOBILE__
 			if (!(Control.AttributedText?.Length > 0))
 				return;
@@ -284,16 +344,58 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var underlineStyleKey = NSStringAttributeKey.UnderlineStyle;
 #endif
 			var range = new NSRange(0, newAttributedText.Length);
+After:
+			}
+*/
+{
+				return;
+			}
+
+			if (Element?.TextType != TextType.Text)
+			{
+				return;
+			}
+
+#if __MOBILE__
+			if (!(Control.AttributedText?.Length > 0))
+			{
+				return;
+			}
+#else
+			if (!(Control.AttributedStringValue?.Length > 0))
+				return;
+#endif
+
+			var textDecorations = Element.TextDecorations;
+#if __MOBILE__
+			var newAttributedText = new NSMutableAttributedString(Control.AttributedText);
+			var strikeThroughStyleKey = UIStringAttributeKey.StrikethroughStyle;
+			var underlineStyleKey = UIStringAttributeKey.UnderlineStyle;
+
+#else
+			var newAttributedText = new NSMutableAttributedString(Control.AttributedStringValue);
+			var strikeThroughStyleKey = NSStringAttributeKey.StrikethroughStyle;
+			var underlineStyleKey = NSStringAttributeKey.UnderlineStyle;
+#endif
+			var range = new NSRange(0, newAttributedText.Length);
 
 			if ((textDecorations & TextDecorations.Strikethrough) == 0)
+			{
 				newAttributedText.RemoveAttribute(strikeThroughStyleKey, range);
+			}
 			else
+			{
 				newAttributedText.AddAttribute(strikeThroughStyleKey, NSNumber.FromInt32((int)NSUnderlineStyle.Single), range);
+			}
 
 			if ((textDecorations & TextDecorations.Underline) == 0)
+			{
 				newAttributedText.RemoveAttribute(underlineStyleKey, range);
+			}
 			else
+			{
 				newAttributedText.AddAttribute(underlineStyleKey, NSNumber.FromInt32((int)NSUnderlineStyle.Single), range);
+			}
 
 #if __MOBILE__
 			Control.AttributedText = newAttributedText;
@@ -302,6 +404,140 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 			UpdateCharacterSpacing();
 			_perfectSizeValid = false;
+		
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
+		[PortHandler]
+		void UpdateTextColor()
+		{
+			if (IsTextFormatted)
+			{
+				UpdateFormattedText();
+				return;
+			}
+
+			var textColor = (Color)Element.GetValue(Label.TextColorProperty);
+
+			if (textColor == null && Element.TextType == TextType.Html)
+			{
+				// If no explicit text color has been specified and we're displaying HTML, 
+				// let the HTML determine the colors
+				return;
+			}
+
+#if __MOBILE__
+			Control.TextColor = textColor.ToPlatform(Maui.Platform.ColorExtensions.LabelColor);
+#else
+			var alignment = Element.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
+			var textWithColor = new NSAttributedString(Element.Text ?? "", font: Element.ToNSFont(), foregroundColor: textColor.ToNSColor(ColorExtensions.TextColor), paragraphStyle: new NSMutableParagraphStyle() { Alignment = alignment });
+			textWithColor = textWithColor.AddCharacterSpacing(Element.Text ?? string.Empty, Element.CharacterSpacing);
+			Control.AttributedStringValue = textWithColor;
+#endif
+			UpdateLayout();
+		}
+
+		void UpdateLayout()
+		{
+#if __MOBILE__
+			LayoutSubviews();
+#else
+			Layout();
+#endif
+		}
+
+		[PortHandler("Partially ported")]
+		void UpdateMaxLines()
+		{
+			if (Element.MaxLines >= 0)
+			{
+#if __MOBILE__
+				Control.Lines = Element.MaxLines;
+
+				LayoutSubviews();
+#else
+				Control.MaximumNumberOfLines = Element.MaxLines;
+
+				Layout();
+#endif
+			}
+			else
+			{
+#if __MOBILE__
+				switch (Element.LineBreakMode)
+				{
+					case LineBreakMode.WordWrap:
+					case LineBreakMode.CharacterWrap:
+						Control.Lines = 0;
+						break;
+					case LineBreakMode.NoWrap:
+					case LineBreakMode.HeadTruncation:
+					case LineBreakMode.MiddleTruncation:
+					case LineBreakMode.TailTruncation:
+						Control.Lines = 1;
+						break;
+				}
+
+				LayoutSubviews();
+#else
+				switch (Element.LineBreakMode)
+				{
+					case LineBreakMode.WordWrap:
+					case LineBreakMode.CharacterWrap:
+						Control.MaximumNumberOfLines = 0;
+						break;
+					case LineBreakMode.NoWrap:
+					case LineBreakMode.HeadTruncation:
+					case LineBreakMode.MiddleTruncation:
+					case LineBreakMode.TailTruncation:
+						Control.MaximumNumberOfLines = 1;
+						break;
+				}
+
+				Layout();
+#endif
+			}
+		}
+
+		void UpdatePadding()
+		{
+			if (IsElementOrControlEmpty)
+				return;
+
+			if (Element.Padding.IsEmpty)
+				return;
+
+#if __MOBILE__
+			var formsLabel = Control as FormsLabel;
+			if (formsLabel == null)
+			{
+				Debug.WriteLine($"{nameof(LabelRenderer)}: On iOS, a Label created with no padding will ignore padding changes");
+				return;
+			}
+
+			formsLabel.TextInsets = new UIEdgeInsets(
+					(float)Element.Padding.Top,
+					(float)Element.Padding.Left,
+					(float)Element.Padding.Bottom,
+					(float)Element.Padding.Right);
+			UpdateLayout();
+#endif
+		}
+
+#if __MOBILE__
+		class FormsLabel : NativeLabel
+		{
+			public UIEdgeInsets TextInsets { get; set; }
+
+			public FormsLabel(RectangleF frame) : base(frame)
+			{
+			}
+
+			public override void DrawText(RectangleF rect) => base.DrawText(TextInsets.InsetRect(rect));
+After:
+#if __MOBILE__
+		protected override void DrawText(RectangleF rect) => base.DrawText(TextInsets.InsetRect(rect));
+*/
+	_perfectSizeValid = false;
 		}
 
 #if __MOBILE__
@@ -315,7 +551,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			var elemValue = (string)Element?.GetValue(AutomationProperties.NameProperty);
 			if (string.IsNullOrWhiteSpace(elemValue) && Control?.AccessibilityLabel == Control?.Text)
+			{
 				return;
+			}
 
 			base.SetAccessibilityLabel();
 		}
@@ -325,9 +563,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 #if __MOBILE__
 			if (color == null)
+			{
 				BackgroundColor = UIColor.Clear;
+			}
 			else
+			{
 				BackgroundColor = color.ToPlatform();
+			}
 #else
 			if (color == null)
 				Layer.BackgroundColor = NSColor.Clear.CGColor;
@@ -348,7 +590,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				Layer.InsertBackgroundLayer(backgroundLayer, 0);
 			}
 			else
+			{
 				Layer.RemoveBackgroundLayer();
+			}
 		}
 
 		[PortHandler]
@@ -415,18 +659,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateCharacterSpacing()
 		{
 			if (IsElementOrControlEmpty)
+			{
 				return;
+			}
 
 			if (Element?.TextType != TextType.Text)
+			{
 				return;
+			}
 
 			if (string.IsNullOrEmpty(Element.Text))
+			{
 				return;
+			}
 #if __MOBILE__
 			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (textAttr != null)
+			{
 				Control.AttributedText = textAttr;
+			}
 #else
 			var textAttr = Control.AttributedStringValue.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
 
@@ -441,7 +693,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateText()
 		{
 			if (IsElementOrControlEmpty)
+			{
 				return;
+			}
 
 			switch (Element.TextType)
 			{
@@ -460,7 +714,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			_formatted = Element.FormattedText;
 			if (_formatted == null && Element.LineHeight >= 0)
+			{
 				_formatted = Element.Text;
+			}
 
 			if (IsTextFormatted)
 			{
@@ -494,7 +750,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateTextHtml()
 		{
 			if (IsElementOrControlEmpty)
+			{
 				return;
+			}
 
 			string text = Element.Text ?? string.Empty;
 
@@ -669,10 +927,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdatePadding()
 		{
 			if (IsElementOrControlEmpty)
+			{
 				return;
+			}
 
 			if (Element.Padding.IsEmpty)
+			{
 				return;
+			}
 
 #if __MOBILE__
 			var formsLabel = Control as FormsLabel;

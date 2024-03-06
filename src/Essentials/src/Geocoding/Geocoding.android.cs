@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		public async Task<IEnumerable<Location>> GetLocationsAsync(string address)
 		{
 			if (address == null)
+			{
 				throw new ArgumentNullException(nameof(address));
+			}
 
 			using (var geocoder = new Geocoder(Application.Context))
 			{

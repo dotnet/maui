@@ -50,7 +50,9 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 #if DEBUG
 				if (_stream.CanSeek)
+				{
 					global::System.Diagnostics.Debug.Assert(_stream.Position == _currentPosition);
+				}
 #endif
 				return _currentPosition;
 			}
@@ -86,7 +88,9 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			var buffer = new StringBuilder(length);
 			for (int i = 0; i < length; i++)
+			{
 				buffer.Append((char)_stream.ReadByte());
+			}
 
 			_currentPosition += length;
 			return buffer.ToString();
@@ -209,7 +213,85 @@ namespace Microsoft.Maui.Controls.Internals
 			int toRead = _colorData.Length;
 			int bytesRead = await stream.ReadAsync(_colorData, toRead).ConfigureAwait(false);
 			if (bytesRead < toRead)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				throw new GIFDecoderFormatException("Invalid color table size.");
+
+			int currentColor = 0;
+			int currentColorData = 0;
+			while (currentColor < _size)
+			{
+After:
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+				throw new GIFDecoderFormatException("Invalid color table size.");
+After:
+			{
+				throw new GIFDecoderFormatException("Invalid color table size.");
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				throw new GIFDecoderFormatException("Invalid color table size.");
+
+			int currentColor = 0;
+			int currentColorData = 0;
+			while (currentColor < _size)
+			{
+After:
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				throw new GIFDecoderFormatException("Invalid color table size.");
+
+			int currentColor = 0;
+			int currentColorData = 0;
+			while (currentColor < _size)
+			{
+After:
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				throw new GIFDecoderFormatException("Invalid color table size.");
+
+			int currentColor = 0;
+			int currentColorData = 0;
+			while (currentColor < _size)
+			{
+After:
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				throw new GIFDecoderFormatException("Invalid color table size.");
+
+			int currentColor = 0;
+			int currentColorData = 0;
+			while (currentColor < _size)
+			{
+After:
+			{
+*/
+			{
+				throw new GIFDecoderFormatException("Invalid color table size.");
+			}
+
+			int currentColor = 0;
+			int currentColorData = 0;
+			while (currentColor < _size)
+			{
+				throw new GIFDecoderFormatException("Invalid color table size.");
+			}
 
 			int currentColor = 0;
 			int currentColorData = 0;
@@ -272,7 +354,9 @@ namespace Microsoft.Maui.Controls.Internals
 			GIFHeader header = new GIFHeader();
 			await header.ParseAsync(stream, skipTypeIdentifier).ConfigureAwait(false);
 			if (!header.IsGIFHeader)
+			{
 				header = null;
+			}
 
 			return header;
 		}
@@ -290,9 +374,13 @@ namespace Microsoft.Maui.Controls.Internals
 		async Task ParseAsync(GIFDecoderStreamReader stream, bool skipTypeIdentifier)
 		{
 			if (!skipTypeIdentifier)
+			{
 				TypeIdentifier = stream.ReadString(3);
+			}
 			else
+			{
 				TypeIdentifier = "GIF";
+			}
 
 			if (IsGIFHeader)
 			{
@@ -404,7 +492,11 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			Dispose = (DisposeMethod)((flags & 0x1C) >> 2);
 			if (Dispose == DisposeMethod.NoAction)
+			{
+			{
 				Dispose = DisposeMethod.LeaveInPlace;
+			}
+			}
 		}
 
 		void SetTransparency(int flags, int index)
@@ -438,7 +530,9 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			int blockSize = stream.Read();
 			if (blockSize != 4)
+			{
 				throw new GIFDecoderFormatException("Invalid graphic control extension size.");
+			}
 
 			int flags = stream.Read();
 			SetDisposeMethod(flags);
@@ -459,9 +553,13 @@ namespace Microsoft.Maui.Controls.Internals
 					int count = (stream.CurrentBlockBuffer[2] << 8) | stream.CurrentBlockBuffer[1];
 
 					if (count == 0)
+					{
 						LoopCount = int.MaxValue;
+					}
 					else if (count != 0)
+					{
 						LoopCount = count;
+					}
 				}
 				blockSize = await stream.ReadBlockAsync().ConfigureAwait(false);
 			}
@@ -503,7 +601,9 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			await ParseGIFBitmapHeaderAsync(stream).ConfigureAwait(false);
 			if (IsTransparent)
+			{
 				ColorTable.SetTransparency(TransparencyIndex);
+			}
 
 			DataPosition = stream.CurrentPosition;
 
@@ -527,7 +627,11 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 
 			if (IsTransparent)
+			{
+			{
 				ColorTable.ResetTransparency();
+			}
+			}
 		}
 
 		async Task ParseExtensionAsync(GIFDecoderStreamReader stream)
@@ -567,20 +671,29 @@ namespace Microsoft.Maui.Controls.Internals
 				{
 					case GIFBlockCodes.ImageSeparator:
 						if (currentBitmap == null)
+						{
 							currentBitmap = new GIFBitmap(header);
+						}
+
 						await currentBitmap.ParseImageDescriptorAsync(stream, decoder, previousBitmap, ignoreImageData).ConfigureAwait(false);
 						haveImage = true;
 						done = true;
 						break;
 					case GIFBlockCodes.Extension:
 						if (currentBitmap == null)
+						{
 							currentBitmap = new GIFBitmap(header);
+						}
+
 						await currentBitmap.ParseExtensionAsync(stream).ConfigureAwait(false);
 						break;
 					case GIFBlockCodes.Trailer:
 						done = true;
 						if (!haveImage)
+						{
 							currentBitmap = null;
+						}
+
 						break;
 					default:
 						break;

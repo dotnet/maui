@@ -15,13 +15,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void NotifyDataSetChanged()
 		{
 			if (IsValidAdapter())
+			{
 				_adapter.NotifyDataSetChanged();
+			}
 		}
 
 		public void NotifyItemChanged(IItemsViewSource source, int startIndex)
 		{
 			if (IsValidAdapter())
+			{
 				_adapter.NotifyItemChanged(startIndex);
+			}
 		}
 
 		public void NotifyItemInserted(IItemsViewSource source, int startIndex)
@@ -50,7 +54,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void NotifyItemRangeChanged(IItemsViewSource source, int start, int end)
 		{
 			if (IsValidAdapter())
+			{
 				_adapter.NotifyItemRangeChanged(start, end);
+			}
 		}
 
 		public void NotifyItemRangeInserted(IItemsViewSource source, int startIndex, int count)
@@ -89,7 +95,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		internal bool IsValidAdapter()
 		{
 			if (_adapter == null || _adapter.IsDisposed())
+			{
 				return false;
+			}
 
 			return true;
 		}

@@ -26,9 +26,56 @@ namespace Microsoft.Maui.Platform
 			var result = base.HitTest(point, uievent);
 
 			if (result is null)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return null;
 
 			if (!_userInteractionEnabled && this.Equals(result))
+			{
+				// If user interaction is disabled (IOW, if the corresponding Layout is InputTransparent),
+				// then we exclude the LayoutView itself from hit testing. But it's children are valid
+				// hit testing targets.
+
+				return null;
+			}
+
+			if (!result.UserInteractionEnabled)
+			{
+				// If the child also has user interaction disabled (IOW the child is InputTransparent),
+				// then we also want to exclude it from the hit testing.
+After:
+			{
+*/
+			{
+				return null;
+			}
+
+			if (!_userInteractionEnabled && this.Equals(result))
+			{
+				// If user interaction is disabled (IOW, if the corresponding Layout is InputTransparent),
+				// then we exclude the LayoutView itself from hit testing. But it's children are valid
+				// hit testing targets.
+
+				return null;
+			}
+
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+			if (result is LayoutView layoutView && !layoutView.UserInteractionEnabledOverride)
+After:
+			if (!layoutView.UserInteractionEnabledOverride)
+*/
+			if (!result.UserInteractionEnabled)
+			{
+				// If the child also has user interaction disabled (IOW the child is InputTransparent),
+				// then we also want to exclude it from the hit testing.
+
+				return null;
+			}
+
+			if (result is LayoutView layoutView && !_userInteractionEnabled && this.Equals(result))
 			{
 				// If user interaction is disabled (IOW, if the corresponding Layout is InputTransparent),
 				// then we exclude the LayoutView itself from hit testing. But it's children are valid

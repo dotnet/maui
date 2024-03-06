@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.CollectionView
 			// Don't send RemainingItemsThresholdReached event for non-linear layout managers
 			// This can also happen if a layout pass has not happened yet
 			if (Last == -1)
+			{
 				return;
+			}
 
 			switch (_itemsView.RemainingItemsThreshold)
 			{
@@ -63,11 +65,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.CollectionView
 					return;
 				case 0:
 					if (Last == ItemsViewAdapter.ItemCount - 1)
+					{
 						_itemsView.SendRemainingItemsThresholdReached();
+					}
+
 					break;
 				default:
 					if (ItemsViewAdapter.ItemCount - 1 - Last <= _itemsView.RemainingItemsThreshold)
+					{
 						_itemsView.SendRemainingItemsThresholdReached();
+					}
+
 					break;
 			}
 		}
@@ -90,7 +98,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.CollectionView
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{

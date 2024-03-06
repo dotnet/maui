@@ -12,7 +12,11 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			var selector = self as DataTemplateSelector;
 			if (selector == null)
+			{
+			{
 				return self;
+			}
+			}
 
 			return selector.SelectTemplate(item, container);
 		}

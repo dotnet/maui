@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		private void EnsureDefaults()
 		{
 			if (_defaultFillPaint != null)
+			{
 				return;
+			}
 
 			_defaultFillPaint = new SKPaint
 			{

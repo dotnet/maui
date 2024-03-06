@@ -52,7 +52,9 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(ImageSource? platformImage)
 			{
 				if (Handler?.PlatformView is not WSwipeItem button)
+				{
 					return;
+				}
 
 				button.IconSource = new ImageIconSource { ImageSource = platformImage };
 			}

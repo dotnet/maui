@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Controls
 		{
 			EventHandler<ChildCollectionChangedEventArgs> handler = SectionCollectionChanged;
 			if (handler != null)
+			{
 				handler(this, new ChildCollectionChangedEventArgs(notifyCollectionChangedEventArgs));
+			}
 		}
 
 		void ChildPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)

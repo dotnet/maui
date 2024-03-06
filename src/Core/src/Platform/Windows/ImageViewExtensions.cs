@@ -23,12 +23,16 @@ namespace Microsoft.Maui.Platform
 				if (image.IsAnimationPlaying)
 				{
 					if (!bitmapImage.IsPlaying)
+					{
 						bitmapImage.Play();
+					}
 				}
 				else
 				{
 					if (bitmapImage.IsPlaying)
+					{
 						bitmapImage.Stop();
+					}
 				}
 			}
 		}

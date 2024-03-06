@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.HandleCellPropertyChanged(sender, args);
 
 			if (args.PropertyName == ImageCell.ImageSourceProperty.PropertyName)
+			{
 				SetImage(imageCell, tvc);
+			}
 		}
 
 		async void SetImage(ImageCell cell, CellTableViewCell target)

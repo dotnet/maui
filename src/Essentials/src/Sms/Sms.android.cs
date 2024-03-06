@@ -54,7 +54,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			intent = new Intent(Intent.ActionView);
 
 			if (!string.IsNullOrWhiteSpace(body))
+			{
 				intent.PutExtra("sms_body", body);
+			}
 
 			var recipienturi = string.Join(smsRecipientSeparator, recipients.Select(r => AndroidUri.Encode(r)));
 

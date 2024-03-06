@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls.Design
 						foreach (string part in parts)
 						{
 							if (!double.TryParse(part, NumberStyles.Number, CultureInfo.InvariantCulture, out _))
+							{
 								return false;
+							}
 						}
 
 						return true;
@@ -32,7 +34,9 @@ namespace Microsoft.Maui.Controls.Design
 					// Example: "1,a,b". CornerRadiusTypeConverter has unusual behavior
 					// for 2 or 3 token string. We match its behavior here
 					if (parts.Length < 4)
+					{
 						return double.TryParse(parts[0], NumberStyles.Number, CultureInfo.InvariantCulture, out _);
+					}
 				}
 				else
 				{

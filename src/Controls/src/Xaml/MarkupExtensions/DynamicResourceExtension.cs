@@ -13,7 +13,10 @@ namespace Microsoft.Maui.Controls.Xaml
 		DynamicResource IMarkupExtension<DynamicResource>.ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (Key == null)
+			{
 				throw new XamlParseException("DynamicResource markup require a Key", serviceProvider);
+			}
+
 			return new DynamicResource(Key);
 		}
 	}

@@ -98,7 +98,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public virtual bool AddOverlay(IWindowOverlay overlay)
 		{
 			if (overlay is IVisualDiagnosticsOverlay)
+			{
 				return false;
+			}
 
 			// Add the overlay. If it's added, 
 			// Initalize the native layer if it wasn't already,
@@ -116,11 +118,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public virtual bool RemoveOverlay(IWindowOverlay overlay)
 		{
 			if (overlay is IVisualDiagnosticsOverlay)
+			{
 				return false;
+			}
 
 			var result = _overlays.Remove(overlay);
 			if (result)
+			{
 				overlay.Deinitialize();
+			}
 
 			return result;
 		}

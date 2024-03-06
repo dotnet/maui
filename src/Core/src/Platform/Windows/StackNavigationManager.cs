@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Platform
 		{
 			_connected = true;
 			if (_navigationFrame != null)
+			{
 				_navigationFrame.Navigated -= OnNavigated;
+			}
 
 			FirePendingNavigationFinished();
 
@@ -46,14 +48,18 @@ namespace Microsoft.Maui.Platform
 			NavigationView = (IStackNavigation)navigationView;
 
 			if (WindowManager?.RootView is NavigationView nv)
+			{
 				nv.IsPaneVisible = true;
+			}
 		}
 
 		public virtual void Disconnect(IStackNavigation navigationView, Frame navigationFrame)
 		{
 			_connected = false;
 			if (_navigationFrame != null)
+			{
 				_navigationFrame.Navigated -= OnNavigated;
+			}
 
 			FirePendingNavigationFinished();
 			_navigationFrame = null;
@@ -108,7 +114,9 @@ namespace Microsoft.Maui.Platform
 		protected virtual NavigationTransitionInfo? GetNavigationTransition(NavigationRequest args)
 		{
 			if (!args.Animated)
+			{
 				return null;
+			}
 
 			// GoBack just plays the animation in reverse so we always just return the same animation
 			return new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight };
@@ -150,10 +158,14 @@ namespace Microsoft.Maui.Platform
 			SyncBackStackToNavigationStack(NavigationStack);
 
 			if (e.Content is not FrameworkElement fe)
+			{
 				return;
+			}
 
 			if (e.Content is not Page page)
+			{
 				return;
+			}
 
 			var nv = NavigationView;
 			ContentPresenter? presenter;
@@ -176,7 +188,9 @@ namespace Microsoft.Maui.Platform
 			// At this point if the Content isn't a ContentPresenter the user has replaced
 			// the conent so we just let them take control
 			if (presenter == null || _currentPage == null)
+			{
 				return;
+			}
 
 			try
 			{

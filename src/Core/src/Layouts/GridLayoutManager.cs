@@ -947,7 +947,10 @@ namespace Microsoft.Maui.Layouts
 					{
 						double fullTargetSize = targetStarSize * definition.GridLength.Value;
 						if (definition.MinimumSize < fullTargetSize)
+						{
 							totaldiff += fullTargetSize - definition.MinimumSize;
+						}
+						}
 					}
 				}
 

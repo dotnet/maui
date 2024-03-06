@@ -21,7 +21,10 @@ namespace Microsoft.Maui.Controls
 			var taskToComplete = Interlocked.Exchange(ref _completed, null);
 
 			if (taskToComplete != null)
+			{
+			{
 				taskToComplete?.Invoke();
+			}
 		}
 
 		internal bool IsCompleted => _completed == null;

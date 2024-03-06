@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Handlers
 
 			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (!_set && PlatformView is MauiAppCompatEditText editText)
+			{
 				editText.SelectionChanged += OnSelectionChanged;
+			}
 
 			_set = true;
 		}
@@ -55,7 +57,9 @@ namespace Microsoft.Maui.Handlers
 
 			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (_set && platformView is MauiAppCompatEditText editText)
+			{
 				editText.SelectionChanged -= OnSelectionChanged;
+			}
 
 			_set = false;
 		}
@@ -75,7 +79,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor)
 		{
 			if (handler is EditorHandler platformHandler)
+			{
 				handler.PlatformView?.UpdatePlaceholderColor(editor);
+			}
 		}
 
 		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) =>
@@ -118,7 +124,9 @@ namespace Microsoft.Maui.Handlers
 		static void MapFocus(IEditorHandler handler, IEditor editor, object? args)
 		{
 			if (args is FocusRequest request)
+			{
 				handler.PlatformView.Focus(request);
+			}
 		}
 
 		void OnPlatformViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
@@ -147,10 +155,14 @@ namespace Microsoft.Maui.Handlers
 			var selectedTextLength = PlatformView.GetSelectedTextLength();
 
 			if (VirtualView.CursorPosition != cursorPosition)
+			{
 				VirtualView.CursorPosition = cursorPosition;
+			}
 
 			if (VirtualView.SelectionLength != selectedTextLength)
+			{
 				VirtualView.SelectionLength = selectedTextLength;
+			}
 		}
 
 		public override void PlatformArrange(Rect frame)

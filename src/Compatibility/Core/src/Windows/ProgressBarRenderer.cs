@@ -61,11 +61,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
+			{
 				Control.Value = Element.Progress;
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 			else if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName)
+			{
 				UpdateProgressColor();
+			}
 		}
 
 		void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)

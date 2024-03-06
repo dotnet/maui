@@ -40,7 +40,9 @@ namespace Microsoft.Maui.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				ValueChanged -= MauiPageControlValueChanged;
+			}
 
 			base.Dispose(disposing);
 		}
@@ -51,12 +53,16 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			if (Subviews.Length == 0)
+			{
 				return;
+			}
 
 			UpdateIndicatorSize();
 
 			if (!IsSquare)
+			{
 				return;
+			}
 
 			UpdateSquareShape();
 		}
@@ -64,7 +70,9 @@ namespace Microsoft.Maui.Platform
 		public void UpdateIndicatorSize()
 		{
 			if (IndicatorSize == 0 || IndicatorSize == DefaultIndicatorSize)
+			{
 				return;
+			}
 
 			float scale = (float)IndicatorSize / DefaultIndicatorSize;
 			var newTransform = CGAffineTransform.MakeScale(scale, scale);
@@ -81,7 +89,9 @@ namespace Microsoft.Maui.Platform
 			int GetCurrentPage()
 			{
 				if (_indicatorView is null || !_indicatorView.TryGetTarget(out var indicatorView))
+				{
 					return -1;
+				}
 
 				var maxVisible = indicatorView.GetMaximumVisible();
 				var position = indicatorView.Position;
@@ -93,7 +103,10 @@ namespace Microsoft.Maui.Platform
 		public void UpdateIndicatorCount()
 		{
 			if (_indicatorView is null || !_indicatorView.TryGetTarget(out var indicatorView))
+			{
 				return;
+			}
+
 			this.UpdatePages(indicatorView.GetMaximumVisible());
 			UpdatePosition();
 		}
@@ -116,7 +129,10 @@ namespace Microsoft.Maui.Platform
 					if (view is UIImageView imageview)
 					{
 						if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+						{
 							imageview.Image = UIImage.GetSystemImage("squareshape.fill");
+						}
+
 						var frame = imageview.Frame;
 						//the square shape is not the same size as the circle so we might need to correct the frame
 						imageview.Frame = new CGRect(frame.X - 6, frame.Y, frame.Width, frame.Height);
@@ -136,14 +152,17 @@ namespace Microsoft.Maui.Platform
 		void MauiPageControlValueChanged(object? sender, System.EventArgs e)
 		{
 			if (_updatingPosition || _indicatorView is null || !_indicatorView.TryGetTarget(out var indicatorView))
+			{
 				return;
+			}
 
 			indicatorView.Position = (int)CurrentPage;
 			//if we are iOS13 or lower and we are using a Square shape
 			//we need to update the CornerRadius of the new shape.
 			if (IsSquare && !(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14)))
+			{
 				LayoutSubviews();
-
+			}
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]

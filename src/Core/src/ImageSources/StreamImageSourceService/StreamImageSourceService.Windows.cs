@@ -17,14 +17,18 @@ namespace Microsoft.Maui
 		public async Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IStreamImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
+			{
 				return null;
+			}
 
 			try
 			{
 				using var stream = await imageSource.GetStreamAsync(cancellationToken);
 
 				if (stream == null)
+				{
 					throw new InvalidOperationException("Unable to load image stream.");
+				}
 
 				var image = new BitmapImage();
 

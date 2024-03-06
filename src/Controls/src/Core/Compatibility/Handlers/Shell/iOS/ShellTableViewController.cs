@@ -101,15 +101,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
+			{
 				return;
+			}
 
 			if (disposing)
 			{
 				if (ShellController != null)
+				{
 					ShellController.FlyoutItemsChanged -= OnFlyoutItemsChanged;
+				}
 
 				if (_source != null)
+				{
 					_source.ScrolledEvent -= OnScrolled;
+				}
 
 				ShellFlyoutContentManager.TearDown();
 				_onElementSelected = null;

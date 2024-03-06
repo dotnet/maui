@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public UIDragItem[] GetItemsForBeginningSession(UIDragInteraction interaction, IUIDragSession session)
 		{
 			if (interaction.View is IVisualElementRenderer renderer && renderer.Element is View view)
+			{
 				return HandleDragStarting(view, renderer);
+			}
 
 			return Array.Empty<UIDragItem>();
 		}
@@ -42,7 +44,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public bool CanHandleSession(UIDropInteraction interaction, IUIDropSession session)
 		{
 			if (session.LocalDragSession == null)
+			{
 				return false;
+			}
 
 			if (session.LocalDragSession.Items.Length > 0 &&
 				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData)
@@ -80,7 +84,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UIDropOperation operation = UIDropOperation.Cancel;
 
 			if (session.LocalDragSession == null)
+			{
 				return new UIDropProposal(operation);
+			}
 
 			if (interaction.View is IVisualElementRenderer renderer)
 			{
@@ -106,7 +112,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public void PerformDrop(UIDropInteraction interaction, IUIDropSession session)
 		{
 			if (session.LocalDragSession == null)
+			{
+			{
 				return;
+			}
 
 			if (session.LocalDragSession.Items.Length > 0 &&
 				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi &&
@@ -126,12 +135,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				view.GestureRecognizers;
 
 			if (gestures == null)
+			{
+			{
 				return;
+			}
 
 			foreach (var gesture in gestures)
 			{
 				if (gesture is TRecognizer recognizer)
+				{
+				{
 					func(recognizer);
+				}
 			}
 		}
 
@@ -141,59 +156,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
 				if (!rec.CanDrag)
+				{
 					return;
+				}
 
 				var args = rec.SendDragStarting(element);
 
 				if (args.Cancel)
-					return;
-#pragma warning disable CS0618 // Type or member is obsolete
-				if (!args.Handled)
-#pragma warning restore CS0618 // Type or member is obsolete
 				{
-					UIImage uIImage = null;
-					string clipDescription = String.Empty;
-					NSItemProvider itemProvider = null;
+					return;
 
-					if (renderer is IImageVisualElementRenderer iver)
-					{
-						uIImage = iver.GetImage()?.Image;
-						if (uIImage != null)
-							itemProvider = new NSItemProvider(uIImage);
-						else
-							itemProvider = new NSItemProvider(new NSString(""));
-
-						if (args.Data.Image == null && renderer.Element is IImageElement imageElement)
-							args.Data.Image = imageElement.Source;
-					}
-					else
-					{
-						string text = args.Data.Text ?? clipDescription;
-
-						if (String.IsNullOrWhiteSpace(text))
-						{
-							itemProvider = new NSItemProvider(renderer.NativeView.ConvertToImage());
-						}
-						else
-						{
-							itemProvider = new NSItemProvider(new NSString(text));
-						}
-					}
-
-					var dragItem = new UIDragItem(itemProvider);
-					dragItem.LocalObject = new CustomLocalStateData()
-					{
-						Renderer = renderer,
-						View = renderer.Element as View,
-						DataPackage = args.Data
-					};
-
-					returnValue = new UIDragItem[] { dragItem };
-				}
-			},
-			element);
-
-			return returnValue ?? Array.Empty<UIDragItem>();
+/* Unmerged change from project 'Compatibility(net8.0-maccatalyst)'
+Before:
 		}
 
 		void HandleDropCompleted(View element)
@@ -243,6 +217,260 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (!rec.AllowDrop)
 					return;
+
+				try
+				{
+					await rec.SendDrop(args);
+				}
+				catch (Exception e)
+				{
+					Forms.MauiContext?.CreateLogger<DropGestureRecognizer>()?.LogWarning(e, null);
+				}
+			}, (View)element);
+		}
+
+		class CustomLocalStateData : NSObject
+		{
+			public View View { get; set; }
+			public IVisualElementRenderer Renderer { get; set; }
+			public DataPackage DataPackage { get; set; }
+After:
+				}
+#pragma warning disable CS0618 // Type or member is obsolete
+				if (!args.Handled)
+#pragma warning restore CS0618 // Type or member is obsolete
+				{
+					UIImage uIImage = null;
+					string clipDescription = String.Empty;
+					NSItemProvider itemProvider = null;
+
+					if (renderer is IImageVisualElementRenderer iver)
+					{
+						uIImage = iver.GetImage()?.Image;
+						if (uIImage != null)
+						{
+							itemProvider = new NSItemProvider(uIImage);
+						}
+						else
+						{
+							itemProvider = new NSItemProvider(new NSString(""));
+						}
+
+						if (args.Data.Image == null && renderer.Element is IImageElement imageElement)
+						{
+							args.Data.Image = imageElement.Source;
+						}
+					}
+					else
+					{
+						string text = args.Data.Text ?? clipDescription;
+
+						if (String.IsNullOrWhiteSpace(text))
+						{
+							itemProvider = new NSItemProvider(renderer.NativeView.ConvertToImage());
+						}
+						else
+						{
+							itemProvider = new NSItemProvider(new NSString(text));
+						}
+					}
+
+					var dragItem = new UIDragItem(itemProvider);
+					dragItem.LocalObject = new CustomLocalStateData()
+					{
+						Renderer = renderer,
+						View = renderer.Element as View,
+						DataPackage = args.Data
+					};
+
+					returnValue = new UIDragItem[] { dragItem };
+				}
+			},
+			element);
+
+			return returnValue ?? Array.Empty<UIDragItem>();
+*/
+				}
+#pragma warning disable CS0618 // Type or member is obsolete
+				if (!args.Handled)
+#pragma warning restore CS0618 // Type or member is obsolete
+				{
+					UIImage uIImage = null;
+					string clipDescription = String.Empty;
+					NSItemProvider itemProvider = null;
+
+					if (renderer is IImageVisualElementRenderer iver)
+					{
+						uIImage = iver.GetImage()?.Image;
+						if (uIImage != null)
+						{
+							itemProvider = new NSItemProvider(uIImage);
+						}
+						else
+						{
+							itemProvider = new NSItemProvider(new NSString(""));
+						}
+
+						if (args.Data.Image == null && renderer.Element is IImageElement imageElement)
+						{
+							args.Data.Image = imageElement.Source;
+						}
+					}
+					else
+					{
+						string text = args.Data.Text ?? clipDescription;
+
+						if (String.IsNullOrWhiteSpace(text))
+						{
+							itemProvider = new NSItemProvider(renderer.NativeView.ConvertToImage());
+						}
+						else
+						{
+							itemProvider = new NSItemProvider(new NSString(text));
+						}
+					}
+
+					var dragItem = new UIDragItem(itemProvider);
+					dragItem.LocalObject = new CustomLocalStateData()
+					{
+						Renderer = renderer,
+						View = renderer.Element as View,
+						DataPackage = args.Data
+					};
+
+					returnValue = new UIDragItem[] { dragItem };
+				}
+			},
+			element);
+
+			return returnValue ?? Array.Empty<UIDragItem>();
+		}
+
+		void HandleDropCompleted(View element)
+		{
+			var args = new DropCompletedEventArgs();
+			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args), element);
+		}
+
+		bool HandleDragLeave(View element, DataPackage dataPackage)
+		{
+			var dragEventArgs = new DragEventArgs(dataPackage);
+
+			bool validTarget = false;
+			SendEventArgs<DropGestureRecognizer>(rec =>
+			{
+				if (!rec.AllowDrop)
+				{
+					return;
+				}
+
+				rec.SendDragLeave(dragEventArgs);
+				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
+			}, element);
+
+			return validTarget;
+		}
+
+		bool HandleDragOver(View element, DataPackage dataPackage)
+		{
+			var dragEventArgs = new DragEventArgs(dataPackage);
+
+			bool validTarget = false;
+			SendEventArgs<DropGestureRecognizer>(rec =>
+			{
+				if (!rec.AllowDrop)
+				{
+					return;
+				}
+
+				rec.SendDragOver(dragEventArgs);
+				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
+			}, element);
+
+			return validTarget;
+		}
+
+		void HandleDrop(View element, DataPackage datapackage)
+		{
+			var args = new DropEventArgs(datapackage?.View);
+			SendEventArgs<DropGestureRecognizer>(async rec =>
+			{
+				if (!rec.AllowDrop)
+				{
+					return;
+				}
+
+				try
+				{
+					await rec.SendDrop(args);
+				}
+				catch (Exception e)
+				{
+					Forms.MauiContext?.CreateLogger<DropGestureRecognizer>()?.LogWarning(e, null);
+				}
+			}, (View)element);
+		}
+
+		class CustomLocalStateData : NSObject
+		{
+			public View View { get; set; }
+			public IVisualElementRenderer Renderer { get; set; }
+			public DataPackage DataPackage { get; set; }
+		}
+
+		void HandleDropCompleted(View element)
+		{
+			var args = new DropCompletedEventArgs();
+			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args), element);
+		}
+
+		bool HandleDragLeave(View element, DataPackage dataPackage)
+		{
+			var dragEventArgs = new DragEventArgs(dataPackage);
+
+			bool validTarget = false;
+			SendEventArgs<DropGestureRecognizer>(rec =>
+			{
+				if (!rec.AllowDrop)
+				{
+					return;
+				}
+
+				rec.SendDragLeave(dragEventArgs);
+				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
+			}, element);
+
+			return validTarget;
+		}
+
+		bool HandleDragOver(View element, DataPackage dataPackage)
+		{
+			var dragEventArgs = new DragEventArgs(dataPackage);
+
+			bool validTarget = false;
+			SendEventArgs<DropGestureRecognizer>(rec =>
+			{
+				if (!rec.AllowDrop)
+				{
+					return;
+				}
+
+				rec.SendDragOver(dragEventArgs);
+				validTarget = validTarget || dragEventArgs.AcceptedOperation != DataPackageOperation.None;
+			}, element);
+
+			return validTarget;
+		}
+
+		void HandleDrop(View element, DataPackage datapackage)
+		{
+			var args = new DropEventArgs(datapackage?.View);
+			SendEventArgs<DropGestureRecognizer>(async rec =>
+			{
+				if (!rec.AllowDrop)
+				{
+					return;
+				}
 
 				try
 				{

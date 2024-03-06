@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			BindingContext = context;
 			if (shell != null)
+			{
 				shell.AddLogicalChild(View);
+			}
 		}
 
 
@@ -46,7 +48,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void MeasureInvalidated(object sender, System.EventArgs e)
 		{
 			if (View == null || TableView == null)
+			{
 				return;
+			}
 
 			ViewMeasureInvalidated?.Invoke(this);
 		}
@@ -61,15 +65,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ViewMeasureInvalidated = null;
 			View.MeasureInvalidated -= MeasureInvalidated;
 			if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
+			{
 				baseShell.PropertyChanged -= OnElementPropertyChanged;
+			}
 
 			_bindingContext = null;
 
 			if (!keepRenderer)
+			{
 				Platform.SetRenderer(View, null);
+			}
 
 			if (shell != null)
+			{
 				shell.RemoveLogicalChild(shell);
+			}
 
 			View = null;
 			TableView = null;
@@ -83,10 +93,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			set
 			{
 				if (value == _bindingContext)
+				{
 					return;
+				}
 
 				if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
+				{
 					baseShell.PropertyChanged -= OnElementPropertyChanged;
+				}
 
 				_bindingContext = value;
 				View.BindingContext = value;
@@ -103,7 +117,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.LayoutSubviews();
 			if (View != null)
+			{
 				View.Layout(Bounds.ToRectangle());
+			}
 		}
 
 		void UpdateVisualState()
@@ -111,9 +127,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
 			{
 				if (baseShellItem.IsChecked)
+				{
 					VisualStateManager.GoToState(View, "Selected");
+				}
 				else
+				{
 					VisualStateManager.GoToState(View, "Normal");
+				}
 			}
 		}
 

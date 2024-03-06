@@ -56,7 +56,9 @@ namespace Microsoft.Maui.Platform
 			public void OnDataClicked(object? sender, EventArgs e)
 			{
 				if (_data is not null && _data.TryGetTarget(out var data))
+				{
 					_doneWithDataClicked?.Invoke(data);
+				}
 			}
 
 			public void OnClicked(object? sender, EventArgs e) => _doneClicked?.Invoke();

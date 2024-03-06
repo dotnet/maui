@@ -68,7 +68,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.IconSource = image.Source?.ToIconSource(handler.MauiContext!);
 #else
 			if (handler.SourceLoader is ImageSourcePartLoader loader)
+			{
+			{
 				return loader.UpdateImageSourceAsync();
+			}
+			}
 #endif
 			return Task.CompletedTask;
 		}

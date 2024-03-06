@@ -43,16 +43,22 @@ namespace Microsoft.Maui.Controls.Platform
 			get
 			{
 				if (_control?.TryGetTarget(out var target) == true && target.IsAlive())
+				{
 					return target;
+				}
 
 				return null;
 			}
 			set
 			{
 				if (value != null)
+				{
 					_control = new WeakReference<AView>(value);
+				}
 				else
+				{
 					_control = null;
+				}
 			}
 		}
 
@@ -80,7 +86,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (!ViewHasPinchGestures() || !_scaleDetector.Value.IsInProgress)
+			{
 				eventConsumed = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e) || eventConsumed;
+			}
 
 			return eventConsumed;
 		}
@@ -122,14 +130,18 @@ namespace Microsoft.Maui.Controls.Platform
 		TapAndPanGestureDetector InitializeTapAndPanAndSwipeDetector()
 		{
 			if (Control?.Context == null)
+			{
 				throw new InvalidOperationException("Context cannot be null here");
+			}
 
 			var context = Control.Context;
 			var listener = new InnerGestureListener(
 				new TapGestureHandler(() => View, () =>
 				{
 					if (Element is View view)
+					{
 						return view.GetChildElements(Point.Zero) ?? new List<GestureElement>();
+					}
 
 					return new List<GestureElement>();
 				}),
@@ -145,7 +157,9 @@ namespace Microsoft.Maui.Controls.Platform
 		ScaleGestureDetector InitializeScaleDetector()
 		{
 			if (Control?.Context == null)
+			{
 				throw new InvalidOperationException("Context cannot be null here");
+			}
 
 			var context = Control.Context;
 			var listener = new InnerScaleListener(new PinchGestureHandler(() => View), context.FromPixels);
@@ -158,13 +172,17 @@ namespace Microsoft.Maui.Controls.Platform
 		bool ViewHasPinchGestures()
 		{
 			if (View == null)
+			{
 				return false;
+			}
 
 			int count = View.GestureRecognizers.Count;
 			for (var i = 0; i < count; i++)
 			{
 				if (View.GestureRecognizers[i] is PinchGestureRecognizer)
+				{
 					return true;
+				}
 			}
 
 			return false;
@@ -173,12 +191,16 @@ namespace Microsoft.Maui.Controls.Platform
 		void SetupGestures()
 		{
 			if (View == null)
+			{
 				return;
+			}
 
 			var platformView = Control;
 
 			if (platformView == null)
+			{
 				return;
+			}
 
 			bool shouldAddTouchEvent = false;
 
@@ -223,20 +245,26 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var platformView = Control;
 				if (platformView != null)
+				{
 					platformView.Touch -= OnPlatformViewTouched;
+				}
 
 				return;
 			}
 
 			if (e.Event != null)
+			{
 				OnTouchEvent(e.Event);
+			}
 		}
 
 		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
 		{
 			var platformView = Control;
 			if (platformView != null)
+			{
 				platformView.Touch -= OnPlatformViewTouched;
+			}
 
 			_handler = null;
 			if (oldElement != null)
@@ -276,7 +304,9 @@ namespace Microsoft.Maui.Controls.Platform
 			SetupGestures();
 
 			if (_tapAndPanAndSwipeDetector.IsValueCreated)
+			{
 				_tapAndPanAndSwipeDetector.Value.UpdateLongPressSettings();
+			}
 
 			View?.AddOrRemoveControlsAccessibilityDelegate();
 		}
@@ -284,21 +314,29 @@ namespace Microsoft.Maui.Controls.Platform
 		void UpdateDragAndDrop()
 		{
 			if (View?.GetCompositeGestureRecognizers()?.Count > 0)
+			{
 				_dragAndDropGestureHandler.Value.SetupHandlerForDrop();
+			}
 		}
 
 		void UpdatePointer()
 		{
 			if (View?.GetCompositeGestureRecognizers()?.Count > 0)
+			{
 				_pointerGestureHandler.Value.SetupHandlerForPointer();
+			}
 		}
 
 		void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
+			{
 				UpdateInputTransparent();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled();
+			}
 		}
 
 		protected void Dispose(bool disposing)

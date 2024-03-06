@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
 			if (_itemsLayout is LinearItemsLayout linearItemsLayout)
+			{
 				return (nfloat)linearItemsLayout.ItemSpacing;
+			}
 
 			return base.GetMinimumInteritemSpacingForSection(collectionView, layout, section);
 		}
@@ -72,9 +74,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// the now mising item. Calculate what the new offset will be and store that.
 			var currentOffset = CollectionView.ContentOffset;
 			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+			{
 				_pendingOffset = new CGPoint(currentOffset.X - ItemSize.Width, currentOffset.Y);
+			}
 			else
+			{
 				_pendingOffset = new CGPoint(currentOffset.X, currentOffset.Y - ItemSize.Height);
+			}
 		}
 
 		public override void FinalizeCollectionViewUpdates()

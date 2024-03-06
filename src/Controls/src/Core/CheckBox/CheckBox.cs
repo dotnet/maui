@@ -44,9 +44,13 @@ namespace Microsoft.Maui.Controls
 		protected internal override void ChangeVisualState()
 		{
 			if (IsEnabled && IsChecked)
+			{
 				VisualStateManager.GoToState(this, IsCheckedVisualState);
+			}
 			else
+			{
 				base.ChangeVisualState();
+			}
 		}
 
 		public event EventHandler<CheckedChangedEventArgs> CheckedChanged;

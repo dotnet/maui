@@ -153,6 +153,9 @@ namespace Microsoft.Maui.Graphics.Text
 		public static float[] Parse(this string color)
 		{
 			if (string.IsNullOrEmpty(color))
+
+/* Unmerged change from project 'Graphics(net8.0)'
+Before:
 				return null;
 
 			//Remove # if present
@@ -203,6 +206,1367 @@ namespace Microsoft.Maui.Graphics.Text
 			{
 				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
 					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.19041.0)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.19041.0)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+					return null;
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+				return null;
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+					return null;
+After:
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
+*/
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color, out color))
+				{
+					return null;
+				}
+			}
+
+			int red = 0;
+			int green = 0;
+			int blue = 0;
+			int alpha = 255;
+
+			if (color.Length == 7)
+			{
+				//#RRGGBB
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 4)
+			{
+				//#RGB
+				red = int.Parse($"{color[1]}{color[1]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse($"{color[2]}{color[2]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse($"{color[3]}{color[3]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+			else if (color.Length == 9)
+			{
+				//#RRGGBBAA
+				red = int.Parse(color.Substring(1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				green = int.Parse(color.Substring(3, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				blue = int.Parse(color.Substring(5, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+				alpha = int.Parse(color.Substring(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+			}
+
+			return new[] { red / 255f, green / 255f, blue / 255f, alpha / 255f };
+		}
+
+		public static int[] ParseAsInts(this string color)
+		{
+			if (string.IsNullOrEmpty(color))
+			{
+				return null;
+			}
+
+			//Remove # if present
+			if (!color.StartsWith("#", StringComparison.Ordinal))
+			{
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				{
+					return null;
+				}
 			}
 
 			int red = 0;

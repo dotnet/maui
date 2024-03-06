@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 			for (int i = 0; i < Spans.Count; i++)
+			{
 				SetInheritedBindingContext(Spans[i], BindingContext);
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='Spans']/Docs/*" />

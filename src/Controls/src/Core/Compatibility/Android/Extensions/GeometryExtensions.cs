@@ -190,12 +190,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 							}
 
 							if (points.Count > 0)
+							{
 								lastPoint = points[points.Count - 1];
+							}
 						}
 					}
 
 					if (pathFigure.IsClosed)
+					{
 						path.Close();
+					}
 				}
 			}
 

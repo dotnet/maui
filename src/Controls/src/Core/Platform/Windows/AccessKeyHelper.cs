@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Controls.Platform
 				var windowsElement = elementConfig.On<PlatformConfiguration.Windows>();
 
 				if (element.IsSet(VisualElementSpecifics.AccessKeyProperty))
+				{
 					control.AccessKey = windowsElement.GetAccessKey();
+				}
 
 				if (element.IsSet(VisualElementSpecifics.AccessKeyPlacementProperty))
 				{
@@ -43,10 +45,14 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				if (element.IsSet(VisualElementSpecifics.AccessKeyHorizontalOffsetProperty))
+				{
 					control.KeyTipHorizontalOffset = windowsElement.GetAccessKeyHorizontalOffset();
+				}
 
 				if (element.IsSet(VisualElementSpecifics.AccessKeyVerticalOffsetProperty))
+				{
 					control.KeyTipVerticalOffset = windowsElement.GetAccessKeyVerticalOffset();
+				}
 			}
 		}
 	}

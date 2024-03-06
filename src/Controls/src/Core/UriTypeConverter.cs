@@ -19,14 +19,23 @@ namespace Microsoft.Maui.Controls
 		{
 			var strValue = value?.ToString();
 			if (string.IsNullOrWhiteSpace(strValue))
+			{
+			{
 				return null;
+			}
+
+			}
+
 			return new Uri(strValue, UriKind.RelativeOrAbsolute);
 		}
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not Uri uri)
+			{
 				throw new NotSupportedException();
+			}
+
 			return uri.ToString();
 		}
 	}

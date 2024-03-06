@@ -39,12 +39,39 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 		{
 			if (element?.FormattedText?.Spans == null
 				|| element.FormattedText.Spans.Count == 0)
+
+/* Unmerged change from project 'Compatibility(net8.0-windows10.0.20348.0)'
+Before:
 				return;
 
 			var labelWidth = control.ActualWidth;
 
 			if (labelWidth <= 0 || control.Height <= 0)
+After:
+			{
+*/
+			{
 				return;
+			}
+
+			var labelWidth = control.ActualWidth;
+
+			if (labelWidth <= 0 || control.Height <= 0)
+			{
+				return;
+
+/* Unmerged change from project 'Compatibility(net8.0-windows10.0.20348.0)'
+Added:
+			}
+
+			var labelWidth = control.ActualWidth;
+
+			if (labelWidth <= 0 || control.Height <= 0)
+			{
+				return;
+			}
+*/
+			}
 
 			for (int i = 0; i < element.FormattedText.Spans.Count; i++)
 			{

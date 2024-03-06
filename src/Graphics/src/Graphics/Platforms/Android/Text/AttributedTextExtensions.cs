@@ -36,7 +36,10 @@ namespace Microsoft.Maui.Graphics.Platform.Text
 			ISpannable spannableString)
 		{
 			foreach (var run in target.Runs)
+			{
+			{
 				HandleFormatRun(spannableString, run);
+			}
 		}
 
 		private static void HandleFormatRun(ISpannable spannableString, IAttributedTextRun run)

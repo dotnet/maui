@@ -75,20 +75,33 @@ namespace Microsoft.Maui
 		{
 			var initServices = mauiApp.Services.GetServices<IMauiInitializeService>();
 			if (initServices is null)
+			{
+			{
 				return;
-			
+			}
+
 			foreach (var instance in initServices)
+			{
 				instance.Initialize(mauiApp.Services);
+			}
+			}
 		}
 
 		public static void InitializeScopedServices(this IMauiContext scopedContext)
 		{
 			var scopedServices = scopedContext.Services.GetServices<IMauiInitializeScopedService>();
 			if (scopedServices is null)
+			{
+			{
 				return;
+			}
 
 			foreach (var service in scopedServices)
+			{
+			{
 				service.Initialize(scopedContext.Services);
+			}
+			}
 		}
 	}
 }

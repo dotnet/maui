@@ -64,7 +64,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var flyout = new TimePickerFlyout { Placement = FlyoutPlacementMode.Bottom, Time = Control.Time };
 			flyout.TimePicked += (p, e) => Control.Time = p.Time;
 			if (!Element.IsVisible)
+			{
 				flyout.Placement = FlyoutPlacementMode.Full;
+			}
+
 			flyout.ShowAt(Control);
 		}
 
@@ -93,7 +96,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var button = Control.GetDescendantsByName<Microsoft.UI.Xaml.Controls.Button>("FlyoutButton").FirstOrDefault();
 
 			if (button != null)
+			{
 				InterceptVisualStateManager.Hook(button.GetFirstDescendant<Microsoft.UI.Xaml.Controls.Grid>(), button, Element);
+			}
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -101,16 +106,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == TimePicker.TimeProperty.PropertyName || e.PropertyName == TimePicker.FormatProperty.PropertyName)
+			{
 				UpdateTime();
+			}
 			else if (e.PropertyName == TimePicker.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == TimePicker.FontAttributesProperty.PropertyName || e.PropertyName == TimePicker.FontFamilyProperty.PropertyName || e.PropertyName == TimePicker.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == TimePicker.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 
 			if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
@@ -135,12 +150,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateFont()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			TimePicker timePicker = Element;
 
 			if (timePicker == null)
+			{
 				return;
+			}
 
 			bool timePickerIsDefault =
 				timePicker.FontFamily == null &&
@@ -150,7 +169,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				timePicker.FontAttributes == FontAttributes.None;
 
 			if (timePickerIsDefault && !_fontApplied)
+			{
 				return;
+			}
 
 			if (timePickerIsDefault)
 			{

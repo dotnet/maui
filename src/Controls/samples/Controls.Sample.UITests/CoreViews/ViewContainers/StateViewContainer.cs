@@ -30,9 +30,13 @@ namespace Maui.Controls.Sample
 			};
 
 			if (name == "Focus" || name == "Unfocused" || name == "Focused")
+			{
 				stateValueLabel.SetBinding(Label.TextProperty, "IsFocused", converter: new GenericValueConverter(o => o.ToString()));
+			}
 			else
+			{
 				stateValueLabel.SetBinding(Label.TextProperty, name, converter: new GenericValueConverter(o => o.ToString()));
+			}
 
 			StateChangeButton = new Button
 			{

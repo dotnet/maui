@@ -23,7 +23,9 @@ namespace Maui.Controls.Sample
 		async void OnTapped(object? sender, WindowOverlayTappedEventArgs e)
 		{
 			if (!e.WindowOverlayElements.Contains(_testWindowDrawable))
+			{
 				return;
+			}
 
 			var window = Application.Current!.Windows.FirstOrDefault(w => w == Window);
 

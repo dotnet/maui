@@ -156,7 +156,10 @@ namespace Microsoft.Maui
 
 			//Send what is left!
 			if (!string.IsNullOrWhiteSpace(currentString))
+			{
 				yield return currentString.Trim();
+			}
+			}
 		}
 	}
 }

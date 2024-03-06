@@ -34,9 +34,16 @@ namespace Microsoft.Maui.Controls
 			private set
 			{
 				if (_cancellationTokenSource == value)
+				{
+				{
 					return;
+				}
+
 				if (_cancellationTokenSource != null)
+				{
 					_cancellationTokenSource.Cancel();
+				}
+
 				_cancellationTokenSource = value;
 			}
 		}
@@ -50,6 +57,9 @@ namespace Microsoft.Maui.Controls
 		public virtual Task<bool> Cancel()
 		{
 			if (!IsLoading)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return Task.FromResult(false);
 
 			var tcs = new TaskCompletionSource<bool>();
@@ -60,6 +70,407 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 				tcs = original;
+After:
+			{
+				return Task.FromResult(false);
+			}
+
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+			else
+			{
+				tcs = original;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return Task.FromResult(false);
+
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+			else
+				tcs = original;
+After:
+			{
+				return Task.FromResult(false);
+			}
+
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+			else
+			{
+				tcs = original;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return Task.FromResult(false);
+
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+			else
+				tcs = original;
+After:
+			{
+				return Task.FromResult(false);
+			}
+
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+			else
+			{
+				tcs = original;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return Task.FromResult(false);
+
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+			else
+				tcs = original;
+After:
+			{
+				return Task.FromResult(false);
+			}
+
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+			else
+			{
+				tcs = original;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return Task.FromResult(false);
+
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+			else
+				tcs = original;
+After:
+			{
+				return Task.FromResult(false);
+			}
+
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+			else
+			{
+				tcs = original;
+			}
+*/
+			{
+				return Task.FromResult(false);
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				throw new ArgumentException("uri is relative");
+			return new UriImageSource { Uri = uri };
+After:
+			{
+				throw new ArgumentException("uri is relative");
+			}
+
+			return new UriImageSource { Uri = uri };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				throw new ArgumentException("uri is relative");
+			return new UriImageSource { Uri = uri };
+After:
+			{
+				throw new ArgumentException("uri is relative");
+			}
+
+			return new UriImageSource { Uri = uri };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				throw new ArgumentException("uri is relative");
+			return new UriImageSource { Uri = uri };
+After:
+			{
+				throw new ArgumentException("uri is relative");
+			}
+
+			return new UriImageSource { Uri = uri };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				throw new ArgumentException("uri is relative");
+			return new UriImageSource { Uri = uri };
+After:
+			{
+				throw new ArgumentException("uri is relative");
+			}
+
+			return new UriImageSource { Uri = uri };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				throw new ArgumentException("uri is relative");
+			return new UriImageSource { Uri = uri };
+After:
+			{
+				throw new ArgumentException("uri is relative");
+			}
+
+			return new UriImageSource { Uri = uri };
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				return null;
+After:
+			{
+				return null;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return null;
+After:
+			{
+				return null;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return null;
+After:
+			{
+				return null;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return null;
+After:
+			{
+				return null;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return null;
+After:
+			{
+				return null;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				throw new ArgumentException("uri is relative");
+			return FromUri(uri);
+After:
+			{
+				throw new ArgumentException("uri is relative");
+			}
+
+			return FromUri(uri);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				throw new ArgumentException("uri is relative");
+			return FromUri(uri);
+After:
+			{
+				throw new ArgumentException("uri is relative");
+			}
+
+			return FromUri(uri);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				throw new ArgumentException("uri is relative");
+			return FromUri(uri);
+After:
+			{
+				throw new ArgumentException("uri is relative");
+			}
+
+			return FromUri(uri);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				throw new ArgumentException("uri is relative");
+			return FromUri(uri);
+After:
+			{
+				throw new ArgumentException("uri is relative");
+			}
+
+			return FromUri(uri);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				throw new ArgumentException("uri is relative");
+			return FromUri(uri);
+After:
+			{
+				throw new ArgumentException("uri is relative");
+			}
+
+			return FromUri(uri);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				tcs.SetResult(cancelled);
+After:
+			{
+				tcs.SetResult(cancelled);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				tcs.SetResult(cancelled);
+After:
+			{
+				tcs.SetResult(cancelled);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				tcs.SetResult(cancelled);
+After:
+			{
+				tcs.SetResult(cancelled);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				tcs.SetResult(cancelled);
+After:
+			{
+				tcs.SetResult(cancelled);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				tcs.SetResult(cancelled);
+After:
+			{
+				tcs.SetResult(cancelled);
+			}
+*/
+			}
+
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
+			{
+				_cancellationTokenSource.Cancel();
+			}
+			else
+			{
+				tcs = original;
+			}
 
 			return tcs.Task;
 		}
@@ -100,7 +511,10 @@ namespace Microsoft.Maui.Controls
 		public static ImageSource FromUri(Uri uri)
 		{
 			if (!uri.IsAbsoluteUri)
+			{
 				throw new ArgumentException("uri is relative");
+			}
+
 			return new UriImageSource { Uri = uri };
 		}
 
@@ -113,21 +527,30 @@ namespace Microsoft.Maui.Controls
 		public static implicit operator ImageSource(Uri uri)
 		{
 			if (uri == null)
+			{
 				return null;
+			}
 
 			if (!uri.IsAbsoluteUri)
+			{
 				throw new ArgumentException("uri is relative");
+			}
+
 			return FromUri(uri);
 		}
 
 		private protected void OnLoadingCompleted(bool cancelled)
 		{
 			if (!IsLoading || _completionSource == null)
+			{
 				return;
+			}
 
 			TaskCompletionSource<bool> tcs = Interlocked.Exchange(ref _completionSource, null);
 			if (tcs != null)
+			{
 				tcs.SetResult(cancelled);
+			}
 
 			lock (_synchandle)
 			{

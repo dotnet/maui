@@ -72,6 +72,9 @@ namespace Microsoft.Maui.Controls
 				|| other.Style != 0 && other.Style < StyleRD && Manual <= 0
 				|| Style >= StyleRD || other.Style >= StyleRD
 				|| Style <= 0 && other.Style <= 0))
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return Vsm.CompareTo(other.Vsm);
 
 			//everything coming from Style has lower priority than something that does not
@@ -81,7 +84,117 @@ namespace Microsoft.Maui.Controls
 				return -1;
 			if (Style != other.Style)
 				return Style.CompareTo(other.Style);
+After:
+			{
+				return Vsm.CompareTo(other.Vsm);
+			}
 
+			//everything coming from Style has lower priority than something that does not
+			if (Style != other.Style && Style == 0)
+			{
+				return 1;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return Vsm.CompareTo(other.Vsm);
+
+			//everything coming from Style has lower priority than something that does not
+			if (Style != other.Style && Style == 0)
+				return 1;
+			if (Style != other.Style && other.Style == 0)
+				return -1;
+			if (Style != other.Style)
+				return Style.CompareTo(other.Style);
+After:
+			{
+				return Vsm.CompareTo(other.Vsm);
+			}
+
+			//everything coming from Style has lower priority than something that does not
+			if (Style != other.Style && Style == 0)
+			{
+				return 1;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return Vsm.CompareTo(other.Vsm);
+
+			//everything coming from Style has lower priority than something that does not
+			if (Style != other.Style && Style == 0)
+				return 1;
+			if (Style != other.Style && other.Style == 0)
+				return -1;
+			if (Style != other.Style)
+				return Style.CompareTo(other.Style);
+After:
+			{
+				return Vsm.CompareTo(other.Vsm);
+			}
+
+			//everything coming from Style has lower priority than something that does not
+			if (Style != other.Style && Style == 0)
+			{
+				return 1;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return Vsm.CompareTo(other.Vsm);
+
+			//everything coming from Style has lower priority than something that does not
+			if (Style != other.Style && Style == 0)
+				return 1;
+			if (Style != other.Style && other.Style == 0)
+				return -1;
+			if (Style != other.Style)
+				return Style.CompareTo(other.Style);
+After:
+			{
+				return Vsm.CompareTo(other.Vsm);
+			}
+
+			//everything coming from Style has lower priority than something that does not
+			if (Style != other.Style && Style == 0)
+			{
+				return 1;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return Vsm.CompareTo(other.Vsm);
+
+			//everything coming from Style has lower priority than something that does not
+			if (Style != other.Style && Style == 0)
+				return 1;
+			if (Style != other.Style && other.Style == 0)
+				return -1;
+			if (Style != other.Style)
+				return Style.CompareTo(other.Style);
+After:
+			{
+				return Vsm.CompareTo(other.Vsm);
+			}
+
+			//everything coming from Style has lower priority than something that does not
+			if (Style != other.Style && Style == 0)
+			{
+				return 1;
+			}
+*/
+			{
+				return Vsm.CompareTo(other.Vsm);
+			}
+
+			//everything coming from Style has lower priority than something that does not
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 			if (Manual != other.Manual)
 				return Manual.CompareTo(other.Manual);
 			if (DynamicResource != other.DynamicResource)
@@ -92,6 +205,181 @@ namespace Microsoft.Maui.Controls
 				return Id.CompareTo(other.Id);
 			if (Class != other.Class)
 				return Class.CompareTo(other.Class);
+			return Type.CompareTo(other.Type);
+After:
+			if (Manual != other.Style && other.Style == 0)
+			{
+				return -1;
+			}
+
+			if (Class != other.Style)
+			{
+				return Style.CompareTo(other.Type);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			if (Manual != other.Manual)
+				return Manual.CompareTo(other.Manual);
+			if (DynamicResource != other.DynamicResource)
+				return DynamicResource.CompareTo(other.DynamicResource);
+			if (Binding != other.Binding)
+				return Binding.CompareTo(other.Binding);
+			if (Id != other.Id)
+				return Id.CompareTo(other.Id);
+			if (Class != other.Class)
+				return Class.CompareTo(other.Class);
+			return Type.CompareTo(other.Type);
+After:
+			if (Manual != other.Style && other.Style == 0)
+			{
+				return -1;
+			}
+
+			if (Class != other.Style)
+			{
+				return Style.CompareTo(other.Type);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			if (Manual != other.Manual)
+				return Manual.CompareTo(other.Manual);
+			if (DynamicResource != other.DynamicResource)
+				return DynamicResource.CompareTo(other.DynamicResource);
+			if (Binding != other.Binding)
+				return Binding.CompareTo(other.Binding);
+			if (Id != other.Id)
+				return Id.CompareTo(other.Id);
+			if (Class != other.Class)
+				return Class.CompareTo(other.Class);
+			return Type.CompareTo(other.Type);
+After:
+			if (Manual != other.Style && other.Style == 0)
+			{
+				return -1;
+			}
+
+			if (Class != other.Style)
+			{
+				return Style.CompareTo(other.Type);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+			if (Manual != other.Manual)
+				return Manual.CompareTo(other.Manual);
+			if (DynamicResource != other.DynamicResource)
+				return DynamicResource.CompareTo(other.DynamicResource);
+			if (Binding != other.Binding)
+				return Binding.CompareTo(other.Binding);
+			if (Id != other.Id)
+				return Id.CompareTo(other.Id);
+			if (Class != other.Class)
+				return Class.CompareTo(other.Class);
+			return Type.CompareTo(other.Type);
+After:
+			if (Manual != other.Style && other.Style == 0)
+			{
+				return -1;
+			}
+
+			if (Class != other.Style)
+			{
+				return Style.CompareTo(other.Type);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			if (Manual != other.Manual)
+				return Manual.CompareTo(other.Manual);
+			if (DynamicResource != other.DynamicResource)
+				return DynamicResource.CompareTo(other.DynamicResource);
+			if (Binding != other.Binding)
+				return Binding.CompareTo(other.Binding);
+			if (Id != other.Id)
+				return Id.CompareTo(other.Id);
+			if (Class != other.Class)
+				return Class.CompareTo(other.Class);
+			return Type.CompareTo(other.Type);
+After:
+			if (Manual != other.Style && other.Style == 0)
+			{
+				return -1;
+			}
+
+			if (Class != other.Style)
+			{
+				return Style.CompareTo(other.Type);
+*/
+			if (Style != other.Style && Style == 0)
+			{
+				return 1;
+			}
+
+			if (Style != other.Style && other.Style == 0)
+			{
+				return -1;
+			}
+
+			if (Style != other.Style)
+			{
+				return Style.CompareTo(other.Style);
+			}
+
+			if (Manual != other.Manual)
+			{
+				return Manual.CompareTo(other.Manual);
+			}
+
+			if (DynamicResource != other.DynamicResource)
+			{
+				return DynamicResource.CompareTo(other.DynamicResource);
+			}
+
+			if (Binding != other.Binding)
+			{
+				return Binding.CompareTo(other.Binding);
+			}
+
+			if (Id != other.Id)
+			{
+				return Id.CompareTo(other.Id);
+			}
+
+			if (Class != other.Class)
+			{
+				return Class.CompareTo(other.Class);
+			}
+
+			return Type.CompareTo(other.Style);
+			}
+
+			if (Manual != other.Manual)
+			{
+				return Manual.CompareTo(other.Manual);
+			}
+
+			if (DynamicResource != other.DynamicResource)
+			{
+				return DynamicResource.CompareTo(other.DynamicResource);
+			}
+
+			if (Binding != other.Binding)
+			{
+				return Binding.CompareTo(other.Binding);
+			}
+
+			if (Id != other.Id)
+			{
+				return Id.CompareTo(other.Id);
+			}
+
+			if (Class != other.Class)
+			{
+				return Class.CompareTo(other.Class);
+			}
+
 			return Type.CompareTo(other.Type);
 		}
 

@@ -49,7 +49,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 			// if this is the first time, lauch the real activity
 			if (!launched)
+			{
 				StartActivityForResult(actualIntent, requestCode);
+			}
 		}
 
 		protected override void OnSaveInstanceState(Bundle outState)
@@ -121,7 +123,11 @@ namespace Microsoft.Maui.ApplicationModel
 		static IntermediateTask? GetIntermediateTask(string? guid, bool remove = false)
 		{
 			if (string.IsNullOrEmpty(guid))
+			{
+			{
 				return null;
+			}
+			}
 
 			if (remove)
 			{

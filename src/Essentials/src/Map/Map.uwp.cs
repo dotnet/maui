@@ -39,7 +39,9 @@ namespace Microsoft.Maui.ApplicationModel
 		Uri GetMapsUri(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
+			{
 				throw new ArgumentNullException(nameof(options));
+			}
 
 			var lat = latitude.ToString(CultureInfo.InvariantCulture);
 			var lng = longitude.ToString(CultureInfo.InvariantCulture);
@@ -61,10 +63,14 @@ namespace Microsoft.Maui.ApplicationModel
 		Uri GetMapsUri(Placemark placemark, MapLaunchOptions options)
 		{
 			if (placemark == null)
+			{
 				throw new ArgumentNullException(nameof(placemark));
+			}
 
 			if (options == null)
+			{
 				throw new ArgumentNullException(nameof(options));
+			}
 
 			var uri = string.Empty;
 

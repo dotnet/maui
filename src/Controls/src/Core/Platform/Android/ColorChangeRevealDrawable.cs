@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void Draw(Canvas canvas)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (_progress == 1)
 			{
@@ -79,7 +81,9 @@ namespace Microsoft.Maui.Controls.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 

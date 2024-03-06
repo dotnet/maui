@@ -15,10 +15,14 @@ namespace Microsoft.Maui.Controls.Design
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			if (KnownValues.Any(v => value?.ToString()?.Equals(v, StringComparison.Ordinal) ?? false))
+			{
 				return true;
+			}
 
 			if (double.TryParse(value?.ToString(), out var d))
+			{
 				return true;
+			}
 
 			return false;
 		}

@@ -51,7 +51,9 @@ namespace Microsoft.Maui.Controls
 		static FrameworkElement? OnCreatePlatformView(ViewHandler<ITabbedView, FrameworkElement> arg)
 		{
 			if (arg.VirtualView is TabbedPage tabbedPage)
+			{
 				return tabbedPage.CreatePlatformView();
+			}
 
 			return null;
 		}
@@ -61,24 +63,32 @@ namespace Microsoft.Maui.Controls
 			base.OnHandlerChangedCore();
 
 			if (Handler != null)
+			{
 				OnHandlerConnected();
+			}
 		}
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
 		{
 			if (args?.OldHandler?.PlatformView is FrameworkElement fe)
+			{
 				OnHandlerDisconnected(fe);
+			}
 		}
 
 		void OnHandlerConnected()
 		{
 			if (_connectedToHandler)
+			{
 				return;
+			}
 
 			_connectedToHandler = true;
 
 			if (this.HasAppeared)
+			{
 				OnTabbedPageAppearing(this, EventArgs.Empty);
+			}
 
 			Appearing += OnTabbedPageAppearing;
 			Disappearing += OnTabbedPageDisappearing;
@@ -104,7 +114,9 @@ namespace Microsoft.Maui.Controls
 					SetupNavigationLocals();
 
 					if (_navigationView != null)
+					{
 						wrv.ContentChanged -= OnContentChanged;
+					}
 				}
 			}
 
@@ -119,7 +131,9 @@ namespace Microsoft.Maui.Controls
 		void OnHandlerDisconnected(FrameworkElement? platformView)
 		{
 			if (!_connectedToHandler)
+			{
 				return;
+			}
 
 			_connectedToHandler = false;
 			if (_navigationView != null)
@@ -129,12 +143,16 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (platformView is WFrame wFrame)
+			{
 				wFrame.Navigated -= OnNavigated;
+			}
 
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;
 			if (_navigationView != null)
+			{
 				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
+			}
 
 			OnTabbedPageDisappearing(this, EventArgs.Empty);
 
@@ -146,40 +164,54 @@ namespace Microsoft.Maui.Controls
 		void OnTabbedPageAppearing(object? sender, EventArgs e)
 		{
 			if (_navigationView != null)
+			{
 				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			}
 		}
 
 		void OnTabbedPageDisappearing(object? sender, EventArgs e)
 		{
 			if (_navigationView != null)
+			{
 				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+			}
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
 			UpdateValuesWaitingForNavigationView();
 			if (sender is MauiNavigationView mnv)
+			{
 				mnv.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+			}
 		}
 
 		void OnNavigationViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			if (_navigationView != null)
+			{
 				this.Arrange(_navigationView);
+			}
 		}
 
 		void SetupNavigationView()
 		{
 			if (_navigationView == null)
+			{
 				return;
+			}
 
 			if (_navigationView.PaneDisplayMode != NavigationViewPaneDisplayMode.Top)
+			{
 				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			}
 
 			_navigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
 
 			if (_navigationView.TopNavArea != null)
+			{
 				UpdateValuesWaitingForNavigationView();
+			}
 			else
 			{
 				_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
@@ -190,7 +222,9 @@ namespace Microsoft.Maui.Controls
 		void UpdateValuesWaitingForNavigationView()
 		{
 			if (_navigationView == null)
+			{
 				return;
+			}
 
 			Handler?.UpdateValue(nameof(TabbedPage.BarBackground));
 			Handler?.UpdateValue(nameof(TabbedPage.ItemsSource));
@@ -205,7 +239,9 @@ namespace Microsoft.Maui.Controls
 				Handler?.UpdateValue(nameof(TabbedPage.CurrentPage));
 			}
 			else
+			{
 				NavigateToPage(CurrentPage);
+			}
 		}
 
 		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -229,13 +265,17 @@ namespace Microsoft.Maui.Controls
 		void UpdateCurrentPageContent()
 		{
 			if (NavigationFrame.Content is WPage page)
+			{
 				UpdateCurrentPageContent(page);
+			}
 		}
 
 		void UpdateCurrentPageContent(WPage page)
 		{
 			if (MauiContext == null)
+			{
 				return;
+			}
 
 			WContentPresenter? presenter;
 			IView _currentPage = CurrentPage;
@@ -258,7 +298,9 @@ namespace Microsoft.Maui.Controls
 			// At this point if the Content isn't a ContentPresenter the user has replaced
 			// the conent so we just let them take control
 			if (presenter == null || _currentPage == null)
+			{
 				return;
+			}
 
 			presenter.Content = _currentPage.ToPlatform(MauiContext);
 		}
@@ -266,7 +308,9 @@ namespace Microsoft.Maui.Controls
 		void OnNavigated(object sender, UI.Xaml.Navigation.NavigationEventArgs e)
 		{
 			if (e.Content is WPage page)
+			{
 				UpdateCurrentPageContent(page);
+			}
 		}
 
 		internal static void MapBarBackground(ITabbedViewHandler handler, TabbedPage view)

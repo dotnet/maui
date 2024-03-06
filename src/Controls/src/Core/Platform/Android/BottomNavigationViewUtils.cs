@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static void UpdateEnabled(bool tabEnabled, IMenuItem menuItem)
 		{
 			if (menuItem.IsEnabled != tabEnabled)
+			{
 				menuItem.SetEnabled(tabEnabled);
+			}
 		}
 
 		internal static Task SetupMenuItem(
@@ -90,7 +92,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				IMenuItem menuItem;
 				if (i >= menu.Size())
+				{
 					loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem));
+				}
 				else
 				{
 					menuItem = menu.GetItem(i);
@@ -109,13 +113,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 				menuItem.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
 				if (currentIndex >= maxBottomItems - 1)
+				{
 					menuItem.SetChecked(true);
+				}
 			}
 
 			bottomView.SetShiftMode(false, false);
 
 			if (loadTasks.Count > 0)
+			{
 				await Task.WhenAll(loadTasks);
+			}
 		}
 
 		internal static void SetMenuItemTitle(IMenuItem menuItem, string title)
@@ -127,10 +135,14 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static async Task SetMenuItemIcon(IMenuItem menuItem, ImageSource source, IMauiContext context)
 		{
 			if (!menuItem.IsAlive())
+			{
 				return;
+			}
 
 			if (source is null)
+			{
 				return;
+			}
 
 			var services = context.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
@@ -164,7 +176,10 @@ namespace Microsoft.Maui.Controls.Platform
 			var bottomSheetDialog = new BottomSheetDialog(context);
 			var bottomSheetLayout = new LinearLayout(context);
 			using (var bottomShellLP = new LP(LP.MatchParent, LP.WrapContent))
+			{
 				bottomSheetLayout.LayoutParameters = bottomShellLP;
+			}
+
 			bottomSheetLayout.Orientation = Orientation.Vertical;
 
 			// handle the more tab
@@ -180,7 +195,9 @@ namespace Microsoft.Maui.Controls.Platform
 					innerLayout.SetPadding(0, (int)context.ToPixels(6), 0, (int)context.ToPixels(6));
 					innerLayout.Orientation = Orientation.Horizontal;
 					using (var param = new LP(LP.MatchParent, LP.WrapContent))
+					{
 						innerLayout.LayoutParameters = param;
+					}
 
 					// technically the unhook isn't needed
 					// we dont even unhook the events that dont fire
@@ -188,7 +205,9 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						selectCallback(i_local, bottomSheetDialog);
 						if (!innerLayout.IsDisposed())
+						{
 							innerLayout.Click -= clickCallback;
+						}
 					}
 					innerLayout.Click += clickCallback;
 
@@ -253,9 +272,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 #if __ANDROID_28__
 				if (enableShiftMode)
+				{
 					bottomNavigationView.LabelVisibilityMode = ALabelVisibilityMode.LabelVisibilityAuto;
+				}
 				else
+				{
 					bottomNavigationView.LabelVisibilityMode = ALabelVisibilityMode.LabelVisibilityLabeled;
+				}
 #else
 				var shiftMode = menuView.Class.GetDeclaredField("mShiftingMode");
 				shiftMode.Accessible = true;

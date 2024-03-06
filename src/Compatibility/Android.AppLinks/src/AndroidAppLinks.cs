@@ -23,7 +23,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppLinks
 		public static void Init(Activity activity)
 		{
 			if (IsInitialized)
+			{
 				return;
+			}
+
 			IsInitialized = true;
 
 			Context = activity;

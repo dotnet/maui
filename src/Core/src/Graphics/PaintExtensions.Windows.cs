@@ -16,19 +16,29 @@ namespace Microsoft.Maui.Graphics
 		public static WBrush? ToPlatform(this Paint paint)
 		{
 			if (paint is SolidPaint solidPaint)
+			{
 				return solidPaint.CreateBrush();
+			}
 
 			if (paint is LinearGradientPaint linearGradientPaint)
+			{
 				return linearGradientPaint.CreateBrush();
+			}
 
 			if (paint is RadialGradientPaint radialGradientPaint)
+			{
 				return radialGradientPaint.CreateBrush();
+			}
 
 			if (paint is ImagePaint imagePaint)
+			{
 				return imagePaint.CreateBrush();
+			}
 
 			if (paint is PatternPaint patternPaint)
+			{
 				return patternPaint.CreateBrush();
+			}
 
 			return null;
 		}

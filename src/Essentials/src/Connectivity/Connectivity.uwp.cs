@@ -25,7 +25,11 @@ namespace Microsoft.Maui.Networking
 				{
 					var profile = NetworkInformation.GetInternetConnectionProfile();
 					if (profile == null)
+					{
+					{
 						return NetworkAccess.Unknown;
+					}
+					}
 
 					var level = profile.GetNetworkConnectivityLevel();
 					return level switch
@@ -81,7 +85,7 @@ namespace Microsoft.Maui.Networking
 				{
 					networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
 				}
-				catch (NetworkInformationException ex) 
+				catch (NetworkInformationException ex)
 				{
 					Debug.WriteLine($"Unable to get network interfaces. Error: {ex.Message}");
 				}

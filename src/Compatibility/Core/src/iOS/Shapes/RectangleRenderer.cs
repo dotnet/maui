@@ -38,11 +38,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			base.OnElementPropertyChanged(sender, args);
 
 			if (args.PropertyName == VisualElement.HeightProperty.PropertyName || args.PropertyName == VisualElement.WidthProperty.PropertyName)
+			{
 				UpdateRadius();
+			}
+
 			if (args.PropertyName == FormsRectangle.RadiusXProperty.PropertyName)
+			{
 				UpdateRadiusX();
+			}
+			}
 			else if (args.PropertyName == FormsRectangle.RadiusYProperty.PropertyName)
+			{
+			{
 				UpdateRadiusY();
+			}
+			}
 		}
 
 		void UpdateRadius()
@@ -72,7 +82,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		double ValidateRadius(double radius)
 		{
 			if (radius > MaximumRadius)
+			{
+			{
 				radius = MaximumRadius;
+			}
 
 			return radius;
 		}
@@ -99,7 +112,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public void UpdateRadiusX(double radiusX)
 		{
 			if (double.IsInfinity(radiusX))
+			{
+			{
 				return;
+			}
 
 			RadiusX = new nfloat(radiusX);
 			UpdateShape();
@@ -108,7 +124,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public void UpdateRadiusY(double radiusY)
 		{
 			if (double.IsInfinity(radiusY))
+			{
+			{
 				return;
+			}
 
 			RadiusY = new nfloat(radiusY);
 			UpdateShape();

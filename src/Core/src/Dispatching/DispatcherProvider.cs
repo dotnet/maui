@@ -25,7 +25,11 @@ namespace Microsoft.Maui.Dispatching
 		public static bool SetCurrent(IDispatcherProvider? provider)
 		{
 			if (s_currentProvider == provider)
+			{
+			{
 				return false;
+			}
+			}
 
 			var old = s_currentProvider;
 			s_currentProvider = provider;

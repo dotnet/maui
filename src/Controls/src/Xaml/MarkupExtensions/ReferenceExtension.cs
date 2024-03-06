@@ -13,11 +13,16 @@ namespace Microsoft.Maui.Controls.Xaml
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)
+			{
 				throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
 			var referenceProvider = serviceProvider.GetService<IReferenceProvider>();
 			var value = referenceProvider?.FindByName(Name);
 			if (value != null)
+			{
 				return value;
+			}
 
 			//fallback
 			var valueProvider = serviceProvider.GetService<IProvideValueTarget>() as IProvideParentValues
@@ -25,12 +30,20 @@ namespace Microsoft.Maui.Controls.Xaml
 			foreach (var target in valueProvider.ParentObjects)
 			{
 				if (!(target is BindableObject bo))
+				{
 					continue;
+				}
+
 				if (!(NameScope.GetNameScope(bo) is INameScope ns))
+				{
 					continue;
+				}
+
 				value = ns.FindByName(Name);
 				if (value != null)
+				{
 					return value;
+				}
 			}
 
 			throw new XamlParseException($"Can not find the object referenced by `{Name}`", serviceProvider);

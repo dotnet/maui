@@ -22,7 +22,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		void OnWindowHandlerChanged(object sender, EventArgs e)
 		{
 			if (_window.Handler?.PlatformView is not MauiWinUIWindow platformWindow)
+			{
 				return;
+			}
 
 			if (_plaformWindow is null)
 			{
@@ -62,7 +64,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (Window is not null)
 			{
 				if (!Window.IsDestroyed)
+				{
 					_window.Destroying();
+				}
 			}
 			else
 			{
@@ -88,7 +92,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				if (Window is not null)
 				{
 					if (!Window.IsActivated)
+					{
 						_window.Activated();
+					}
 				}
 				else
 				{

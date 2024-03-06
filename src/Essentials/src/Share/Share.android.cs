@@ -52,9 +52,13 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 				contentUris.Add(FileSystemUtils.GetShareableFileUri(file));
 
 				if (contentType == null)
+				{
 					contentType = file.ContentType;
+				}
 				else if (contentType != file.ContentType)
+				{
 					contentType = FileMimeTypes.All;
+				}
 			}
 
 			var intentType = contentUris.Count > 1
@@ -66,12 +70,18 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			intent.SetFlags(ActivityFlags.GrantReadUriPermission);
 
 			if (contentUris.Count > 1)
+			{
 				intent.PutParcelableArrayListExtra(Intent.ExtraStream, contentUris);
+			}
 			else if (contentUris.Count == 1)
+			{
 				intent.PutExtra(Intent.ExtraStream, contentUris[0]);
+			}
 
 			if (!string.IsNullOrEmpty(request.Title))
+			{
 				intent.PutExtra(Intent.ExtraTitle, request.Title);
+			}
 
 			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;

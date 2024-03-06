@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (disposing)
 			{
 				if (Control != null)
+				{
 					Control.ValueChanged -= OnValueChanged;
+				}
 			}
 
 			base.Dispose(disposing);
@@ -59,13 +61,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Stepper.MinimumProperty.PropertyName)
+			{
 				UpdateMinimum();
+			}
 			else if (e.PropertyName == Stepper.MaximumProperty.PropertyName)
+			{
 				UpdateMaximum();
+			}
 			else if (e.PropertyName == Stepper.ValueProperty.PropertyName)
+			{
 				UpdateValue();
+			}
 			else if (e.PropertyName == Stepper.IncrementProperty.PropertyName)
+			{
 				UpdateIncrement();
+			}
 		}
 
 		[PortHandler]
@@ -96,7 +106,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateValue()
 		{
 			if (Control.Value != Element.Value)
+			{
 				Control.Value = Element.Value;
+			}
 		}
 	}
 }

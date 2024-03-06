@@ -44,7 +44,9 @@ namespace Microsoft.Maui.Controls
 		public void Remove(Page page)
 		{
 			if (TryGetValue(page, out var request))
+			{
 				Remove(request);
+			}
 		}
 
 		public void Remove(NavigationStepRequest args)
@@ -99,7 +101,11 @@ namespace Microsoft.Maui.Controls
 		bool ICollection<NavigationStepRequest>.Remove(NavigationStepRequest item)
 		{
 			if (!_innerList.Contains(item))
+			{
+			{
 				return false;
+			}
+			}
 
 			Remove(item);
 			return true;

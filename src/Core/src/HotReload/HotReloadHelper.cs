@@ -34,35 +34,130 @@ namespace Microsoft.Maui.HotReload
 		public static void Register(IHotReloadableView view, params object[] parameters)
 		{
 			if (!IsSupported || !IsEnabled)
+			{
+			{
 				return;
+			}
+
 			currentViews[view] = parameters;
 		}
 
 		public static void UnRegister(IHotReloadableView view)
 		{
 			if (!IsSupported || !IsEnabled)
+			{
+			{
 				return;
+			}
+
 			currentViews.Remove(view);
 		}
 		public static bool IsReplacedView(IHotReloadableView view, IView newView)
 		{
 			if (!IsSupported || !IsEnabled)
+			{
 				return false;
+			}
+
 			if (view == null || newView == null)
+			{
 				return false;
+			}
 
 			if (!replacedViews.TryGetValue(view.GetType().FullName!, out var newViewType))
+			{
+			{
 				return false;
+			}
+
+			}
+
 			return newView.GetType() == newViewType;
 		}
 		public static IView GetReplacedView(IHotReloadableView view)
 		{
 			if (!IsSupported || !IsEnabled)
+
+/* Unmerged change from project 'Core(net8.0)'
+Before:
 				return view;
 
 			var viewType = view.GetType();
 			if (!replacedViews.TryGetValue(viewType.FullName!, out var newViewType) || viewType == newViewType)
 				return view;
+
+			currentViews.TryGetValue(view, out var parameters);
+			try
+			{
+After:
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return view;
+
+			var viewType = view.GetType();
+			if (!replacedViews.TryGetValue(viewType.FullName!, out var newViewType) || viewType == newViewType)
+				return view;
+
+			currentViews.TryGetValue(view, out var parameters);
+			try
+			{
+After:
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+				return view;
+
+			var viewType = view.GetType();
+			if (!replacedViews.TryGetValue(viewType.FullName!, out var newViewType) || viewType == newViewType)
+				return view;
+
+			currentViews.TryGetValue(view, out var parameters);
+			try
+			{
+After:
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+				return view;
+
+			var viewType = view.GetType();
+			if (!replacedViews.TryGetValue(viewType.FullName!, out var newViewType) || viewType == newViewType)
+				return view;
+
+			currentViews.TryGetValue(view, out var parameters);
+			try
+			{
+After:
+			{
+*/
+			{
+				return view;
+			}
+
+			var viewType = view.GetType();
+			if (!replacedViews.TryGetValue(viewType.FullName!, out var newViewType) || viewType == newViewType)
+			{
+				return view;
+			}
+
+			currentViews.TryGetValue(view, out var parameters);
+			try
+			{
+				return view;
+			}
+
+			var viewType = view.GetType();
+			if (!replacedViews.TryGetValue(viewType.FullName!, out var newViewType) || viewType == newViewType)
+			{
+				return view;
+			}
 
 			currentViews.TryGetValue(view, out var parameters);
 			try
@@ -100,7 +195,10 @@ namespace Microsoft.Maui.HotReload
 		public static void RegisterReplacedView(string oldViewType, Type newViewType)
 		{
 			if (!IsSupported || !IsEnabled)
+			{
+			{
 				return;
+			}
 
 			Action<MethodInfo> executeStaticMethod = (method) =>
 			{
@@ -120,14 +218,19 @@ namespace Microsoft.Maui.HotReload
 			onHotReloadMethods.ForEach(x => executeStaticMethod(x));
 
 			if (typeof(IHotReloadableView).IsAssignableFrom(newViewType))
+			{
 				replacedViews[oldViewType] = newViewType;
+			}
 
 			if (typeof(IViewHandler).IsAssignableFrom(newViewType))
 			{
 				if (replacedHandlers.TryGetValue(oldViewType, out var vTypes))
 				{
 					foreach (var vType in vTypes)
+					{
 						RegisterHandler(vType, newViewType);
+					}
+
 					return;
 				}
 
@@ -154,7 +257,10 @@ namespace Microsoft.Maui.HotReload
 			var view = pair.Key;
 			var newType = newHandler;
 			if (pair.Value.IsGenericType)
+			{
 				newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
+			}
+
 			HandlerService.AddHandler(view, newType);
 		}
 
@@ -183,7 +289,9 @@ namespace Microsoft.Maui.HotReload
 		{
 			IsEnabled = true;
 			foreach (var t in types)
+			{
 				RegisterReplacedView(t.FullName ?? "", t);
+			}
 		}
 		public static void ClearCache(Type[] types) => TriggerReload();
 		#endregion

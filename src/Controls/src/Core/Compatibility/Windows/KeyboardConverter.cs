@@ -11,8 +11,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var keyboard = value as Keyboard;
 			if (keyboard == null)
+			{
 				return null;
-
+			}
 
 			var result = new InputScope();
 			result.Names.Add(keyboard.ToInputScopeName());

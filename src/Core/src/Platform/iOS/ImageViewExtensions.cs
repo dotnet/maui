@@ -29,12 +29,16 @@ namespace Microsoft.Maui.Platform
 			if (image.IsAnimationPlaying)
 			{
 				if (!imageView.IsAnimating)
+				{
 					imageView.StartAnimating();
+				}
 			}
 			else
 			{
 				if (imageView.IsAnimating)
+				{
 					imageView.StopAnimating();
+				}
 			}
 		}
 
@@ -72,7 +76,56 @@ namespace Microsoft.Maui.Platform
 		{
 			// If there's no image, we don't need to take up any space
 			if (imageView.Image is null)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return new CGSize(0, 0);
+
+			var heightConstraint = constraints.Height;
+			var widthConstraint = constraints.Width;
+			var imageSize = imageView.Image.Size;
+
+			var widthRatio = Math.Min(imageSize.Width, widthConstraint) / imageSize.Width;
+			var heightRatio = Math.Min(imageSize.Height, heightConstraint) / imageSize.Height;
+
+			// In cases where we the image must fit its given constraints, we must shrink based on the smallest dimension (scale factor)
+			// that can fit it
+			if (imageView.ContentMode == UIViewContentMode.ScaleAspectFit)
+			{
+				var scaleFactor = Math.Min(widthRatio, heightRatio);
+				return new CGSize(imageSize.Width * scaleFactor, imageSize.Height * scaleFactor);
+			}
+
+			// Cases where AspectMode is ScaleToFill or Center
+			return constraints;
+		}
+After:
+			{
+				return new CGSize(0, 0);
+			}
+
+			var heightConstraint = constraints.Height;
+			var widthConstraint = constraints.Width;
+			var imageSize = imageView.Image.Size;
+
+			var widthRatio = Math.Min(imageSize.Width, widthConstraint) / imageSize.Width;
+			var heightRatio = Math.Min(imageSize.Height, heightConstraint) / imageSize.Height;
+
+			// In cases where we the image must fit its given constraints, we must shrink based on the smallest dimension (scale factor)
+			// that can fit it
+			if (imageView.ContentMode == UIViewContentMode.ScaleAspectFit)
+			{
+				var scaleFactor = Math.Min(widthRatio, heightRatio);
+				return new CGSize(imageSize.Width * scaleFactor, imageSize.Height * scaleFactor);
+			}
+
+			// Cases where AspectMode is ScaleToFill or Center
+			return constraints;
+		}
+*/
+			{
+				return new CGSize(0, 0);
+			}
 
 			var heightConstraint = constraints.Height;
 			var widthConstraint = constraints.Width;

@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		void DataUpdated(CMMagnetometerData data, NSError error)
 		{
 			if (data == null)
+			{
 				return;
+			}
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 			var field = data.MagneticField;
 			var magnetometerData = new MagnetometerData(field.X, field.Y, field.Z);

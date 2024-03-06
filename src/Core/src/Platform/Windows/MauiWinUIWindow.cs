@@ -66,14 +66,20 @@ namespace Microsoft.Maui
 				// when maximizing a window
 				// https://github.com/microsoft/microsoft-ui-xaml/issues/7343
 				if (_isActivated)
+				{
 					return;
+				}
 
 				_isActivated = true;
 
 				if (_enableResumeEvent)
+				{
 					Services?.InvokeLifecycleEvents<WindowsLifecycle.OnResumed>(del => del(this));
+				}
 				else
+				{
 					_enableResumeEvent = true;
+				}
 			}
 			else
 			{
@@ -211,7 +217,9 @@ namespace Microsoft.Maui
 				var titleBar = this.GetAppWindow()?.TitleBar;
 
 				if (titleBar is null)
+				{
 					return;
+				}
 
 				titleBar.ButtonBackgroundColor = Colors.Transparent;
 				titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;

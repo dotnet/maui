@@ -11,6 +11,9 @@ namespace Microsoft.Maui.Controls
 		public static async Task<Element> FindTemplatedParentAsync(Element element)
 		{
 			if (element.RealParent is Application)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return null;
 
 			var skipCount = 0;
@@ -26,6 +29,221 @@ namespace Microsoft.Maui.Controls
 				}
 				if (element is ContentPresenter)
 					skipCount++;
+After:
+			{
+				return null;
+			}
+
+			var skipCount = 0;
+			element = await GetRealParentAsync(element);
+			while (!Application.IsApplicationOrNull(element))
+			{
+				var controlTemplated = element as IControlTemplated;
+				if (controlTemplated?.ControlTemplate != null)
+				{
+					if (skipCount == 0)
+					{
+						return element;
+					}
+
+					skipCount--;
+				}
+				if (element is ContentPresenter)
+				{
+					skipCount++;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return null;
+
+			var skipCount = 0;
+			element = await GetRealParentAsync(element);
+			while (!Application.IsApplicationOrNull(element))
+			{
+				var controlTemplated = element as IControlTemplated;
+				if (controlTemplated?.ControlTemplate != null)
+				{
+					if (skipCount == 0)
+						return element;
+					skipCount--;
+				}
+				if (element is ContentPresenter)
+					skipCount++;
+After:
+			{
+				return null;
+			}
+
+			var skipCount = 0;
+			element = await GetRealParentAsync(element);
+			while (!Application.IsApplicationOrNull(element))
+			{
+				var controlTemplated = element as IControlTemplated;
+				if (controlTemplated?.ControlTemplate != null)
+				{
+					if (skipCount == 0)
+					{
+						return element;
+					}
+
+					skipCount--;
+				}
+				if (element is ContentPresenter)
+				{
+					skipCount++;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return null;
+
+			var skipCount = 0;
+			element = await GetRealParentAsync(element);
+			while (!Application.IsApplicationOrNull(element))
+			{
+				var controlTemplated = element as IControlTemplated;
+				if (controlTemplated?.ControlTemplate != null)
+				{
+					if (skipCount == 0)
+						return element;
+					skipCount--;
+				}
+				if (element is ContentPresenter)
+					skipCount++;
+After:
+			{
+				return null;
+			}
+
+			var skipCount = 0;
+			element = await GetRealParentAsync(element);
+			while (!Application.IsApplicationOrNull(element))
+			{
+				var controlTemplated = element as IControlTemplated;
+				if (controlTemplated?.ControlTemplate != null)
+				{
+					if (skipCount == 0)
+					{
+						return element;
+					}
+
+					skipCount--;
+				}
+				if (element is ContentPresenter)
+				{
+					skipCount++;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return null;
+
+			var skipCount = 0;
+			element = await GetRealParentAsync(element);
+			while (!Application.IsApplicationOrNull(element))
+			{
+				var controlTemplated = element as IControlTemplated;
+				if (controlTemplated?.ControlTemplate != null)
+				{
+					if (skipCount == 0)
+						return element;
+					skipCount--;
+				}
+				if (element is ContentPresenter)
+					skipCount++;
+After:
+			{
+				return null;
+			}
+
+			var skipCount = 0;
+			element = await GetRealParentAsync(element);
+			while (!Application.IsApplicationOrNull(element))
+			{
+				var controlTemplated = element as IControlTemplated;
+				if (controlTemplated?.ControlTemplate != null)
+				{
+					if (skipCount == 0)
+					{
+						return element;
+					}
+
+					skipCount--;
+				}
+				if (element is ContentPresenter)
+				{
+					skipCount++;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return null;
+
+			var skipCount = 0;
+			element = await GetRealParentAsync(element);
+			while (!Application.IsApplicationOrNull(element))
+			{
+				var controlTemplated = element as IControlTemplated;
+				if (controlTemplated?.ControlTemplate != null)
+				{
+					if (skipCount == 0)
+						return element;
+					skipCount--;
+				}
+				if (element is ContentPresenter)
+					skipCount++;
+After:
+			{
+				return null;
+			}
+
+			var skipCount = 0;
+			element = await GetRealParentAsync(element);
+			while (!Application.IsApplicationOrNull(element))
+			{
+				var controlTemplated = element as IControlTemplated;
+				if (controlTemplated?.ControlTemplate != null)
+				{
+					if (skipCount == 0)
+					{
+						return element;
+					}
+
+					skipCount--;
+				}
+				if (element is ContentPresenter)
+				{
+					skipCount++;
+				}
+*/
+			{
+				return null;
+			}
+
+			var skipCount = 0;
+			element = await GetRealParentAsync(element);
+			while (!Application.IsApplicationOrNull(element))
+			{
+				var controlTemplated = element as IControlTemplated;
+				if (controlTemplated?.ControlTemplate != null)
+				{
+					if (skipCount == 0)
+					{
+						return element;
+					}
+
+					skipCount--;
+				}
+				if (element is ContentPresenter)
+				{
+					skipCount++;
+				}
+
 				element = await GetRealParentAsync(element);
 			}
 
@@ -36,10 +254,166 @@ namespace Microsoft.Maui.Controls
 		{
 			Element parent = element.RealParent;
 			if (parent is Application)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return Task.FromResult<Element>(null);
+After:
+			{
+				return Task.FromResult<Element>(null);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return Task.FromResult<Element>(null);
+After:
+			{
+				return Task.FromResult<Element>(null);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return Task.FromResult<Element>(null);
+After:
+			{
+				return Task.FromResult<Element>(null);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return Task.FromResult<Element>(null);
+After:
+			{
+				return Task.FromResult<Element>(null);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return Task.FromResult<Element>(null);
+After:
+			{
+				return Task.FromResult<Element>(null);
+			}
+*/
+			{
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+				return Task.FromResult(parent);
+
+			var tcs = new TaskCompletionSource<Element>();
+			EventHandler handler = null;
+			handler = (sender, args) =>
+			{
+				tcs.TrySetResult(element.RealParent);
+				element.ParentSet -= handler;
+			};
+			element.ParentSet += handler;
+
+			return tcs.Task;
+After:
+			{
+				return Task.FromResult(parent);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return Task.FromResult(parent);
+
+			var tcs = new TaskCompletionSource<Element>();
+			EventHandler handler = null;
+			handler = (sender, args) =>
+			{
+				tcs.TrySetResult(element.RealParent);
+				element.ParentSet -= handler;
+			};
+			element.ParentSet += handler;
+
+			return tcs.Task;
+After:
+			{
+				return Task.FromResult(parent);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return Task.FromResult(parent);
+
+			var tcs = new TaskCompletionSource<Element>();
+			EventHandler handler = null;
+			handler = (sender, args) =>
+			{
+				tcs.TrySetResult(element.RealParent);
+				element.ParentSet -= handler;
+			};
+			element.ParentSet += handler;
+
+			return tcs.Task;
+After:
+			{
+				return Task.FromResult(parent);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return Task.FromResult(parent);
+
+			var tcs = new TaskCompletionSource<Element>();
+			EventHandler handler = null;
+			handler = (sender, args) =>
+			{
+				tcs.TrySetResult(element.RealParent);
+				element.ParentSet -= handler;
+			};
+			element.ParentSet += handler;
+
+			return tcs.Task;
+After:
+			{
+				return Task.FromResult(parent);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return Task.FromResult(parent);
+
+			var tcs = new TaskCompletionSource<Element>();
+			EventHandler handler = null;
+			handler = (sender, args) =>
+			{
+				tcs.TrySetResult(element.RealParent);
+				element.ParentSet -= handler;
+			};
+			element.ParentSet += handler;
+
+			return tcs.Task;
+After:
+			{
+				return Task.FromResult(parent);
+*/
+				return Task.FromResult<Element>(null);
+			}
 
 			if (parent != null)
+			{
 				return Task.FromResult(parent);
+			}
+
+			var tcs = new TaskCompletionSource<Element>();
+			EventHandler handler = null;
+			handler = (sender, args) =>
+			{
+				tcs.TrySetResult(element.RealParent);
+				element.ParentSet -= handler;
+			};
+			element.ParentSet += handler;
+
+			return tcs.Task;
+			}
 
 			var tcs = new TaskCompletionSource<Element>();
 			EventHandler handler = null;
@@ -65,7 +439,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (newValue != null)
+				{
 					self.InternalChildren.Add(newElement);
+				}
 			}
 			else
 			{
@@ -97,9 +473,73 @@ namespace Microsoft.Maui.Controls
 
 						var presenter = child as ContentPresenter;
 						if (presenter != null)
+						{
 							presenter.Clear();
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
 							queue.Enqueue(child);
+After:
+						}
+						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+						{
+							queue.Enqueue(child);
+						}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+							queue.Enqueue(child);
+After:
+						}
+						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+						{
+							queue.Enqueue(child);
+						}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+							queue.Enqueue(child);
+After:
+						}
+						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+						{
+							queue.Enqueue(child);
+						}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+							queue.Enqueue(child);
+After:
+						}
+						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+						{
+							queue.Enqueue(child);
+						}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+							queue.Enqueue(child);
+After:
+						}
+						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+						{
+							queue.Enqueue(child);
+						}
+*/
+						}
+						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+						{
+							queue.Enqueue(child);
+						}
 					}
 				}
 			}
@@ -139,7 +579,9 @@ namespace Microsoft.Maui.Controls
 		internal static void OnChildRemoved(IControlTemplated controlTemplated, Element removedChild)
 		{
 			if (removedChild == controlTemplated.TemplateRoot)
+			{
 				controlTemplated.TemplateRoot = null;
+			}
 		}
 	}
 }

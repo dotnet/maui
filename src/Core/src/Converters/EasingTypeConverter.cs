@@ -23,6 +23,9 @@ namespace Microsoft.Maui.Converters
 			var strValue = value?.ToString();
 
 			if (string.IsNullOrWhiteSpace(strValue))
+
+/* Unmerged change from project 'Core(net8.0)'
+Before:
 				return null;
 
 			strValue = strValue?.Trim() ?? "";
@@ -30,7 +33,71 @@ namespace Microsoft.Maui.Converters
 
 			if (parts.Length == 2 && parts[0] == nameof(Easing))
 				strValue = parts[parts.Length - 1];
+After:
+			{
+				return null;
+			}
 
+			strValue = strValue?.Trim() ?? "";
+			var parts = strValue.Split('.');
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return null;
+
+			strValue = strValue?.Trim() ?? "";
+			var parts = strValue.Split('.');
+
+			if (parts.Length == 2 && parts[0] == nameof(Easing))
+				strValue = parts[parts.Length - 1];
+After:
+			{
+				return null;
+			}
+
+			strValue = strValue?.Trim() ?? "";
+			var parts = strValue.Split('.');
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+				return null;
+
+			strValue = strValue?.Trim() ?? "";
+			var parts = strValue.Split('.');
+
+			if (parts.Length == 2 && parts[0] == nameof(Easing))
+				strValue = parts[parts.Length - 1];
+After:
+			{
+				return null;
+			}
+
+			strValue = strValue?.Trim() ?? "";
+			var parts = strValue.Split('.');
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+				return null;
+
+			strValue = strValue?.Trim() ?? "";
+			var parts = strValue.Split('.');
+
+			if (parts.Length == 2 && parts[0] == nameof(Easing))
+				strValue = parts[parts.Length - 1];
+After:
+			{
+				return null;
+			}
+
+			strValue = strValue?.Trim() ?? "";
+			var parts = strValue.Split('.');
+*/
+			
+/* Unmerged change from project 'Core(net8.0)'
+Before:
 			if (strValue.Equals(nameof(Linear), StringComparison.OrdinalIgnoreCase))
 				return Linear;
 			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
@@ -70,29 +137,350 @@ namespace Microsoft.Maui.Converters
 		{
 			if (value is not Easing easing)
 				throw new NotSupportedException();
+After:
+			if (parts.Length == 2 && parts[0] == nameof(Easing))
+			{
+				strValue = parts[parts.Length - 1];
+			}
+*/
 
-			if (easing == Linear)
-				return nameof(Linear);
-			if (easing == SinIn)
-				return nameof(SinIn);
-			if (easing == SinOut)
-				return nameof(SinOut);
-			if (easing == SinInOut)
-				return nameof(SinInOut);
-			if (easing == CubicIn)
-				return nameof(CubicIn);
-			if (easing == CubicOut)
-				return nameof(CubicOut);
-			if (easing == CubicInOut)
-				return nameof(CubicInOut);
-			if (easing == BounceIn)
-				return nameof(BounceIn);
-			if (easing == BounceOut)
-				return nameof(BounceOut);
-			if (easing == SpringIn)
-				return nameof(SpringIn);
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+			if (strValue.Equals(nameof(Linear), StringComparison.OrdinalIgnoreCase))
+				return Linear;
+			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
+				return SinIn;
+			if (strValue.Equals(nameof(SinOut), StringComparison.OrdinalIgnoreCase))
+				return SinOut;
+			if (strValue.Equals(nameof(SinInOut), StringComparison.OrdinalIgnoreCase))
+				return SinInOut;
+			if (strValue.Equals(nameof(CubicIn), StringComparison.OrdinalIgnoreCase))
+				return CubicIn;
+			if (strValue.Equals(nameof(CubicOut), StringComparison.OrdinalIgnoreCase))
+				return CubicOut;
+			if (strValue.Equals(nameof(CubicInOut), StringComparison.OrdinalIgnoreCase))
+				return CubicInOut;
+			if (strValue.Equals(nameof(BounceIn), StringComparison.OrdinalIgnoreCase))
+				return BounceIn;
+			if (strValue.Equals(nameof(BounceOut), StringComparison.OrdinalIgnoreCase))
+				return BounceOut;
+			if (strValue.Equals(nameof(SpringIn), StringComparison.OrdinalIgnoreCase))
+				return SpringIn;
+			if (strValue.Equals(nameof(SpringOut), StringComparison.OrdinalIgnoreCase))
+				return SpringOut;
+
+			var fallbackValue = typeof(Easing)
+				.GetTypeInfo()
+				.DeclaredFields
+				.FirstOrDefault(f => f.Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
+				?.GetValue(null);
+
+			if (fallbackValue is Easing fallbackEasing)
+				return fallbackEasing;
+
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}");
+		}
+
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		{
+			if (value is not Easing easing)
+				throw new NotSupportedException();
+After:
+			if (parts.Length == 2 && parts[0] == nameof(Easing))
+			{
+				strValue = parts[parts.Length - 1];
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+			if (strValue.Equals(nameof(Linear), StringComparison.OrdinalIgnoreCase))
+				return Linear;
+			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
+				return SinIn;
+			if (strValue.Equals(nameof(SinOut), StringComparison.OrdinalIgnoreCase))
+				return SinOut;
+			if (strValue.Equals(nameof(SinInOut), StringComparison.OrdinalIgnoreCase))
+				return SinInOut;
+			if (strValue.Equals(nameof(CubicIn), StringComparison.OrdinalIgnoreCase))
+				return CubicIn;
+			if (strValue.Equals(nameof(CubicOut), StringComparison.OrdinalIgnoreCase))
+				return CubicOut;
+			if (strValue.Equals(nameof(CubicInOut), StringComparison.OrdinalIgnoreCase))
+				return CubicInOut;
+			if (strValue.Equals(nameof(BounceIn), StringComparison.OrdinalIgnoreCase))
+				return BounceIn;
+			if (strValue.Equals(nameof(BounceOut), StringComparison.OrdinalIgnoreCase))
+				return BounceOut;
+			if (strValue.Equals(nameof(SpringIn), StringComparison.OrdinalIgnoreCase))
+				return SpringIn;
+			if (strValue.Equals(nameof(SpringOut), StringComparison.OrdinalIgnoreCase))
+				return SpringOut;
+
+			var fallbackValue = typeof(Easing)
+				.GetTypeInfo()
+				.DeclaredFields
+				.FirstOrDefault(f => f.Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
+				?.GetValue(null);
+
+			if (fallbackValue is Easing fallbackEasing)
+				return fallbackEasing;
+
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}");
+		}
+
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		{
+			if (value is not Easing easing)
+				throw new NotSupportedException();
+After:
+			if (parts.Length == 2 && parts[0] == nameof(Easing))
+			{
+				strValue = parts[parts.Length - 1];
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+			if (strValue.Equals(nameof(Linear), StringComparison.OrdinalIgnoreCase))
+				return Linear;
+			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
+				return SinIn;
+			if (strValue.Equals(nameof(SinOut), StringComparison.OrdinalIgnoreCase))
+				return SinOut;
+			if (strValue.Equals(nameof(SinInOut), StringComparison.OrdinalIgnoreCase))
+				return SinInOut;
+			if (strValue.Equals(nameof(CubicIn), StringComparison.OrdinalIgnoreCase))
+				return CubicIn;
+			if (strValue.Equals(nameof(CubicOut), StringComparison.OrdinalIgnoreCase))
+				return CubicOut;
+			if (strValue.Equals(nameof(CubicInOut), StringComparison.OrdinalIgnoreCase))
+				return CubicInOut;
+			if (strValue.Equals(nameof(BounceIn), StringComparison.OrdinalIgnoreCase))
+				return BounceIn;
+			if (strValue.Equals(nameof(BounceOut), StringComparison.OrdinalIgnoreCase))
+				return BounceOut;
+			if (strValue.Equals(nameof(SpringIn), StringComparison.OrdinalIgnoreCase))
+				return SpringIn;
+			if (strValue.Equals(nameof(SpringOut), StringComparison.OrdinalIgnoreCase))
+				return SpringOut;
+
+			var fallbackValue = typeof(Easing)
+				.GetTypeInfo()
+				.DeclaredFields
+				.FirstOrDefault(f => f.Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
+				?.GetValue(null);
+
+			if (fallbackValue is Easing fallbackEasing)
+				return fallbackEasing;
+
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}");
+		}
+
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		{
+			if (value is not Easing easing)
+				throw new NotSupportedException();
+After:
+			if (parts.Length == 2 && parts[0] == nameof(Easing))
+			{
+				strValue = parts[parts.Length - 1];
+			}
+*/
+{
+				return null;
+			}
+
+			strValue = strValue?.Trim() ?? "";
+			var parts = strValue.Split('.');
+
+			if (parts.Length == 2 && parts[0] == nameof(Easing))
+			{
+				strValue = parts[parts.Length - 1];
+			}
+
+			if (strValue.Equals(nameof(Linear), StringComparison.OrdinalIgnoreCase))
+			{
+				return Linear;
+			}
+
+
+/* Unmerged change from project 'Core(net8.0)'
+Before:
 			if (easing == SpringOut)
 				return nameof(SpringOut);
+After:
+			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
+			{
+				return SinIn;
+			}
+
+			if (strValue.Equals(SpringOut);
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+			if (easing == SpringOut)
+				return nameof(SpringOut);
+After:
+			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
+			{
+				return SinIn;
+			}
+
+			if (strValue.Equals(SpringOut);
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+			if (easing == SpringOut)
+				return nameof(SpringOut);
+After:
+			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
+			{
+				return SinIn;
+			}
+
+			if (strValue.Equals(SpringOut);
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+			if (easing == SpringOut)
+				return nameof(SpringOut);
+After:
+			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
+			{
+				return SinIn;
+			}
+
+			if (strValue.Equals(SpringOut);
+*/
+			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
+			{
+				return SinIn;
+			}
+
+			if (strValue.Equals(nameof(SinOut), StringComparison.OrdinalIgnoreCase))
+			{
+				return SinOut;
+			}
+
+			if (strValue.Equals(nameof(SinInOut), StringComparison.OrdinalIgnoreCase))
+			{
+				return SinInOut;
+			}
+
+			if (strValue.Equals(nameof(CubicIn), StringComparison.OrdinalIgnoreCase))
+			{
+				return CubicIn;
+			}
+
+			if (strValue.Equals(nameof(CubicOut), StringComparison.OrdinalIgnoreCase))
+			{
+				return CubicOut;
+			}
+
+			if (strValue.Equals(nameof(CubicInOut), StringComparison.OrdinalIgnoreCase))
+			{
+				return CubicInOut;
+			}
+
+			if (strValue.Equals(nameof(BounceIn), StringComparison.OrdinalIgnoreCase))
+			{
+				return BounceIn;
+			}
+
+			if (strValue.Equals(nameof(BounceOut), StringComparison.OrdinalIgnoreCase))
+			{
+				return BounceOut;
+			}
+
+			if (strValue.Equals(nameof(SpringIn), StringComparison.OrdinalIgnoreCase))
+			{
+				return SpringIn;
+			}
+
+			if (strValue.Equals(nameof(SpringOut), StringComparison.OrdinalIgnoreCase))
+			{
+				return SpringOut;
+			}
+
+			var fallbackValue = typeof(Easing)
+				.GetTypeInfo()
+				.DeclaredFields
+				.FirstOrDefault(f => f.Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
+				?.GetValue(null);
+
+			if (fallbackValue is Easing fallbackEasing)
+			{
+				return fallbackEasing;
+			}
+
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}");
+		}
+
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		{
+			if (value is not Easing easing)
+			{
+				throw new NotSupportedException();
+			}
+
+			if (easing == Linear)
+			{
+				return nameof(Linear);
+			}
+
+			if (easing == SinIn)
+			{
+				return nameof(SinIn);
+			}
+
+			if (easing == SinOut)
+			{
+				return nameof(SinOut);
+			}
+
+			if (easing == SinInOut)
+			{
+				return nameof(SinInOut);
+			}
+
+			if (easing == CubicIn)
+			{
+				return nameof(CubicIn);
+			}
+
+			if (easing == CubicOut)
+			{
+				return nameof(CubicOut);
+			}
+
+			if (easing == CubicInOut)
+			{
+				return nameof(CubicInOut);
+			}
+
+			if (easing == BounceIn)
+			{
+				return nameof(BounceIn);
+			}
+
+			if (easing == BounceOut)
+			{
+				return nameof(BounceOut);
+			}
+
+			if (easing == SpringIn)
+			{
+				return nameof(SpringIn);
+			}
+
+			if (easing == SpringOut)
+			{
+				return nameof(SpringOut);
+			}
 
 			throw new NotSupportedException();
 		}

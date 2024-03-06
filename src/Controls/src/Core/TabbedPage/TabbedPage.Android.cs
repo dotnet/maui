@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Controls
 		static AView? OnCreatePlatformView(ViewHandler<ITabbedView, AView> arg)
 		{
 			if (arg.VirtualView is TabbedPage tabbedPage)
+			{
 				return tabbedPage.CreatePlatformView();
+			}
 
 			return null;
 		}
@@ -41,7 +43,9 @@ namespace Microsoft.Maui.Controls
 				_tabbedPageManager = null;
 			}
 			else if (args.OldHandler != null && args.NewHandler == null)
+			{
 				DisconnectHandler();
+			}
 		}
 
 		void DisconnectHandler()

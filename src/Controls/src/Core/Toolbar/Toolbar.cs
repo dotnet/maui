@@ -52,14 +52,19 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_handler == value)
+				{
+				{
 					return;
+				}
 
 				var oldHandler = _handler;
 				OnHandlerChanging(_handler, value);
 				_handler = value;
 
 				if (oldHandler?.VirtualView == this)
+				{
 					oldHandler?.DisconnectHandler();
+				}
 			}
 		}
 
@@ -72,7 +77,9 @@ namespace Microsoft.Maui.Controls
 			[CallerMemberName] string propertyName = "")
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))
+			{
 				return;
+			}
 
 			backingStore = value;
 			Handler?.UpdateValue(propertyName);

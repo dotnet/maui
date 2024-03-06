@@ -45,7 +45,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					isGeneric = true;
 				}
 				else if (match[pos] == ')')
+				{
 					parensCount--;
+				}
 				else if (match[pos] == ',' && parensCount == 0)
 				{
 					remaining = match.Substring(pos + 1);
@@ -65,7 +67,23 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var split = type.Split(':');
 			if (split.Length > 2)
+			{
+			
+/* Unmerged change from project 'Controls.Xaml(net8.0-ios)'
+Added:
+			}
+*/
+
+/* Unmerged change from project 'Controls.Xaml(net8.0-ios)'
+Before:
+				throw new XamlParseException($"No xmlns declaration for prefix '{prefix}'.", lineinfo, null);
+After:
+			{
+				throw new XamlParseException($"No xmlns declaration for prefix '{prefix}'.", lineinfo, null);
+*/
+{
 				return null;
+			}
 
 			string prefix, name;
 			if (split.Length == 2)
@@ -81,7 +99,12 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var namespaceuri = resolver.LookupNamespace(prefix);
 			if (namespaceuri == null)
+			{
 				throw new XamlParseException($"No xmlns declaration for prefix '{prefix}'.", lineinfo, null);
+			}
+
+			}
+
 			return new XmlType(namespaceuri, name, typeArguments);
 		}
 	}

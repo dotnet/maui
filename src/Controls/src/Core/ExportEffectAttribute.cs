@@ -13,7 +13,10 @@ namespace Microsoft.Maui.Controls
 		public ExportEffectAttribute(Type effectType, string uniqueName)
 		{
 			if (uniqueName.IndexOf(".", StringComparison.Ordinal) != -1)
+			{
 				throw new ArgumentException("uniqueName must not contain a .");
+			}
+
 			Type = effectType;
 			Id = uniqueName;
 		}

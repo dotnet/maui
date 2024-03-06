@@ -24,7 +24,10 @@ namespace Microsoft.Maui.Layouts
 					|| double.IsNaN(frame.Y)
 					|| double.IsNaN(frame.Width)
 					|| double.IsNaN(frame.Height))
+				{
 					throw new Exception("something is deeply wrong");
+				}
+
 				frame = frame.Offset(bounds.Left, bounds.Top);
 				child.Arrange(frame);
 			}

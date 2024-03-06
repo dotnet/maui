@@ -56,15 +56,30 @@ namespace Microsoft.Maui.Controls
 			{
 				var idiom = DeviceInfo.Idiom;
 				if (idiom == DeviceIdiom.Tablet)
+				{
 					return TargetIdiom.Tablet;
+				}
+
 				if (idiom == DeviceIdiom.Phone)
+				{
 					return TargetIdiom.Phone;
+				}
+
 				if (idiom == DeviceIdiom.Desktop)
+				{
 					return TargetIdiom.Desktop;
+				}
+
 				if (idiom == DeviceIdiom.TV)
+				{
 					return TargetIdiom.TV;
+				}
+
 				if (idiom == DeviceIdiom.Watch)
+				{
 					return TargetIdiom.Watch;
+				}
+
 				return TargetIdiom.Unsupported;
 			}
 		}

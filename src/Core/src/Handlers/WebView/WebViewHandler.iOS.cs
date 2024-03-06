@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapWKUIDelegate(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
+			{
 				handler.PlatformView.UIDelegate = platformHandler._delegate ??= new MauiWebViewUIDelegate(handler);
+			}
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)
@@ -43,7 +45,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler.PlatformView.CanGoBack && handler.PlatformView.NavigationDelegate is MauiWebViewNavigationDelegate mauiDelegate)
+			{
 				mauiDelegate.CurrentNavigationEvent = WebNavigationEvent.Back;
+			}
 
 			handler.PlatformView?.UpdateGoBack(webView);
 		}
@@ -51,7 +55,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler.PlatformView.CanGoForward && handler.PlatformView.NavigationDelegate is MauiWebViewNavigationDelegate mauiDelegate)
+			{
 				mauiDelegate.CurrentNavigationEvent = WebNavigationEvent.Forward;
+			}
 
 			handler.PlatformView?.UpdateGoForward(webView);
 		}
@@ -69,7 +75,9 @@ namespace Microsoft.Maui.Handlers
 				var url = ((MauiWKWebView)handler.PlatformView).CurrentUrl;
 
 				if (url != null)
+				{
 					await platformHandler.SyncPlatformCookiesAsync(url);
+				}
 			}
 			catch (Exception exc)
 			{
@@ -77,7 +85,9 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			if (handler.PlatformView.NavigationDelegate is MauiWebViewNavigationDelegate mauiDelegate)
+			{
 				mauiDelegate.CurrentNavigationEvent = WebNavigationEvent.Refresh;
+			}
 
 			handler.PlatformView?.UpdateReload(webView);
 		}
@@ -85,7 +95,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapEval(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is not string script)
+			{
 				return;
+			}
 
 			handler.PlatformView?.Eval(webView, script);
 		}
@@ -118,7 +130,10 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			if (set)
+			{
+			{
 				size = new Size(width, height);
+			}
 
 			return size;
 		}
@@ -126,12 +141,16 @@ namespace Microsoft.Maui.Handlers
 		internal async Task ProcessNavigatedAsync(string url)
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			try
 			{
 				if (VirtualView.Cookies != null)
+				{
 					await SyncPlatformCookiesToVirtualViewAsync(url);
+				}
 			}
 			catch
 			{
@@ -152,7 +171,10 @@ namespace Microsoft.Maui.Handlers
 				var request = new NSUrlRequest(new NSUrl(new Uri(safeHostUri, safeRelativeUri).AbsoluteUri));
 
 				if (HasCookiesToLoad(url) && !(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+				{
+				{
 					return;
+				}
 
 				await SyncPlatformCookiesAsync(url);
 				PlatformView?.LoadRequest(request);
@@ -179,6 +201,9 @@ namespace Microsoft.Maui.Handlers
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return false;
 
 			var myCookieJar = VirtualView.Cookies;
@@ -187,9 +212,39 @@ namespace Microsoft.Maui.Handlers
 				return false;
 
 			var cookies = myCookieJar.GetCookies(uri);
+After:
+			{
+				return false;
+			}
+
+			var myCookieJar = myCookieJar.GetCookies(uri);
+*/
+			{
+				return false;
+			}
+
+			var myCookieJar = VirtualView.Cookies;
+
+			if (myCookieJar == null)
+			{
+			{
+				return false;
+			}
+
+			var cookies = myCookieJar.GetCookies(uri);
 
 			if (cookies == null)
+			{
 				return false;
+			}
+			}
+
+			var cookies = myCookieJar.GetCookies(uri);
+
+			if (cookies == null)
+			{
+				return false;
+			}
 
 			return cookies.Count > 0;
 		}
@@ -197,17 +252,23 @@ namespace Microsoft.Maui.Handlers
 		internal async Task SyncPlatformCookiesToVirtualViewAsync(string url)
 		{
 			if (string.IsNullOrWhiteSpace(url))
+			{
 				return;
+			}
 
 			var myCookieJar = VirtualView.Cookies;
 
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 			var retrieveCurrentWebCookies = await GetCookiesFromPlatformStore(url);
@@ -236,9 +297,13 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				if (nSHttpCookie == null)
+				{
 					cookie.Expired = true;
+				}
 				else
+				{
 					cookie.Value = nSHttpCookie.Value;
+				}
 			}
 
 			await SyncPlatformCookiesAsync(url);
@@ -249,17 +314,23 @@ namespace Microsoft.Maui.Handlers
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return;
+			}
 
 			var myCookieJar = VirtualView.Cookies;
 
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			await InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
 			if (cookies == null)
+			{
 				return;
+			}
 
 			var retrieveCurrentWebCookies = await GetCookiesFromPlatformStore(url);
 
@@ -267,7 +338,9 @@ namespace Microsoft.Maui.Handlers
 			foreach (var cookie in retrieveCurrentWebCookies)
 			{
 				if (cookies[cookie.Name] != null)
+				{
 					continue;
+				}
 
 				deleteCookies.Add(cookie);
 			}
@@ -300,7 +373,9 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				if (changeCookie)
+				{
 					cookiesToSet.Add(cookie);
+				}
 			}
 
 			await SetCookie(cookiesToSet);
@@ -312,19 +387,27 @@ namespace Microsoft.Maui.Handlers
 			var myCookieJar = VirtualView.Cookies;
 
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return;
+			}
 
 			if (!_loadedCookies.Add(uri.Host))
+			{
 				return;
+			}
 
 			// Pre ios 11 we sync cookies after navigated
 			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+			{
 				return;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 			var existingCookies = await GetCookiesFromPlatformStore(url);
@@ -365,7 +448,9 @@ namespace Microsoft.Maui.Handlers
 					// we don't care that much about this being accurate
 					// the cookie container will split the cookies up more correctly
 					if (!cookie.Domain.Contains(domain, StringComparison.Ordinal) && !domain.Contains(cookie.Domain, StringComparison.Ordinal))
+					{
 						continue;
+					}
 
 					existingCookies.Add(cookie);
 				}
@@ -379,7 +464,9 @@ namespace Microsoft.Maui.Handlers
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				foreach (var cookie in cookies)
+				{
 					await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.SetCookieAsync(new NSHttpCookie(cookie));
+				}
 			}
 			else
 			{
@@ -399,7 +486,9 @@ namespace Microsoft.Maui.Handlers
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				foreach (var cookie in cookies)
+				{
 					await PlatformView.Configuration.WebsiteDataStore.HttpCookieStore.DeleteCookieAsync(cookie);
+				}
 			}
 			else
 			{
@@ -478,17 +567,23 @@ namespace Microsoft.Maui.Handlers
 		static Uri? CreateUriForCookies(string url)
 		{
 			if (url == null)
+			{
 				return null;
+			}
 
 			Uri? uri;
 
 			if (url.Length > 2000)
+			{
 				url = url.Substring(0, 2000);
+			}
 
 			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
 			{
 				if (string.IsNullOrWhiteSpace(uri.Host))
+				{
 					return null;
+				}
 
 				return uri;
 			}

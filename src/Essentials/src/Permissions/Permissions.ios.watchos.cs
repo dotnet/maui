@@ -33,9 +33,14 @@ namespace Microsoft.Maui.ApplicationModel
 				if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
 				{
 					if (entityType == EKEntityType.Reminder)
+					{
 						results = await eventStore.RequestFullAccessToRemindersAsync();
+					}
+
 					if (entityType == EKEntityType.Event)
+					{
 						results = await eventStore.RequestFullAccessToEventsAsync();
+					}
 				}
 				else
 #endif
@@ -79,7 +84,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = EventPermission.CheckPermissionStatus(EKEntityType.Event);
 				if (status == PermissionStatus.Granted)
+				{
 					return Task.FromResult(status);
+				}
 
 				return EventPermission.RequestPermissionAsync(EKEntityType.Event);
 			}
@@ -118,7 +125,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = EventPermission.CheckPermissionStatus(EKEntityType.Event);
 				if (status == PermissionStatus.Granted)
+				{
 					return Task.FromResult(status);
+				}
 
 				return EventPermission.RequestPermissionAsync(EKEntityType.Event);
 			}
@@ -157,7 +166,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = EventPermission.CheckPermissionStatus(EKEntityType.Reminder);
 				if (status == PermissionStatus.Granted)
+				{
 					return Task.FromResult(status);
+				}
 
 				return EventPermission.RequestPermissionAsync(EKEntityType.Reminder);
 			}
@@ -184,7 +195,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = GetSensorPermissionStatus();
 				if (status == PermissionStatus.Granted)
+				{
 					return Task.FromResult(status);
+				}
 
 				EnsureMainThread();
 
@@ -195,7 +208,9 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				// Check if it's available
 				if (!CMMotionActivityManager.IsActivityAvailable)
+				{
 					return PermissionStatus.Disabled;
+				}
 
 				if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsWatchOSVersionAtLeast(4, 0))
 				{
@@ -225,7 +240,11 @@ namespace Microsoft.Maui.ApplicationModel
 				{
 					var results = await activityManager.QueryActivityAsync(NSDate.DistantPast, NSDate.DistantFuture, NSOperationQueue.MainQueue);
 					if (results != null)
+					{
+					{
 						return PermissionStatus.Granted;
+					}
+					}
 				}
 				catch (Exception ex)
 				{
@@ -262,7 +281,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var status = LocationWhenInUse.GetLocationStatus(false);
 				if (status == PermissionStatus.Granted)
+				{
 					return status;
+				}
 
 				EnsureMainThread();
 

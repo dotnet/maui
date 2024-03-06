@@ -54,7 +54,9 @@ namespace Microsoft.Maui.Controls
 		internal override void OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue)
 		{
 			if (oldValue == null)
+			{
 				return;
+			}
 
 			base.OnControlTemplateChanged(oldValue, newValue);
 			View content = Content;
@@ -113,7 +115,9 @@ namespace Microsoft.Maui.Controls
 			//TODO: Let you hot reload the the ViewModel
 			//TODO: Lets do a real state transfer
 			if (newView is View v)
+			{
 				v.BindingContext = BindingContext;
+			}
 		}
 
 		void HotReload.IHotReloadableView.Reload()

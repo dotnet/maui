@@ -57,7 +57,48 @@ namespace Microsoft.Maui
 		public bool RequiresReload(PlatformView uiContext)
 		{
 			if (!IsResolutionDependent)
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 				return false;
+
+#if IOS || MACCATALYST || WINDOWS
+			if (uiContext is not null)
+			{
+After:
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+				return false;
+
+#if IOS || MACCATALYST || WINDOWS
+			if (uiContext is not null)
+			{
+After:
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+				return false;
+
+#if IOS || MACCATALYST || WINDOWS
+			if (uiContext is not null)
+			{
+After:
+			{
+*/
+			{
+				return false;
+			}
+
+#if IOS || MACCATALYST || WINDOWS
+			if (uiContext is not null)
+			{
+				return false;
+			}
 
 #if IOS || MACCATALYST || WINDOWS
 			if (uiContext is not null)

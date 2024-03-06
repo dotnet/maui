@@ -72,16 +72,22 @@ namespace Microsoft.Maui.Controls
 		void ApplyBindings(object item)
 		{
 			if (Bindings == null)
+			{
 				return;
+			}
 
 			var bindable = item as BindableObject;
 			if (bindable == null)
+			{
 				return;
+			}
 
 			foreach (KeyValuePair<BindableProperty, BindingBase> kvp in Bindings)
 			{
 				if (Values.ContainsKey(kvp.Key))
+				{
 					throw new InvalidOperationException("Binding and Value found for " + kvp.Key.PropertyName);
+				}
 
 				bindable.SetBinding(kvp.Key, kvp.Value.Clone());
 			}
@@ -90,13 +96,20 @@ namespace Microsoft.Maui.Controls
 		void ApplyValues(object item)
 		{
 			if (Values == null)
+			{
 				return;
+			}
 
 			var bindable = item as BindableObject;
 			if (bindable == null)
+			{
 				return;
+			}
+
 			foreach (KeyValuePair<BindableProperty, object> kvp in Values)
+			{
 				bindable.SetValue(kvp.Key, kvp.Value);
+			}
 		}
 	}
 }

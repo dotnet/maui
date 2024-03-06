@@ -38,7 +38,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			base.Draw(canvas);
 			if (_isRunning != IsRunning)
+			{
 				IsRunning = _isRunning;
+			}
 		}
 
 		public void SetColor(Color color)
@@ -54,7 +56,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				GradientDrawable backgroundDrawable = gradientDrawable.GetConstantState().NewDrawable() as GradientDrawable;
 
 				if (!Brush.IsNullOrEmpty(brush))
+				{
 					backgroundDrawable.UpdateBackground(brush, Height, Width);
+				}
 				else
 				{
 					_backgroudColor = color?.ToAndroid() ?? AColor.Transparent;
@@ -73,13 +77,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			set
 			{
 				if (AnimatedDrawable == null)
+				{
 					return;
+				}
 
 				_isRunning = value;
 				if (_isRunning && !AnimatedDrawable.IsRunning)
+				{
 					AnimatedDrawable.Start();
+				}
 				else if (AnimatedDrawable.IsRunning)
+				{
 					AnimatedDrawable.Stop();
+				}
 
 				PostInvalidate();
 			}
@@ -94,9 +104,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			t += (height - squareSize) / 2;
 			int strokeWidth;
 			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
 				strokeWidth = squareSize / _paddingRatio23;
+			}
 			else
+			{
 				strokeWidth = squareSize / _paddingRatio;
+			}
 
 			squareSize += strokeWidth;
 			base.Layout(l - strokeWidth, t - strokeWidth, l + squareSize, t + squareSize);

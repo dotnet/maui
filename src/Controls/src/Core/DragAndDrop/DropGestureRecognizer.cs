@@ -106,7 +106,9 @@ namespace Microsoft.Maui.Controls
 		internal async Task SendDrop(DropEventArgs args)
 		{
 			if (!AllowDrop)
+			{
 				return;
+			}
 
 			DropCommand?.Execute(DropCommandParameter);
 			Drop?.Invoke(this, args);
@@ -123,7 +125,9 @@ namespace Microsoft.Maui.Controls
 				{
 					dragSource = (IView)internalProperties["DragSource"];
 					if (sourceTarget == null && dragSource is IImageElement imageElement)
+					{
 						sourceTarget = imageElement.Source;
+					}
 
 					if (String.IsNullOrWhiteSpace(text))
 					{
@@ -132,14 +136,22 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (Parent is IImageElement && sourceTarget == null)
+				{
 					sourceTarget = text;
+				}
 
 				if (Parent is Image image)
+				{
 					image.Source = sourceTarget;
+				}
 				else if (Parent is ImageButton ib)
+				{
 					ib.Source = sourceTarget;
+				}
 				else if (Parent is Button b)
+				{
 					b.ImageSource = sourceTarget;
+				}
 
 				Parent?.TrySetValue(text);
 			}

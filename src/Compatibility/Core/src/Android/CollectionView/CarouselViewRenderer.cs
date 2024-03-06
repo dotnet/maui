@@ -38,7 +38,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
 			if (!_isSwipeEnabled)
+			{
 				return false;
+			}
 
 			return base.OnInterceptTouchEvent(ev);
 		}
@@ -48,13 +50,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override int DetermineTargetPosition(ScrollToRequestEventArgs args)
 		{
 			if (args.Mode == ScrollToMode.Element)
+			{
 				return ItemsViewAdapter.GetPositionForItem(args.Item);
+			}
 
 			if (!Carousel.Loop)
+			{
 				return args.Index;
+			}
 
 			if (_carouselViewLoopManager == null)
+			{
 				return -1;
+			}
 
 			var carouselPosition = GetCarouselViewCurrentIndex(Carousel.Position);
 			var getGoIndex = _carouselViewLoopManager.GetGoToIndex(this, carouselPosition, args.Index);
@@ -65,7 +73,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			if (Carousel.Loop)
+			{
 				_carouselViewLoopManager.CenterIfNeeded(this, IsHorizontal);
+			}
 
 			return base.OnTouchEvent(e);
 		}
@@ -95,7 +105,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.SetUpNewElement(newElement);
 
 			if (newElement == null)
+			{
 				return;
+			}
 
 			AddLayoutListener();
 			UpdateIsSwipeEnabled();
@@ -112,7 +124,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void TearDownOldElement(ItemsView oldElement)
 		{
 			if (Carousel != null)
+			{
 				Carousel.Scrolled -= CarouselViewScrolled;
+			}
 
 			ClearLayoutListener();
 			base.TearDownOldElement(oldElement);
@@ -142,7 +156,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdateInitialPosition();
 
 			if (ItemsViewAdapter?.ItemsSource is ObservableItemsSource observableItemsSource)
+			{
 				observableItemsSource.CollectionItemsSourceChanged += CollectionItemsSourceChanged;
+			}
 
 			oldItemViewAdapter?.Dispose();
 		}
@@ -159,19 +175,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, changedProperty);
 
 			if (changedProperty.Is(FormsCarouselView.PeekAreaInsetsProperty))
+			{
 				UpdatePeekAreaInsets();
+			}
 			else if (changedProperty.Is(FormsCarouselView.IsSwipeEnabledProperty))
+			{
 				UpdateIsSwipeEnabled();
+			}
 			else if (changedProperty.Is(FormsCarouselView.IsBounceEnabledProperty))
+			{
 				UpdateIsBounceEnabled();
+			}
 			else if (changedProperty.Is(LinearItemsLayout.ItemSpacingProperty))
+			{
 				UpdateItemSpacing();
+			}
 			else if (changedProperty.Is(FormsCarouselView.PositionProperty))
+			{
 				UpdateFromPosition();
+			}
 			else if (changedProperty.Is(FormsCarouselView.CurrentItemProperty))
+			{
 				UpdateFromCurrentItem();
+			}
 			else if (changedProperty.Is(FormsCarouselView.LoopProperty))
+			{
 				UpdateAdapter();
+			}
 		}
 
 		protected override ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
@@ -205,7 +235,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var position = DetermineTargetPosition(args);
 
 			if (_carouselViewLoopManager == null)
+			{
 				return;
+			}
 
 			// Special case here
 			// We could have a race condition where we are scrolling our collection to center the first item
@@ -213,7 +245,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (position == -1)
 			{
 				if (Carousel.Loop)
+				{
 					_carouselViewLoopManager.AddPendingScrollTo(args);
+				}
 
 				return;
 			}
@@ -233,7 +267,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var itemWidth = Width;
 
 			if (ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			{
 				itemWidth = (int)(Width - Context?.ToPixels(Carousel.PeekAreaInsets.Left) - Context?.ToPixels(Carousel.PeekAreaInsets.Right) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+			}
 
 			return itemWidth;
 		}
@@ -243,7 +279,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var itemHeight = Height;
 
 			if (ItemsLayout is LinearItemsLayout listItemsLayout && listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+			{
 				itemHeight = (int)(Height - Context?.ToPixels(Carousel.PeekAreaInsets.Top) - Context?.ToPixels(Carousel.PeekAreaInsets.Bottom) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+			}
 
 			return itemHeight;
 		}
@@ -257,13 +295,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter<ItemsView, IItemsViewSource> oldItemViewAdapter)
 		{
 			if (oldItemViewAdapter?.ItemsSource is ObservableItemsSource oldObservableItemsSource)
+			{
 				oldObservableItemsSource.CollectionItemsSourceChanged -= CollectionItemsSourceChanged;
+			}
 		}
 
 		void CollectionItemsSourceChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			if (!(ItemsViewAdapter?.ItemsSource is IItemsViewSource observableItemsSource))
+			{
 				return;
+			}
 
 			var carouselPosition = Carousel.Position;
 			var currentItemPosition = observableItemsSource.GetPosition(Carousel.CurrentItem);
@@ -287,9 +329,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 
 				if (removingFirstElement)
+				{
 					carouselPosition = 0;
+				}
 				else if (removingLastElement)
+				{
 					carouselPosition = Carousel.Position - 1;
+				}
 
 				if (Carousel.Loop)
 				{
@@ -331,7 +377,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateItemDecoration()
 		{
 			if (_itemDecoration != null)
+			{
 				RemoveItemDecoration(_itemDecoration);
+			}
+
 			_itemDecoration = CreateSpacingDecoration(ItemsLayout);
 			AddItemDecoration(_itemDecoration);
 		}
@@ -356,7 +405,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Carousel.Position = position;
 			}
 			else
+			{
 				position = Carousel.Position;
+			}
 
 			_oldPosition = position;
 
@@ -381,7 +432,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdatePositionFromVisibilityChanges()
 		{
 			if (_isVisible != Carousel.IsVisible)
+			{
 				UpdateInitialPosition();
+			}
 
 			_isVisible = Carousel.IsVisible;
 		}
@@ -389,14 +442,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateVisualStates()
 		{
 			if (!(GetLayoutManager() is LinearLayoutManager layoutManager))
+			{
 				return;
+			}
 
 			var first = layoutManager.FindFirstVisibleItemPosition();
 			var last = layoutManager.FindLastVisibleItemPosition();
 
 
 			if (first == -1)
+			{
 				return;
+			}
 
 			var newViews = new List<View>();
 			var carouselPosition = this.CalculateCenterItemIndex(first, layoutManager, false);
@@ -407,7 +464,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var cell = layoutManager.FindViewByPosition(i);
 				if (!((cell as ItemContentView)?.VisualElementRenderer?.Element is View itemView))
+				{
 					return;
+				}
 
 				if (i == carouselPosition)
 				{
@@ -452,7 +511,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
 			if (!_initialized || !_isVisible)
+			{
 				return;
+			}
 
 			_noNeedForScroll = false;
 			var index = e.CenterItemIndex;
@@ -462,7 +523,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (index == -1)
+			{
 				return;
+			}
 
 			UpdatePosition(index);
 			UpdateVisualStates();
@@ -491,16 +554,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			// We arrived center
 			if (position == _gotoPosition)
+			{
 				_gotoPosition = -1;
+			}
 
 			if (_gotoPosition == -1 && carouselPosition != position)
+			{
 				Carousel.SetValueFromRenderer(FormsCarouselView.PositionProperty, position);
+			}
 		}
 
 		void SetCurrentItem(int carouselPosition)
 		{
 			if (ItemsViewAdapter?.ItemsSource?.Count == 0)
+			{
 				return;
+			}
 
 			var item = ItemsViewAdapter.ItemsSource.GetItem(carouselPosition);
 			Carousel.SetValueFromRenderer(FormsCarouselView.CurrentItemProperty, item);
@@ -537,10 +606,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 
 			if (carouselPosition >= itemCount || carouselPosition < 0)
+			{
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {itemCount} items.");
+			}
 
 			if (carouselPosition == _gotoPosition)
+			{
 				_gotoPosition = -1;
+			}
 
 			if (_noNeedForScroll)
 			{
@@ -561,7 +634,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void AddLayoutListener()
 		{
 			if (_carouselViewLayoutListener != null)
+			{
 				return;
+			}
 
 			_carouselViewLayoutListener = new CarouselViewwOnGlobalLayoutListener();
 			_carouselViewLayoutListener.LayoutReady += LayoutReady;
@@ -590,7 +665,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void ClearLayoutListener()
 		{
 			if (_carouselViewLayoutListener == null)
+			{
 				return;
+			}
 
 			ViewTreeObserver?.RemoveOnGlobalLayoutListener(_carouselViewLayoutListener);
 			_carouselViewLayoutListener.LayoutReady -= LayoutReady;
@@ -615,9 +692,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_carouselView.IsSwipeEnabled)
 				{
 					if (state == ScrollStateDragging)
+					{
 						_carouselView.SetIsDragging(true);
+					}
 					else
+					{
 						_carouselView.SetIsDragging(false);
+					}
 				}
 
 				_carouselView.IsScrolling = state != ScrollStateIdle;
@@ -687,7 +768,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			public void CenterIfNeeded(RecyclerView recyclerView, bool isHorizontal)
 			{
 				if (!(recyclerView.GetLayoutManager() is LinearLayoutManager linearLayoutManager))
+				{
 					return;
+				}
 
 				var itemSourceCount = _itemsSource.Count;
 
@@ -696,19 +779,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var offSet = recyclerView.ComputeHorizontalScrollOffset();
 
 				if (!isHorizontal)
+				{
 					offSet = recyclerView.ComputeVerticalScrollOffset();
+				}
 
 				if (firstCompletelyItemVisible == 0)
+				{
 					linearLayoutManager.ScrollToPositionWithOffset(itemSourceCount, -offSet);
+				}
 			}
 
 			public void CheckPendingScrollToEvents(RecyclerView recyclerView)
 			{
 				if (!(recyclerView is CarouselViewRenderer carouselViewRenderer))
+				{
 					return;
+				}
 
 				if (_pendingScrollTo.TryDequeue(out ScrollToRequestEventArgs scrollToRequestEventArgs))
+				{
 					carouselViewRenderer.ScrollTo(scrollToRequestEventArgs);
+				}
 			}
 
 			public void AddPendingScrollTo(ScrollToRequestEventArgs args) => _pendingScrollTo.Enqueue(args);
@@ -716,7 +807,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			public int GetGoToIndex(RecyclerView recyclerView, int carouselPosition, int newPosition)
 			{
 				if (!(recyclerView.GetLayoutManager() is LinearLayoutManager linearLayoutManager))
+				{
 					return -1;
+				}
 
 				var currentCarouselPosition = carouselPosition;
 				var itemSourceCount = _itemsSource.Count;
@@ -726,7 +819,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var centerView = recyclerView.GetCenteredView();
 
 				if (centerView == null)
+				{
 					return -1;
+				}
 
 				var centerPosition = linearLayoutManager.GetPosition(centerView);
 				var increment = currentCarouselPosition - newPosition;
@@ -734,11 +829,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				int goToPosition;
 				if (diffToStart < incrementAbs)
+				{
 					goToPosition = centerPosition - diffToStart;
+				}
 				else if (diffToEnd < incrementAbs)
+				{
 					goToPosition = centerPosition + diffToEnd;
+				}
 				else
+				{
 					goToPosition = centerPosition - increment;
+				}
 
 				return goToPosition;
 			}

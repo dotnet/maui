@@ -48,7 +48,10 @@ namespace Microsoft.Maui.Controls.Xaml
 			foreach (var xmlnsDef in xmlnsDefinitions)
 			{
 				if (xmlnsDef.XmlNamespace != namespaceURI)
+				{
 					continue;
+				}
+
 				lookupAssemblies.Add(xmlnsDef);
 			}
 
@@ -57,12 +60,17 @@ namespace Microsoft.Maui.Controls.Xaml
 				XmlnsHelper.ParseXmlns(namespaceURI, out _, out var ns, out var asmstring, out _);
 				asmstring ??= defaultAssemblyName;
 				if (namespaceURI != null && ns != null)
+				{
 					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) { AssemblyName = asmstring });
+				}
 			}
 
 			var lookupNames = new List<string>(capacity: 2);
 			if (elementName != "DataTemplate" && !elementName.EndsWith("Extension", StringComparison.Ordinal))
+			{
 				lookupNames.Add(elementName + "Extension");
+			}
+
 			lookupNames.Add(elementName);
 
 			for (var i = 0; i < lookupNames.Count; i++)
@@ -70,9 +78,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				var name = lookupNames[i];
 				var lastIndex = name.LastIndexOf(":", StringComparison.Ordinal);
 				if (lastIndex != -1)
+				{
 					name = name.Substring(lastIndex + 1);
+				}
+
 				if (typeArguments != null)
+				{
 					name += "`" + typeArguments.Count; //this will return an open generic Type
+				}
+
 				lookupNames[i] = name;
 			}
 
@@ -94,8 +108,12 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			T? type = null;
 			foreach (var typeInfo in potentialTypes)
+			{
 				if ((type = refFromTypeInfo(typeInfo)) != null)
+				{
 					break;
+				}
+			}
 
 			return type;
 		}

@@ -23,9 +23,16 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (((BindingCondition)Condition).Binding == value)
+				{
+				{
 					return;
+				}
+
 				if (IsSealed)
+				{
 					throw new InvalidOperationException("Cannot change Binding once the Trigger has been applied.");
+				}
+
 				OnPropertyChanging();
 				((BindingCondition)Condition).Binding = value;
 				OnPropertyChanged();
@@ -45,9 +52,16 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (((BindingCondition)Condition).Value == value)
+				{
+				{
 					return;
+				}
+
 				if (IsSealed)
+				{
 					throw new InvalidOperationException("Cannot change Value once the Trigger has been applied.");
+				}
+
 				OnPropertyChanging();
 				((BindingCondition)Condition).Value = value;
 				OnPropertyChanged();

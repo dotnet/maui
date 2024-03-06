@@ -75,20 +75,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 
 				if (_cursorPositionChangePending)
+				{
 					UpdateCursorPosition();
+				}
 
 				if (_selectionLengthChangePending)
+				{
 					UpdateSelectionLength();
+				}
 			}
 		}
 
 		void TextBoxGotFocus(object sender, RoutedEventArgs e)
 		{
 			if (_cursorPositionChangePending)
+			{
 				UpdateCursorPosition();
+			}
 
 			if (_selectionLengthChangePending)
+			{
 				UpdateSelectionLength();
+			}
 
 			SetCursorPositionFromRenderer(Control.SelectionStart);
 			SetSelectionLengthFromRenderer(Control.SelectionLength);
@@ -112,51 +120,93 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.IsOneOf(Entry.TextProperty, Entry.TextTransformProperty))
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == Entry.IsPasswordProperty.PropertyName)
+			{
 				UpdateIsPassword();
+			}
 			else if (e.PropertyName == Entry.PlaceholderProperty.PropertyName)
+			{
 				UpdatePlaceholder();
+			}
 			else if (e.PropertyName == Entry.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == Entry.CharacterSpacingProperty.PropertyName)
 			{
 				UpdateCharacterSpacing();
 			}
 			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
+			{
 				UpdateInputScope();
+			}
 			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
 				UpdateInputScope();
+			}
 			else if (e.PropertyName == Entry.IsTextPredictionEnabledProperty.PropertyName)
+			{
 				UpdateInputScope();
+			}
 			else if (e.PropertyName == Entry.FontAttributesProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Entry.FontFamilyProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Entry.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Entry.HorizontalTextAlignmentProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == Entry.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateVerticalTextAlignment();
+			}
 			else if (e.PropertyName == Entry.PlaceholderColorProperty.PropertyName)
+			{
 				UpdatePlaceholderColor();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateHorizontalTextAlignment();
+			}
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+			{
 				UpdateMaxLength();
+			}
 			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
+			{
 				UpdateDetectReadingOrderFromContent();
+			}
 			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
+			{
 				UpdateReturnType();
+			}
 			else if (e.PropertyName == Entry.CursorPositionProperty.PropertyName)
+			{
 				UpdateCursorPosition();
+			}
 			else if (e.PropertyName == Entry.SelectionLengthProperty.PropertyName)
+			{
 				UpdateSelectionLength();
+			}
 			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
+			{
 				UpdateIsReadOnly();
+			}
 			else if (e.PropertyName == Entry.ClearButtonVisibilityProperty.PropertyName)
+			{
 				UpdateClearButtonVisibility();
+			}
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -176,7 +226,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnNativeTextChanged(object sender, Microsoft.UI.Xaml.Controls.TextChangedEventArgs args)
 		{
 			if (Control.Text == _transformedText)
+			{
 				return;
+			}
+
 			_transformedText = Element.UpdateFormsText(Control.Text, Element.TextTransform);
 			Element.SetValueCore(Entry.TextProperty, _transformedText);
 		}
@@ -184,7 +237,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void TextBoxOnKeyUp(object sender, KeyRoutedEventArgs args)
 		{
 			if (args?.Key != VirtualKey.Enter)
+			{
 				return;
+			}
 
 			if (Element.ReturnType == ReturnType.Next)
 			{
@@ -214,12 +269,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateFont()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			Entry entry = Element;
 
 			if (entry == null)
+			{
 				return;
+			}
 
 			bool entryIsDefault =
 				entry.FontFamily == null &&
@@ -229,7 +288,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				entry.FontAttributes == FontAttributes.None;
 
 			if (entryIsDefault && !_fontApplied)
+			{
 				return;
+			}
 
 			if (entryIsDefault)
 			{
@@ -271,13 +332,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else
 			{
 				if (entry.IsSet(Entry.IsTextPredictionEnabledProperty))
+				{
 					Control.IsTextPredictionEnabled = entry.IsTextPredictionEnabled;
+				}
 				else
+				{
 					Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
+				}
+
 				if (entry.IsSet(InputView.IsSpellCheckEnabledProperty))
+				{
 					Control.IsSpellCheckEnabled = entry.IsSpellCheckEnabled;
+				}
 				else
+				{
 					Control.ClearValue(TextBox.IsSpellCheckEnabledProperty);
+				}
 			}
 
 			Control.InputScope = entry.Keyboard.ToInputScope();
@@ -329,14 +399,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var maxLength = Element.MaxLength;
 			if (maxLength == -1)
+			{
 				maxLength = int.MaxValue;
+			}
 
 			Control.MaxLength = maxLength;
 
 			var currentControlText = Control.Text;
 
 			if (currentControlText.Length > maxLength)
+			{
 				Control.Text = currentControlText.Substring(0, maxLength);
+			}
 		}
 
 		void UpdateDetectReadingOrderFromContent()
@@ -358,7 +432,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateReturnType()
 		{
 			if (Control == null || Element == null)
+			{
 				return;
+			}
 
 			Control.InputScope = Element.ReturnType.ToInputScope();
 		}
@@ -367,7 +443,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void SelectionChanged(object sender, RoutedEventArgs e)
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
+			{
 				return;
+			}
 
 			int cursorPosition = Element.CursorPosition;
 
@@ -376,7 +454,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				var start = cursorPosition;
 				int selectionStart = Control.SelectionStart;
 				if (selectionStart != start)
+				{
 					SetCursorPositionFromRenderer(selectionStart);
+				}
 			}
 
 			if (!_selectionLengthChangePending)
@@ -385,7 +465,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				int controlSelectionLength = Control.SelectionLength;
 				if (controlSelectionLength != elementSelectionLength)
+				{
 					SetSelectionLengthFromRenderer(controlSelectionLength);
+				}
 			}
 		}
 
@@ -393,7 +475,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateSelectionLength()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
+			{
 				return;
+			}
 
 			if (Control.Focus(FocusState.Programmatic))
 			{
@@ -403,10 +487,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					int elemSelectionLength = Element.SelectionLength;
 
 					if (Element.IsSet(Entry.SelectionLengthProperty))
+					{
 						selectionLength = Math.Max(0, Math.Min(Control.Text.Length - Element.CursorPosition, elemSelectionLength));
+					}
 
 					if (elemSelectionLength != selectionLength)
+					{
 						SetSelectionLengthFromRenderer(selectionLength);
+					}
 
 					Control.SelectionLength = selectionLength;
 				}
@@ -425,7 +513,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateCursorPosition()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
+			{
 				return;
+			}
 
 			if (Control.Focus(FocusState.Programmatic))
 			{
@@ -435,10 +525,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					int cursorPosition = Element.CursorPosition;
 
 					if (Element.IsSet(Entry.CursorPositionProperty))
+					{
 						start = Math.Min(start, cursorPosition);
+					}
 
 					if (start != cursorPosition)
+					{
 						SetCursorPositionFromRenderer(start);
+					}
 
 					Control.SelectionStart = start;
 
@@ -503,7 +597,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			FormsTextBox child = Control;
 
 			if (Children.Count == 0 || child == null)
+			{
 				return new SizeRequest();
+			}
 
 			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			child.Measure(constraint);

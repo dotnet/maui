@@ -30,7 +30,10 @@ namespace Microsoft.Maui.DeviceTests
 
 #if MACCATALYST || IOS
 			if (control is SearchBar sb)
+			{
+			{
 				return;
+			}
 #endif
 			control.Margin = new Thickness(5, 5, 5, 5);
 			control.HeightRequest = 50;

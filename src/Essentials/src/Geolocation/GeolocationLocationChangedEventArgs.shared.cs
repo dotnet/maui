@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		public GeolocationLocationChangedEventArgs(Location location)
 		{
 			if (location == null)
+			{
 				throw new ArgumentNullException(nameof(location));
+			}
 
 			Location = location;
 		}

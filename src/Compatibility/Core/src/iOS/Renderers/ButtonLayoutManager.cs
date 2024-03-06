@@ -66,7 +66,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					{
 						var imageRenderer = ImageVisualElementRenderer;
 						if (imageRenderer != null)
+						{
 							ImageElementManager.Dispose(imageRenderer);
+						}
 
 						_renderer.ElementChanged -= OnElementChanged;
 						_renderer = null;
@@ -79,19 +81,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public CGSize SizeThatFits(CGSize size, CGSize measured)
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return measured;
+			}
 
 			var control = Control;
 			if (control == null)
+			{
 				return measured;
+			}
 
 			var minHeight = _renderer.MinimumHeight;
 			if (measured.Height < minHeight)
+			{
 				measured.Height = minHeight;
+			}
 
 			var titleHeight = control.TitleLabel.Frame.Height;
 			if (titleHeight > measured.Height)
+			{
 				measured.Height = titleHeight;
+			}
 
 			return measured;
 		}
@@ -111,7 +121,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var control = Control;
 
 			if (_disposed || _renderer == null || _element == null || control == null)
+			{
 				return;
+			}
 
 			control.TitleLabel.LineBreakMode = _element.LineBreakMode switch
 			{
@@ -128,11 +140,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public void SetImage(UIImage image)
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			var control = Control;
 			if (control == null)
+			{
 				return;
+			}
 
 			if (image != null)
 			{
@@ -167,32 +183,50 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			if (e.PropertyName == Button.PaddingProperty.PropertyName)
+			{
 				UpdatePadding();
+			}
 			else if (e.PropertyName == Button.ImageSourceProperty.PropertyName)
+			{
 				_ = UpdateImageAsync();
+			}
 			else if (e.PropertyName == Button.TextProperty.PropertyName ||
 					 e.PropertyName == Button.TextTransformProperty.PropertyName ||
 					 e.PropertyName == Button.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateText();
+			}
 			else if (e.PropertyName == Button.ContentLayoutProperty.PropertyName)
+			{
 				UpdateEdgeInsets();
+			}
 			else if (e.PropertyName == Button.BorderWidthProperty.PropertyName && _borderAdjustsPadding)
+			{
 				UpdateEdgeInsets();
+			}
 			else if (e.PropertyName == Button.LineBreakModeProperty.PropertyName)
+			{
 				UpdateLineBreakMode();
+			}
 		}
 
 		internal void UpdateText()
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			var control = Control;
 			if (control == null)
+			{
 				return;
+			}
 
 			var transformedText = _element.UpdateFormsText(_element.Text, _element.TextTransform);
 
@@ -208,7 +242,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (control.Title(UIControlState.Normal) != null)
+			{
 				control.SetTitle(null, UIControlState.Normal);
+			}
 
 			string text = transformedText ?? string.Empty;
 			var colorRange = new NSRange(0, text.Length);
@@ -253,11 +289,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		async Task UpdateImageAsync()
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			var imageRenderer = ImageVisualElementRenderer;
 			if (imageRenderer == null)
+			{
 				return;
+			}
 
 			try
 			{
@@ -274,11 +314,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdatePadding()
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			var control = Control;
 			if (control == null)
+			{
 				return;
+			}
 
 			EnsureDefaultInsets();
 
@@ -301,28 +345,44 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void EnsureDefaultInsets()
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			var control = Control;
 			if (control == null)
+			{
 				return;
+			}
 
 			if (_defaultImageInsets == null)
+			{
 				_defaultImageInsets = control.ImageEdgeInsets;
+			}
+
 			if (_defaultTitleInsets == null)
+			{
 				_defaultTitleInsets = control.TitleEdgeInsets;
+			}
+
 			if (_defaultContentInsets == null)
+			{
 				_defaultContentInsets = control.ContentEdgeInsets;
+			}
 		}
 
 		void UpdateEdgeInsets()
 		{
 			if (_disposed || _renderer == null || _element == null)
+			{
 				return;
+			}
 
 			var control = Control;
 			if (control == null)
+			{
 				return;
+			}
 
 			EnsureDefaultInsets();
 
@@ -407,7 +467,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					// the width will be different now that the image is no longer next to the text
 					nfloat horizontalAdjustment = 0;
 					if (_collapseHorizontalPadding)
+					{
 						horizontalAdjustment = (nfloat)(titleWidth + imageWidth - Math.Max(titleWidth, imageWidth)) / 2;
+					}
+
 					_paddingAdjustments.Left -= horizontalAdjustment;
 					_paddingAdjustments.Right -= horizontalAdjustment;
 

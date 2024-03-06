@@ -110,9 +110,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control != null)
 			{
 				if (Element.MinimumTrackColor.IsDefault())
+				{
 					Control.Foreground = defaultforegroundcolor;
+				}
 				else
+				{
 					Control.Foreground = Element.MinimumTrackColor.ToPlatform();
+				}
 			}
 		}
 
@@ -122,9 +126,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control != null)
 			{
 				if (Element.MaximumTrackColor.IsDefault())
+				{
 					Control.Background = defaultbackgroundcolor;
+				}
 				else
+				{
 					Control.Background = Element.MaximumTrackColor.ToPlatform();
+				}
 			}
 		}
 
@@ -133,24 +141,40 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Slider.MinimumProperty.PropertyName)
+			{
 				Control.Minimum = Element.Minimum;
+			}
 			else if (e.PropertyName == Slider.MaximumProperty.PropertyName)
+			{
 				Control.Maximum = Element.Maximum;
+			}
 			else if (e.PropertyName == Slider.ValueProperty.PropertyName)
 			{
 				if (Control.Value != Element.Value)
+				{
 					Control.Value = Element.Value;
+				}
 			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 			else if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
+			{
 				UpdateMinimumTrackColor();
+			}
 			else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
+			{
 				UpdateMaximumTrackColor();
+			}
 			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+			{
 				UpdateThumbColor();
+			}
 			else if (e.PropertyName == Slider.ThumbImageSourceProperty.PropertyName)
+			{
 				UpdateThumbImage();
+			}
 		}
 
 		void UpdateThumbColor()
@@ -217,7 +241,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Color backgroundColor = Element.BackgroundColor;
 					if (backgroundColor.IsDefault())
+					{
 						Control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
+					}
 				}
 			}
 		}

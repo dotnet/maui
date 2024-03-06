@@ -105,7 +105,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						window.SetSoftInputMode(SoftInput.AdjustPan);
 					}
 					else
+					{
 						window.SetSoftInputMode(_startingInputMode);
+					}
 				}
 			}
 
@@ -117,7 +119,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
 			if (Control == null)
+			{
 				return (base.GetDesiredSize(widthConstraint, heightConstraint));
+			}
 
 			AView view = _container == this ? (AView)Control : _container;
 			view.Measure(widthConstraint, heightConstraint);
@@ -163,13 +167,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementChanged(e);
 
 			if (_focusChangeHandler == null)
+			{
 				_focusChangeHandler = OnFocusChangeRequested;
+			}
 
 			if (e.OldElement != null)
+			{
 				e.OldElement.FocusChangeRequested -= _focusChangeHandler;
+			}
 
 			if (e.NewElement != null)
+			{
 				e.NewElement.FocusChangeRequested += _focusChangeHandler;
+			}
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -177,18 +187,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled();
+			}
 			else if (e.PropertyName == AutomationProperties.LabeledByProperty.PropertyName)
+			{
 				SetLabeledBy();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
 			if (Control == null)
+			{
 				return;
+			}
 
 			AView view = _container == this ? (AView)Control : _container;
 
@@ -235,11 +253,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetupAutomationDefaults();
 
 			if (includeHint)
+			{
 				Controls.Platform.AutomationPropertiesProvider.SetContentDescription(
 					ControlUsedForAutomation, Element, _defaultContentDescription, _defaultHint);
+			}
 			else
+			{
 				Controls.Platform.AutomationPropertiesProvider.SetBasicContentDescription(
 					ControlUsedForAutomation, Element, _defaultContentDescription);
+			}
 		}
 
 		protected override void SetContentDescription()
@@ -273,7 +295,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			e.Result = true;
 
@@ -286,10 +310,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Post(() =>
 				{
 					if (Control == null || Control.IsDisposed())
+					{
 						return;
+					}
 
 					if (Control is IPopupTrigger popupElement)
+					{
 						popupElement.ShowPopupOnFocus = true;
+					}
 
 					Control?.RequestFocus();
 				});
@@ -341,7 +369,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateIsEnabled()
 		{
 			if (Control != null)
+			{
 				Control.Enabled = Element.IsEnabled;
+			}
 		}
 
 		void UpdateFlowDirection()

@@ -77,15 +77,128 @@ namespace Microsoft.Maui.Controls
 		{
 			var idiom = DeviceInfo.Idiom;
 			if (idiom == DeviceIdiom.Tablet)
+			{
+			{
 				return onIdiom._isTabletSet ? onIdiom.Tablet : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
 			else if (idiom == DeviceIdiom.Desktop)
+			{
+			{
 				return onIdiom._isDesktopSet ? onIdiom.Desktop : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
 			else if (idiom == DeviceIdiom.TV)
+			{
+			{
 				return onIdiom._isTVSet ? onIdiom.TV : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
 			else if (idiom == DeviceIdiom.Watch)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
 			else
+After:
+			{
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
+			else
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			else
+After:
+			{
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
+			else
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			else
+After:
+			{
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
+			else
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			else
+After:
+			{
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
+			else
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			else
+After:
+			{
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
+			else
+			{
+*/
+			{
+				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+		}
+After:
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+		}
+After:
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+		}
+After:
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+		}
+After:
+			}
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+		}
+After:
+			}
+		}
+*/
+			}
+			else
+			{
 				return onIdiom._isPhoneSet ? onIdiom.Phone : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
 		}
 	}
 }

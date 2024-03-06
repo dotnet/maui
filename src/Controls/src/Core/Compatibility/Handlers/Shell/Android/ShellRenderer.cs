@@ -183,7 +183,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
+			{
 				SwitchFragment(FragmentManager, _frameLayout, Element.CurrentItem);
+			}
 
 			_elementPropertyChanged?.Invoke(sender, e);
 		}
@@ -231,7 +233,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			FragmentTransaction transaction = manager.BeginTransactionEx();
 
 			if (animate)
+			{
 				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
+			}
 
 			transaction.ReplaceEx(_frameLayout.Id, fragment);
 
@@ -253,7 +257,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			if (previousView != null)
+			{
 				previousView.Destroyed += OnDestroyed;
+			}
 		}
 
 		void OnElementSizeChanged(object sender, EventArgs e)
@@ -319,7 +325,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void IElementHandler.DisconnectHandler()
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -328,14 +336,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			((IShellController)Element).RemoveAppearanceObserver(this);
 
 			if (_flyoutView is ShellFlyoutRenderer sfr)
+			{
 				sfr.Disconnect();
+			}
 			else
+			{
 				(_flyoutView as IDisposable)?.Dispose();
+			}
 
 			if (_currentView is ShellItemRendererBase sir)
+			{
 				sir.Disconnect();
+			}
 			else
+			{
 				_currentView.Dispose();
+			}
 
 			_currentView = null;
 

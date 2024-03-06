@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void OnPageSelected(int position)
 		{
 			if (_ignoreAndroidSelection)
+			{
 				return;
+			}
 
 			int currentItem = _pager.CurrentItem;
 			_page.CurrentPage = currentItem >= 0 && currentItem < ElementController.LogicalChildren.Count ? ElementController.LogicalChildren[currentItem] as ContentPage : null;
@@ -68,14 +70,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var holder = (ObjectJavaBox<Tuple<ViewGroup, Page, int>>)item;
 			Element parent = holder.Instance.Item2.RealParent;
 			if (parent == null)
+			{
 				return PositionNone;
+			}
 
 			// Unfortunately we can't just call CarouselPage.GetIndex, because we need to know
 			// if the item has been removed. We could update MultiPage<T> to set removed items' index
 			// to -1 to support this if it ever becomes an issue.
 			int index = ((CarouselPage)parent).Children.IndexOf(holder.Instance.Item2);
 			if (index == -1)
+			{
 				return PositionNone;
+			}
 
 			if (index != holder.Instance.Item3)
 			{
@@ -90,7 +96,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			ContentPage child = _page.Children.ElementAt(position);
 			if (Platform.GetRenderer(child) == null)
+			{
 				Platform.SetRenderer(child, Platform.CreateRenderer(child, _context));
+			}
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(child);
 			renderer.View.RemoveFromParent();
@@ -112,11 +120,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void UpdateCurrentItem()
 		{
 			if (_page.CurrentPage == null)
+			{
 				throw new InvalidOperationException("CarouselPage has no children.");
+			}
 
 			int index = CarouselPage.GetIndex(_page.CurrentPage);
 			if (index >= 0 && index < _page.Children.Count)
+			{
 				_pager.CurrentItem = index;
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -128,7 +140,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					var childPage = element as VisualElement;
 
 					if (childPage == null)
+					{
 						continue;
+					}
 
 					IVisualElementRenderer childPageRenderer = Platform.GetRenderer(childPage);
 					if (childPageRenderer != null)
@@ -153,7 +167,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_ignoreAndroidSelection = false;
 
 			if (_page.CurrentPage == null)
+			{
 				return;
+			}
 
 			UpdateCurrentItem();
 		}

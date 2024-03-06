@@ -41,7 +41,10 @@ namespace Samples.ViewModel
 		async void OnLoad()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
+
 			IsBusy = true;
 
 			try
@@ -59,7 +62,10 @@ namespace Samples.ViewModel
 		async void OnSave()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
+
 			IsBusy = true;
 
 			try
@@ -76,7 +82,10 @@ namespace Samples.ViewModel
 		async void OnRemove()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
+
 			IsBusy = true;
 
 			try
@@ -93,7 +102,10 @@ namespace Samples.ViewModel
 		async void OnRemoveAll()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
+
 			IsBusy = true;
 
 			try

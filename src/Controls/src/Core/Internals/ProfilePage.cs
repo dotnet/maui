@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Controls.Internals
 		private static void ASSERT(bool condition)
 		{
 			if (!condition)
+			{
 				throw new Exception("assert");
+			}
 		}
 
 		private static long GatherTicks(ref int i)
@@ -50,7 +52,9 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				var next = Data[i];
 				if (next.Depth < depth)
+				{
 					break;
+				}
 
 				if (next.Depth > depth)
 				{
@@ -75,18 +79,25 @@ namespace Microsoft.Maui.Controls.Internals
 
 				var name = datum.Name;
 				if (datum.Id != null)
+				{
 					name += $" ({datum.Id})";
+				}
 
 				var ticksMs = datum.Ticks / MS;
 				var exclusiveTicksMs = (datum.Ticks - datum.SubTicks) / MS;
 
 				var percentage = (int)Math.Round(ticksMs / (double)profiledMs * 100);
 				if (!showZeros && percentage == 0)
+				{
 					continue;
+				}
 
 				var line = $"{name} = {ticksMs}ms";
 				if (exclusiveTicksMs != ticksMs)
+				{
 					line += $" ({exclusiveTicksMs}ms)";
+				}
+
 				line += $", {percentage}%";
 
 				sb.AppendLine("".PadLeft(depth * 2) + line);

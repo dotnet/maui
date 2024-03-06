@@ -24,7 +24,10 @@ namespace Microsoft.Maui.Controls
 		public void Clear()
 		{
 			foreach (T item in _internalList)
+			{
 				item.SizeChanged -= OnItemSizeChanged;
+			}
+
 			_internalList.Clear();
 			OnItemSizeChanged(this, EventArgs.Empty);
 		}
@@ -54,7 +57,10 @@ namespace Microsoft.Maui.Controls
 			item.SizeChanged -= OnItemSizeChanged;
 			bool success = _internalList.Remove(item);
 			if (success)
+			{
 				OnItemSizeChanged(this, EventArgs.Empty);
+			}
+
 			return success;
 		}
 
@@ -86,7 +92,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (index < _internalList.Count && index >= 0 && _internalList[index] != null)
+				{
 					_internalList[index].SizeChanged -= OnItemSizeChanged;
+				}
 
 				_internalList[index] = value;
 				value.SizeChanged += OnItemSizeChanged;

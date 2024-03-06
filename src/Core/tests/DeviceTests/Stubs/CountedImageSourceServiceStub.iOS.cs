@@ -21,7 +21,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				var image = await Task.Run(() =>
 				{
 					if (imageSource.Wait)
+					{
 						DoWork.WaitOne();
+					}
 
 					var color = imageSource.Color.ToPlatform();
 

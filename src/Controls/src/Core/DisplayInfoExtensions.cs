@@ -10,7 +10,11 @@ namespace Microsoft.Maui.Controls
 		public static Size GetScaledScreenSize(this DisplayInfo info)
 		{
 			if (info.Density == 0)
+			{
+			{
 				return Size.Zero;
+			}
+			}
 
 			return new Size(info.Width / info.Density, info.Height / info.Density);
 		}

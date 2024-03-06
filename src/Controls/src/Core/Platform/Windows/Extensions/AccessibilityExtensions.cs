@@ -15,19 +15,27 @@ namespace Microsoft.Maui.Controls.Platform
 		public static string SetAutomationPropertiesName(this FrameworkElement Control, Element Element, string _defaultAutomationPropertiesName = null)
 		{
 			if (Element == null)
+			{
 				return _defaultAutomationPropertiesName;
+			}
 
 			if (_defaultAutomationPropertiesName == null)
+			{
 				_defaultAutomationPropertiesName = (string)Control.GetValue(NativeAutomationProperties.NameProperty);
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			var elemValue = (string)Element.GetValue(AutomationProperties.NameProperty);
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			if (!string.IsNullOrWhiteSpace(elemValue))
+			{
 				Control.SetValue(NativeAutomationProperties.NameProperty, elemValue);
+			}
 			else
+			{
 				Control.SetValue(NativeAutomationProperties.NameProperty, _defaultAutomationPropertiesName);
+			}
 
 			return _defaultAutomationPropertiesName;
 		}
@@ -35,19 +43,27 @@ namespace Microsoft.Maui.Controls.Platform
 		public static AccessibilityView? SetAutomationPropertiesAccessibilityView(this FrameworkElement Control, Element Element, AccessibilityView? _defaultAutomationPropertiesAccessibilityView = null)
 		{
 			if (Element == null)
+			{
 				return _defaultAutomationPropertiesAccessibilityView;
+			}
 
 			if (!_defaultAutomationPropertiesAccessibilityView.HasValue)
+			{
 				_defaultAutomationPropertiesAccessibilityView = (AccessibilityView)Control.GetValue(NativeAutomationProperties.AccessibilityViewProperty);
+			}
 
 			var newValue = _defaultAutomationPropertiesAccessibilityView;
 
 			var elemValue = (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
 
 			if (elemValue == true)
+			{
 				newValue = AccessibilityView.Content;
+			}
 			else if (elemValue == false)
+			{
 				newValue = AccessibilityView.Raw;
+			}
 
 			Control.SetValue(NativeAutomationProperties.AccessibilityViewProperty, newValue);
 
@@ -57,19 +73,27 @@ namespace Microsoft.Maui.Controls.Platform
 		public static string SetAutomationPropertiesHelpText(this FrameworkElement Control, Element Element, string _defaultAutomationPropertiesHelpText = null)
 		{
 			if (Element == null)
+			{
 				return _defaultAutomationPropertiesHelpText;
+			}
 
 			if (_defaultAutomationPropertiesHelpText == null)
+			{
 				_defaultAutomationPropertiesHelpText = (string)Control.GetValue(NativeAutomationProperties.HelpTextProperty);
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			var elemValue = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			if (!string.IsNullOrWhiteSpace(elemValue))
+			{
 				Control.SetValue(NativeAutomationProperties.HelpTextProperty, elemValue);
+			}
 			else
+			{
 				Control.SetValue(NativeAutomationProperties.HelpTextProperty, _defaultAutomationPropertiesHelpText);
+			}
 
 			return _defaultAutomationPropertiesHelpText;
 		}
@@ -81,28 +105,38 @@ namespace Microsoft.Maui.Controls.Platform
 			UIElement _defaultAutomationPropertiesLabeledBy = null)
 		{
 			if (Element == null)
+			{
 				return _defaultAutomationPropertiesLabeledBy;
+			}
 
 			// TODO Maui: this is a bit of a hack because Elements
 			// currently don't implement IView but they should
 			mauiContext ??= (Element as IView)?.Handler?.MauiContext;
 
 			if (_defaultAutomationPropertiesLabeledBy == null)
+			{
 				_defaultAutomationPropertiesLabeledBy = (UIElement)Control.GetValue(NativeAutomationProperties.LabeledByProperty);
+			}
 #pragma warning disable CS0618 // Type or member is obsolete
 			var elemValue = (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty);
 #pragma warning restore CS0618 // Type or member is obsolete
 			FrameworkElement nativeElement = null;
 
 			if (mauiContext != null)
+			{
 				nativeElement = (elemValue as IView)?.ToHandler(mauiContext)?.PlatformView as FrameworkElement;
+			}
 
 			if (nativeElement != null)
+			{
 #pragma warning disable CS0618 // Type or member is obsolete
 				Control.SetValue(AutomationProperties.LabeledByProperty, nativeElement);
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 			else
+			{
 				Control.SetValue(NativeAutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
+			}
 
 			return _defaultAutomationPropertiesLabeledBy;
 		}
@@ -112,7 +146,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void SetBackButtonTitle(this PageControl Control, Element Element)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			var elemValue = ConcatenateNameAndHint(Element);
 
@@ -130,11 +166,13 @@ namespace Microsoft.Maui.Controls.Platform
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(hint))
+			{
 				separator = "";
-
+			}
 			else
+			{
 				separator = ". ";
-
+			}
 
 			return string.Join(separator, name, hint);
 

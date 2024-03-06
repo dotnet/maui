@@ -79,7 +79,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var flyout = new DatePickerFlyout { Placement = FlyoutPlacementMode.Bottom, Date = Control.Date };
 			flyout.DatePicked += (p, e) => Control.Date = p.Date;
 			if (!Element.IsVisible)
+			{
 				flyout.Placement = FlyoutPlacementMode.Full;
+			}
+
 			flyout.ShowAt(Control);
 		}
 
@@ -96,7 +99,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var button = Control.GetDescendantsByName<Microsoft.UI.Xaml.Controls.Button>("FlyoutButton").FirstOrDefault();
 
 			if (button != null)
+			{
 				InterceptVisualStateManager.Hook(button.GetFirstDescendant<Microsoft.UI.Xaml.Controls.Grid>(), button, Element);
+			}
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -104,19 +109,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.IsOneOf(DatePicker.DateProperty, DatePicker.FormatProperty))
+			{
 				UpdateDate(Element.Date);
+			}
 			else if (e.PropertyName == DatePicker.MaximumDateProperty.PropertyName)
+			{
 				UpdateMaximumDate();
+			}
 			else if (e.PropertyName == DatePicker.MinimumDateProperty.PropertyName)
+			{
 				UpdateMinimumDate();
+			}
 			else if (e.PropertyName == DatePicker.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == DatePicker.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 			else if (e.PropertyName == DatePicker.FontAttributesProperty.PropertyName || e.PropertyName == DatePicker.FontFamilyProperty.PropertyName || e.PropertyName == DatePicker.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
@@ -125,7 +144,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnControlDateChanged(object sender, DatePickerValueChangedEventArgs e)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			if (Element.Date.CompareTo(e.NewDate.Date) != 0)
 			{
@@ -151,7 +172,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateDate(DateTime date)
 		{
 			if (Control != null)
+			{
 				Control.Date = new DateTimeOffset(new DateTime(date.Ticks, DateTimeKind.Unspecified));
+			}
 
 			UpdateDay();
 			UpdateMonth();
@@ -174,13 +197,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				var month = Element.Format.Count(x => x == 'M');
 				if (month == 0)
+				{
 					Control.MonthVisible = false;
+				}
 				else if (month <= 2)
+				{
 					Control.MonthFormat = "month.numeric";
+				}
 				else if (month == 3)
+				{
 					Control.MonthFormat = "month.abbreviated";
+				}
 				else
+				{
 					Control.MonthFormat = "month.full";
+				}
 			}
 		}
 
@@ -200,13 +231,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				var day = Element.Format.Count(x => x == 'd');
 				if (day == 0)
+				{
 					Control.DayVisible = false;
+				}
 				else if (day == 3)
+				{
 					Control.DayFormat = "day dayofweek.abbreviated";
+				}
 				else if (day == 4)
+				{
 					Control.DayFormat = "dayofweek.full";
+				}
 				else
+				{
 					Control.DayFormat = "day";
+				}
 			}
 		}
 
@@ -226,11 +265,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				var year = Element.Format.Count(x => x == 'y');
 				if (year == 0)
+				{
 					Control.YearVisible = false;
+				}
 				else if (year <= 2)
+				{
 					Control.YearFormat = "year.abbreviated";
+				}
 				else
+				{
 					Control.YearFormat = "year.full";
+				}
 			}
 		}
 
@@ -249,12 +294,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateFont()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			DatePicker datePicker = Element;
 
 			if (datePicker == null)
+			{
 				return;
+			}
 
 			bool datePickerIsDefault =
 				datePicker.FontFamily == null &&
@@ -264,7 +313,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				datePicker.FontAttributes == FontAttributes.None;
 
 			if (datePickerIsDefault && !_fontApplied)
+			{
 				return;
+			}
 
 			if (datePickerIsDefault)
 			{
@@ -288,7 +339,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateMaximumDate()
 		{
 			if (Element != null && Control != null)
+			{
 				Control.MaxYear = new DateTimeOffset(new DateTime(Element.MaximumDate.Ticks, DateTimeKind.Unspecified));
+			}
 		}
 
 		[PortHandler]
@@ -299,7 +352,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			try
 			{
 				if (Element != null && Control != null)
+				{
 					Control.MinYear = new DateTimeOffset(new DateTime(Element.MinimumDate.Ticks, DateTimeKind.Unspecified));
+				}
 			}
 			catch (ArgumentOutOfRangeException)
 			{

@@ -88,7 +88,9 @@ namespace Microsoft.Maui
 			public object? GetKeyedService(Type serviceType, object? serviceKey)
 			{
 				if (Inner is IKeyedServiceProvider provider)
+				{
 					return provider.GetKeyedService(serviceType, serviceKey);
+				}
 
 				// we know this won't work, but we need to call it to throw the right exception
 				return Inner.GetRequiredKeyedService(serviceType, serviceKey);

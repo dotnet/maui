@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var layoutParams = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = GravityFlags.CenterVertical };
 			using (layoutParams)
+			{
 				AddView(_label, layoutParams);
+			}
 
 			EditText = new EntryCellEditText(context);
 			EditText.AddTextChangedListener(this);
@@ -50,7 +52,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			//editText.SetBackgroundDrawable (null);
 			layoutParams = new LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent) { Width = 0, Weight = 1, Gravity = GravityFlags.FillHorizontal | GravityFlags.Center };
 			using (layoutParams)
+			{
 				AddView(EditText, layoutParams);
+			}
 		}
 
 		public Action EditingCompleted { get; set; }
@@ -65,7 +69,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set
 			{
 				if (_labelTextText == value)
+				{
 					return;
+				}
 
 				_labelTextText = value;
 				_label.Text = value;
@@ -103,7 +109,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			Action<bool> focusChanged = FocusChanged;
 			if (focusChanged != null)
+			{
 				focusChanged(hasFocus);
+			}
 		}
 
 		void ITextWatcher.AfterTextChanged(IEditable s)
@@ -118,13 +126,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			Action<string> changed = TextChanged;
 			if (changed != null)
+			{
 				changed(s != null ? s.ToString() : null);
+			}
 		}
 
 		public void SetLabelTextColor(Color color, int defaultColorResourceId)
 		{
 			if (_labelTextColor == color)
+			{
 				return;
+			}
 
 			_labelTextColor = color;
 			_label.SetTextColor(color.ToPlatform(defaultColorResourceId, _label.Context));
@@ -145,7 +157,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// TODO Clear focus
 			Action editingCompleted = EditingCompleted;
 			if (editingCompleted != null)
+			{
 				editingCompleted();
+			}
 		}
 	}
 }

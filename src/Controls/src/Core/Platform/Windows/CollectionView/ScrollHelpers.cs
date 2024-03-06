@@ -91,7 +91,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var point = new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
 
 			if (!(list.ContainerFromItem(targetItem) is UIElement targetContainer))
+			{
 				return;
+			}
 
 			point = AdjustToEnd(point, targetContainer.DesiredSize, scrollViewer);
 			await JumpToOffsetAsync(scrollViewer, point.X, point.Y);
@@ -124,7 +126,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var point = new UWPPoint(scrollViewer.HorizontalOffset, scrollViewer.VerticalOffset);
 
 			if (!(list.ContainerFromItem(targetItem) is UIElement targetContainer))
+			{
 				return;
+			}
 
 			point = AdjustToCenter(point, targetContainer.DesiredSize, scrollViewer);
 			await JumpToOffsetAsync(scrollViewer, point.X, point.Y);
@@ -161,7 +165,9 @@ namespace Microsoft.Maui.Controls.Platform
 		static async Task<UWPPoint> GetApproximateTargetAsync(ListViewBase list, ScrollViewer scrollViewer, object targetItem)
 		{
 			if (scrollViewer == null)
+			{
 				return new UWPPoint(0, 0);
+			}
 
 			// Keep track of where we are now
 			var horizontalOffset = scrollViewer.HorizontalOffset;
@@ -173,7 +179,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var targetContainer = list.ContainerFromItem(targetItem) as UIElement;
 
 			if (targetContainer == null)
+			{
 				return new UWPPoint(0, 0);
+			}
 
 			var transform = targetContainer.TransformToVisual(scrollViewer.Content as UIElement);
 

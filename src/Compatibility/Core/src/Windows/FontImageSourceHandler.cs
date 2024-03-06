@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			CancellationToken cancelationToken = default(CancellationToken))
 		{
 			if (!(imagesource is FontImageSource fontsource))
+			{
 				return null;
+			}
 
 			var device = CanvasDevice.GetSharedDevice();
 
@@ -74,7 +76,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily(fontImageSource.RequireFontManager());
 
 				if (!string.IsNullOrEmpty(uwpFontFamily.Source))
+				{
 					((WFontIconSource)image).FontFamily = uwpFontFamily;
+				}
 			}
 
 			return Task.FromResult(image);
@@ -96,7 +100,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily(fontImageSource.RequireFontManager());
 
 				if (!string.IsNullOrEmpty(uwpFontFamily.Source))
+				{
 					((FontIcon)image).FontFamily = uwpFontFamily;
+				}
 			}
 
 			return Task.FromResult(image);
@@ -105,7 +111,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		string GetFontSource(FontImageSource fontImageSource)
 		{
 			if (fontImageSource == null)
+			{
 				return string.Empty;
+			}
 
 			var fontFamily = fontImageSource.FontFamily.ToFontFamily(fontImageSource.RequireFontManager());
 

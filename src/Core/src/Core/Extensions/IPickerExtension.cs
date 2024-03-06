@@ -9,7 +9,9 @@ namespace Microsoft.Maui
 		{
 			var returnValue = new string[picker.GetCount()];
 			for (int i = 0; i < returnValue.Length; i++)
+			{
 				returnValue[i] = picker.GetItem(i);
+			}
 
 			return returnValue;
 		}
@@ -18,7 +20,9 @@ namespace Microsoft.Maui
 		{
 			var returnValue = new List<string>(picker.GetCount());
 			for (int i = 0; i < returnValue.Count; i++)
+			{
 				returnValue[i] = picker.GetItem(i);
+			}
 
 			return returnValue;
 		}

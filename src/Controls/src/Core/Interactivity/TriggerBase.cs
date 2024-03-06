@@ -43,9 +43,16 @@ namespace Microsoft.Maui.Controls
 			private set
 			{
 				if (_isSealed == value)
+				{
+				{
 					return;
+				}
+
 				if (!value)
+				{
 					throw new InvalidOperationException("What is sealed cannot be unsealed.");
+				}
+
 				_isSealed = value;
 				OnSeal();
 			}
@@ -67,29 +74,42 @@ namespace Microsoft.Maui.Controls
 			IsSealed = true;
 
 			if (bindable == null)
+			{
 				throw new ArgumentNullException("bindable");
+			}
+
 			if (!TargetType.IsInstanceOfType(bindable))
+			{
 				throw new InvalidOperationException("bindable not an instance of AssociatedType");
+			}
+
 			OnAttachedTo(bindable);
 		}
 
 		void IAttachedObject.DetachFrom(BindableObject bindable)
 		{
 			if (bindable == null)
+			{
 				throw new ArgumentNullException("bindable");
+			}
+
 			OnDetachingFrom(bindable);
 		}
 
 		internal virtual void OnAttachedTo(BindableObject bindable)
 		{
 			if (Condition != null)
+			{
 				Condition.SetUp(bindable);
+			}
 		}
 
 		internal virtual void OnDetachingFrom(BindableObject bindable)
 		{
 			if (Condition != null)
+			{
 				Condition.TearDown(bindable);
+			}
 		}
 
 		internal virtual void OnSeal()
@@ -97,9 +117,14 @@ namespace Microsoft.Maui.Controls
 			((SealedList<TriggerAction>)EnterActions).IsReadOnly = true;
 			((SealedList<TriggerAction>)ExitActions).IsReadOnly = true;
 			if (Setters != null)
+			{
 				((SealedList<Setter>)Setters).IsReadOnly = true;
+			}
+
 			if (Condition != null)
+			{
 				Condition.IsSealed = true;
+			}
 		}
 
 		void OnConditionChanged(BindableObject bindable, bool oldValue, bool newValue)
@@ -107,16 +132,26 @@ namespace Microsoft.Maui.Controls
 			if (newValue)
 			{
 				foreach (TriggerAction action in EnterActions)
+				{
 					action.DoInvoke(bindable);
+				}
+
 				foreach (Setter setter in Setters)
+				{
 					setter.Apply(bindable, Specificity);
+				}
 			}
 			else
 			{
 				foreach (Setter setter in Setters)
+				{
 					setter.UnApply(bindable, Specificity);
+				}
+
 				foreach (TriggerAction action in ExitActions)
+				{
 					action.DoInvoke(bindable);
+				}
 			}
 		}
 
@@ -134,14 +169,20 @@ namespace Microsoft.Maui.Controls
 			public void Add(T item)
 			{
 				if (IsReadOnly)
+				{
 					throw new InvalidOperationException("This list is ReadOnly");
+				}
+
 				_actual.Add(item);
 			}
 
 			public void Clear()
 			{
 				if (IsReadOnly)
+				{
 					throw new InvalidOperationException("This list is ReadOnly");
+				}
+
 				_actual.Clear();
 			}
 
@@ -166,9 +207,15 @@ namespace Microsoft.Maui.Controls
 				set
 				{
 					if (_isReadOnly == value)
+					{
 						return;
+					}
+
 					if (!value)
+					{
 						throw new InvalidOperationException("Can't change this back to non readonly");
+					}
+
 					_isReadOnly = value;
 				}
 			}
@@ -176,7 +223,10 @@ namespace Microsoft.Maui.Controls
 			public bool Remove(T item)
 			{
 				if (IsReadOnly)
+				{
 					throw new InvalidOperationException("This list is ReadOnly");
+				}
+
 				return _actual.Remove(item);
 			}
 
@@ -198,7 +248,10 @@ namespace Microsoft.Maui.Controls
 			public void Insert(int index, T item)
 			{
 				if (IsReadOnly)
+				{
 					throw new InvalidOperationException("This list is ReadOnly");
+				}
+
 				_actual.Insert(index, item);
 			}
 
@@ -208,7 +261,10 @@ namespace Microsoft.Maui.Controls
 				set
 				{
 					if (IsReadOnly)
+					{
 						throw new InvalidOperationException("This list is ReadOnly");
+					}
+
 					_actual[index] = value;
 				}
 			}
@@ -216,7 +272,10 @@ namespace Microsoft.Maui.Controls
 			public void RemoveAt(int index)
 			{
 				if (IsReadOnly)
+				{
 					throw new InvalidOperationException("This list is ReadOnly");
+				}
+
 				_actual.RemoveAt(index);
 			}
 		}

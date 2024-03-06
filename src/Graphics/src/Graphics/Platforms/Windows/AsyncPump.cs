@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static void Run(Func<Task> func)
 		{
 			if (func == null)
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
 				throw new ArgumentNullException("func");
 
 			var prevCtx = SynchronizationContext.Current;
@@ -47,6 +50,143 @@ namespace Microsoft.Maui.Graphics.Platform
 				syncCtx.RunOnCurrentThread();
 				t.GetAwaiter().GetResult();
 			}
+After:
+			{
+				throw new InvalidOperationException("No task provided.");
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.19041.0)'
+Before:
+				throw new ArgumentNullException("func");
+
+			var prevCtx = SynchronizationContext.Current;
+			try
+			{
+				// Establish the new context
+				var syncCtx = new SingleThreadSynchronizationContext();
+				SynchronizationContext.SetSynchronizationContext(syncCtx);
+
+				// Invoke the function and alert the context to when it completes
+				var t = func();
+				if (t == null)
+					throw new InvalidOperationException("No task provided.");
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
+
+				// Pump continuations and propagate any exceptions
+				syncCtx.RunOnCurrentThread();
+				t.GetAwaiter().GetResult();
+			}
+After:
+			{
+				throw new InvalidOperationException("No task provided.");
+			}
+*/
+
+/* Unmerged change from project 'Graphics.Win2D(net8.0-windows10.0.19041.0)'
+Before:
+				throw new ArgumentNullException("func");
+
+			var prevCtx = SynchronizationContext.Current;
+			try
+			{
+				// Establish the new context
+				var syncCtx = new SingleThreadSynchronizationContext();
+				SynchronizationContext.SetSynchronizationContext(syncCtx);
+
+				// Invoke the function and alert the context to when it completes
+				var t = func();
+				if (t == null)
+					throw new InvalidOperationException("No task provided.");
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
+
+				// Pump continuations and propagate any exceptions
+				syncCtx.RunOnCurrentThread();
+				t.GetAwaiter().GetResult();
+			}
+After:
+			{
+				throw new InvalidOperationException("No task provided.");
+			}
+*/
+
+/* Unmerged change from project 'Graphics.Win2D(net8.0-windows10.0.20348.0)'
+Before:
+				throw new ArgumentNullException("func");
+
+			var prevCtx = SynchronizationContext.Current;
+			try
+			{
+				// Establish the new context
+				var syncCtx = new SingleThreadSynchronizationContext();
+				SynchronizationContext.SetSynchronizationContext(syncCtx);
+
+				// Invoke the function and alert the context to when it completes
+				var t = func();
+				if (t == null)
+					throw new InvalidOperationException("No task provided.");
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
+
+				// Pump continuations and propagate any exceptions
+				syncCtx.RunOnCurrentThread();
+				t.GetAwaiter().GetResult();
+			}
+After:
+			{
+				throw new InvalidOperationException("No task provided.");
+			}
+*/
+			{
+			{
+				throw new ArgumentNullException("func");
+			}
+
+			var prevCtx = SynchronizationContext.Current;
+			try
+			{
+				// Establish the new context
+				var syncCtx = new SingleThreadSynchronizationContext();
+				SynchronizationContext.SetSynchronizationContext(syncCtx);
+
+				// Invoke the function and alert the context to when it completes
+				var t = func();
+				if (t == null)
+				{
+					throw new ArgumentNullException("func");
+				}
+
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
+
+				// Pump continuations and propagate any exceptions
+				syncCtx.RunOnCurrentThread();
+				t.GetAwaiter().GetResult();
+			}
+
+			var prevCtx = SynchronizationContext.Current;
+			try
+			{
+				// Establish the new context
+				var syncCtx = new SingleThreadSynchronizationContext();
+				SynchronizationContext.SetSynchronizationContext(syncCtx);
+
+				// Invoke the function and alert the context to when it completes
+				var t = func();
+				if (t == null)
+				{
+					throw new InvalidOperationException("No task provided.");
+				}
+
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
+
+				// Pump continuations and propagate any exceptions
+				syncCtx.RunOnCurrentThread();
+				t.GetAwaiter().GetResult();
+			}
 			finally
 			{
 				SynchronizationContext.SetSynchronizationContext(prevCtx);
@@ -58,6 +198,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static T Run<T>(Func<Task<T>> asyncMethod)
 		{
 			if (asyncMethod == null)
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
 				throw new ArgumentNullException("asyncMethod");
 
 			var prevCtx = SynchronizationContext.Current;
@@ -71,6 +214,143 @@ namespace Microsoft.Maui.Graphics.Platform
 				var t = asyncMethod();
 				if (t == null)
 					throw new InvalidOperationException("No task provided.");
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
+
+				// Pump continuations and propagate any exceptions
+				syncCtx.RunOnCurrentThread();
+				return t.GetAwaiter().GetResult();
+			}
+After:
+			{
+				throw new InvalidOperationException("No task provided.");
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.19041.0)'
+Before:
+				throw new ArgumentNullException("asyncMethod");
+
+			var prevCtx = SynchronizationContext.Current;
+			try
+			{
+				// Establish the new context
+				var syncCtx = new SingleThreadSynchronizationContext();
+				SynchronizationContext.SetSynchronizationContext(syncCtx);
+
+				// Invoke the function and alert the context to when it completes
+				var t = asyncMethod();
+				if (t == null)
+					throw new InvalidOperationException("No task provided.");
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
+
+				// Pump continuations and propagate any exceptions
+				syncCtx.RunOnCurrentThread();
+				return t.GetAwaiter().GetResult();
+			}
+After:
+			{
+				throw new InvalidOperationException("No task provided.");
+			}
+*/
+
+/* Unmerged change from project 'Graphics.Win2D(net8.0-windows10.0.19041.0)'
+Before:
+				throw new ArgumentNullException("asyncMethod");
+
+			var prevCtx = SynchronizationContext.Current;
+			try
+			{
+				// Establish the new context
+				var syncCtx = new SingleThreadSynchronizationContext();
+				SynchronizationContext.SetSynchronizationContext(syncCtx);
+
+				// Invoke the function and alert the context to when it completes
+				var t = asyncMethod();
+				if (t == null)
+					throw new InvalidOperationException("No task provided.");
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
+
+				// Pump continuations and propagate any exceptions
+				syncCtx.RunOnCurrentThread();
+				return t.GetAwaiter().GetResult();
+			}
+After:
+			{
+				throw new InvalidOperationException("No task provided.");
+			}
+*/
+
+/* Unmerged change from project 'Graphics.Win2D(net8.0-windows10.0.20348.0)'
+Before:
+				throw new ArgumentNullException("asyncMethod");
+
+			var prevCtx = SynchronizationContext.Current;
+			try
+			{
+				// Establish the new context
+				var syncCtx = new SingleThreadSynchronizationContext();
+				SynchronizationContext.SetSynchronizationContext(syncCtx);
+
+				// Invoke the function and alert the context to when it completes
+				var t = asyncMethod();
+				if (t == null)
+					throw new InvalidOperationException("No task provided.");
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
+
+				// Pump continuations and propagate any exceptions
+				syncCtx.RunOnCurrentThread();
+				return t.GetAwaiter().GetResult();
+			}
+After:
+			{
+				throw new InvalidOperationException("No task provided.");
+			}
+*/
+			{
+			{
+				throw new ArgumentNullException("asyncMethod");
+			}
+
+			var prevCtx = SynchronizationContext.Current;
+			try
+			{
+				// Establish the new context
+				var syncCtx = new SingleThreadSynchronizationContext();
+				SynchronizationContext.SetSynchronizationContext(syncCtx);
+
+				// Invoke the function and alert the context to when it completes
+				var t = asyncMethod();
+				if (t == null)
+				{
+					throw new ArgumentNullException("asyncMethod");
+				}
+
+				t.ContinueWith(delegate
+				{ syncCtx.Complete(); }, TaskScheduler.Default);
+
+				// Pump continuations and propagate any exceptions
+				syncCtx.RunOnCurrentThread();
+				return t.GetAwaiter().GetResult();
+			}
+
+			var prevCtx = SynchronizationContext.Current;
+			try
+			{
+				// Establish the new context
+				var syncCtx = new SingleThreadSynchronizationContext();
+				SynchronizationContext.SetSynchronizationContext(syncCtx);
+
+				// Invoke the function and alert the context to when it completes
+				var t = asyncMethod();
+				if (t == null)
+				{
+					throw new InvalidOperationException("No task provided.");
+				}
+
 				t.ContinueWith(delegate
 				{ syncCtx.Complete(); }, TaskScheduler.Default);
 
@@ -99,7 +379,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			public override void Post(SendOrPostCallback d, object state)
 			{
 				if (d == null)
+				{
 					throw new ArgumentNullException("d");
+				}
+
 				_mQueue.Add(new KeyValuePair<SendOrPostCallback, object>(d, state));
 			}
 
@@ -113,7 +396,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			public void RunOnCurrentThread()
 			{
 				foreach (var workItem in _mQueue.GetConsumingEnumerable())
+				{
 					workItem.Key(workItem.Value);
+				}
+				}
 			}
 
 			/// <summary>Notifies the context that no more work will arrive.</summary>

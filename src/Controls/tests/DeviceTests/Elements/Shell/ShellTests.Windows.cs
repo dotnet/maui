@@ -612,7 +612,9 @@ namespace Microsoft.Maui.DeviceTests
 			var navView = (shellRenderer.PlatformView as ShellView);
 
 			if (navView.IsPaneOpen)
+			{
 				return;
+			}
 
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 			navView.PaneOpened += OnPaneOpened;
@@ -738,10 +740,14 @@ namespace Microsoft.Maui.DeviceTests
 			await OnNavigatedToAsync(shell.CurrentPage);
 
 			if (shellItem != shell.CurrentItem)
+			{
 				throw new NotImplementedException();
+			}
 
 			if (shellSection != shell.CurrentItem.CurrentItem)
+			{
 				throw new NotImplementedException();
+			}
 
 			var mauiNavigationView = shellItem.Handler.PlatformView as MauiNavigationView;
 			var navSource = mauiNavigationView.MenuItemsSource as IEnumerable;
@@ -769,11 +775,15 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				if (found)
+				{
 					break;
+				}
 			}
 
 			if (!found)
+			{
 				throw new InvalidOperationException("Unable to locate page inside platform shell components");
+			}
 
 			await OnNavigatedToAsync(page);
 		}
@@ -788,7 +798,9 @@ namespace Microsoft.Maui.DeviceTests
 			var togglePaneButton = mauiNavigationView.TogglePaneButton;
 
 			if (togglePaneButton is null)
+			{
 				return null;
+			}
 
 			var animatedIcon = togglePaneButton.GetFirstDescendant<AnimatedIcon>();
 

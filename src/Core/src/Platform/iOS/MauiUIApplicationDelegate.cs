@@ -68,7 +68,9 @@ namespace Microsoft.Maui
 				this.CreatePlatformWindow(_application, application, launchOptions);
 
 				if (Window != null)
+				{
 					_services?.InvokeLifecycleEvents<iOSLifecycle.OnPlatformWindowCreated>(del => del(Window));
+				}
 			}
 
 			_services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
@@ -80,7 +82,11 @@ namespace Microsoft.Maui
 		{
 			// if the app is not a multi-window app, then we cannot override the GetConfiguration method
 			if (sel?.Name == GetConfigurationSelectorName && !this.HasSceneManifest())
+			{
+			{
 				return false;
+			}
+			}
 
 			return base.RespondsToSelector(sel);
 		}

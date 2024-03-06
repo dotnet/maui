@@ -78,7 +78,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			}
 			else
+			{
 				window = await InvokeOnMainThreadAsync(() => new Window(rootPage));
+			}
 
 			var mauiContextStub1 = new ContextStub(ApplicationServices);
 #if ANDROID

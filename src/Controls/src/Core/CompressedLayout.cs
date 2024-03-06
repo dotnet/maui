@@ -25,9 +25,14 @@ namespace Microsoft.Maui.Controls
 		{
 			var ve = bindable as IVisualElementController;
 			if (ve == null)
+			{
 				return;
+			}
+
 			if (ve.IsPlatformEnabled)
+			{
 				throw new InvalidOperationException("IsHeadless cannot be modified when the view is rendered");
+			}
 		}
 
 		static readonly BindablePropertyKey HeadlessOffsetPropertyKey =

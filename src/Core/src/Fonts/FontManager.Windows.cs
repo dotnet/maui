@@ -51,7 +51,9 @@ namespace Microsoft.Maui
 		public FontFamily GetFontFamily(Font font)
 		{
 			if (font.IsDefault || string.IsNullOrWhiteSpace(font.Family))
+			{
 				return DefaultFontFamily;
+			}
 
 			return _fonts.GetOrAdd(font.Family, CreateFontFamily);
 		}
@@ -142,7 +144,9 @@ namespace Microsoft.Maui
 		string? FindFontFamilyName(string? fontFile)
 		{
 			if (fontFile == null)
+			{
 				return null;
+			}
 
 			try
 			{
@@ -153,7 +157,9 @@ namespace Microsoft.Maui
 				{
 					var path = fontUri.AbsolutePath.TrimStart('/');
 					if (FileSystemUtils.TryGetAppPackageFileUri(path, out var uri))
+					{
 						fontUri = new Uri(uri, UriKind.RelativeOrAbsolute);
+					}
 				}
 
 				using (var fontSet = new CanvasFontSet(fontUri))

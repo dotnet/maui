@@ -47,10 +47,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (fontSize > 0)
+			{
 				result.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = fontSize });
+			}
 
 			if (!string.IsNullOrEmpty(fontFamily))
+			{
 				result.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = fontFamily });
+			}
 
 			if (androidColor != defaultColor)
 			{
