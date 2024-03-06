@@ -13,31 +13,16 @@ namespace Gtk.UIExtensions.NUI
 	/// <summary>
 	/// A <see cref="ICollectionViewLayoutManager"/> implementation which provides grid layout
 	/// </summary>
-	public class GridLayoutManager : ICollectionViewLayoutManager
+	public class GridLayoutManager : LayoutManagerBase
 	{
-
-		Size _allocatedSize;
-		Size _scrollCanvasSize;
-		bool _isLayouting;
-		Rect _lastLayoutedBound;
-		Dictionary<int, RealizedItem> _realizedItem = new();
-		List<double> _itemSizes = new();
-		List<bool> _cached = new();
-		List<double> _accumulatedItemSizes = new();
-		bool _hasUnevenRows;
-		Size _baseItemBound;
-
-		Size _headerSize;
-		NView? _header;
-		Size _footerSize;
-		NView? _footer;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GridLayoutManager"/> class
 		/// </summary>
 		/// <param name="isHorizontal">Layout orientation</param>
 		/// <param name="span">Column count</param>
-		public GridLayoutManager(bool isHorizontal, int span = 1) : this(isHorizontal, span, ItemSizingStrategy.MeasureFirstItem) { }
+		public GridLayoutManager(bool isHorizontal, int span = 1) : this(isHorizontal, span, ItemSizingStrategy.MeasureFirstItem)
+		{ }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GridLayoutManager"/> class
@@ -45,7 +30,8 @@ namespace Gtk.UIExtensions.NUI
 		/// <param name="isHorizontal">Layout orientation</param>
 		/// <param name="span">Column count</param>
 		/// <param name="sizingStrategy">Item size measuring strategy</param>
-		public GridLayoutManager(bool isHorizontal, int span, ItemSizingStrategy sizingStrategy) : this(isHorizontal, span, sizingStrategy, 0, 0) { }
+		public GridLayoutManager(bool isHorizontal, int span, ItemSizingStrategy sizingStrategy) : this(isHorizontal, span, sizingStrategy, 0, 0)
+		{ }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GridLayoutManager"/> class
@@ -55,24 +41,12 @@ namespace Gtk.UIExtensions.NUI
 		/// <param name="sizingStrategy">Item size measuring strategy</param>
 		/// <param name="verticalSpacing">A space size between items</param>
 		/// <param name="horizontalSpacing">A space size between items</param>
-		public GridLayoutManager(bool isHorizontal, int span, ItemSizingStrategy sizingStrategy, int verticalSpacing, int horizontalSpacing)
+		public GridLayoutManager(bool isHorizontal, int span, ItemSizingStrategy sizingStrategy, int verticalSpacing, int horizontalSpacing) : base(isHorizontal, sizingStrategy)
 		{
-			IsHorizontal = isHorizontal;
 			Span = span;
-			_hasUnevenRows = sizingStrategy == ItemSizingStrategy.MeasureAllItems;
 			VerticalItemSpacing = verticalSpacing;
 			HorizontalItemSpacing = horizontalSpacing;
 		}
-
-		/// <summary>
-		/// Column count
-		/// </summary>
-		public int Span { get; private set; }
-
-		/// <summary>
-		/// Whether the item is a layout horizontally
-		/// </summary>
-		public bool IsHorizontal { get; }
 
 		/// <summary>
 		/// A space size between items
@@ -85,21 +59,28 @@ namespace Gtk.UIExtensions.NUI
 		public double HorizontalItemSpacing { get; }
 
 		/// <summary>
-		/// CollectionView that interact with layout manager
+		/// Column count
 		/// </summary>
-		public ICollectionViewController? Controller { get; set; }
+		public int Span { get; private set; }
 
-		double BaseItemSize
+		public void UpdateSpan(int span)
 		{
-			get => IsHorizontal ? BaseItemBound.Width : BaseItemBound.Height;
+			Span = span;
+			InitializeMeasureCache();
+			Controller!.RequestLayoutItems();
 		}
 
-		double BaseColumnSize
-		{
-			get => IsHorizontal ? BaseItemBound.Height : BaseItemBound.Width;
-		}
+		public override double ItemSpacing => IsHorizontal ? HorizontalItemSpacing : VerticalItemSpacing;
 
-		Size BaseItemBound
+		double ItemWidthConstraint => IsHorizontal ? double.PositiveInfinity : ColumnSize;
+
+		double ItemHeightConstraint => IsHorizontal ? ColumnSize : double.PositiveInfinity;
+
+		double ColumnSize => (IsHorizontal ? _allocatedSize.Height / Span : _allocatedSize.Width / Span) - ((Span - 1) * ColumnSpacing / Span);
+
+		double ColumnSpacing => IsHorizontal ? VerticalItemSpacing : HorizontalItemSpacing;
+
+		protected override Size BaseItemBound
 		{
 			get
 			{
@@ -116,237 +97,7 @@ namespace Gtk.UIExtensions.NUI
 			}
 		}
 
-		double ItemSpacing => IsHorizontal ? HorizontalItemSpacing : VerticalItemSpacing;
-
-		double ItemWidthConstraint => IsHorizontal ? double.PositiveInfinity : ColumnSize;
-
-		double ItemHeightConstraint => IsHorizontal ? ColumnSize : double.PositiveInfinity;
-
-		double ColumnSize => (IsHorizontal ? _allocatedSize.Height / Span : _allocatedSize.Width / Span) - ((Span - 1) * ColumnSpacing / Span);
-
-		double ColumnSpacing => IsHorizontal ? VerticalItemSpacing : HorizontalItemSpacing;
-
-		double FooterSize => IsHorizontal ? _footerSize.Width : _footerSize.Height;
-
-		double HeaderSize => IsHorizontal ? _headerSize.Width : _headerSize.Height;
-
-		double ItemStartPoint
-		{
-			get
-			{
-				var startPoint = HeaderSize;
-
-				if (startPoint > 0)
-				{
-					startPoint += ItemSpacing;
-				}
-
-				return startPoint;
-			}
-		}
-
-		double FooterSizeWithSpacing
-		{
-			get
-			{
-				var size = FooterSize;
-
-				if (size > 0)
-				{
-					size += ItemSpacing;
-				}
-
-				return size;
-			}
-		}
-
-		public void SizeAllocated(Size size)
-		{
-			_allocatedSize = size;
-			InitializeMeasureCache();
-		}
-
-		public Size GetScrollCanvasSize()
-		{
-			if (Controller!.Count == 0 || _allocatedSize.Width <= 0 || _allocatedSize.Height <= 0)
-				return _allocatedSize;
-
-			if (_scrollCanvasSize.Width > 0 && _scrollCanvasSize.Height > 0)
-				return _scrollCanvasSize;
-
-			double totalItemSize = 0;
-
-			if (_hasUnevenRows)
-			{
-				// If item source was shared between adaptors, in some case CollectionView.Count could be wrong
-				if (_accumulatedItemSizes.Count == 0)
-				{
-					return _allocatedSize;
-				}
-
-				totalItemSize = _accumulatedItemSizes[_accumulatedItemSizes.Count - 1] + FooterSizeWithSpacing;
-			}
-			else
-			{
-				totalItemSize = (int)Math.Ceiling(Controller!.Count / (double)Span) * (BaseItemSize + ItemSpacing) - ItemSpacing + ItemStartPoint + FooterSizeWithSpacing;
-			}
-
-			if (IsHorizontal)
-			{
-				_scrollCanvasSize = new Size(totalItemSize, _allocatedSize.Height);
-			}
-			else
-			{
-				_scrollCanvasSize = new Size(_allocatedSize.Width, totalItemSize);
-			}
-
-			return _scrollCanvasSize;
-		}
-
-		public double GetScrollBlockSize()
-		{
-			return BaseItemSize + ItemSpacing;
-		}
-
-		public double GetScrollColumnSize()
-		{
-			return (IsHorizontal ? BaseItemBound.Height : BaseItemBound.Width) * Span + ColumnSpacing * (Span - 1);
-		}
-
-		public void LayoutItems(Rect bound, bool force)
-		{
-			if (_allocatedSize.Width <= 0 || _allocatedSize.Height <= 0)
-				return;
-
-			// TODO : need to optimization. it was frequently called with similar bound value.
-			if (!ShouldRearrange(bound) && !force)
-			{
-				return;
-			}
-
-			_isLayouting = true;
-			_lastLayoutedBound = bound;
-
-			int padding = Span;
-			int startIndex = Math.Max(GetStartIndex(bound) - padding * 2, 0);
-			int endIndex = Math.Min(GetEndIndex(bound) + padding * 2, Controller!.Count - 1);
-
-			foreach (var index in _realizedItem.Keys.ToList())
-			{
-				if (index < startIndex || index > endIndex)
-				{
-					Controller!.UnrealizeView(_realizedItem[index].Holder);
-					_realizedItem.Remove(index);
-				}
-			}
-
-			for (int i = startIndex; i <= endIndex; i++)
-			{
-				NView? itemView = null;
-
-				if (!_realizedItem.ContainsKey(i))
-				{
-					var holder = Controller!.RealizeView(i);
-
-					_realizedItem[i] = new RealizedItem(holder, i);
-					itemView = holder;
-				}
-				else
-				{
-					itemView = _realizedItem[i].Holder;
-					itemView.Visible = true;
-				}
-
-				var itemBound = GetItemBound(i);
-				itemView.UpdateBounds(itemBound);
-			}
-
-			_isLayouting = false;
-		}
-
-		public void UpdateSpan(int span)
-		{
-			Span = span;
-			InitializeMeasureCache();
-			Controller!.RequestLayoutItems();
-		}
-
-		public void ItemInserted(int inserted)
-		{
-			var items = _realizedItem.Keys.OrderByDescending(key => key);
-
-			foreach (var index in items)
-			{
-				if (index >= inserted)
-				{
-					_realizedItem[index + 1] = _realizedItem[index];
-				}
-			}
-
-			if (_realizedItem.ContainsKey(inserted))
-			{
-				_realizedItem.Remove(inserted);
-			}
-			else
-			{
-				var last = items.LastOrDefault();
-
-				if (last >= inserted)
-				{
-					_realizedItem.Remove(last);
-				}
-			}
-
-			UpdateInsertedSize(inserted);
-
-			_scrollCanvasSize = new Size(0, 0);
-			Controller!.ContentSizeUpdated();
-		}
-
-		public void ItemRemoved(int removed)
-		{
-			if (_realizedItem.ContainsKey(removed))
-			{
-				Controller!.UnrealizeView(_realizedItem[removed].Holder);
-				_realizedItem.Remove(removed);
-			}
-
-			var items = _realizedItem.Keys.OrderBy(key => key);
-
-			foreach (var index in items)
-			{
-				if (index > removed)
-				{
-					_realizedItem[index - 1] = _realizedItem[index];
-				}
-			}
-
-			var last = items.LastOrDefault();
-
-			if (last > removed)
-			{
-				_realizedItem.Remove(last);
-			}
-
-			UpdateRemovedSize(removed);
-
-			_scrollCanvasSize = new Size(0, 0);
-			Controller!.ContentSizeUpdated();
-		}
-
-		public void ItemUpdated(int index)
-		{
-			if (_realizedItem.ContainsKey(index))
-			{
-				var bound = _realizedItem[index].Holder.Bounds;
-				Controller!.UnrealizeView(_realizedItem[index].Holder);
-				var view = Controller!.RealizeView(index);
-				_realizedItem[index].Holder = view;
-				view.UpdateBounds(bound);
-			}
-		}
-
-		public Rect GetItemBound(int index)
+		public override Rect GetItemBound(int index)
 		{
 			int rowIndex = index / Span;
 			int columnIndex = index % Span;
@@ -425,44 +176,7 @@ namespace Gtk.UIExtensions.NUI
 				new Rect(columnStartPoint, rowStartPoint, columnSize, itemSize);
 		}
 
-		public void Reset()
-		{
-			foreach (var realizedItem in _realizedItem.Values.ToList())
-			{
-				Controller!.UnrealizeView(realizedItem.Holder);
-			}
-
-			_realizedItem.Clear();
-			_scrollCanvasSize = new Size(0, 0);
-			Controller!.ContentSizeUpdated();
-		}
-
-		public void ItemSourceUpdated()
-		{
-			InitializeMeasureCache();
-		}
-
-		public void ItemMeasureInvalidated(int index)
-		{
-			if (_hasUnevenRows)
-			{
-				if (index >= 0 && _cached.Count > index)
-					_cached[index] = false;
-
-				if (_realizedItem.ContainsKey(index))
-				{
-					Controller!.RequestLayoutItems();
-				}
-			}
-			else if (index == 0) // MeasureFirstItem
-			{
-				// Reset item size to measure updated size
-				InitializeMeasureCache();
-				Controller!.RequestLayoutItems();
-			}
-		}
-
-		public int GetVisibleItemIndex(double x, double y)
+		public override int GetVisibleItemIndex(double x, double y)
 		{
 			int index = 0;
 
@@ -499,115 +213,17 @@ namespace Gtk.UIExtensions.NUI
 			return Controller!.Count - 1;
 		}
 
-		public void SetHeader(NView? header, Size size)
-		{
-			bool contentSizeChanged = false;
-
-			if (IsHorizontal)
-			{
-				if (_headerSize.Width != size.Width)
-					contentSizeChanged = true;
-			}
-			else
-			{
-				if (_headerSize.Height != size.Height)
-					contentSizeChanged = true;
-			}
-
-			_header = header;
-			_headerSize = size;
-
-			if (contentSizeChanged)
-			{
-				InitializeMeasureCache();
-				Controller!.ContentSizeUpdated();
-			}
-
-			if (_header != null)
-			{
-				var bound = new Rect(0, 0, _headerSize.Width, _headerSize.Height);
-
-				if (IsHorizontal)
-				{
-					bound.Height = _allocatedSize.Height;
-				}
-				else
-				{
-					bound.Width = _allocatedSize.Width;
-				}
-
-				_header.UpdateBounds(bound);
-			}
-		}
-
-		public void SetFooter(NView? footer, Size size)
-		{
-			bool contentSizeChanged = false;
-
-			if (IsHorizontal)
-			{
-				if (_footerSize.Width != size.Width)
-					contentSizeChanged = true;
-			}
-			else
-			{
-				if (_footerSize.Height != size.Height)
-					contentSizeChanged = true;
-			}
-
-			_footer = footer;
-			_footerSize = size;
-
-			if (contentSizeChanged)
-			{
-				InitializeMeasureCache();
-				Controller!.ContentSizeUpdated();
-			}
-
-			UpdateFooterPosition();
-		}
-
-		public int NextRowItemIndex(int index)
+		public override int NextRowItemIndex(int index)
 		{
 			return Math.Min(index + Span, Controller!.Count - 1);
 		}
 
-		public int PreviousRowItemIndex(int index)
+		public override int PreviousRowItemIndex(int index)
 		{
 			return Math.Max(index - Span, 0);
 		}
 
-		void UpdateFooterPosition()
-		{
-			if (_footer == null)
-				return;
-
-			var position = new Point();
-
-			if (IsHorizontal)
-			{
-				position.X += (GetScrollCanvasSize().Width - _footerSize.Width);
-			}
-			else
-			{
-				position.Y += (GetScrollCanvasSize().Height - _footerSize.Height);
-			}
-
-			var bound = new Rect(position.X, position.Y, _footerSize.Width, _footerSize.Height);
-
-			if (IsHorizontal)
-			{
-				bound.Height = _allocatedSize.Height;
-			}
-			else
-			{
-				bound.Width = _allocatedSize.Width;
-			}
-
-			_footer.UpdateBounds(bound);
-		}
-
-		void InitializeMeasureCache()
+		protected override void InitializeMeasureCache()
 		{
 			_baseItemBound = Size.Zero;
 			_scrollCanvasSize = new Size(0, 0);
@@ -643,7 +259,7 @@ namespace Gtk.UIExtensions.NUI
 			Controller!.ContentSizeUpdated();
 		}
 
-		void BuildAccumulatedSize()
+		protected override void BuildAccumulatedSize()
 		{
 			_accumulatedItemSizes = new List<double>();
 			int n = _itemSizes.Count;
@@ -667,51 +283,7 @@ namespace Gtk.UIExtensions.NUI
 			}
 		}
 
-		void UpdateInsertedSize(int inserted)
-		{
-			if (!_hasUnevenRows)
-				return;
-
-			_cached.Insert(inserted, false);
-			_itemSizes.Insert(inserted, BaseItemSize);
-
-			BuildAccumulatedSize();
-		}
-
-		void UpdateRemovedSize(int removed)
-		{
-			if (!_hasUnevenRows)
-				return;
-
-			_itemSizes.RemoveAt(removed);
-
-			_cached.RemoveAt(removed);
-			BuildAccumulatedSize();
-		}
-
-		void UpdateAccumulatedItemSize(int index, double diff)
-		{
-			for (int i = index; i < _accumulatedItemSizes.Count; i++)
-			{
-				_accumulatedItemSizes[i] += diff;
-			}
-
-			if (_scrollCanvasSize.Width > 0 && _scrollCanvasSize.Height > 0)
-			{
-				if (IsHorizontal)
-				{
-					_scrollCanvasSize.Width += diff;
-				}
-				else
-				{
-					_scrollCanvasSize.Height += diff;
-				}
-			}
-
-			UpdateFooterPosition();
-		}
-
-		double GetMaxItemSize(int index)
+		protected double GetMaxItemSize(int index)
 		{
 			int columnStart = (index / Span) * Span;
 			int columnEnd = columnStart + Span - 1;
@@ -725,12 +297,12 @@ namespace Gtk.UIExtensions.NUI
 			return max;
 		}
 
-		int GetStartIndex(Rect bound, double itemSize)
+		protected override int GetStartIndex(Rect bound, double itemSize)
 		{
 			return (int)((ViewPortStartPoint(bound) - ItemStartPoint) / itemSize * Span);
 		}
 
-		int GetStartIndex(Rect bound)
+		protected override int GetStartIndex(Rect bound)
 		{
 			if (!_hasUnevenRows)
 			{
@@ -740,12 +312,12 @@ namespace Gtk.UIExtensions.NUI
 			return FindFirstGreaterOrEqualTo(_accumulatedItemSizes, ViewPortStartPoint(bound)) * Span;
 		}
 
-		int GetEndIndex(Rect bound, double itemSize)
+		protected override int GetEndIndex(Rect bound, double itemSize)
 		{
 			return (int)Math.Ceiling(ViewPortEndPoint(bound) / (double)itemSize) * Span - 1;
 		}
 
-		int GetEndIndex(Rect bound)
+		protected override int GetEndIndex(Rect bound)
 		{
 			if (!_hasUnevenRows)
 			{
@@ -755,65 +327,97 @@ namespace Gtk.UIExtensions.NUI
 			return (FindFirstGreaterOrEqualTo(_accumulatedItemSizes, ViewPortEndPoint(bound)) + 1) * Span - 1;
 		}
 
-		double ViewPortStartPoint(Rect viewPort)
+		public override Size GetScrollCanvasSize()
 		{
-			return IsHorizontal ? viewPort.X : viewPort.Y;
-		}
+			if (Controller!.Count == 0 || _allocatedSize.Width <= 0 || _allocatedSize.Height <= 0)
+				return _allocatedSize;
 
-		double ViewPortEndPoint(Rect viewPort)
-		{
-			return ViewPortStartPoint(viewPort) + ViewPortSize(viewPort);
-		}
+			if (_scrollCanvasSize.Width > 0 && _scrollCanvasSize.Height > 0)
+				return _scrollCanvasSize;
 
-		double ViewPortSize(Rect viewPort)
-		{
-			return IsHorizontal ? viewPort.Width : viewPort.Height;
-		}
+			double totalItemSize = 0;
 
-		bool ShouldRearrange(Rect viewport)
-		{
-			if (_isLayouting)
-				return false;
-
-			if (_lastLayoutedBound.Size != viewport.Size)
-				return true;
-
-			var diff = IsHorizontal ? Math.Abs(_lastLayoutedBound.X - viewport.X) : Math.Abs(_lastLayoutedBound.Y - viewport.Y);
-
-			if (diff > BaseItemSize)
-				return true;
-
-			return false;
-		}
-
-		static int FindFirstGreaterOrEqualTo(IList<double> data, double value)
-		{
-			if (data.Count == 0)
-				return 0;
-
-			int start = 0;
-			int end = data.Count - 1;
-
-			while (start < end)
+			if (_hasUnevenRows)
 			{
-				int mid = (start + end) / 2;
-
-				if (data[mid] < value)
+				// If item source was shared between adaptors, in some case CollectionView.Count could be wrong
+				if (_accumulatedItemSizes.Count == 0)
 				{
-					start = mid + 1;
+					return _allocatedSize;
+				}
+
+				totalItemSize = _accumulatedItemSizes[_accumulatedItemSizes.Count - 1] + FooterSizeWithSpacing;
+			}
+			else
+			{
+				totalItemSize = (int)Math.Ceiling(Controller!.Count / (double)Span) * (BaseItemSize + ItemSpacing) - ItemSpacing + ItemStartPoint + FooterSizeWithSpacing;
+			}
+
+			if (IsHorizontal)
+			{
+				_scrollCanvasSize = new Size(totalItemSize, _allocatedSize.Height);
+			}
+			else
+			{
+				_scrollCanvasSize = new Size(_allocatedSize.Width, totalItemSize);
+			}
+
+			return _scrollCanvasSize;
+		}
+
+		public override double GetScrollColumnSize()
+		{
+			return (IsHorizontal ? BaseItemBound.Height : BaseItemBound.Width) * Span + ColumnSpacing * (Span - 1);
+		}
+
+		public override void LayoutItems(Rect bound, bool force)
+		{
+			if (_allocatedSize.Width <= 0 || _allocatedSize.Height <= 0)
+				return;
+
+			// TODO : need to optimization. it was frequently called with similar bound value.
+			if (!ShouldRearrange(bound) && !force)
+			{
+				return;
+			}
+
+			_isLayouting = true;
+			_lastLayoutedBound = bound;
+
+			int padding = Span;
+			int startIndex = Math.Max(GetStartIndex(bound) - padding * 2, 0);
+			int endIndex = Math.Min(GetEndIndex(bound) + padding * 2, Controller!.Count - 1);
+
+			foreach (var index in _realizedItem.Keys.ToList())
+			{
+				if (index < startIndex || index > endIndex)
+				{
+					Controller!.UnrealizeView(_realizedItem[index].Holder);
+					_realizedItem.Remove(index);
+				}
+			}
+
+			for (int i = startIndex; i <= endIndex; i++)
+			{
+				Widget? itemView = null;
+
+				if (!_realizedItem.ContainsKey(i))
+				{
+					var holder = Controller!.RealizeView(i);
+
+					_realizedItem[i] = new RealizedItem(holder, i);
+					itemView = holder;
 				}
 				else
 				{
-					end = mid - 1;
+					itemView = _realizedItem[i].Holder;
+					itemView.Visible = true;
 				}
+
+				var itemBound = GetItemBound(i);
+				itemView.UpdateBounds(itemBound);
 			}
 
-			if (data[start] < value)
-			{
-				start++;
-			}
-
-			return start;
+			_isLayouting = false;
 		}
 
 	}
