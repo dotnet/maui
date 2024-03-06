@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using View = Gtk.Widget;
 
 namespace Gtk.UIExtensions.NUI
 {
@@ -60,6 +59,8 @@ namespace Gtk.UIExtensions.NUI
 			}
 		}
 
+		double ColumnSize => (IsHorizontal ? _allocatedSize.Height  : _allocatedSize.Width );
+		
 		double ItemWidthConstraint => IsHorizontal ? double.PositiveInfinity : _allocatedSize.Width;
 
 		double ItemHeightConstraint => IsHorizontal ? _allocatedSize.Height : double.PositiveInfinity;
@@ -84,7 +85,7 @@ namespace Gtk.UIExtensions.NUI
 					return _allocatedSize;
 				}
 
-				totalItemSize = _accumulatedItemSizes[_accumulatedItemSizes.Count - 1] + FooterSizeWithSpacing;
+				totalItemSize = _accumulatedItemSizes[^1] + FooterSizeWithSpacing;
 			}
 			else
 			{
@@ -131,7 +132,7 @@ namespace Gtk.UIExtensions.NUI
 
 			for (int i = startIndex; i <= endIndex; i++)
 			{
-				View itemView;
+				Widget itemView;
 
 				if (!_realizedItem.ContainsKey(i))
 				{
@@ -156,6 +157,11 @@ namespace Gtk.UIExtensions.NUI
 			double itemSize = 0;
 			double startPoint = 0;
 
+			double columnSize = ColumnSize;
+
+			if (double.IsInfinity(columnSize))
+				columnSize = BaseColumnSize;
+			
 			if (!_hasUnevenRows)
 			{
 				itemSize = BaseItemSize;
@@ -188,8 +194,8 @@ namespace Gtk.UIExtensions.NUI
 			}
 
 			return IsHorizontal ?
-				new Rect(startPoint, 0, itemSize, _allocatedSize.Height) :
-				new Rect(0, startPoint, _allocatedSize.Width, itemSize);
+				new Rect(startPoint, 0, itemSize, columnSize) :
+				new Rect(0, startPoint, columnSize, itemSize);
 		}
 
 		public override int GetVisibleItemIndex(double x, double y)
@@ -299,7 +305,9 @@ namespace Gtk.UIExtensions.NUI
 			int n = _itemSizes.Count;
 
 			for (int i = 0; i < n; i++)
-			{ }
+			{
+				_accumulatedItemSizes.Add((i > 0 ? (_accumulatedItemSizes[i - 1] + ItemSpacing) : ItemStartPoint) + _itemSizes[i]);
+			}
 		}
 
 	}

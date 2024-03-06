@@ -200,7 +200,7 @@ public abstract class LayoutManagerBase : ICollectionViewLayoutManager
 
 		_realizedItem.Clear();
 		_scrollCanvasSize = new Size(0, 0);
-		Controller!.ContentSizeUpdated();
+		// Controller!.ContentSizeUpdated();
 	}
 
 	public void ItemSourceUpdated()

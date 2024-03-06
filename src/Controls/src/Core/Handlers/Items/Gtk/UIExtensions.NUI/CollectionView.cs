@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
+using Gdk;
 using Gtk;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics.Platform.Gtk;
@@ -232,7 +233,7 @@ namespace Gtk.UIExtensions.NUI
 
 		public IView? VirtualView
 		{
-			get => CollectionContainer.VirtualView; 
+			get => CollectionContainer.VirtualView;
 			set => CollectionContainer.VirtualView = value;
 		}
 
@@ -257,8 +258,12 @@ namespace Gtk.UIExtensions.NUI
 				if (CollectionContainer.IsSizeAllocating || CollectionContainer.IsMeasuring || CollectionContainer.IsReallocating) return;
 
 				CollectionContainer.UpdateSize(size);
-				CollectionContainer.QueueAllocate();
-				// ScrollView.ContentContainer.UpdateSize(size);
+
+				if (!CollectionContainer.Visible && !size.IsZero)
+				{
+					CollectionContainer.SizeAllocate(new(0, 0, (int)size.Width, (int)size.Height));
+					CollectionContainer.Show();
+				}
 			};
 
 			CollectionViewController.UpdateHeaderFooter += (sender, args) => UpdateHeaderFooter();
@@ -313,7 +318,7 @@ namespace Gtk.UIExtensions.NUI
 			};
 
 			this.Child = CollectionContainer;
-			
+
 			this.WidthSpecification(LayoutParamPolicies.MatchParent);
 			this.HeightSpecification(LayoutParamPolicies.MatchParent);
 
@@ -328,13 +333,21 @@ namespace Gtk.UIExtensions.NUI
 			ScrollView.ScrollAnimationEnded += OnScrollAnimationEnded;
 
 			SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
+
 			if (ScrollView is SnappableScrollView snappable)
 			{
 				snappable.SnapRequestFinished += OnSnapRequestFinished;
 			}
 
 			ScrollView.Relayout += CollectionViewController.OnLayout;
+
 			// Add(ScrollView);
+		}
+
+		protected override void OnSizeAllocated(Rectangle allocation)
+		{
+			base.OnSizeAllocated(allocation);
+			ShowAll();
 		}
 
 		void OnScrollAnimationEnded(object? sender, ScrollEventArgs e)

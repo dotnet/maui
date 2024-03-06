@@ -345,7 +345,7 @@ namespace Gtk.UIExtensions.NUI
 					return _allocatedSize;
 				}
 
-				totalItemSize = _accumulatedItemSizes[_accumulatedItemSizes.Count - 1] + FooterSizeWithSpacing;
+				totalItemSize = _accumulatedItemSizes[^1] + FooterSizeWithSpacing;
 			}
 			else
 			{
