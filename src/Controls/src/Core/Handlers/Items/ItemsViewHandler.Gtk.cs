@@ -65,7 +65,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		
 		public override void PlatformArrange(Rect rect)
 		{
-			PlatformView?.Arrange(rect);
+			// PlatformView?.Arrange(rect);
+			base.PlatformArrange(rect);
 		}
 		
 #if DEBUG

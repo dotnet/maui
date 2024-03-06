@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
+using Gdk;
 using Gtk;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics.Platform.Gtk;
@@ -16,7 +17,7 @@ namespace Gtk.UIExtensions.NUI
 	/// <summary>
 	/// A View that contain a templated list of items.
 	/// </summary>
-	public partial class CollectionView : Gtk.Container, ICollectionViewController
+	public partial class CollectionView : Gtk.ScrolledWindow, ICollectionViewController
 	{
 
 		double _previousHorizontalOffset;
@@ -36,7 +37,7 @@ namespace Gtk.UIExtensions.NUI
 		public CollectionView()
 #pragma warning restore CS8618
 		{
-			HasWindow = false;
+			// HasWindow = false;
 			InitializationComponent();
 		}
 
@@ -52,17 +53,27 @@ namespace Gtk.UIExtensions.NUI
 
 		protected CollectionViewController CollectionViewController { get; set; }
 
+		protected CollectionContainer CollectionContainer { get; set; }
+
 		public ItemAdaptor? Adaptor
 		{
 			get => CollectionViewController.Adaptor;
-			set => CollectionViewController.Adaptor = value;
+			set
+			{
+				CollectionViewController.Adaptor = value;
+				CollectionContainer.Adaptor = value;
+			}
 
 		}
 
 		public ICollectionViewLayoutManager? LayoutManager
 		{
 			get => CollectionViewController.LayoutManager;
-			set => CollectionViewController.LayoutManager = value;
+			set
+			{
+				CollectionViewController.LayoutManager = value;
+				CollectionContainer.LayoutManager = value;
+			}
 
 		}
 
@@ -220,6 +231,12 @@ namespace Gtk.UIExtensions.NUI
 			};
 		}
 
+		public IView? VirtualView
+		{
+			get => CollectionContainer.VirtualView;
+			set => CollectionContainer.VirtualView = value;
+		}
+
 		/// <summary>
 		/// Initialize internal components, such as ScrollView
 		/// </summary>
@@ -230,19 +247,23 @@ namespace Gtk.UIExtensions.NUI
 			{
 				SelectionMode = this.SelectionMode,
 				GetViewPort = () => ViewPort,
-				
-				AddToContainer = holder => AddItem(holder),
-				RemoveFromContainer = holder => RemoveItem(holder),
-				
+				AddToContainer = holder => CollectionContainer.AddItem(holder),
+				RemoveFromContainer = holder => CollectionContainer.RemoveItem(holder),
 				ScrollTo = args => ScrollTo(args.index, args.position, args.animate),
 
 			};
 
 			CollectionViewController.HasContentSizeUpdated += (sender, size) =>
 			{
-				if (IsSizeAllocating || IsMeasuring || IsReallocating) return;
+				if (CollectionContainer.IsSizeAllocating || CollectionContainer.IsMeasuring || CollectionContainer.IsReallocating) return;
 
-				ScrollView.ContentContainer.UpdateSize(size);
+				CollectionContainer.UpdateSize(size);
+
+				if (!CollectionContainer.Visible && !size.IsZero)
+				{
+					CollectionContainer.SizeAllocate(new(0, 0, (int)size.Width, (int)size.Height));
+					CollectionContainer.Show();
+				}
 			};
 
 			CollectionViewController.UpdateHeaderFooter += (sender, args) => UpdateHeaderFooter();
@@ -289,6 +310,15 @@ namespace Gtk.UIExtensions.NUI
 				UpdateHeaderFooter();
 			};
 
+			CollectionContainer = new CollectionContainer()
+			{
+				// VirtualView = VirtualView,
+				Adaptor = Adaptor,
+				LayoutManager = LayoutManager
+			};
+
+			this.Child = CollectionContainer;
+
 			this.WidthSpecification(LayoutParamPolicies.MatchParent);
 			this.HeightSpecification(LayoutParamPolicies.MatchParent);
 
@@ -302,13 +332,22 @@ namespace Gtk.UIExtensions.NUI
 			ScrollView.Scrolling += OnScrolling;
 			ScrollView.ScrollAnimationEnded += OnScrollAnimationEnded;
 
+			SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
+
 			if (ScrollView is SnappableScrollView snappable)
 			{
 				snappable.SnapRequestFinished += OnSnapRequestFinished;
 			}
 
 			ScrollView.Relayout += CollectionViewController.OnLayout;
+
 			// Add(ScrollView);
+		}
+
+		protected override void OnSizeAllocated(Rectangle allocation)
+		{
+			base.OnSizeAllocated(allocation);
+			ShowAll();
 		}
 
 		void OnScrollAnimationEnded(object? sender, ScrollEventArgs e)

@@ -11,9 +11,28 @@ using Rectangle = Microsoft.Maui.Graphics.Rect;
 
 namespace Gtk.UIExtensions.NUI;
 
-public partial class CollectionView
+public partial class CollectionContainer : Gtk.Container
 {
 
+	public CollectionContainer()
+	{
+		HasWindow = false;
+	}
+
+	public ItemAdaptor? Adaptor
+	{
+		get;
+		set;
+
+	}
+
+	public ICollectionViewLayoutManager? LayoutManager
+	{
+		get;
+		set;
+
+	}
+	
 	protected override bool OnDrawn(Cairo.Context cr)
 	{
 		var r = base.OnDrawn(cr);
@@ -21,11 +40,11 @@ public partial class CollectionView
 		return r;
 	}
 
-	bool IsReallocating { get; set; }
+	public bool IsReallocating { get; set; }
 
-	bool IsSizeAllocating { get; set; }
+	public bool IsSizeAllocating { get; set; }
 
-	protected IView? VirtualView { get; set; }
+	public IView? VirtualView { get; set; }
 
 	protected Rectangle? CurrentAllocation { get; set; }
 
@@ -210,7 +229,7 @@ public partial class CollectionView
 		}
 	}
 
-	bool IsMeasuring { get; set; }
+	public bool IsMeasuring { get; set; }
 
 	Size Measure(double widthConstraint, double heightConstraint)
 	{

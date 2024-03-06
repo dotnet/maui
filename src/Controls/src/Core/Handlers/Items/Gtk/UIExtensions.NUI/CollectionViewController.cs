@@ -30,6 +30,9 @@ public class CollectionViewController : ICollectionViewController
 		get => _adaptor;
 		set
 		{
+			if (_adaptor == value)
+				return;
+
 			OnAdaptorChanging();
 			_adaptor = value;
 			OnAdaptorChanged();
@@ -46,6 +49,9 @@ public class CollectionViewController : ICollectionViewController
 		get => _layoutManager;
 		set
 		{
+			if (_layoutManager == value)
+				return;
+
 			OnLayoutManagerChanging();
 			_layoutManager = value;
 			OnLayoutManagerChanged();
@@ -466,7 +472,7 @@ public class CollectionViewController : ICollectionViewController
 			return;
 
 		_itemSize = new Size(-1, -1);
-		_layoutManager.CollectionView = this;
+		_layoutManager.Controller = this;
 
 		LayoutManagerChanged?.Invoke(this, new());
 		_layoutManager.SizeAllocated(AllocatedSize);

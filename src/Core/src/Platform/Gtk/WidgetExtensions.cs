@@ -124,7 +124,7 @@ namespace Microsoft.Maui
 #pragma warning restore CS0162 // Unreachable code detected
 		}
 
-		public static void Arrange(this Widget? platformView, Rect rect, bool queue = false)
+		public static void Arrange(this Widget? platformView, Rect rect, bool queue = true)
 		{
 			if (platformView == null)
 				return;

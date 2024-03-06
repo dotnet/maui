@@ -10,9 +10,9 @@ namespace Gtk.UIExtensions.NUI
 	public interface ICollectionViewLayoutManager
 	{
         /// <summary>
-        /// CollectoinView interact with layout manager
+        /// CollectionViewController interact with layout manager
         /// </summary>
-		ICollectionViewController? CollectionView { get; set; }
+		ICollectionViewController? Controller { get; set; }
 
         /// <summary>
         /// Whether the item is a layout horizontally 

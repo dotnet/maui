@@ -1,4 +1,4 @@
-﻿#if WINDOWS || IOS || ANDROID || TIZEN
+﻿#if WINDOWS || IOS || ANDROID || TIZEN || GTK
 using System;
 using System.Collections.Generic;
 using System.Text;

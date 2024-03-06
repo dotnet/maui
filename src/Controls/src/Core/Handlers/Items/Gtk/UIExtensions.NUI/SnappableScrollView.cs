@@ -32,7 +32,7 @@ internal class SnappableScrollView : ScrollableBase
 		ScrollDragStarted += OnDragStart;
 
 		ScrollAnimationEnded += OnAnimationEnd;
-		CollectionView.SizeAllocated += OnLayout;
+		// CollectionView.SizeAllocated += OnLayout;
 	
 	}
 
