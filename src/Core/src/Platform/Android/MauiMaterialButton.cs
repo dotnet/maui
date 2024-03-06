@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Views;
 using Google.Android.Material.Button;
 
 namespace Microsoft.Maui.Platform
@@ -21,8 +22,13 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			var availableWidth = MeasureSpec.GetSize(widthMeasureSpec);
-			var availableHeight = MeasureSpec.GetSize(heightMeasureSpec);
+			var availableWidth = MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified
+				? int.MaxValue
+				: MeasureSpec.GetSize(widthMeasureSpec);
+
+			var availableHeight = MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified
+				? int.MaxValue
+				: MeasureSpec.GetSize(heightMeasureSpec);
 
 			CalculateIconSize(availableWidth, availableHeight);
 
