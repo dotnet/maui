@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Platform
 
 		public TextAlignment VerticalTextAlignment { get; set; }
 
-		public LineBreakMode LineBreakMode { get; set; } = LineBreakMode.TailTruncation;
-
 		protected override void OnAdjustSizeRequest(Orientation orientation, out int minimum_size, out int natural_size)
 		{
 			SetLayout(Layout, this);
@@ -58,10 +56,7 @@ namespace Microsoft.Maui.Platform
 			var horizontalTextAlignment = platformView.HorizontalTextAlignment.GetHorizontalAlignment();
 			layout.Alignment = horizontalTextAlignment.ToPango();
 			layout.Justify = horizontalTextAlignment.HasFlag(HorizontalAlignment.Justified);
-			layout.Wrap = platformView.LineBreakMode.GetLineBreakMode().ToPangoWrap();
-			layout.Ellipsize = platformView.LineBreakMode.GetLineBreakMode().ToPangoEllipsize();
 			layout.LineSpacing = platformView.LineHeight > 1 ? platformView.LineHeight : 0;
-			layout.FontDescription = platformView.GetPangoFontDescription();
 		}
 
 		public static void SetLayoutFromLabel(Pango.Layout layout, Label platformView)
@@ -101,7 +96,7 @@ namespace Microsoft.Maui.Platform
 					layout.Height = (int)lh;
 				}
 			}
-			
+
 			if (!heightForWidth && heightConstrained && widthConstrained)
 			{
 				layout.Width = Math.Max((widthConstraint - hMargin).ScaledToPango(), -1);
@@ -115,15 +110,15 @@ namespace Microsoft.Maui.Platform
 					layout.Width = desiredSize.ScaledToPango();
 				else
 					layout.Height = desiredSize.ScaledToPango();
-			
+
 			}
 
 			layout.SetText(text);
 			layout.GetPixelSize(out var textWidth, out var textHeight);
-			
+
 			width = textWidth;
 			height = textHeight;
-			
+
 			if (lh > 0)
 			{
 				height = Math.Min((int)lh.ScaledFromPango(), height);

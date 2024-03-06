@@ -32,6 +32,13 @@ namespace Microsoft.Maui
 			return text;
 		}
 
+		public static void UpdateMaxLines(this Label platformView, int maxLines)
+		{
+			platformView.Lines = maxLines;
+			platformView.AdjustMaxLines();
+
+		}
+
 		public static void UpdateMaxLines(this Label platformView, ILabel label)
 		{
 			// nativeLabel.Lines = label.MaxLines;
@@ -109,15 +116,13 @@ namespace Microsoft.Maui
 			return res;
 		}
 
-		public static void UpdateLineBreakMode(this Label platformView, ILabel label)
+		public static void UpdateLineBreakMode(this Label platformView, LineBreakMode lineBreakMode, int maxLines = 0)
 		{
-			var labelLineBreakMode = LineBreakMode.CharacterWrap;
-			var labelMaxLines = 0;
-			
-			switch (labelLineBreakMode)
+
+			switch (lineBreakMode)
 			{
 				case LineBreakMode.NoWrap:
-					platformView.LineWrap = labelMaxLines > 0;
+					platformView.LineWrap = maxLines > 0;
 					platformView.Ellipsize = Pango.EllipsizeMode.None;
 
 					break;
@@ -161,7 +166,13 @@ namespace Microsoft.Maui
 					throw new ArgumentOutOfRangeException();
 			}
 
+			platformView.UpdateMaxLines(maxLines);
 			platformView.AdjustMaxLines();
+		}
+
+		public static void UpdateLineBreakMode(this Label platformView, ILabel label)
+		{
+			platformView.UpdateLineBreakMode(LineBreakMode.CharacterWrap);
 		}
 
 		public static void UpdateHorizontalTextAlignment(this Label platformView, ILabel label)
@@ -176,6 +187,7 @@ namespace Microsoft.Maui
 		public static void UpdateVerticalTextAlignment(this Label platformView, ILabel label)
 		{
 			platformView.Yalign = label.VerticalTextAlignment.ToXyAlign();
+
 			if (platformView is LabelView labelView)
 				labelView.VerticalTextAlignment = label.VerticalTextAlignment;
 		}
