@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 			int naturalWidth = 0;
 #pragma warning disable CS0162 // Unreachable code detected
 
-			if (false &&(!widthConstrained && !heightConstrained))
+			if (false && (!widthConstrained && !heightConstrained))
 			{
 				platformView.GetSizeRequest(out var w, out var h);
 
@@ -124,7 +124,7 @@ namespace Microsoft.Maui
 #pragma warning restore CS0162 // Unreachable code detected
 		}
 
-		public static void Arrange(this Widget? platformView, Rect rect)
+		public static void Arrange(this Widget? platformView, Rect rect, bool queue = false)
 		{
 			if (platformView == null)
 				return;
@@ -135,7 +135,9 @@ namespace Microsoft.Maui
 			if (rect != platformView.Allocation.ToRect())
 			{
 				platformView.SizeAllocate(rect.ToNative());
-				platformView.QueueAllocate();
+
+				if (queue)
+					platformView.QueueAllocate();
 			}
 		}
 

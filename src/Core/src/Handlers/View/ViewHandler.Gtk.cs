@@ -5,6 +5,13 @@
 	{
 
 		[MissingMapper]
+		static partial void MappingFrame(IViewHandler handler, IView view)
+		{
+			var platformView = handler.ToPlatform();
+			platformView.Arrange(view.Frame);
+		}
+		
+		[MissingMapper]
 		public static void MapTranslationX(IViewHandler handler, IView view) { }
 
 		[MissingMapper]
