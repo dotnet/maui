@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using UIKit;
+using CoreGraphics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -200,12 +202,50 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(UIImage? platformImage)
 			{
 				if (Handler?.PlatformView is not UIButton button)
-					return;
+ 					return;
 
-				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+ 				nfloat buttonSize = 0;
 
-				button.SetImage(platformImage, UIControlState.Normal);
+ #pragma warning disable CA1422 // Validate platform compatibility
+ 				var contentEdgeInsets = button.ContentEdgeInsets;
+ #pragma warning restore CA1422 // Validate platform compatibility
+
+ 				if (button.Bounds != CGRect.Empty)
+ 				{
+ 					if (button.Bounds.Height > button.Bounds.Width)
+ 						buttonSize = button.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right);
+ 					else
+ 						buttonSize = button.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom);
+ 				}
+
+ 				try
+ 				{
+ 					if (buttonSize != 0)
+ 						platformImage = ResizeImageSource(platformImage, buttonSize, buttonSize);
+
+ 					platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+
+ 					button.SetImage(platformImage, UIControlState.Normal);
+ 				}
+ 				catch (Exception)
+ 				{
+ 					Handler.MauiContext?.CreateLogger<ButtonHandler>()?.LogWarning("Can not load Button ImageSource");
+ 				}
 			}
+			
+			static UIImage? ResizeImageSource(UIImage? sourceImage, nfloat maxWidth, nfloat maxHeight)
+ 			{
+ 				if (sourceImage is null || sourceImage.CGImage is null)
+ 					return null;
+
+ 				var sourceSize = sourceImage.Size;
+ 				float maxResizeFactor = (float)Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+
+ 				if (maxResizeFactor > 1)
+ 					return sourceImage;
+
+ 				return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
+ 			}
 		}
 	}
 }
