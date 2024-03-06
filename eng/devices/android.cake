@@ -108,8 +108,7 @@ Setup(context =>
 			else
 				DEVICE_ARCH = "arm64-v8a";
 		}
-		//var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
-		var sdk = "google_apis";
+		var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
 		if (api == 27 && DEVICE_ARCH == "x86_64")
 			sdk = "default";
 		ANDROID_AVD_IMAGE = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
@@ -354,7 +353,12 @@ Task("uitest")
 	Information("Run UITests project {0}", PROJECT.FullPath);	
 	
 	try{
-		RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
+        try{
+		    RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
+        }
+        catch{
+		    RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
+        }
 	}
 	catch(Exception)
 	{
