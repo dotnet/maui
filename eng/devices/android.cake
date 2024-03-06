@@ -111,6 +111,7 @@ Setup(context =>
 		var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
 		if (api == 27 && DEVICE_ARCH == "x86_64")
 			sdk = "default";
+        sdk = "default";
 		ANDROID_AVD_IMAGE = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
 
 		Information("Going to run image: {0}", ANDROID_AVD_IMAGE);
@@ -147,7 +148,6 @@ Setup(context =>
 	if (IsCIBuild())
 	{
 		AdbLogcat(new AdbLogcatOptions() { Clear = true });
-		AdbShell("pm disable-user --user 0 com.google.android.configupdater");
 		AdbShell("logcat -G 16M");
 	}
 });
@@ -354,8 +354,8 @@ Task("uitest")
 	
 	int numOfRetries = 0;
 
-	if (IsCIBuild())
-		numOfRetries = 1;
+	/*if (IsCIBuild())
+		numOfRetries = 1;*/
 
 	for(int retryCount = 0; retryCount <= numOfRetries; retryCount++)
 	{
