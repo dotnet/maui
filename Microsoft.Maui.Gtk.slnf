@@ -23,7 +23,6 @@
       "src\\Graphics\\src\\Graphics.Gtk\\Graphics.Gtk.csproj",
       "src\\Graphics\\src\\Graphics.Skia.GtkSharp\\Graphics.Skia.GtkSharp.csproj",
       "src\\Graphics\\src\\Graphics.Skia\\Graphics.Skia.csproj",
-      "src\\Graphics\\src\\Graphics.Win2D\\Graphics.Win2D.csproj",
       "src\\Graphics\\src\\Graphics\\Graphics.csproj",
       "src\\Graphics\\src\\Text.Markdig\\Graphics.Text.Markdig.csproj",
       "src\\Graphics\\tests\\Graphics.Benchmarks\\Graphics.Benchmarks.csproj",
