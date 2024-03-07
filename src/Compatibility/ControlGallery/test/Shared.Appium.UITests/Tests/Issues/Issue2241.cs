@@ -14,7 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		public void ChildAddedShouldFire()
+		public void ChangeOrientationCheckScroll()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 

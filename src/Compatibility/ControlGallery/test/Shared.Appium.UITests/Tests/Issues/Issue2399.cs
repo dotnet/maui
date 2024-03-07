@@ -17,7 +17,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		public void ChildAddedShouldFire()
+		public void WaitForAllEffectsToDetach()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
