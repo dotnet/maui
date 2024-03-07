@@ -52,7 +52,7 @@ namespace Microsoft.Maui
 				return res;
 			}
 
-			foreach (AppFW.ResourceManager.Category category in Enum.GetValues(typeof(AppFW.ResourceManager.Category)))
+			foreach (AppFW.ResourceManager.Category category in Enum.GetValues<AppFW.ResourceManager.Category>())
 			{
 				foreach (var file in new[] { res, res + ".jpg", res + ".png", res + ".gif" })
 				{
