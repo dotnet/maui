@@ -8,6 +8,9 @@ namespace UITests
 	{
 		protected IApp App { get; private set; }
 
+		public string ViewQuery { get; private set; }
+		public string EventLabelQuery { get; set; }
+
 		public string StateLabelQuery { get; private set; }
 
 		public string StateButtonQuery { get; private set; }
@@ -16,6 +19,8 @@ namespace UITests
 		{
 			App = app;
 
+			ViewQuery = string.Format("{0}VisualElement", type);
+			EventLabelQuery = string.Format("{0}EventLabel", type);
 			StateLabelQuery = string.Format("{0}StateLabel", type);
 			StateButtonQuery = string.Format("{0}StateButton", type);
 		}
@@ -27,6 +32,11 @@ namespace UITests
 			string text = callerMemberName.Replace("_", "", StringComparison.CurrentCultureIgnoreCase) + "VisualElement";
 			App.EnterText("TargetViewContainer", text);
 			App.Tap("GoButton");
+		}
+
+		public void TapView()
+		{
+			App.Tap(ViewQuery);
 		}
 	}
 }
