@@ -13,7 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.DragAndDrop)]
-		public void AppDoesntCrashWhenResettingPage()
+		public void AcceptedOperationNoneDisablesDropOperation()
 		{
 			RunningApp.WaitForElement("TestLoaded");
 			App.DragAndDrop("DragBox", "DropBox");
