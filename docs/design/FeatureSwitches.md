@@ -39,14 +39,50 @@ If your library or your app defines an implicit operator on a type that can be u
 If you need to define a type converter for a type that you don't own, you can use `MauiAppBuilder.ConfigureTypeConversions`:
 
 ```c#
+// Third-party assembly:
+class Customer
+{
+    public string Name { get; set; }
+}
+
+class Person
+{
+    public string Name { get; set; }
+}
+
+// MAUI App:
 var builder = MauiApp.CreateBuilder();
 builder
     .UseMauiApp<App>()
     .ConfigureTypeConversions(config =>
     {
-        config.AddTypeConverter<MyTypeA, MyTypeAConverter>();
-        config.AddTypeConverter<MyTypeB>(() => new MyTypeBConverter(myFlag: false));
+        config.AddTypeConverter<Customer, CustomerConverter>();
     });
+
+class CustomerConverter : TypeConverter
+{
+    public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+        => sourceType == typeof(string) || sourceType == typeof(Person);
+
+    public override bool CanConvertTo(ITypeDescriptorContext? context, Type destinationType)
+        => sourceType == typeof(string) || sourceType == typeof(Person);
+
+    public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
+        => value switch
+        {
+            string str => new Customer { Name = str },
+            Person person => new Customer { Name = person.Name },
+            _ => throw new NotSupportedException(),
+        };
+
+    public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        => value switch
+        {
+            Customer customer when destinationType == typeof(string) => customer.Name,
+            Customer customer when destinationType == typeof(Person) => new Person { Name = customer.Name },
+            _ => throw new NotSupportedException(),
+        };
+}
 ```
 
 _Note: Prefer using the `TypeConverterAttribute` as it can help the trimmer achieve better binary size in certain scenarios._
