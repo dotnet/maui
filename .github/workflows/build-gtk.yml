@@ -6,7 +6,7 @@ jobs:
     name: Build & Test
     runs-on: ubuntu-22.04
     env:
-      GtkSharpVersion: 3.24.24.96
+      GtkSharpVersion: 3.24.24.117
       GtkSharpManifestVersion: 8.0.200
       DotnetVersion: 8.0.200
     steps:
