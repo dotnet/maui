@@ -20,7 +20,8 @@ jobs:
         run: |
             dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/GtkSharp/index.json"
             # For some reason automatic workload manifest detection doesn't work (see https://github.com/GtkSharp/GtkSharp/issues/355#issuecomment-1446262239), so download and uzip mainfest file manually
-            wget https://www.nuget.org/api/v2/package/gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}/$GtkSharpVersion gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}.nupkg            DOTNET_DIR=/home/runner/.dotnet
+            wget https://www.nuget.org/api/v2/package/gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}/$GtkSharpVersion gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}.nupkg            
+            DOTNET_DIR=/home/runner/.dotnet
             WORKLOAD_MANIFEST_DIR=$DOTNET_DIR/sdk-manifests/${{ env.DotnetVersion }}/gtksharp.net.sdk.gtk
             mkdir -p $WORKLOAD_MANIFEST_DIR
             unzip -j gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}.nupkg "data/*" -d $WORKLOAD_MANIFEST_DIR/
