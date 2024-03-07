@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using UITest.Appium;
 
 namespace UITests
 {
@@ -9,6 +9,12 @@ namespace UITests
 		protected override void NavigateToGallery()
 		{
 			App.NavigateToGallery(GalleryQueries.TimePickerGallery);
+		}
+
+		protected override void FixtureTeardown()
+		{
+			App.Back();
+			base.FixtureTeardown();
 		}
 	}
 }

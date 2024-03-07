@@ -2,29 +2,29 @@
 {
 	internal static class GalleryQueries
 	{
-		public const string ActivityIndicatorGallery = "* marked:'ActivityIndicator Gallery'";
-		public const string BoxViewGallery = "* marked:'BoxView Gallery'";
-		public const string ButtonGallery = "* marked:'Button Gallery'";
-		public const string CheckBoxGallery = "* marked:'CheckBox Gallery'";
-		public const string CollectionViewGallery = "* marked:'CollectionView Gallery'";
-		public const string CarouselViewGallery = "* marked:'CarouselView Gallery'";
-		public const string DatePickerGallery = "* marked:'DatePicker Gallery'";
-		public const string EditorGallery = "* marked:'Editor Gallery'";
-		public const string EntryGallery = "* marked:'Entry Gallery'";
-		public const string FrameGallery = "* marked:'Frame Gallery'";
-		public const string ImageGallery = "* marked:'Image Gallery'";
-		public const string ImageButtonGallery = "* marked:'Image Button Gallery'";
-		public const string LabelGallery = "* marked:'Label Gallery'";
-		public const string ListViewGallery = "* marked:'ListView Gallery'";
-		public const string PickerGallery = "* marked:'Picker Gallery'";
-		public const string ProgressBarGallery = "* marked:'ProgressBar Gallery'";
-		public const string RadioButtonGallery = "* marked:'RadioButton Core Gallery'";
-		public const string ScrollViewGallery = "* marked:'ScrollView Gallery'";
-		public const string SearchBarGallery = "* marked:'SearchBar Gallery'";
-		public const string SliderGallery = "* marked:'Slider Gallery'";
-		public const string StepperGallery = "* marked:'Stepper Gallery'";
-		public const string SwitchGallery = "* marked:'Switch Gallery'";
-		public const string TimePickerGallery = "* marked:'TimePicker Gallery'";
-		public const string WebViewGallery = "* marked:'WebView Gallery'";
+		public const string ActivityIndicatorGallery = "ActivityIndicator Gallery";
+		public const string BoxViewGallery = "BoxView Gallery";
+		public const string ButtonGallery = "Button Gallery";
+		public const string CheckBoxGallery = "CheckBox Gallery";
+		public const string CollectionViewGallery = "CollectionView Gallery";
+		public const string CarouselViewGallery = "CarouselView Gallery";
+		public const string DatePickerGallery = "DatePicker Gallery";
+		public const string EditorGallery = "Editor Gallery";
+		public const string EntryGallery = "Entry Gallery";
+		public const string FrameGallery = "Frame Gallery";
+		public const string ImageGallery = "Image Gallery";
+		public const string ImageButtonGallery = "Image Button Gallery";
+		public const string LabelGallery = "Label Gallery";
+		public const string ListViewGallery = "ListView Gallery";
+		public const string PickerGallery = "Picker Gallery";
+		public const string ProgressBarGallery = "ProgressBar Gallery";
+		public const string RadioButtonGallery = "RadioButton Core Gallery";
+		public const string ScrollViewGallery = "ScrollView Gallery";
+		public const string SearchBarGallery = "SearchBar Gallery";
+		public const string SliderGallery = "Slider Gallery";
+		public const string StepperGallery = "tepper Gallery";
+		public const string SwitchGallery = "Switch Gallery";
+		public const string TimePickerGallery = "TimePicker Gallery";
+		public const string WebViewGallery = "WebView Gallery";
 	}
 }

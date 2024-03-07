@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.Maui.Controls.CustomAttributes;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 
 namespace UITests
@@ -6,6 +8,40 @@ namespace UITests
 	public abstract class ViewUITest : UITest
 	{
 		public ViewUITest(TestDevice device) : base(device) { }
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		public virtual void IsEnabled()
+		{
+			var remote = new StateViewContainerRemote(App, Test.VisualElement.IsEnabled);
+			remote.GoTo();
+
+			var isEnabled = remote.GetStateLabel().GetText();
+			ClassicAssert.AreEqual("True", isEnabled);
+
+			remote.TapStateButton();
+
+			var isDisabled = remote.GetStateLabel().GetText();
+			ClassicAssert.AreEqual("False", isDisabled);
+		}
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		[Category(UITestCategories.ManualReview)]
+		public virtual void _TranslationX()
+		{
+			var remote = new ViewContainerRemote(App, Test.VisualElement.TranslationX);
+			remote.GoTo();
+		}
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		[Category(UITestCategories.ManualReview)]
+		public virtual void _TranslationY()
+		{
+			var remote = new ViewContainerRemote(App, Test.VisualElement.TranslationY);
+			remote.GoTo();
+		}
 
 		protected override void FixtureSetup()
 		{
