@@ -2,16 +2,33 @@
   "solution": {
     "path": "Microsoft.Maui.sln",
     "projects": [
-      "src\\Graphics\\src\\Graphics\\Graphics.csproj",
-      "src\\Graphics\\src\\Graphics.Gtk\\Graphics.Gtk.csproj",
+      "src\\BlazorWebView\\samples\\BlazorGtkApp\\BlazorGtkApp.csproj",
+      "src\\BlazorWebView\\samples\\MauiRazorClassLibrarySample\\MauiRazorClassLibrarySample.csproj",
+      "src\\BlazorWebView\\samples\\WebViewAppShared\\WebViewAppShared.csproj",
+      "src\\BlazorWebView\\src\\Gtk\\Microsoft.AspNetCore.Components.WebView.Gtk.csproj",
+      "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
+      "src\\BlazorWebView\\tests\\MauiDeviceTests\\MauiBlazorWebView.DeviceTests.csproj",
+      "src\\Compatibility\\Core\\src\\Compatibility.csproj",
+      "src\\Controls\\samples\\Controls.Sample.Gtk\\Controls.Sample.Gtk.csproj",
+      "src\\Controls\\samples\\Controls.Sample\\Maui.Controls.Sample.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",
-      "src\\Essentials\\src\\Essentials.csproj",
       "src\\Controls\\src\\Core\\Controls.Core.csproj",
       "src\\Controls\\src\\Xaml\\Controls.Xaml.csproj",
       "src\\Core\\src\\Core.csproj",
-      "src\\Compatibility\\Core\\src\\Compatibility.csproj",
-      "src\\SingleProject\\Resizetizer\\src\\Resizetizer.csproj",
-      "src\\Controls\\samples\\Controls.Sample.Gtk\\Controls.Sample.Gtk.csproj"
+      "src\\Essentials\\src\\Essentials.csproj",
+      "src\\Graphics\\samples\\GraphicsTester.Gtk\\GraphicsTester.Gtk.csproj",
+      "src\\Graphics\\samples\\GraphicsTester.Portable\\GraphicsTester.Portable.csproj",
+      "src\\Graphics\\samples\\GraphicsTester.Skia.Console\\GraphicsTester.Skia.Console.csproj",
+      "src\\Graphics\\samples\\GraphicsTester.Skia.Gtk\\GraphicsTester.Skia.Gtk.csproj",
+      "src\\Graphics\\src\\Graphics.Gtk\\Graphics.Gtk.csproj",
+      "src\\Graphics\\src\\Graphics.Skia.GtkSharp\\Graphics.Skia.GtkSharp.csproj",
+      "src\\Graphics\\src\\Graphics.Skia\\Graphics.Skia.csproj",
+      "src\\Graphics\\src\\Graphics.Win2D\\Graphics.Win2D.csproj",
+      "src\\Graphics\\src\\Graphics\\Graphics.csproj",
+      "src\\Graphics\\src\\Text.Markdig\\Graphics.Text.Markdig.csproj",
+      "src\\Graphics\\tests\\Graphics.Benchmarks\\Graphics.Benchmarks.csproj",
+      "src\\Graphics\\tests\\Graphics.Tests\\Graphics.Tests.csproj",
+      "src\\SingleProject\\Resizetizer\\src\\Resizetizer.csproj"
     ]
   }
 }
