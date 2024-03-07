@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Globalization;
+using System.Linq;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 
 namespace Microsoft.Maui.Graphics
@@ -58,7 +60,7 @@ namespace Microsoft.Maui.Graphics
 				var max = sorted[^1].Offset;
 #endif
 				max = 100 / (max == 0 ? 1 : max);
-				var stops = string.Join(",", sorted.Select(s => $"{s.Color.ToGdkRgba().ToString()} {s.Offset * max}%"));
+				var stops = string.Join(",", sorted.Select(s => $"{s.Color.ToGdkRgba().ToString()} {(s.Offset * max).ToString(CultureInfo.InvariantCulture)}%"));
 
 				return stops;
 			}

@@ -8,8 +8,10 @@ using Action = System.Action;
 
 namespace Microsoft.Maui.Platform
 {
+
 	public static partial class ViewExtensions
 	{
+
 		public static void UpdateAutomationId(this Widget platformView, IView view) { }
 
 		public static void UpdateBackground(this Widget platformView, IView view)
@@ -21,21 +23,22 @@ namespace Microsoft.Maui.Platform
 				color = paint.ToColor();
 			}
 
-			var css = view.Background.ToCss();
+			var gradientCss = view.Background.ToCss();
 
 			var disposePixbuf = false;
-			var pixbuf = css == null ? view.Background?.ToPixbuf(out disposePixbuf) : default;
+			var pixbuf = gradientCss == null ? view.Background?.ToPixbuf(out disposePixbuf) : default;
 
 			// create a temporary file 
+			var picCss = default(string);
 			var tempFile = pixbuf?.TempFileFor();
 
 			if (tempFile != null)
 			{
 				// use the tempfile as url in css
-				css = $"url('{tempFile}')";
+				picCss = $"url('{tempFile}')";
 			}
 
-			if (color == null && css == null)
+			if (color == null && (gradientCss == null || picCss == null))
 				return;
 
 			switch (platformView)
@@ -50,9 +53,14 @@ namespace Microsoft.Maui.Platform
 
 					break;
 				default:
-					if (css != null)
+					if (picCss != null)
 					{
-						platformView.SetStyleValue(css, "background-image");
+						platformView.SetStyleValue(picCss, "background-image");
+					}
+
+					if (gradientCss != null)
+					{
+						platformView.SetStyleValue(gradientCss, "background");
 					}
 					else
 					{
@@ -212,6 +220,7 @@ namespace Microsoft.Maui.Platform
 			if (platformView is not { })
 			{
 				request.TrySetResult(false);
+
 				return;
 			}
 
@@ -236,10 +245,12 @@ namespace Microsoft.Maui.Platform
 			if (platformView.IsLoaded())
 			{
 				action();
+
 				return new ActionDisposable(() => { });
 			}
 
 			EventHandler? routedEventHandler = null;
+
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
@@ -254,6 +265,7 @@ namespace Microsoft.Maui.Platform
 			};
 
 			platformView.Realized += routedEventHandler;
+
 			return disposable;
 		}
 
@@ -266,10 +278,12 @@ namespace Microsoft.Maui.Platform
 			if (!platformView.IsLoaded())
 			{
 				action();
+
 				return new ActionDisposable(() => { });
 			}
 
 			EventHandler? routedEventHandler = null;
+
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
@@ -284,7 +298,9 @@ namespace Microsoft.Maui.Platform
 			};
 
 			platformView.Unrealized += routedEventHandler;
-			return disposable;		}
+
+			return disposable;
+		}
 
 		public static bool IsLoaded(this Widget? platformView)
 		{
@@ -324,5 +340,7 @@ namespace Microsoft.Maui.Platform
 
 			return default;
 		}
+
 	}
+
 }
