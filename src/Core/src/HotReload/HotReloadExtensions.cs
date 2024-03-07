@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Hosting;
@@ -34,20 +35,24 @@ namespace Microsoft.Maui.HotReload
 			}
 		}
 
-		public static List<MethodInfo> GetOnHotReloadMethods(this Type type) => getOnHotReloadMethods(type).Distinct(new ReflectionMethodComparer()).ToList();
-
-		static IEnumerable<MethodInfo> getOnHotReloadMethods(Type type, bool isSubclass = false)
+		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
+		public static List<MethodInfo> GetOnHotReloadMethods(this Type type)
 		{
-			var flags = BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic;
-			if (isSubclass)
-				flags = BindingFlags.Static | BindingFlags.NonPublic;
-			var foos = type.GetMethods(flags).Where(x => x.GetCustomAttributes(typeof(OnHotReloadAttribute), true).Length > 0).ToList();
-			foreach (var foo in foos)
-				yield return foo;
+			return getOnHotReloadMethods(type).Distinct(new ReflectionMethodComparer()).ToList();
 
-			if (type.BaseType != null)
-				foreach (var foo in getOnHotReloadMethods(type.BaseType, true))
+			static IEnumerable<MethodInfo> getOnHotReloadMethods(Type type, bool isSubclass = false)
+			{
+				var flags = BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.NonPublic;
+				if (isSubclass)
+					flags = BindingFlags.Static | BindingFlags.NonPublic;
+				var foos = type.GetMethods(flags).Where(x => x.GetCustomAttributes(typeof(OnHotReloadAttribute), true).Length > 0).ToList();
+				foreach (var foo in foos)
 					yield return foo;
+
+				if (type.BaseType != null)
+					foreach (var foo in getOnHotReloadMethods(type.BaseType, true))
+						yield return foo;
+			}
 		}
 
 		class ReflectionMethodComparer : IEqualityComparer<MethodInfo>
