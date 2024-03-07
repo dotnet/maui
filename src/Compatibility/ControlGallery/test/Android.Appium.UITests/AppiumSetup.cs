@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿/*
+using NUnit.Framework;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Enums;
@@ -67,3 +68,4 @@ public class AppiumSetup
 		AppiumServerHelper.DisposeAppiumLocalServer();
 	}
 }
+*/

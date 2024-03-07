@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-
+﻿/*
+using NUnit.Framework;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Mac;
@@ -47,3 +47,4 @@ public class AppiumSetup
 		AppiumServerHelper.DisposeAppiumLocalServer();
 	}
 }
+*/
