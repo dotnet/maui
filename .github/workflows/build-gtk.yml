@@ -1,0 +1,47 @@
+name: Build Controls.Sample.Gtk
+on: [push, pull_request]
+
+jobs:
+  build_and_test:
+    name: Build & Test
+    runs-on: ubuntu-22.04
+    env:
+      GtkSharpVersion: 3.24.24.95
+      DotnetVersion: 8.0.200
+    steps:
+      - name: Checkout MAUI repo
+        uses: actions/checkout@v2
+      - name: Setup .NET SDK ${{ env.DotnetVersion }}
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: ${{ env.DotnetVersion }}
+      - name: Install gtk workload
+        run: |
+            dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/GtkSharp/index.json"
+            # For some reason automatic workload manifest detection doesn't work (see https://github.com/GtkSharp/GtkSharp/issues/355#issuecomment-1446262239), so download and uzip mainfest file manually
+            wget --user ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} https://nuget.pkg.github.com/GtkSharp/download/gtksharp.net.sdk.gtk.manifest-${{ env.DotnetVersion }}/$GtkSharpVersion/gtksharp.net.sdk.gtk.manifest-${{ env.DotnetVersion }}.nupkg
+            DOTNET_DIR=/home/runner/.dotnet
+            WORKLOAD_MANIFEST_DIR=$DOTNET_DIR/sdk-manifests/${{ env.DotnetVersion }}/gtksharp.net.sdk.gtk
+            unzip -j gtksharp.net.sdk.gtk.manifest-${{ env.DotnetVersion }}.nupkg "data/*" -d $WORKLOAD_MANIFEST_DIR/
+            rm gtksharp.net.sdk.gtk.manifest-${{ env.DotnetVersion }}.nupkg
+            chmod 764 $WORKLOAD_MANIFEST_DIR/*
+            dotnet workload search
+            dotnet workload install gtk --skip-manifest-update
+      - name: Build MAUI
+        run: |
+            sed -i 's/_IncludeAndroid>true/_IncludeAndroid>/g' Directory.Build.Override.props
+            dotnet build Microsoft.Maui.BuildTasks.slnf
+            dotnet build ./src/Controls/samples/Controls.Sample.Gtk/Controls.Sample.Gtk.csproj
+
+  dotnet-format:
+    needs: build_and_test
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Run dotnet format
+        run: |
+          dotnet format whitespace ./src --folder --exclude Templates/src
+          git diff --exit-code
+

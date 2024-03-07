@@ -1,0 +1,17 @@
+{
+  "solution": {
+    "path": "Microsoft.Maui.sln",
+    "projects": [
+      "src\\Graphics\\src\\Graphics\\Graphics.csproj",
+      "src\\Graphics\\src\\Graphics.Gtk\\Graphics.Gtk.csproj",
+      "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",
+      "src\\Essentials\\src\\Essentials.csproj",
+      "src\\Controls\\src\\Core\\Controls.Core.csproj",
+      "src\\Controls\\src\\Xaml\\Controls.Xaml.csproj",
+      "src\\Core\\src\\Core.csproj",
+      "src\\Compatibility\\Core\\src\\Compatibility.csproj",
+      "src\\SingleProject\\Resizetizer\\src\\Resizetizer.csproj",
+      "src\\Controls\\samples\\Controls.Sample.Gtk\\Controls.Sample.Gtk.csproj"
+    ]
+  }
+}
