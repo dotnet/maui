@@ -150,6 +150,11 @@ namespace UITest.Appium
 			});
 		}
 
+		public static void DoubleTap(this IApp app, string element)
+		{
+			app.DoubleClick(element);
+		}
+	
 		public static void DragAndDrop(this IApp app, string dragSource, string dragTarget)
 		{
 			var dragSourceElement = app.FindElement(dragSource);

@@ -2,7 +2,7 @@
 
 namespace UITests
 {
-	internal class DatePickerUITests : ViewUITest
+	public class DatePickerUITests : ViewUITest
 	{
 		public DatePickerUITests(TestDevice device) : base(device) { }
 

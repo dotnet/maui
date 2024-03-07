@@ -2,7 +2,7 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace UITests.Tests.Issues
+namespace UITests
 {
 	public class Issue3413 : IssuesUITest
 	{

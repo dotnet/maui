@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using UITest.Appium;
 
-namespace UITests.Tests.Issues
+namespace UITests
 {
 	public class Issue7371 : IssuesUITest
 	{

@@ -14,7 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Page)]
-		public void AppDoesntCrashWhenResettingPage()
+		public void Issue342NoSourceTestsLablePresentNoImage()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
 
@@ -34,7 +34,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Page)]
-		public void AppDoesntCrashWhenResettingPage()
+		public void Issue342DelayedLoadTestsImageLoads()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
 

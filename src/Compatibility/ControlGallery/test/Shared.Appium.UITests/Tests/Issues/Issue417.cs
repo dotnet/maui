@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace UITests
 {
-    internal class Issue417 : IssuesUITest
+	public class Issue417 : IssuesUITest
 	{
 		public Issue417(TestDevice testDevice) : base(testDevice)
 		{
