@@ -133,6 +133,36 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
 
+	[Theory("Gesture Does Not Leak")]
+	[InlineData(typeof(DragGestureRecognizer))]
+	[InlineData(typeof(DropGestureRecognizer))]
+	[InlineData(typeof(PanGestureRecognizer))]
+	[InlineData(typeof(PinchGestureRecognizer))]
+	[InlineData(typeof(PointerGestureRecognizer))]
+	[InlineData(typeof(SwipeGestureRecognizer))]
+	[InlineData(typeof(TapGestureRecognizer))]
+	public async Task GestureDoesNotLeak(Type type)
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference platformViewReference = null;
+		WeakReference handlerReference = null;
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var view = new Label(); // Just using simplest view
+			view.GestureRecognizers.Add((GestureRecognizer)Activator.CreateInstance(type));
+
+			var handler = CreateHandler<LabelHandler>(view);
+			viewReference = new WeakReference(view);
+			handlerReference = new WeakReference(view.Handler);
+			platformViewReference = new WeakReference(view.Handler.PlatformView);
+		});
+
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+	}
+
 #if IOS
 	[Fact]
 	public async Task ResignFirstResponderTouchGestureRecognizer()

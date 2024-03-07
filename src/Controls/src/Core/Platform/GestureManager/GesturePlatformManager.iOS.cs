@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using CoreGraphics;
 using Foundation;
@@ -20,9 +21,9 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
-		readonly Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>> _gestureRecognizers = new Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>>();
+		readonly ConditionalWeakTable<IGestureRecognizer, List<UIGestureRecognizer?>> _gestureRecognizers = new();
 		readonly List<INativeObject> _interactions = new List<INativeObject>();
-		readonly IPlatformViewHandler _handler;
+		readonly WeakReference<IPlatformViewHandler> _handler;
 
 		bool _disposed;
 		WeakReference<PlatformView>? _platformView;
@@ -38,17 +39,18 @@ namespace Microsoft.Maui.Controls.Platform
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
 
-			_handler = (IPlatformViewHandler)handler;
+			var platformHandler = (IPlatformViewHandler)handler;
 
-			if (_handler?.ToPlatform() is not PlatformView target)
+			if (platformHandler?.ToPlatform() is not PlatformView target)
 				throw new ArgumentNullException(nameof(handler.PlatformView));
 
+			_handler = new WeakReference<IPlatformViewHandler>(platformHandler);
 			_platformView = new WeakReference<PlatformView>(target);
 
 			_collectionChangedHandler = GestureRecognizersOnCollectionChanged;
 
 			// In XF this was called inside ViewDidLoad
-			if (_handler.VirtualView is View view)
+			if (platformHandler.VirtualView is View view)
 				OnElementChanged(this, new VisualElementChangedEventArgs(null, view));
 			else
 				throw new ArgumentNullException(nameof(handler.VirtualView));
@@ -64,8 +66,14 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		IPlatformViewHandler? Handler => _handler.TryGetTarget(out var handler) ? handler : null;
+
+		IView? VirtualView => Handler?.VirtualView;
+
+		UIWindow? PlatformWindow => Handler?.MauiContext?.GetPlatformWindow();
+
 		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers =>
-			(_handler.VirtualView as Element)?.GetCompositeGestureRecognizers() as ObservableCollection<IGestureRecognizer>;
+			(VirtualView as Element)?.GetCompositeGestureRecognizers() as ObservableCollection<IGestureRecognizer>;
 
 		internal void Disconnect()
 		{
@@ -142,7 +150,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var recognizer = weakRecognizer.Target as IGestureRecognizer;
 			var eventTracker = weakEventTracker.Target as GesturePlatformManager;
-			var view = eventTracker?._handler?.VirtualView as View;
+			var view = eventTracker?.VirtualView as View;
 
 			WeakReference? weakPlatformRecognizer = null;
 			if (uITapGestureRecognizer != null)
@@ -178,7 +186,7 @@ namespace Microsoft.Maui.Controls.Platform
 		static Point? CalculatePosition(IElement? element, CGPoint originPoint, WeakReference? weakPlatformRecognizer, WeakReference weakEventTracker)
 		{
 			var eventTracker = weakEventTracker.Target as GesturePlatformManager;
-			var virtualView = eventTracker?._handler?.VirtualView as View;
+			var virtualView = eventTracker?.VirtualView as View;
 			var platformRecognizer = weakPlatformRecognizer?.Target as UIGestureRecognizer;
 			var platformView = element?.ToPlatform();
 
@@ -257,7 +265,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var swipeGestureRecognizer = weakRecognizer.Target as SwipeGestureRecognizer;
 					var eventTracker = weakEventTracker.Target as GesturePlatformManager;
-					var view = eventTracker?._handler.VirtualView as View;
+					var view = eventTracker?.VirtualView as View;
 
 					if (swipeGestureRecognizer != null && view != null)
 						swipeGestureRecognizer.SendSwiped(view, direction);
@@ -274,7 +282,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (weakRecognizer.Target is IPinchGestureController pinchGestureRecognizer &&
 						weakEventTracker.Target is GesturePlatformManager eventTracker &&
-						eventTracker._handler?.VirtualView is View view &&
+						eventTracker?.VirtualView is View view &&
 						UIApplication.SharedApplication.GetKeyWindow() is UIWindow window)
 					{
 						var oldScale = eventTracker._previousScale;
@@ -332,7 +340,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var uiRecognizer = CreatePanRecognizer(panRecognizer.TouchPoints, r =>
 				{
 					var eventTracker = weakEventTracker.Target as GesturePlatformManager;
-					var view = eventTracker?._handler?.VirtualView as View;
+					var view = eventTracker?.VirtualView as View;
 
 					var panGestureRecognizer = weakRecognizer.Target as IPanGestureController;
 					if (panGestureRecognizer != null && view != null)
@@ -340,12 +348,12 @@ namespace Microsoft.Maui.Controls.Platform
 						switch (r.State)
 						{
 							case UIGestureRecognizerState.Began:
-								if (r.NumberOfTouches != panRecognizer.TouchPoints)
+								if (r.NumberOfTouches != ((PanGestureRecognizer)panGestureRecognizer).TouchPoints)
 									return;
 								panGestureRecognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case UIGestureRecognizerState.Changed:
-								if (r.NumberOfTouches != panRecognizer.TouchPoints)
+								if (r.NumberOfTouches != ((PanGestureRecognizer)panGestureRecognizer).TouchPoints)
 								{
 									r.State = UIGestureRecognizerState.Ended;
 									panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
@@ -361,7 +369,7 @@ namespace Microsoft.Maui.Controls.Platform
 								PanGestureRecognizer.CurrentId.Increment();
 								break;
 							case UIGestureRecognizerState.Ended:
-								if (r.NumberOfTouches != panRecognizer.TouchPoints)
+								if (r.NumberOfTouches != ((PanGestureRecognizer)panGestureRecognizer).TouchPoints)
 								{
 									panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
 									PanGestureRecognizer.CurrentId.Increment();
@@ -412,8 +420,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
 					weakEventTracker.Target is GesturePlatformManager eventTracker &&
-					eventTracker._handler?.VirtualView is View view &&
-					eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
+					eventTracker?.VirtualView is View view &&
+					eventTracker?.PlatformWindow is UIWindow window)
 				{
 					var originPoint = pointerGesture.LocationInView(eventTracker?.PlatformView);
 					var platformPointerArgs = new PlatformPointerEventArgs(pointerGesture.View, pointerGesture);
@@ -592,7 +600,7 @@ namespace Microsoft.Maui.Controls.Platform
 			bool dropFound = false;
 
 			if (PlatformView != null &&
-				_handler.VirtualView is View v &&
+				VirtualView is View v &&
 				v.TapGestureRecognizerNeedsDelegate() &&
 				(PlatformView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
 			{
@@ -615,7 +623,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				IGestureRecognizer recognizer = ElementGestureRecognizers[i];
 
-				if (_gestureRecognizers.ContainsKey(recognizer))
+				if (_gestureRecognizers.TryGetValue(recognizer, out _))
 					continue;
 
 				if (TryGetTapGestureRecognizer(recognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
@@ -637,7 +645,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DragGestureRecognizer)
 				{
 					dragFound = true;
-					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
+					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(Handler);
 					if (uIDragInteraction == null && PlatformView != null)
 					{
 						var interaction = new UIDragInteraction(_dragAndDropDelegate);
@@ -650,7 +658,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DropGestureRecognizer)
 				{
 					dropFound = true;
-					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
+					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(Handler);
 					if (uIDropInteraction == null && PlatformView != null)
 					{
 						var interaction = new UIDropInteraction(_dragAndDropDelegate);
@@ -664,7 +672,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (nativeRecognizers is null)
 					continue;
 
-				_gestureRecognizers[recognizer] = nativeRecognizers;
+				_gestureRecognizers.AddOrUpdate(recognizer, nativeRecognizers);
 				foreach (UIGestureRecognizer? nativeRecognizer in nativeRecognizers)
 				{
 					if (nativeRecognizer != null && PlatformView != null)
@@ -685,18 +693,19 @@ namespace Microsoft.Maui.Controls.Platform
 					PlatformView.RemoveInteraction(uIDropInteraction);
 			}
 
-			var toRemove = new List<IGestureRecognizer>();
+			var toRemove = new List<KeyValuePair<IGestureRecognizer, List<UIGestureRecognizer?>>>();
 
-			foreach (var key in _gestureRecognizers.Keys)
+			foreach (var pair in _gestureRecognizers)
 			{
-				if (!ElementGestureRecognizers.Contains(key))
-					toRemove.Add(key);
+				if (!ElementGestureRecognizers.Contains(pair.Key))
+					toRemove.Add(pair);
 			}
 
 			for (int i = 0; i < toRemove.Count; i++)
 			{
-				IGestureRecognizer gestureRecognizer = toRemove[i];
-				var uiRecognizers = _gestureRecognizers[gestureRecognizer];
+				var pair = toRemove[i];
+				IGestureRecognizer gestureRecognizer = pair.Key;
+				var uiRecognizers = pair.Value;
 				_gestureRecognizers.Remove(gestureRecognizer);
 
 				foreach (var uiRecognizer in uiRecognizers)
@@ -741,7 +750,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
 			var platformView = PlatformView;
-			var virtualView = _handler?.VirtualView;
+			var virtualView = VirtualView;
 
 			if (virtualView == null || platformView == null)
 			{
