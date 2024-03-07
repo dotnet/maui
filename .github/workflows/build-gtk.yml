@@ -23,6 +23,7 @@ jobs:
             wget --user ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} https://nuget.pkg.github.com/GtkSharp/download/gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}/$GtkSharpVersion/gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}.nupkg
             DOTNET_DIR=/home/runner/.dotnet
             WORKLOAD_MANIFEST_DIR=$DOTNET_DIR/sdk-manifests/${{ env.DotnetVersion }}/gtksharp.net.sdk.gtk
+            mkdir -p $WORKLOAD_MANIFEST_DIR
             unzip -j gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}.nupkg "data/*" -d $WORKLOAD_MANIFEST_DIR/
             rm gtksharp.net.sdk.gtk.manifest-${{ env.GtkSharpManifestVersion }}.nupkg
             chmod 764 $WORKLOAD_MANIFEST_DIR/*
