@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			_cursorStartPosition = new Entry { AutomationId = "CursorStart" };
 			_selectionLength = new Entry { AutomationId = "SelectionLength" };
 
-			_updateButton = new Button { Text = "Update" };
+			_updateButton = new Button { AutomationId = "Update", Text = "Update" };
 			_updateButton.Clicked += UpdateCursor;
 
 			var layout = new StackLayout
@@ -54,13 +54,13 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
-				var red = new Button { Text = "Red", TextColor = Colors.Red };
+				var red = new Button { AutomationId = "Red", Text = "Red", TextColor = Colors.Red };
 				red.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Colors.Red);
 
-				var blue = new Button { Text = "Blue", TextColor = Colors.Blue };
+				var blue = new Button { AutomationId = "Blue", Text = "Blue", TextColor = Colors.Blue };
 				blue.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Colors.Blue);
 
-				var defaultColor = new Button { Text = "Default" };
+				var defaultColor = new Button { AutomationId = "Default", Text = "Default" };
 				defaultColor.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(null);
 
 				layout.Children.Add(red);

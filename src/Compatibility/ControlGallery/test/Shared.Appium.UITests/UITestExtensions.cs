@@ -30,32 +30,32 @@ namespace UITests
 
 		public static void NavigateToGallery(this IApp app, string page)
 		{
-			RunningApp.WaitForElement(GoToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
+			app.WaitForElement(GoToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
 			NavigateTo(app, page);
 		}
 
 		public static void NavigateTo(this IApp app, string text)
 		{
-			RunningApp.WaitForElement("SearchBar");
-			RunningApp.ClearText("SearchBar");
+			app.WaitForElement("SearchBar");
+			app.ClearText("SearchBar");
 			if (!string.IsNullOrWhiteSpace(text))
 			{
-				RunningApp.EnterText("SearchBar", text);
+				app.EnterText("SearchBar", text);
 			}
-			RunningApp.Tap(GoToTestButtonId);
+			app.Tap(GoToTestButtonId);
 
-			RunningApp.WaitForNoElement(GoToTestButtonId, "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(1));
+			app.WaitForNoElement(GoToTestButtonId, "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(1));
 		}
 
 		public static void NavigateToIssues(this IApp app)
 		{
-			RunningApp.WaitForElement(GoToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
+			app.WaitForElement(GoToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
 
-			RunningApp.WaitForElement("SearchBar");
-			RunningApp.ClearText("SearchBar");
+			app.WaitForElement("SearchBar");
+			app.ClearText("SearchBar");
 
-			RunningApp.Tap(GoToTestButtonId);
-			RunningApp.WaitForElement("TestCasesIssueList");
+			app.Tap(GoToTestButtonId);
+			app.WaitForElement("TestCasesIssueList");
 		}
 
 		public static void IgnoreIfPlatforms(this UITestBase? test, IEnumerable<TestDevice> devices, string? message = null)

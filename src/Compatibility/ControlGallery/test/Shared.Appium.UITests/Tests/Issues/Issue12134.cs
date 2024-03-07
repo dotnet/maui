@@ -19,7 +19,7 @@ namespace UITests
 
 			for (int i = 0; i < 10; i++)
 			{
-				RunningRunningApp.WaitForNoElement("Success", $"Failied on: {i}");
+				RunningApp.WaitForNoElement("Success", $"Failied on: {i}");
 				RunningApp.Tap("LoadNewWebView");
 			}
 		}
