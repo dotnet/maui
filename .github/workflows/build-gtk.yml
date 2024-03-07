@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       GtkSharpVersion: 3.24.24.95
-      GtkSharpManifestVersion: 6.0.400
+      GtkSharpManifestVersion: 8.0.200
       DotnetVersion: 8.0.200
     steps:
       - name: Checkout MAUI repo
