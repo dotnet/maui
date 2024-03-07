@@ -14,13 +14,19 @@ namespace Microsoft.Maui.IntegrationTests
 			var buildArgs = $"\"{projectFile}\" -c {config}";
 
 			if (!string.IsNullOrEmpty(target))
+			{
 				buildArgs += $" -t:{target}";
+			}
 
 			if (!string.IsNullOrEmpty(framework))
+			{
 				buildArgs += $" -f:{framework}";
+			}
 
 			if (!string.IsNullOrEmpty(runtimeIdentifier))
+			{
 				buildArgs += $" -r:{runtimeIdentifier}";
+			}
 
 			if (properties != null)
 			{
@@ -34,9 +40,13 @@ namespace Microsoft.Maui.IntegrationTests
 			{
 				var binlogPrefix = string.Empty;
 				if (!string.IsNullOrEmpty(target))
+				{
 					binlogPrefix = target;
+				}
 				else
+				{
 					binlogPrefix = isPublishing ? "publish" : "build";
+				}
 
 				var binlogName = $"{binlogPrefix}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 				binlogPath = Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName);
@@ -85,7 +95,9 @@ namespace Microsoft.Maui.IntegrationTests
 			var args = $"{shortName} -o \"{outputDirectory}\"";
 
 			if (!string.IsNullOrEmpty(framework))
+			{
 				args += $" -f {framework}";
+			}
 
 			var output = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300);
 			TestContext.WriteLine(output);

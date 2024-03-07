@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Maps.Platform
 		public static void UpdateMapType(this GoogleMap googleMap, IMap map)
 		{
 			if (googleMap == null)
+			{
 				return;
+			}
 
 			googleMap.MapType = map.MapType switch
 			{
@@ -26,10 +28,14 @@ namespace Microsoft.Maui.Maps.Platform
 		public static void UpdateIsShowingUser(this GoogleMap googleMap, IMap map, IMauiContext? mauiContext)
 		{
 			if (googleMap == null)
+			{
 				return;
+			}
 
 			if (mauiContext?.Context == null)
+			{
 				return;
+			}
 
 			googleMap.SetIsShowingUser(map, mauiContext).FireAndForget();
 		}
@@ -37,7 +43,9 @@ namespace Microsoft.Maui.Maps.Platform
 		public static void UpdateIsScrollEnabled(this GoogleMap googleMap, IMap map)
 		{
 			if (googleMap == null)
+			{
 				return;
+			}
 
 			googleMap.UiSettings.ScrollGesturesEnabled = map.IsScrollEnabled;
 		}
@@ -45,7 +53,9 @@ namespace Microsoft.Maui.Maps.Platform
 		public static void UpdateIsTrafficEnabled(this GoogleMap googleMap, IMap map)
 		{
 			if (googleMap == null)
+			{
 				return;
+			}
 
 			googleMap.TrafficEnabled = map.IsTrafficEnabled;
 		}
@@ -53,7 +63,9 @@ namespace Microsoft.Maui.Maps.Platform
 		public static void UpdateIsZoomEnabled(this GoogleMap googleMap, IMap map)
 		{
 			if (googleMap == null)
+			{
 				return;
+			}
 
 			googleMap.UiSettings.ZoomControlsEnabled = map.IsZoomEnabled;
 			googleMap.UiSettings.ZoomGesturesEnabled = map.IsZoomEnabled;

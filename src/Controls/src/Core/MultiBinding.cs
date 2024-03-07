@@ -57,7 +57,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var bindingsclone = new List<BindingBase>(Bindings.Count);
 			foreach (var b in Bindings)
+			{
 				bindingsclone.Add(b.Clone());
+			}
 
 			var clone = new MultiBinding()
 			{
@@ -71,7 +73,9 @@ namespace Microsoft.Maui.Controls
 			};
 
 			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			{
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+			}
 
 			return clone;
 		}
@@ -79,18 +83,26 @@ namespace Microsoft.Maui.Controls
 		internal override void Apply(bool fromTarget)
 		{
 			if (_applying)
+			{
 				return;
+			}
 
 			base.Apply(fromTarget);
 
 			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneTime)
+			{
 				return;
+			}
 
 			if (fromTarget && this.GetRealizedMode(_targetProperty) == BindingMode.OneWay)
+			{
 				return;
+			}
 
 			if (!fromTarget && this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
+			{
 				return;
+			}
 
 			if (!fromTarget)
 			{
@@ -115,11 +127,18 @@ namespace Microsoft.Maui.Controls
 
 					//https://docs.microsoft.com/en-us/dotnet/api/system.windows.data.imultivalueconverter.convertback?view=netframework-4.8#remarks
 					if (!(GetTargetValue(_targetObject.GetValue(_targetProperty), null) is object[] values)) //converter failed
+					{
 						return;
+					}
+
 					for (var i = 0; i < Math.Min(_bpProxies.Length, values.Length); i++)
 					{
 						if (ReferenceEquals(values[i], Binding.DoNothing) || ReferenceEquals(values[i], BindableProperty.UnsetValue))
+						{
+						{
 							continue;
+						}
+
 						_proxyObject.SetValue(_bpProxies[i], values[i]);
 					}
 				}
@@ -134,10 +153,14 @@ namespace Microsoft.Maui.Controls
 		internal override void Apply(object context, BindableObject targetObject, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
 		{
 			if (_bindings == null)
+			{
 				throw new InvalidOperationException("Bindings is null");
+			}
 
 			if (Converter == null && StringFormat == null)
+			{
 				throw new InvalidOperationException("Cannot apply MultiBinding because both Converter and StringFormat are null.");
+			}
 
 			base.Apply(context, targetObject, targetProperty, fromBindingContextChanged, specificity);
 
@@ -165,7 +188,9 @@ namespace Microsoft.Maui.Controls
 			_proxyObject.BindingContext = context;
 
 			if (this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
+			{
 				return;
+			}
 
 			var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
 			if (value != Binding.DoNothing)
@@ -189,7 +214,10 @@ namespace Microsoft.Maui.Controls
 		{
 			var valuearray = new object[_bpProxies.Length];
 			for (var i = 0; i < _bpProxies.Length; i++)
+			{
 				valuearray[i] = _proxyObject.GetValue(_bpProxies[i]);
+			}
+
 			return valuearray;
 		}
 
@@ -197,13 +225,19 @@ namespace Microsoft.Maui.Controls
 		{
 			var valuearray = value as object[];
 			if (valuearray != null && Converter != null)
+			{
 				value = Converter.Convert(valuearray, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+			}
 
 			if (valuearray != null && Converter == null && StringFormat != null && BindingBase.TryFormat(StringFormat, valuearray, out var formatted))
+			{
 				return formatted;
+			}
 
 			if (ReferenceEquals(BindableProperty.UnsetValue, value))
+			{
 				return FallbackValue;
+			}
 
 			return base.GetSourceValue(value, targetPropertyType);
 		}
@@ -215,7 +249,10 @@ namespace Microsoft.Maui.Controls
 				var values = GetValueArray();
 				var types = new Type[_bpProxies.Length];
 				for (var i = 0; i < _bpProxies.Length; i++)
+				{
 					types[i] = values[i]?.GetType() ?? typeof(object);
+				}
+
 				return Converter.ConvertBack(value, types, ConverterParameter, CultureInfo.CurrentUICulture);
 			}
 
@@ -225,7 +262,10 @@ namespace Microsoft.Maui.Controls
 		void OnBindingChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (!_applying)
+			{
+			{
 				Apply(fromTarget: false);
+			}
 		}
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
@@ -233,8 +273,12 @@ namespace Microsoft.Maui.Controls
 			if (!fromBindingContextChanged)
 			{
 				if (_bpProxies != null && _proxyObject != null)
+				{
 					foreach (var proxybp in _bpProxies)
+					{
 						_proxyObject.RemoveBinding(proxybp);
+					}
+				}
 
 				_bpProxies = null;
 				_proxyObject = null;

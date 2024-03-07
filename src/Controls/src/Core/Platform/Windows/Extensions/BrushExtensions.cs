@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static WBrush ToBrush(this Brush brush)
 		{
 			if (brush == null)
+			{
 				return null;
+			}
 
 			if (brush is SolidColorBrush solidColorBrush)
 			{
@@ -32,7 +34,9 @@ namespace Microsoft.Maui.Controls.Platform
 				var gradientStopCollection = new WGradientStopCollection();
 
 				foreach (var item in orderedStops)
+				{
 					gradientStopCollection.Add(new WGradientStop { Offset = item.Offset, Color = item.Color.ToWindowsColor() });
+				}
 
 				var p1 = linearGradientBrush.StartPoint;
 				var p2 = linearGradientBrush.EndPoint;
@@ -57,8 +61,10 @@ namespace Microsoft.Maui.Controls.Platform
 				var orderedStops = radialGradientBrush.GradientStops.OrderBy(x => x.Offset).ToList();
 
 				foreach (var gradientStop in orderedStops)
+				{
 					wRadialGradientBrush.GradientStops.Add(
 						new WGradientStop { Color = gradientStop.Color.ToWindowsColor(), Offset = gradientStop.Offset });
+				}
 
 				return wRadialGradientBrush;
 			}

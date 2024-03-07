@@ -74,7 +74,9 @@ namespace Microsoft.Maui.Handlers
 			void OnControlValueChanged(object? sender, EventArgs e)
 			{
 				if (VirtualView is ISwitch virtualView && sender is UISwitch platformView && virtualView.IsOn != platformView.On)
+				{
 					virtualView.IsOn = platformView.On;
+				}
 			}
 		}
 	}

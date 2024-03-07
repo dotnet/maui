@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// https://msdn.microsoft.com/en-us/library/windows/apps/mt299120.aspx
 			var scrollName = "ContentScrollViewer";
 			if (GetTemplateChild(scrollName) is ScrollViewer contentScrollViewer)
+			{
 				contentScrollViewer.VerticalScrollBarVisibility = VerticalScrollBarVisibility;
+			}
 		}
 	}
 }

@@ -46,7 +46,10 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (!IsPlainText(label))
+			{
+			{
 				return;
+			}
 
 			LabelHandler.MapFormatting(handler, label);
 		}
@@ -56,7 +59,9 @@ namespace Microsoft.Maui.Controls
 			if (Handler is LabelHandler labelHandler)
 			{
 				if (labelHandler.PlatformView is not UILabel platformView || labelHandler.VirtualView is not Label virtualView)
+				{
 					return;
+				}
 
 				platformView.RecalculateSpanPositions(virtualView);
 			}

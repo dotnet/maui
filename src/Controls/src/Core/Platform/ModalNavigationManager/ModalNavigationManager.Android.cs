@@ -53,12 +53,17 @@ namespace Microsoft.Maui.Controls.Platform
 			set
 			{
 				if (_navAnimationInProgress == value)
+				{
 					return;
+				}
+
 				_navAnimationInProgress = value;
 
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				if (value)
+				{
 					MessagingCenter.Send(this, CloseContextActionsSignalName);
+				}
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
@@ -177,10 +182,14 @@ namespace Microsoft.Maui.Controls.Platform
 			platformView.ImportantForAccessibility = ImportantForAccessibility.Auto;
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
 				platformView.SetFocusable(ViewFocusability.FocusableAuto);
+			}
 
 			if (platformView is ViewGroup vg)
+			{
 				vg.DescendantFocusability = DescendantFocusability.BeforeDescendants;
+			}
 		}
 
 		void RemoveFocusability(AView platformView)
@@ -188,11 +197,15 @@ namespace Microsoft.Maui.Controls.Platform
 			platformView.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
 				platformView.SetFocusable(ViewFocusability.NotFocusable);
+			}
 
 			// Without setting this the keyboard will still navigate to components behind the modal page
 			if (platformView is ViewGroup vg)
+			{
 				vg.DescendantFocusability = DescendantFocusability.BlockDescendants;
+			}
 		}
 
 		sealed class ModalContainer : ViewGroup
@@ -275,7 +288,9 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnRootViewLayoutChanged(object? sender, LayoutChangeEventArgs e)
 			{
 				if (Modal is null || sender is not AView view)
+				{
 					return;
+				}
 
 				var modalStack = Modal?.Navigation?.ModalStack;
 				if (modalStack is null ||
@@ -330,16 +345,24 @@ namespace Microsoft.Maui.Controls.Platform
 						var barInsets = windowInsets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 
 						if (mlp.TopMargin != barInsets.Top)
+						{
 							mlp.TopMargin = barInsets.Top;
+						}
 
 						if (mlp.LeftMargin != barInsets.Left)
+						{
 							mlp.LeftMargin = barInsets.Left;
+						}
 
 						if (mlp.RightMargin != barInsets.Right)
+						{
 							mlp.RightMargin = barInsets.Right;
+						}
 
 						if (mlp.BottomMargin != barInsets.Bottom)
+						{
 							mlp.BottomMargin = barInsets.Bottom;
+						}
 					}
 				}
 			}
@@ -373,7 +396,9 @@ namespace Microsoft.Maui.Controls.Platform
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
 				if (Context is null || NavigationRootManager?.RootView is null)
+				{
 					return;
+				}
 
 				NavigationRootManager
 					.RootView
@@ -385,28 +410,40 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == Page.BackgroundColorProperty.PropertyName)
+				{
 					UpdateBackgroundColor();
+				}
 			}
 
 			void UpdateBackgroundColor()
 			{
 				if (Modal is null)
+				{
 					return;
+				}
 
 				Color modalBkgndColor = Modal.BackgroundColor;
 				if (modalBkgndColor is null)
+				{
 					_backgroundView.SetWindowBackground();
+				}
 				else
+				{
 					_backgroundView.SetBackgroundColor(modalBkgndColor.ToPlatform());
+				}
 			}
 
 			public void Destroy()
 			{
 				if (Modal is null || _windowMauiContext is null || _fragmentManager is null || !_fragmentManager.IsAlive() || _fragmentManager.IsDestroyed)
+				{
 					return;
+				}
 
 				if (Modal.Toolbar?.Handler is not null)
+				{
 					Modal.Toolbar.Handler = null;
+				}
 
 				Modal.Handler = null;
 

@@ -24,7 +24,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			base.ViewDidLoad();
 
 			if (_task is not null)
+			{
 				await _task;
+			}
 
 			var runner = MauiTestApplicationDelegate.Current.Services.GetRequiredService<HeadlessTestRunner>();
 

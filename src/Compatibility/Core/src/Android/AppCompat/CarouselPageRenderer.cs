@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		void IManageFragments.SetFragmentManager(FragmentManager childFragmentManager)
 		{
 			if (_fragmentManager == null)
+			{
 				_fragmentManager = childFragmentManager;
+			}
 		}
 
 		void ViewPager.IOnPageChangeListener.OnPageSelected(int position)
@@ -60,7 +62,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				_disposed = true;
 
 				if (Element != null)
+				{
 					PageController.InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
+				}
 
 				if (_viewPager != null)
 				{
@@ -100,7 +104,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 			base.OnAttachedToWindow();
 			if (Parent is PageContainer pageContainer && (pageContainer.IsInFragment || pageContainer.Visibility == ViewStates.Gone))
+			{
 				return;
+			}
+
 			PageController.SendAppearing();
 			Element.CurrentPage?.SendAppearing();
 		}
@@ -109,7 +116,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 			base.OnDetachedFromWindow();
 			if (Parent is PageContainer pageContainer && pageContainer.IsInFragment)
+			{
 				return;
+			}
+
 			Element.CurrentPage?.SendDisappearing();
 			PageController.SendDisappearing();
 		}
@@ -121,7 +131,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			var activity = Context.GetActivity();
 
 			if (e.OldElement != null)
+			{
 				((IPageController)e.OldElement).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
+			}
 
 			if (e.NewElement != null)
 			{
@@ -161,7 +173,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == nameof(Element.CurrentPage))
+			{
 				ScrollToCurrentPage();
+			}
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)

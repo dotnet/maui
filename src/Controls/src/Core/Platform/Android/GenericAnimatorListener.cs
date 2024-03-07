@@ -15,21 +15,30 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void OnAnimationCancel(Animator animation)
 		{
 			if (OnCancel != null)
+			{
 				OnCancel(animation);
+			}
+
 			base.OnAnimationCancel(animation);
 		}
 
 		public override void OnAnimationEnd(Animator animation)
 		{
 			if (OnEnd != null)
+			{
 				OnEnd(animation);
+			}
+
 			base.OnAnimationEnd(animation);
 		}
 
 		public override void OnAnimationRepeat(Animator animation)
 		{
 			if (OnRepeat != null)
+			{
 				OnRepeat(animation);
+			}
+
 			base.OnAnimationRepeat(animation);
 		}
 

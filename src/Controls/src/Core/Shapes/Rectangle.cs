@@ -43,7 +43,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (propertyName == RadiusXProperty.PropertyName ||
 				propertyName == RadiusYProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
+			}
 		}
 
 		public override PathF GetPath()

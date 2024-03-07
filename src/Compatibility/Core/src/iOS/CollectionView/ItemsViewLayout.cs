@@ -544,9 +544,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					var lastIndexPath = NSIndexPath.FromItemSection(itemCount - 1, section);
 
 					if (itemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+					{
 						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Bottom, true);
+					}
 					else
+					{
 						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Right, true);
+					}
 
 					return;
 				}

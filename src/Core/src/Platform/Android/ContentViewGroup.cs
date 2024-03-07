@@ -113,7 +113,9 @@ namespace Microsoft.Maui.Platform
 		protected override Path? GetClipPath(int width, int height)
 		{
 			if (Clip is null || Clip?.Shape is null)
+			{
 				return null;
+			}
 
 			float density = _context.GetDisplayDensity();
 			float strokeThickness = (float)Clip.StrokeThickness;

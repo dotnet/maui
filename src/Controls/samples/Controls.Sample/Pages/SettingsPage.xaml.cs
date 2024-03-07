@@ -21,12 +21,18 @@ namespace Maui.Controls.Sample.Pages
 			var mainPage = Application.Current!.MainPage;
 
 			if (mainPage == null)
+			{
 				return;
+			}
 
 			if (mainPage.FlowDirection != Microsoft.Maui.FlowDirection.RightToLeft)
+			{
 				mainPage.FlowDirection = FlowDirection = Microsoft.Maui.FlowDirection.RightToLeft;
+			}
 			else
+			{
 				mainPage.FlowDirection = FlowDirection = Microsoft.Maui.FlowDirection.LeftToRight;
+			}
 		}
 	}
 }

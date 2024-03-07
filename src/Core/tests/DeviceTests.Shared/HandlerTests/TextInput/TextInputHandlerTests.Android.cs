@@ -16,7 +16,9 @@ namespace Microsoft.Maui.DeviceTests
 		public void HorizontalTextAlignedWhenRtlIsFalse()
 		{
 			if (Rtl.IsSupported)
+			{
 				return;
+			}
 
 			var inputView = new TStub { Text = "Foo", HorizontalTextAlignment = TextAlignment.Center };
 
@@ -24,9 +26,13 @@ namespace Microsoft.Maui.DeviceTests
 			TextView platformView;
 
 			if (handler is SearchBarHandler searchBarHandler)
+			{
 				platformView = searchBarHandler.QueryEditor;
+			}
 			else
+			{
 				platformView = (TextView)handler.PlatformView;
+			}
 
 			Assert.False(platformView.Gravity.HasFlag(GravityFlags.Start), "Text input should not have the Start flag.");
 			Assert.False(platformView.Gravity.HasFlag(GravityFlags.End), "Text input should not have the End flag.");
@@ -38,7 +44,9 @@ namespace Microsoft.Maui.DeviceTests
 		public void VerticalTextAlignedWhenRtlIsFalse()
 		{
 			if (Rtl.IsSupported)
+			{
 				return;
+			}
 
 			var inputView = new TStub { Text = "Foo", VerticalTextAlignment = TextAlignment.Center };
 
@@ -46,9 +54,13 @@ namespace Microsoft.Maui.DeviceTests
 			TextView platformView;
 
 			if (handler is SearchBarHandler searchBarHandler)
+			{
 				platformView = searchBarHandler.QueryEditor;
+			}
 			else
+			{
 				platformView = (TextView)handler.PlatformView;
+			}
 
 			Assert.False(platformView.Gravity.HasFlag(GravityFlags.Top), "Search bar editor should not have the Top flag.");
 			Assert.False(platformView.Gravity.HasFlag(GravityFlags.Bottom), "Search bar editor should not have the Bottom flag.");

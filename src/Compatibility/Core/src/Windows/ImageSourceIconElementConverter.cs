@@ -7,7 +7,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{
 			if (value is ImageSource source)
+			{
 				return source.ToWindowsIconElement();
+			}
 
 			return null;
 		}

@@ -59,7 +59,9 @@ namespace Microsoft.Maui.Graphics
 		public void SetBackgroundColor(AColor? backgroundColor)
 		{
 			if (_backgroundColor == backgroundColor)
+			{
 				return;
+			}
 
 			_backgroundColor = backgroundColor;
 
@@ -69,17 +71,29 @@ namespace Microsoft.Maui.Graphics
 		public void SetBackground(GPaint? paint)
 		{
 			if (paint is SolidPaint solidPaint)
+			{
 				SetBackground(solidPaint);
+			}
 			else if (paint is LinearGradientPaint linearGradientPaint)
+			{
 				SetBackground(linearGradientPaint);
+			}
 			else if (paint is RadialGradientPaint radialGradientPaint)
+			{
 				SetBackground(radialGradientPaint);
+			}
 			else if (paint is ImagePaint imagePaint)
+			{
 				SetBackground(imagePaint);
+			}
 			else if (paint is PatternPaint patternPaint)
+			{
 				SetBackground(patternPaint);
+			}
 			else
+			{
 				SetDefaultBackgroundColor();
+			}
 		}
 
 		public void SetBackground(SolidPaint solidPaint)
@@ -89,7 +103,9 @@ namespace Microsoft.Maui.Graphics
 			_background = null;
 
 			if (solidPaint.Color == null)
+			{
 				SetDefaultBackgroundColor();
+			}
 			else
 			{
 				var backgroundColor = solidPaint.Color.ToPlatform();
@@ -100,7 +116,9 @@ namespace Microsoft.Maui.Graphics
 		public void SetBackground(LinearGradientPaint linearGradientPaint)
 		{
 			if (_background == linearGradientPaint)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -114,7 +132,9 @@ namespace Microsoft.Maui.Graphics
 		public void SetBackground(RadialGradientPaint radialGradientPaint)
 		{
 			if (_background == radialGradientPaint)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -138,7 +158,9 @@ namespace Microsoft.Maui.Graphics
 		public void SetBorderShape(IShape? shape)
 		{
 			if (_shape == shape)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -151,7 +173,9 @@ namespace Microsoft.Maui.Graphics
 		public void SetBorderColor(AColor? borderColor)
 		{
 			if (_borderColor == borderColor)
+			{
 				return;
+			}
 
 			_borderColor = borderColor;
 
@@ -161,22 +185,29 @@ namespace Microsoft.Maui.Graphics
 		public void SetBorderBrush(GPaint? paint)
 		{
 			if (paint is SolidPaint solidPaint)
+			{
 				SetBorderBrush(solidPaint);
-
+			}
 			else if (paint is LinearGradientPaint linearGradientPaint)
+			{
 				SetBorderBrush(linearGradientPaint);
-
+			}
 			else if (paint is RadialGradientPaint radialGradientPaint)
+			{
 				SetBorderBrush(radialGradientPaint);
-
+			}
 			else if (paint is ImagePaint imagePaint)
+			{
 				SetBorderBrush(imagePaint);
-
+			}
 			else if (paint is PatternPaint patternPaint)
+			{
 				SetBorderBrush(patternPaint);
-
+			}
 			else
+			{
 				SetEmptyBorderBrush();
+			}
 		}
 
 		public void SetBorderBrush(SolidPaint solidPaint)
@@ -195,7 +226,9 @@ namespace Microsoft.Maui.Graphics
 		public void SetBorderBrush(LinearGradientPaint linearGradientPaint)
 		{
 			if (_stroke == linearGradientPaint)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -209,7 +242,9 @@ namespace Microsoft.Maui.Graphics
 		public void SetBorderBrush(RadialGradientPaint radialGradientPaint)
 		{
 			if (_stroke == radialGradientPaint)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -235,7 +270,9 @@ namespace Microsoft.Maui.Graphics
 				_borderColor = null;
 
 				if (_background != null)
+				{
 					SetBorderBrush(_background);
+				}
 			}
 
 			InitializeBorderIfNeeded();
@@ -257,7 +294,9 @@ namespace Microsoft.Maui.Graphics
 			float strokeThickness = (float)(strokeWidth * _density);
 
 			if (_strokeThickness == strokeThickness)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -270,16 +309,22 @@ namespace Microsoft.Maui.Graphics
 		public void SetBorderDash(float[]? strokeDashArray, double strokeDashOffset)
 		{
 			if (strokeDashArray is null || strokeDashArray.Length == 0)
+			{
 				_borderPathEffect = null;
+			}
 			else
 			{
 				float[] strokeDash = new float[strokeDashArray.Length];
 
 				for (int i = 0; i < strokeDashArray.Length; i++)
+				{
 					strokeDash[i] = strokeDashArray[i] * _strokeThickness;
+				}
 
 				if (strokeDash.Length > 1)
+				{
 					_borderPathEffect = new DashPathEffect(strokeDash, (float)strokeDashOffset * _strokeThickness);
+				}
 			}
 
 			InvalidateSelf();
@@ -288,7 +333,9 @@ namespace Microsoft.Maui.Graphics
 		public void SetBorderMiterLimit(float strokeMiterLimit)
 		{
 			if (_strokeMiterLimit == strokeMiterLimit)
+			{
 				return;
+			}
 
 			_strokeMiterLimit = strokeMiterLimit;
 
@@ -313,7 +360,9 @@ namespace Microsoft.Maui.Graphics
 			}
 
 			if (_strokeLineJoin == aLineJoin)
+			{
 				return;
+			}
 
 			_strokeLineJoin = aLineJoin;
 
@@ -338,7 +387,9 @@ namespace Microsoft.Maui.Graphics
 			}
 
 			if (_strokeLineCap == aLineCap)
+			{
 				return;
+			}
 
 			_strokeLineCap = aLineCap;
 
@@ -364,7 +415,9 @@ namespace Microsoft.Maui.Graphics
 					var height = _bounds.Height();
 
 					if (_width == width && _height == height)
+					{
 						return;
+					}
 
 					_invalidatePath = true;
 
@@ -379,12 +432,16 @@ namespace Microsoft.Maui.Graphics
 		protected override void OnDraw(Shape? shape, Canvas? canvas, APaint? paint)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (HasBorder())
 			{
 				if (Paint != null)
+				{
 					SetBackground(Paint);
+				}
 
 				if (_borderPaint != null)
 				{
@@ -397,7 +454,9 @@ namespace Microsoft.Maui.Graphics
 					else
 					{
 						if (_stroke != null)
+						{
 							SetPaint(_borderPaint, _stroke);
+						}
 					}
 				}
 
@@ -417,7 +476,9 @@ namespace Microsoft.Maui.Graphics
 						var clipPath = _shape?.ToPlatform(bounds, strokeThickness, _density);
 
 						if (clipPath == null)
+						{
 							return;
+						}
 
 						if (_clipPath != null)
 						{
@@ -428,14 +489,18 @@ namespace Microsoft.Maui.Graphics
 				}
 
 				if (canvas == null || _clipPath == null)
+				{
 					return;
+				}
 
 				PlatformInterop.DrawMauiDrawablePath(this, canvas, _width, _height, _clipPath, _borderPaint);
 			}
 			else
 			{
 				if (paint != null)
+				{
 					SetBackground(paint);
+				}
 
 				base.OnDraw(shape, canvas, paint);
 			}
@@ -444,7 +509,9 @@ namespace Microsoft.Maui.Graphics
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -536,10 +603,14 @@ namespace Microsoft.Maui.Graphics
 		void SetPaint(APaint platformPaint, GPaint paint)
 		{
 			if (paint is LinearGradientPaint linearGradientPaint)
+			{
 				SetLinearGradientPaint(platformPaint, linearGradientPaint);
+			}
 
 			if (paint is RadialGradientPaint radialGradientPaint)
+			{
 				SetRadialGradientPaint(platformPaint, radialGradientPaint);
+			}
 		}
 
 		void SetLinearGradientPaint(APaint platformPaint, LinearGradientPaint linearGradientPaint)
@@ -554,10 +625,14 @@ namespace Microsoft.Maui.Graphics
 			var data = GetGradientPaintData(linearGradientPaint);
 			var shader = new LinearGradientData(data.Colors, data.Offsets, x1, y1, x2, y2);
 			if (_width == 0 && _height == 0)
+			{
 				return;
+			}
 
 			if (shader.Colors == null || shader.Colors.Length < 2)
+			{
 				return;
+			}
 
 			var linearGradientShader = new LinearGradient(
 				_width * shader.X1,
@@ -582,10 +657,14 @@ namespace Microsoft.Maui.Graphics
 			var radialGradientData = new RadialGradientData(gradientData.Colors, gradientData.Offsets, centerX, centerY, radius);
 
 			if (_width == 0 && _height == 0)
+			{
 				return;
+			}
 
 			if (radialGradientData.Colors == null || radialGradientData.Colors.Length < 2)
+			{
 				return;
+			}
 
 			var radialGradient = new RadialGradient(
 				_width * radialGradientData.CenterX,

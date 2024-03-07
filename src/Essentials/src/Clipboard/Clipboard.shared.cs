@@ -91,14 +91,20 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			add
 			{
 				if (ClipboardContentChangedInternal == null)
+				{
 					StartClipboardListeners();
+				}
+
 				ClipboardContentChangedInternal += value;
 			}
 			remove
 			{
 				ClipboardContentChangedInternal -= value;
 				if (ClipboardContentChangedInternal == null)
+				{
 					StopClipboardListeners();
+				}
+				}
 			}
 		}
 

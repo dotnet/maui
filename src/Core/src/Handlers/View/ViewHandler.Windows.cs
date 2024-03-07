@@ -88,7 +88,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapToolbar(IViewHandler handler, IView view)
 		{
 			if (view is IToolbarElement tb)
+			{
 				MapToolbar(handler, tb);
+			}
 		}
 
 		internal static void MapToolbar(IElementHandler handler, IToolbarElement toolbarElement)
@@ -146,12 +148,16 @@ namespace Microsoft.Maui.Handlers
 		void UpdateIsFocused(bool isFocused)
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			bool updateIsFocused = (isFocused && !VirtualView.IsFocused) || (!isFocused && VirtualView.IsFocused);
 
 			if (updateIsFocused)
+			{
 				VirtualView.IsFocused = isFocused;
+			}
 		}
 	}
 }

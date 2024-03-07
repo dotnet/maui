@@ -55,12 +55,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateImageDirectory(FileImageSource fileSource)
 		{
 			if (fileSource == null || fileSource.File == null)
+			{
 				return;
+			}
 
 			var currentApp = Application.Current;
 
 			if (currentApp == null)
+			{
 				return;
+			}
 
 			var imageDirectory = currentApp.OnThisPlatform().GetImageDirectory();
 

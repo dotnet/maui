@@ -39,15 +39,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
 			if (item.Parent is View parentView)
+			{
 				ParentView = parentView;
+			}
 
 			if (parent == null && ParentView?.Handler?.PlatformView is ViewGroup platformParent)
+			{
 				parent = platformParent;
+			}
 
 			Performance.Start(out string reference);
 
 			if (Cell is ICellController cellController)
+			{
 				cellController.ForceUpdateSizeRequested -= OnForceUpdateSizeRequested;
+			}
 
 			Cell = item;
 			Cell.PropertyChanged -= PropertyChangedHandler;
@@ -76,9 +82,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var holder = view.Tag as RendererHolder;
 			if (holder == null)
+			{
 				view.Tag = new RendererHolder(this);
+			}
 			else
+			{
 				holder.Renderer = this;
+			}
 
 			Cell.PropertyChanged += PropertyChangedHandler;
 			((ICellController)Cell).SendAppearing();
@@ -120,7 +130,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void DisconnectHandler(AView platformView)
 		{
 			if (Cell is ICellController cellController)
+			{
 				cellController.ForceUpdateSizeRequested -= OnForceUpdateSizeRequested;
+			}
 
 			base.DisconnectHandler(platformView);
 		}
@@ -128,7 +140,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static void OnForceUpdateSizeRequested(object sender, EventArgs e)
 		{
 			if (sender is not Cell cellInner)
+			{
 				return;
+			}
 
 			if (cellInner.Handler is not IElementHandler elementHandler ||
 				elementHandler.PlatformView is not AView pCell ||

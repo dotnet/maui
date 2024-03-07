@@ -43,7 +43,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (e.OldElement != null)
 			{
 				if (e.OldElement is INotifyPropertyChanged oldElement)
+				{
 					oldElement.PropertyChanged -= BorderElementPropertyChanged;
+				}
 			}
 
 			if (e.NewElement != null)
@@ -55,7 +57,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				BorderElement = (IBorderElement)e.NewElement;
 
 				if (BorderPropertyChanged != null)
+				{
 					BorderPropertyChanged.PropertyChanged += BorderElementPropertyChanged;
+				}
 			}
 
 			Reset();
@@ -77,7 +81,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void UpdateDrawable()
 		{
 			if (BorderElement == null || Control == null)
+			{
 				return;
+			}
 
 			bool cornerRadiusIsDefault = !BorderElement.IsCornerRadiusSet() || (BorderElement.CornerRadius == (int)BorderElement.CornerRadiusDefaultValue || BorderElement.CornerRadius == BorderDrawable.DefaultCornerRadius);
 			bool backgroundColorIsDefault = !BorderElement.IsBackgroundColorSet() || BorderElement.BackgroundColor == (Color)VisualElement.BackgroundColorProperty.DefaultValue;
@@ -92,10 +98,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				&& borderWidthIsDefault)
 			{
 				if (!_drawableEnabled)
+				{
 					return;
+				}
 
 				if (_defaultDrawable != null)
+				{
 					Control.SetBackground(_defaultDrawable);
+				}
 
 				_drawableEnabled = false;
 				Reset();
@@ -103,7 +113,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 			{
 				if (_backgroundDrawable == null)
+				{
 					_backgroundDrawable = new BorderDrawable(Control.Context.ToPixels, Forms.GetColorButtonNormal(Control.Context), _drawOutlineWithBackground);
+				}
 
 				_backgroundDrawable.BorderElement = BorderElement;
 
@@ -144,10 +156,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 
 				if (_drawableEnabled)
+				{
 					return;
+				}
 
 				if (_defaultDrawable == null)
+				{
 					_defaultDrawable = Control.Background;
+				}
 
 				if (!backgroundColorIsDefault || _drawOutlineWithBackground)
 				{

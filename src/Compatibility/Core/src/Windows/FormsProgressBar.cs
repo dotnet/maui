@@ -17,7 +17,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var result = base.MeasureOverride(availableSize);
 			if (!double.IsInfinity(availableSize.Width))
+			{
 				result.Width = availableSize.Width;
+			}
+
 			return result;
 		}
 	}

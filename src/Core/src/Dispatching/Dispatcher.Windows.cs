@@ -78,7 +78,9 @@ namespace Microsoft.Maui.Dispatching
 		public void Start()
 		{
 			if (IsRunning)
+			{
 				return;
+			}
 
 			IsRunning = true;
 
@@ -91,7 +93,9 @@ namespace Microsoft.Maui.Dispatching
 		public void Stop()
 		{
 			if (!IsRunning)
+			{
 				return;
+			}
 
 			IsRunning = false;
 
@@ -105,7 +109,9 @@ namespace Microsoft.Maui.Dispatching
 			Tick?.Invoke(this, EventArgs.Empty);
 
 			if (!IsRepeating)
+			{
 				Stop();
+			}
 		}
 	}
 
@@ -116,7 +122,9 @@ namespace Microsoft.Maui.Dispatching
 		{
 			var q = DispatcherQueue.GetForCurrentThread();
 			if (q == null)
+			{
 				return null;
+			}
 
 			return new Dispatcher(q);
 		}

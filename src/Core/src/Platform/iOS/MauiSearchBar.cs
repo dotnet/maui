@@ -67,11 +67,15 @@ namespace Microsoft.Maui.Platform
 			{
 				editor.EditingChanged -= OnEditingChanged;
 				if (window != null)
+				{
 					editor.EditingChanged += OnEditingChanged;
+				}
 			}
 
 			if (window != null)
+			{
 				OnMovedToWindow?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]

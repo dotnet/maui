@@ -58,7 +58,9 @@ namespace Microsoft.Maui.Handlers
 		private void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			if (!args.NewDate.HasValue)
 			{

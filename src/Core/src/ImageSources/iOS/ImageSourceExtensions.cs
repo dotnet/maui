@@ -100,7 +100,9 @@ namespace Microsoft.Maui
 
 			var stream = await imageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
 			if (stream is null)
+			{
 				throw new ArgumentException("Unable to load image stream.");
+			}
 
 			return stream.GetPlatformImageSource();
 		}
@@ -111,7 +113,9 @@ namespace Microsoft.Maui
 
 			var data = NSData.FromStream(stream);
 			if (data is null)
+			{
 				throw new ArgumentException("Stream contained no data.", nameof(stream));
+			}
 
 			return data.GetPlatformImageSource();
 		}
@@ -128,7 +132,9 @@ namespace Microsoft.Maui
 			ArgumentNullException.ThrowIfNull(cgImageSource);
 
 			if (cgImageSource.ImageCount == 0)
+			{
 				throw new InvalidOperationException("CGImageSource does not contain any images.");
+			}
 
 			UIImage image;
 
@@ -136,7 +142,9 @@ namespace Microsoft.Maui
 			{
 				var animated = ImageAnimationHelper.Create(cgImageSource, scale);
 				if (animated is null)
+				{
 					throw new InvalidOperationException("Unable to create animation from CGImageSource.");
+				}
 
 				image = animated;
 			}
@@ -144,7 +152,9 @@ namespace Microsoft.Maui
 			{
 				using var cgimage = cgImageSource.CreateImage(0, new() { ShouldCache = false });
 				if (cgimage is null)
+				{
 					throw new InvalidOperationException("Unable to create CGImage from CGImageSource.");
+				}
 
 				image = new UIImage(cgimage, scale, UIImageOrientation.Up);
 			}

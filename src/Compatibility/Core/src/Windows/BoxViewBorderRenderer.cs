@@ -37,12 +37,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
+			{
 				SetColor(Element.Color);
+			}
 			else if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
+			{
 				SetCornerRadius(Element.CornerRadius);
+			}
 			else if (e.PropertyName == BoxView.ColorProperty.PropertyName)
+			{
 				UpdateBackgroundColor();
-
+			}
 		}
 
 		protected override AutomationPeer OnCreateAutomationPeer()
@@ -62,7 +67,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// because the background would protrude through the border if the corners are rounded
 			// as the background would be applied to the renderer's FrameworkElement
 			if (Control == null)
+			{
 				return;
+			}
+
 			Color backgroundColor = Element.Color;
 			if (backgroundColor.IsDefault())
 			{
@@ -75,7 +83,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void UpdateBackground()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			Brush background = Element.Background;
 
@@ -84,6 +94,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Color backgroundColor = Element.BackgroundColor;
 
 				if (!backgroundColor.IsDefault())
+
+/* Unmerged change from project 'Compatibility(net8.0-windows10.0.20348.0)'
+Before:
 					Control.Background = backgroundColor.ToPlatform();
 				else
 				{
@@ -92,15 +105,48 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 			}
 			else
+After:
+				{
+					Control.Background = backgroundColor.ToPlatform();
+				}
+				else
+				{
+					if (Element.Color.IsDefault())
+					{
+						Control.Background = null;
+					}
+				}
+			}
+			else
+			{
+*/
+				{
+					Control.Background = backgroundColor.ToPlatform();
+				}
+				else
+				{
+					if (Element.Color.IsDefault())
+					{
+						Control.Background = null;
+					}
+				}
+			}
+			else
+			{
 				Control.Background = background.ToBrush();
+			}
 		}
 
 		void SetColor(Color color)
 		{
 			if (color.IsDefault())
+			{
 				UpdateBackground();
+			}
 			else
+			{
 				Control.Background = color.ToPlatform();
+			}
 		}
 
 		void SetCornerRadius(CornerRadius cornerRadius)

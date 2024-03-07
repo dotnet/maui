@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Graphics
 		public override bool Equals(object o)
 		{
 			if (!(o is PointF))
+			{
 				return false;
+			}
 
 			return this == (PointF)o;
 		}
@@ -50,7 +52,9 @@ namespace Microsoft.Maui.Graphics
 		public bool Equals(object o, float epsilon)
 		{
 			if (!(o is PointF))
+			{
 				return false;
+			}
 
 			var compareTo = (PointF)o;
 			return Math.Abs(compareTo.X - X) < epsilon && Math.Abs(compareTo.Y - Y) < epsilon;

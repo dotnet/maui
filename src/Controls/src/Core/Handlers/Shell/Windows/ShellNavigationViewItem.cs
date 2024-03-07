@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls.Platform
 		protected override AutomationPeer GetLabeledByCore()
 		{
 			if (_owner.Content is ShellFlyoutItemView sf && sf.Content is FrameworkElement fe)
+			{
 				return FrameworkElementAutomationPeer.FromElement(fe);
+			}
 
 			return null;
 		}

@@ -14,9 +14,14 @@ namespace Microsoft.Maui.Storage
 		public Task SetAsync(string key, string value, SecAccessible accessible)
 		{
 			if (string.IsNullOrWhiteSpace(key))
+			{
 				throw new ArgumentNullException(nameof(key));
+			}
+
 			if (value == null)
+			{
 				throw new ArgumentNullException(nameof(value));
+			}
 
 			var kc = new KeyChain(accessible);
 			kc.SetValueForKey(value, key, Alias);
@@ -70,9 +75,14 @@ namespace Microsoft.Maui.Storage
 			using (var match = SecKeyChain.QueryAsRecord(record, out var resultCode))
 			{
 				if (resultCode == SecStatusCode.Success)
+				{
 					return NSString.FromData(match.ValueData, NSStringEncoding.UTF8);
+				}
 				else
+				{
 					return null;
+				}
+				}
 			}
 		}
 
@@ -83,14 +93,19 @@ namespace Microsoft.Maui.Storage
 				if (string.IsNullOrEmpty(value))
 				{
 					if (!string.IsNullOrEmpty(ValueForKey(key, service)))
+					{
 						RemoveRecord(record);
+					}
 
 					return;
 				}
 
 				// if the key already exists, remove it
 				if (!string.IsNullOrEmpty(ValueForKey(key, service)))
+				{
 					RemoveRecord(record);
+				}
+				}
 			}
 
 			using (var newRecord = CreateRecordForNewKeyValue(key, value, service))
@@ -109,7 +124,9 @@ namespace Microsoft.Maui.Storage
 							{
 								result = SecKeyChain.Add(newRecord);
 								if (result != SecStatusCode.Success)
+								{
 									throw new Exception($"Error adding record: {result}");
+								}
 							}
 							else
 							{
@@ -164,7 +181,9 @@ namespace Microsoft.Maui.Storage
 		{
 			var result = SecKeyChain.Remove(record);
 			if (result != SecStatusCode.Success && result != SecStatusCode.ItemNotFound)
+			{
 				throw new Exception($"Error removing record: {result}");
+			}
 
 			return true;
 		}

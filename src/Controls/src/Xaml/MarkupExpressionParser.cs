@@ -49,20 +49,32 @@ namespace Microsoft.Maui.Controls.Xaml
 		public object ParseExpression(ref string expression, IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)
+			{
 				throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
 			if (expression.StartsWith("{}", StringComparison.Ordinal))
+			{
 				return expression.Substring(2);
+			}
 
 			if (expression[expression.Length - 1] != '}')
+			{
 				throw new XamlParseException("Expression must end with '}'", serviceProvider);
+			}
 
 			int len;
 			string match;
 			if (!MatchMarkup(out match, expression, out len))
+			{
 				return false;
+			}
+
 			expression = expression.Substring(len).TrimStart();
 			if (expression.Length == 0)
+			{
 				throw new XamlParseException("Expression did not end in '}'", serviceProvider);
+			}
 
 			var parser = Activator.CreateInstance(GetType()) as IExpressionParser;
 			return parser.Parse(match, ref expression, serviceProvider);
@@ -89,7 +101,10 @@ namespace Microsoft.Maui.Controls.Xaml
 			for (i = 1; i < expression.Length; i++)
 			{
 				if (expression[i] == ' ')
+				{
 					continue;
+				}
+
 				found = true;
 				break;
 			}
@@ -105,7 +120,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			for (c = 0; c + i < expression.Length; c++)
 			{
 				if (expression[i + c] == ' ' || expression[i + c] == '}')
+				{
 					break;
+				}
 			}
 
 			if (i + c == expression.Length)
@@ -128,14 +145,18 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			remaining = remaining.TrimStart();
 			if (remaining[0] == '{')
+			{
 				return ParsePropertyExpression(null, serviceProvider, ref remaining);
+			}
 
 			str_value = GetNextPiece(serviceProvider, ref remaining, out var next);
 			if (next == '=')
 			{
 				remaining = remaining.TrimStart();
 				if (remaining[0] == '{')
+				{
 					return ParsePropertyExpression(str_value, serviceProvider, ref remaining);
+				}
 
 				name = str_value;
 				str_value = GetNextPiece(serviceProvider, ref remaining, out next);
@@ -154,13 +175,22 @@ namespace Microsoft.Maui.Controls.Xaml
 			var value = ParseExpression(ref remaining, serviceProvider);
 			remaining = remaining.TrimStart();
 			if (remaining.Length <= 0)
+			{
 				throw new XamlParseException("Unexpected end of markup expression", serviceProvider);
+			}
+
 			if (remaining[0] == ',')
+			{
 				last = false;
+			}
 			else if (remaining[0] == '}')
+			{
 				last = true;
+			}
 			else
+			{
 				throw new XamlParseException("Unexpected character following value string", serviceProvider);
+			}
 
 			remaining = remaining.Substring(1);
 			return new Property { last = last, name = prop, strValue = value as string, value = value };
@@ -184,7 +214,10 @@ namespace Microsoft.Maui.Controls.Xaml
 						inString = false;
 						end++;
 						while (remaining[end] == ' ')
+						{
 							end++;
+						}
+
 						break;
 					}
 				}
@@ -204,17 +237,23 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					end++;
 					if (end == remaining.Length)
+					{
 						break;
+					}
 				}
 				piece.Append(remaining[end]);
 				end++;
 			}
 
 			if (inString && end == remaining.Length)
+			{
 				throw new XamlParseException("Unterminated quoted string", serviceProvider);
+			}
 
 			if (end == 0)
+			{
 				throw new XamlParseException("Empty value string in markup expression", serviceProvider);
+			}
 
 			next = remaining[end];
 			remaining = remaining.Substring(end + 1);
@@ -222,7 +261,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			// Whitespace is trimmed from the end of the piece before stripping
 			// quote chars from the start/end of the string. 
 			while (piece.Length > 0 && char.IsWhiteSpace(piece[piece.Length - 1]))
+			{
 				piece.Length--;
+			}
 
 			return piece.ToString();
 		}
@@ -232,7 +273,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			var split = name.Split(':');
 
 			if (split.Length > 2)
+			{
 				throw new ArgumentException();
+			}
 
 			return split.Length == 2 ? (split[0], split[1]) : ("", split[0]);
 		}

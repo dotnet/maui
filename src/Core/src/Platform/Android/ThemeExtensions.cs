@@ -19,9 +19,13 @@ namespace Microsoft.Maui.Platform
 				if (theme != null && theme.ResolveAttribute(id, tv, resolveRefs: true))
 				{
 					if (tv.Data == 0)
+					{
 						value = false;
+					}
 					else
+					{
 						value = true;
+					}
 
 					return true;
 				}

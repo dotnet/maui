@@ -36,12 +36,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var view = bindable as VisualElement;
 				if (view != null)
+				{
 					view.IsPlatformEnabled = newvalue != null;
+				}
 
 				if (bindable is IView mauiView)
 				{
 					if (mauiView.Handler == null && newvalue is IVisualElementRenderer ver)
+					{
 						mauiView.Handler = new RendererToHandlerShim(ver);
+					}
 				}
 
 			});
@@ -80,10 +84,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			set
 			{
 				if (_navAnimationInProgress == value)
+				{
 					return;
+				}
+
 				_navAnimationInProgress = value;
 				if (value)
+				{
 					MessagingCenter.Send(this, CloseContextActionsSignalName);
+				}
 			}
 		}
 
@@ -94,7 +103,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		internal void Dispose()
 		{
 			if (_disposed)
+			{
 				return;
+			}
+
 			_disposed = true;
 
 			FormsAppCompatActivity.BackPressed -= HandleBackPressed;
@@ -210,7 +222,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			// Verify that the modal is still on the stack
 			if (_navModel.CurrentPage == modal)
+			{
 				((IPageController)modal).SendAppearing();
+			}
 		}
 
 		void INavigation.RemovePage(Page page)
@@ -242,7 +256,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			SizeRequest rawResult = visualElementRenderer.GetDesiredSize(widthMeasureSpec, heightMeasureSpec);
 			if (rawResult.Minimum == Size.Zero)
+			{
 				rawResult.Minimum = rawResult.Request;
+			}
+
 			var result = new SizeRequest(new Size(context.FromPixels(rawResult.Request.Width), context.FromPixels(rawResult.Request.Height)),
 				new Size(context.FromPixels(rawResult.Minimum.Width), context.FromPixels(rawResult.Minimum.Height)));
 
@@ -296,7 +313,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var renderer = GetRenderer(view);
 				if (renderer == renderedView)
+				{
 					element.ClearValue(RendererProperty);
+				}
+
 				renderer?.Dispose();
 				renderer = null;
 			}
@@ -339,7 +359,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					var mauiContext = Forms.MauiContext;
 
 					if (fragmentManager != null || layoutInflater != null)
+					{
 						mauiContext = mauiContext.MakeScoped(layoutInflater, fragmentManager);
+					}
 
 					handler = mauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(mauiContext);
@@ -371,7 +393,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					}
 				}
 				else if (handler is IVisualElementRenderer ver)
+				{
 					renderer = ver;
+				}
 				else if (handler is IPlatformViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
@@ -416,7 +440,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void IPlatformLayout.OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (Page == null)
+			{
 				return;
+			}
 
 			if (changed)
 			{
@@ -465,17 +491,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				foreach (var rootPage in navModel.Roots)
 				{
 					if (GetRenderer(rootPage) is ILifeCycleState nr)
+					{
 						nr.MarkedForDispose = true;
+					}
 				}
 
 				var viewsToRemove = new List<AView>();
 				var renderersToDispose = new List<IVisualElementRenderer>();
 
 				for (int i = 0; i < _renderer.ChildCount; i++)
+				{
 					viewsToRemove.Add(_renderer.GetChildAt(i));
+				}
 
 				foreach (var root in navModel.Roots)
+				{
 					renderersToDispose.Add(GetRenderer(root));
+				}
 
 				SetPageInternal(newRoot);
 
@@ -492,11 +524,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var pageRenderer = GetRenderer(page);
 			if (pageRenderer?.View == null)
+			{
 				return;
+			}
+
 			pageRenderer.View.ImportantForAccessibility = importantForAccessibility;
 			if (forceFocus)
+			{
 				pageRenderer.View.SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
-
+			}
 		}
 
 		void SetPageInternal(Page newRoot)
@@ -510,10 +546,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					_previousNavModel = null;
 					if (_navModel == null)
+					{
 						_navModel = new NavigationModel();
+					}
 				}
 				else
+				{
 					_navModel = new NavigationModel();
+				}
 
 				layout = true;
 			}
@@ -566,16 +606,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void AddChild(Page page, bool layout = false)
 		{
 			if (page == null)
+			{
 				return;
+			}
 
 			if (GetRenderer(page) != null)
+			{
 				return;
+			}
 
 			IVisualElementRenderer renderView = CreateRenderer(page, _context);
 			SetRenderer(page, renderView);
 
 			if (layout)
+			{
 				LayoutRootPage(page, _renderer.Width, _renderer.Height);
+			}
 
 			_renderer.AddView(renderView.View);
 		}
@@ -583,7 +629,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool HandleBackPressed(object sender, EventArgs e)
 		{
 			if (NavAnimationInProgress)
+			{
 				return true;
+			}
 
 			Page root = _navModel.Roots.LastOrDefault();
 			bool handled = root?.SendBackButtonPressed() ?? false;
@@ -657,7 +705,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
+				{
 					return;
+				}
 
 				if (disposing)
 				{
@@ -696,16 +746,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			void OnModalPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == Page.BackgroundColorProperty.PropertyName)
+				{
 					UpdateBackgroundColor();
+				}
 			}
 
 			void UpdateBackgroundColor()
 			{
 				Color modalBkgndColor = _modal.BackgroundColor;
 				if (modalBkgndColor == null)
+				{
 					_backgroundView.SetWindowBackground();
+				}
 				else
+				{
 					_backgroundView.SetBackgroundColor(modalBkgndColor.ToAndroid());
+				}
 			}
 		}
 
@@ -745,7 +801,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			public override bool OnTouchEvent(MotionEvent e)
 			{
 				if (base.OnTouchEvent(e))
+				{
 					return true;
+				}
 
 				return _motionEventHelper.HandleMotionEvent(Parent, e);
 			}
@@ -818,7 +876,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_disposed = true;
 
 				if (disposing)
+				{
 					SetOnTouchListener(null);
+				}
 
 				base.Dispose(disposing);
 			}

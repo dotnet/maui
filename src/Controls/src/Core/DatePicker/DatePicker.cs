@@ -164,10 +164,14 @@ namespace Microsoft.Maui.Controls
 			DateTime dateValue = ((DateTime)value).Date;
 
 			if (dateValue > picker.MaximumDate)
+			{
 				dateValue = picker.MaximumDate;
+			}
 
 			if (dateValue < picker.MinimumDate)
+			{
 				dateValue = picker.MinimumDate;
+			}
 
 			return dateValue;
 		}
@@ -177,7 +181,9 @@ namespace Microsoft.Maui.Controls
 			DateTime dateValue = ((DateTime)value).Date;
 			var picker = (DatePicker)bindable;
 			if (picker.Date > dateValue)
+			{
 				picker.Date = dateValue;
+			}
 
 			return dateValue;
 		}
@@ -187,7 +193,9 @@ namespace Microsoft.Maui.Controls
 			DateTime dateValue = ((DateTime)value).Date;
 			var picker = (DatePicker)bindable;
 			if (picker.Date < dateValue)
+			{
 				picker.Date = dateValue;
+			}
 
 			return dateValue;
 		}
@@ -198,7 +206,9 @@ namespace Microsoft.Maui.Controls
 			EventHandler<DateChangedEventArgs> selected = datePicker.DateSelected;
 
 			if (selected != null)
+			{
 				selected(datePicker, new DateChangedEventArgs((DateTime)oldValue, (DateTime)newValue));
+			}
 		}
 
 		static bool ValidateMaximumDate(BindableObject bindable, object value)

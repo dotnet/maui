@@ -19,9 +19,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var handler = view.Handler;
 
 			if (handler == null)
+			{
 				handler = view.ToHandler(context);
-
-			(handler.PlatformView as UIView).Frame = view.Bounds.ToCGRect();
+			} (handler.PlatformView as UIView).Frame = view.Bounds.ToCGRect();
 
 			return (IPlatformViewHandler)handler;
 		}

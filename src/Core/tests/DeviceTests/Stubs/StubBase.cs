@@ -98,7 +98,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			// If this view is attached to the visual tree then let's arrange it
 			if (IsLoaded)
+			{
 				Handler?.PlatformArrange(Frame);
+			}
 
 			return DesiredSize;
 		}
@@ -108,7 +110,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			Action<T, T> onChanged = null)
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))
+			{
 				return false;
+			}
 
 			var oldValue = backingStore;
 			backingStore = value;

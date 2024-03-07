@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Platform
 		public static void TryMoveFocus(this FrameworkElement platformView, FocusNavigationDirection direction)
 		{
 			if (platformView?.XamlRoot?.Content is UIElement elem)
+			{
 				FocusManager.TryMoveFocus(direction, new FindNextElementOptions { SearchRoot = elem });
+			}
 		}
 
 		public static void UpdateIsEnabled(this FrameworkElement platformView, IView view) =>
@@ -36,7 +38,9 @@ namespace Microsoft.Maui.Platform
 		public static void Unfocus(this FrameworkElement platformView, IView view)
 		{
 			if (platformView is Control control)
+			{
 				UnfocusControl(control);
+			}
 		}
 
 		public static void UpdateVisibility(this FrameworkElement platformView, IView view)
@@ -87,7 +91,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var border = (view as IBorder)?.Border;
 			if (platformView is WrapperView wrapperView)
+			{
 				wrapperView.Border = border;
+			}
 		}
 
 		public static void UpdateOpacity(this FrameworkElement platformView, IView view)
@@ -143,12 +149,18 @@ namespace Microsoft.Maui.Platform
 			var semantics = view.Semantics;
 
 			if (view is IPicker picker && string.IsNullOrEmpty(semantics?.Description))
+			{
 				AutomationProperties.SetName(platformView, picker.Title);
+			}
 			else if (semantics != null)
+			{
 				AutomationProperties.SetName(platformView, semantics.Description);
+			}
 
 			if (semantics == null)
+			{
 				return;
+			}
 
 			AutomationProperties.SetHelpText(platformView, semantics.Hint);
 			AutomationProperties.SetHeadingLevel(platformView, (UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
@@ -157,17 +169,25 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateProperty(this FrameworkElement platformControl, DependencyProperty property, Color color)
 		{
 			if (color.IsDefault())
+			{
 				platformControl.ClearValue(property);
+			}
 			else
+			{
 				platformControl.SetValue(property, color.ToPlatform());
+			}
 		}
 
 		internal static void UpdateProperty(this FrameworkElement platformControl, DependencyProperty property, object? value)
 		{
 			if (value == null)
+			{
 				platformControl.ClearValue(property);
+			}
 			else
+			{
 				platformControl.SetValue(property, value);
+			}
 		}
 
 		public static void InvalidateMeasure(this FrameworkElement platformView, IView view)
@@ -226,14 +246,22 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
 		{
 			if (border is IView view)
+			{
 				(platformView as ContentPanel)?.UpdateBackground(view.Background);
+			}
 
 			if (platformView is Control control)
+			{
 				control.UpdateBackground((Paint?)null);
+			}
 			else if (platformView is Border b)
+			{
 				b.UpdateBackground(null);
+			}
 			else if (platformView is Panel panel)
+			{
 				panel.UpdateBackground(null);
+			}
 		}
 
 		internal static void UpdatePlatformViewBackground(this FrameworkElement platformView, IView view)
@@ -241,19 +269,29 @@ namespace Microsoft.Maui.Platform
 			(platformView as ContentPanel)?.UpdateBackground(null);
 
 			if (platformView is Control control)
+			{
 				control.UpdateBackground(view.Background);
+			}
 			else if (platformView is Border border)
+			{
 				border.UpdateBackground(view.Background);
+			}
 			else if (platformView is Panel panel)
+			{
 				panel.UpdateBackground(view.Background);
+			}
 		}
 
 		public static async Task UpdateBackgroundImageSourceAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			if (platformView is Control control)
+			{
 				await control.UpdateBackgroundImageSourceAsync(imageSource, provider);
+			}
 			else if (platformView is Panel panel)
+			{
 				await panel.UpdateBackgroundImageSourceAsync(imageSource, provider);
+			}
 		}
 
 		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
@@ -274,7 +312,10 @@ namespace Microsoft.Maui.Platform
 		{
 			var platformView = view?.ToPlatform();
 			if (platformView == null)
+			{
 				return new Matrix4x4();
+			}
+
 			return GetViewTransform(platformView);
 		}
 
@@ -283,7 +324,10 @@ namespace Microsoft.Maui.Platform
 			var root = element?.XamlRoot;
 			var offset = element?.TransformToVisual(root?.Content ?? element) as MatrixTransform;
 			if (offset == null)
+			{
 				return new Matrix4x4();
+			}
+
 			Matrix matrix = offset.Matrix;
 			return new Matrix4x4()
 			{
@@ -299,19 +343,26 @@ namespace Microsoft.Maui.Platform
 		{
 			var platformView = view?.ToPlatform();
 			if (platformView != null)
+			{
 				return platformView.GetPlatformViewBounds();
+			}
+
 			return new Rect();
 		}
 
 		internal static Rect GetPlatformViewBounds(this FrameworkElement platformView)
 		{
 			if (platformView == null)
+			{
 				return new Rect();
+			}
 
 			var root = platformView.XamlRoot;
 			var offset = platformView.TransformToVisual(root.Content) as UI.Xaml.Media.MatrixTransform;
 			if (offset != null)
+			{
 				return new Rect(offset.Matrix.OffsetX, offset.Matrix.OffsetY, platformView.ActualWidth, platformView.ActualHeight);
+			}
 
 			return new Rect();
 		}
@@ -322,13 +373,17 @@ namespace Microsoft.Maui.Platform
 		internal static Graphics.Rect GetBoundingBox(this FrameworkElement? platformView)
 		{
 			if (platformView == null)
+			{
 				return new Rect();
+			}
 
 			var rootView = platformView.XamlRoot.Content;
 			if (platformView == rootView)
 			{
 				if (rootView is not FrameworkElement el)
+				{
 					return new Rect();
+				}
 
 				return new Rect(0, 0, el.ActualWidth, el.ActualHeight);
 			}
@@ -355,7 +410,9 @@ namespace Microsoft.Maui.Platform
 		internal static DependencyObject? GetParent(this DependencyObject? view)
 		{
 			if (view is FrameworkElement pv)
+			{
 				return pv.Parent;
+			}
 
 			return null;
 		}
@@ -363,7 +420,9 @@ namespace Microsoft.Maui.Platform
 		internal static T? GetChildAt<T>(this DependencyObject view, int index) where T : DependencyObject
 		{
 			if (VisualTreeHelper.GetChildrenCount(view) >= index)
+			{
 				return null;
+			}
 
 			return VisualTreeHelper.GetChild(view, index) as T;
 		}
@@ -371,7 +430,9 @@ namespace Microsoft.Maui.Platform
 		internal static void UnfocusControl(Control control)
 		{
 			if (control == null || !control.IsEnabled)
+			{
 				return;
+			}
 
 			var isTabStop = control.IsTabStop;
 			control.IsTabStop = false;
@@ -389,7 +450,9 @@ namespace Microsoft.Maui.Platform
 		internal static IWindow? GetWindowForXamlRoot(XamlRoot? root)
 		{
 			if (root is null)
+			{
 				return null;
+			}
 
 			var windows = WindowExtensions.GetWindows();
 			foreach (var window in windows)
@@ -397,7 +460,9 @@ namespace Microsoft.Maui.Platform
 				if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window win)
 				{
 					if (win.Content?.XamlRoot == root)
+					{
 						return window;
+					}
 				}
 			}
 

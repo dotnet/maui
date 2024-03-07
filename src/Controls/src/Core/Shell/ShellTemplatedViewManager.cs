@@ -15,13 +15,21 @@ namespace Microsoft.Maui.Controls
 			Action<Element> OnChildAdded)
 		{
 			if (localView == newView)
+			{
+			{
 				return;
+			}
 
 			if (localView != null)
+			{
 				OnChildRemoved(localView);
+			}
+
 			localView = newView;
 			if (localView != null)
+			{
 				OnChildAdded(localView);
+			}
 		}
 
 

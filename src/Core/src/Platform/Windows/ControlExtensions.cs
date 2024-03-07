@@ -64,15 +64,22 @@ namespace Microsoft.Maui.Platform
 		internal static async Task UpdateBackgroundImageAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			if (platformView == null || provider == null)
+			{
 				return;
+			}
 
 			if (imageSource == null)
 			{
 				if (platformView is Panel panel)
+				{
 					panel.Background = null;
+				}
 
 				if (platformView is Control control)
+				{
 					control.Background = null;
+				}
+
 				return;
 			}
 
@@ -84,10 +91,14 @@ namespace Microsoft.Maui.Platform
 				var background = new ImageBrush { ImageSource = nativeBackgroundImageSource?.Value };
 
 				if (platformView is Panel panel)
+				{
 					panel.Background = background;
+				}
 
 				if (platformView is Control control)
+				{
 					control.Background = background;
+				}
 			}
 		}
 	}

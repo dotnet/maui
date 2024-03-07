@@ -58,7 +58,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnAttachedToWindow();
 
 			if (Control != null)
+			{
 				Control.NestedScrollingEnabled = (Parent.GetParentOfType<NestedScrollView>() != null);
+			}
 		}
 
 		protected override void Dispose(bool disposing)

@@ -107,7 +107,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			// Force UICollectionView to get the internal accounting straight 
 			if (!CollectionView.Hidden)
+			{
 				CollectionView.NumberOfItemsInSection(_section);
+			}
 
 			switch (args.Action)
 			{
@@ -221,24 +223,34 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal int ItemsCount()
 		{
 			if (_itemsSource is IList list)
+			{
 				return list.Count;
+			}
 
 			int count = 0;
 			foreach (var item in _itemsSource)
+			{
 				count++;
+			}
+
 			return count;
 		}
 
 		internal object ElementAt(int index)
 		{
 			if (_itemsSource is IList list)
+			{
 				return list[index];
+			}
 
 			int count = 0;
 			foreach (var item in _itemsSource)
 			{
 				if (count == index)
+				{
 					return item;
+				}
+
 				count++;
 			}
 
@@ -248,13 +260,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal int IndexOf(object item)
 		{
 			if (_itemsSource is IList list)
+			{
 				return list.IndexOf(item);
+			}
 
 			int count = 0;
 			foreach (var i in _itemsSource)
 			{
 				if (i == item)
+				{
 					return count;
+				}
+
 				count++;
 			}
 

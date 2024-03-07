@@ -35,7 +35,10 @@ namespace Microsoft.Maui.Controls
 			private protected set
 			{
 				if (_inner != null)
+				{
+				{
 					throw new ArgumentException("Inner can only be set once");
+				}
 
 				_inner = value;
 				((INotifyCollectionChanged)_inner).CollectionChanged += InnerCollectionChanged;
@@ -91,10 +94,14 @@ namespace Microsoft.Maui.Controls
 			_notifyCollectionChangedEventArgs.Clear();
 
 			foreach (var args in pendingEvents)
+			{
 				VisibleItemsChangedInternal?.Invoke(VisibleItemsReadOnly, args);
+			}
 
 			foreach (var args in pendingEvents)
+			{
 				VisibleItemsChanged?.Invoke(VisibleItemsReadOnly, args);
+			}
 		}
 
 		#region IList
@@ -149,7 +156,9 @@ namespace Microsoft.Maui.Controls
 				foreach (BaseShellItem element in e.NewItems)
 				{
 					if (element is IElementController controller)
+					{
 						OnElementControllerInserting(controller);
+					}
 
 					CheckVisibility(element);
 				}
@@ -168,10 +177,14 @@ namespace Microsoft.Maui.Controls
 			foreach (BaseShellItem element in items)
 			{
 				if (VisibleItems.Contains(element))
+				{
 					VisibleItems.Remove(element);
+				}
 
 				if (element is IElementController controller)
+				{
 					OnElementControllerRemoving(controller);
+				}
 			}
 		}
 
@@ -180,7 +193,9 @@ namespace Microsoft.Maui.Controls
 			if (IsBaseShellItemVisible(element))
 			{
 				if (VisibleItems.Contains(element))
+				{
 					return;
+				}
 
 				int visibleIndex = 0;
 				for (var i = 0; i < Inner.Count; i++)
@@ -188,7 +203,9 @@ namespace Microsoft.Maui.Controls
 					var item = Inner[i];
 
 					if (!IsBaseShellItemVisible(element))
+					{
 						continue;
+					}
 
 					if (item == element)
 					{
@@ -197,7 +214,9 @@ namespace Microsoft.Maui.Controls
 					}
 
 					if (VisibleItems.Contains(item))
+					{
 						visibleIndex++;
+					}
 				}
 			}
 			else if (VisibleItems.Contains(element))
@@ -208,7 +227,9 @@ namespace Microsoft.Maui.Controls
 			bool IsBaseShellItemVisible(BaseShellItem item)
 			{
 				if (!item.IsVisible)
+				{
 					return false;
+				}
 
 				if (item is ShellGroupItem sgi)
 				{
@@ -234,7 +255,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (controller is BaseShellItem bsi)
+			{
 				bsi.PropertyChanged += BaseShellItemPropertyChanged;
+			}
 		}
 
 		protected virtual void OnElementControllerRemoving(IElementController controller)
@@ -245,13 +268,17 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (controller is BaseShellItem bsi)
+			{
 				bsi.PropertyChanged -= BaseShellItemPropertyChanged;
+			}
 		}
 
 		void BaseShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(BaseShellItem.IsVisible))
+			{
 				CheckVisibility((BaseShellItem)sender);
+			}
 		}
 
 		void OnShellElementControllerItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -259,9 +286,13 @@ namespace Microsoft.Maui.Controls
 			foreach (BaseShellItem bsi in (e.NewItems ?? e.OldItems ?? Inner))
 			{
 				if (bsi.Parent == null)
+				{
 					bsi.ParentSet += OnParentSet;
+				}
 				else
+				{
 					CheckVisibility(bsi.Parent as BaseShellItem);
+				}
 			}
 
 			void OnParentSet(object s, EventArgs __)

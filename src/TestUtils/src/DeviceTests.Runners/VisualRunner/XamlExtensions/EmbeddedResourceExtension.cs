@@ -13,7 +13,42 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		public virtual object? ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (Name == null)
+			{
 				return null;
+
+/* Unmerged change from project 'TestUtils.DeviceTests.Runners(net8.0-maccatalyst)'
+Before:
+			var resourceName = "." + Name.Trim().Replace('/', '.').Replace('\\', '.');
+
+			var assembly = typeof(MauiVisualRunnerApp).Assembly;
+After:
+			}
+
+			var resourceName = typeof(MauiVisualRunnerApp).Assembly;
+*/
+
+/* Unmerged change from project 'TestUtils.DeviceTests.Runners(net8.0-windows10.0.19041.0)'
+Before:
+			var resourceName = "." + Name.Trim().Replace('/', '.').Replace('\\', '.');
+
+			var assembly = typeof(MauiVisualRunnerApp).Assembly;
+After:
+			}
+
+			var resourceName = typeof(MauiVisualRunnerApp).Assembly;
+*/
+
+/* Unmerged change from project 'TestUtils.DeviceTests.Runners(net8.0-windows10.0.20348.0)'
+Before:
+			var resourceName = "." + Name.Trim().Replace('/', '.').Replace('\\', '.');
+
+			var assembly = typeof(MauiVisualRunnerApp).Assembly;
+After:
+			}
+
+			var resourceName = typeof(MauiVisualRunnerApp).Assembly;
+*/
+			}
 
 			var resourceName = "." + Name.Trim().Replace('/', '.').Replace('\\', '.');
 
@@ -21,7 +56,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			foreach (var name in assembly.GetManifestResourceNames())
 			{
 				if (name.EndsWith(resourceName, StringComparison.InvariantCultureIgnoreCase))
+				{
 					return assembly.GetManifestResourceStream(name);
+				}
 			}
 
 			return null;

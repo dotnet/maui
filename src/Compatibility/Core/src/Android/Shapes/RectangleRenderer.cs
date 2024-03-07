@@ -30,11 +30,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, args);
 
 			if (args.IsOneOf(VisualElement.HeightProperty, VisualElement.WidthProperty))
+			{
 				UpdateRadius();
+			}
 			else if (args.PropertyName == FormsRectangle.RadiusXProperty.PropertyName)
+			{
 				UpdateRadiusX();
+			}
 			else if (args.PropertyName == FormsRectangle.RadiusYProperty.PropertyName)
+			{
 				UpdateRadiusY();
+			}
 		}
 
 		void UpdateRadius()
@@ -46,13 +52,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateRadiusX()
 		{
 			if (Element.Width > 0)
+			{
 				Control.UpdateRadiusX(Element.RadiusX / Element.Width);
+			}
 		}
 
 		void UpdateRadiusY()
 		{
 			if (Element.Height > 0)
+			{
 				Control.UpdateRadiusY(Element.RadiusY / Element.Height);
+			}
 		}
 	}
 

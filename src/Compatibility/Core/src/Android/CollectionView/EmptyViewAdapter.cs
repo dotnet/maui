@@ -250,7 +250,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool IsHeader(int position)
 		{
 			if (Header == null && HeaderTemplate == null)
+			{
 				return false;
+			}
 
 			return position == 0;
 		}
@@ -258,7 +260,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool IsFooter(int position)
 		{
 			if (Footer == null && FooterTemplate == null)
+			{
 				return false;
+			}
 
 			return position == ItemCount - 1;
 		}
@@ -266,7 +270,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool IsEmpty(int position)
 		{
 			if (EmptyView == null && EmptyViewTemplate == null)
+			{
 				return false;
+			}
 
 			return (Header == null && HeaderTemplate == null) ? position == 0 : position == 1;
 		}
@@ -285,12 +291,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateHeaderFooterHeight(object item, bool isHeader)
 		{
 			if (item == null)
+			{
 				return;
+			}
 
 			var sizeRequest = new SizeRequest(new Size(0, 0));
 
 			if (item is View view)
+			{
 				sizeRequest = view.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+			}
 
 			if (item is DataTemplate dataTemplate)
 			{
@@ -301,9 +311,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var itemHeight = (int)sizeRequest.Request.Height;
 
 			if (isHeader)
+			{
 				_headerHeight = itemHeight;
+			}
 			else
+			{
 				_footerHeight = itemHeight;
+			}
 		}
 	}
 }

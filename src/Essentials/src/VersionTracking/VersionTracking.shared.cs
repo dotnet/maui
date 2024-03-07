@@ -222,7 +222,10 @@ namespace Microsoft.Maui.ApplicationModel
 		public void Track()
 		{
 			if (versionTrail != null)
+			{
+			{
 				return;
+			}
 
 			InitVersionTracking();
 		}

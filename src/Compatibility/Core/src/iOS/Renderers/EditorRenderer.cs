@@ -82,12 +82,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var textAttr = TextView.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (textAttr != null)
+			{
 				TextView.AttributedText = textAttr;
+			}
 
 			var placeHolder = _placeholderLabel.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (placeHolder != null)
+			{
 				_placeholderLabel.AttributedText = placeHolder;
+			}
 		}
 
 		[PortHandler]
@@ -145,7 +149,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -158,7 +164,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					TextView.Ended -= OnEnded;
 					TextView.ShouldChangeText -= ShouldChangeText;
 					if (Control is IFormsUITextView formsUITextView)
+					{
 						formsUITextView.FrameChanged -= OnFrameChanged;
+					}
 				}
 			}
 
@@ -171,7 +179,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementChanged(e);
 
 			if (e.NewElement == null)
+			{
 				return;
+			}
 
 			if (Control == null)
 			{
@@ -221,7 +231,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				textView.FrameChanged -= OnFrameChanged;
 				if (Element.AutoSize == EditorAutoSizeOption.TextChanges)
+				{
 					textView.FrameChanged += OnFrameChanged;
+				}
 			}
 		}
 
@@ -235,36 +247,62 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateCharacterSpacing();
 			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.InputView.KeyboardProperty.PropertyName)
+			{
 				UpdateKeyboard();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
 				UpdateKeyboard();
+			}
 			else if (e.PropertyName == Editor.IsTextPredictionEnabledProperty.PropertyName)
+			{
 				UpdateKeyboard();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName || e.PropertyName == Microsoft.Maui.Controls.InputView.IsReadOnlyProperty.PropertyName)
+			{
 				UpdateUserInteraction();
+			}
 			else if (e.PropertyName == Editor.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == Editor.FontAttributesProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Editor.FontFamilyProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Editor.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateTextAlignment();
+			}
 			else if (e.PropertyName == Microsoft.Maui.Controls.InputView.MaxLengthProperty.PropertyName)
+			{
 				UpdateMaxLength();
+			}
 			else if (e.PropertyName == Editor.PlaceholderProperty.PropertyName)
 			{
 				UpdatePlaceholderText();
 				UpdateCharacterSpacing();
 			}
 			else if (e.PropertyName == Editor.PlaceholderColorProperty.PropertyName)
+			{
 				UpdatePlaceholderColor();
+			}
 			else if (e.PropertyName == Editor.AutoSizeProperty.PropertyName)
+			{
 				UpdateAutoSizeOption();
+			}
 		}
 
 		void HandleChanged(object sender, EventArgs e)
@@ -287,7 +325,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			if (TextView.Text != Element.Text)
+			{
 				ElementController.SetValueFromRenderer(Editor.TextProperty, TextView.Text);
+			}
 
 			Element.SetValue(VisualElement.IsFocusedPropertyKey, false);
 			ElementController.SendCompleted();
@@ -305,7 +345,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			TextView.UserInteractionEnabled = Element.IsEnabled;
 
 			if (TextView.InputAccessoryView != null)
+			{
 				TextView.InputAccessoryView.Hidden = !Element.IsEnabled;
+			}
 		}
 
 		[PortHandler]
@@ -372,7 +414,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var currentControlText = TextView.Text;
 
 			if (currentControlText.Length > Element.MaxLength)
+			{
 				TextView.Text = currentControlText.Substring(0, Element.MaxLength);
+			}
 		}
 
 		[PortHandler]
@@ -394,9 +438,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateUserInteraction()
 		{
 			if (Element.IsEnabled && Element.IsReadOnly)
+			{
 				UpdateReadOnly();
+			}
 			else
+			{
 				UpdateEditable();
+			}
 		}
 
 		internal class FormsUITextView : UITextView, IFormsUITextView

@@ -19,16 +19,22 @@ namespace Microsoft.Maui.Platform
 
 			var context = destinationContext.Context;
 			if (context == null)
+			{
 				return null;
+			}
 
 			var destinationImageView = destinationContext as Android.Widget.ImageView;
 
 			if (destinationImageView is null && setImage is null)
+			{
 				return null;
+			}
 
 			var imageSource = image.Source;
 			if (imageSource == null)
+			{
 				return null;
+			}
 
 			var events = image as IImageSourcePartEvents;
 
@@ -53,11 +59,15 @@ namespace Microsoft.Maui.Platform
 					{
 						result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
 						if (setImage is not null && result is IImageSourceServiceResult<Drawable> drawableResult)
+						{
 							setImage.Invoke(drawableResult.Value);
+						}
 					}
 
 					if (result is null)
+					{
 						throw new InvalidOperationException("Glide failed to load image");
+					}
 				}
 
 				events?.LoadingCompleted(applied);

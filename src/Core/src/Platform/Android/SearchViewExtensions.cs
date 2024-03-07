@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Platform
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)
+			{
 				return;
+			}
 
 			var placeholderTextColor = searchBar.PlaceholderColor;
 
@@ -44,7 +46,9 @@ namespace Microsoft.Maui.Platform
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)
+			{
 				return;
+			}
 
 			editText.UpdateFont(searchBar, fontManager);
 		}
@@ -59,7 +63,9 @@ namespace Microsoft.Maui.Platform
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)
+			{
 				return;
+			}
 
 			editText.UpdateVerticalAlignment(searchBar.VerticalTextAlignment, TextAlignment.Center.ToVerticalGravityFlags());
 		}
@@ -100,7 +106,9 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)
 		{
 			if (searchView.Resources == null)
+			{
 				return;
+			}
 
 			var searchCloseButtonIdentifier = Resource.Id.search_close_btn;
 
@@ -111,9 +119,13 @@ namespace Microsoft.Maui.Platform
 				if (image != null && image.Drawable != null)
 				{
 					if (searchBar.CancelButtonColor != null)
+					{
 						image.Drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
+					}
 					else
+					{
 						image.Drawable.ClearColorFilter();
+					}
 				}
 			}
 		}
@@ -123,12 +135,18 @@ namespace Microsoft.Maui.Platform
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)
+			{
 				return;
+			}
 
 			if (searchBar.IsTextPredictionEnabled)
+			{
 				editText.InputType |= InputTypes.TextFlagAutoCorrect;
+			}
 			else
+			{
 				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
+			}
 		}
 
 		public static void UpdateIsSpellCheckEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
@@ -136,12 +154,18 @@ namespace Microsoft.Maui.Platform
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)
+			{
 				return;
+			}
 
 			if (!searchBar.IsSpellCheckEnabled)
+			{
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+			}
 			else
+			{
 				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
+			}
 		}
 
 		public static void UpdateIsEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
@@ -149,7 +173,9 @@ namespace Microsoft.Maui.Platform
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)
+			{
 				return;
+			}
 
 			if (editText != null)
 			{
@@ -167,7 +193,9 @@ namespace Microsoft.Maui.Platform
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)
+			{
 				return;
+			}
 
 			editText.SetInputType(searchBar);
 		}

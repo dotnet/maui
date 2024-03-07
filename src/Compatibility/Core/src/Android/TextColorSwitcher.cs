@@ -27,7 +27,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void UpdateTextColor(TextView control, Color color, Action<ColorStateList> setColor = null)
 		{
 			if (color == _currentTextColor)
+			{
 				return;
+			}
 
 			if (setColor == null)
 			{

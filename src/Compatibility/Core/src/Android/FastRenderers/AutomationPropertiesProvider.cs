@@ -68,7 +68,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void SetupDefaults()
 		{
 			if (_defaultsSet || Control == null)
+			{
 				return;
+			}
 
 			_defaultsSet = true;
 			Controls.Platform.AutomationPropertiesProvider.SetupDefaults(Control, ref _defaultHint, ref _defaultContentDescription);

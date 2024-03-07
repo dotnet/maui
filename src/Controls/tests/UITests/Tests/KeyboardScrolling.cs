@@ -24,13 +24,19 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			var App = (app as AppiumApp);
 			if (App is null)
+			{
 				return;
+			}
 
 			app.WaitForElement("TargetView");
 			if (isEditor)
+			{
 				app.EnterText("TargetView", "KeyboardScrollingEditorsPage");
+			}
 			else
+			{
 				app.EnterText("TargetView", "KeyboardScrollingEntriesPage");
+			}
 
 			app.Click("GoButton");
 
@@ -40,16 +46,22 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				var didReachEndofPage = false;
 				if (isEditor)
+				{
 					ClickText(app, $"Editor{i}", isEditor, out didReachEndofPage);
+				}
 				else
+				{
 					ClickText(app, $"Entry{i}", isEditor, out didReachEndofPage);
+				}
 
 				// Scroll to the top of the page
 				var actions = new TouchAction(App.Driver);
 				actions.LongPress(null, 5, 300).MoveTo(null, 5, 650).Release().Perform();
 
 				if (!didReachEndofPage)
+				{
 					break;
+				}
 			}
 		}
 
@@ -58,7 +70,9 @@ namespace Microsoft.Maui.AppiumTests
 			app.Click(marked);
 			didReachEndofPage = CheckIfViewAboveKeyboard(app, marked, isEditor);
 			if (didReachEndofPage)
+			{
 				HideKeyboard(app, (app as AppiumApp)?.Driver, isEditor);
+			}
 		}
 
 		// will return a bool showing if the view is visible
@@ -69,7 +83,9 @@ namespace Microsoft.Maui.AppiumTests
 			// if this view is not on the screen, the keyboard will not be
 			// showing and we can skip this view
 			if (!app.IsKeyboardShown())
+			{
 				return false;
+			}
 
 			Assert.NotNull(views);
 			var rect = views.GetRect();
@@ -95,9 +111,13 @@ namespace Microsoft.Maui.AppiumTests
 		internal static void HideKeyboard(IApp app, AppiumDriver? driver, bool isEditor)
 		{
 			if (isEditor)
+			{
 				CloseiOSEditorKeyboard(driver);
+			}
 			else
+			{
 				app.DismissKeyboard();
+			}
 		}
 
 		internal static System.Drawing.Point? FindiOSKeyboardLocation(AppiumDriver? driver)
@@ -143,7 +163,7 @@ namespace Microsoft.Maui.AppiumTests
 			keyboard?.SendKeys("\n");
 		}
 
-		internal static void GridStarRowScrollingTest (IApp app)
+		internal static void GridStarRowScrollingTest(IApp app)
 		{
 			for (int i = 1; i <= 7; i++)
 			{

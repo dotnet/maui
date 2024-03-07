@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public VisualElementPackager(IVisualElementRenderer renderer, VisualElement element = null)
 		{
 			if (renderer == null)
+			{
 				throw new ArgumentNullException(nameof(renderer));
+			}
 
 			_element = element ?? renderer.Element;
 			_childAddedHandler = OnChildAdded;
@@ -40,7 +42,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_renderer.ElementChanged += OnElementChanged;
 
 			if (renderer.View is ILayoutChanges layout)
+			{
 				layout.LayoutChange += OnInitialLayoutChange;
+			}
 		}
 
 		void OnInitialLayoutChange(object sender, AView.LayoutChangeEventArgs e)
@@ -50,7 +54,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			// but this appears to only be the case when the app first starts
 
 			if (sender is ILayoutChanges layout)
+			{
 				layout.LayoutChange -= OnInitialLayoutChange;
+			}
 
 			EnsureChildOrder(true);
 		}
@@ -67,7 +73,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -85,7 +93,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					}
 
 					if (_renderer.View is ILayoutChanges layout)
+					{
 						layout.LayoutChange -= OnInitialLayoutChange;
+					}
 
 					SetElement(_element, null);
 
@@ -98,7 +108,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if (_childPackagers != null)
 					{
 						foreach (var kvp in _childPackagers)
+						{
 							kvp.Value.Dispose();
+						}
 
 						_childPackagers.Clear();
 						_childPackagers = null;
@@ -122,7 +134,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var packager = new VisualElementPackager(_renderer, view);
 				if (_childPackagers == null)
+				{
 					_childPackagers = new Dictionary<BindableObject, VisualElementPackager>();
+				}
+
 				view.IsPlatformEnabled = true;
 				packager.Load();
 
@@ -131,11 +146,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 			{
 				if (_childViews == null)
+				{
 					_childViews = new List<IVisualElementRenderer>();
+				}
 
 				IVisualElementRenderer renderer = oldRenderer;
 				if (pool != null)
+				{
 					renderer = pool.GetFreeRenderer(view);
+				}
+
 				if (renderer == null || (renderer.View?.Handle ?? IntPtr.Zero) == IntPtr.Zero)
 				{
 					Performance.Start(reference, "New renderer");
@@ -185,14 +205,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						if (elementElevation == null)
 						{
 							if (elevation > elevationToSet)
+							{
 								elevationToSet = elevation;
+							}
 
 							if (r.View.Elevation != elevationToSet)
+							{
 								r.View.Elevation = elevationToSet;
+							}
 						}
 
 						if (!onlyUpdateElevations)
+						{
 							(_renderer.View as ViewGroup)?.BringChildToFront(r.View);
+						}
 					}
 				}
 			}
@@ -202,11 +228,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var view = e.Element as VisualElement;
 			if (view != null)
+			{
 				AddChild(view);
+			}
 
 			int itemCount = ElementController.LogicalChildren.Count;
 			if (itemCount <= 1)
+			{
 				return;
+			}
 
 			Element lastChild = ElementController.LogicalChildren[itemCount - 1];
 
@@ -222,13 +252,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			IVisualElementRenderer previousRenderer = null;
 
 			if (lastChild is VisualElement last)
+			{
 				lastRenderer = Platform.GetRenderer(last);
+			}
 
 			if (previousChild is VisualElement previous)
+			{
 				previousRenderer = Platform.GetRenderer(previous);
+			}
 
 			if (ElevationHelper.GetElevation(lastRenderer?.View) < ElevationHelper.GetElevation(previousRenderer?.View))
+			{
 				EnsureChildOrder();
+			}
 		}
 
 		void OnChildRemoved(object sender, ElementEventArgs e)
@@ -236,7 +272,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Performance.Start(out string reference);
 			var view = e.Element as VisualElement;
 			if (view != null)
+			{
 				RemoveChild(view);
+			}
 
 			Performance.Stop(reference);
 		}
@@ -256,7 +294,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					foreach (var child in ((IElementController)view).LogicalChildren)
 					{
 						if (child is VisualElement ve)
+						{
 							packager.RemoveChild(ve);
+						}
 					}
 				}
 			}
@@ -309,7 +349,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						}
 					}
 					else
+					{
 						sameChildrenTypes = false;
+					}
 				}
 				else
 				{
@@ -342,7 +384,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					IVisualElementRenderer oldRenderer = null;
 					if (oldChildren != null && sameChildrenTypes && _childViews != null)
+					{
 						oldRenderer = _childViews[i];
+					}
 
 					AddChild((VisualElement)newChildren[i], oldRenderer, pool, sameChildrenTypes);
 				}

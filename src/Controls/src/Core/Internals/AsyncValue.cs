@@ -48,14 +48,22 @@ namespace Microsoft.Maui.Controls.Internals
 			TaskScheduler scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
 			if (_valueTask.IsCompleted)
+			{
 				IsRunning = false;
+			}
 			else
+			{
 				_valueTask.ContinueWith(t => IsRunning = false, scheduler);
+			}
 
 			if (_valueTask.Status == TaskStatus.RanToCompletion)
+			{
 				OnPropertyChanged(nameof(Value));
+			}
 			else
+			{
 				_valueTask.ContinueWith(t => OnPropertyChanged(nameof(Value)), CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+			}
 		}
 
 		public bool IsRunning
@@ -64,7 +72,9 @@ namespace Microsoft.Maui.Controls.Internals
 			set
 			{
 				if (_isRunning == value)
+				{
 					return;
+				}
 
 				_isRunning = value;
 				OnPropertyChanged();
@@ -76,7 +86,9 @@ namespace Microsoft.Maui.Controls.Internals
 			get
 			{
 				if (_valueTask.Status != TaskStatus.RanToCompletion)
+				{
 					return _defaultValue;
+				}
 
 				return _valueTask.Result;
 			}

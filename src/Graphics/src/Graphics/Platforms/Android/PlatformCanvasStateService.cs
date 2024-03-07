@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void EnsureDefaults()
 		{
 			if (_defaultFillPaint != null)
+			{
 				return;
+			}
 
 			_defaultFillPaint = new global::Android.Graphics.Paint();
 			_defaultFillPaint.SetARGB(255, 255, 255, 255);
@@ -56,9 +58,13 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			var defaultFont = Typeface.Default;
 			if (defaultFont != null)
+			{
 				_defaultFontPaint.SetTypeface(defaultFont);
+			}
 			else
+			{
 				System.Diagnostics.Debug.WriteLine("Unable to set the default font paint to Default");
+			}
 		}
 
 		public void Dispose()

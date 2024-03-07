@@ -290,12 +290,16 @@ namespace Microsoft.Maui.AppiumTests
 		Point? GetCoordinatesFromLabel(string? labelText)
 		{
 			if (labelText is null)
+			{
 				return null;
+			}
 
 			var i = labelText.IndexOf(':', StringComparison.Ordinal);
 
 			if (i == -1)
+			{
 				return null;
+			}
 
 			var coordinates = labelText[(i + 1)..].Split(",");
 			var x = int.Parse(coordinates[0]);

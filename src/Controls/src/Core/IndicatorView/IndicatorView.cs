@@ -137,13 +137,17 @@ namespace Microsoft.Maui.Controls
 			if (IndicatorTemplate == null)
 			{
 				if (Handler != null)
+				{
 					return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
+				}
 
 				_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
 				return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
 			}
 			else
+			{
 				return base.OnMeasure(widthConstraint, heightConstraint);
+			}
 		}
 
 		static void UpdateIndicatorLayout(IndicatorView indicatorView, object newValue)
@@ -162,10 +166,14 @@ namespace Microsoft.Maui.Controls
 		void ResetItemsSource(IEnumerable oldItemsSource)
 		{
 			if (oldItemsSource is INotifyCollectionChanged oldCollection)
+			{
 				oldCollection.CollectionChanged -= OnCollectionChanged;
+			}
 
 			if (ItemsSource is INotifyCollectionChanged collection)
+			{
 				collection.CollectionChanged += OnCollectionChanged;
+			}
 
 			OnCollectionChanged(ItemsSource, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 

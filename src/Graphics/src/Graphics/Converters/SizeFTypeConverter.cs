@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Graphics.Converters
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			if (SizeF.TryParse(value?.ToString(), out var s))
+			{
 				return s;
+			}
 
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(SizeF)));
 		}
@@ -24,7 +26,10 @@ namespace Microsoft.Maui.Graphics.Converters
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (!(value is SizeF size))
+			{
 				throw new NotSupportedException();
+			}
+
 			return $"{size.Width.ToString(CultureInfo.InvariantCulture)}, {size.Height.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}

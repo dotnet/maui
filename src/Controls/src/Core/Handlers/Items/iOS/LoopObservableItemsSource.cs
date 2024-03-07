@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var collectionView = CollectionView;
 			if (collectionView is null)
+			{
 				return Array.Empty<NSIndexPath>();
+			}
 
 			return IndexPathHelpers.GenerateLoopedIndexPathRange(Section,
 				(int)collectionView.NumberOfItemsInSection(Section), LoopBy, startIndex, count);

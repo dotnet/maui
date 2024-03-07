@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Platform
 		public MauiActivityIndicator(CGRect rect, IActivityIndicator? virtualView) : base(rect)
 		{
 			if (virtualView is not null)
+			{
 				_virtualView = new(virtualView);
+			}
 		}
 
 		public override void Draw(CGRect rect)
@@ -23,9 +25,13 @@ namespace Microsoft.Maui.Platform
 			base.Draw(rect);
 
 			if (IsRunning)
+			{
 				StartAnimating();
+			}
 			else
+			{
 				StopAnimating();
+			}
 		}
 
 		public override void LayoutSubviews()
@@ -33,9 +39,13 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			if (IsRunning)
+			{
 				StartAnimating();
+			}
 			else
+			{
 				StopAnimating();
+			}
 		}
 
 		protected override void Dispose(bool disposing)

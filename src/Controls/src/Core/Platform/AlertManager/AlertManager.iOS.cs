@@ -19,7 +19,10 @@ namespace Microsoft.Maui.Controls.Platform
 			var platformWindow = window?.MauiContext.GetPlatformWindow();
 
 			if (Subscriptions.Any(s => s.PlatformView == platformWindow))
+			{
+			{
 				return;
+			}
 
 			Subscriptions.Add(new AlertRequestHelper(window, platformWindow));
 		}
@@ -29,7 +32,10 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext mauiContext = window?.Handler?.MauiContext;
 			var platformWindow = mauiContext?.GetPlatformWindow();
 			if (platformWindow == null)
+			{
+			{
 				return;
+			}
 
 			var toRemove = Subscriptions.Where(s => s.PlatformView == platformWindow).ToList();
 
@@ -84,7 +90,9 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnAlertRequested(Page sender, AlertArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
+				{
 					return;
+				}
 
 				PresentAlert(sender, arguments);
 			}
@@ -92,7 +100,9 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnPromptRequested(Page sender, PromptArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
+				{
 					return;
+				}
 
 				PresentPrompt(sender, arguments);
 			}
@@ -100,7 +110,9 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
+				{
 					return;
+				}
 
 				PresentActionSheet(sender, arguments);
 			}
@@ -165,7 +177,9 @@ namespace Microsoft.Maui.Controls.Platform
 				foreach (var label in arguments.Buttons)
 				{
 					if (label == null)
+					{
 						continue;
+					}
 
 					var blabel = label;
 

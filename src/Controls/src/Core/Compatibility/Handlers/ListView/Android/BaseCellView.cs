@@ -50,7 +50,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Gravity = GravityFlags.Center
 			};
 			using (imageParams)
+			{
 				AddView(_imageView, imageParams);
+			}
 
 			var textLayout = new LinearLayout(context) { Orientation = Orientation.Vertical };
 
@@ -61,7 +63,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			TextViewCompat.SetTextAppearance(_mainText, global::Android.Resource.Style.TextAppearanceSmall);
 
 			using (var lp = new LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent))
+			{
 				textLayout.AddView(_mainText, lp);
+			}
 
 			_detailText = new AppCompatTextView(context);
 			_detailText.SetSingleLine(true);
@@ -71,12 +75,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			TextViewCompat.SetTextAppearance(_detailText, global::Android.Resource.Style.TextAppearanceSmall);
 
 			using (var lp = new LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent))
+			{
 				textLayout.AddView(_detailText, lp);
+			}
 
 			var layoutParams = new LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent) { Width = 0, Weight = 1, Gravity = GravityFlags.Center };
 
 			using (layoutParams)
+			{
 				AddView(textLayout, layoutParams);
+			}
 
 			SetMinimumHeight((int)context.ToPixels(DefaultMinHeight));
 			_androidDefaultTextColor = Color.FromUint((uint)_mainText.CurrentTextColor);
@@ -92,7 +100,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set
 			{
 				if (_detailTextText == value)
+				{
 					return;
+				}
 
 				_detailTextText = value;
 				_detailText.Text = value;
@@ -106,7 +116,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set
 			{
 				if (_mainTextText == value)
+				{
 					return;
+				}
 
 				_mainTextText = value;
 				_mainText.Text = value;
@@ -121,12 +133,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void SetAccessoryView(AView view)
 		{
 			if (AccessoryView != null)
+			{
 				RemoveView(AccessoryView);
+			}
 
 			if (view != null)
 			{
 				using (var layout = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.MatchParent))
+				{
 					AddView(view, layout);
+				}
 
 				AccessoryView = view;
 			}
@@ -136,16 +152,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_defaultMainTextColor = defaultColor;
 			if (_mainTextColor == null && defaultColor != null)
+			{
 				_mainText.SetTextColor(defaultColor.ToPlatform());
+			}
 		}
 
 		public void SetDetailTextColor(Color color)
 		{
 			if (_detailTextColor == color)
+			{
 				return;
+			}
 
 			if (_defaultDetailColor == null)
+			{
 				_defaultDetailColor = Color.FromUint((uint)_detailText.CurrentTextColor);
+			}
 
 			_detailTextColor = color;
 			_detailText.SetTextColor(color.ToPlatform(_defaultDetailColor));
@@ -185,7 +207,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateBitmap(ImageSource source, ImageSource previousSource = null)
 		{
 			if (source == previousSource)
+			{
 				return;
+			}
 
 			if (source == null)
 			{

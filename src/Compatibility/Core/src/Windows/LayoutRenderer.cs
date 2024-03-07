@@ -52,7 +52,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.UpdateBackgroundColor();
 
 			if (!Brush.IsNullOrEmpty(Element.Background))
+			{
 				Background = Element.Background.ToBrush();
+			}
 		}
 
 		protected override AutomationPeer OnCreateAutomationPeer()
@@ -67,7 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Layout.IsClippedToBoundsProperty.PropertyName)
+			{
 				UpdateClipToBounds();
+			}
 		}
 
 		void OnSizeChanged(object sender, SizeChangedEventArgs e)

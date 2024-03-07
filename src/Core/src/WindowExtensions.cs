@@ -19,10 +19,14 @@ namespace Microsoft.Maui
 		{
 #if PLATFORM
 			if (window?.Handler?.PlatformView is not PlatformView platformView)
+			{
 				return Task.FromResult<IScreenshotResult?>(null);
+			}
 
 			if (!Screenshot.Default.IsCaptureSupported)
+			{
 				return Task.FromResult<IScreenshotResult?>(null);
+			}
 
 			return CaptureAsync(platformView);
 #else

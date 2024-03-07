@@ -24,7 +24,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.EnsureBorderPath();
 
 			if (handler.VirtualView.PresentedContent is IView view)
+			{
+			{
 				handler.PlatformView.Content = view.ToPlatform(handler.MauiContext);
+			}
 		}
 
 		protected override ContentPanel CreatePlatformView()

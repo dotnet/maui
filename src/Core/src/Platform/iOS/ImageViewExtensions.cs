@@ -29,12 +29,16 @@ namespace Microsoft.Maui.Platform
 			if (image.IsAnimationPlaying)
 			{
 				if (!imageView.IsAnimating)
+				{
 					imageView.StartAnimating();
+				}
 			}
 			else
 			{
 				if (imageView.IsAnimating)
+				{
 					imageView.StopAnimating();
+				}
 			}
 		}
 
@@ -72,7 +76,9 @@ namespace Microsoft.Maui.Platform
 		{
 			// If there's no image, we don't need to take up any space
 			if (imageView.Image is null)
+			{
 				return new CGSize(0, 0);
+			}
 
 			var heightConstraint = constraints.Height;
 			var widthConstraint = constraints.Width;

@@ -140,7 +140,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					_collection = new ObservableCollection<object>();
 					foreach (var item in Element.ItemsSource)
+					{
 						_collection.Add(item);
+					}
 				}
 				else if (!object.ReferenceEquals(_collection, Element.ItemsSource))
 				{
@@ -149,10 +151,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			if (isStillTheSameUnderlyingItemsSource && _collectionViewSource != null)
+			{
 				return;
+			}
 
 			if (_collectionViewSource != null)
+			{
 				_collectionViewSource.Source = null;
+			}
 
 			_collectionViewSource = new CollectionViewSource
 			{
@@ -171,7 +177,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					case NotifyCollectionChangedAction.Add:
 						if (e.NewStartingIndex < 0)
+						{
 							goto case NotifyCollectionChangedAction.Reset;
+						}
 
 						// if a NewStartingIndex that's too high is passed in just add the items.
 						// I realize this is enforcing bad behavior but prior to this synchronization
@@ -180,18 +188,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						if (e.NewStartingIndex >= _collection.Count)
 						{
 							for (int i = 0; i < e.NewItems.Count; i++)
+							{
 								_collection.Add((e.NewItems[i] as BindableObject).BindingContext);
+							}
 						}
 						else
 						{
 							for (int i = e.NewItems.Count - 1; i >= 0; i--)
+							{
 								_collection.Insert(e.NewStartingIndex, (e.NewItems[i] as BindableObject).BindingContext);
+							}
 						}
 
 						break;
 					case NotifyCollectionChangedAction.Remove:
 						for (int i = e.OldItems.Count - 1; i >= 0; i--)
+						{
 							_collection.RemoveAt(e.OldStartingIndex);
+						}
+
 						break;
 					case NotifyCollectionChangedAction.Move:
 						{
@@ -315,7 +330,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 					List.SelectionChanged -= OnControlSelectionChanged;
 					if (_collectionViewSource != null)
+					{
 						_collectionViewSource.Source = null;
+					}
 
 					List.DataContext = null;
 
@@ -343,10 +360,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				DependencyObject element = VisualTreeHelper.GetChild(dobj, i);
 				if (element is T)
+				{
 					yield return (T)element;
+				}
 
 				foreach (T descendant in FindDescendants<T>(element))
+				{
 					yield return descendant;
+				}
 			}
 		}
 
@@ -396,7 +417,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			bool grouping = Element.IsGroupingEnabled;
 
 			if (_collectionViewSource != null)
+			{
 				_collectionViewSource.IsSourceGrouped = grouping;
+			}
 
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			if (grouping && templatedItems.ShortNames != null)
@@ -426,9 +449,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else
 			{
 				if (_zoom != null)
+				{
 					_zoom.CanChangeViews = false;
+				}
 				else if (List != Control)
+				{
 					SetNativeControl(List);
+				}
 			}
 		}
 
@@ -446,7 +473,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				// UWP seems to reset the selected item when SelectionMode is set, make sure our items stays selected by doing this call
 				if (Element.SelectedItem != null)
+				{
 					OnElementItemSelected(null, new SelectedItemChangedEventArgs(Element.SelectedItem, TemplatedItemsView.TemplatedItems.GetGlobalIndexOfItem(Element.SelectedItem)));
+				}
 			}
 		}
 
@@ -491,7 +520,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == null)
+			{
 				_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
+			}
 
 			switch (Element.VerticalScrollBarVisibility)
 			{
@@ -510,7 +541,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateHorizontalScrollBarVisibility()
 		{
 			if (_defaultHorizontalScrollVisibility == null)
+			{
 				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(Control);
+			}
 
 			switch (Element.HorizontalScrollBarVisibility)
 			{
@@ -529,7 +562,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		async void OnViewChangeCompleted(object sender, SemanticZoomViewChangedEventArgs e)
 		{
 			if (e.IsSourceZoomedInView)
+			{
 				return;
+			}
 
 			// HACK: Technically more than one short name could be the same, this will potentially find the wrong one in that case
 			var item = (string)e.SourceItem.Item;
@@ -537,15 +572,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			int index = templatedItems.ShortNames.IndexOf(item);
 			if (index == -1)
+			{
 				return;
+			}
 
 			var til = templatedItems.GetGroup(index);
 			if (til.Count == 0)
+			{
 				return; // FIXME
+			}
 
 			// Delay until after the SemanticZoom change _actually_ finishes, fixes tons of odd issues on Phone w/ virtualization.
 			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+			{
 				await Task.Delay(1);
+			}
 
 			IListProxy listProxy = til.ListProxy;
 			ScrollTo(listProxy.ProxiedEnumerable, listProxy[0], ScrollToPosition.Start, true, true);
@@ -557,7 +598,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var transform = selectorItem?.TransformToVisual(viewer.Content as UIElement);
 			var position = transform?.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 			if (!position.HasValue)
+			{
 				return false;
+			}
 			// scroll with animation
 			viewer.ChangeView(position.Value.X, position.Value.Y, null);
 			return true;
@@ -584,14 +627,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			Tuple<int, int> location = templatedItems.GetGroupAndIndexOfItem(group, item);
 			if (location.Item1 == -1 || location.Item2 == -1)
+			{
 				return;
+			}
 
 			object[] t = templatedItems.GetGroup(location.Item1).ItemsSource.Cast<object>().ToArray();
 			object c = t[location.Item2];
 
 			// scroll to desired item with animation
 			if (shouldAnimate && ScrollToItemWithAnimation(viewer, c))
+			{
 				return;
+			}
 
 			double viewportHeight = viewer.ViewportHeight;
 
@@ -625,9 +672,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 							double tHeight = content.DesiredSize.Height;
 
 							if (toPosition == ScrollToPosition.Center)
+							{
 								semanticLocation.Bounds = new WRect(0, viewportHeight / 2 - tHeight / 2, 0, 0);
+							}
 							else
+							{
 								semanticLocation.Bounds = new WRect(0, viewportHeight - tHeight, 0, 0);
+							}
 
 							break;
 						}
@@ -645,7 +696,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			catch (Exception)
 			{
 				if (previouslyFailed)
+				{
 					return;
+				}
 
 				Task.Delay(1).ContinueWith(ct => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup, true); }, TaskScheduler.FromCurrentSynchronizationContext()).WatchForError();
 			}
@@ -666,7 +719,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				T target = child as T ?? GetFirstDescendant<T>(child);
 				if (target != null)
+				{
 					return target;
+				}
 			}
 
 			return null;
@@ -678,11 +733,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				ScrollViewer viewer = GetScrollViewer();
 				if (viewer == null)
+				{
 					return null;
+				}
 
 				var presenter = GetFirstDescendant<ItemsPresenter>(viewer);
 				if (presenter == null)
+				{
 					return null;
+				}
 
 				_headerControl = GetFirstDescendant<ContentControl>(presenter);
 			}
@@ -729,7 +788,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnElementItemSelected(object sender, SelectedItemChangedEventArgs e)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			if (_deferSelection)
 			{
@@ -783,16 +844,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			bool areEqual = false;
 
 			if (Element.SelectedItem != null && Element.SelectedItem.GetType().IsValueType)
+			{
 				areEqual = Element.SelectedItem.Equals(List.SelectedItem);
+			}
 			else
+			{
 				areEqual = Element.SelectedItem == List.SelectedItem;
+			}
 
 			if (!areEqual)
 			{
 				if (_itemWasClicked)
+				{
 					List.SelectedItem = Element.SelectedItem;
+				}
 				else
+				{
 					((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
+				}
 			}
 
 			_itemWasClicked = false;
@@ -803,7 +872,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			foreach (CellControl selector in FindDescendants<CellControl>(List))
 			{
 				if (ReferenceEquals(cell, selector.DataContext))
+				{
 					return selector;
+				}
 			}
 
 			return null;
@@ -815,7 +886,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override AutomationPeer OnCreateAutomationPeer()
 		{
 			if (List == null)
+			{
 				return new FrameworkElementAutomationPeer(this);
+			}
 
 			var automationPeer = new ListViewAutomationPeer(List);
 			// skip this renderer from automationPeer tree to avoid infinity loop

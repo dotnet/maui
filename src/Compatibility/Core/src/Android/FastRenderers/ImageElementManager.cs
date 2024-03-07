@@ -19,13 +19,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			renderer.ElementChanged += OnElementChanged;
 
 			if (renderer is ILayoutChanges layoutChanges)
+			{
 				layoutChanges.LayoutChange += OnLayoutChange;
+			}
 		}
 
 		static void OnLayoutChange(object sender, global::Android.Views.View.LayoutChangeEventArgs e)
 		{
 			if (sender is IVisualElementRenderer renderer && renderer.View is ImageView imageView)
+			{
 				AViewCompat.SetClipBounds(imageView, imageView.GetScaleType() == AScaleType.CenterCrop ? new ARect(0, 0, e.Right - e.Left, e.Bottom - e.Top) : null);
+			}
 		}
 
 		public static void Dispose(IVisualElementRenderer renderer)
@@ -33,10 +37,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			renderer.ElementPropertyChanged -= OnElementPropertyChanged;
 			renderer.ElementChanged -= OnElementChanged;
 			if (renderer is ILayoutChanges layoutChanges)
+			{
 				layoutChanges.LayoutChange -= OnLayoutChange;
+			}
 
 			if (renderer is IImageRendererController imageRenderer)
+			{
 				imageRenderer.SetFormsAnimationDrawable(null);
+			}
 
 			if (renderer.View is ImageView imageView)
 			{
@@ -54,17 +62,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			var rendererController = renderer as IImageRendererController;
 
 			if (rendererController.IsDisposed)
+			{
 				return;
+			}
 
 			await TryUpdateBitmap(rendererController, view, newImageElementManager, oldImageElementManager);
 
 			if (rendererController.IsDisposed)
+			{
 				return;
+			}
 
 			UpdateAspect(rendererController, view, newImageElementManager, oldImageElementManager);
 
 			if (rendererController.IsDisposed)
+			{
 				return;
+			}
 
 			ElevationHelper.SetElevation(view, renderer.Element);
 		}
@@ -91,7 +105,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				UpdateAspect(renderer as IImageRendererController, (ImageView)renderer.View, (IImageElement)renderer.Element);
 			}
 			else if (e.Is(Image.IsAnimationPlayingProperty))
+			{
 				await StartStopAnimation(renderer, imageController, ImageElementManager).ConfigureAwait(false);
+			}
 		}
 
 		async static Task StartStopAnimation(
@@ -102,20 +118,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			IImageRendererController imageRendererController = renderer as IImageRendererController;
 			var view = renderer.View as ImageView;
 			if (imageRendererController.IsDisposed || imageElement == null || view == null || view.IsDisposed())
+			{
 				return;
+			}
 
 			if (imageElement.IsLoading)
+			{
 				return;
+			}
 
 			if (!(view.Drawable is FormsAnimationDrawable) && imageElement.IsAnimationPlaying)
+			{
 				await TryUpdateBitmap(imageRendererController, view, imageElement);
+			}
 
 			if (view.Drawable is FormsAnimationDrawable animation)
 			{
 				if (imageElement.IsAnimationPlaying && !animation.IsRunning)
+				{
 					animation.Start();
+				}
 				else if (!imageElement.IsAnimationPlaying && animation.IsRunning)
+				{
 					animation.Stop();
+				}
 			}
 		}
 
@@ -148,25 +174,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			finally
 			{
 				if (newImage is IImageController imageController)
+				{
 					imageController.SetIsLoading(false);
+				}
 			}
 
 			if (rendererController.IsDisposed)
+			{
 				return;
+			}
 
 			if (Control.Drawable is FormsAnimationDrawable updatedAnimation)
 			{
 				rendererController.SetFormsAnimationDrawable(updatedAnimation);
 
 				if (newImage.IsAnimationPlaying)
+				{
 					updatedAnimation.Start();
+				}
 			}
 		}
 
 		internal static void OnAnimationStopped(IElementController image, FormsAnimationDrawableStateEventArgs e)
 		{
 			if (image != null && e.Finished)
+			{
 				image.SetValueFromRenderer(Image.IsAnimationPlayingProperty, false);
+			}
 		}
 
 		static void UpdateAspect(IImageRendererController rendererController, ImageView Control, IImageElement newImage, IImageElement previous = null)

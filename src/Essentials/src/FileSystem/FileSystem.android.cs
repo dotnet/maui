@@ -33,7 +33,9 @@ namespace Microsoft.Maui.Storage
 		Stream PlatformOpenAppPackageFile(string filename)
 		{
 			if (filename == null)
+			{
 				throw new ArgumentNullException(nameof(filename));
+			}
 
 			filename = FileSystemUtils.NormalizePath(filename);
 

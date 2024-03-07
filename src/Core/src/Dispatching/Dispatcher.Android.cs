@@ -69,7 +69,9 @@ namespace Microsoft.Maui.Dispatching
 		public void Start()
 		{
 			if (IsRunning)
+			{
 				return;
+			}
 
 			IsRunning = true;
 
@@ -80,7 +82,9 @@ namespace Microsoft.Maui.Dispatching
 		public void Stop()
 		{
 			if (!IsRunning)
+			{
 				return;
+			}
 
 			IsRunning = false;
 
@@ -92,7 +96,9 @@ namespace Microsoft.Maui.Dispatching
 		void OnTimerTick()
 		{
 			if (!IsRunning)
+			{
 				return;
+			}
 
 			SetHasCallbacks(false);
 
@@ -151,7 +157,9 @@ namespace Microsoft.Maui.Dispatching
 		{
 			var q = Looper.MyLooper();
 			if (q == null || q != Looper.MainLooper)
+			{
 				return null;
+			}
 
 			return new Dispatcher(q);
 		}

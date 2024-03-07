@@ -41,7 +41,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (cell.View == null)
+			{
 				throw new InvalidOperationException($"ViewCell must have a {nameof(cell.View)}");
+			}
 
 			IVisualElementRenderer view = Platform.CreateRenderer(cell.View, context);
 			Platform.SetRenderer(cell.View, view);
@@ -152,7 +154,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			public override bool OnInterceptTouchEvent(MotionEvent ev)
 			{
 				if (!Enabled)
+				{
 					return true;
+				}
 
 				return base.OnInterceptTouchEvent(ev);
 			}
@@ -193,7 +197,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					cell.View.DisableLayout = true;
 					foreach (VisualElement c in cell.View.Descendants())
+					{
 						c.DisableLayout = true;
+					}
 
 					Performance.Start(reference, "Reuse.SetElement");
 					renderer.SetElement(cell.View);
@@ -203,11 +209,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					cell.View.DisableLayout = false;
 					foreach (VisualElement c in cell.View.Descendants())
+					{
 						c.DisableLayout = false;
+					}
 
 					var viewAsLayout = cell.View as Layout;
 					if (viewAsLayout != null)
+					{
 						viewAsLayout.ForceLayout();
+					}
 
 					Invalidate();
 
@@ -276,7 +286,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					height = (int)Context.ToPixels(_viewCell.Height > 0 ? _viewCell.Height : measure.Request.Height);
 				}
 				else
+				{
 					height = (int)Context.ToPixels(ParentRowHeight == -1 ? Handlers.Compatibility.BaseCellView.DefaultMinHeight : ParentRowHeight);
+				}
 
 				SetMeasuredDimension(width, height);
 

@@ -80,7 +80,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var element = newValue as Element;
 			if (element == null)
+			{
+			{
 				return;
+			}
+
 			element.Parent = (Element)bindable;
 		}
 

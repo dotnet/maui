@@ -18,13 +18,17 @@ namespace Microsoft.Maui.Devices
 		{
 			// fail fast
 			if (hasLoadedLamp)
+			{
 				return;
+			}
 
 			Monitor.Enter(locker);
 
 			// we may have loaded it while this was waiting to enter
 			if (hasLoadedLamp)
+			{
 				return;
+			}
 
 			// find all the lamps
 			var selector = Lamp.GetDeviceSelector();
@@ -67,7 +71,9 @@ namespace Microsoft.Maui.Devices
 			await FindLampAsync();
 
 			if (lamp == null)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			lock (locker)
 			{

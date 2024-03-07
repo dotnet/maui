@@ -159,17 +159,31 @@ namespace Microsoft.Maui.Graphics
 		{
 			var halfHeight = Math.Abs(height / 2);
 			if (cornerRadius > halfHeight)
+			{
 				cornerRadius = halfHeight;
+			}
 
 			var halfWidth = Math.Abs(width / 2);
 			if (cornerRadius > halfWidth)
-				cornerRadius = halfWidth;
-
-			EnsureStrokePatternSet();
+			
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+			PlatformDrawRoundedRectangle(x, y, width, height, cornerRadius);
+		}
+After:
+			PlatformDrawRoundedRectangle();
 			PlatformDrawRoundedRectangle(x, y, width, height, cornerRadius);
 		}
 
 		public abstract void FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius);
+*/
+{
+				cornerRadius = halfWidth;
+			}
+
+			EnsureStrokePatternSet();
+			PlatformDrawRoundedRectangle(x, y, width, height, cornerRadius);
+		}
 
 		public void DrawEllipse(float x, float y, float width, float height)
 		{

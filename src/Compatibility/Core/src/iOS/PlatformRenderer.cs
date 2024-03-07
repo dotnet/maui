@@ -78,7 +78,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// For some reason iOS calls this after it's already been disposed
 			// while it's being replaced on the Window.RootViewController with a new MainPage
 			if (!_disposed)
+			{
 				Platform.DidAppear();
+			}
 
 			base.ViewDidAppear(animated);
 		}
@@ -107,7 +109,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			}
 		}
 
 		protected override void Dispose(bool disposing)

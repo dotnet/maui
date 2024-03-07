@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				int index = _page.Children.IndexOf(fragContainer.Page);
 
 				if (index >= 0)
+				{
 					return index;
+				}
 			}
 
 			_fragments.Remove(fragContainer);

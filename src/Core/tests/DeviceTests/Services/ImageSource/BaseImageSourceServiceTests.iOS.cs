@@ -19,10 +19,15 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			filename ??= Guid.NewGuid().ToString("N") + ".png";
 			if (!Path.IsPathRooted(filename))
+			{
 				filename = Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString("N"), filename);
+			}
+
 			var dir = Path.GetDirectoryName(filename);
 			if (!Directory.Exists(dir))
+			{
 				Directory.CreateDirectory(dir);
+			}
 
 			using var src = CreateBitmapStream(width, height, color);
 			using var dst = File.Create(filename);

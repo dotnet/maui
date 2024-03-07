@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			var contacts = await Contacts.GetAllAsync();
 
 			foreach (var contact in contacts.Take(10))
+			{
 				list?.Add(contact);
+			}
 		}
 	}
 }

@@ -15,10 +15,14 @@ namespace Microsoft.Maui.Accessibility
 #pragma warning restore 618
 
 			if (manager == null || announcement == null)
+			{
 				return;
+			}
 
 			if (!(manager.IsEnabled || manager.IsTouchExplorationEnabled))
+			{
 				return;
+			}
 
 			announcement.EventType = EventTypes.Announcement;
 			announcement.Text?.Add(new Java.Lang.String(text));

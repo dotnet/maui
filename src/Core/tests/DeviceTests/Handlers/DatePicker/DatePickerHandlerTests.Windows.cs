@@ -53,7 +53,9 @@ namespace Microsoft.Maui.DeviceTests
 			var date = plaformDatePicker.Date;
 
 			if (date.HasValue)
+			{
 				return date.Value.DateTime;
+			}
 
 			return DateTime.MinValue;
 		}
@@ -63,7 +65,9 @@ namespace Microsoft.Maui.DeviceTests
 			var foreground = GetNativeDatePicker(datePickerHandler).Foreground;
 
 			if (foreground is UI.Xaml.Media.SolidColorBrush solidColorBrush)
+			{
 				return solidColorBrush.Color.ToColor();
+			}
 
 			return null;
 		}

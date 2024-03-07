@@ -39,13 +39,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillShow += OnKeyboardShown;
 			Controls.Compatibility.Platform.iOS.KeyboardObserver.KeyboardWillHide += OnKeyboardHidden;
 			if (renderer != null)
+			{
 				_shellScrollViewTracker = new ShellScrollViewTracker(renderer);
+			}
 		}
 
 		public void Dispose()
 		{
 			if (_disposed)
+			{
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -61,7 +66,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			//being called from LayoutSubviews but keyboard wasn't shown yet
 			if (_lastKeyboardRect.IsEmpty)
+			{
+			{
 				return;
+			}
 
 			var window = _fetchWindow();
 			// Code left verbose to make its operation more obvious
@@ -95,7 +103,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var fieldBottom = fieldPosition.Y + field.Frame.Height;
 				var offset = fieldBottom - keyboardTop;
 				if (offset > 0)
+				{
 					_setContentOffset(new PointF(0, offset));
+				}
 			}
 		}
 
@@ -104,7 +114,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void OnKeyboardHidden(object sender, UIKeyboardEventArgs args)
 		{
 			if (_shellScrollViewTracker == null || !_shellScrollViewTracker.Reset())
+			{
 				_setInsetAction(new UIEdgeInsets(0, 0, 0, 0));
+			}
 
 			_lastKeyboardRect = RectangleF.Empty;
 		}

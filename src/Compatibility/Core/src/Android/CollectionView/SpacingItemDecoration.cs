@@ -32,9 +32,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				case LinearItemsLayout listItemsLayout:
 					_orientation = listItemsLayout.Orientation;
 					if (_orientation == ItemsLayoutOrientation.Horizontal)
+					{
 						_horizontalSpacing = listItemsLayout.ItemSpacing;
+					}
 					else
+					{
 						_verticalSpacing = listItemsLayout.ItemSpacing;
+					}
+
 					_spanCount = 1;
 					break;
 			}

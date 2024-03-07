@@ -14,9 +14,13 @@ namespace Microsoft.Maui.Platform
 			var paint = check.Background;
 
 			if (paint.IsNullOrEmpty())
+			{
 				platformCheckBox.SetBackgroundColor(AColor.Transparent);
+			}
 			else
+			{
 				platformCheckBox.UpdateBackground((IView)check);
+			}
 		}
 
 		public static void UpdateIsChecked(this AppCompatCheckBox platformCheckBox, ICheckBox check)

@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal static bool UpdateFlowDirection(this UIView view, IVisualElementController controller)
 		{
 			if (controller == null || view == null)
+			{
 				return false;
+			}
 
 			if (controller is IView v)
 			{
@@ -20,9 +22,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UISemanticContentAttribute updateValue = view.SemanticContentAttribute;
 
 			if (controller.EffectiveFlowDirection.IsRightToLeft())
+			{
 				updateValue = UISemanticContentAttribute.ForceRightToLeft;
+			}
 			else if (controller.EffectiveFlowDirection.IsLeftToRight())
+			{
 				updateValue = UISemanticContentAttribute.ForceLeftToRight;
+			}
 
 			if (updateValue != view.SemanticContentAttribute)
 			{
@@ -36,7 +42,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal static void UpdateTextAlignment(this UITextField control, IVisualElementController controller)
 		{
 			if (controller == null || control == null)
+			{
 				return;
+			}
 
 			if (controller.EffectiveFlowDirection.IsRightToLeft())
 			{
@@ -53,12 +61,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal static void UpdateTextAlignment(this UITextView control, IVisualElementController controller)
 		{
 			if (controller == null || control == null)
+			{
 				return;
+			}
 
 			if (controller.EffectiveFlowDirection.IsRightToLeft())
+			{
 				control.TextAlignment = UITextAlignment.Right;
+			}
 			else if (controller.EffectiveFlowDirection.IsLeftToRight())
+			{
 				control.TextAlignment = UITextAlignment.Left;
+			}
 		}
 	}
 }

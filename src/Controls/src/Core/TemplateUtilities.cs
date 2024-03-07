@@ -11,7 +11,9 @@ namespace Microsoft.Maui.Controls
 		public static async Task<Element> FindTemplatedParentAsync(Element element)
 		{
 			if (element.RealParent is Application)
+			{
 				return null;
+			}
 
 			var skipCount = 0;
 			element = await GetRealParentAsync(element);
@@ -21,11 +23,17 @@ namespace Microsoft.Maui.Controls
 				if (controlTemplated?.ControlTemplate != null)
 				{
 					if (skipCount == 0)
+					{
 						return element;
+					}
+
 					skipCount--;
 				}
 				if (element is ContentPresenter)
+				{
 					skipCount++;
+				}
+
 				element = await GetRealParentAsync(element);
 			}
 
@@ -36,10 +44,14 @@ namespace Microsoft.Maui.Controls
 		{
 			Element parent = element.RealParent;
 			if (parent is Application)
+			{
 				return Task.FromResult<Element>(null);
+			}
 
 			if (parent != null)
+			{
 				return Task.FromResult(parent);
+			}
 
 			var tcs = new TaskCompletionSource<Element>();
 			EventHandler handler = null;
@@ -65,7 +77,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (newValue != null)
+				{
 					self.InternalChildren.Add(newElement);
+				}
 			}
 			else
 			{
@@ -97,9 +111,13 @@ namespace Microsoft.Maui.Controls
 
 						var presenter = child as ContentPresenter;
 						if (presenter != null)
+						{
 							presenter.Clear();
+						}
 						else if (controlTemplated == null || controlTemplated.ControlTemplate == null)
+						{
 							queue.Enqueue(child);
+						}
 					}
 				}
 			}
@@ -139,7 +157,9 @@ namespace Microsoft.Maui.Controls
 		internal static void OnChildRemoved(IControlTemplated controlTemplated, Element removedChild)
 		{
 			if (removedChild == controlTemplated.TemplateRoot)
+			{
 				controlTemplated.TemplateRoot = null;
+			}
 		}
 	}
 }

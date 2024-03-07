@@ -96,7 +96,10 @@ namespace Microsoft.Maui.Networking
 			{
 				ConnectivityChangedInternal -= value;
 				if (ConnectivityChangedInternal is null)
+				{
 					StopListeners();
+				}
+				}
 			}
 		}
 

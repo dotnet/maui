@@ -81,19 +81,27 @@ namespace Microsoft.Maui.Platform
 
 			var q = Looper.MyLooper();
 			if (q != null)
+			{
 				new Handler(q).Post(RequestFocus);
+			}
 			else
+			{
 				MainThread.InvokeOnMainThreadAsync(RequestFocus);
+			}
 
 			void RequestFocus()
 			{
 				if (platformView == null || platformView.IsDisposed())
+				{
 					return;
+				}
 
 				platformView?.RequestFocus();
 
 				if (platformView?.RequestFocus() == true)
+				{
 					focusRequested?.Invoke();
+				}
 			}
 		}
 
@@ -110,18 +118,24 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateClip(this AView platformView, IView view)
 		{
 			if (platformView is WrapperView wrapper)
+			{
 				wrapper.Clip = view.Clip;
+			}
 		}
 
 		public static void UpdateShadow(this AView platformView, IView view)
 		{
 			if (platformView is WrapperView wrapper)
+			{
 				wrapper.Shadow = view.Shadow;
+			}
 		}
 		public static void UpdateBorder(this AView platformView, IView view)
 		{
 			if (platformView is WrapperView wrapper)
+			{
 				wrapper.Border = (view as IBorder)?.Border;
+			}
 		}
 
 		public static ViewStates ToPlatformVisibility(this Visibility visibility)
@@ -138,10 +152,14 @@ namespace Microsoft.Maui.Platform
 		{
 			var context = view.Context;
 			if (context?.Theme == null)
+			{
 				return;
+			}
 
 			if (context?.Resources == null)
+			{
 				return;
+			}
 
 			using (var background = new TypedValue())
 			{
@@ -159,7 +177,10 @@ namespace Microsoft.Maui.Platform
 								break;
 							case "drawable":
 								using (Drawable? drawable = ContextCompat.GetDrawable(context, background.ResourceId))
+								{
 									view.Background = drawable;
+								}
+
 								break;
 						}
 					}
@@ -172,7 +193,9 @@ namespace Microsoft.Maui.Platform
 			bool hasBorder = border.Shape != null;
 
 			if (hasBorder)
+			{
 				platformView.UpdateBorderStroke(border);
+			}
 		}
 
 		public static void UpdateBackground(this AView platformView, IView view) =>
@@ -219,7 +242,9 @@ namespace Microsoft.Maui.Platform
 			var backgroundDrawable = paint.ToDrawable(platformView.Context);
 
 			if (previousDrawable is null)
+			{
 				platformView.Background = backgroundDrawable;
+			}
 			else
 			{
 				if (backgroundDrawable is null)
@@ -230,7 +255,9 @@ namespace Microsoft.Maui.Platform
 					// If the Background is null or is a ColorDrawable, a Custom Handler is being created, removing the default behavior.
 					// In this case, we don't want to reset the Drawable to the default one.
 					if (platformView.Background is not ColorDrawable)
+					{
 						platformView.Background = previousDrawable;
+					}
 				}
 				else
 				{
@@ -270,12 +297,16 @@ namespace Microsoft.Maui.Platform
 				else if (paint is SolidPaint solidPaint)
 				{
 					if (solidPaint.Color is Color backgroundColor)
+					{
 						platformView.SetBackgroundColor(backgroundColor.ToPlatform());
+					}
 				}
 				else
 				{
 					if (paint!.ToDrawable(platformView.Context) is Drawable drawable)
+					{
 						platformView.Background = drawable;
+					}
 				}
 			}
 			else if (platformView is LayoutViewGroup)
@@ -316,7 +347,9 @@ namespace Microsoft.Maui.Platform
 		public static bool GetClipToOutline(this AView view)
 		{
 			if (!view.IsAlive())
+			{
 				return false;
+			}
 
 			return view.ClipToOutline;
 		}
@@ -324,7 +357,9 @@ namespace Microsoft.Maui.Platform
 		public static void SetClipToOutline(this AView view, bool value)
 		{
 			if (!view.IsAlive())
+			{
 				return;
+			}
 
 			view.ClipToOutline = value;
 		}
@@ -387,12 +422,16 @@ namespace Microsoft.Maui.Platform
 		public static async Task UpdateBackgroundImageSourceAsync(this AView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			if (provider == null)
+			{
 				return;
+			}
 
 			Context? context = platformView.Context;
 
 			if (context == null)
+			{
 				return;
+			}
 
 			if (imageSource != null)
 			{
@@ -401,7 +440,9 @@ namespace Microsoft.Maui.Platform
 				Drawable? backgroundImageDrawable = result?.Value;
 
 				if (platformView.IsAlive())
+				{
 					platformView.Background = backgroundImageDrawable;
+				}
 			}
 		}
 
@@ -414,7 +455,9 @@ namespace Microsoft.Maui.Platform
 		public static void RemoveFromParent(this AView view)
 		{
 			if (view != null)
+			{
 				PlatformInterop.RemoveFromParent(view);
+			}
 		}
 
 		internal static Rect GetPlatformViewBounds(this IView view)
@@ -432,7 +475,9 @@ namespace Microsoft.Maui.Platform
 		internal static Rect GetPlatformViewBounds(this View platformView)
 		{
 			if (platformView?.Context == null)
+			{
 				return new Rect();
+			}
 
 			var location = new int[2];
 			platformView.GetLocationOnScreen(location);
@@ -447,14 +492,19 @@ namespace Microsoft.Maui.Platform
 		{
 			var platformView = view?.ToPlatform();
 			if (platformView == null)
+			{
 				return new Matrix4x4();
+			}
+
 			return platformView.GetViewTransform();
 		}
 
 		internal static Matrix4x4 GetViewTransform(this View view)
 		{
 			if (view?.Matrix == null)
+			{
 				return new Matrix4x4();
+			}
 
 			var m = new float[16];
 			var v = new float[16];
@@ -499,7 +549,9 @@ namespace Microsoft.Maui.Platform
 		internal static Graphics.Rect GetBoundingBox(this View? platformView)
 		{
 			if (platformView?.Context == null)
+			{
 				return new Rect();
+			}
 
 			var context = platformView.Context;
 			var rect = new Android.Graphics.Rect();
@@ -515,10 +567,14 @@ namespace Microsoft.Maui.Platform
 		internal static bool IsLoaded(this View frameworkElement)
 		{
 			if (frameworkElement == null)
+			{
 				return false;
+			}
 
 			if (frameworkElement.IsDisposed())
+			{
 				return false;
+			}
 
 			return frameworkElement.IsAttachedToWindow;
 		}
@@ -535,7 +591,9 @@ namespace Microsoft.Maui.Platform
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
+				{
 					view.ViewAttachedToWindow -= routedEventHandler;
+				}
 			});
 
 			routedEventHandler = (_, __) =>
@@ -545,7 +603,9 @@ namespace Microsoft.Maui.Platform
 					new Handler(q).Post(() =>
 					{
 						if (disposable is not null)
+						{
 							action.Invoke();
+						}
 
 						disposable?.Dispose();
 						disposable = null;
@@ -575,7 +635,9 @@ namespace Microsoft.Maui.Platform
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
+				{
 					view.ViewDetachedFromWindow -= routedEventHandler;
+				}
 			});
 
 			routedEventHandler = (_, __) =>
@@ -587,7 +649,9 @@ namespace Microsoft.Maui.Platform
 					new Handler(q).Post(() =>
 					{
 						if (disposable is not null)
+						{
 							action.Invoke();
+						}
 
 						disposable?.Dispose();
 						disposable = null;
@@ -631,7 +695,9 @@ namespace Microsoft.Maui.Platform
 				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
 
 			if (!view.Frame.Equals(destination))
+			{
 				view.Arrange(destination);
+			}
 		}
 
 		internal static void Arrange(this IView view, AView.LayoutChangeEventArgs e)
@@ -690,7 +756,9 @@ namespace Microsoft.Maui.Platform
 		internal static Point? GetLocationOnScreen(this IElement element)
 		{
 			if (element.Handler?.MauiContext == null)
+			{
 				return null;
+			}
 
 			return (element.ToPlatform())?.GetLocationOnScreen();
 		}
@@ -705,7 +773,9 @@ namespace Microsoft.Maui.Platform
 		internal static Point? GetLocationOnScreenPx(this IElement element)
 		{
 			if (element.Handler?.MauiContext == null)
+			{
 				return null;
+			}
 
 			return (element.ToPlatform())?.GetLocationOnScreenPx();
 		}

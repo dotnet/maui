@@ -34,9 +34,14 @@ namespace Microsoft.Maui.Graphics
 		public int CompareTo(PaintGradientStop obj)
 		{
 			if (_offset < obj._offset)
+			{
 				return -1;
+			}
+
 			if (_offset > obj._offset)
+			{
 				return 1;
+			}
 
 			return 0;
 		}

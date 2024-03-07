@@ -92,7 +92,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
+			{
 				throw new ArgumentOutOfRangeException(nameof(quality), "quality must be in the range of 0..1");
+			}
 
 			switch (format)
 			{
@@ -108,7 +110,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
+			{
 				throw new ArgumentOutOfRangeException(nameof(quality), "quality must be in the range of 0..1");
+			}
 
 			switch (format)
 			{

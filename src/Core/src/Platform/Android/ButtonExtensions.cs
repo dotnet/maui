@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (button is IButtonStroke buttonStroke && buttonStroke.StrokeColor is Color stroke)
+			{
 				platformView.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToPlatform());
+			}
 		}
 
 		public static void UpdateStrokeThickness(this MaterialButton platformView, IButton button)
@@ -32,7 +34,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (button is IButtonStroke buttonStroke && buttonStroke.StrokeThickness >= 0)
+			{
 				platformView.StrokeWidth = (int)platformView.Context.ToPixels(buttonStroke.StrokeThickness);
+			}
 		}
 
 		public static void UpdateCornerRadius(this MaterialButton platformView, IButton button)
@@ -44,7 +48,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (button is IButtonStroke buttonStroke && buttonStroke.CornerRadius >= 0)
+			{
 				platformView.CornerRadius = (int)platformView.Context.ToPixels(buttonStroke.CornerRadius);
+			}
 		}
 
 		public static void UpdatePadding(this Button platformControl, IPadding padding, Thickness? defaultPadding = null) =>
@@ -54,10 +60,14 @@ namespace Microsoft.Maui.Platform
 		{
 			var context = platformControl.Context;
 			if (context == null)
+			{
 				return;
+			}
 
 			if (padding.IsNaN)
+			{
 				padding = defaultPadding ?? Thickness.Zero;
+			}
 
 			padding = context.ToPixels(padding);
 
@@ -91,13 +101,19 @@ namespace Microsoft.Maui.Platform
 				mauiDrawable.SetBackground(background);
 
 				if (button.StrokeColor != null)
+				{
 					mauiDrawable.SetBorderBrush(new SolidPaint { Color = button.StrokeColor });
+				}
 
 				if (button.StrokeThickness > 0)
+				{
 					mauiDrawable.SetBorderWidth(button.StrokeThickness);
+				}
 
 				if (button.CornerRadius >= 0)
+				{
 					mauiDrawable.SetCornerRadius(button.CornerRadius);
+				}
 				else
 				{
 					const int defaultCornerRadius = 2; // Default value for Android material button.

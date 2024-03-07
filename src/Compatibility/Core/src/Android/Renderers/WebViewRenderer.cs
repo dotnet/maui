@@ -60,10 +60,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected internal bool SendNavigatingCanceled(string url)
 		{
 			if (Element == null || string.IsNullOrWhiteSpace(url))
+			{
 				return true;
+			}
 
 			if (url == AssetBaseUrl)
+			{
 				return false;
+			}
 
 			var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = url }, url);
 			SyncNativeCookies(url);
@@ -76,7 +80,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 			if (disposing)
@@ -208,17 +214,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		Uri CreateUriForCookies(string url)
 		{
 			if (url == null)
+			{
 				return null;
+			}
 
 			Uri uri;
 
 			if (url.Length > 2000)
+			{
 				url = url.Substring(0, 2000);
+			}
 
 			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
 			{
 				if (String.IsNullOrWhiteSpace(uri.Host))
+				{
 					return null;
+				}
 
 				return uri;
 			}
@@ -237,7 +249,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (currentCookies != null)
 			{
 				foreach (var cookie in currentCookies.Split(';'))
+				{
 					existingCookies.SetCookies(uri, cookie);
+				}
 			}
 
 			return existingCookies.GetCookies(uri);
@@ -248,14 +262,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var myCookieJar = Element.Cookies;
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			var uri = CreateUriForCookies(url);
 			if (uri == null)
+			{
 				return;
+			}
 
 			if (!_loadedCookies.Add(uri.Host))
+			{
 				return;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 
@@ -265,7 +285,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				foreach (Cookie cookie in existingCookies)
 				{
 					if (cookies[cookie.Name] == null)
+					{
 						myCookieJar.Add(cookie);
+					}
 				}
 			}
 		}
@@ -275,11 +297,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var myCookieJar = Element.Cookies;
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			var uri = CreateUriForCookies(url);
 			if (uri == null)
+			{
 				return;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
@@ -288,9 +314,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var nativeCookie = retrieveCurrentWebCookies[cookie.Name];
 				if (nativeCookie == null)
+				{
 					cookie.Expired = true;
+				}
 				else
+				{
 					cookie.Value = nativeCookie.Value;
+				}
 			}
 
 			SyncNativeCookies(url);
@@ -301,16 +331,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var uri = CreateUriForCookies(url);
 			if (uri == null)
+			{
 				return;
+			}
 
 			var myCookieJar = Element.Cookies;
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
 			if (cookies == null)
+			{
 				return;
+			}
 
 			var retrieveCurrentWebCookies = GetCookiesFromNativeStore(url);
 
@@ -326,7 +362,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			foreach (Cookie cookie in retrieveCurrentWebCookies)
 			{
 				if (cookies[cookie.Name] != null)
+				{
 					continue;
+				}
 
 				var cookieString = $"{cookie.Name}=; max-age=0;expires=Sun, 31 Dec 2017 00:00:00 UTC";
 				cookieManager.SetCookie(cookie.Domain, cookieString);
@@ -336,7 +374,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void Load()
 		{
 			if (IgnoreSourceChanges)
+			{
 				return;
+			}
 
 			Element.Source?.Load(this);
 
@@ -390,7 +430,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected internal void UpdateCanGoBackForward()
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
+
 			ElementController.CanGoBack = Control.CanGoBack();
 			ElementController.CanGoForward = Control.CanGoForward();
 		}

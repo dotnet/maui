@@ -649,12 +649,16 @@ namespace Microsoft.Maui.DeviceTests
 				bool WaitCondition()
 				{
 					if (shellTitleView.Handler == null)
+					{
 						return false;
+					}
 
 					var titleView = GetTitleView(handler);
 
 					if (titleView == null)
+					{
 						return false;
+					}
 
 					return shellTitleView.ToPlatform() == titleView;
 				}
@@ -780,7 +784,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var value = new Shell();
 				foreach (var item in shellItems)
+				{
 					value.Items.Add(item);
+				}
 
 				return value;
 			});

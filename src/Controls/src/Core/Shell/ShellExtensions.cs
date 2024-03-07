@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls
 			{
 				var result = SearchForPart(items[i], searchBy);
 				if (result != null)
+				{
 					return result;
+				}
 			}
 
 			return null;
@@ -37,7 +39,9 @@ namespace Microsoft.Maui.Controls
 		public static BaseShellItem SearchForPart(this BaseShellItem part, Func<BaseShellItem, bool> searchBy)
 		{
 			if (searchBy(part))
+			{
 				return part;
+			}
 
 			BaseShellItem baseShellItem = null;
 			switch (part)
@@ -47,7 +51,9 @@ namespace Microsoft.Maui.Controls
 					{
 						baseShellItem = SearchForPart(section, searchBy);
 						if (baseShellItem != null)
+						{
 							return baseShellItem;
+						}
 					}
 					break;
 				case IShellSectionController section:
@@ -55,7 +61,9 @@ namespace Microsoft.Maui.Controls
 					{
 						baseShellItem = SearchForPart(content, searchBy);
 						if (baseShellItem != null)
+						{
 							return baseShellItem;
+						}
 					}
 					break;
 			}

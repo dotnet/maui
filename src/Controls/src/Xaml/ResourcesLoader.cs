@@ -28,12 +28,17 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(assembly, resourcePath);
 			if (resourceId == null)
+			{
 				throw new XamlParseException($"Resource '{resourcePath}' not found.", lineInfo);
+			}
 
 			using (var stream = assembly.GetManifestResourceStream(resourceId))
 			{
 				if (stream == null)
+				{
 					throw new XamlParseException($"No resource found for '{resourceId}'.", lineInfo);
+				}
+
 				using (var reader = new StreamReader(stream))
 				{
 					rd.LoadFromXaml(reader.ReadToEnd(), assembly);
@@ -53,18 +58,27 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var alternateResource = resourceLoadingResponse?.ResourceContent;
 			if (alternateResource != null)
+			{
 				return alternateResource;
+			}
 
 			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(assembly, resourcePath);
 			if (resourceId == null)
+			{
 				throw new XamlParseException($"Resource '{resourcePath}' not found.", lineInfo);
+			}
 
 			using (var stream = assembly.GetManifestResourceStream(resourceId))
 			{
 				if (stream == null)
+				{
 					throw new XamlParseException($"No resource found for '{resourceId}'.", lineInfo);
+				}
+
 				using (var reader = new StreamReader(stream))
+				{
 					return reader.ReadToEnd();
+				}
 			}
 		}
 	}

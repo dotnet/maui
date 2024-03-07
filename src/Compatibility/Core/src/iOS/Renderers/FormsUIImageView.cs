@@ -71,9 +71,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			get
 			{
 				if (_animation != null)
+				{
 					return Layer.Speed != 0.0f;
+				}
 				else
+				{
 					return base.IsAnimating;
+				}
 			}
 		}
 
@@ -108,7 +112,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 

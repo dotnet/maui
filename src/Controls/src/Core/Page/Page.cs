@@ -90,7 +90,9 @@ namespace Microsoft.Maui.Controls
 
 			//if things were added in base ctor (through implicit styles), the items added aren't properly parented
 			if (InternalChildren.Count > 0)
+			{
 				InternalChildrenOnCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, InternalChildren));
+			}
 
 			InternalChildren.CollectionChanged += InternalChildrenOnCollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Page>>(() => new PlatformConfigurationRegistry<Page>(this));
@@ -179,7 +181,10 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_containerArea == value)
+				{
 					return;
+				}
+
 				_containerAreaSet = true;
 				_containerArea = value;
 				ForceLayout();
@@ -254,9 +259,13 @@ namespace Microsoft.Maui.Controls
 			args.FlowDirection = flowDirection;
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			if (IsPlatformEnabled)
+			{
 				MessagingCenter.Send(this, ActionSheetSignalName, args);
+			}
 			else
+			{
 				_pendingActions.Add(() => MessagingCenter.Send(this, ActionSheetSignalName, args));
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			return args.Result.Task;
@@ -293,16 +302,22 @@ namespace Microsoft.Maui.Controls
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel, FlowDirection flowDirection)
 		{
 			if (string.IsNullOrEmpty(cancel))
+			{
 				throw new ArgumentNullException(nameof(cancel));
+			}
 
 			var args = new AlertArguments(title, message, accept, cancel);
 			args.FlowDirection = flowDirection;
 
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			if (IsPlatformEnabled)
+			{
 				MessagingCenter.Send(this, AlertSignalName, args);
+			}
 			else
+			{
 				_pendingActions.Add(() => MessagingCenter.Send(this, AlertSignalName, args));
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			return args.Result.Task;
@@ -326,9 +341,13 @@ namespace Microsoft.Maui.Controls
 
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			if (IsPlatformEnabled)
+			{
 				MessagingCenter.Send(this, PromptSignalName, args);
+			}
 			else
+			{
 				_pendingActions.Add(() => MessagingCenter.Send(this, PromptSignalName, args));
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			return args.Result.Task;
@@ -341,7 +360,9 @@ namespace Microsoft.Maui.Controls
 				var actionsToProcess = _pendingActions.ToList();
 				_pendingActions.Clear();
 				foreach (var pendingAction in actionsToProcess)
+				{
 					pendingAction();
+				}
 			}
 
 			this.NavigatedTo -= FlushPendingActions;
@@ -391,13 +412,19 @@ namespace Microsoft.Maui.Controls
 			{
 				var child = element as VisualElement;
 				if (child == null)
+				{
 					continue;
+				}
 
 				var page = child as Page;
 				if (page != null && page.IgnoresContainerArea)
+				{
 					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
+				}
 				else
+				{
 					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, area);
+				}
 			}
 		}
 
@@ -420,11 +447,15 @@ namespace Microsoft.Maui.Controls
 		protected virtual bool OnBackButtonPressed()
 		{
 			if (RealParent is BaseShellItem || RealParent is Shell)
+			{
 				return false;
+			}
 
 			var window = RealParent as Window;
 			if (window == null || this == window.Page)
+			{
 				return false;
+			}
 
 			var canceled = false;
 			EventHandler handler = (sender, args) => { canceled = true; };
@@ -454,7 +485,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (_titleView != null)
+			{
 				SetInheritedBindingContext(_titleView, BindingContext);
+			}
 		}
 
 		/// <summary>
@@ -485,7 +518,10 @@ namespace Microsoft.Maui.Controls
 		protected override void OnParentSet()
 		{
 			if (!Application.IsApplicationOrWindowOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem))
+			{
 				throw new InvalidOperationException("Parent of a Page must also be a Page");
+			}
+
 			base.OnParentSet();
 		}
 
@@ -507,14 +543,18 @@ namespace Microsoft.Maui.Controls
 		protected void UpdateChildrenLayout()
 		{
 			if (!ShouldLayoutChildren())
+			{
 				return;
+			}
 
 			var logicalChildren = this.InternalChildren;
 			var startingLayout = new List<Rect>(logicalChildren.Count);
 			foreach (Element el in logicalChildren)
 			{
 				if (el is VisualElement c)
+				{
 					startingLayout.Add(c.Bounds);
+				}
 			}
 
 			double x = Padding.Left;
@@ -545,7 +585,9 @@ namespace Microsoft.Maui.Controls
 			{
 				Page page = container.CurrentPage;
 				if (page != null && page.IsVisible && (!page.IsPlatformEnabled || !page.IsPlatformStateConsistent))
+				{
 					return;
+				}
 			}
 			else
 			{
@@ -554,7 +596,9 @@ namespace Microsoft.Maui.Controls
 				{
 					var v = logicalChildren[i] as VisualElement;
 					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
+					{
 						return;
+					}
 				}
 			}
 
@@ -569,7 +613,9 @@ namespace Microsoft.Maui.Controls
 		internal void OnAppearing(Action action)
 		{
 			if (_hasAppeared)
+			{
 				action();
+			}
 			else
 			{
 				EventHandler eventHandler = null;
@@ -601,7 +647,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (_hasAppeared)
+			{
 				return;
+			}
 
 			_hasAppeared = true;
 
@@ -609,9 +657,13 @@ namespace Microsoft.Maui.Controls
 			{
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 				if (IsPlatformEnabled)
+				{
 					MessagingCenter.Send(this, BusySetSignalName, true);
+				}
 				else
+				{
 					_pendingActions.Add(() => MessagingCenter.Send(this, BusySetSignalName, true));
+				}
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
 
@@ -632,13 +684,17 @@ namespace Microsoft.Maui.Controls
 		public void SendDisappearing()
 		{
 			if (!_hasAppeared)
+			{
 				return;
+			}
 
 			_hasAppeared = false;
 
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			if (IsBusy)
+			{
 				MessagingCenter.Send(this, BusySetSignalName, false);
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			var pageContainer = this as IPageContainer<Page>;
@@ -653,7 +709,9 @@ namespace Microsoft.Maui.Controls
 		Application FindApplication(Element element)
 		{
 			if (element == null)
+			{
 				return null;
+			}
 
 			return (element.Parent is Application app) ? app : FindApplication(element.Parent);
 		}
@@ -666,7 +724,9 @@ namespace Microsoft.Maui.Controls
 				{
 					var item = (Element)e.OldItems[i];
 					if (item is VisualElement visual)
+					{
 						visual.MeasureInvalidated -= OnChildMeasureInvalidated;
+					}
 
 					RemoveLogicalChild(item);
 				}
@@ -680,7 +740,9 @@ namespace Microsoft.Maui.Controls
 				{
 					int insertIndex = index;
 					if (insertIndex < 0)
+					{
 						insertIndex = InternalChildren.IndexOf(item);
+					}
 
 					if (item is VisualElement visual)
 					{
@@ -690,10 +752,14 @@ namespace Microsoft.Maui.Controls
 						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 					}
 					else
+					{
 						InsertLogicalChild(insertIndex, item);
+					}
 
 					if (index >= 0)
+					{
 						index++;
+					}
 				}
 			}
 		}
@@ -701,7 +767,9 @@ namespace Microsoft.Maui.Controls
 		void OnPageBusyChanged()
 		{
 			if (!_hasAppeared)
+			{
 				return;
+			}
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			MessagingCenter.Send(this, BusySetSignalName, IsBusy);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -712,13 +780,17 @@ namespace Microsoft.Maui.Controls
 			if (args.NewItems != null)
 			{
 				foreach (IElementDefinition item in args.NewItems)
+				{
 					item.Parent = this;
+				}
 			}
 
 			if (args.OldItems != null)
 			{
 				foreach (IElementDefinition item in args.OldItems)
+				{
 					item.Parent = null;
+				}
 			}
 		}
 
@@ -726,13 +798,18 @@ namespace Microsoft.Maui.Controls
 		{
 			var logicalChildren = this.InternalChildren;
 			if (logicalChildren.Count == 0 || Width <= 0 || Height <= 0 || !IsPlatformStateConsistent)
+			{
 				return false;
+			}
 
 			var container = this as IPageContainer<Page>;
 			if (container?.CurrentPage != null)
 			{
 				if (InternalChildren.Contains(container.CurrentPage))
+				{
 					return container.CurrentPage.IsPlatformEnabled && container.CurrentPage.IsPlatformStateConsistent;
+				}
+
 				return true;
 			}
 
@@ -768,11 +845,19 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (!Brush.IsNullOrEmpty(Background))
+				{
 					return Background;
+				}
+
 				if (!ImageSource.IsNullOrEmpty(BackgroundImageSource))
+				{
 					return new ImageSourcePaint(BackgroundImageSource);
+				}
+
 				if (BackgroundColor.IsNotDefault())
+				{
 					return new SolidColorBrush(BackgroundColor);
+				}
 
 				return null;
 			}

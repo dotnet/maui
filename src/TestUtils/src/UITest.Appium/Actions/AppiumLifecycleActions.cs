@@ -52,7 +52,9 @@ namespace UITest.Appium
 		CommandResponse LaunchApp(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
+			{
 				return CommandResponse.FailedEmptyResponse;
+			}
 
 			_app.Driver.LaunchApp();
 
@@ -62,7 +64,9 @@ namespace UITest.Appium
 		CommandResponse ForegroundApp(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
+			{
 				return CommandResponse.FailedEmptyResponse;
+			}
 
 			if (_app.Driver is WindowsDriver wd)
 			{
@@ -79,11 +83,15 @@ namespace UITest.Appium
 		CommandResponse BackgroundApp(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
+			{
 				return CommandResponse.FailedEmptyResponse;
+			}
 
 			_app.Driver.BackgroundApp();
 			if (_app.GetTestDevice() == TestDevice.Android)
+			{
 				Thread.Sleep(500);
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -91,7 +99,9 @@ namespace UITest.Appium
 		CommandResponse ResetApp(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
+			{
 				return CommandResponse.FailedEmptyResponse;
+			}
 
 			// Terminate App not supported on Mac
 			if (_app.GetTestDevice() == TestDevice.Mac)
@@ -108,9 +118,13 @@ namespace UITest.Appium
 				_app.Driver.TerminateApp(_app.GetAppId());
 
 				if (_app.GetTestDevice() == TestDevice.iOS)
+				{
 					_app.Driver.ActivateApp(_app.GetAppId());
+				}
 				else
+				{
 					_app.Driver.LaunchApp();
+				}
 			}
 
 			return CommandResponse.SuccessEmptyResponse;
@@ -119,10 +133,14 @@ namespace UITest.Appium
 		CommandResponse CloseApp(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
+			{
 				return CommandResponse.FailedEmptyResponse;
+			}
 
-			if(_app.AppState != ApplicationState.NotRunning)
+			if (_app.AppState != ApplicationState.NotRunning)
+			{
 				_app.Driver.CloseApp();
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -130,7 +148,9 @@ namespace UITest.Appium
 		CommandResponse Back(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
+			{
 				return CommandResponse.FailedEmptyResponse;
+			}
 
 			// Navigate backwards in the history, if possible.
 			_app.Driver.Navigate().Back();

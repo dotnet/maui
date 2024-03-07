@@ -43,7 +43,9 @@ namespace Microsoft.Maui.DeviceTests
 				var tuples = formattedString.ToRunAndColorsTuples(fontManager: fontManager);
 
 				foreach (var t in tuples)
+				{
 					result += t.Item1.Text;
+				}
 #endif
 				return result;
 			});

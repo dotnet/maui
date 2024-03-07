@@ -43,9 +43,13 @@ namespace Microsoft.Maui
 			void newMethod(IElementHandler handler, IElement view)
 			{
 				if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
+				{
 					method((TViewHandler)handler!, v, previousMethod);
+				}
 				else
+				{
 					previousMethod?.Invoke(handler!, view);
+				}
 			}
 
 			propertyMapper.Add(key, newMethod);
@@ -102,7 +106,9 @@ namespace Microsoft.Maui
 				action?.Invoke(handler, view);
 
 				if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
+				{
 					method((TViewHandler)handler!, v);
+				}
 			});
 		}
 
@@ -140,7 +146,9 @@ namespace Microsoft.Maui
 			propertyMapper.ModifyMapping(key, (handler, view, action) =>
 			{
 				if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
+				{
 					method((TViewHandler)handler!, v);
+				}
 
 				action?.Invoke(handler!, view);
 			});

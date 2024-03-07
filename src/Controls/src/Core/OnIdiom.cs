@@ -77,15 +77,25 @@ namespace Microsoft.Maui.Controls
 		{
 			var idiom = DeviceInfo.Idiom;
 			if (idiom == DeviceIdiom.Tablet)
+			{
 				return onIdiom._isTabletSet ? onIdiom.Tablet : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
 			else if (idiom == DeviceIdiom.Desktop)
+			{
 				return onIdiom._isDesktopSet ? onIdiom.Desktop : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
 			else if (idiom == DeviceIdiom.TV)
+			{
 				return onIdiom._isTVSet ? onIdiom.TV : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
 			else if (idiom == DeviceIdiom.Watch)
+			{
 				return onIdiom._isWatchSet ? onIdiom.Watch : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
 			else
+			{
 				return onIdiom._isPhoneSet ? onIdiom.Phone : (onIdiom._isDefaultSet ? onIdiom.Default : default(T));
+			}
 		}
 	}
 }

@@ -25,7 +25,22 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			// create the controller
 			var messageController = new MFMessageComposeViewController();
 			if (!string.IsNullOrWhiteSpace(message?.Body))
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
 				messageController.Body = message.Body;
+
+			messageController.Recipients = message?.Recipients?.ToArray() ?? Array.Empty<string>();
+After:
+			{
+				messageController.Recipients = message?.Recipients?.ToArray() ?? Array.Empty<string>();
+*/
+			{
+				messageController.Body = message.Body;
+			}
+
+			messageController.Body = message.Body;
+			}
 
 			messageController.Recipients = message?.Recipients?.ToArray() ?? Array.Empty<string>();
 

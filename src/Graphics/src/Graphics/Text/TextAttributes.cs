@@ -17,10 +17,15 @@ namespace Microsoft.Maui.Graphics.Text
 			IReadOnlyDictionary<TextAttribute, string> second)
 		{
 			foreach (var entry in first)
+			{
 				this[entry.Key] = entry.Value;
+			}
 
 			foreach (var entry in second)
+			{
+			{
 				this[entry.Key] = entry.Value;
+			}
 		}
 	}
 }

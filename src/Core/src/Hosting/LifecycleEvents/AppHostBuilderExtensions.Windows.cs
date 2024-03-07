@@ -39,7 +39,9 @@ namespace Microsoft.Maui.LifecycleEvents
 				.OnVisibilityChanged((window, args) =>
 				{
 					if (!args.Visible)
+					{
 						window.GetWindow()?.Stopped();
+					}
 				})
 				.OnClosed((window, args) =>
 				{

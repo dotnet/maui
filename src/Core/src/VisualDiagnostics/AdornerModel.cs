@@ -91,7 +91,9 @@ namespace Microsoft.Maui
 		{
 			Rect rc = DpiHelper.RoundToPixel(rect, unitsPerPixel);
 			if (!rc.IsEmpty)
+			{
 				marginZones.Add(rc);
+			}
 		}
 
 		/// <summary>
@@ -165,7 +167,9 @@ namespace Microsoft.Maui
 			{
 				//in case they are Infinities (then epsilon check does not work)
 				if (value1 == value2)
+				{
 					return true;
+				}
 				// This computes (|value1-value2| / (|value1| + |value2| + 10.0)) < Tolerances.Epsilon
 				double eps = (Math.Abs(value1) + Math.Abs(value2) + 10.0) * Tolerances.Epsilon;
 				double delta = value1 - value2;

@@ -165,7 +165,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				var stateGroups = WVisualStateManager.GetVisualStateGroups(_rootGrid).ToList();
 				_DeleteButtonVisibleStateGroups = stateGroups.SingleOrDefault(sg => sg.Name == "ButtonStates");
 				if (_DeleteButtonVisibleStateGroups != null)
+				{
 					_DeleteButtonVisibleState = _DeleteButtonVisibleStateGroups.States.SingleOrDefault(s => s.Name == "ButtonVisible");
+				}
+
 				UpdateClearButtonVisible();
 			}
 
@@ -257,13 +260,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var lengthDifference = passwordText.Length - realText.Length;
 			if (lengthDifference > 0)
+			{
 				realText = realText.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
+			}
 			else if (lengthDifference < 0)
+			{
 				realText = realText.Remove(start, -lengthDifference);
+			}
 
 			var sb = new StringBuilder(passwordText.Length);
 			for (int i = 0; i < passwordText.Length; i++)
+			{
 				sb.Append(passwordText[i] == ObfuscationCharacter ? realText[i] : passwordText[i]);
+			}
 
 			return sb.ToString();
 		}
@@ -271,7 +280,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		string Obfuscate(string text, bool leaveLastVisible = false)
 		{
 			if (!leaveLastVisible)
+			{
 				return new string(ObfuscationCharacter, text.Length);
+			}
 
 			return text.Length == 1
 				? text
@@ -337,11 +348,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 					base.OnKeyDown(e);
 					if (_cachedSelectionLength > 0 && !ctrlDown)
+
+/* Unmerged change from project 'Compatibility(net8.0-windows10.0.20348.0)'
+Before:
 						Text = Text.Remove(SelectionStart, _cachedSelectionLength);
 				}
 			}
 			else
+After:
+					{
+						Text = Text.Remove(SelectionStart, _cachedSelectionLength);
+					}
+				}
+			}
+			else
+			{
+*/
+					{
+						Text = Text.Remove(SelectionStart, _cachedSelectionLength);
+					}
+				}
+			}
+			else
+			{
 				base.OnKeyDown(e);
+			}
 		}
 
 		void OnTextChanged(object sender, Microsoft.UI.Xaml.Controls.TextChangedEventArgs textChangedEventArgs)
@@ -361,10 +392,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				var savedSelectionStart = SelectionStart;
 
 				if (Text != updatedRealText)
+				{
 					Text = updatedRealText;
+				}
 
 				if (base.Text != updatedText)
+				{
 					base.Text = updatedText;
+				}
 
 				SelectionStart = savedSelectionStart;
 			}
@@ -399,9 +434,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (states != null && visibleState != null)
 			{
 				if (ClearButtonVisible && !states.Contains(visibleState))
+				{
 					states.Add(visibleState);
+				}
 				else if (!ClearButtonVisible)
+				{
 					states.Remove(visibleState);
+				}
+				}
 			}
 		}
 

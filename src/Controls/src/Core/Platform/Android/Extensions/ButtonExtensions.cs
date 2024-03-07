@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var context = materialButton.Context;
 			if (context == null)
+			{
 				return;
+			}
 
 			var icon = materialButton.Icon ??
 						TextViewCompat.GetCompoundDrawablesRelative(materialButton)[3];

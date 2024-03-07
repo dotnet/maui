@@ -111,7 +111,9 @@ namespace Samples.ViewModel
 			// pick a file
 			var result = await PickAndShow(PickOptions.Images);
 			if (result == null)
+			{
 				return;
+			}
 
 			// copy it locally
 			var copyDir = FileSystem.CacheDirectory;
@@ -119,7 +121,9 @@ namespace Samples.ViewModel
 			var copyPath = Path.Combine(copyDir, result.FileName);
 			using (var destination = File.Create(copyPath))
 			using (var source = await result.OpenReadAsync())
+			{
 				await source.CopyToAsync(destination);
+			}
 
 			// send it via an email
 			await Email.ComposeAsync(new EmailMessage

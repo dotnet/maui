@@ -34,12 +34,16 @@ namespace Microsoft.Maui.Handlers
 		static void UpdateRefreshColor(IRefreshViewHandler handler)
 		{
 			if (handler.VirtualView.RefreshColor == null)
+			{
 				return;
+			}
 
 			var color = handler.VirtualView.RefreshColor.ToColor()?.ToInt();
 
 			if (color != null)
+			{
 				handler.PlatformView.SetColorSchemeColors(color.Value);
+			}
 		}
 
 		static void UpdateIsRefreshing(IRefreshViewHandler handler) =>
@@ -48,11 +52,15 @@ namespace Microsoft.Maui.Handlers
 		static void UpdateBackground(IRefreshViewHandler handler)
 		{
 			if (handler.VirtualView.Background == null)
+			{
 				return;
+			}
 
 			var color = handler.VirtualView.Background.ToColor()?.ToInt();
 			if (color != null)
+			{
 				handler.PlatformView.SetProgressBackgroundColorSchemeColor(color.Value);
+			}
 		}
 
 		public static void MapBackground(IRefreshViewHandler handler, IView view)

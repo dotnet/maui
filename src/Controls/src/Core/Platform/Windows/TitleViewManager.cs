@@ -65,20 +65,32 @@ namespace Microsoft.Maui.Controls.Platform
 		void UpdateTitleViewWidth()
 		{
 			if (TitleView == null || TitleViewPresenter == null || CommandBar == null)
+			{
 				return;
+			}
 
 			if (CommandBar.ActualWidth <= 0)
+			{
 				return;
+			}
 
 			double buttonWidth = 0;
 
 			foreach (var item in CommandBar.GetDescendantsByName<Microsoft.UI.Xaml.Controls.Button>("MoreButton"))
+			{
 				if (item.Visibility == WVisibility.Visible)
+				{
 					buttonWidth += item.ActualWidth;
+				}
+			}
 
 			if (!CommandBar.IsDynamicOverflowEnabled)
+			{
 				foreach (var item in CommandBar.GetDescendantsByName<ItemsControl>("PrimaryItemsControl"))
+				{
 					buttonWidth += item.ActualWidth;
+				}
+			}
 
 			TitleViewPresenter.Width = CommandBar.ActualWidth - buttonWidth;
 			UpdateVisibility();
@@ -87,9 +99,13 @@ namespace Microsoft.Maui.Controls.Platform
 		void UpdateVisibility()
 		{
 			if (TitleView == null)
+			{
 				_titleViewRendererController.TitleViewVisibility = Visibility.Collapsed;
+			}
 			else
+			{
 				_titleViewRendererController.TitleViewVisibility = Visibility.Visible;
+			}
 		}
 	}
 }

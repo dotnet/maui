@@ -50,7 +50,9 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 		async void OnPopPage(object sender, EventArgs e)
 		{
 			if (Navigation.NavigationStack.Count > 1)
+			{
 				await Navigation.PopAsync();
+			}
 		}
 
 		async void OnPopToRoot(object sender, EventArgs e)
@@ -80,7 +82,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 		{
 			AppShell!.FlyoutIsPresented = !AppShell!.FlyoutIsPresented;
 		}
-		
+
 		void OnToggleFlyoutBackgroundColor(object sender, EventArgs e)
 		{
 			AppShell!.RemoveBinding(Shell.FlyoutBackgroundProperty);
@@ -122,9 +124,13 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 		{
 			var searchHandler = Shell.GetSearchHandler(this);
 			if (searchHandler != null)
+			{
 				RemoveSearchHandler();
+			}
 			else
+			{
 				AddSearchHandler("text here");
+			}
 		}
 
 		void OnToggleTabBar(object sender, EventArgs e)

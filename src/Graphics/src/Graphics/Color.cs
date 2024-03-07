@@ -102,7 +102,9 @@ namespace Microsoft.Maui.Graphics
 		public override bool Equals(object obj)
 		{
 			if (obj is Color other)
+			{
 				return ToInt() == other.ToInt();
+			}
 
 			return base.Equals(obj);
 		}
@@ -111,7 +113,9 @@ namespace Microsoft.Maui.Graphics
 		public string ToHex(bool includeAlpha)
 		{
 			if (includeAlpha || Alpha < 1)
+			{
 				return "#" + ToHex(Alpha) + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+			}
 
 			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
 		}
@@ -124,7 +128,9 @@ namespace Microsoft.Maui.Graphics
 		public string ToArgbHex(bool includeAlpha = false)
 		{
 			if (includeAlpha || Alpha < 1)
+			{
 				return "#" + ToHex(Alpha) + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+			}
 
 			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
 		}
@@ -132,7 +138,9 @@ namespace Microsoft.Maui.Graphics
 		public string ToRgbaHex(bool includeAlpha = false)
 		{
 			if (includeAlpha || Alpha < 1)
+			{
 				return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue) + ToHex(Alpha);
+			}
 
 			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
 		}
@@ -151,7 +159,9 @@ namespace Microsoft.Maui.Graphics
 		public Color WithAlpha(float alpha)
 		{
 			if (Math.Abs(alpha - Alpha) < GeometryUtil.Epsilon)
+			{
 				return this;
+			}
 
 			return new Color(Red, Green, Blue, alpha);
 		}
@@ -166,7 +176,9 @@ namespace Microsoft.Maui.Graphics
 			var intValue = (int)(255f * value);
 			var stringValue = intValue.ToString("X");
 			if (stringValue.Length == 1)
+			{
 				return "0" + stringValue;
+			}
 
 			return stringValue;
 		}
@@ -199,7 +211,10 @@ namespace Microsoft.Maui.Graphics
 			m = Math.Min(m, Blue);
 			var l = (m + v) / 2.0f;
 			if (l <= 0.0)
+			{
 				return 0;
+			}
+
 			return l;
 		}
 
@@ -344,7 +359,135 @@ namespace Microsoft.Maui.Graphics
 			{
 				//Skip # if present
 				if (colorAsHex[0] == '#')
+
+/* Unmerged change from project 'Graphics(net8.0)'
+Before:
 					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-ios)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-android)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.19041.0)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.19041.0)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
 
 				if (colorAsHex.Length == 6 || colorAsHex.Length == 3)
 				{
@@ -394,7 +537,135 @@ namespace Microsoft.Maui.Graphics
 			{
 				//Skip # if present
 				if (colorAsHex[0] == '#')
+
+/* Unmerged change from project 'Graphics(net8.0)'
+Before:
 					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-ios)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-android)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.19041.0)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.19041.0)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					colorAsHex = colorAsHex.Slice(1);
+After:
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
+*/
+				{
+					colorAsHex = colorAsHex.Slice(1);
+				}
 
 				if (colorAsHex.Length == 6)
 				{
@@ -495,17 +766,31 @@ namespace Microsoft.Maui.Graphics
 			for (var i = 0; i < 3; i++)
 			{
 				if (t3[i] < 0)
+				{
 					t3[i] += 1.0f;
+				}
+
 				if (t3[i] > 1)
+				{
 					t3[i] -= 1.0f;
+				}
+
 				if (6.0 * t3[i] < 1.0)
+				{
 					clr[i] = temp1 + (temp2 - temp1) * t3[i] * 6.0f;
+				}
 				else if (2.0 * t3[i] < 1.0)
+				{
 					clr[i] = temp2;
+				}
 				else if (3.0 * t3[i] < 2.0)
+				{
 					clr[i] = temp1 + (temp2 - temp1) * (2.0f / 3.0f - t3[i]) * 6.0f;
+				}
 				else
+				{
 					clr[i] = temp1;
+				}
 			}
 
 			r = clr[0];
@@ -578,7 +863,9 @@ namespace Microsoft.Maui.Graphics
 		public static Color Parse(string value)
 		{
 			if (TryParse(value, out var c) && c != default)
+			{
 				return c;
+			}
 
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
 		}
@@ -620,7 +907,10 @@ namespace Microsoft.Maui.Graphics
 					valid &= TryParseOpacity(quad3, out double a);
 
 					if (!valid)
+					{
+					{
 						goto ReturnFalse;
+					}
 
 					color = new Color((float)r, (float)g, (float)b, (float)a);
 					return true;
@@ -628,6 +918,9 @@ namespace Microsoft.Maui.Graphics
 
 				if (value.StartsWith("rgb".AsSpan(), StringComparison.OrdinalIgnoreCase))
 				{
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
 					if (!TryParseThreeColorRanges(value,
 						out ReadOnlySpan<char> triplet0,
 						out ReadOnlySpan<char> triplet1,
@@ -654,6 +947,2697 @@ namespace Microsoft.Maui.Graphics
 						out ReadOnlySpan<char> quad1,
 						out ReadOnlySpan<char> quad2,
 						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = new Color((float)r, (float)g, (float)b);
+					return true;
+				}
+
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = new Color((float)r, (float)g, (float)b);
+					return true;
+				}
+
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = new Color((float)r, (float)g, (float)b);
+					return true;
+				}
+
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = new Color((float)r, (float)g, (float)b);
+					return true;
+				}
+
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = new Color((float)r, (float)g, (float)b);
+					return true;
+				}
+
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = new Color((float)r, (float)g, (float)b);
+					return true;
+				}
+
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+					if 
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsla(h, s, l, a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = new Color((float)r, (float)g, (float)b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsla(h, s, l, a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = new Color((float)r, (float)g, (float)b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsla(h, s, l, a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = new Color((float)r, (float)g, (float)b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsla(h, s, l, a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = new Color((float)r, (float)g, (float)b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsla(h, s, l, a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = new Color((float)r, (float)g, (float)b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsla(h, s, l, a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = new Color((float)r, (float)g, (float)b);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsla(h, s, l, a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = new Color((float)r, (float)g, (float)b);
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+(
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+
+					if (!valid)
+						goto ReturnFalse;
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+
+					if (!valid)
+						goto ReturnFalse;
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+
+					if (!valid)
+						goto ReturnFalse;
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+
+					if (!valid)
+						goto ReturnFalse;
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+
+					if (!valid)
+						goto ReturnFalse;
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+
+					if (!valid)
+						goto ReturnFalse;
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+
+					if (!valid)
+						goto ReturnFalse;
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					color = Color.FromHsla(h, s, l);
+After:
+					color = Color.FromHsla(h, s, l, a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					color = Color.FromHsla(h, s, l);
+After:
+					color = Color.FromHsla(h, s, l, a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					color = Color.FromHsla(h, s, l);
+After:
+					color = Color.FromHsla(h, s, l, a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					color = Color.FromHsla(h, s, l);
+After:
+					color = Color.FromHsla(h, s, l, a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					color = Color.FromHsla(h, s, l);
+After:
+					color = Color.FromHsla(h, s, l, a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					color = Color.FromHsla(h, s, l);
+After:
+					color = Color.FromHsla(h, s, l, a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					color = Color.FromHsla(h, s, l);
+After:
+					color = Color.FromHsla(h, s, l, a);
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+!TryParseThreeColorRanges(value
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+After:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+After:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsla(h, s, l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsla(h, s, l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsla(h, s, l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsla(h, s, l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsla(h, s, l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsla(h, s, l);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+						goto ReturnFalse;
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+After:
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsla(h, s, l);
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+After:
+				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+After:
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+						goto ReturnFalse;
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+After:
+					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
+					valid &= TryParseOpacity(quad3, out double a);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				var namedColor = GetNamedColor(value);
+After:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+					return true;
+				}
+
+				var namedColor = GetNamedColor(value);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				var namedColor = GetNamedColor(value);
+				if (namedColor != null)
+After:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+					return true;
+				}
+
+				var namedColor = GetNamedColor(value);
+				if (namedColor != null)
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				var namedColor = GetNamedColor(value);
+				if (namedColor != null)
+After:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+					return true;
+				}
+
+				var namedColor = GetNamedColor(value);
+				if (namedColor != null)
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				var namedColor = GetNamedColor(value);
+After:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+					return true;
+				}
+
+				var namedColor = GetNamedColor(value);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				var namedColor = GetNamedColor(value);
+				if (namedColor != null)
+After:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+					return true;
+				}
+
+				var namedColor = GetNamedColor(value);
+				if (namedColor != null)
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+				var namedColor = GetNamedColor(value);
+After:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+					return true;
+				}
+
+				var namedColor = GetNamedColor(value);
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+				var namedColor = GetNamedColor(value);
+				if (namedColor != null)
+After:
+				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseThreeColorRanges(value,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
+					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
+					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = Color.FromHsv((float)h, (float)s, (float)v);
+					return true;
+				}
+
+				var namedColor = GetNamedColor(value);
+				if (namedColor != null)
+*/
+,
+						out ReadOnlySpan<char> triplet0,
+						out ReadOnlySpan<char> triplet1,
+						out ReadOnlySpan<char> triplet2))
+					{
+						goto ReturnFalse;
+					}
+
+					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
+					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
+					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
+
+					if (!valid)
+					{
+						goto ReturnFalse;
+					}
+
+					color = new Color((float)r, (float)g, (float)b);
+					return true;
+		
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+After:
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+				goto ReturnFalse;
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+				goto ReturnFalse;
+After:
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+			{
+				goto ReturnFalse;
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+				goto ReturnFalse;
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+				goto ReturnFalse;
+After:
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+			{
+				goto ReturnFalse;
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+After:
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+				goto ReturnFalse;
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+				goto ReturnFalse;
+After:
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+			{
+				goto ReturnFalse;
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+				goto ReturnFalse;
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+				goto ReturnFalse;
+After:
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+			{
+				goto ReturnFalse;
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+				goto ReturnFalse;
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+				goto ReturnFalse;
+After:
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+			{
+				goto ReturnFalse;
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				goto ReturnFalse;
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				goto ReturnFalse;
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+				goto ReturnFalse;
+After:
+			}
+
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+			{
+				goto ReturnFalse;
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+				goto ReturnFalse;
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+				goto ReturnFalse;
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+				goto ReturnFalse;
+After:
+			}
+
+			quad0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad1 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			quad2 = value.Slice(0, index);
+			quad3 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (quad3.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+
+			return true;
+
+		ReturnFalse:
+			quad0 = quad1 = quad2 = quad3 = default;
+			return false;
+		}
+
+		static bool TryParseThreeColorRanges(
+			ReadOnlySpan<char> value,
+			out ReadOnlySpan<char> triplet0,
+			out ReadOnlySpan<char> triplet1,
+			out ReadOnlySpan<char> triplet2)
+		{
+			var op = value.IndexOf('(');
+			var cp = value.LastIndexOf(')');
+			if (op < 0 || cp < 0 || cp < op)
+			{
+				goto ReturnFalse;
+			}
+
+			value = value.Slice(op + 1, cp - op - 1);
+
+			int index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet0 = value.Slice(0, index);
+			value = value.Slice(index + 1);
+
+			index = value.IndexOf(',');
+			if (index == -1)
+			{
+				goto ReturnFalse;
+			}
+
+			triplet1 = value.Slice(0, index);
+			triplet2 = value.Slice(index + 1);
+
+			// if there are more commas, fail
+			if (triplet2.IndexOf(',') != -1)
+			{
+				goto ReturnFalse;
+			}
+*/
+		}
+
+				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
+				{
+					if (!TryParseFourColorRanges(value,
+						out ReadOnlySpan<char> quad0,
+						out ReadOnlySpan<char> quad1,
+						out ReadOnlySpan<char> quad2,
+						out ReadOnlySpan<char> quad3))
 					{
 						goto ReturnFalse;
 					}
@@ -664,7 +3648,9 @@ namespace Microsoft.Maui.Graphics
 					valid &= TryParseOpacity(quad3, out double a);
 
 					if (!valid)
+					{
 						goto ReturnFalse;
+					}
 
 					color = Color.FromHsla(h, s, l, a);
 					return true;
@@ -685,7 +3671,9 @@ namespace Microsoft.Maui.Graphics
 					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
 
 					if (!valid)
+					{
 						goto ReturnFalse;
+					}
 
 					color = Color.FromHsla(h, s, l);
 					return true;
@@ -708,7 +3696,9 @@ namespace Microsoft.Maui.Graphics
 					valid &= TryParseOpacity(quad3, out double a);
 
 					if (!valid)
+					{
 						goto ReturnFalse;
+					}
 
 					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
 					return true;
@@ -729,7 +3719,9 @@ namespace Microsoft.Maui.Graphics
 					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
 
 					if (!valid)
+					{
 						goto ReturnFalse;
+					}
 
 					color = Color.FromHsv((float)h, (float)s, (float)v);
 					return true;
@@ -921,31 +3913,44 @@ namespace Microsoft.Maui.Graphics
 			var op = value.IndexOf('(');
 			var cp = value.LastIndexOf(')');
 			if (op < 0 || cp < 0 || cp < op)
+			{
 				goto ReturnFalse;
+			}
 
 			value = value.Slice(op + 1, cp - op - 1);
 
 			int index = value.IndexOf(',');
 			if (index == -1)
+			{
 				goto ReturnFalse;
+			}
+
 			quad0 = value.Slice(0, index);
 			value = value.Slice(index + 1);
 
 			index = value.IndexOf(',');
 			if (index == -1)
+			{
 				goto ReturnFalse;
+			}
+
 			quad1 = value.Slice(0, index);
 			value = value.Slice(index + 1);
 
 			index = value.IndexOf(',');
 			if (index == -1)
+			{
 				goto ReturnFalse;
+			}
+
 			quad2 = value.Slice(0, index);
 			quad3 = value.Slice(index + 1);
 
 			// if there are more commas, fail
 			if (quad3.IndexOf(',') != -1)
+			{
 				goto ReturnFalse;
+			}
 
 			return true;
 
@@ -963,25 +3968,35 @@ namespace Microsoft.Maui.Graphics
 			var op = value.IndexOf('(');
 			var cp = value.LastIndexOf(')');
 			if (op < 0 || cp < 0 || cp < op)
+			{
 				goto ReturnFalse;
+			}
 
 			value = value.Slice(op + 1, cp - op - 1);
 
 			int index = value.IndexOf(',');
 			if (index == -1)
+			{
 				goto ReturnFalse;
+			}
+
 			triplet0 = value.Slice(0, index);
 			value = value.Slice(index + 1);
 
 			index = value.IndexOf(',');
 			if (index == -1)
+			{
 				goto ReturnFalse;
+			}
+
 			triplet1 = value.Slice(0, index);
 			triplet2 = value.Slice(index + 1);
 
 			// if there are more commas, fail
 			if (triplet2.IndexOf(',') != -1)
+			{
 				goto ReturnFalse;
+			}
 
 			return true;
 

@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public static Fragment CreateSupportFragment(this ContentPage view, Context context)
 		{
 			if (!Forms.IsInitialized)
+			{
 				throw new InvalidOperationException("call Forms.Init() before this");
+			}
 
 			if (!(view.RealParent is Application))
 			{

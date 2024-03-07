@@ -21,7 +21,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var wGeometry = geometry.ToPlatform();
 
 			if (wGeometry is WRectangleGeometry wRectangleGeometry && frameworkElement.Clip != wRectangleGeometry)
+			{
+			{
 				frameworkElement.Clip = wRectangleGeometry;
+			}
+			}
 		}
 
 		public static void ClipVisual(this FrameworkElement frameworkElement, Geometry geometry)

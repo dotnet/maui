@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls
 		public static void CancelAnimations(this VisualElement view)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			view.AbortAnimation(nameof(LayoutTo));
 			view.AbortAnimation(nameof(TranslateTo));
@@ -39,7 +41,9 @@ namespace Microsoft.Maui.Controls
 			Action<VisualElement, double> updateAction, uint length = 250, Easing? easing = null)
 		{
 			if (easing == null)
+			{
 				easing = Easing.Linear;
+			}
 
 			var tcs = new TaskCompletionSource<bool>();
 
@@ -71,7 +75,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> FadeTo(this VisualElement view, double opacity, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			return AnimateTo(view, view.Opacity, opacity, nameof(FadeTo), (v, value) => v.Opacity = value, length, easing);
 		}
@@ -89,7 +95,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> LayoutTo(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			Rect start = view.Bounds;
 			Func<double, Rect> computeBounds = progress =>
@@ -117,7 +125,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> RelRotateTo(this VisualElement view, double drotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			return view.RotateTo(view.Rotation + drotation, length, easing);
 		}
@@ -135,7 +145,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> RelScaleTo(this VisualElement view, double dscale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			return view.ScaleTo(view.Scale + dscale, length, easing);
 		}
@@ -153,7 +165,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> RotateTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			return AnimateTo(view, view.Rotation, rotation, nameof(RotateTo), (v, value) => v.Rotation = value, length, easing);
 		}
@@ -171,7 +185,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> RotateXTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			return AnimateTo(view, view.RotationX, rotation, nameof(RotateXTo), (v, value) => v.RotationX = value, length, easing);
 		}
@@ -189,7 +205,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> RotateYTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			return AnimateTo(view, view.RotationY, rotation, nameof(RotateYTo), (v, value) => v.RotationY = value, length, easing);
 		}
@@ -206,7 +224,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> ScaleTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			return AnimateTo(view, view.Scale, scale, nameof(ScaleTo), (v, value) => v.Scale = value, length, easing);
 		}
@@ -224,7 +244,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> ScaleXTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			return AnimateTo(view, view.ScaleX, scale, nameof(ScaleXTo), (v, value) => v.ScaleX = value, length, easing);
 		}
@@ -242,7 +264,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> ScaleYTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			return AnimateTo(view, view.ScaleY, scale, nameof(ScaleYTo), (v, value) => v.ScaleY = value, length, easing);
 		}
@@ -261,7 +285,9 @@ namespace Microsoft.Maui.Controls
 		public static Task<bool> TranslateTo(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
 			easing ??= Easing.Linear;
 
@@ -270,12 +296,16 @@ namespace Microsoft.Maui.Controls
 			Action<double> translateX = f =>
 			{
 				if (weakView.TryGetTarget(out VisualElement? v))
+				{
 					v.TranslationX = f;
+				}
 			};
 			Action<double> translateY = f =>
 			{
 				if (weakView.TryGetTarget(out VisualElement? v))
+				{
 					v.TranslationY = f;
+				}
 			};
 
 			new Animation
@@ -292,10 +322,14 @@ namespace Microsoft.Maui.Controls
 			if (animatable is Element element)
 			{
 				if (element.FindMauiContext() is IMauiContext viewMauiContext)
+				{
 					return viewMauiContext.GetAnimationManager();
+				}
 
 				if (Application.Current?.FindMauiContext() is IMauiContext applicationMauiContext)
+				{
 					return applicationMauiContext.GetAnimationManager();
+				}
 			}
 
 			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
@@ -307,12 +341,16 @@ namespace Microsoft.Maui.Controls
 		internal static IMauiContext? FindMauiContext(this Element element, bool fallbackToAppMauiContext = false)
 		{
 			if (element is Maui.IElement fe && fe.Handler?.MauiContext != null)
+			{
 				return fe.Handler.MauiContext;
+			}
 
 			foreach (var parent in element.GetParentsPath())
 			{
 				if (parent is Maui.IElement parentView && parentView.Handler?.MauiContext != null)
+				{
 					return parentView.Handler.MauiContext;
+				}
 			}
 
 			return fallbackToAppMauiContext ? Application.Current?.FindMauiContext() : default;
@@ -330,12 +368,16 @@ namespace Microsoft.Maui.Controls
 		internal static Element? FindParentWith(this Element element, Func<Element, bool> withMatch, bool includeThis = false)
 		{
 			if (includeThis && withMatch(element))
+			{
 				return element;
+			}
 
 			foreach (var parent in element.GetParentsPath())
 			{
 				if (withMatch(parent))
+				{
 					return parent;
+				}
 			}
 
 			return default;
@@ -345,12 +387,16 @@ namespace Microsoft.Maui.Controls
 			where T : Maui.IElement
 		{
 			if (includeThis && element is T view)
+			{
 				return view;
+			}
 
 			foreach (var parent in element.GetParentsPath())
 			{
 				if (parent is T parentView)
+				{
 					return parentView;
+				}
 			}
 
 			return default;
@@ -359,7 +405,9 @@ namespace Microsoft.Maui.Controls
 		internal static IList<IGestureRecognizer>? GetCompositeGestureRecognizers(this Element element)
 		{
 			if (element is IGestureController gc)
+			{
 				return gc.CompositeGestureRecognizers;
+			}
 
 			return null;
 		}
@@ -394,21 +442,37 @@ namespace Microsoft.Maui.Controls
 			string? text = null;
 
 			if (element is ILabel label)
+			{
 				text = label.Text;
+			}
 			else if (element is IEntry entry)
+			{
 				text = entry.Text;
+			}
 			else if (element is IEditor editor)
+			{
 				text = editor.Text;
+			}
 			else if (element is ITimePicker tp)
+			{
 				text = tp.Time.ToString();
+			}
 			else if (element is IDatePicker dp)
+			{
 				text = dp.Date.ToString();
+			}
 			else if (element is ICheckBox cb)
+			{
 				text = cb.IsChecked.ToString();
+			}
 			else if (element is ISwitch sw)
+			{
 				text = sw.IsOn.ToString();
+			}
 			else if (element is IRadioButton rb)
+			{
 				text = rb.IsChecked.ToString();
+			}
 
 			return text;
 		}
@@ -463,7 +527,9 @@ namespace Microsoft.Maui.Controls
 		{
 			// if there is an attached handler, we use that and we will end up in the MapFocus method below
 			if (view.Handler is IViewHandler handler)
+			{
 				return handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+			}
 
 			// if there is no handler, we need to still run some code
 			var focusRequest = new FocusRequest();
@@ -505,7 +571,9 @@ namespace Microsoft.Maui.Controls
 			var window = (element as Window) ?? (element as IWindowController)?.Window;
 
 			if (window is null)
+			{
 				return null;
+			}
 
 			var modalStack = window.Navigation.ModalStack;
 			if (modalStack.Count > 0)

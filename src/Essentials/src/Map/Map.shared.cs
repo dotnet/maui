@@ -203,10 +203,14 @@ namespace Microsoft.Maui.ApplicationModel
 		public static Task OpenAsync(this IMap map, Location location, MapLaunchOptions options)
 		{
 			if (location == null)
+			{
 				throw new ArgumentNullException(nameof(location));
+			}
 
 			if (options == null)
+			{
 				throw new ArgumentNullException(nameof(options));
+			}
 
 			return map.OpenAsync(location.Latitude, location.Longitude, options);
 		}
@@ -234,10 +238,14 @@ namespace Microsoft.Maui.ApplicationModel
 		public static Task<bool> TryOpenAsync(this IMap map, Location location, MapLaunchOptions options)
 		{
 			if (location == null)
+			{
 				throw new ArgumentNullException(nameof(location));
+			}
 
 			if (options == null)
+			{
 				throw new ArgumentNullException(nameof(options));
+			}
 
 			return map.TryOpenAsync(location.Latitude, location.Longitude, options);
 		}

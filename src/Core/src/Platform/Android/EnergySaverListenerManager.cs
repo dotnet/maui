@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Platform
 		private void OnEnergySaverStatusChanged(object? sender, EnergySaverStatusChangedEventArgs e)
 		{
 			if (_disposedValue)
+			{
 				return;
+			}
 
 			_listeners.ForEach(l => l.OnStatusUpdated(e.EnergySaverStatus == EnergySaverStatus.On));
 		}
@@ -24,7 +26,9 @@ namespace Microsoft.Maui.Platform
 		public void Add(IEnergySaverListener listener)
 		{
 			if (_disposedValue)
+			{
 				throw new ObjectDisposedException(null);
+			}
 
 			_listeners.Add(listener);
 			listener.OnStatusUpdated(Battery.EnergySaverStatus == EnergySaverStatus.On);
@@ -33,7 +37,9 @@ namespace Microsoft.Maui.Platform
 		public void Remove(IEnergySaverListener listener)
 		{
 			if (_disposedValue)
+			{
 				throw new ObjectDisposedException(null);
+			}
 
 			_listeners.Remove(listener);
 		}

@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBackground(this AView view, Brush brush)
 		{
 			if (view == null)
+			{
 				return;
+			}
 
 			if (view.Background is GradientStrokeDrawable)
 			{
@@ -26,14 +28,18 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (Brush.IsNullOrEmpty(brush))
+			{
 				return;
+			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)
 			{
 				GradientStopCollection gradients = linearGradientBrush.GradientStops;
 
 				if (!IsValidGradient(gradients))
+				{
 					return;
+				}
 			}
 
 			if (brush is RadialGradientBrush radialGradientBrush)
@@ -41,7 +47,9 @@ namespace Microsoft.Maui.Controls.Platform
 				GradientStopCollection gradients = radialGradientBrush.GradientStops;
 
 				if (!IsValidGradient(gradients))
+				{
 					return;
+				}
 			}
 
 			view.SetPaintGradient(brush);
@@ -50,7 +58,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBackground(this Paint paint, Brush brush, int height, int width)
 		{
 			if (paint == null || brush == null || brush.IsEmpty)
+			{
 				return;
+			}
 
 			if (brush is SolidColorBrush solidColorBrush)
 			{
@@ -75,7 +85,9 @@ namespace Microsoft.Maui.Controls.Platform
 				var offsets = gradientBrushData.Item2;
 
 				if (colors.Length < 2)
+				{
 					return;
+				}
 
 				var linearGradientShader = new LinearGradient(
 					width * x1,
@@ -101,7 +113,9 @@ namespace Microsoft.Maui.Controls.Platform
 				var offsets = gradientBrushData.Item2;
 
 				if (colors.Length < 2)
+				{
 					return;
+				}
 
 				var radialGradientShader = new RadialGradient(
 					width * centerX,
@@ -118,7 +132,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBackground(this GradientDrawable gradientDrawable, Brush brush, int height, int width)
 		{
 			if (gradientDrawable == null || brush == null || brush.IsEmpty)
+			{
 				return;
+			}
 
 			if (brush is SolidColorBrush solidColorBrush)
 			{
@@ -144,13 +160,17 @@ namespace Microsoft.Maui.Controls.Platform
 				double angle = Math.Atan2(yDiff, xDiff) * Rad2Deg;
 
 				if (angle < 0)
+				{
 					angle += 360;
+				}
 
 				var gradientBrushData = linearGradientBrush.GetGradientBrushData();
 				var colors = gradientBrushData.Item1;
 
 				if (colors.Length < 2)
+				{
 					return;
+				}
 
 				gradientDrawable.SetGradientType(GradientType.LinearGradient);
 				gradientDrawable.SetColors(colors);
@@ -168,7 +188,9 @@ namespace Microsoft.Maui.Controls.Platform
 				var colors = gradientBrushData.Item1;
 
 				if (colors.Length < 2)
+				{
 					return;
+				}
 
 				gradientDrawable.SetGradientType(GradientType.RadialGradient);
 				gradientDrawable.SetGradientCenter(centerX, centerY);
@@ -180,7 +202,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static bool UseGradients(this GradientDrawable gradientDrawable)
 		{
 			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
 				return false;
+			}
 
 			var colors = gradientDrawable.GetColors();
 			return colors != null && colors.Length > 1;
@@ -189,7 +213,9 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static bool IsValidGradient(GradientStopCollection gradients)
 		{
 			if (gradients == null || gradients.Count == 0)
+			{
 				return false;
+			}
 
 			return true;
 		}
@@ -209,7 +235,9 @@ namespace Microsoft.Maui.Controls.Platform
 				gradientStrokeDrawable.SetColor(color);
 			}
 			else
+			{
 				gradientStrokeDrawable.SetGradient(brush);
+			}
 
 			view.Background?.Dispose();
 			view.Background = gradientStrokeDrawable;

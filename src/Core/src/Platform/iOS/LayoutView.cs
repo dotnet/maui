@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Platform
 			var result = base.HitTest(point, uievent);
 
 			if (result is null)
+			{
 				return null;
+			}
 
 			if (!_userInteractionEnabled && this.Equals(result))
 			{

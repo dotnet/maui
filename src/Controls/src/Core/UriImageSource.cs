@@ -54,7 +54,9 @@ namespace Microsoft.Maui.Controls
 		async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken userToken)
 		{
 			if (IsEmpty)
+			{
 				return null;
+			}
 
 			OnLoadingStarted();
 			userToken.Register(CancellationTokenSource.Cancel);
@@ -98,7 +100,9 @@ namespace Microsoft.Maui.Controls
 				// var key = GetKey();
 				// var cached = TryGetFromCache(key, out stream)
 				if (stream is null)
+				{
 					stream = await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
+				}
 				// if (!cached)
 				//    Cache(key, stream)
 			}

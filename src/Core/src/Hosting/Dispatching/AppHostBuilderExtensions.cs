@@ -66,9 +66,11 @@ namespace Microsoft.Maui.Hosting
 			}
 
 			var result = Dispatcher.GetForCurrentThread();
-			
+
 			if (fallBackToApplicationDispatcher && result is null)
+			{
 				result = services.GetRequiredService<ApplicationDispatcher>().Dispatcher;
+			}
 
 			return result!;
 		}

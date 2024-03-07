@@ -81,13 +81,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			base.LayoutSubviews();
 			if (Control != null && Element != null)
+			{
 				Control.Frame = new RectangleF(0, 0, (nfloat)Element.Width, (nfloat)Element.Height);
+			}
+			}
 		}
 
 		public override SizeF SizeThatFits(SizeF size)
 		{
 			if (Control == null)
+			{
 				return (base.SizeThatFits(size));
+			}
 
 			return Control.SizeThatFits(size);
 		}
@@ -135,15 +140,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			base.OnElementChanged(e);
 
 			if (e.OldElement != null)
+			{
 				e.OldElement.FocusChangeRequested -= ViewOnFocusChangeRequested;
+			}
 
 			if (e.NewElement != null)
 			{
 				if (Control != null && e.OldElement != null && e.OldElement.BackgroundColor != e.NewElement.BackgroundColor || e.NewElement.BackgroundColor != null)
+				{
 					SetBackgroundColor(e.NewElement.BackgroundColor);
+				}
 
 				if (Control != null && e.OldElement != null && e.OldElement.Background != e.NewElement.Background)
+				{
 					SetBackground(e.NewElement.Background);
+				}
 
 				e.NewElement.FocusChangeRequested += ViewOnFocusChangeRequested;
 			}
@@ -157,13 +168,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (Control != null)
 			{
 				if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				{
 					UpdateIsEnabled();
+				}
 				else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+				{
 					SetBackgroundColor(Element.BackgroundColor);
+				}
 				else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+				{
 					SetBackground(Element.Background);
+				}
 				else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				{
 					UpdateFlowDirection();
+				}
 			}
 
 			base.OnElementPropertyChanged(sender, e);
@@ -198,7 +217,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected override void SetAutomationId(string id)
 		{
 			if (Control == null)
+			{
 				base.SetAutomationId(id);
+			}
 			else
 			{
 				AccessibilityIdentifier = id + "_Container";
@@ -209,12 +230,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected override void SetBackgroundColor(Color color)
 		{
 			if (IsElementOrControlEmpty)
+			{
 				return;
+			}
 #if __MOBILE__
 			if (color == null)
+			{
 				Control.BackgroundColor = _defaultColor;
+			}
 			else
+			{
 				Control.BackgroundColor = color.ToPlatform();
+			}
 #else
 			Control.Layer.BackgroundColor = color == null ? _defaultColor : color.ToCGColor();
 #endif
@@ -223,7 +250,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected override void SetBackground(Brush brush)
 		{
 			if (IsElementOrControlEmpty)
+			{
 				return;
+			}
 
 			Control.UpdateBackground(brush);
 		}
@@ -259,7 +288,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility			// Make sure the control adheres to changes in UI theme
 			if (Forms.IsiOS13OrNewer && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			{
 				Control?.SetNeedsDisplay();
+			}
+			}
 		}
 
 		internal override void SendVisualElementInitialized(VisualElement element, NativeView nativeView)
@@ -271,31 +303,47 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateBackgroundColor()
 		{
 			if (IsElementOrControlEmpty)
+			{
 				return;
+			}
 
 			if (Element.BackgroundColor != null)
+			{
 				SetBackgroundColor(Element.BackgroundColor);
+			}
+			}
 		}
 
 		void UpdateBackground()
 		{
 			if (IsElementOrControlEmpty)
+			{
 				return;
+			}
 
 			Brush brush = Element.Background;
 
 			if (!Brush.IsNullOrEmpty(brush))
+			{
+			{
 				SetBackground(brush);
+			}
+			}
 		}
 
 		void UpdateIsEnabled()
 		{
 			if (IsElementOrControlEmpty)
+			{
 				return;
+			}
 
 			var uiControl = Control as NativeControl;
 			if (uiControl == null)
+			{
 				return;
+			}
+
 			uiControl.Enabled = Element.IsEnabled;
 		}
 
@@ -303,7 +351,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateFlowDirection()
 		{
 			if (IsElementOrControlEmpty)
+			{
 				return;
+			}
 
 			Control.UpdateFlowDirection(Element);
 		}
@@ -312,7 +362,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void ViewOnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs focusRequestArgs)
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 #if __MOBILE__
 			focusRequestArgs.Result = focusRequestArgs.Focus ? Control.BecomeFirstResponder() : Control.ResignFirstResponder();

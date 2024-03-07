@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateSnapBehavior(IItemsLayout iitemsLayout)
 		{
 			if (iitemsLayout is not ItemsLayout itemsLayout)
+			{
 				return;
+			}
 
 			var snapPointsType = itemsLayout.SnapPointsType;
 

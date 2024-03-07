@@ -30,9 +30,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 #if __IOS__
 			if (DeviceInfo.Version.Major >= 13)
+			{
 				Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
+			}
 			else
+			{
 				Assert.Equal(AppTheme.Unspecified, AppInfo.RequestedTheme);
+			}
 #elif WINDOWS_UWP || WINDOWS || __ANDROID__
 			Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
 #else

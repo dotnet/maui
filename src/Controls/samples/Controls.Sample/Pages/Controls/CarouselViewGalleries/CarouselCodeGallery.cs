@@ -58,9 +58,13 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			};
 
 			if (orientation == ItemsLayoutOrientation.Horizontal)
+			{
 				carouselView.PeekAreaInsets = new Thickness(30, 0, 30, 0);
+			}
 			else
+			{
 				carouselView.PeekAreaInsets = new Thickness(0, 30, 0, 30);
+			}
 
 			carouselView.Scrolled += CarouselViewScrolled;
 
@@ -88,9 +92,13 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				var peek = padi.Value;
 
 				if (orientation == ItemsLayoutOrientation.Horizontal)
+				{
 					carouselView.PeekAreaInsets = new Thickness(peek, 0, peek, 0);
+				}
 				else
+				{
 					carouselView.PeekAreaInsets = new Thickness(0, peek, 0, peek);
+				}
 			};
 
 			stckPeek.Children.Add(padi);

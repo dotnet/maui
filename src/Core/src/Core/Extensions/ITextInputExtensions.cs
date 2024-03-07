@@ -16,10 +16,15 @@ namespace Microsoft.Maui
 			var maxLength = textInput.MaxLength;
 
 			if (maxLength >= 0 && platformText.Length > maxLength)
+			{
 				platformText = platformText.Substring(0, maxLength);
+			}
 
 			if (mauiText != platformText)
+			{
 				textInput.Text = platformText;
+			}
+			}
 		}
 
 #if __IOS__
@@ -29,10 +34,14 @@ namespace Microsoft.Maui
 
 			// fix a crash on undo
 			if (range.Length + range.Location > currLength)
+			{
 				return false;
+			}
 
 			if (textInput.MaxLength < 0)
+			{
 				return true;
+			}
 
 			var addLength = replacementString?.Length ?? 0;
 			var remLength = range.Length;
@@ -47,11 +56,17 @@ namespace Microsoft.Maui
 		public static void UpdateText(this ITextInput textInput, Android.Text.TextChangedEventArgs e)
 		{
 			if (e.Text is Java.Lang.ICharSequence cs)
+			{
 				textInput.UpdateText(cs.ToString());
+			}
 			else if (e.Text != null)
+			{
 				textInput.UpdateText(String.Concat(e.Text));
+			}
 			else
+			{
 				textInput.UpdateText((string?)null);
+			}
 		}
 #endif
 	}

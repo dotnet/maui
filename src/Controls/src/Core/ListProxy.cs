@@ -38,11 +38,15 @@ namespace Microsoft.Maui.Controls
 			_collection = enumerable as ICollection;
 
 			if (_collection == null && enumerable is IReadOnlyCollection<object> coll)
+			{
 				_collection = new ReadOnlyListAdapter(coll);
+			}
 
 			_list = enumerable as IList;
 			if (_list == null && enumerable is IReadOnlyList<object>)
+			{
 				_list = new ReadOnlyListAdapter((IReadOnlyList<object>)enumerable);
+			}
 
 			if (enumerable is INotifyCollectionChanged changed)
 			{
@@ -73,12 +77,16 @@ namespace Microsoft.Maui.Controls
 		public bool Contains(object item)
 		{
 			if (_list != null)
+			{
 				return _list.Contains(item);
+			}
 
 			EnsureWindowCreated();
 
 			if (_items != null)
+			{
 				return _items.Values.Contains(item);
+			}
 
 			return false;
 		}
@@ -91,7 +99,9 @@ namespace Microsoft.Maui.Controls
 		public int IndexOf(object item)
 		{
 			if (_list != null)
+			{
 				return _list.IndexOf(item);
+			}
 
 			EnsureWindowCreated();
 
@@ -100,7 +110,9 @@ namespace Microsoft.Maui.Controls
 				foreach (KeyValuePair<int, object> kvp in _items)
 				{
 					if (Equals(kvp.Value, item))
+					{
 						return kvp.Key;
+					}
 				}
 			}
 
@@ -114,12 +126,16 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (_collection != null)
+				{
 					return _collection.Count;
+				}
 
 				EnsureWindowCreated();
 
 				if (_indexesCounted != null)
+				{
 					return _indexesCounted.Count;
+				}
 
 				return 0;
 			}
@@ -131,7 +147,10 @@ namespace Microsoft.Maui.Controls
 			{
 				object value;
 				if (!TryGetValue(index, out value))
+				{
+				{
 					throw new ArgumentOutOfRangeException("index");
+				}
 
 				return value;
 			}
@@ -148,15 +167,22 @@ namespace Microsoft.Maui.Controls
 			{
 				var dispose = _enumerator as IDisposable;
 				if (dispose != null)
+				{
 					dispose.Dispose();
+				}
 
 				_enumerator = null;
 			}
 
 			if (_items != null)
+			{
 				_items.Clear();
+			}
+
 			if (_indexesCounted != null)
+			{
 				_indexesCounted.Clear();
+			}
 
 			OnCountChanged();
 			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -167,23 +193,34 @@ namespace Microsoft.Maui.Controls
 		void ClearRange(int index, int clearCount)
 		{
 			if (_items == null)
+			{
+			{
 				return;
+			}
 
 			for (int i = index; i < index + clearCount; i++)
+			{
 				_items.Remove(i);
+			}
 		}
 
 		bool CountIndex(int index)
 		{
 			if (_collection != null)
+			{
 				return false;
+			}
 
 			// A collection is used in case TryGetValue is called out of order.
 			if (_indexesCounted == null)
+			{
 				_indexesCounted = new HashSet<int>();
+			}
 
 			if (_indexesCounted.Contains(index))
+			{
 				return false;
+			}
 
 			_indexesCounted.Add(index);
 			return true;
@@ -192,7 +229,10 @@ namespace Microsoft.Maui.Controls
 		void EnsureWindowCreated()
 		{
 			if (_items != null && _items.Count > 0)
+			{
+			{
 				return;
+			}
 
 			object value;
 			TryGetValue(0, out value);
@@ -234,14 +274,18 @@ namespace Microsoft.Maui.Controls
 		{
 			NotifyCollectionChangedEventHandler changed = CollectionChanged;
 			if (changed != null)
+			{
 				changed(this, e);
+			}
 		}
 
 		void OnCountChanged()
 		{
 			EventHandler changed = CountChanged;
 			if (changed != null)
+			{
 				changed(this, EventArgs.Empty);
+			}
 		}
 
 		bool TryGetValue(int index, out object value)
@@ -258,28 +302,225 @@ namespace Microsoft.Maui.Controls
 				Action getFromList = () =>
 				{
 					if (index >= _list.Count)
-						return;
+					{
+					
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					indexedValue = _list[index];
+					inRange = true;
+				};
+After:
+					}
 
 					indexedValue = _list[index];
 					inRange = true;
 				};
+*/
 
-				if (syncContext != null)
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 					syncContext.Callback(ProxiedEnumerable, syncContext.Context, getFromList, false);
 				else
 					getFromList();
-
-				value = indexedValue;
-				return inRange;
-			}
-
-			if (_collection != null && index >= _collection.Count)
+After:
+				{
+					syncContext.Callback(ProxiedEnumerable, syncContext.Context, getFromList, false);
+				}
+				else
+				{
+					getFromList();
+				}
+*/
+{
+						return;
+			
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				return false;
 			if (_items != null)
 			{
 				bool found = _items.TryGetValue(index, out value);
 				if (found || _finished)
 					return found;
+			}
+After:
+			{
+				return false;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			if (index >= _windowIndex + _windowSize)
+After:
+			if (_items != null)
+			{
+				bool found = _items.TryGetValue(index, out value);
+				if (found || _finished)
+				{
+					return found;
+				}
+			}
+
+			if (index >= _windowIndex + _windowSize)
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					dispose.Dispose();
+After:
+				{
+					dispose.Dispose();
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				_enumerator = ProxiedEnumerable.GetEnumerator();
+			if (_items == null)
+				_items = new Dictionary<int, object>();
+After:
+			{
+				_enumerator = ProxiedEnumerable.GetEnumerator();
+			}
+
+			if (_items == null)
+			{
+				_items = new Dictionary<int, object>();
+			}
+*/
+		}
+
+					indexedValue = _list[index];
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+							dispose.Dispose();
+After:
+						{
+							dispose.Dispose();
+						}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					move();
+				else
+					syncContext.Callback(ProxiedEnumerable, syncContext.Context, move, false);
+
+				if (!moved)
+					break;
+
+				if (CountIndex(_enumeratorIndex))
+					countChanged = true;
+
+				if (_enumeratorIndex >= _windowIndex)
+					_items.Add(_enumeratorIndex, _enumerator.Current);
+After:
+				{
+					move();
+				}
+				else
+				{
+					syncContext.Callback(ProxiedEnumerable, syncContext.Context, move, false);
+				}
+
+				if (!moved)
+				{
+					break;
+				}
+
+				if (CountIndex(_enumeratorIndex))
+				{
+					countChanged = true;
+				}
+
+				if (_enumeratorIndex >= _windowIndex)
+				{
+					_items.Add(_enumeratorIndex, _enumerator.Current);
+				}
+*/
+					inRange = true;
+				};
+
+				if (
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				OnCountChanged();
+After:
+			{
+				OnCountChanged();
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					throw new InvalidOperationException();
+
+				object value;
+				bool next = _proxy.TryGetValue(_index++, out value);
+				if (next)
+					Current = value;
+
+				return next;
+			}
+
+			public void Reset()
+			{
+				_index = 0;
+				Current = null;
+After:
+				{
+					throw new InvalidOperationException();
+				}
+
+				object value;
+				bool next = _proxy.TryGetValue(_index++, out value);
+				if (next)
+				{
+					Current = value;
+				}
+
+				return next;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			public object Current { get; private set; }
+After:
+			public void Reset()
+			{
+				_index = 0;
+				Current = null;
+			}
+
+			public object Current { get; private set; }
+*/
+syncContext != null)
+				{
+					syncContext.Callback(ProxiedEnumerable, syncContext.Context, getFromList, false);
+				}
+				else
+				{
+					getFromList();
+				}
+
+				value = indexedValue;
+				return inRange;
+			}
+
+			if (_collection != null && index >= _collection.Count)
+			{
+				return false;
+			}
+
+			if (_items != null)
+			{
+				bool found = _items.TryGetValue(index, out value);
+				if (found || _finished)
+				{
+					return found;
+				}
 			}
 
 			if (index >= _windowIndex + _windowSize)
@@ -304,16 +545,23 @@ namespace Microsoft.Maui.Controls
 
 				var dispose = _enumerator as IDisposable;
 				if (dispose != null)
+				{
 					dispose.Dispose();
+				}
 
 				_enumerator = null;
 				_enumeratorIndex = 0;
 			}
 
 			if (_enumerator == null)
+			{
 				_enumerator = ProxiedEnumerable.GetEnumerator();
+			}
+
 			if (_items == null)
+			{
 				_items = new Dictionary<int, object>();
+			}
 
 			var countChanged = false;
 			int end = _windowIndex + _windowSize;
@@ -336,7 +584,9 @@ namespace Microsoft.Maui.Controls
 					{
 						var dispose = _enumerator as IDisposable;
 						if (dispose != null)
+						{
 							dispose.Dispose();
+						}
 
 						_enumerator = null;
 						_enumeratorIndex = 0;
@@ -345,22 +595,34 @@ namespace Microsoft.Maui.Controls
 				};
 
 				if (syncContext == null)
+				{
 					move();
+				}
 				else
+				{
 					syncContext.Callback(ProxiedEnumerable, syncContext.Context, move, false);
+				}
 
 				if (!moved)
+				{
 					break;
+				}
 
 				if (CountIndex(_enumeratorIndex))
+				{
 					countChanged = true;
+				}
 
 				if (_enumeratorIndex >= _windowIndex)
+				{
 					_items.Add(_enumeratorIndex, _enumerator.Current);
+				}
 			}
 
 			if (countChanged)
+			{
 				OnCountChanged();
+			}
 
 			return _items.TryGetValue(index, out value);
 		}
@@ -385,12 +647,16 @@ namespace Microsoft.Maui.Controls
 			public bool MoveNext()
 			{
 				if (_proxy._version != _version)
+				{
 					throw new InvalidOperationException();
+				}
 
 				object value;
 				bool next = _proxy.TryGetValue(_index++, out value);
 				if (next)
+				{
 					Current = value;
+				}
 
 				return next;
 			}

@@ -219,10 +219,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void Start(SensorSpeed sensorSpeed)
 		{
 			if (!IsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (IsMonitoring)
+			{
 				throw new InvalidOperationException("Accelerometer has already been started.");
+			}
 
 			IsMonitoring = true;
 			useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
@@ -243,10 +247,15 @@ namespace Microsoft.Maui.Devices.Sensors
 		public void Stop()
 		{
 			if (!IsSupported)
+			{
 				throw new FeatureNotSupportedException();
+			}
 
 			if (!IsMonitoring)
+			{
+			{
 				return;
+			}
 
 			IsMonitoring = false;
 
@@ -267,12 +276,18 @@ namespace Microsoft.Maui.Devices.Sensors
 		internal void OnChanged(AccelerometerChangedEventArgs e)
 		{
 			if (useSyncContext)
+			{
 				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
+			}
 			else
+			{
 				ReadingChanged?.Invoke(null, e);
+			}
 
 			if (ShakeDetected != null)
+			{
 				ProcessShakeEvent(e.Reading.Acceleration);
+			}
 		}
 
 		void ProcessShakeEvent(Vector3 acceleration)
@@ -292,9 +307,14 @@ namespace Microsoft.Maui.Devices.Sensors
 				var args = new EventArgs();
 
 				if (useSyncContext)
+				{
 					MainThread.BeginInvokeOnMainThread(() => ShakeDetected?.Invoke(null, args));
+				}
 				else
+				{
 					ShakeDetected?.Invoke(null, args);
+				}
+				}
 			}
 
 			static long Nanoseconds(DateTime time) =>

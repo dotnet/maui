@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			IDrawable drawable = handler.PlatformView?.Drawable;
 
 			if (drawable == null)
+			{
 				return;
+			}
 
 			if (drawable is ShapeDrawable shapeDrawable)
 			{

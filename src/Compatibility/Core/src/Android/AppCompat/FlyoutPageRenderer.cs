@@ -53,15 +53,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			set
 			{
 				if (value == _presented)
+				{
 					return;
+				}
+
 				UpdateSplitViewLayout();
 				_presented = value;
 				if (Element.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Default && FlyoutPageController.ShouldShowSplitMode)
+				{
 					return;
+				}
+
 				if (_presented)
+				{
 					OpenDrawer(_flyoutLayout);
+				}
 				else
+				{
 					CloseDrawer(_flyoutLayout);
+				}
 			}
 		}
 
@@ -90,7 +100,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void IManageFragments.SetFragmentManager(FragmentManager fragmentManager)
 		{
 			if (_fragmentManager == null)
+			{
 				_fragmentManager = fragmentManager;
+			}
 		}
 
 		VisualElement IVisualElementRenderer.Element => Element;
@@ -193,10 +205,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			// Make sure to initialize this AFTER event is fired
 			if (_tracker == null)
+			{
 				_tracker = new VisualElementTracker(this);
+			}
 
 			if (element != null && !string.IsNullOrEmpty(element.AutomationId))
+			{
 				SetAutomationId(element.AutomationId);
+			}
 
 			SetContentDescription();
 		}
@@ -238,7 +254,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -255,10 +273,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 
 				if (_flyoutLayout?.ChildView != null)
+				{
 					_flyoutLayout.ChildView.PropertyChanged -= HandleFlyoutPropertyChanged;
+				}
 
 				if (!this.IsDisposed())
+				{
 					RemoveDrawerListener(this);
+				}
 
 				if (_tracker != null)
 				{
@@ -312,7 +334,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnLayout(changed, l, t, r, b);
 			//hack to make the split layout handle touches the full width
 			if (FlyoutPageController.ShouldShowSplitMode && _flyoutLayout != null)
+			{
 				_flyoutLayout.Right = r;
+			}
 		}
 
 		async void DeviceInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e)
@@ -343,11 +367,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool HasAncestorNavigationPage(Element element)
 		{
 			if (element.Parent == null)
+			{
 				return false;
+			}
 			else if (element.Parent is NavigationPage)
+			{
 				return true;
+			}
 			else
+			{
 				return HasAncestorNavigationPage(element.Parent);
+			}
 		}
 
 		void HandleFlyoutPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -358,11 +388,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			ElementPropertyChanged?.Invoke(this, e);
 			if (e.PropertyName == "Flyout")
+			{
 				UpdateFlyout();
+			}
 			else if (e.PropertyName == "Detail")
+			{
 				UpdateDetail();
+			}
 			else if (e.PropertyName == FlyoutPage.IsGestureEnabledProperty.PropertyName)
+			{
 				SetGestureState();
+			}
 			else if (e.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName)
 			{
 				_isPresentingFromCore = true;
@@ -370,11 +406,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_isPresentingFromCore = false;
 			}
 			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
+			{
 				UpdateBackgroundImage(Element);
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
 				UpdateBackgroundColor(Element);
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 		}
 
 		void FlyoutPageAppearing(object sender, EventArgs e)
@@ -392,7 +434,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void OnBackButtonPressed(object sender, BackButtonPressedEventArgs backButtonPressedEventArgs)
 		{
 			if (!IsDrawerOpen((int)GravityFlags.Start) || _currentLockMode == LockModeLockedOpen)
+			{
 				return;
+			}
 
 			CloseDrawer((int)GravityFlags.Start);
 			backButtonPressedEventArgs.Handled = true;
@@ -416,7 +460,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			Color backgroundColor = view.BackgroundColor;
 			if (backgroundColor != null)
+			{
 				SetBackgroundColor(backgroundColor.ToAndroid());
+			}
 		}
 
 		void UpdateBackgroundImage(Page view)
@@ -425,7 +471,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				(Drawable drawable) =>
 			{
 				if (drawable != null)
+				{
 					this.SetBackground(drawable);
+				}
 			}).FireAndForget(e => Application.Current?.FindMauiContext()?.CreateLogger<FlyoutPageRenderer>()?
 						.LogWarning(e, "Error updating the background image"));
 		}
@@ -433,15 +481,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateDetail()
 		{
 			if (_detailLayout.ChildView == null)
+			{
 				Update();
+			}
 			else
+			{
 				// Queue up disposal of the previous renderers after the current layout updates have finished
 				new Handler(Looper.MainLooper).Post(Update);
+			}
 
 			void Update()
 			{
 				if (_detailLayout == null || _detailLayout.IsDisposed())
+				{
 					return;
+				}
 
 				Context.HideKeyboard(this);
 				_detailLayout.ChildView = Element.Detail;
@@ -457,31 +511,46 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateIsPresented()
 		{
 			if (_isPresentingFromCore)
+			{
 				return;
+			}
+
 			if (Presented != Element.IsPresented)
+			{
 				((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, Presented);
+			}
 		}
 
 		void UpdateFlyout()
 		{
 			if (_flyoutLayout.ChildView == null)
+			{
 				Update();
+			}
 			else
+			{
 				// Queue up disposal of the previous renderers after the current layout updates have finished
 				new Handler(Looper.MainLooper).Post(Update);
+			}
 
 			void Update()
 			{
 				if (_flyoutLayout == null || _flyoutLayout.IsDisposed())
+				{
 					return;
+				}
 
 				if (_flyoutLayout.ChildView != null)
+				{
 					_flyoutLayout.ChildView.PropertyChanged -= HandleFlyoutPropertyChanged;
+				}
 
 				_flyoutLayout.ChildView = Element.Flyout;
 
 				if (_flyoutLayout.ChildView != null)
+				{
 					_flyoutLayout.ChildView.PropertyChanged += HandleFlyoutPropertyChanged;
+				}
 			}
 		}
 

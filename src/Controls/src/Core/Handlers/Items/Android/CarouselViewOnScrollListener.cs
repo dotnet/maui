@@ -21,9 +21,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_carouselView.IsSwipeEnabled)
 			{
 				if (state == RecyclerView.ScrollStateDragging)
+				{
 					_carouselView.SetIsDragging(true);
+				}
 				else
+				{
 					_carouselView.SetIsDragging(false);
+				}
 			}
 
 			_carouselView.IsScrolling = state != RecyclerView.ScrollStateIdle;

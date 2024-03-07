@@ -28,9 +28,14 @@ namespace Microsoft.Maui.Controls
 		public Binding(string path, BindingMode mode = BindingMode.Default, IValueConverter converter = null, object converterParameter = null, string stringFormat = null, object source = null)
 		{
 			if (path == null)
+			{
 				throw new ArgumentNullException(nameof(path));
+			}
+
 			if (string.IsNullOrWhiteSpace(path))
+			{
 				throw new ArgumentException("path cannot be an empty string", nameof(path));
+			}
 
 			Path = path;
 			Converter = converter;
@@ -86,7 +91,9 @@ namespace Microsoft.Maui.Controls
 				ThrowIfApplied();
 				_source = value;
 				if ((value as RelativeBindingSource)?.Mode == RelativeBindingSourceMode.TemplatedParent)
+				{
 					AllowChaining = true;
+				}
 			}
 		}
 
@@ -110,7 +117,9 @@ namespace Microsoft.Maui.Controls
 			base.Apply(fromTarget);
 
 			if (_expression == null)
+			{
 				_expression = new BindingExpression(this, SelfPath);
+			}
 
 			_expression.Apply(fromTarget);
 		}
@@ -123,7 +132,9 @@ namespace Microsoft.Maui.Controls
 			base.Apply(src ?? context, bindObj, targetProperty, fromBindingContextChanged, specificity);
 
 			if (src != null && isApplied && fromBindingContextChanged)
+			{
 				return;
+			}
 
 			if (Source is RelativeBindingSource)
 			{
@@ -133,7 +144,10 @@ namespace Microsoft.Maui.Controls
 			{
 				object bindingContext = src ?? Context ?? context;
 				if (_expression == null)
+				{
 					_expression = new BindingExpression(this, SelfPath);
+				}
+
 				_expression.Apply(bindingContext, bindObj, targetProperty, specificity);
 			}
 		}
@@ -145,11 +159,15 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
 		{
 			if (!(Source is RelativeBindingSource relativeSource))
+			{
 				return;
+			}
 
 			var relativeSourceTarget = RelativeSourceTargetOverride ?? targetObject as Element;
 			if (!(relativeSourceTarget is Element))
+			{
 				throw new InvalidOperationException();
+			}
 
 			object resolvedSource = null;
 			switch (relativeSource.Mode)
@@ -188,7 +206,9 @@ namespace Microsoft.Maui.Controls
 			chain = chain ?? new List<Element> { relativeSourceTarget };
 
 			if (!(Source is RelativeBindingSource relativeSource))
+			{
 				return;
+			}
 
 			if (currentElement.RealParent is Application ||
 				currentElement.RealParent == null)
@@ -208,9 +228,14 @@ namespace Microsoft.Maui.Controls
 				{
 					object resolvedSource;
 					if (relativeSource.Mode == RelativeBindingSourceMode.FindAncestor)
+					{
 						resolvedSource = currentElement.RealParent;
+					}
 					else
+					{
 						resolvedSource = currentElement.RealParent?.BindingContext;
+					}
+
 					_expression.Apply(resolvedSource, actualTarget, targetProperty, specificity);
 					_expression.SubscribeToAncestryChanges(
 						chain,
@@ -253,7 +278,9 @@ namespace Microsoft.Maui.Controls
 		bool ElementFitsAncestorTypeAndLevel(Element element, ref int level, ref object lastPotentialBctx)
 		{
 			if (!(Source is RelativeBindingSource relativeSource))
+			{
 				return false;
+			}
 
 			bool fitsElementType =
 				relativeSource.Mode == RelativeBindingSourceMode.FindAncestor &&
@@ -265,7 +292,9 @@ namespace Microsoft.Maui.Controls
 				relativeSource.AncestorType.IsAssignableFrom(element.BindingContext.GetType());
 
 			if (!fitsElementType && !fitsBindingContextType)
+			{
 				return false;
+			}
 
 			if (fitsBindingContextType)
 			{
@@ -297,7 +326,9 @@ namespace Microsoft.Maui.Controls
 			};
 
 			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			{
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+			}
 
 			return clone;
 		}
@@ -305,7 +336,9 @@ namespace Microsoft.Maui.Controls
 		internal override object GetSourceValue(object value, Type targetPropertyType)
 		{
 			if (Converter != null)
+			{
 				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+			}
 
 			return base.GetSourceValue(value, targetPropertyType);
 		}
@@ -313,7 +346,9 @@ namespace Microsoft.Maui.Controls
 		internal override object GetTargetValue(object value, Type sourcePropertyType)
 		{
 			if (Converter != null)
+			{
 				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+			}
 
 			return base.GetTargetValue(value, sourcePropertyType);
 		}
@@ -321,12 +356,16 @@ namespace Microsoft.Maui.Controls
 		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
 			if (Source != null && !(Source is RelativeBindingSource) && fromBindingContextChanged && IsApplied)
+			{
 				return;
+			}
 
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
 
 			if (_expression != null)
+			{
 				_expression.Unapply();
+			}
 		}
 	}
 }

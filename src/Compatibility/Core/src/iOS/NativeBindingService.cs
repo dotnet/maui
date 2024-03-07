@@ -17,9 +17,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			var view = target as UIView;
 			if (view == null)
+			{
 				return false;
+			}
+
 			if (target.GetType().GetProperty(propertyName)?.GetMethod == null)
+			{
 				return false;
+			}
+
 			view.SetBinding(propertyName, binding);
 			return true;
 		}
@@ -29,7 +35,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			var view = target as UIView;
 			if (view == null)
+			{
 				return false;
+			}
+
 			view.SetBinding(property, binding);
 			return true;
 		}
@@ -39,7 +48,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 			var view = target as UIView;
 			if (view == null)
+			{
 				return false;
+			}
+
 			view.SetValue(property, value);
 			return true;
 		}

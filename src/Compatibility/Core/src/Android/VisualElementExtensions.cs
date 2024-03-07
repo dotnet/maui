@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public static IVisualElementRenderer GetRenderer(this VisualElement self)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException(nameof(self));
+			}
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(self);
 
@@ -30,7 +32,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var elementRenderer = Element.GetRenderer();
 			if ((elementRenderer as ILifeCycleState)?.MarkedForDispose == true)
+			{
 				return false;
+			}
 
 			Page root = Element as Page;
 			var parent = Element.RealParent;
@@ -46,7 +50,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (root.GetRenderer() is ILifeCycleState lcs)
 				{
 					if (lcs.MarkedForDispose)
+					{
 						return false;
+					}
 				}
 			}
 

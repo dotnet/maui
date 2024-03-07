@@ -77,10 +77,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static IViewHandler CreateShim(object renderer)
 		{
 			if (renderer is IViewHandler handler)
+			{
 				return handler;
+			}
 
 			if (renderer is IVisualElementRenderer ivr)
+			{
 				return new RendererToHandlerShim(ivr);
+			}
 
 			return new RendererToHandlerShim();
 		}
@@ -88,7 +92,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public RendererToHandlerShim(IVisualElementRenderer visualElementRenderer) : this()
 		{
 			if (visualElementRenderer != null)
+			{
 				SetupRenderer(visualElementRenderer);
+			}
 		}
 
 		public void SetupRenderer(IVisualElementRenderer visualElementRenderer)
@@ -100,10 +106,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 				view.Handler = this;
 
 				if (VirtualView != view)
+				{
 					SetVirtualView(view);
+				}
 			}
 			else if (VisualElementRenderer.Element != null)
+			{
 				throw new Exception($"{VisualElementRenderer.Element} must implement: {nameof(Microsoft.Maui.IView)}");
+			}
 
 			VisualElementRenderer.ElementChanged += OnElementChanged;
 		}
@@ -111,7 +121,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 		void OnElementChanged(object? sender, VisualElementChangedEventArgs e)
 		{
 			if (e.OldElement is IView view)
+			{
+			{
 				view.Handler = null;
+			}
+			}
 
 			if (e.NewElement is IView newView)
 			{
@@ -123,10 +137,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (VirtualView != newView)
+				{
 					this.SetVirtualView(newView);
+				}
+				}
 			}
 			else if (e.NewElement != null)
+			{
 				throw new Exception($"{e.NewElement} must implement: {nameof(Microsoft.Maui.IView)}");
+			}
 		}
 
 		protected override void ConnectHandler(PlatformView platformView)
@@ -158,7 +177,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			if (view != VirtualView)
+			{
 				base.SetVirtualView(view);
+			}
 		}
 #else
 		protected override PlatformView CreatePlatformView()

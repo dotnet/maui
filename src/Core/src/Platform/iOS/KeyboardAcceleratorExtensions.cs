@@ -16,11 +16,15 @@ namespace Microsoft.Maui.Platform
 
 			var accelerators = virtualView.KeyboardAccelerators;
 			if (accelerators is null || accelerators.Count == 0 || accelerators[0] is null || accelerators[0].Key is null)
+			{
 				return virtualView.CreateMenuItemCommand(index, uiImage, selector);
+			}
 
 			var key = accelerators[0].Key;
 			if (key is null)
+			{
 				return virtualView.CreateMenuItemCommand(index, uiImage, selector);
+			}
 
 			var modifiers = accelerators[0].Modifiers.ToUIKeyModifierFlags();
 
@@ -33,13 +37,24 @@ namespace Microsoft.Maui.Platform
 			UIKeyModifierFlags modifierFlags = 0;
 
 			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Shift))
+			{
 				modifierFlags |= UIKeyModifierFlags.Shift;
+			}
+
 			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Ctrl))
+			{
 				modifierFlags |= UIKeyModifierFlags.Control;
+			}
+
 			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Alt))
+			{
 				modifierFlags |= UIKeyModifierFlags.Alternate;
+			}
+
 			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Cmd))
+			{
 				modifierFlags |= UIKeyModifierFlags.Command;
+			}
 
 			return modifierFlags;
 		}

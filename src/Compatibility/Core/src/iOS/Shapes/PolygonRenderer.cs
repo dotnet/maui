@@ -45,9 +45,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			base.OnElementPropertyChanged(sender, args);
 
 			if (args.PropertyName == Polygon.PointsProperty.PropertyName)
+			{
 				UpdatePoints();
+			}
 			else if (args.PropertyName == Polygon.FillRuleProperty.PropertyName)
+			{
 				UpdateFillRule();
+			}
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -67,7 +72,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdatePoints()
 		{
 			if (_points != null)
+			{
 				_points.CollectionChanged -= OnCollectionChanged;
+			}
 
 			_points = Element.Points;
 

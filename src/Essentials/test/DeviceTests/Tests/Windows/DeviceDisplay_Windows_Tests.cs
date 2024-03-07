@@ -51,7 +51,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			void SetActiveWindow(Window window)
 			{
 				if (_activeWindow == window)
+				{
 					return;
+				}
 
 				_activeWindow = window;
 
@@ -67,7 +69,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			public void OnActivated(Window window, WindowActivatedEventArgs args)
 			{
 				if (args.WindowActivationState != WindowActivationState.Deactivated)
+				{
 					SetActiveWindow(window);
+				}
 			}
 		}
 	}

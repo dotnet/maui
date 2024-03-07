@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				Control.ValueChanged -= OnControlValueChanged;
+			}
 
 			base.Dispose(disposing);
 		}
@@ -33,7 +35,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void OnElementChanged(ElementChangedEventArgs<Switch> e)
 		{
 			if (e.OldElement != null)
+			{
 				e.OldElement.Toggled -= OnElementToggled;
+			}
 
 			if (e.NewElement != null)
 			{
@@ -60,9 +64,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Element != null)
 			{
 				if (Element.OnColor == null)
+				{
 					Control.OnTintColor = _defaultOnColor;
+				}
 				else
+				{
 					Control.OnTintColor = Element.OnColor.ToPlatform();
+				}
 			}
 		}
 
@@ -70,7 +78,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateThumbColor()
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			Color thumbColor = Element.ThumbColor;
 			Control.ThumbTintColor = thumbColor?.ToPlatform() ?? _defaultThumbColor;
@@ -92,9 +102,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Switch.OnColorProperty.PropertyName)
+			{
 				UpdateOnColor();
+			}
+
 			if (e.PropertyName == Switch.ThumbColorProperty.PropertyName)
+			{
 				UpdateThumbColor();
+			}
 		}
 	}
 }

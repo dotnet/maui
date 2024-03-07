@@ -9,12 +9,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public static void ClipShape(this Canvas canvas, Context context, VisualElement element)
 		{
 			if (canvas == null || element == null)
+			{
 				return;
+			}
 
 			var geometry = element.Clip;
 
 			if (geometry == null)
+			{
 				return;
+			}
 
 			var path = geometry.ToAPath(context);
 			canvas.ClipPath(path);

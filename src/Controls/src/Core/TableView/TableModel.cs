@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls.Internals
 			object item = GetItem(section, row);
 			var cell = item as Cell;
 			if (cell != null)
+			{
 				return cell;
+			}
 
 			return new TextCell { Text = item.ToString() };
 		}
@@ -68,7 +70,9 @@ namespace Microsoft.Maui.Controls.Internals
 		public void RowLongPressed(object item)
 		{
 			if (ItemLongPressed != null)
+			{
 				ItemLongPressed(this, new EventArg<object>(item));
+			}
 
 			OnRowLongPressed(item);
 		}
@@ -83,7 +87,9 @@ namespace Microsoft.Maui.Controls.Internals
 		public void RowSelected(object item)
 		{
 			if (ItemSelected != null)
+			{
 				ItemSelected(this, new EventArg<object>(item));
+			}
 
 			OnRowSelected(item);
 		}

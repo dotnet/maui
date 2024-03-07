@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static UIBezierPath AsUIBezierPath(this PathF target)
 		{
 			if (target == null)
+			{
 				return null;
+			}
 
 			return UIBezierPath.FromPath(target.AsCGPath());
 		}

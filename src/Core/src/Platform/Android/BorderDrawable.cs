@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Platform
 		public void SetBackgroundColor(AColor? backgroundColor)
 		{
 			if (_backgroundColor == backgroundColor)
+			{
 				return;
+			}
 
 			_backgroundColor = backgroundColor;
 
@@ -65,17 +67,29 @@ namespace Microsoft.Maui.Platform
 		public void SetBackground(GPaint? paint)
 		{
 			if (paint is SolidPaint solidPaint)
+			{
 				SetBackground(solidPaint);
+			}
 			else if (paint is LinearGradientPaint linearGradientPaint)
+			{
 				SetBackground(linearGradientPaint);
+			}
 			else if (paint is RadialGradientPaint radialGradientPaint)
+			{
 				SetBackground(radialGradientPaint);
+			}
 			else if (paint is ImagePaint imagePaint)
+			{
 				SetBackground(imagePaint);
+			}
 			else if (paint is PatternPaint patternPaint)
+			{
 				SetBackground(patternPaint);
+			}
 			else
+			{
 				SetDefaultBackgroundColor();
+			}
 		}
 
 		public void SetBackground(SolidPaint solidPaint)
@@ -85,7 +99,9 @@ namespace Microsoft.Maui.Platform
 			_background = null;
 
 			if (solidPaint.Color == null)
+			{
 				SetDefaultBackgroundColor();
+			}
 			else
 			{
 				var backgroundColor = solidPaint.Color.ToPlatform();
@@ -96,7 +112,9 @@ namespace Microsoft.Maui.Platform
 		public void SetBackground(LinearGradientPaint linearGradientPaint)
 		{
 			if (_background == linearGradientPaint)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -110,7 +128,9 @@ namespace Microsoft.Maui.Platform
 		public void SetBackground(RadialGradientPaint radialGradientPaint)
 		{
 			if (_background == radialGradientPaint)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -134,7 +154,9 @@ namespace Microsoft.Maui.Platform
 		public void SetCornerRadius(CornerRadius cornerRadius)
 		{
 			if (_cornerRadius == cornerRadius)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -147,7 +169,9 @@ namespace Microsoft.Maui.Platform
 		public void SetBorderColor(AColor? borderColor)
 		{
 			if (_borderColor == borderColor)
+			{
 				return;
+			}
 
 			_borderColor = borderColor;
 
@@ -157,19 +181,29 @@ namespace Microsoft.Maui.Platform
 		public void SetBorderBrush(GPaint? paint)
 		{
 			if (paint is SolidPaint solidPaint)
+			{
 				SetBorderBrush(solidPaint);
+			}
 
 			if (paint is LinearGradientPaint linearGradientPaint)
+			{
 				SetBorderBrush(linearGradientPaint);
+			}
 
 			if (paint is RadialGradientPaint radialGradientPaint)
+			{
 				SetBorderBrush(radialGradientPaint);
+			}
 
 			if (paint is ImagePaint imagePaint)
+			{
 				SetBorderBrush(imagePaint);
+			}
 
 			if (paint is PatternPaint patternPaint)
+			{
 				SetBorderBrush(patternPaint);
+			}
 		}
 
 		public void SetBorderBrush(SolidPaint solidPaint)
@@ -188,7 +222,9 @@ namespace Microsoft.Maui.Platform
 		public void SetBorderBrush(LinearGradientPaint linearGradientPaint)
 		{
 			if (_stroke == linearGradientPaint)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -202,7 +238,9 @@ namespace Microsoft.Maui.Platform
 		public void SetBorderBrush(RadialGradientPaint radialGradientPaint)
 		{
 			if (_stroke == radialGradientPaint)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -228,7 +266,9 @@ namespace Microsoft.Maui.Platform
 			float strokeThickness = (float)(strokeWidth * _density);
 
 			if (_strokeThickness == strokeThickness)
+			{
 				return;
+			}
 
 			_invalidatePath = true;
 
@@ -250,7 +290,9 @@ namespace Microsoft.Maui.Platform
 					var height = _bounds.Height();
 
 					if (_width == width && _height == height)
+					{
 						return;
+					}
 
 					_invalidatePath = true;
 
@@ -265,10 +307,14 @@ namespace Microsoft.Maui.Platform
 		protected override void OnDraw(Shape? shape, Canvas? canvas, APaint? paint)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (Paint != null)
+			{
 				SetBackground(Paint);
+			}
 
 			if (HasBorder())
 			{
@@ -277,13 +323,17 @@ namespace Microsoft.Maui.Platform
 					_borderPaint.StrokeWidth = _strokeThickness;
 
 					if (_borderColor != null)
+					{
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 						_borderPaint.Color = _borderColor.Value;
+					}
 #pragma warning restore CA1416
 					else
 					{
 						if (_stroke != null)
+						{
 							SetPaint(_borderPaint, _stroke);
+						}
 					}
 				}
 			}
@@ -297,7 +347,9 @@ namespace Microsoft.Maui.Platform
 				var clipPath = path?.AsAndroidPath();
 
 				if (clipPath == null)
+				{
 					return;
+				}
 
 				if (_clipPath != null)
 				{
@@ -307,17 +359,23 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (canvas == null)
+			{
 				return;
+			}
 
 			var saveCount = canvas.SaveLayer(0, 0, _width, _height, null);
 
 			if (_clipPath != null && Paint != null)
+			{
 				canvas.DrawPath(_clipPath, Paint);
+			}
 
 			if (HasBorder())
 			{
 				if (_clipPath != null && _borderPaint != null)
+				{
 					canvas.DrawPath(_clipPath, _borderPaint);
+				}
 			}
 
 			canvas.RestoreToCount(saveCount);
@@ -326,7 +384,9 @@ namespace Microsoft.Maui.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -383,7 +443,9 @@ namespace Microsoft.Maui.Platform
 			using (var background = new TypedValue())
 			{
 				if (_context == null || _context.Theme == null || _context.Resources == null)
+				{
 					return;
+				}
 
 				if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.WindowBackground, background, true))
 				{
@@ -404,13 +466,17 @@ namespace Microsoft.Maui.Platform
 			if (platformPaint != null)
 			{
 				if (_backgroundColor != null)
+				{
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					platformPaint.Color = _backgroundColor.Value;
+				}
 #pragma warning restore CA1416
 				else
 				{
 					if (_background != null)
+					{
 						SetPaint(platformPaint, _background);
+					}
 				}
 			}
 		}
@@ -418,10 +484,14 @@ namespace Microsoft.Maui.Platform
 		void SetPaint(APaint platformPaint, GPaint paint)
 		{
 			if (paint is LinearGradientPaint linearGradientPaint)
+			{
 				SetLinearGradientPaint(platformPaint, linearGradientPaint);
+			}
 
 			if (paint is RadialGradientPaint radialGradientPaint)
+			{
 				SetRadialGradientPaint(platformPaint, radialGradientPaint);
+			}
 		}
 
 		void SetLinearGradientPaint(APaint platformPaint, LinearGradientPaint linearGradientPaint)
@@ -436,10 +506,14 @@ namespace Microsoft.Maui.Platform
 			var data = GetGradientPaintData(linearGradientPaint);
 			var shader = new LinearGradientData(data.Colors, data.Offsets, x1, y1, x2, y2);
 			if (_width == 0 && _height == 0)
+			{
 				return;
+			}
 
 			if (shader.Colors == null || shader.Colors.Length < 2)
+			{
 				return;
+			}
 
 			var linearGradientShader = new LinearGradient(
 				_width * shader.X1,
@@ -464,10 +538,14 @@ namespace Microsoft.Maui.Platform
 			var radialGradientData = new RadialGradientData(gradientData.Colors, gradientData.Offsets, centerX, centerY, radius);
 
 			if (_width == 0 && _height == 0)
+			{
 				return;
+			}
 
 			if (radialGradientData.Colors == null || radialGradientData.Colors.Length < 2)
+			{
 				return;
+			}
 
 			var radialGradient = new RadialGradient(
 				_width * radialGradientData.CenterX,

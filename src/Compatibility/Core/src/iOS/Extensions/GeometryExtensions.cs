@@ -24,9 +24,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			CGAffineTransform transform;
 
 			if (renderTransform == null)
+			{
 				transform = CGAffineTransform.MakeIdentity();
+			}
 			else
+			{
 				transform = renderTransform.ToCGAffineTransform();
+			}
 
 			if (geometry is LineGeometry)
 			{
@@ -91,7 +95,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 							PointCollection points = polylineSegment.Points;
 
 							for (int i = 0; i < points.Count; i++)
+							{
 								pathData.Data.AddLineToPoint(transform, points[i].ToPointF());
+							}
 
 							lastPoint = points.Count > 0 ? points[points.Count - 1] : Point.Zero;
 						}
@@ -186,7 +192,108 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 							CGPoint[] cgpoints = new CGPoint[points.Count];
 
 							for (int i = 0; i < points.Count; i++)
+							{
 								cgpoints[i] = transform.TransformPoint(points[i].ToPointF());
+							}
+
+							pathData.Data.AddLines(cgpoints);
+
+							lastPoint = points.Count > 0 ? points[points.Count - 1] : Point.Zero;
+						}
+					}
+
+					if (pathSegment is BezierSegment)
+						{
+							BezierSegment bezierSegment = pathSegment as BezierSegment;
+
+							pathData.Data.AddCurveToPoint(
+								transform,
+								bezierSegment.Point1.ToPointF(),
+								bezierSegment.Point2.ToPointF(),
+								bezierSegment.Point3.ToPointF());
+
+							lastPoint = bezierSegment.Point3;
+						}
+						// PolyBezierSegment
+						else if (pathSegment is PolyBezierSegment)
+						{
+							PolyBezierSegment polyBezierSegment = pathSegment as PolyBezierSegment;
+							PointCollection points = polyBezierSegment.Points;
+
+							if (points.Count >= 3)
+							{
+								for (int i = 0; i < points.Count; i += 3)
+								{
+									pathData.Data.AddCurveToPoint(
+										transform,
+										points[i].ToPointF(),
+										points[i + 1].ToPointF(),
+										points[i + 2].ToPointF());
+								}
+							}
+
+							lastPoint = points.Count > 0 ? points[points.Count - 1] : Point.Zero;
+						}
+
+						// QuadraticBezierSegment
+						if (pathSegment is QuadraticBezierSegment)
+						{
+							QuadraticBezierSegment bezierSegment = pathSegment as QuadraticBezierSegment;
+
+							pathData.Data.AddQuadCurveToPoint(
+								transform,
+								new nfloat(bezierSegment.Point1.X),
+								new nfloat(bezierSegment.Point1.Y),
+								new nfloat(bezierSegment.Point2.X),
+								new nfloat(bezierSegment.Point2.Y));
+
+							lastPoint = bezierSegment.Point2;
+						}
+						// PolyQuadraticBezierSegment
+						else if (pathSegment is PolyQuadraticBezierSegment)
+						{
+							PolyQuadraticBezierSegment polyBezierSegment = pathSegment as PolyQuadraticBezierSegment;
+							PointCollection points = polyBezierSegment.Points;
+
+							if (points.Count >= 2)
+							{
+								for (int i = 0; i < points.Count; i += 2)
+								{
+									pathData.Data.AddQuadCurveToPoint(
+										transform,
+										new nfloat(points[i + 0].X),
+										new nfloat(points[i + 0].Y),
+										new nfloat(points[i + 1].X),
+										new nfloat(points[i + 1].Y));
+								}
+							}
+
+							lastPoint = points.Count > 0 ? points[points.Count - 1] : Point.Zero;
+						}
+						// ArcSegment
+						else if (pathSegment is ArcSegment)
+						{
+							ArcSegment arcSegment = pathSegment as ArcSegment;
+
+							List<Point> points = new List<Point>();
+
+							GeometryHelper.FlattenArc(
+								points,
+								lastPoint,
+								arcSegment.Point,
+								arcSegment.Size.Width,
+								arcSegment.Size.Height,
+								arcSegment.RotationAngle,
+								arcSegment.IsLargeArc,
+								arcSegment.SweepDirection == SweepDirection.CounterClockwise,
+								1);
+
+							CGPoint[] cgpoints = new CGPoint[points.Count];
+
+							for (int i = 0; i < points.Count; i++)
+							{
+								cgpoints[i] = transform.TransformPoint(points[i].ToPointF());
+							}
 
 							pathData.Data.AddLines(cgpoints);
 
@@ -195,7 +302,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					}
 
 					if (pathFigure.IsClosed)
+					{
+					{
 						pathData.Data.CloseSubpath();
+					}
+					}
 				}
 			}
 

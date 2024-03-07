@@ -36,18 +36,28 @@ namespace Microsoft.Maui.ApplicationModel
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true)!;
 
 			if (options.PreferredToolbarColor != null)
+			{
 				sfViewController.PreferredBarTintColor = options.PreferredToolbarColor.AsUIColor();
+			}
 
 			if (options.PreferredControlColor != null)
+			{
 				sfViewController.PreferredControlTintColor = options.PreferredControlColor.AsUIColor();
+			}
 
 			if (sfViewController.PopoverPresentationController != null)
+			{
 				sfViewController.PopoverPresentationController.SourceView = vc.View!;
+			}
 
 			if (options.HasFlag(BrowserLaunchFlags.PresentAsFormSheet))
+			{
 				sfViewController.ModalPresentationStyle = UIModalPresentationStyle.FormSheet;
+			}
 			else if (options.HasFlag(BrowserLaunchFlags.PresentAsPageSheet))
+			{
 				sfViewController.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
+			}
 
 			await vc.PresentViewControllerAsync(sfViewController, true);
 		}

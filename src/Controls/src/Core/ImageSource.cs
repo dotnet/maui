@@ -34,9 +34,15 @@ namespace Microsoft.Maui.Controls
 			private set
 			{
 				if (_cancellationTokenSource == value)
+				{
 					return;
+				}
+
 				if (_cancellationTokenSource != null)
+				{
 					_cancellationTokenSource.Cancel();
+				}
+
 				_cancellationTokenSource = value;
 			}
 		}
@@ -50,7 +56,9 @@ namespace Microsoft.Maui.Controls
 		public virtual Task<bool> Cancel()
 		{
 			if (!IsLoading)
+			{
 				return Task.FromResult(false);
+			}
 
 			var tcs = new TaskCompletionSource<bool>();
 			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
@@ -59,7 +67,9 @@ namespace Microsoft.Maui.Controls
 				_cancellationTokenSource.Cancel();
 			}
 			else
+			{
 				tcs = original;
+			}
 
 			return tcs.Task;
 		}
@@ -100,7 +110,10 @@ namespace Microsoft.Maui.Controls
 		public static ImageSource FromUri(Uri uri)
 		{
 			if (!uri.IsAbsoluteUri)
+			{
 				throw new ArgumentException("uri is relative");
+			}
+
 			return new UriImageSource { Uri = uri };
 		}
 
@@ -113,21 +126,30 @@ namespace Microsoft.Maui.Controls
 		public static implicit operator ImageSource(Uri uri)
 		{
 			if (uri == null)
+			{
 				return null;
+			}
 
 			if (!uri.IsAbsoluteUri)
+			{
 				throw new ArgumentException("uri is relative");
+			}
+
 			return FromUri(uri);
 		}
 
 		private protected void OnLoadingCompleted(bool cancelled)
 		{
 			if (!IsLoading || _completionSource == null)
+			{
 				return;
+			}
 
 			TaskCompletionSource<bool> tcs = Interlocked.Exchange(ref _completionSource, null);
 			if (tcs != null)
+			{
 				tcs.SetResult(cancelled);
+			}
 
 			lock (_synchandle)
 			{

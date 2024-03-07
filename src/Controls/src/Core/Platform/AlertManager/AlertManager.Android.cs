@@ -43,7 +43,9 @@ namespace Microsoft.Maui.Controls.Platform
 			Context context = mauiContext?.Context;
 			Activity activity = context?.GetActivity();
 			if (activity == null)
+			{
 				return;
+			}
 
 			var toRemove = Subscriptions.Where(s => s.Activity == activity).ToList();
 
@@ -122,27 +124,39 @@ namespace Microsoft.Maui.Controls.Platform
 				builder.SetItems(items, (o, args) => arguments.Result.TrySetResult(items[args.Which]));
 
 				if (arguments.Cancel != null)
+				{
 					builder.SetPositiveButton(arguments.Cancel, (o, args) => arguments.Result.TrySetResult(arguments.Cancel));
+				}
 
 				if (arguments.Destruction != null)
+				{
 					builder.SetNegativeButton(arguments.Destruction, (o, args) => arguments.Result.TrySetResult(arguments.Destruction));
+				}
 
 				var dialog = builder.Create();
 				builder.Dispose();
 
 				if (dialog == null)
+				{
 					return;
+				}
 
 				// To match current functionality of handler we set cancelable on outside
 				// and return null
 				if (dialog.Window != null)
 				{
 					if (arguments.FlowDirection == FlowDirection.MatchParent && sender is IView view)
+					{
 						dialog.Window.DecorView.UpdateFlowDirection(view);
+					}
 					else if (arguments.FlowDirection == FlowDirection.LeftToRight)
+					{
 						dialog.Window.DecorView.LayoutDirection = LayoutDirection.Ltr;
+					}
 					else if (arguments.FlowDirection == FlowDirection.RightToLeft)
+					{
 						dialog.Window.DecorView.LayoutDirection = LayoutDirection.Rtl;
+					}
 				}
 
 				dialog.SetCanceledOnTouchOutside(true);
@@ -159,9 +173,14 @@ namespace Microsoft.Maui.Controls.Platform
 					if (dialog.GetButton((int)DialogButtonType.Negative)?.Parent is AView parentView)
 					{
 						if (arguments.Cancel != null)
+						{
 							parentView.LayoutDirection = layoutDirection;
+						}
+
 						if (arguments.Destruction != null)
+						{
 							parentView.LayoutDirection = layoutDirection;
+						}
 					}
 				}
 			}
@@ -178,22 +197,33 @@ namespace Microsoft.Maui.Controls.Platform
 				var alert = new DialogBuilder(Activity).Create();
 
 				if (alert == null)
+				{
 					return;
+				}
 
 				if (alert.Window != null)
 				{
 					if (arguments.FlowDirection == FlowDirection.MatchParent && sender is IView view)
+					{
 						alert.Window.DecorView.UpdateFlowDirection(view);
+					}
 					else if (arguments.FlowDirection == FlowDirection.LeftToRight)
+					{
 						alert.Window.DecorView.LayoutDirection = LayoutDirection.Ltr;
+					}
 					else if (arguments.FlowDirection == FlowDirection.RightToLeft)
+					{
 						alert.Window.DecorView.LayoutDirection = LayoutDirection.Rtl;
+					}
 				}
 
 				alert.SetTitle(arguments.Title);
 				alert.SetMessage(arguments.Message);
 				if (arguments.Accept != null)
+				{
 					alert.SetButton((int)DialogButtonType.Positive, arguments.Accept, (o, args) => arguments.SetResult(true));
+				}
+
 				alert.SetButton((int)DialogButtonType.Negative, arguments.Cancel, (o, args) => arguments.SetResult(false));
 				alert.SetCancelEvent((o, args) => { arguments.SetResult(false); });
 				alert.Show();
@@ -203,23 +233,33 @@ namespace Microsoft.Maui.Controls.Platform
 
 
 				if (alert.GetButton((int)DialogButtonType.Negative).Parent is AView parentView)
+				{
 					parentView.LayoutDirection = GetLayoutDirection(sender, arguments.FlowDirection);
+				}
 			}
 
 			LayoutDirection GetLayoutDirection(IView sender, FlowDirection flowDirection)
 			{
 				if (flowDirection == FlowDirection.LeftToRight)
+				{
 					return LayoutDirection.Ltr;
+				}
 				else if (flowDirection == FlowDirection.RightToLeft)
+				{
 					return LayoutDirection.Rtl;
+				}
 				else
 				{
 					if (sender is IVisualElementController visualElementController)
 					{
 						if (visualElementController.EffectiveFlowDirection.IsRightToLeft())
+						{
 							return LayoutDirection.Rtl;
+						}
 						else if (visualElementController.EffectiveFlowDirection.IsLeftToRight())
+						{
 							return LayoutDirection.Ltr;
+						}
 					}
 				}
 
@@ -229,17 +269,25 @@ namespace Microsoft.Maui.Controls.Platform
 			TextDirection GetTextDirection(IView sender, FlowDirection flowDirection)
 			{
 				if (flowDirection == FlowDirection.LeftToRight)
+				{
 					return TextDirection.Ltr;
+				}
 				else if (flowDirection == FlowDirection.RightToLeft)
+				{
 					return TextDirection.Rtl;
+				}
 				else
 				{
 					if (sender is IVisualElementController visualElementController)
 					{
 						if (visualElementController.EffectiveFlowDirection.IsRightToLeft())
+						{
 							return TextDirection.Rtl;
+						}
 						else if (visualElementController.EffectiveFlowDirection.IsLeftToRight())
+						{
 							return TextDirection.Ltr;
+						}
 					}
 				}
 
@@ -257,7 +305,9 @@ namespace Microsoft.Maui.Controls.Platform
 				var alertDialog = new DialogBuilder(Activity).Create();
 
 				if (alertDialog == null)
+				{
 					return;
+				}
 
 				alertDialog.SetTitle(arguments.Title);
 				alertDialog.SetMessage(arguments.Message);
@@ -273,10 +323,14 @@ namespace Microsoft.Maui.Controls.Platform
 				editText.LayoutParameters = layoutParams;
 				editText.InputType = arguments.Keyboard.ToInputType();
 				if (arguments.Keyboard == Keyboard.Numeric)
+				{
 					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
+				}
 
 				if (arguments.MaxLength > -1)
+				{
 					editText.SetFilters(new IInputFilter[] { new InputFilterLengthFilter(arguments.MaxLength) });
+				}
 
 				frameLayout.AddView(editText);
 				alertDialog.SetView(frameLayout);
@@ -424,7 +478,9 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					if (_legacyBuilder != null)
+					{
 						return new FlexibleAlertDialog(_legacyBuilder.Create());
+					}
 
 					return null;
 				}

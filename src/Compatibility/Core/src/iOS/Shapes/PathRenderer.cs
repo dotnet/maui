@@ -38,7 +38,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			base.OnElementPropertyChanged(sender, args);
 
 			if (args.PropertyName == Path.DataProperty.PropertyName || args.PropertyName == Path.RenderTransformProperty.PropertyName)
+			{
 				UpdatePath();
+			}
+			}
 		}
 
 		void UpdatePath()

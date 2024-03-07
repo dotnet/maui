@@ -59,8 +59,12 @@ class WeakList<T> : IEnumerable<T> where T : class
 		CleanupIfNeeded();
 
 		foreach (var w in _list)
+		{
 			if (w.TryGetTarget(out T? item))
+			{
 				yield return item;
+			}
+		}
 	}
 
 	void CleanupIfNeeded()

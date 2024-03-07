@@ -26,8 +26,12 @@ namespace Microsoft.Maui.Graphics
 		public void Draw(ICanvas canvas)
 		{
 			if (_commands != null)
+			{
 				foreach (var command in _commands)
+				{
 					command.Invoke(canvas);
+				}
+			}
 		}
 	}
 }

@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Storage
 				using (var userDefaults = GetUserDefaults(sharedName))
 				{
 					if (userDefaults[key] != null)
+					{
 						userDefaults.RemoveObject(key);
+					}
 				}
 			}
 		}
@@ -39,7 +41,9 @@ namespace Microsoft.Maui.Storage
 					foreach (var item in items.Keys)
 					{
 						if (item is NSString nsString)
+						{
 							userDefaults.RemoveObject(nsString);
+						}
 					}
 				}
 			}
@@ -56,7 +60,10 @@ namespace Microsoft.Maui.Storage
 					if (value == null)
 					{
 						if (userDefaults[key] != null)
+						{
 							userDefaults.RemoveObject(key);
+						}
+
 						return;
 					}
 
@@ -99,7 +106,9 @@ namespace Microsoft.Maui.Storage
 				using (var userDefaults = GetUserDefaults(sharedName))
 				{
 					if (userDefaults[key] == null)
+					{
 						return defaultValue;
+					}
 
 					switch (defaultValue)
 					{
@@ -131,7 +140,11 @@ namespace Microsoft.Maui.Storage
 						default:
 							// the case when the string is null
 							if (typeof(T) == typeof(string))
+							{
+							{
 								value = userDefaults.StringForKey(key);
+							}
+
 							break;
 					}
 				}
@@ -143,9 +156,13 @@ namespace Microsoft.Maui.Storage
 		static NSUserDefaults GetUserDefaults(string sharedName)
 		{
 			if (!string.IsNullOrWhiteSpace(sharedName))
+			{
 				return new NSUserDefaults(sharedName, NSUserDefaultsType.SuiteName);
+			}
 			else
+			{
 				return NSUserDefaults.StandardUserDefaults;
+			}
 		}
 	}
 }

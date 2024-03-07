@@ -22,10 +22,14 @@ namespace Microsoft.Maui.Platform
 			var htmlText = WebUtility.HtmlDecode(text);
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
 				textView.SetText(Html.FromHtml(htmlText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
+			}
 			else
+			{
 #pragma warning disable CS0618 // Type or member is obsolete
 				textView.SetText(Html.FromHtml(htmlText), BufferType.Spannable);
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
@@ -34,7 +38,9 @@ namespace Microsoft.Maui.Platform
 			var textColor = textStyle.TextColor;
 
 			if (textColor != null)
+			{
 				textView.SetTextColor(textColor.ToPlatform());
+			}
 		}
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)
@@ -86,14 +92,22 @@ namespace Microsoft.Maui.Platform
 			var textDecorations = label.TextDecorations;
 
 			if ((textDecorations & TextDecorations.Strikethrough) == 0)
+			{
 				textView.PaintFlags &= ~PaintFlags.StrikeThruText;
+			}
 			else
+			{
 				textView.PaintFlags |= PaintFlags.StrikeThruText;
+			}
 
 			if ((textDecorations & TextDecorations.Underline) == 0)
+			{
 				textView.PaintFlags &= ~PaintFlags.UnderlineText;
+			}
 			else
+			{
 				textView.PaintFlags |= PaintFlags.UnderlineText;
+			}
 		}
 
 		public static void UpdateFlowDirection(this TextView platformView, IView view)
@@ -122,18 +136,24 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateLineHeight(this TextView textView, ILabel label)
 		{
 			if (label.LineHeight >= 0)
+			{
 				textView.SetLineSpacing(0, (float)label.LineHeight);
+			}
 		}
 
 		internal static void Focus(this TextView textView, FocusRequest request)
 		{
 			if (textView is null)
+			{
 				return;
+			}
 
 			textView.Focus(request, () =>
 			{
 				if (textView.ShowSoftInputOnFocus)
+				{
 					ViewExtensions.PostShowSoftInput(textView);
+				}
 			});
 		}
 	}

@@ -41,7 +41,9 @@ namespace Maui.Controls.Sample
 			Count = Items.Count - 1;
 
 			if (startCurrentItem != -1)
+			{
 				Selected = Items[startCurrentItem];
+			}
 		}
 
 		public bool IsLoop
@@ -139,9 +141,13 @@ namespace Maui.Controls.Sample
 			Index = index;
 
 			if (string.IsNullOrEmpty(image))
+			{
 				Image = "https://picsum.photos/700/300/";
+			}
 			else
+			{
 				Image = image;
+			}
 		}
 
 		public int Index { get; set; }

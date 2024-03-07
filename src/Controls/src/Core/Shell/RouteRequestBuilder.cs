@@ -32,9 +32,13 @@ namespace Microsoft.Maui.Controls
 		public RouteRequestBuilder(string shellSegment, string userSegment, object node, List<string> allSegments) : this(allSegments)
 		{
 			if (node != null)
+			{
 				AddMatch(shellSegment, userSegment, node);
+			}
 			else
+			{
 				AddGlobalRoute(userSegment, shellSegment);
+			}
 		}
 
 		public RouteRequestBuilder(RouteRequestBuilder builder) : this(builder._allSegments)
@@ -63,13 +67,19 @@ namespace Microsoft.Maui.Controls
 		public bool AddMatch(ShellUriHandler.NodeLocation nodeLocation)
 		{
 			if (Item == null && !AddNode(nodeLocation.Item, NextSegment))
+			{
 				return false;
+			}
 
 			if (Section == null && !AddNode(nodeLocation.Section, NextSegment))
+			{
 				return false;
+			}
 
 			if (Content == null && !AddNode(nodeLocation.Content, NextSegment))
+			{
 				return false;
+			}
 
 			return true;
 
@@ -89,7 +99,9 @@ namespace Microsoft.Maui.Controls
 			string GetUserSegment(BaseShellItem baseShellItem)
 			{
 				if (Routing.IsUserDefined(baseShellItem))
+				{
 					return baseShellItem.Route;
+				}
 
 				return String.Empty;
 			}
@@ -98,29 +110,40 @@ namespace Microsoft.Maui.Controls
 		public void AddMatch(string shellSegment, string userSegment, object node)
 		{
 			if (node == null)
+			{
 				throw new ArgumentNullException(nameof(node));
+			}
 
 			switch (node)
 			{
 				case ShellUriHandler.GlobalRouteItem globalRoute:
 					if (globalRoute.IsFinished)
+					{
 						_globalRouteMatches.Add(globalRoute.SourceRoute);
+					}
+
 					break;
 				case Shell shell:
 					if (shell == Shell)
+					{
 						return;
+					}
 
 					Shell = shell;
 					break;
 				case ShellItem item:
 					if (Item == item)
+					{
 						return;
+					}
 
 					Item = item;
 					break;
 				case ShellSection section:
 					if (Section == section)
+					{
 						return;
+					}
 
 					Section = section;
 
@@ -133,7 +156,9 @@ namespace Microsoft.Maui.Controls
 					break;
 				case ShellContent content:
 					if (Content == content)
+					{
 						return;
+					}
 
 					Content = content;
 					if (Section == null)
@@ -152,11 +177,15 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (Item?.Parent is Shell s)
+			{
 				Shell = s;
+			}
 
 			// if shellSegment == userSegment it means the implicit route is part of the request
 			if (Routing.IsUserDefined(shellSegment) || shellSegment == userSegment || shellSegment == NextSegment)
+			{
 				_matchedSegments.Add(shellSegment);
+			}
 
 			_fullSegments.Add(shellSegment);
 		}
@@ -173,7 +202,9 @@ namespace Microsoft.Maui.Controls
 				{
 					var seg = _matchedSegments[i];
 					if (segmentsToMatch.Count <= i || segmentsToMatch[i] != seg)
+					{
 						return String.Empty;
+					}
 
 					segmentsToMatch.Remove(seg);
 				}
@@ -203,7 +234,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var nextMatch = matchedSegments.Count;
 			if (nextMatch >= _allSegments.Count)
+			{
 				return null;
+			}
 
 			return _allSegments[nextMatch];
 
@@ -220,7 +253,9 @@ namespace Microsoft.Maui.Controls
 			{
 				var nextMatch = _matchedSegments.Count;
 				if (nextMatch >= _allSegments.Count)
+				{
 					return null;
+				}
 
 				return Routing.FormatRoute(String.Join(_uriSeparator, _allSegments.Skip(nextMatch)));
 			}
@@ -232,7 +267,9 @@ namespace Microsoft.Maui.Controls
 			{
 				var nextMatch = _matchedSegments.Count;
 				if (nextMatch >= _allSegments.Count)
+				{
 					return null;
+				}
 
 				return _allSegments.Skip(nextMatch).ToList();
 			}
@@ -241,7 +278,9 @@ namespace Microsoft.Maui.Controls
 		string MakeUriString(List<string> segments)
 		{
 			if (segments[0].StartsWith(_uriSeparator, StringComparison.Ordinal) || segments[0].StartsWith("\\", StringComparison.Ordinal))
+			{
 				return String.Join(_uriSeparator, segments);
+			}
 
 			return $"//{String.Join(_uriSeparator, segments)}";
 		}
@@ -253,11 +292,19 @@ namespace Microsoft.Maui.Controls
 				int count = GlobalRouteMatches.Count;
 
 				if (Item != null)
+				{
 					count++;
+				}
+
 				if (Content != null)
+				{
 					count++;
+				}
+
 				if (Section != null)
+				{
 					count++;
+				}
 
 				return count;
 			}

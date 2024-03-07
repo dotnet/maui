@@ -38,8 +38,12 @@ namespace Microsoft.Maui.Controls
 				foreach (var group in oldVisualStateGroupList)
 				{
 					if (group.CurrentState is VisualState state)
+					{
 						foreach (var setter in state.Setters)
+						{
 							setter.UnApply(oldElement, specificity);
+						}
+					}
 				}
 				oldVisualStateGroupList.VisualElement = null;
 			}
@@ -47,7 +51,9 @@ namespace Microsoft.Maui.Controls
 			var visualElement = (VisualElement)bindable;
 
 			if (newValue != null)
+			{
 				((VisualStateGroupList)newValue).VisualElement = visualElement;
+			}
 
 			visualElement.ChangeVisualState();
 
@@ -74,7 +80,10 @@ namespace Microsoft.Maui.Controls
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
 			var vsgSpecificity = context.Values.GetSpecificityAndValue().Key;
 			if (vsgSpecificity == SetterSpecificity.DefaultValue)
+			{
 				vsgSpecificity = new SetterSpecificity();
+			}
+
 			groups.Specificity = vsgSpecificity;
 			var specificity = new SetterSpecificity(1, 0, 0, 0, vsgSpecificity.Style, vsgSpecificity.Id, vsgSpecificity.Class, vsgSpecificity.Type);
 
@@ -121,10 +130,14 @@ namespace Microsoft.Maui.Controls
 		public static bool HasVisualStateGroups(this VisualElement element)
 		{
 			if (!element.IsSet(VisualStateGroupsProperty))
+			{
 				return false;
+			}
 
 			if (GetVisualStateGroups(element) is VisualStateGroupList vsgl)
+			{
 				return !vsgl.IsDefault;
+			}
 
 			return true;
 		}
@@ -217,7 +230,9 @@ namespace Microsoft.Maui.Controls
 		void ValidateAndNotify(IList<VisualStateGroup> groups)
 		{
 			if (groups.Count > 0)
+			{
 				IsDefault = false;
+			}
 
 			Validate(groups);
 			OnStatesChanged();
@@ -331,14 +346,28 @@ namespace Microsoft.Maui.Controls
 		bool Equals(VisualStateGroupList other)
 		{
 			if (other is null)
+			{
 				return false;
+			}
+
 			if (Object.ReferenceEquals(this, other))
+			{
 				return true;
+			}
+
 			if (Count != other.Count)
+			{
 				return false;
+			}
+
 			for (var i = 0; i < Count; i++)
+			{
 				if (!this[i].Equals(other[i]))
+				{
 					return false;
+				}
+			}
+
 			return true;
 		}
 
@@ -348,7 +377,10 @@ namespace Microsoft.Maui.Controls
 			{
 				var hash = 41;
 				for (var i = 0; i < Count; i++)
+				{
 					hash = (hash * 43) ^ this[i].GetHashCode();
+				}
+
 				return hash;
 			}
 		}
@@ -425,7 +457,9 @@ namespace Microsoft.Maui.Controls
 					if (trigger.IsActive)
 					{
 						if (visualState == defaultState)
+						{
 							visualState = state;
+						}
 
 						conflicts.Add(trigger);
 					}
@@ -433,7 +467,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (conflicts.Count > 1)
+			{
 				visualState = ResolveStateTriggersConflict(conflicts);
+			}
 
 			return visualState;
 		}
@@ -464,13 +500,17 @@ namespace Microsoft.Maui.Controls
 			var latestMinWindowWidthAdaptiveTrigger = minWindowWidthAdaptiveTriggers.FirstOrDefault();
 
 			if (latestMinWindowWidthAdaptiveTrigger != null)
+			{
 				return latestMinWindowWidthAdaptiveTrigger.VisualState;
+			}
 
 			var minWindowHeightAdaptiveTriggers = adaptiveTriggers.Where(c => ((AdaptiveTrigger)c).MinWindowHeight != -1d).OrderByDescending(c => ((AdaptiveTrigger)c).MinWindowHeight);
 			var latestMinWindowHeightAdaptiveTrigger = minWindowHeightAdaptiveTriggers.FirstOrDefault();
 
 			if (latestMinWindowHeightAdaptiveTrigger != null)
+			{
 				return latestMinWindowHeightAdaptiveTrigger.VisualState;
+			}
 
 			return default;
 		}
@@ -486,7 +526,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			{
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+			}
 
 			return clone;
 		}
@@ -494,22 +536,52 @@ namespace Microsoft.Maui.Controls
 		internal void UpdateStateTriggers()
 		{
 			if (VisualElement == null)
+			{
 				return;
 
-			bool hasStateTriggers = HasStateTriggers();
-
-			if (!hasStateTriggers)
-				return;
-
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
 			var newStateTrigger = GetActiveTrigger();
 
 			if (newStateTrigger == null)
 				return;
 
 			var oldStateTrigger = CurrentState;
+After:
+			}
+
+			bool hasStateTriggers = HasStateTriggers();
+
+			if (!hasStateTriggers)
+			{
+				return;
+			}
+
+			var newStateTrigger = CurrentState;
+*/
+			}
+
+			bool hasStateTriggers = HasStateTriggers();
+
+			if (!hasStateTriggers)
+			{
+				return;
+			}
+
+			var newStateTrigger = GetActiveTrigger();
+
+			if (newStateTrigger == null)
+			{
+			{
+				return;
+			}
+
+			var oldStateTrigger = CurrentState;
 
 			if (newStateTrigger == oldStateTrigger)
+			{
 				return;
+			}
 
 			VisualStateManager.GoToState(VisualElement, newStateTrigger.Name);
 		}
@@ -536,18 +608,38 @@ namespace Microsoft.Maui.Controls
 		bool Equals(VisualStateGroup other)
 		{
 			if (other is null)
+			{
 				return false;
+			}
+
 			if (object.ReferenceEquals(this, other))
+			{
 				return true;
+			}
+
 			if (Name != other.Name)
+			{
 				return false;
+			}
+
 			if (TargetType != other.TargetType)
+			{
 				return false;
+			}
+
 			if (States.Count != other.States.Count)
+			{
 				return false;
+			}
+
 			for (var i = 0; i < States.Count; i++)
+			{
 				if (!States[i].Equals(other.States[i]))
+				{
 					return false;
+				}
+			}
+
 			return true;
 		}
 
@@ -557,7 +649,10 @@ namespace Microsoft.Maui.Controls
 			{
 				var hash = (Name, TargetType).GetHashCode();
 				for (var i = 0; i < States.Count; i++)
+				{
 					hash = (hash * 43) ^ States[i].GetHashCode();
+				}
+
 				return hash;
 			}
 		}
@@ -600,7 +695,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			{
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+			}
 
 			return clone;
 		}
@@ -620,23 +717,51 @@ namespace Microsoft.Maui.Controls
 		bool Equals(VisualState other)
 		{
 			if (other is null)
+			{
 				return false;
+			}
+
 			if (object.ReferenceEquals(this, other))
+			{
 				return true;
+			}
+
 			if (Name != other.Name)
+			{
 				return false;
+			}
+
 			if (TargetType != other.TargetType)
+			{
 				return false;
+			}
+
 			if (Setters.Count != other.Setters.Count)
+			{
 				return false;
+			}
+
 			if (StateTriggers.Count != other.StateTriggers.Count)
+			{
 				return false;
+			}
+
 			for (var i = 0; i < Setters.Count; i++)
+			{
 				if (!Setters[i].Equals(other.Setters[i]))
+				{
 					return false;
+				}
+			}
+
 			for (var i = 0; i < StateTriggers.Count; i++)
+			{
 				if (!StateTriggers[i].Equals(other.StateTriggers[i]))
+				{
 					return false;
+				}
+			}
+
 			return true;
 		}
 
@@ -646,9 +771,15 @@ namespace Microsoft.Maui.Controls
 			{
 				var hash = (Name, TargetType).GetHashCode();
 				for (var i = 0; i < Setters.Count; i++)
+				{
 					hash = (hash * 43) ^ Setters[i].GetHashCode();
+				}
+
 				for (var i = 0; i < StateTriggers.Count; i++)
+				{
 					hash = (hash * 43) ^ StateTriggers[i].GetHashCode();
+				}
+
 				return hash;
 			}
 		}
@@ -667,7 +798,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(groups) is SourceInfo info)
+			{
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+			}
 
 			return clone;
 		}
@@ -681,7 +814,9 @@ namespace Microsoft.Maui.Controls
 				for (var j = 0; j < group.States.Count; j++)
 				{
 					if (group.States[j].Name == name)
+					{
 						return true;
+					}
 				}
 			}
 

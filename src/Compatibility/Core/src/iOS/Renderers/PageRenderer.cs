@@ -68,7 +68,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (element != null)
 			{
 				if (!string.IsNullOrEmpty(element.AutomationId))
+				{
 					SetAutomationId(element.AutomationId);
+				}
 
 				element.SendViewInitialized(NativeView);
 
@@ -77,7 +79,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				while (!Application.IsApplicationOrNull(parent))
 				{
 					if (parent is ShellContent)
+					{
 						_isInItems = true;
+					}
 
 					if (parent is ShellSection shellSection)
 					{
@@ -99,7 +103,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// In Split Mode the Frame will occasionally get set to the wrong value
 			var rect = new CoreGraphics.CGRect(Element.X, Element.Y, size.Width, size.Height);
 			if (rect != _pageContainer.Frame)
+			{
 				_pageContainer.Frame = rect;
+			}
 
 			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
@@ -128,16 +134,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidLayoutSubviews();
 
 			if (_disposed || Element == null)
+			{
 				return;
+			}
 
 			if (Element.Parent is BaseShellItem)
+			{
 				Element.Layout(View.Bounds.ToRectangle());
+			}
 
 			if (_safeAreasSet || !Forms.IsiOS11OrNewer)
+			{
 				UpdateUseSafeArea();
+			}
 
 			if (Element.Background != null && !Element.Background.IsEmpty)
+			{
 				NativeView?.UpdateBackgroundLayer();
+			}
 		}
 
 		[SupportedOSPlatform("ios11.0")]
@@ -156,15 +170,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidAppear(animated);
 
 			if (_appeared || _disposed || Element == null)
+			{
 				return;
+			}
 
 			_appeared = true;
 			UpdateStatusBarPrefersHidden();
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			}
 
 			if (Element.Parent is CarouselPage)
+			{
 				return;
+			}
 
 			Page.SendAppearing();
 		}
@@ -174,12 +194,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidDisappear(animated);
 
 			if (!_appeared || _disposed || Element == null)
+			{
 				return;
+			}
 
 			_appeared = false;
 
 			if (Element.Parent is CarouselPage)
+			{
 				return;
+			}
 
 			Page.SendDisappearing();
 		}
@@ -189,7 +213,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidLoad();
 
 			if (NativeView == null)
+			{
 				return;
+			}
 
 			var uiTapGestureRecognizer = new UITapGestureRecognizer(a => NativeView?.EndEditing(true));
 
@@ -231,7 +257,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Platform.SetRenderer(Element, null);
 
 				if (_appeared)
+				{
 					Page.SendDisappearing();
+				}
 
 				Element = null;
 			}
@@ -243,7 +271,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -272,32 +302,48 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected virtual void SetAutomationId(string id)
 		{
 			if (NativeView != null)
+			{
 				NativeView.AccessibilityIdentifier = id;
+			}
 		}
 
 		void OnHandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
+			{
 				UpdateTitle();
+			}
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
+			{
 				UpdateStatusBarPrefersHidden();
+			}
 			else if (Forms.IsiOS11OrNewer && e.PropertyName == PlatformConfiguration.iOSSpecific.Page.UseSafeAreaProperty.PropertyName)
 			{
 				_userOverriddenSafeArea = false;
 				UpdateUseSafeArea();
 			}
 			else if (Forms.IsiOS11OrNewer && e.PropertyName == PlatformConfiguration.iOSSpecific.Page.SafeAreaInsetsProperty.PropertyName)
+			{
 				UpdateUseSafeArea();
+			}
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
+			{
 				UpdateHomeIndicatorAutoHidden();
+			}
 			else if (e.PropertyName == Page.PaddingProperty.PropertyName)
 			{
 				if (ShouldUseSafeArea() && Page.Padding != SafeAreaInsets)
+				{
 					_userOverriddenSafeArea = true;
+				}
 			}
 		}
 
@@ -328,7 +374,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Forms.IsiOS13OrNewer &&
 				previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle &&
 				UIApplication.SharedApplication.ApplicationState != UIApplicationState.Background)
+			{
 				((IApplication)Application.Current)?.ThemeChanged();
+			}
 		}
 
 		bool ShouldUseSafeArea()
@@ -337,7 +385,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			bool isSafeAreaSet = Element.IsSet(PageSpecific.UseSafeAreaProperty);
 
 			if (IsPartOfShell && !isSafeAreaSet)
+			{
 				usingSafeArea = true;
+			}
 
 			return usingSafeArea;
 		}
@@ -345,22 +395,32 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateUseSafeArea()
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			if (_userOverriddenSafeArea)
+			{
 				return;
+			}
 
 			if (!IsPartOfShell && !Forms.IsiOS11OrNewer)
+			{
 				return;
+			}
 
 			var tabThickness = _tabThickness;
 			if (!_isInItems)
+			{
 				tabThickness = 0;
+			}
 
 			Thickness safeareaPadding = default(Thickness);
 
 			if (Page.Padding != SafeAreaInsets)
+			{
 				_userPadding = Page.Padding;
+			}
 
 			if (Forms.IsiOS11OrNewer)
 			{
@@ -385,7 +445,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (IsPartOfShell && !isSafeAreaSet)
 			{
 				if (Shell.GetNavBarIsVisible(Element) || _tabThickness != default(Thickness))
+				{
 					usingSafeArea = true;
+				}
 			}
 
 			if (!usingSafeArea && isSafeAreaSet && Page.Padding == safeareaPadding)
@@ -394,10 +456,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			if (!usingSafeArea)
+			{
 				return;
+			}
 
 			if (SafeAreaInsets == Page.Padding)
+			{
 				return;
+			}
 
 			// this is determining if there is a UIScrollView control occupying the whole screen
 			if (IsPartOfShell && !isSafeAreaSet)
@@ -408,7 +474,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (subViewSearch?.Subviews.Length > 0)
 					{
 						if (subViewSearch.Subviews[0] is UIScrollView)
+						{
 							return;
+						}
 
 						subViewSearch = subViewSearch.Subviews[0];
 					}
@@ -426,13 +494,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateStatusBarPrefersHidden()
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			var animation = Page.OnThisPlatform().PreferredStatusBarUpdateAnimation();
 			if (animation == PageUIStatusBarAnimation.Fade || animation == PageUIStatusBarAnimation.Slide)
+			{
 				UIView.Animate(0.25, () => SetNeedsStatusBarAppearanceUpdate());
+			}
 			else
+			{
 				SetNeedsStatusBarAppearanceUpdate();
+			}
+
 			NativeView?.SetNeedsLayout();
 		}
 
@@ -442,7 +517,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
 			{
 				if (v != null && (v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder))
+				{
 					return false;
+				}
 			}
 			return true;
 		}
@@ -465,21 +542,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateBackground()
 		{
 			if (NativeView == null)
+			{
 				return;
+			}
 
 			_ = this.ApplyNativeImageAsync(Page.BackgroundImageSourceProperty, bgImage =>
 			{
 				if (NativeView == null)
+				{
 					return;
+				}
 
 				if (bgImage != null)
+				{
 					NativeView.BackgroundColor = UIColor.FromPatternImage(bgImage);
+				}
 				else
 				{
 					Brush background = Element.Background;
 
 					if (!Brush.IsNullOrEmpty(background))
+					{
 						NativeView.UpdateBackground(Element.Background);
+					}
 					else
 					{
 						NativeView.BackgroundColor = Element.BackgroundColor?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
@@ -491,7 +576,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateTitle()
 		{
 			if (!string.IsNullOrWhiteSpace(Page.Title))
+			{
 				NavigationItem.Title = Page.Title;
+			}
 		}
 
 		[PortHandler]
@@ -507,7 +594,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateHomeIndicatorAutoHidden()
 		{
 			if (Element == null || !OperatingSystem.IsIOSVersionAtLeast(11))
+			{
 				return;
+			}
 
 			SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}

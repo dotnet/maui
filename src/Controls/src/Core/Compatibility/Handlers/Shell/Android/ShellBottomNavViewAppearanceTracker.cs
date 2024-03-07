@@ -80,14 +80,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AColor newColor;
 
 			if (color == null)
+			{
 				newColor = ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
+			}
 			else
+			{
 				newColor = color.ToPlatform();
+			}
 
 			if (menuView == null)
 			{
 				if (colorDrawable != null && lastColor == newColor)
+				{
 					return;
+				}
 
 				if (lastColor != newColor || colorDrawable == null)
 				{
@@ -102,7 +108,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				if (colorChangeRevealDrawable != null && lastColor == newColor)
+				{
 					return;
+				}
 
 				var index = ((IShellItemController)_shellItem).GetItems().IndexOf(_shellItem.CurrentItem);
 				var menu = bottomView.Menu;
@@ -110,7 +118,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				var child = menuView.GetChildAt(index);
 				if (child == null)
+				{
 					return;
+				}
 
 				var touchPoint = new Point(child.Left + (child.Right - child.Left) / 2, child.Top + (child.Bottom - child.Top) / 2);
 
@@ -122,7 +132,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			TypedValue mTypedValue = new TypedValue();
 			if (context.Theme?.ResolveAttribute(R.Attribute.TextColorSecondary, mTypedValue, true) == false)
+			{
 				return null;
+			}
 
 			var baseCSL = AppCompatResources.GetColorStateList(context, mTypedValue.ResourceId);
 			var colorPrimary = (ShellRenderer.IsDarkTheme) ? AColor.White : ShellRenderer.DefaultBackgroundColor.ToPlatform();
@@ -166,7 +178,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 

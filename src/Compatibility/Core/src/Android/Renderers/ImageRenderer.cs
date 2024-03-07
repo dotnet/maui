@@ -31,7 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
@@ -60,7 +62,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			UpdateAspect();
 
 			if (e.NewElement is IImageController imageController && imageController.GetLoadAsAnimation())
+			{
 				UpdateAnimations();
+			}
 		}
 
 		protected override async void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -73,11 +77,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Image.SourceProperty.PropertyName)
+			{
 				await TryUpdateBitmap();
+			}
 			else if (e.PropertyName == Image.AspectProperty.PropertyName)
+			{
 				UpdateAspect();
+			}
 			else if (e.Is(Image.IsAnimationPlayingProperty))
+			{
 				UpdateAnimations();
+			}
 		}
 
 		void UpdateAnimations()
@@ -130,7 +140,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			if (base.OnTouchEvent(e))
+			{
 				return true;
+			}
 
 			return _motionEventHelper.HandleMotionEvent(Parent, e);
 		}

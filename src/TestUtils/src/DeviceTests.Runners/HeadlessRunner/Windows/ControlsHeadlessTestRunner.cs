@@ -103,7 +103,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			TestsCompleted -= OnTestsCompleted;
 
 			if (File.Exists(TestsResultsFinalPath))
+			{
 				return TestsResultsFinalPath;
+			}
 
 			return null;
 

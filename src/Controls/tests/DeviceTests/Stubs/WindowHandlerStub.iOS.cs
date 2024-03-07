@@ -32,7 +32,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			{
 				base.ViewDidLayoutSubviews();
 				if (View.Subviews.Length > 0)
+				{
 					View.Subviews[0].Frame = View.Bounds;
+				}
 			}
 		}
 
@@ -67,11 +69,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 						_workSpace.AddChildViewController(vc);
 						_workSpace.View.AddSubview(vc.View);
 						if (fireEvents && this is IElementHandler elementHandler && elementHandler.VirtualView is IWindow virtualView)
+						{
 							FireWindowEvent(virtualView, (window) => !window.IsActivated, () =>
 							{
 								if (!IsDisconnected)
+								{
 									VirtualView.Activated();
+								}
 							});
+						}
 					});
 			}
 			else

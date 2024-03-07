@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
 	{
-		public AutoSuggestBox? QueryEditor => null;
+		public static AutoSuggestBox? QueryEditor => null;
 
 		protected override AutoSuggestBox CreatePlatformView() => new AutoSuggestBox
 		{
@@ -128,12 +128,16 @@ namespace Microsoft.Maui.Handlers
 		void OnQuerySubmitted(AutoSuggestBox? sender, AutoSuggestBoxQuerySubmittedEventArgs e)
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			// Modifies the text of the control if it does not match the query.
 			// This is possible because OnTextChanged is fired with a delay
 			if (e.QueryText != VirtualView.Text)
+			{
 				VirtualView.Text = e.QueryText;
+			}
 
 			VirtualView.SearchButtonPressed();
 		}
@@ -141,10 +145,14 @@ namespace Microsoft.Maui.Handlers
 		void OnTextChanged(AutoSuggestBox? sender, AutoSuggestBoxTextChangedEventArgs e)
 		{
 			if (e.Reason == AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
+			{
 				return;
+			}
 
 			if (VirtualView == null || sender == null)
+			{
 				return;
+			}
 
 			VirtualView.Text = sender.Text;
 		}

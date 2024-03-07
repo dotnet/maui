@@ -63,13 +63,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var headerView = CollectionView.ViewWithTag(HeaderTag);
 
 			if (headerView != null)
+			{
 				headerHeight = headerView.Frame.Height;
+			}
 
 			nfloat footerHeight = 0;
 			var footerView = CollectionView.ViewWithTag(FooterTag);
 
 			if (footerView != null)
+			{
 				footerHeight = footerView.Frame.Height;
+			}
 
 			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y, CollectionView.Frame.Width,
 				Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
@@ -89,13 +93,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					if (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width ||
 						_footerUIView.Frame.X < emptyView?.Frame.X)
+					{
 						UpdateHeaderFooterPosition();
+					}
 				}
 				else
 				{
 					if (_footerUIView.Frame.Y != ItemsViewLayout.CollectionViewContentSize.Height ||
 						_footerUIView.Frame.Y < (emptyView?.Frame.Y + emptyView?.Frame.Height))
+					{
 						UpdateHeaderFooterPosition();
+					}
 				}
 			}
 		}
@@ -133,7 +141,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			if (formsElement != null)
+			{
 				ItemsView.AddLogicalChild(formsElement);
+			}
 
 			if (formsElement != null)
 			{
@@ -159,10 +169,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				nfloat emptyWidth = emptyView?.Frame.Width ?? 0f;
 
 				if (_headerUIView != null && _headerUIView.Frame.X != headerWidth)
+				{
 					_headerUIView.Frame = new CoreGraphics.CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
+				}
 
 				if (_footerUIView != null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || emptyWidth > 0))
+				{
 					_footerUIView.Frame = new CoreGraphics.CGRect(ItemsViewLayout.CollectionViewContentSize.Width + emptyWidth, 0, footerWidth, CollectionView.Frame.Height);
+				}
 
 				if (CollectionView.ContentInset.Left != headerWidth || CollectionView.ContentInset.Right != footerWidth)
 				{
@@ -172,7 +186,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var xOffset = currentOffset.X + (currentInset.Left - CollectionView.ContentInset.Left);
 
 					if (CollectionView.ContentSize.Width + headerWidth <= CollectionView.Bounds.Width)
+					{
 						xOffset = -headerWidth;
+					}
 
 					// if the header grows it will scroll off the screen because if you change the content inset iOS adjusts the content offset so the list doesn't move
 					// this changes the offset of the list by however much the header size has changed
@@ -197,7 +213,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var yOffset = currentOffset.Y + (currentInset.Top - CollectionView.ContentInset.Top);
 
 					if (CollectionView.ContentSize.Height + headerHeight <= CollectionView.Bounds.Height)
+					{
 						yOffset = -headerHeight;
+					}
 
 					CollectionView.ContentOffset = new CoreGraphics.CGPoint(CollectionView.ContentOffset.X, yOffset);
 				}
@@ -230,10 +248,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateLayoutMeasurements()
 		{
 			if (_headerViewFormsElement != null)
+			{
 				HandleFormsElementMeasureInvalidated(_headerViewFormsElement);
+			}
 
 			if (_footerViewFormsElement != null)
+			{
 				HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
+			}
 		}
 	}
 }

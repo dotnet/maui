@@ -31,7 +31,10 @@ namespace Microsoft.Maui.Storage
 		public static string PlatformGetFullAppPackageFilePath(string filename)
 		{
 			if (filename == null)
+			{
+			{
 				throw new ArgumentNullException(nameof(filename));
+			}
 
 			filename = NormalizePath(filename);
 

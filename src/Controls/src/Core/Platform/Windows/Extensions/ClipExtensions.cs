@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var wGeometry = geometry.ToPlatform();
 
 			if (wGeometry is WRectangleGeometry wRectangleGeometry && frameworkElement.Clip != wRectangleGeometry)
+			{
 				frameworkElement.Clip = wRectangleGeometry;
+			}
 		}
 
 		public static void ClipVisual(this FrameworkElement frameworkElement, Geometry geometry)
@@ -55,7 +57,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (visual.Clip != compositionClip)
+			{
 				visual.Clip = compositionClip;
+			}
 		}
 	}
 }

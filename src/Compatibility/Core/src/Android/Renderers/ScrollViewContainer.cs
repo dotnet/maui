@@ -23,21 +23,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			set
 			{
 				if (_childView == value)
+				{
 					return;
+				}
 
 				RemoveAllViews();
 
 				_childView = value;
 
 				if (_childView == null)
+				{
 					return;
+				}
 
 				IVisualElementRenderer renderer;
 				if ((renderer = Platform.GetRenderer(_childView)) == null)
+				{
 					Platform.SetRenderer(_childView, renderer = Platform.CreateRenderer(_childView, Context));
+				}
 
 				if (renderer.View.Parent != null)
+				{
 					renderer.View.RemoveFromParent();
+				}
 
 				AddView(renderer.View);
 			}
@@ -46,7 +54,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
@@ -66,7 +76,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (_childView == null)
+			{
 				return;
+			}
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(_childView);
 			renderer.UpdateLayout();
@@ -80,7 +92,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				SetMeasuredDimension((int)Context.ToPixels(_childView.Bounds.Right + _parent.Padding.Right), (int)Context.ToPixels(_childView.Bounds.Bottom + _parent.Padding.Bottom));
 			}
 			else
+			{
 				SetMeasuredDimension((int)Context.ToPixels(_parent.Padding.Right), (int)Context.ToPixels(_parent.Padding.Bottom));
+			}
 		}
 	}
 }

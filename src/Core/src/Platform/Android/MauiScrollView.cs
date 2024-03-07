@@ -67,10 +67,14 @@ namespace Microsoft.Maui.Platform
 		public void SetVerticalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
 			if (_defaultVerticalScrollVisibility == 0)
+			{
 				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+			}
 
 			if (scrollBarVisibility == ScrollBarVisibility.Default)
+			{
 				scrollBarVisibility = _defaultVerticalScrollVisibility;
+			}
 
 			VerticalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
 
@@ -112,7 +116,7 @@ namespace Microsoft.Maui.Platform
 				}
 				// If the user has changed between horiztonal and both we want to request a new layout
 				// so the Horizontal Layout can be adjusted to satisfy the new orientation.
-				else if(orientationChanged)
+				else if (orientationChanged)
 				{
 					PlatformInterop.RequestLayoutIfNeeded(this);
 				}
@@ -123,7 +127,10 @@ namespace Microsoft.Maui.Platform
 				{
 					_content.RemoveFromParent();
 					if (_hScrollView != null)
+					{
 						_hScrollView.RemoveFromParent();
+					}
+
 					AddView(_content);
 				}
 			}
@@ -134,7 +141,9 @@ namespace Microsoft.Maui.Platform
 			// See also MauiHorizontalScrollView notes in OnInterceptTouchEvent
 
 			if (ev == null)
+			{
 				return false;
+			}
 
 			// set the start point for the bidirectional scroll; 
 			// Down is swallowed by other controls, so we'll just sneak this in here without actually preventing
@@ -151,7 +160,9 @@ namespace Microsoft.Maui.Platform
 		public override bool OnTouchEvent(MotionEvent? ev)
 		{
 			if (ev == null || !Enabled || _scrollOrientation == ScrollOrientation.Neither)
+			{
 				return false;
+			}
 
 			if (ShouldSkipOnTouch)
 			{
@@ -209,7 +220,7 @@ namespace Microsoft.Maui.Platform
 					MeasureSpec.MakeMeasureSpec(hScrollViewHeight, MeasureSpecMode.Exactly));
 			}
 		}
-		
+
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
 			base.OnLayout(changed, left, top, right, bottom);
@@ -369,7 +380,9 @@ namespace Microsoft.Maui.Platform
 		public override bool OnInterceptTouchEvent(MotionEvent? ev)
 		{
 			if (ev == null || _parentScrollView == null)
+			{
 				return false;
+			}
 
 			// TODO ezhart 2021-07-12 The previous version of this checked _renderer.Element.InputTransparent; we don't have acces to that here,
 			// and I'm not sure it even applies. We need to determine whether touch events will get here at all if we've marked the ScrollView InputTransparent
@@ -391,10 +404,14 @@ namespace Microsoft.Maui.Platform
 		public override bool OnTouchEvent(MotionEvent? ev)
 		{
 			if (ev == null || _parentScrollView == null)
+			{
 				return false;
+			}
 
 			if (!_parentScrollView.Enabled)
+			{
 				return false;
+			}
 
 			// If the touch is caught by the horizontal scrollview, forward it to the parent 
 			_parentScrollView.ShouldSkipOnTouch = true;

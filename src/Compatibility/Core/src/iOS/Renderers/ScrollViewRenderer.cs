@@ -109,10 +109,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 				if (element != null)
+				{
 					element.SendViewInitialized(this);
+				}
 
 				if (!string.IsNullOrEmpty(element.AutomationId))
+				{
 					AccessibilityIdentifier = element.AutomationId;
+				}
 			}
 		}
 
@@ -155,7 +159,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateFlowDirection()
 		{
 			if (Superview == null || ScrollView.Content == null || _requestedScroll != null || _checkedForRtlScroll)
+			{
 				return;
+			}
 
 			if (Element is IVisualElementController controller && ScrollView.Orientation != ScrollOrientation.Vertical)
 			{
@@ -176,7 +182,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (disposing)
 			{
 				if (_packager == null)
+				{
 					return;
+				}
 
 				Element?.ClearValue(Platform.RendererProperty);
 				SetElement(null);
@@ -206,19 +214,34 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == PlatformConfiguration.iOSSpecific.ScrollView.ShouldDelayContentTouchesProperty.PropertyName)
+			{
 				UpdateDelaysContentTouches();
+			}
 			else if (e.PropertyName == ScrollView.ContentSizeProperty.PropertyName)
+			{
 				UpdateContentSize();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
 				UpdateBackgroundColor();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled();
+			}
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateVerticalScrollBarVisibility();
+			}
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateHorizontalScrollBarVisibility();
+			}
 		}
 
 		[PortHandler]
@@ -274,7 +297,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			PointF newOffset = PointF.Empty;
 			if (e.Mode == ScrollToMode.Position)
+			{
 				newOffset = new PointF((nfloat)e.ScrollX, (nfloat)e.ScrollY);
+			}
 			else
 			{
 				var positionOnScroll = ScrollView.GetScrollPositionForElement(e.Element as VisualElement, e.Position);
@@ -298,7 +323,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			SetContentOffset(newOffset, e.ShouldAnimate);
 
 			if (!e.ShouldAnimate || sameOffset)
+			{
 				ScrollView.SendScrollFinished();
+			}
 		}
 
 		[PortHandler]
@@ -315,7 +342,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateBackground()
 		{
 			if (NativeView == null)
+			{
 				return;
+			}
 
 			Brush background = Element.Background;
 
@@ -326,7 +355,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var contentSize = RetrieveElementContentSize();
 			if (!contentSize.IsEmpty)
+			{
 				ContentSize = contentSize;
+			}
 		}
 
 		CoreGraphics.CGSize RetrieveElementContentSize()
@@ -337,7 +368,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateScrollPosition()
 		{
 			if (ScrollView != null)
+			{
 				ScrollView.SetScrolledPosition(ContentOffset.X, ContentOffset.Y);
+			}
 		}
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)

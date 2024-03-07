@@ -207,7 +207,9 @@ namespace Maui.Controls.Sample
 				var newButton = new Button { Text = "Foo Bar", AutomationId = string.Format("btn_{0}", i) };
 
 				if (i == 49)
+				{
 					newButton.Text = "the before";
+				}
 
 				if (i == 50)
 				{
@@ -218,7 +220,9 @@ namespace Maui.Controls.Sample
 				}
 
 				if (i == 51)
+				{
 					newButton.Text = "the after";
+				}
 
 				if (i == 53)
 				{

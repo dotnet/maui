@@ -17,14 +17,18 @@ namespace Microsoft.Maui
 		public async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IStreamImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
+			{
 				return null;
+			}
 
 			try
 			{
 				using var cgImageSource =
 					await imageSource.GetPlatformImageSourceAsync(cancellationToken).ConfigureAwait(false);
 				if (cgImageSource is null)
+				{
 					throw new InvalidOperationException("Unable to load image file.");
+				}
 
 				var image = cgImageSource.GetPlatformImage();
 

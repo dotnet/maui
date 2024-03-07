@@ -48,9 +48,40 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 		{
 			var storageFiles = new List<IStorageFile>();
 			foreach (var file in request.Files)
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.19041.0)'
+Before:
 				storageFiles.Add(file.File ?? await StorageFile.GetFileFromPathAsync(file.FullPath));
 
 			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
+			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);
+After:
+			{
+				storageFiles.Add(file.File ?? await StorageFile.GetFileFromPathAsync(file.FullPath));
+			}
+
+			var hwnd = DataTransferManagerHelper.GetDataTransferManager(hwnd);
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Before:
+				storageFiles.Add(file.File ?? await StorageFile.GetFileFromPathAsync(file.FullPath));
+
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
+			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);
+After:
+			{
+				storageFiles.Add(file.File ?? await StorageFile.GetFileFromPathAsync(file.FullPath));
+			}
+
+			var hwnd = DataTransferManagerHelper.GetDataTransferManager(hwnd);
+*/
+			{
+				storageFiles.Add(file.File ?? await StorageFile.GetFileFromPathAsync(file.FullPath));
+			}
+
+			var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
+			var dataTransferManager = WindowStateManager.Default.GetActiveWindowHandle(true);
 			var dataTransferManager = DataTransferManagerHelper.GetDataTransferManager(hwnd);
 
 			dataTransferManager.DataRequested += ShareTextHandler;

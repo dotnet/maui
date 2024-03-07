@@ -39,7 +39,20 @@ namespace Microsoft.Maui.Platform
 			var handlerType = mauiContext.Handlers.GetHandlerType(viewType);
 
 			if (handlerType == null)
+			{
 				return null;
+
+/* Unmerged change from project 'Core(net8.0-android)'
+Before:
+#if ANDROID
+			if(mauiContext.Context != null)
+After:
+			}
+
+#if ANDROID
+			if (mauiContext.Context != null)
+*/
+			}
 
 #if ANDROID
 			if(mauiContext.Context != null)
@@ -60,6 +73,9 @@ namespace Microsoft.Maui.Platform
 
 			//This is how MVU works. It collapses views down
 			if (view is IReplaceableView ir)
+
+/* Unmerged change from project 'Core(net8.0-ios)'
+Before:
 				view = ir.ReplacedView;
 
 			var handler = view.Handler;
@@ -157,6 +173,1250 @@ namespace Microsoft.Maui.Platform
 
 			if (handler.VirtualView != element)
 				handler.SetVirtualView(element);
+After:
+			{
+				view = ir.ReplacedView;
+			}
+
+			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
+			if (handler == null)
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+					{
+						handler = viewType.CreateTypeWithInjection(context);
+					}
+					else
+					{
+						handler = context.Handlers.GetHandler(viewType);
+					}
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+					{
+						handlersWithConstructors.Add(view.GetType());
+					}
+				}
+			}
+
+			if (handler == null)
+			{
+				throw new HandlerNotFoundException(view);
+			}
+
+			handler.SetMauiContext(context);
+
+			view.Handler = handler;
+
+			if (handler.VirtualView != view)
+			{
+				handler.SetVirtualView(view);
+			}
+
+			return handler;
+		}
+
+		internal static PlatformView ToPlatform(this IElement view)
+		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+			{
+				return replaceableView.ReplacedView.ToPlatform();
+			}
+
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+			if (view.Handler is IViewHandler viewHandler)
+			{
+				if (viewHandler.ContainerView is PlatformView containerView)
+				{
+					return containerView;
+				}
+
+				if (viewHandler.PlatformView is PlatformView platformView)
+				{
+					return platformView;
+				}
+			}
+
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.PlatformView is not PlatformView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+			}
+
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
+		{
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+			if (handler == null)
+			{
+				handler = context.Handlers.GetHandler(element.GetType());
+			}
+
+			if (handler == null)
+			{
+				throw new Exception($"Handler not found for window {element}.");
+			}
+
+			handler.SetMauiContext(context);
+
+			element.Handler = handler;
+
+			if (handler.VirtualView != element)
+			{
+				handler.SetVirtualView(element);
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				view = ir.ReplacedView;
+
+			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+				handler = null;
+
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
+			if (handler == null)
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+						handler = viewType.CreateTypeWithInjection(context);
+					else
+						handler = context.Handlers.GetHandler(viewType);
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+						handlersWithConstructors.Add(view.GetType());
+				}
+			}
+
+			if (handler == null)
+				throw new HandlerNotFoundException(view);
+
+			handler.SetMauiContext(context);
+
+			view.Handler = handler;
+
+			if (handler.VirtualView != view)
+				handler.SetVirtualView(view);
+
+			return handler;
+		}
+
+		internal static PlatformView ToPlatform(this IElement view)
+		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+				return replaceableView.ReplacedView.ToPlatform();
+
+
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+			if (view.Handler is IViewHandler viewHandler)
+			{
+				if (viewHandler.ContainerView is PlatformView containerView)
+					return containerView;
+
+				if (viewHandler.PlatformView is PlatformView platformView)
+					return platformView;
+			}
+
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.PlatformView is not PlatformView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+			}
+
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
+		{
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+				handler = null;
+
+			if (handler == null)
+				handler = context.Handlers.GetHandler(element.GetType());
+
+			if (handler == null)
+				throw new Exception($"Handler not found for window {element}.");
+
+			handler.SetMauiContext(context);
+
+			element.Handler = handler;
+
+			if (handler.VirtualView != element)
+				handler.SetVirtualView(element);
+After:
+			{
+				view = ir.ReplacedView;
+			}
+
+			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
+			if (handler == null)
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+					{
+						handler = viewType.CreateTypeWithInjection(context);
+					}
+					else
+					{
+						handler = context.Handlers.GetHandler(viewType);
+					}
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+					{
+						handlersWithConstructors.Add(view.GetType());
+					}
+				}
+			}
+
+			if (handler == null)
+			{
+				throw new HandlerNotFoundException(view);
+			}
+
+			handler.SetMauiContext(context);
+
+			view.Handler = handler;
+
+			if (handler.VirtualView != view)
+			{
+				handler.SetVirtualView(view);
+			}
+
+			return handler;
+		}
+
+		internal static PlatformView ToPlatform(this IElement view)
+		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+			{
+				return replaceableView.ReplacedView.ToPlatform();
+			}
+
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+			if (view.Handler is IViewHandler viewHandler)
+			{
+				if (viewHandler.ContainerView is PlatformView containerView)
+				{
+					return containerView;
+				}
+
+				if (viewHandler.PlatformView is PlatformView platformView)
+				{
+					return platformView;
+				}
+			}
+
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.PlatformView is not PlatformView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+			}
+
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
+		{
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+			if (handler == null)
+			{
+				handler = context.Handlers.GetHandler(element.GetType());
+			}
+
+			if (handler == null)
+			{
+				throw new Exception($"Handler not found for window {element}.");
+			}
+
+			handler.SetMauiContext(context);
+
+			element.Handler = handler;
+
+			if (handler.VirtualView != element)
+			{
+				handler.SetVirtualView(element);
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-android)'
+Before:
+				view = ir.ReplacedView;
+
+			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+				handler = null;
+
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
+			if (handler == null)
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+						handler = viewType.CreateTypeWithInjection(context);
+					else
+						handler = context.Handlers.GetHandler(viewType);
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+						handlersWithConstructors.Add(view.GetType());
+				}
+			}
+
+			if (handler == null)
+				throw new HandlerNotFoundException(view);
+
+			handler.SetMauiContext(context);
+
+			view.Handler = handler;
+
+			if (handler.VirtualView != view)
+				handler.SetVirtualView(view);
+
+			return handler;
+		}
+
+		internal static PlatformView ToPlatform(this IElement view)
+		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+				return replaceableView.ReplacedView.ToPlatform();
+
+
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+			if (view.Handler is IViewHandler viewHandler)
+			{
+				if (viewHandler.ContainerView is PlatformView containerView)
+					return containerView;
+
+				if (viewHandler.PlatformView is PlatformView platformView)
+					return platformView;
+			}
+
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.PlatformView is not PlatformView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+			}
+
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
+		{
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+				handler = null;
+
+			if (handler == null)
+				handler = context.Handlers.GetHandler(element.GetType());
+
+			if (handler == null)
+				throw new Exception($"Handler not found for window {element}.");
+
+			handler.SetMauiContext(context);
+
+			element.Handler = handler;
+
+			if (handler.VirtualView != element)
+				handler.SetVirtualView(element);
+After:
+			{
+				view = ir.ReplacedView;
+			}
+
+			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
+			if (handler == null)
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+					{
+						handler = viewType.CreateTypeWithInjection(context);
+					}
+					else
+					{
+						handler = context.Handlers.GetHandler(viewType);
+					}
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+					{
+						handlersWithConstructors.Add(view.GetType());
+					}
+				}
+			}
+
+			if (handler == null)
+			{
+				throw new HandlerNotFoundException(view);
+			}
+
+			handler.SetMauiContext(context);
+
+			view.Handler = handler;
+
+			if (handler.VirtualView != view)
+			{
+				handler.SetVirtualView(view);
+			}
+
+			return handler;
+		}
+
+		internal static PlatformView ToPlatform(this IElement view)
+		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+			{
+				return replaceableView.ReplacedView.ToPlatform();
+			}
+
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+			if (view.Handler is IViewHandler viewHandler)
+			{
+				if (viewHandler.ContainerView is PlatformView containerView)
+				{
+					return containerView;
+				}
+
+				if (viewHandler.PlatformView is PlatformView platformView)
+				{
+					return platformView;
+				}
+			}
+
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.PlatformView is not PlatformView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+			}
+
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
+		{
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+			if (handler == null)
+			{
+				handler = context.Handlers.GetHandler(element.GetType());
+			}
+
+			if (handler == null)
+			{
+				throw new Exception($"Handler not found for window {element}.");
+			}
+
+			handler.SetMauiContext(context);
+
+			element.Handler = handler;
+
+			if (handler.VirtualView != element)
+			{
+				handler.SetVirtualView(element);
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+				view = ir.ReplacedView;
+
+			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+				handler = null;
+
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
+			if (handler == null)
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+						handler = viewType.CreateTypeWithInjection(context);
+					else
+						handler = context.Handlers.GetHandler(viewType);
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+						handlersWithConstructors.Add(view.GetType());
+				}
+			}
+
+			if (handler == null)
+				throw new HandlerNotFoundException(view);
+
+			handler.SetMauiContext(context);
+
+			view.Handler = handler;
+
+			if (handler.VirtualView != view)
+				handler.SetVirtualView(view);
+
+			return handler;
+		}
+
+		internal static PlatformView ToPlatform(this IElement view)
+		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+				return replaceableView.ReplacedView.ToPlatform();
+
+
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+			if (view.Handler is IViewHandler viewHandler)
+			{
+				if (viewHandler.ContainerView is PlatformView containerView)
+					return containerView;
+
+				if (viewHandler.PlatformView is PlatformView platformView)
+					return platformView;
+			}
+
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.PlatformView is not PlatformView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+			}
+
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
+		{
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+				handler = null;
+
+			if (handler == null)
+				handler = context.Handlers.GetHandler(element.GetType());
+
+			if (handler == null)
+				throw new Exception($"Handler not found for window {element}.");
+
+			handler.SetMauiContext(context);
+
+			element.Handler = handler;
+
+			if (handler.VirtualView != element)
+				handler.SetVirtualView(element);
+After:
+			{
+				view = ir.ReplacedView;
+			}
+
+			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
+			if (handler == null)
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+					{
+						handler = viewType.CreateTypeWithInjection(context);
+					}
+					else
+					{
+						handler = context.Handlers.GetHandler(viewType);
+					}
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+					{
+						handlersWithConstructors.Add(view.GetType());
+					}
+				}
+			}
+
+			if (handler == null)
+			{
+				throw new HandlerNotFoundException(view);
+			}
+
+			handler.SetMauiContext(context);
+
+			view.Handler = handler;
+
+			if (handler.VirtualView != view)
+			{
+				handler.SetVirtualView(view);
+			}
+
+			return handler;
+		}
+
+		internal static PlatformView ToPlatform(this IElement view)
+		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+			{
+				return replaceableView.ReplacedView.ToPlatform();
+			}
+
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+			if (view.Handler is IViewHandler viewHandler)
+			{
+				if (viewHandler.ContainerView is PlatformView containerView)
+				{
+					return containerView;
+				}
+
+				if (viewHandler.PlatformView is PlatformView platformView)
+				{
+					return platformView;
+				}
+			}
+
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.PlatformView is not PlatformView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+			}
+
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
+		{
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+			if (handler == null)
+			{
+				handler = context.Handlers.GetHandler(element.GetType());
+			}
+
+			if (handler == null)
+			{
+				throw new Exception($"Handler not found for window {element}.");
+			}
+
+			handler.SetMauiContext(context);
+
+			element.Handler = handler;
+
+			if (handler.VirtualView != element)
+			{
+				handler.SetVirtualView(element);
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+				view = ir.ReplacedView;
+
+			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+				handler = null;
+
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
+			if (handler == null)
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+						handler = viewType.CreateTypeWithInjection(context);
+					else
+						handler = context.Handlers.GetHandler(viewType);
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+						handlersWithConstructors.Add(view.GetType());
+				}
+			}
+
+			if (handler == null)
+				throw new HandlerNotFoundException(view);
+
+			handler.SetMauiContext(context);
+
+			view.Handler = handler;
+
+			if (handler.VirtualView != view)
+				handler.SetVirtualView(view);
+
+			return handler;
+		}
+
+		internal static PlatformView ToPlatform(this IElement view)
+		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+				return replaceableView.ReplacedView.ToPlatform();
+
+
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+			if (view.Handler is IViewHandler viewHandler)
+			{
+				if (viewHandler.ContainerView is PlatformView containerView)
+					return containerView;
+
+				if (viewHandler.PlatformView is PlatformView platformView)
+					return platformView;
+			}
+
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.PlatformView is not PlatformView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+			}
+
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
+		{
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+				handler = null;
+
+			if (handler == null)
+				handler = context.Handlers.GetHandler(element.GetType());
+
+			if (handler == null)
+				throw new Exception($"Handler not found for window {element}.");
+
+			handler.SetMauiContext(context);
+
+			element.Handler = handler;
+
+			if (handler.VirtualView != element)
+				handler.SetVirtualView(element);
+After:
+			{
+				view = ir.ReplacedView;
+			}
+
+			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
+			if (handler == null)
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+					{
+						handler = viewType.CreateTypeWithInjection(context);
+					}
+					else
+					{
+						handler = context.Handlers.GetHandler(viewType);
+					}
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+					{
+						handlersWithConstructors.Add(view.GetType());
+					}
+				}
+			}
+
+			if (handler == null)
+			{
+				throw new HandlerNotFoundException(view);
+			}
+
+			handler.SetMauiContext(context);
+
+			view.Handler = handler;
+
+			if (handler.VirtualView != view)
+			{
+				handler.SetVirtualView(view);
+			}
+
+			return handler;
+		}
+
+		internal static PlatformView ToPlatform(this IElement view)
+		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+			{
+				return replaceableView.ReplacedView.ToPlatform();
+			}
+
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+			if (view.Handler is IViewHandler viewHandler)
+			{
+				if (viewHandler.ContainerView is PlatformView containerView)
+				{
+					return containerView;
+				}
+
+				if (viewHandler.PlatformView is PlatformView platformView)
+				{
+					return platformView;
+				}
+			}
+
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.PlatformView is not PlatformView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+			}
+
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
+		{
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+			if (handler == null)
+			{
+				handler = context.Handlers.GetHandler(element.GetType());
+			}
+
+			if (handler == null)
+			{
+				throw new Exception($"Handler not found for window {element}.");
+			}
+
+			handler.SetMauiContext(context);
+
+			element.Handler = handler;
+
+			if (handler.VirtualView != element)
+			{
+				handler.SetVirtualView(element);
+			}
+*/
+			
+/* Unmerged change from project 'Core(net8.0-ios)'
+Before:
+				return view;
+After:
+			{
+				return view;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return view;
+After:
+			{
+				return view;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-android)'
+Before:
+				return view;
+After:
+			{
+				return view;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+				return view;
+After:
+			{
+				return view;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+				return view;
+After:
+			{
+				return view;
+			}
+*/
+
+/* Unmerged change from project 'Core(net8.0-ios)'
+Before:
+					return parentView;
+After:
+				{
+					return parentView;
+				}
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+					return parentView;
+After:
+				{
+					return parentView;
+				}
+*/
+
+/* Unmerged change from project 'Core(net8.0-android)'
+Before:
+					return parentView;
+After:
+				{
+					return parentView;
+				}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
+					return parentView;
+After:
+				{
+					return parentView;
+				}
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+					return parentView;
+After:
+				{
+					return parentView;
+				}
+*/
+{
+				view = ir.ReplacedView;
+			}
+
+			var handler = view.Handler;
+
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+
+			// TODO Clean up this handler create. Handlers should probably create through the 
+			// DI.Ext Service provider. We just register them all as transient? possibly?
+			if (handler == null)
+			{
+				var viewType = view.GetType();
+				try
+				{
+					if (handlersWithConstructors.Contains(viewType))
+					{
+						handler = viewType.CreateTypeWithInjection(context);
+					}
+					else
+					{
+						handler = context.Handlers.GetHandler(viewType);
+					}
+				}
+				catch (MissingMethodException)
+				{
+					handler = viewType.CreateTypeWithInjection(context);
+					if (handler != null)
+					{
+						handlersWithConstructors.Add(view.GetType());
+					}
+				}
+			}
+
+			if (handler == null)
+			{
+				throw new HandlerNotFoundException(view);
+			}
+
+			handler.SetMauiContext(context);
+
+			view.Handler = handler;
+
+			if (handler.VirtualView != view)
+			{
+				handler.SetVirtualView(view);
+			}
+
+			return handler;
+		}
+
+		internal static PlatformView ToPlatform(this IElement view)
+		{
+			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
+			{
+				return replaceableView.ReplacedView.ToPlatform();
+			}
+
+			_ = view.Handler ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set on parent.");
+
+			if (view.Handler is IViewHandler viewHandler)
+			{
+				if (viewHandler.ContainerView is PlatformView containerView)
+				{
+					return containerView;
+				}
+
+				if (viewHandler.PlatformView is PlatformView platformView)
+				{
+					return platformView;
+				}
+			}
+
+			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
+		{
+			var handler = view.ToHandler(context);
+
+			if (handler.PlatformView is not PlatformView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+			}
+
+			return view.ToPlatform() ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
+
+		}
+
+		static void SetHandler(this BasePlatformType nativeElement, IElement element, IMauiContext context)
+		{
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
+			if (handler?.MauiContext != null && handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
+			if (handler == null)
+			{
+				handler = context.Handlers.GetHandler(element.GetType());
+			}
+
+			if (handler == null)
+			{
+				throw new Exception($"Handler not found for window {element}.");
+			}
+
+			handler.SetMauiContext(context);
+
+			element.Handler = handler;
+
+			if (handler.VirtualView != element)
+			{
+				handler.SetVirtualView(element);
+			}
 		}
 
 		public static void SetApplicationHandler(this PlatformApplication platformApplication, IApplication application, IMauiContext context) =>
@@ -175,12 +1435,16 @@ namespace Microsoft.Maui.Platform
 	where T : IElement
 		{
 			if (includeThis && element is T view)
+			{
 				return view;
+			}
 
 			foreach (var parent in element.GetParentsPath())
 			{
 				if (parent is T parentView)
+				{
 					return parentView;
+				}
 			}
 
 			return default;

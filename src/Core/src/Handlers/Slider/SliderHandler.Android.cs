@@ -71,7 +71,9 @@ namespace Microsoft.Maui.Handlers
 		void OnProgressChanged(SeekBar seekBar, int progress, bool fromUser)
 		{
 			if (VirtualView == null || !fromUser)
+			{
 				return;
+			}
 
 			var min = VirtualView.Minimum;
 			var max = VirtualView.Maximum;
@@ -98,7 +100,9 @@ namespace Microsoft.Maui.Handlers
 			public void OnProgressChanged(SeekBar? seekBar, int progress, bool fromUser)
 			{
 				if (Handler == null || seekBar == null)
+				{
 					return;
+				}
 
 				Handler.OnProgressChanged(seekBar, progress, fromUser);
 			}
@@ -106,7 +110,9 @@ namespace Microsoft.Maui.Handlers
 			public void OnStartTrackingTouch(SeekBar? seekBar)
 			{
 				if (Handler == null || seekBar == null)
+				{
 					return;
+				}
 
 				Handler.OnStartTrackingTouch(seekBar);
 			}
@@ -114,7 +120,9 @@ namespace Microsoft.Maui.Handlers
 			public void OnStopTrackingTouch(SeekBar? seekBar)
 			{
 				if (Handler == null || seekBar == null)
+				{
 					return;
+				}
 
 				Handler.OnStopTrackingTouch(seekBar);
 			}

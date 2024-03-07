@@ -45,7 +45,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
 			if (e.OldElement != null)
+			{
 				((INotifyCollectionChanged)e.OldElement.Items).CollectionChanged -= RowsCollectionChanged;
+			}
 
 			if (e.NewElement != null)
 			{
@@ -78,17 +80,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Picker.TitleProperty.PropertyName || e.PropertyName == Picker.TitleColorProperty.PropertyName)
+			{
 				UpdatePicker();
+			}
 			else if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
+			{
 				UpdatePicker();
+			}
 			else if (e.PropertyName == Picker.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == Picker.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == Picker.FontAttributesProperty.PropertyName || e.PropertyName == Picker.FontFamilyProperty.PropertyName || e.PropertyName == Picker.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 			else if (e.PropertyName == Picker.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == Picker.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateGravity();
+			}
 		}
 
 		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -98,9 +112,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			if (e.Focus)
 			{
 				if (Clickable)
+				{
 					CallOnClick();
+				}
 				else
+				{
 					((IPickerRenderer)this)?.OnClick();
+				}
 			}
 			else if (_dialog != null)
 			{
@@ -179,9 +197,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			UpdateTitleColor();
 
 			if (Element.SelectedIndex == -1 || Element.Items == null || Element.SelectedIndex >= Element.Items.Count)
+			{
 				EditText.Text = null;
+			}
 			else
+			{
 				EditText.Text = Element.Items[Element.SelectedIndex];
+			}
 
 			_pickerAccessibilityDelegate.ValueText = EditText.Text;
 		}

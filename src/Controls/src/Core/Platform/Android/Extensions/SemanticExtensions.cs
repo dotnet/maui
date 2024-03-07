@@ -9,16 +9,22 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateSemanticNodeInfo(this View virtualView, AccessibilityNodeInfoCompat? info)
 		{
 			if (info == null)
+			{
 				return;
+			}
 
 			if (virtualView.TapGestureRecognizerNeedsDelegate())
+			{
 				info.AddAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
+			}
 		}
 
 		internal static void AddOrRemoveControlsAccessibilityDelegate(this View virtualView)
 		{
 			if (virtualView?.Handler?.PlatformView is not AView view)
+			{
 				return;
+			}
 
 			bool needsDelegate = virtualView.ControlsAccessibilityDelegateNeeded();
 			var currentDelegate = ViewCompat.GetAccessibilityDelegate(view);
@@ -26,13 +32,17 @@ namespace Microsoft.Maui.Controls.Platform
 			if (needsDelegate)
 			{
 				if (currentDelegate is ControlsAccessibilityDelegate)
+				{
 					return;
+				}
 
 				// This means the current delegate didn't come from our code at all so we just exit and assume
 				// the user wants full control of the delegate
 				// If the user is inheriting from AccessibilityDelegateCompatWrapper then we will continue wrapping
 				if (currentDelegate != null && currentDelegate is not AccessibilityDelegateCompatWrapper)
+				{
 					return;
+				}
 
 				var controlsDelegate = new ControlsAccessibilityDelegate(currentDelegate, virtualView.Handler);
 				ViewCompat.SetAccessibilityDelegate(view, controlsDelegate);

@@ -20,7 +20,10 @@ namespace Microsoft.Maui.LifecycleEvents
 					{
 						window.GetWindow()?.Created();
 						if (!KeyboardAutoManagerScroll.ShouldDisconnectLifecycle)
+						{
 							KeyboardAutoManagerScroll.Connect();
+						}
+						}
 					})
 					.WillTerminate(app =>
 					{
@@ -31,35 +34,51 @@ namespace Microsoft.Maui.LifecycleEvents
 					.WillEnterForeground(app =>
 					{
 						if (!app.Delegate.HasSceneManifest())
+						{
 							app.GetWindow()?.Resumed();
+						}
+						}
 					})
 					.OnActivated(app =>
 					{
 						if (!app.Delegate.HasSceneManifest())
+						{
 							app.GetWindow()?.Activated();
+						}
+						}
 					})
 					.OnResignActivation(app =>
 					{
 						if (!app.Delegate.HasSceneManifest())
+						{
 							app.GetWindow()?.Deactivated();
+						}
+						}
 					})
 					.DidEnterBackground(app =>
 					{
 						if (!app.Delegate.HasSceneManifest())
+						{
 							app.GetWindow()?.Stopped();
+						}
 					});
 
 
 			// Pre iOS 13 doesn't support scenes
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
+			{
 				return;
-
+			}
 
 			iOS
 				.SceneWillEnterForeground(scene =>
 				{
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+					{
+					{
 						return;
+					}
 
 					if (scene.Delegate is IUIWindowSceneDelegate windowScene &&
 						scene.ActivationState != UISceneActivationState.Unattached)
@@ -70,34 +89,54 @@ namespace Microsoft.Maui.LifecycleEvents
 				.SceneOnActivated(scene =>
 				{
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+					{
+					{
 						return;
+					}
 
 					if (scene.Delegate is IUIWindowSceneDelegate sd)
+					{
 						sd.GetWindow().GetWindow()?.Activated();
+					}
 				})
 				.SceneOnResignActivation(scene =>
 				{
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+					{
+					{
 						return;
+					}
 
 					if (scene.Delegate is IUIWindowSceneDelegate sd)
+					{
 						sd.GetWindow().GetWindow()?.Deactivated();
+					}
 				})
 				.SceneDidEnterBackground(scene =>
 				{
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+					{
+					{
 						return;
+					}
 
 					if (scene.Delegate is IUIWindowSceneDelegate sd)
+					{
 						sd.GetWindow().GetWindow()?.Stopped();
+					}
 				})
 				.SceneDidDisconnect(scene =>
 				{
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+					{
+					{
 						return;
+					}
 
 					if (scene.Delegate is IUIWindowSceneDelegate sd)
+					{
 						sd.GetWindow().GetWindow()?.Destroying();
+					}
 				});
 		}
 
@@ -105,21 +144,57 @@ namespace Microsoft.Maui.LifecycleEvents
 		{
 			// Pre iOS 13 doesn't support scenes
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
+			{
 				return;
+			}
 
 			iOS = iOS
 				.WindowSceneDidUpdateCoordinateSpace((windowScene, _, _, _) =>
 				{
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
 						return;
 
 					if (windowScene.Delegate is not IUIWindowSceneDelegate wsd ||
 						wsd.GetWindow() is not UIWindow platformWindow)
+After:
+					{
+*/
+					{
 						return;
+					}
+
+					if (windowScene.Delegate is not IUIWindowSceneDelegate wsd ||
+						wsd.GetWindow() is not UIWindow platformWindow)
+					
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Added:
+					}
+
+					if (windowScene.Delegate is not IUIWindowSceneDelegate wsd ||
+						wsd.GetWindow() is not UIWindow platformWindow)
+					{
+						return;
+					}
+*/
+{
+					{
+						return;
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Added:
+					}
+*/
+					}
 
 					var window = platformWindow.GetWindow();
 					if (window is null)
+					{
 						return;
+					}
 
 					window.FrameChanged(platformWindow.Frame.ToRectangle());
 				});

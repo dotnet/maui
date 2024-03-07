@@ -56,9 +56,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 			Context.Types[node] = type;
 			if (IsXaml2009LanguagePrimitive(node))
+			{
 				value = CreateLanguagePrimitive(type, node);
+			}
 			else if (node.Properties.ContainsKey(XmlName.xArguments) || node.Properties.ContainsKey(XmlName.xFactoryMethod))
+			{
 				value = CreateFromFactory(type, node);
+			}
 			else if (
 				type.GetTypeInfo()
 					.DeclaredConstructors.Any(
@@ -66,7 +70,9 @@ namespace Microsoft.Maui.Controls.Xaml
 							ci.IsPublic && ci.GetParameters().Length != 0 &&
 							ci.GetParameters().All(pi => pi.CustomAttributes.Any(attr => attr.AttributeType == typeof(ParameterAttribute)))) &&
 				ValidateCtorArguments(type, node, out string ctorargname))
+			{
 				value = CreateFromParameterizedConstructor(type, node);
+			}
 			else if (!type.GetTypeInfo().DeclaredConstructors.Any(ci => ci.IsPublic && ci.GetParameters().Length == 0) &&
 					 !ValidateCtorArguments(type, node, out ctorargname))
 			{
@@ -78,9 +84,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				try
 				{
 					if (type == typeof(DataTemplate))
+					{
 						value = new DataTemplate();
+					}
+
 					if (type == typeof(ControlTemplate))
+					{
 						value = new ControlTemplate();
+					}
+
 					if (value == null && node.CollectionItems.Any() && node.CollectionItems.First() is ValueNode)
 					{
 						var serviceProvider = new XamlServiceProvider(node, Context);
@@ -96,10 +108,14 @@ namespace Microsoft.Maui.Controls.Xaml
 							throw exception;
 						}
 						if (converted != null && converted.GetType() == type)
+						{
 							value = converted;
+						}
 					}
 					if (value == null)
+					{
 						value = Activator.CreateInstance(type);
+					}
 				}
 				catch (TargetInvocationException e) when (e.InnerException is XamlParseException || e.InnerException is XmlException)
 				{
@@ -119,9 +135,14 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				var visitor = new ApplyPropertiesVisitor(Context);
 				foreach (var cnode in node.Properties.Values.ToList())
+				{
 					cnode.Accept(visitor, node);
+				}
+
 				foreach (var cnode in node.CollectionItems)
+				{
 					cnode.Accept(visitor, node);
+				}
 
 				try
 				{
@@ -135,27 +156,36 @@ namespace Microsoft.Maui.Controls.Xaml
 						Context.ExceptionHandler(xamlpe);
 					}
 					else
+					{
 						throw xamlpe;
+					}
 				}
 				if (!node.Properties.TryGetValue(XmlName.xKey, out INode xKey))
+				{
 					xKey = null;
+				}
 
 				node.Properties.Clear();
 				node.CollectionItems.Clear();
 
 				if (xKey != null)
+				{
 					node.Properties.Add(XmlName.xKey, xKey);
+				}
 
 				Values[node] = value;
 			}
 
 			if (value is BindableObject bindableValue && node.NameScopeRef != (parentNode as IElementNode)?.NameScopeRef)
+			{
 				NameScope.SetNameScope(bindableValue, node.NameScopeRef.NameScope);
+			}
 
 			var assemblyName = (Context.RootAssembly ?? Context.RootElement?.GetType().Assembly)?.GetName().Name;
 			if (assemblyName != null && value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(Context.RootElement) is string path)
+			{
 				VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
-
+			}
 		}
 
 		public void Visit(RootNode node, INode parentNode)
@@ -166,21 +196,29 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (rnode.Root is BindableObject bindable)
 			{
 				if (NameScope.GetNameScope(bindable) is INameScope existingNs)
+				{
 					node.NameScopeRef.NameScope = existingNs;
+				}
 				else
+				{
 					NameScope.SetNameScope(bindable, node.NameScopeRef?.NameScope);
+				}
 			}
 
 			var assemblyName = (Context.RootAssembly ?? Context.RootElement.GetType().Assembly)?.GetName().Name;
 			if (rnode.Root != null && !rnode.Root.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(Context.RootElement) is string path)
+			{
 				VisualDiagnostics.RegisterSourceInfo(rnode.Root, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
+			}
 		}
 
 		public void Visit(ListNode node, INode parentNode)
 		{
 			//this is a gross hack to keep ListNode alive. ListNode must go in favor of Properties
 			if (ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+			{
 				node.XmlName = name;
+			}
 		}
 
 		bool ValidateCtorArguments(Type nodeType, IElementNode node, out string missingArgName)
@@ -193,7 +231,10 @@ namespace Microsoft.Maui.Controls.Xaml
 							ci.GetParameters().Length != 0 && ci.IsPublic &&
 							ci.GetParameters().All(pi => pi.CustomAttributes.Any(attr => attr.AttributeType == typeof(ParameterAttribute))));
 			if (ctorInfo == null)
+			{
 				return true;
+			}
+
 			foreach (var parameter in ctorInfo.GetParameters())
 			{
 				var propname =
@@ -238,21 +279,36 @@ namespace Microsoft.Maui.Controls.Xaml
 			bool isMatch(MethodInfo m)
 			{
 				if (m.Name != factoryMethod)
+				{
 					return false;
+				}
+
 				var p = m.GetParameters();
 				if (p.Length != types.Length)
+				{
 					return false;
+				}
+
 				if (!m.IsStatic)
+				{
 					return false;
+				}
+
 				for (var i = 0; i < p.Length; i++)
 				{
 					if ((p[i].ParameterType.IsAssignableFrom(types[i])))
+					{
 						continue;
+					}
+
 					var op_impl = p[i].ParameterType.GetImplicitConversionOperator(fromType: types[i], toType: p[i].ParameterType)
 								?? types[i].GetImplicitConversionOperator(fromType: types[i], toType: p[i].ParameterType);
 
 					if (op_impl == null)
+					{
 						return false;
+					}
+
 					arguments[i] = op_impl.Invoke(null, new[] { arguments[i] });
 				}
 				return true;
@@ -260,14 +316,20 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var mi = nodeType.GetRuntimeMethods().FirstOrDefault(isMatch);
 			if (mi == null)
+			{
 				throw new MissingMemberException($"No static method found for {nodeType.FullName}::{factoryMethod} ({string.Join(", ", types.Select(t => t.FullName))})");
+			}
+
 			return mi.Invoke(null, arguments);
 		}
 
 		public object[] CreateArgumentsArray(IElementNode enode)
 		{
 			if (!enode.Properties.ContainsKey(XmlName.xArguments))
+			{
 				return null;
+			}
+
 			var node = enode.Properties[XmlName.xArguments];
 			if (node is ElementNode elementNode)
 			{
@@ -280,7 +342,10 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				var array = new object[listnode.CollectionItems.Count];
 				for (var i = 0; i < listnode.CollectionItems.Count; i++)
+				{
 					array[i] = Values[(ElementNode)listnode.CollectionItems[i]];
+				}
+
 				return array;
 			}
 			return null;
@@ -299,14 +364,23 @@ namespace Microsoft.Maui.Controls.Xaml
 						.Value as string;
 				var name = new XmlName("", propname);
 				if (!enode.Properties.TryGetValue(name, out INode node))
+				{
 					throw new XamlParseException($"The Property {propname} is required to create a {ctorInfo.DeclaringType.FullName} object.", enode as IXmlLineInfo);
+				}
+
 				if (!enode.SkipProperties.Contains(name))
+				{
 					enode.SkipProperties.Add(name);
+				}
+
 				var value = Context.Values[node];
 				var serviceProvider = new XamlServiceProvider(enode, Context);
 				var convertedValue = value.ConvertTo(parameter.ParameterType, () => parameter, serviceProvider, out Exception e);
 				if (e != null)
+				{
 					throw e;
+				}
+
 				array[i] = convertedValue;
 			}
 
@@ -319,48 +393,101 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			object value;
 			if (nodeType == typeof(string))
+			{
 				value = String.Empty;
+			}
 			else if (nodeType == typeof(Uri))
+			{
 				value = null;
+			}
 			else
+			{
 				value = Activator.CreateInstance(nodeType);
+			}
 
 			if (node.CollectionItems.Count == 1
 				&& node.CollectionItems[0] is ValueNode
 				&& ((ValueNode)node.CollectionItems[0]).Value is string valuestring)
 			{
 				if (nodeType == typeof(SByte) && sbyte.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var sbyteval))
+				{
 					return sbyteval;
+				}
+
 				if (nodeType == typeof(Int16) && short.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var int16val))
+				{
 					return int16val;
+				}
+
 				if (nodeType == typeof(Int32) && int.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var int32val))
+				{
 					return int32val;
+				}
+
 				if (nodeType == typeof(Int64) && long.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var int64val))
+				{
 					return int64val;
+				}
+
 				if (nodeType == typeof(Byte) && byte.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var byteval))
+				{
 					return byteval;
+				}
+
 				if (nodeType == typeof(UInt16) && ushort.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var uint16val))
+				{
 					return uint16val;
+				}
+
 				if (nodeType == typeof(UInt32) && uint.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var uint32val))
+				{
 					return uint32val;
+				}
+
 				if (nodeType == typeof(UInt64) && ulong.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var uint64val))
+				{
 					return uint64val;
+				}
+
 				if (nodeType == typeof(Single) && float.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var singleval))
+				{
 					return singleval;
+				}
+
 				if (nodeType == typeof(Double) && double.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var doubleval))
+				{
 					return doubleval;
+				}
+
 				if (nodeType == typeof(Boolean) && bool.TryParse(valuestring, out var boolval))
+				{
 					return boolval;
+				}
+
 				if (nodeType == typeof(TimeSpan) && TimeSpan.TryParse(valuestring, CultureInfo.InvariantCulture, out TimeSpan timespanval))
+				{
 					return timespanval;
+				}
+
 				if (nodeType == typeof(char) && char.TryParse(valuestring, out var charval))
+				{
 					return charval;
+				}
+
 				if (nodeType == typeof(string))
+				{
 					return valuestring;
+				}
+
 				if (nodeType == typeof(decimal) && decimal.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalval))
+				{
 					return decimalval;
+				}
+
 				if (nodeType == typeof(Uri) && Uri.TryCreate(valuestring, UriKind.RelativeOrAbsolute, out Uri urival))
+				{
 					return urival;
+				}
 			}
 			return value;
 		}

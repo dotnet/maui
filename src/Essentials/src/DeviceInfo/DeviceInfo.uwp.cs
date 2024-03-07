@@ -95,12 +95,16 @@ namespace Microsoft.Maui.Devices
 			get
 			{
 				if (currentType != DeviceType.Unknown)
+				{
 					return currentType;
+				}
 
 				try
 				{
 					if (string.IsNullOrWhiteSpace(systemProductName))
+					{
 						systemProductName = deviceInfo.SystemProductName;
+					}
 
 					var isVirtual = systemProductName.Contains("Virtual", StringComparison.Ordinal) || systemProductName == "HMV domU";
 

@@ -15,10 +15,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			get
 			{
 				if (s_provider is null)
+				{
 					s_provider = TestServices.Services.GetService<IDispatcherProvider>();
+				}
 
 				if (s_provider is null)
+				{
 					throw new InvalidOperationException($"Test app did not provide a dispatcher.");
+				}
 
 				return s_provider;
 			}
@@ -29,10 +33,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			get
 			{
 				if (s_dispatcher is null)
+				{
 					s_dispatcher = TestServices.Services.GetService<ApplicationDispatcher>()?.Dispatcher;
+				}
 
 				if (s_dispatcher is null)
+				{
 					throw new InvalidOperationException($"Test app did not provide a dispatcher.");
+				}
 
 				return s_dispatcher;
 			}

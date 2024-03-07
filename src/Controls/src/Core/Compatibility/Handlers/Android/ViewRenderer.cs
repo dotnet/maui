@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var value = ((IElementHandler)this).PlatformView as TPlatformView;
 				if (value != this && value != null)
+				{
 					return value;
+				}
 
 				return _platformView;
 			}

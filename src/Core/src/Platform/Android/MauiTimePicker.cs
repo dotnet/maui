@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Platform
 		void Initialize()
 		{
 			if (Background != null)
+			{
 				DrawableCompat.Wrap(Background);
+			}
 
 			Focusable = true;
 			FocusableInTouchMode = false;

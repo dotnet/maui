@@ -62,7 +62,9 @@ namespace Microsoft.Maui.Controls
 			if (template == null)
 			{
 				if (content is Page page)
+				{
 					result = page;
+				}
 			}
 			else
 			{
@@ -83,19 +85,29 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (result == null)
+			{
 				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");
+			}
 
 			if (result is TabbedPage)
+			{
 				throw new NotSupportedException($"Shell is currently not compatible with TabbedPage. Please use TabBar, Tab or switch to using NavigationPage for your {Application.Current}.MainPage");
+			}
 
 			if (result is FlyoutPage)
+			{
 				throw new NotSupportedException("Shell is currently not compatible with FlyoutPage.");
+			}
 
 			if (result is NavigationPage)
+			{
 				throw new NotSupportedException("Shell is currently not compatible with NavigationPage. Shell has Navigation built in and doesn't require a NavigationPage.");
+			}
 
 			if (GetValue(QueryAttributesProperty) is ShellRouteParameters delayedQueryParams)
+			{
 				result.SetValue(QueryAttributesProperty, delayedQueryParams);
+			}
 
 			return result;
 		}
@@ -122,7 +134,10 @@ namespace Microsoft.Maui.Controls
 			// only fire Appearing when the Content Page exists on the ShellContent
 			var content = ContentCache ?? Content;
 			if (content == null)
+			{
+			{
 				return;
+			}
 
 			base.SendAppearing();
 
@@ -132,7 +147,10 @@ namespace Microsoft.Maui.Controls
 		void SendPageAppearing(Page page)
 		{
 			if (page == null)
+			{
+			{
 				return;
+			}
 
 			if (page.Parent == null)
 			{
@@ -172,7 +190,9 @@ namespace Microsoft.Maui.Controls
 		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.IsVisibleProperty.PropertyName)
+			{
 				_isPageVisibleChanged?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		Page ContentCache
@@ -181,12 +201,16 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_contentCache == value)
+				{
 					return;
+				}
 
 				var oldCache = _contentCache;
 				_contentCache = value;
 				if (oldCache != null)
+				{
 					RemoveLogicalChild(oldCache);
+				}
 
 				if (value != null && value.Parent != this)
 				{
@@ -194,7 +218,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (Parent != null)
+				{
 					((ShellSection)Parent).UpdateDisplayedPage();
+				}
 			}
 		}
 
@@ -242,21 +268,29 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (shellContent.Parent?.Parent is ShellItem shellItem)
+			{
 				shellItem.SendStructureChanged();
+			}
 		}
 
 		void MenuItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.NewItems != null)
+			{
 				foreach (Element el in e.NewItems)
+				{
 					OnChildAdded(el);
+				}
+			}
 
 			if (e.OldItems != null)
+			{
 				for (var i = 0; i < e.OldItems.Count; i++)
 				{
 					var el = (Element)e.OldItems[i];
 					OnChildRemoved(el, e.OldStartingIndex + i);
 				}
+			}
 		}
 
 		internal override void ApplyQueryAttributes(ShellRouteParameters query)
@@ -268,12 +302,18 @@ namespace Microsoft.Maui.Controls
 			// An empty query is only valid if we've previously propagated
 			// something to this bindable property
 			if (query.Count == 0 && !this.IsSet(QueryAttributesProperty))
+			{
+			{
 				return;
+			}
 
 			SetValue(QueryAttributesProperty, query);
 
 			if (ContentCache is BindableObject bindable)
+			{
+			{
 				bindable.SetValue(QueryAttributesProperty, query);
+			}
 		}
 
 		static void OnQueryAttributesPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -293,7 +333,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
+			{
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
+			}
 
 			var type = content.GetType();
 			var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
@@ -314,7 +356,9 @@ namespace Microsoft.Maui.Controls
 						if (prop.PropertyType == typeof(string))
 						{
 							if (value != null)
+							{
 								value = global::System.Net.WebUtility.UrlDecode((string)value);
+							}
 
 							prop.SetValue(content, value);
 						}
@@ -330,7 +374,9 @@ namespace Microsoft.Maui.Controls
 					PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
 
 					if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
+					{
 						prop.SetValue(content, null);
+					}
 				}
 			}
 
@@ -341,7 +387,9 @@ namespace Microsoft.Maui.Controls
 				// Once we've applied the attributes to ContentPage lets remove the 
 				// parameters used during navigation
 				if (content is ContentPage)
+				{
 					query.ResetToQueryParameters();
+				}
 			}
 		}
 	}

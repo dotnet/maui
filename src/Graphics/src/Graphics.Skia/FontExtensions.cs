@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Graphics.Skia
 		public static SKTypeface ToSKTypeface(this IFont font)
 		{
 			if (string.IsNullOrEmpty(font?.Name))
+			{
 				return SKTypeface.Default;
+			}
 
 			try
 			{

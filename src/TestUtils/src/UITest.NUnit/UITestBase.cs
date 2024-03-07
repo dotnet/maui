@@ -106,7 +106,9 @@ namespace UITest.Appium.NUnit
 				SaveDeviceDiagnosticInfo();
 
 				if (App.AppState != ApplicationState.NotRunning)
+				{
 					SaveUIDiagnosticInfo();
+				}
 			}
 
 			FixtureTeardown();
@@ -120,7 +122,9 @@ namespace UITest.Appium.NUnit
 			foreach (var logType in new[] { "logcat" })
 			{
 				if (!types.Contains(logType, StringComparer.InvariantCultureIgnoreCase))
+				{
 					continue;
+				}
 
 				var logsPath = GetGeneratedFilePath($"AppLogs-{logType}.log", note);
 				if (logsPath is not null)
@@ -136,7 +140,9 @@ namespace UITest.Appium.NUnit
 		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
 		{
 			if (App.AppState == ApplicationState.NotRunning)
+			{
 				return false;
+			}
 
 			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
 			if (screenshotPath is not null)
@@ -161,12 +167,18 @@ namespace UITest.Appium.NUnit
 		{
 			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
 			if (UITestContext is null)
+			{
 				return null;
+			}
 
 			if (string.IsNullOrEmpty(note))
+			{
 				note = "-";
+			}
 			else
+			{
 				note = $"-{note}-";
+			}
 
 			filename = $"{Path.GetFileNameWithoutExtension(filename)}-{Guid.NewGuid().ToString("N")}{Path.GetExtension(filename)}";
 

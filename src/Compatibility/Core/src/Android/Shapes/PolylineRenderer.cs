@@ -39,9 +39,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, args);
 
 			if (args.PropertyName == Polyline.PointsProperty.PropertyName)
+			{
 				UpdatePoints();
+			}
 			else if (args.PropertyName == Polyline.FillRuleProperty.PropertyName)
+			{
 				UpdateFillRule();
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -61,7 +65,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdatePoints()
 		{
 			if (_points != null)
+			{
 				_points.CollectionChanged -= OnCollectionChanged;
+			}
 
 			_points = Element.Points;
 
@@ -100,7 +106,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				path.MoveTo(_density * (float)_points[0].X, _density * (float)_points[0].Y);
 
 				for (int index = 1; index < _points.Count; index++)
+				{
 					path.LineTo(_density * (float)_points[index].X, _density * (float)_points[index].Y);
+				}
 
 				UpdateShape(path);
 			}

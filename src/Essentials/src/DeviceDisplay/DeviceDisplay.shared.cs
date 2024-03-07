@@ -122,7 +122,11 @@ namespace Microsoft.Maui.Devices
 				var wasStopped = MainDisplayInfoChangedInternal is null;
 				MainDisplayInfoChangedInternal -= value;
 				if (!wasStopped && MainDisplayInfoChangedInternal is null)
+				{
+				{
 					StopScreenMetricsListeners();
+				}
+				}
 			}
 		}
 

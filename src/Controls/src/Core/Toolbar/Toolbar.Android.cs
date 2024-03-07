@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls
 			if (newHandler == null)
 			{
 				if (_platformTitleView != null)
+				{
 					_platformTitleView.Child = null;
+				}
 
 				Controls.Platform.ToolbarExtensions.DisposeMenuItems(
 					oldHandler?.PlatformView as AToolbar,
@@ -48,10 +50,14 @@ namespace Microsoft.Maui.Controls
 			var toolbarItems = ToolbarItems;
 			List<ToolbarItem> newToolBarItems = new List<ToolbarItem>();
 			if (toolbarItems != null)
+			{
 				newToolBarItems.AddRange(toolbarItems);
+			}
 
 			if (sender is ToolbarItem ti)
+			{
 				PlatformView.OnToolbarItemPropertyChanged(e, ti, newToolBarItems, MauiContext!, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			}
 		}
 
 		void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
@@ -65,7 +71,9 @@ namespace Microsoft.Maui.Controls
 			_ = MauiContext ?? throw new ArgumentNullException(nameof(MauiContext));
 
 			if (_currentMenuItems == null)
+			{
 				return;
+			}
 
 			PlatformView.UpdateMenuItems(ToolbarItems, MauiContext, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
@@ -210,7 +218,9 @@ namespace Microsoft.Maui.Controls
 						var platformView = _child.ToPlatform();
 						platformView.RemoveFromParent();
 						if (platformView != null)
+						{
 							AddView(platformView);
+						}
 					}
 				}
 			}

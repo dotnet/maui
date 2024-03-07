@@ -42,10 +42,242 @@ namespace Microsoft.Maui.Devices
 		DeviceIdiom(string deviceIdiom)
 		{
 			if (deviceIdiom == null)
+
+/* Unmerged change from project 'Essentials(net8.0)'
+Before:
 				throw new ArgumentNullException(nameof(deviceIdiom));
 
 			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-ios)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-android)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.19041.0)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.20348.0)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.19041.0)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Before:
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+			if (deviceIdiom.Length == 0)
+After:
+			{
+*/
+			{
+				throw new ArgumentNullException(nameof(deviceIdiom));
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentNullException(nameof(deviceIdiom));
+
+/* Unmerged change from project 'Essentials(net8.0)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
 				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-ios)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-android)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.19041.0)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.20348.0)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.19041.0)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Added:
+			}
+
+			if (deviceIdiom.Length == 0)
+			{
+				throw new ArgumentException(nameof(deviceIdiom));
+			}
+*/
+			}
 
 			this.deviceIdiom = deviceIdiom;
 		}

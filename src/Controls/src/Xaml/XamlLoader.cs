@@ -45,7 +45,10 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			var xaml = GetXamlForType(callingType, view, out var useDesignProperties);
 			if (string.IsNullOrEmpty(xaml))
+			{
 				throw new XamlParseException(string.Format("No embeddedresource found for {0}", callingType), new XmlLineInfo());
+			}
+
 			Load(view, xaml, useDesignProperties);
 		}
 
@@ -62,9 +65,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
+					{
 						continue;
+					}
+
 					if (reader.NodeType == XmlNodeType.XmlDeclaration)
+					{
 						continue;
+					}
+
 					if (reader.NodeType != XmlNodeType.Element)
 					{
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
@@ -104,9 +113,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
+					{
 						continue;
+					}
+
 					if (reader.NodeType == XmlNodeType.XmlDeclaration)
+					{
 						continue;
+					}
+
 					if (reader.NodeType != XmlNodeType.Element)
 					{
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
@@ -145,9 +160,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
+					{
 						continue;
+					}
+
 					if (reader.NodeType == XmlNodeType.XmlDeclaration)
+					{
 						continue;
+					}
+
 					if (reader.NodeType != XmlNodeType.Element)
 					{
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
@@ -159,7 +180,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					XamlParser.ParseXaml(rootNode, reader);
 					var rNode = (IElementNode)rootNode;
 					if (!rNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resources))
+					{
 						return null;
+					}
 
 					var visitorContext = new HydrationContext
 					{
@@ -175,7 +198,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					{ //multiple implicit resources
 						resources = new ElementNode(new XmlType(XamlParser.MauiUri, nameof(ResourceDictionary), null), XamlParser.MauiUri, rootNode.NamespaceResolver);
 						foreach (var n in resourcesLN.CollectionItems)
+						{
 							((ElementNode)resources).CollectionItems.Add(n);
+						}
 					}
 					cvv.Visit((ElementNode)resources, null);
 
@@ -202,7 +227,10 @@ namespace Microsoft.Maui.Controls.Xaml
 			rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
 			rootnode.Accept(new PruneIgnoredNodesVisitor(useDesignProperties), null);
 			if (useDesignProperties)
+			{
 				rootnode.Accept(new RemoveDuplicateDesignNodes(), null);
+			}
+
 			rootnode.Accept(new NamescopingVisitor(visitorContext), null); //set namescopes for {x:Reference}
 			rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
 			rootnode.Accept(new RegisterXNamesVisitor(visitorContext), null);
@@ -235,15 +263,23 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			if (resourceId == null)
+			{
 				return LegacyGetXamlForType(type);
+			}
 
 			using (var stream = assembly.GetManifestResourceStream(resourceId))
 			{
 				if (stream != null)
+				{
 					using (var reader = new StreamReader(stream))
+					{
 						xaml = reader.ReadToEnd();
+					}
+				}
 				else
+				{
 					xaml = null;
+				}
 			}
 
 			return xaml;
@@ -260,7 +296,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				var result = ReadResourceAsXaml(type, assembly, resourceId);
 				if (result != null)
+				{
 					return result;
+				}
 			}
 
 			var likelyResourceName = type.Name + ".xaml";
@@ -276,7 +314,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					resourceName = resource;
 					var xaml = ReadResourceAsXaml(type, assembly, resource);
 					if (xaml != null)
+					{
 						return xaml;
+					}
 				}
 			}
 
@@ -285,23 +325,31 @@ namespace Microsoft.Maui.Controls.Xaml
 			foreach (var resource in resourceNames)
 			{
 				if (!resource.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase))
+				{
 					continue;
+				}
 
 				resourceName = resource;
 				var xaml = ReadResourceAsXaml(type, assembly, resource);
 				if (xaml != null)
+				{
 					return xaml;
+				}
 			}
 
 			foreach (var resource in resourceNames)
 			{
 				if (resource.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase))
+				{
 					continue;
+				}
 
 				resourceName = resource;
 				var xaml = ReadResourceAsXaml(type, assembly, resource, true);
 				if (xaml != null)
+				{
 					return xaml;
+				}
 			}
 
 			return null;
@@ -316,7 +364,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				if (!string.IsNullOrEmpty(info.FileName) &&
 					string.Compare(info.FileName, filename, StringComparison.OrdinalIgnoreCase) == 0)
+				{
 					return true;
+				}
 			}
 			catch (PlatformNotSupportedException)
 			{
@@ -325,7 +375,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			if (resource.EndsWith("." + filename, StringComparison.OrdinalIgnoreCase) ||
 				string.Compare(resource, filename, StringComparison.OrdinalIgnoreCase) == 0)
+			{
 				return true;
+			}
 
 			return false;
 		}
@@ -343,10 +395,14 @@ namespace Microsoft.Maui.Controls.Xaml
 
 					var firstNonWhitespace = (char)reader.Read();
 					while (char.IsWhiteSpace(firstNonWhitespace))
+					{
 						firstNonWhitespace = (char)reader.Read();
+					}
 
 					if (firstNonWhitespace != '<')
+					{
 						return null;
+					}
 
 					stream.Seek(0, SeekOrigin.Begin);
 				}
@@ -356,7 +412,9 @@ namespace Microsoft.Maui.Controls.Xaml
 				var pattern = $"x:Class *= *\"{type.FullName}\"";
 				var regex = new Regex(pattern, RegexOptions.ECMAScript);
 				if (regex.IsMatch(xaml) || xaml.IndexOf($"x:Class=\"{type.FullName}\"") != -1)
+				{
 					return xaml;
+				}
 			}
 			return null;
 		}

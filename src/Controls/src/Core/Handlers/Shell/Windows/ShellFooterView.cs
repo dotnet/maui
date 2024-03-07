@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnShellFooterViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			if (Element is Controls.Compatibility.Layout layout)
+			{
 				layout.ForceLayout();
+			}
 		}
 
 		internal VisualElement Element { get; set; }
@@ -31,7 +33,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public void SetElement(Shell shell)
 		{
 			if (_shell != null)
+			{
 				_shell.PropertyChanged -= OnShellPropertyChanged;
+			}
 
 			if (shell != null)
 			{
@@ -44,7 +48,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.IsOneOf(Shell.FlyoutFooterProperty, Shell.FlyoutFooterTemplateProperty))
+			{
 				UpdateFooter();
+			}
 		}
 
 		void UpdateFooter()
@@ -63,7 +69,9 @@ namespace Microsoft.Maui.Controls.Platform
 			object Footer = null;
 
 			if (_shell is IShellController controller)
+			{
 				Footer = controller.FlyoutFooter;
+			}
 
 			if (Footer is View visualElement)
 			{

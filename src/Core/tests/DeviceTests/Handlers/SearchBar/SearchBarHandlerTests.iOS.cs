@@ -168,7 +168,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField is null)
+			{
 				return Colors.Transparent;
+			}
 
 			return textField.TextColor.ToColor();
 		}
@@ -182,7 +184,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField is null)
+			{
 				return UITextAlignment.Left;
+			}
 
 			return textField.TextAlignment;
 		}
@@ -193,7 +197,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField is null)
+			{
 				return UIControlContentVerticalAlignment.Center;
+			}
 
 			return textField.VerticalAlignment;
 		}
@@ -212,7 +218,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField is null)
+			{
 				return -1;
+			}
 
 			return textField.Font.PointSize;
 		}
@@ -230,7 +238,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField is null)
+			{
 				return false;
+			}
 
 			return textField.KeyboardType == UIKeyboardType.DecimalPad;
 		}
@@ -241,7 +251,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField is null)
+			{
 				return false;
+			}
 
 			return textField.KeyboardType == UIKeyboardType.EmailAddress;
 		}
@@ -252,7 +264,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField is null)
+			{
 				return false;
+			}
 
 			return textField.KeyboardType == UIKeyboardType.PhonePad;
 		}
@@ -263,7 +277,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField is null)
+			{
 				return false;
+			}
 
 			return textField.KeyboardType == UIKeyboardType.Url;
 		}
@@ -274,7 +290,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField is null)
+			{
 				return false;
+			}
 
 			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
@@ -287,7 +305,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
 			if (textField is null)
+			{
 				return false;
+			}
 
 			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
@@ -299,7 +319,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = searchView.GetSearchTextField();
 
 			if (textField is null)
+			{
 				return false;
+			}
 
 			return textField.AutocorrectionType == UITextAutocorrectionType.Yes;
 		}
@@ -310,7 +332,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = searchView.GetSearchTextField();
 
 			if (textField is null)
+			{
 				return false;
+			}
 
 			return textField.SpellCheckingType == UITextSpellCheckingType.Yes;
 		}

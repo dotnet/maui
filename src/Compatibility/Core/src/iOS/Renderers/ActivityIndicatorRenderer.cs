@@ -18,14 +18,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.Draw(rect);
 			if (_element?.IsRunning == true)
+			{
 				StartAnimating();
+			}
 		}
 
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
 			if (_element?.IsRunning == true)
+			{
 				StartAnimating();
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -52,9 +56,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (Control == null)
 				{
 					if (Forms.IsiOS13OrNewer)
+					{
 						SetNativeControl(new UIActivityIndicatorViewDelegate(RectangleF.Empty, e.NewElement) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Medium });
+					}
 					else
+					{
 						SetNativeControl(new UIActivityIndicatorViewDelegate(RectangleF.Empty, e.NewElement) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray });
+					}
 				}
 
 				UpdateColor();
@@ -69,9 +77,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ActivityIndicator.ColorProperty.PropertyName)
+			{
 				UpdateColor();
+			}
 			else if (e.PropertyName == ActivityIndicator.IsRunningProperty.PropertyName)
+			{
 				UpdateIsRunning();
+			}
 		}
 
 		[PortHandler]
@@ -84,18 +96,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateIsRunning()
 		{
 			if (Control?.Superview == null)
+			{
 				return;
+			}
 
 			if (Element.IsRunning)
+			{
 				Control.StartAnimating();
+			}
 			else
+			{
 				Control.StopAnimating();
+			}
 		}
 
 		internal void PreserveState()
 		{
 			if (Control != null && !Control.IsAnimating && Element != null && Element.IsRunning)
+			{
 				Control.StartAnimating();
+			}
 		}
 	}
 }

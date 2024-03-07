@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public BackgroundTracker(DependencyProperty backgroundProperty)
 		{
 			if (backgroundProperty == null)
+			{
 				throw new ArgumentNullException("backgroundProperty");
+			}
 
 			_backgroundProperty = backgroundProperty;
 		}
@@ -36,17 +38,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.UpdateNativeControl();
 
 			if (_backgroundNeedsUpdate)
+			{
 				UpdateBackground();
+			}
 		}
 
 		async void UpdateBackground()
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			FrameworkElement element = Control ?? Container;
 			if (element == null)
+			{
 				return;
+			}
 
 			var backgroundImage = await Element.BackgroundImageSource.ToWindowsImageSourceAsync();
 
@@ -71,7 +79,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					{
 						object localBackground = element.ReadLocalValue(_backgroundProperty);
 						if (localBackground != null && localBackground != DependencyProperty.UnsetValue)
+						{
 							element.ClearValue(_backgroundProperty);
+						}
 					}
 				}
 			}

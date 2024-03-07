@@ -27,7 +27,9 @@ namespace Microsoft.Maui.Handlers
 			if (args is IWindow window)
 			{
 				if (window.Handler?.PlatformView is Activity activity)
+				{
 					activity.Finish();
+				}
 			}
 		}
 	}

@@ -28,20 +28,30 @@ namespace Microsoft.Maui.Controls
 		void OnMenuItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.MenuItemTemplateProperty.PropertyName)
+			{
 				Shell.SetMenuItemTemplate(this, Shell.GetMenuItemTemplate(MenuItem));
+			}
 			else if (e.PropertyName == TitleProperty.PropertyName)
+			{
 				OnPropertyChanged(MenuItem.TextProperty.PropertyName);
+			}
 			else if (e.PropertyName == Shell.FlyoutItemIsVisibleProperty.PropertyName)
+			{
 				Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(MenuItem));
+			}
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == nameof(Title))
+			{
 				OnPropertyChanged(nameof(Text));
+			}
 			else if (propertyName == Shell.FlyoutItemIsVisibleProperty.PropertyName && MenuItem != null)
+			{
 				Shell.SetFlyoutItemIsVisible(MenuItem, Shell.GetFlyoutItemIsVisible(this));
+			}
 		}
 
 		public MenuItem MenuItem { get; }

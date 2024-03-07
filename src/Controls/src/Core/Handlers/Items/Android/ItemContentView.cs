@@ -73,7 +73,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			//Arrange doesn't seem to work as expected
 
 			if (View?.Handler is not IPlatformViewHandler handler)
+			{
 				return;
+			}
 
 			handler.LayoutVirtualView(l, t, r, b);
 
@@ -143,7 +145,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			AView aview = Content.ToPlatform();
 
 			if (mauiControlsView == null || aview == null)
+			{
 				return;
+			}
 
 			var x = (int)this.ToPixels(mauiControlsView.X);
 			var y = (int)this.ToPixels(mauiControlsView.Y);

@@ -134,15 +134,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateFlowDirection();
 			}
 			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+			{
 				UpdateMaxLength();
+			}
 			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
+			{
 				UpdateDetectReadingOrderFromContent();
+			}
 			else if (e.PropertyName == Editor.PlaceholderProperty.PropertyName)
+			{
 				UpdatePlaceholderText();
+			}
 			else if (e.PropertyName == Editor.PlaceholderColorProperty.PropertyName)
+			{
 				UpdatePlaceholderColor();
+			}
 			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
+			{
 				UpdateIsReadOnly();
+			}
 		}
 
 		protected override void UpdateBackground()
@@ -206,7 +216,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			FormsTextBox child = Control;
 
 			if (Children.Count == 0 || child == null)
+			{
 				return new SizeRequest();
+			}
 
 			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			child.Measure(constraint);
@@ -217,12 +229,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateFont()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			Editor editor = Element;
 
 			if (editor == null)
+			{
 				return;
+			}
 
 			bool editorIsDefault = editor.FontFamily == null &&
 #pragma warning disable CS0612 // Type or member is obsolete
@@ -231,7 +247,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 								   editor.FontAttributes == FontAttributes.None;
 
 			if (editorIsDefault && !_fontApplied)
+			{
 				return;
+			}
 
 			if (editorIsDefault)
 			{
@@ -265,13 +283,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else
 			{
 				if (editor.IsSet(Editor.IsTextPredictionEnabledProperty))
+				{
 					Control.IsTextPredictionEnabled = editor.IsTextPredictionEnabled;
+				}
 				else
+				{
 					Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
+				}
+
 				if (editor.IsSet(InputView.IsSpellCheckEnabledProperty))
+				{
 					Control.IsSpellCheckEnabled = editor.IsSpellCheckEnabled;
+				}
 				else
+				{
 					Control.ClearValue(TextBox.IsSpellCheckEnabledProperty);
+				}
 			}
 
 			Control.InputScope = editor.Keyboard.ToInputScope();
@@ -320,7 +347,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var currentControlText = Control.Text;
 
 			if (currentControlText.Length > Element.MaxLength)
+			{
 				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+			}
 		}
 
 		[PortHandler]

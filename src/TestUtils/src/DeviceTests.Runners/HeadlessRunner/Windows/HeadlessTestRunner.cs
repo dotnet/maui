@@ -51,7 +51,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			var testRunner = base.GetTestRunner(logWriter);
 
 			if (_options.SkipCategories?.Count > 0)
+			{
 				testRunner.SkipCategories(_options.SkipCategories);
+			}
 
 			return testRunner;
 		}
@@ -71,7 +73,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			TestsCompleted -= OnTestsCompleted;
 
 			if (File.Exists(TestsResultsFinalPath))
+			{
 				return TestsResultsFinalPath;
+			}
 
 			return null;
 

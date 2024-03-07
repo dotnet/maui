@@ -102,10 +102,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			set
 			{
 				if (_current == value)
+				{
 					return;
+				}
 
 				if (_current != null)
+				{
 					_current.PropertyChanged -= CurrentOnPropertyChanged;
+				}
 
 				_current = value;
 
@@ -127,19 +131,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			set
 			{
 				if (_toolbarVisible == value)
+				{
 					return;
+				}
 
 				_toolbarVisible = value;
 
 				if (!IsLayoutRequested)
+				{
 					RequestLayout();
+				}
 			}
 		}
 
 		void IManageFragments.SetFragmentManager(FragmentManager childFragmentManager)
 		{
 			if (_fragmentManager == null)
+			{
 				_fragmentManager = childFragmentManager;
+			}
 		}
 
 		public Task<bool> PopToRootAsync(Page page, bool animated = true)
@@ -160,7 +170,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -190,7 +202,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				{
 					FragmentTransaction trans = fm.BeginTransactionEx();
 					foreach (Fragment fragment in _fragmentStack)
+					{
 						trans.RemoveEx(fragment);
+					}
+
 					trans.CommitAllowingStateLossEx();
 					fm.ExecutePendingTransactionsEx();
 				}
@@ -281,7 +296,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					{
 						var child = element as VisualElement;
 						if (child == null)
+						{
 							continue;
+						}
 
 						IVisualElementRenderer renderer = Platform.GetRenderer(child);
 						renderer?.Dispose();
@@ -302,7 +319,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			// this page may no longer be part of the hierarchy; if so, we need to skip
 			// updating the toolbar and pushing the pages to avoid crashing the app
 			if (!Element.IsAttachedToRoot())
+			{
 				return;
+			}
 
 			RegisterToolbar();
 
@@ -370,17 +389,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
+			{
 				UpdateToolbar();
+			}
 			else if (e.PropertyName == NavigationPage.BarBackgroundProperty.PropertyName)
+			{
 				UpdateToolbar();
+			}
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
+			{
 				UpdateToolbar();
+			}
 			else if (e.PropertyName == BarHeightProperty.PropertyName)
+			{
 				UpdateToolbar();
+			}
 			else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+			{
 				UpdateToolbar();
+			}
 			else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+			{
 				UpdateToolbar();
+			}
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -392,7 +423,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			int barHeight = ActionBarHeight();
 
 			if (Element.IsSet(BarHeightProperty))
+			{
 				barHeight = Element.OnThisPlatform().GetBarHeight();
+			}
 
 			if (barHeight != _lastActionBarHeight && _lastActionBarHeight > 0)
 			{
@@ -422,7 +455,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				Page childPage = (child as PageContainer)?.Child?.Element as Page;
 
 				if (childPage == null)
+				{
 					return;
+				}
 
 				// We need to base the layout of both the child and the bar on the presence of the NavBar on the child Page itself.
 				// If we layout the bar based on ToolbarVisible, we get a white bar flashing at the top of the screen.
@@ -460,15 +495,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		protected virtual void SetupPageTransition(FragmentTransaction transaction, bool isPush)
 		{
 			if (isPush)
+			{
 				transaction.SetTransitionEx((int)FragmentTransit.FragmentOpen);
+			}
 			else
+			{
 				transaction.SetTransitionEx((int)FragmentTransit.FragmentClose);
+			}
 		}
 
 		internal int GetNavBarHeight()
 		{
 			if (!ToolbarVisible)
+			{
 				return 0;
+			}
 
 			return ActionBarHeight();
 		}
@@ -482,16 +523,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				actionBarHeight = 0;
 				if (Context.Theme.ResolveAttribute(attr, tv, true))
+				{
 					actionBarHeight = TypedValue.ComplexToDimensionPixelSize(tv.Data, Resources.DisplayMetrics);
+				}
 			}
 
 			if (actionBarHeight <= 0)
+			{
 				return DeviceDisplay.MainDisplayInfo.Orientation.IsPortrait() ? (int)Context.ToPixels(56) : (int)Context.ToPixels(48);
+			}
 
 			if (Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.TranslucentStatus) || Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.TranslucentNavigation))
 			{
 				if (_toolbar.PaddingTop == 0)
+				{
 					_toolbar.SetPadding(0, GetStatusBarHeight(), 0, 0);
+				}
 
 				return actionBarHeight + GetStatusBarHeight();
 			}
@@ -503,7 +550,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 			var icon = _toolbar.NavigationIcon as DrawerArrowDrawable;
 			if (icon == null)
+			{
 				return;
+			}
 
 			ValueAnimator valueAnim = ValueAnimator.OfFloat(0, 1);
 			valueAnim.SetDuration(200);
@@ -514,11 +563,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		int GetStatusBarHeight()
 		{
 			if (_statusbarHeight > 0)
+			{
 				return _statusbarHeight;
+			}
 
 			int resourceId = Resources.GetIdentifier("status_bar_height", "dimen", "android");
 			if (resourceId > 0)
+			{
 				_statusbarHeight = Resources.GetDimensionPixelSize(resourceId);
+			}
 
 			return _statusbarHeight;
 		}
@@ -527,7 +580,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 			var icon = _toolbar.NavigationIcon as DrawerArrowDrawable;
 			if (icon == null)
+			{
 				return;
+			}
 
 			ValueAnimator valueAnim = ValueAnimator.OfFloat(1, 0);
 			valueAnim.SetDuration(200);
@@ -543,16 +598,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		void CurrentOnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
+			{
 				ToolbarVisible = NavigationPage.GetHasNavigationBar(Current);
+			}
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
+			{
 				UpdateToolbar();
+			}
 			else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
+			{
 				UpdateToolbar();
+			}
 			else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
+			{
 				UpdateToolbar();
+			}
 			else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
+			{
 				UpdateToolbar();
+			}
 		}
 
 		void DeviceInfoPropertyChanged(object sender, DisplayInfoChangedEventArgs e)
@@ -563,13 +628,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		void InsertPageBefore(Page page, Page before)
 		{
 			if (!_isAttachedToWindow)
+			{
 				PushCurrentPages();
+			}
 
 			UpdateToolbar();
 
 			int index = PageController.InternalChildren.IndexOf(before);
 			if (index == -1)
+			{
 				throw new InvalidOperationException("This should never happen, please file a bug");
+			}
 
 			Fragment fragment = FragmentContainer.CreateInstance(page);
 			_fragmentStack.Insert(index, fragment);
@@ -599,7 +668,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 			Page pageToShow = NavigationPageController.Peek(1);
 			if (pageToShow == null)
+			{
 				return Task.FromResult(false);
+			}
 
 			return SwitchContentAsync(pageToShow, animated, true);
 		}
@@ -639,18 +710,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			if (_flyoutPage == null)
 			{
 				if (PageController.InternalChildren.Count > 0)
+				{
 					_flyoutPage = PageController.InternalChildren[0] as FlyoutPage;
+				}
 
 				if (_flyoutPage == null)
+				{
 					return;
+				}
 			}
 
 			if (((IFlyoutPageController)_flyoutPage).ShouldShowSplitMode)
+			{
 				return;
+			}
 
 			var renderer = APlatform.GetRenderer(_flyoutPage) as FlyoutPageRenderer;
 			if (renderer == null)
+			{
 				return;
+			}
 
 			_drawerLayout = renderer;
 
@@ -695,7 +774,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		void RemovePage(Page page)
 		{
 			if (!_isAttachedToWindow)
+			{
 				PushCurrentPages();
+			}
 
 			Fragment fragment = GetPageFragment(page);
 
@@ -750,7 +831,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			// if the old toolbar had padding from transluscentflags, set it to the new toolbar
 			if (oldToolbar.PaddingTop != 0)
+			{
 				_toolbar.SetPadding(0, oldToolbar.PaddingTop, 0, 0);
+			}
 
 			RegisterToolbar();
 			UpdateToolbar();
@@ -758,7 +841,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			// Preserve old values that can't be replicated by calling methods above
 			if (_toolbar != null)
+			{
 				_toolbar.Subtitle = oldToolbar.Subtitle;
+			}
 		}
 
 		void SetupToolbar()
@@ -768,9 +853,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			AToolbar bar;
 			if (FormsAppCompatActivity.ToolbarResource != 0)
+			{
 				bar = activity.LayoutInflater.Inflate(FormsAppCompatActivity.ToolbarResource, null).JavaCast<AToolbar>();
+			}
 			else
+			{
 				bar = new AToolbar(context);
+			}
 
 			bar.SetNavigationOnClickListener(this);
 
@@ -781,7 +870,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		Task<bool> SwitchContentAsync(Page page, bool animated, bool removed = false, bool popToRoot = false)
 		{
 			if (!Element.IsAttachedToRoot())
+			{
 				return Task.FromResult(false);
+			}
 
 			var tcs = new TaskCompletionSource<bool>();
 			Fragment fragment = GetFragment(page, removed, popToRoot);
@@ -804,7 +895,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
 
 			if (animated)
+			{
 				SetupPageTransition(transaction, !removed);
+			}
 
 			var fragmentsToRemove = new List<Fragment>();
 
@@ -832,9 +925,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					// Execute pending transactions so that we can be sure the fragment list is accurate.
 					FragmentManager.ExecutePendingTransactionsEx();
 					if (FragmentManager.Fragments.Contains(toShow))
+					{
 						transaction.ShowEx(toShow);
+					}
 					else
+					{
 						transaction.AddEx(Id, toShow);
+					}
 				}
 				else
 				{
@@ -859,15 +956,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				{
 					UpdateToolbar();
 					if (_drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton(page))
+					{
 						AnimateArrowIn();
+					}
 				}
 				else if (_drawerToggle != null && NavigationPageController.StackDepth == 2 && NavigationPage.GetHasBackButton(page))
+				{
 					AnimateArrowOut();
+				}
 
 				AddTransitionTimer(tcs, fragment, FragmentManager, fragmentsToRemove, TransitionDuration, removed);
 			}
 			else
+			{
 				AddTransitionTimer(tcs, fragment, FragmentManager, fragmentsToRemove, 1, true);
+			}
 
 			Context.HideKeyboard(this);
 
@@ -883,11 +986,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		{
 			// pop
 			if (removed)
+			{
 				return _fragmentStack[_fragmentStack.Count - 2];
+			}
 
 			// pop to root
 			if (popToRoot)
+			{
 				return _fragmentStack[0];
+			}
 
 			// push
 			return FragmentContainer.CreateInstance(page);
@@ -901,7 +1008,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		void UpdateMenu()
 		{
 			if (_disposed || _currentMenuItems == null)
+			{
 				return;
+			}
 
 			_toolbar.UpdateMenuItems(_toolbarTracker?.ToolbarItems, Element.FindMauiContext(), null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
@@ -920,14 +1029,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		void UpdateToolbar()
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			Context context = Context;
 			AToolbar bar = _toolbar;
 			ActionBarDrawerToggle toggle = _drawerToggle;
 
 			if (bar == null)
+			{
 				return;
+			}
 
 			bool isNavigated = NavigationPageController.StackDepth > 1;
 			bar.NavigationIcon = null;
@@ -971,7 +1084,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			Color tintColor = Element.BarBackgroundColor;
 
 			if (tintColor == null)
+			{
 				bar.BackgroundTintMode = null;
+			}
 			else
 			{
 				bar.BackgroundTintMode = PorterDuff.Mode.Src;
@@ -983,11 +1098,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			Color textColor = Element.BarTextColor;
 			if (textColor != null)
+			{
 				bar.SetTitleTextColor(textColor.ToAndroid().ToArgb());
+			}
 
 			Color navIconColor = NavigationPage.GetIconColor(Current);
 			if (navIconColor != null && bar.NavigationIcon != null)
+			{
 				bar.NavigationIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
+			}
 
 			bar.Title = currentPage?.Title ?? string.Empty;
 
@@ -995,7 +1114,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				var icon = _toolbar.NavigationIcon as DrawerArrowDrawable;
 				if (icon != null)
+				{
 					icon.Color = textColor.ToAndroid().ToArgb();
+				}
 			}
 
 			UpdateTitleIcon();
@@ -1008,7 +1129,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			Page currentPage = Element.CurrentPage;
 
 			if (currentPage == null)
+			{
 				return;
+			}
 
 			ImageSource source = NavigationPage.GetTitleIconImageSource(currentPage);
 
@@ -1044,12 +1167,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			AToolbar bar = _toolbar;
 
 			if (bar == null)
+			{
 				return;
+			}
 
 			Page currentPage = Element.CurrentPage;
 
 			if (currentPage == null)
+			{
 				return;
+			}
 
 			VisualElement titleView = NavigationPage.GetTitleView(currentPage);
 			if (_titleViewRenderer != null)
@@ -1059,7 +1186,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				if (titleView == null || Internals.Registrar.Registered.GetHandlerTypeForObject(titleView) != rendererType)
 				{
 					if (_titleView != null)
+					{
 						_titleView.Child = null;
+					}
+
 					Platform.ClearRenderer(_titleViewRenderer.View);
 					_titleViewRenderer.Dispose();
 					_titleViewRenderer = null;
@@ -1067,10 +1197,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			}
 
 			if (titleView == null)
+			{
 				return;
+			}
 
 			if (_titleViewRenderer != null)
+			{
 				_titleViewRenderer.SetElement(titleView);
+			}
 			else
 			{
 				_titleViewRenderer = Platform.CreateRenderer(titleView, Context);
@@ -1094,14 +1228,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				tcs.TrySetResult(true);
 				Current?.SendAppearing();
 				if (shouldUpdateToolbar)
+				{
 					UpdateToolbar();
+				}
 
 				if (fragmentsToRemove.Count > 0)
 				{
 					FragmentTransaction fragmentTransaction = fragmentManager.BeginTransactionEx();
 
 					foreach (Fragment frag in fragmentsToRemove)
+					{
 						fragmentTransaction.RemoveEx(frag);
+					}
 
 					fragmentTransaction.CommitAllowingStateLossEx();
 				}
@@ -1111,7 +1249,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		void PushCurrentPages()
 		{
 			if (_fragmentStack.Count > 0)
+			{
 				return;
+			}
 
 			foreach (Page page in NavigationPageController.Pages)
 			{
@@ -1152,19 +1292,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				set
 				{
 					if (_child != null)
+					{
 						RemoveView(_child.View);
+					}
 
 					_child = value;
 
 					if (value != null)
+					{
 						AddView(value.View);
+					}
 				}
 			}
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
 				if (_child == null)
+				{
 					return;
+				}
 
 				_child.UpdateLayout();
 			}
@@ -1201,25 +1347,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			public void OnDrawerClosed(AView drawerView)
 			{
 				foreach (DrawerLayout.IDrawerListener listener in Listeners)
+				{
 					listener.OnDrawerClosed(drawerView);
+				}
 			}
 
 			public void OnDrawerOpened(AView drawerView)
 			{
 				foreach (DrawerLayout.IDrawerListener listener in Listeners)
+				{
 					listener.OnDrawerOpened(drawerView);
+				}
 			}
 
 			public void OnDrawerSlide(AView drawerView, float slideOffset)
 			{
 				foreach (DrawerLayout.IDrawerListener listener in Listeners)
+				{
 					listener.OnDrawerSlide(drawerView, slideOffset);
+				}
 			}
 
 			public void OnDrawerStateChanged(int newState)
 			{
 				foreach (DrawerLayout.IDrawerListener listener in Listeners)
+				{
 					listener.OnDrawerStateChanged(newState);
+				}
 			}
 		}
 	}

@@ -53,27 +53,54 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			base.OnElementPropertyChanged(sender, args);
 
 			if (args.PropertyName == VisualElement.HeightProperty.PropertyName)
+			{
 				UpdateHeight();
+			}
 			else if (args.PropertyName == VisualElement.WidthProperty.PropertyName)
+			{
 				UpdateWidth();
+			}
 			else if (args.PropertyName == Shape.AspectProperty.PropertyName)
+			{
 				UpdateAspect();
+			}
 			else if (args.PropertyName == Shape.FillProperty.PropertyName)
+			{
+			{
 				UpdateFill();
+			}
 			else if (args.PropertyName == Shape.StrokeProperty.PropertyName)
+			{
+			{
 				UpdateStroke();
+			}
 			else if (args.PropertyName == Shape.StrokeThicknessProperty.PropertyName)
+			{
+			{
 				UpdateStrokeThickness();
+			}
 			else if (args.PropertyName == Shape.StrokeDashArrayProperty.PropertyName)
+			{
 				UpdateStrokeDashArray();
+			}
 			else if (args.PropertyName == Shape.StrokeDashOffsetProperty.PropertyName)
+			{
 				UpdateStrokeDashOffset();
+			}
 			else if (args.PropertyName == Shape.StrokeLineCapProperty.PropertyName)
+			{
 				UpdateStrokeLineCap();
+			}
 			else if (args.PropertyName == Shape.StrokeLineJoinProperty.PropertyName)
+			{
 				UpdateStrokeLineJoin();
+			}
 			else if (args.PropertyName == Shape.StrokeMiterLimitProperty.PropertyName)
+			{
+			{
 				UpdateStrokeMiterLimit();
+			}
+			}
 		}
 
 #if !WINDOWS
@@ -145,12 +172,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 		void UpdateStrokeDashArray()
 		{
 			if (Control.StrokeDashArray != null)
+
+/* Unmerged change from project 'Compatibility(net8.0-windows10.0.20348.0)'
+Before:
 				Control.StrokeDashArray.Clear();
+After:
+			{
+				Control.StrokeDashArray.Clear();
+*/
+			{
+				Control.StrokeDashArray.Clear();
+			}
+			}
 
 			if (Element.StrokeDashArray != null && Element.StrokeDashArray.Count > 0)
 			{
 				if (Control.StrokeDashArray == null)
+				{
 					Control.StrokeDashArray = new WDoubleCollection();
+				}
 
 				double[] array = new double[Element.StrokeDashArray.Count];
 				Element.StrokeDashArray.CopyTo(array, 0);

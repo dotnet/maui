@@ -40,9 +40,13 @@ namespace Microsoft.Maui
 			{
 				var group = func(item);
 				if (!result.ContainsKey(group))
+				{
 					result.Add(group, new List<TSource> { item });
+				}
 				else
+				{
 					result[group].Add(item);
+				}
 			}
 			return result;
 		}
@@ -58,19 +62,27 @@ namespace Microsoft.Maui
 		public static int IndexOf<T>(this IEnumerable<T> enumerable, T item)
 		{
 			if (enumerable == null)
+			{
 				throw new ArgumentNullException(nameof(enumerable));
+			}
 
-            if (enumerable is IList<T> list)
-                return list.IndexOf(item);
+			if (enumerable is IList<T> list)
+			{
+				return list.IndexOf(item);
+			}
 
-            if (enumerable is T[] array)
-                return Array.IndexOf(array, item);
+			if (enumerable is T[] array)
+			{
+				return Array.IndexOf(array, item);
+			}
 
 			var i = 0;
 			foreach (T element in enumerable)
 			{
 				if (Equals(element, item))
+				{
 					return i;
+				}
 
 				i++;
 			}
@@ -95,7 +107,9 @@ namespace Microsoft.Maui
 			foreach (T element in enumerable)
 			{
 				if (predicate(element))
+				{
 					return i;
+				}
 
 				i++;
 			}

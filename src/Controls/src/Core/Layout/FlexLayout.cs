@@ -162,7 +162,11 @@ namespace Microsoft.Maui.Controls
 		static void OnOrderPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (!bindable.IsSet(FlexItemProperty))
+			{
+			{
 				return;
+			}
+
 			GetFlexItem(bindable).Order = (int)newValue;
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.Undefined);
 		}
@@ -170,7 +174,11 @@ namespace Microsoft.Maui.Controls
 		static void OnGrowPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (!bindable.IsSet(FlexItemProperty))
+			{
+			{
 				return;
+			}
+
 			GetFlexItem(bindable).Grow = (float)newValue;
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
@@ -178,7 +186,11 @@ namespace Microsoft.Maui.Controls
 		static void OnShrinkPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (!bindable.IsSet(FlexItemProperty))
+			{
+			{
 				return;
+			}
+
 			GetFlexItem(bindable).Shrink = (float)newValue;
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
@@ -186,7 +198,11 @@ namespace Microsoft.Maui.Controls
 		static void OnAlignSelfPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (!bindable.IsSet(FlexItemProperty))
+			{
+			{
 				return;
+			}
+
 			GetFlexItem(bindable).AlignSelf = (Flex.AlignSelf)(FlexAlignSelf)newValue;
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
@@ -194,7 +210,11 @@ namespace Microsoft.Maui.Controls
 		static void OnBasisPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (!bindable.IsSet(FlexItemProperty))
+			{
+			{
 				return;
+			}
+
 			GetFlexItem(bindable).Basis = ((FlexBasis)newValue).ToFlexBasis();
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
@@ -203,7 +223,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var flexLayout = bindable as FlexLayout;
 			if (flexLayout._root == null)
+			{
+			{
 				return;
+			}
+
 			flexLayout._root.Direction = (Flex.Direction)(FlexDirection)newValue;
 			flexLayout.InvalidateMeasure();
 		}
@@ -212,7 +236,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var flexLayout = bindable as FlexLayout;
 			if (flexLayout._root == null)
+			{
+			{
 				return;
+			}
+
 			flexLayout._root.JustifyContent = (Flex.Justify)(FlexJustify)newValue;
 			flexLayout.InvalidateMeasure();
 		}
@@ -221,7 +249,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var flexLayout = bindable as FlexLayout;
 			if (flexLayout._root == null)
+			{
+			{
 				return;
+			}
+
 			flexLayout._root.AlignContent = (Flex.AlignContent)(FlexAlignContent)newValue;
 			flexLayout.InvalidateMeasure();
 		}
@@ -230,7 +262,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var flexLayout = (FlexLayout)bindable;
 			if (flexLayout._root == null)
+			{
+			{
 				return;
+			}
+
 			flexLayout._root.AlignItems = (Flex.AlignItems)(FlexAlignItems)newValue;
 			flexLayout.InvalidateMeasure();
 		}
@@ -239,7 +275,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var flexLayout = (FlexLayout)bindable;
 			if (flexLayout._root == null)
+			{
+			{
 				return;
+			}
+
 			flexLayout._root.Position = (Flex.Position)(FlexPosition)newValue;
 			flexLayout.InvalidateMeasure();
 		}
@@ -248,7 +288,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var flexLayout = bindable as FlexLayout;
 			if (flexLayout._root == null)
+			{
+			{
 				return;
+			}
+
 			flexLayout._root.Wrap = (Flex.Wrap)(FlexWrap)newValue;
 			flexLayout.InvalidateMeasure();
 		}
@@ -482,7 +526,10 @@ namespace Microsoft.Maui.Controls
 		void AddFlexItem(IView child)
 		{
 			if (_root == null)
+			{
+			{
 				return;
+			}
 
 			if (child is not BindableObject)
 			{
@@ -525,7 +572,10 @@ namespace Microsoft.Maui.Controls
 		void RemoveFlexItem(IView child)
 		{
 			if (_root == null)
+			{
+			{
 				return;
+			}
 
 			var item = GetFlexItem(child);
 			_root.Remove(item);
@@ -569,7 +619,10 @@ namespace Microsoft.Maui.Controls
 		public void Layout(double width, double height)
 		{
 			if (_root.Parent != null)   //Layout is only computed at root level
+			{
+			{
 				return;
+			}
 
 			var useMeasureHack = NeedsMeasureHack(width, height);
 			if (useMeasureHack)
@@ -593,22 +646,31 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnParentSet();
 			if (Parent != null && _root == null)
+			{
 				PopulateLayout();
+			}
 			else if (Parent == null && _root != null)
+			{
 				ClearLayout();
+			}
 		}
 
 		void PopulateLayout()
 		{
 			InitLayoutProperties(_root = new Flex.Item());
 			foreach (var child in Children)
+			{
 				AddFlexItem(child);
+			}
 		}
 
 		void ClearLayout()
 		{
 			foreach (var child in Children)
+			{
 				RemoveFlexItem(child);
+			}
+
 			_root = null;
 		}
 

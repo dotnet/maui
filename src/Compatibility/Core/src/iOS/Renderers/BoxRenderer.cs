@@ -76,24 +76,36 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
+			{
 				SetBackground(Element.Background);
+			}
 			else if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
+			{
 				SetCornerRadius();
+			}
 			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName && Element.IsVisible)
+			{
 				SetNeedsDisplay();
+			}
 		}
 
 		protected override void SetBackgroundColor(Color color)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			var elementColor = Element.Color;
 
 			if (elementColor != null)
+			{
 				_colorToRenderer = elementColor.ToPlatform();
+			}
 			else if (color != null)
+			{
 				_colorToRenderer = color.ToPlatform();
+			}
 
 			SetNeedsDisplay();
 		}
@@ -101,10 +113,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void SetBackground(Brush brush)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			if (Brush.IsNullOrEmpty(brush))
+			{
 				brush = Element.Background;
+			}
 
 			if (Brush.IsNullOrEmpty(brush))
 			{
@@ -113,7 +129,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 			{
 				if (brush is SolidColorBrush solidColorBrush)
+				{
 					_colorToRenderer = solidColorBrush.Color.ToPlatform();
+				}
 				else
 				{
 					var backgroundImage = this.GetBackgroundImage(brush);
@@ -127,7 +145,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void SetCornerRadius()
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			var elementCornerRadius = Element.CornerRadius;
 

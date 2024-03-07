@@ -33,9 +33,13 @@ namespace Microsoft.Maui.Controls.StyleSheets
 					throw new Exception();
 				}
 				else if (c.IsNmChar())
+				{
 					sb.Append((char)reader.Read());
+				}
 				else
+				{
 					break;
+				}
 			}
 			return sb.ToString();
 		}
@@ -49,9 +53,13 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			{
 				var c = unchecked((char)p);
 				if (c.IsNmChar())
+				{
 					sb.Append((char)reader.Read());
+				}
 				else
+				{
 					break;
+				}
 			}
 			return sb.ToString();
 		}
@@ -64,7 +72,10 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			{
 				var c = unchecked((char)p);
 				if (limit != null && limit.Contains(c))
+				{
 					break;
+				}
+
 				reader.Read();
 				sb.Append(c);
 			}
@@ -79,7 +90,10 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			{
 				var c = unchecked((char)p);
 				if (!c.IsW())
+				{
 					break;
+				}
+
 				reader.Read();
 			}
 		}

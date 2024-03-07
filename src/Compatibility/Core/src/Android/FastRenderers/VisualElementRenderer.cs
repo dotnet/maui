@@ -40,7 +40,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void UpdateFlowDirection()
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			Control.UpdateFlowDirection(Element);
 		}
@@ -54,7 +56,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 

@@ -14,7 +14,9 @@ namespace Maui.Controls.Sample
 		void PointerGestureRecognizer_PointerEntered(System.Object sender, Microsoft.Maui.Controls.PointerEventArgs e)
 		{
 			if (e.PlatformArgs is not null)
+			{
 				secondaryLabel.Text += $"Pointer Entered: {e.PlatformArgs.ToString()}\n";
+			}
 		}
 
 		bool pointerAlreadyMoved = false;
@@ -31,7 +33,9 @@ namespace Maui.Controls.Sample
 		void PointerGestureRecognizer_PointerExited(System.Object sender, Microsoft.Maui.Controls.PointerEventArgs e)
 		{
 			if (e.PlatformArgs is not null)
+			{
 				secondaryLabel.Text += $"Pointer Exited: {e.PlatformArgs.ToString()}\n";
+			}
 		}
 	}
 }

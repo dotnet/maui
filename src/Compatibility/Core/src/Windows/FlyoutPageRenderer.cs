@@ -40,10 +40,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (_tracker == value)
+				{
 					return;
+				}
 
 				if (_tracker != null)
+				{
 					_tracker.Dispose();
+				}
 
 				_tracker = value;
 			}
@@ -56,7 +60,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			Tracker = null;
 			if (Element != null)
+			{
 				SetElement(null);
+			}
 		}
 
 		WBrush ITitleProvider.BarBackgroundBrush
@@ -76,9 +82,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (_showTitle == value)
+				{
 					return;
+				}
 
 				_showTitle = value;
+				Control.DetailTitleVisibility = _showTitle ? WVisibility.Visible : WVisibility.Collapsed;
 				Control.DetailTitleVisibility = _showTitle ? WVisibility.Visible : WVisibility.Collapsed;
 			}
 		}
@@ -90,7 +99,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (Control != null)
+				{
 					Control.DetailTitle = value;
+				}
+				}
 			}
 		}
 
@@ -116,7 +128,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (Control != null)
+				{
 					Control.DetailTitleIcon = value;
+				}
+				}
 			}
 		}
 
@@ -126,7 +141,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (Control != null)
+				{
 					Control.DetailTitleView = value;
+				}
+				}
 			}
 		}
 
@@ -151,13 +169,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Element = (FlyoutPage)element;
 
 			if (element != old)
+			{
 				OnElementChanged(new ElementChangedEventArgs<FlyoutPage>(old, Element));
+			}
 		}
 
 		protected virtual void OnElementChanged(ElementChangedEventArgs<FlyoutPage> e)
 		{
 			if (e.OldElement != null)
+
+/* Unmerged change from project 'Compatibility(net8.0-windows10.0.20348.0)'
+Before:
 				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
+After:
+			{
+				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
+*/
+			{
+				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
+			}
+			}
 
 			if (e.NewElement != null)
 			{
@@ -180,9 +211,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateIsPresented();
 
 				if (!string.IsNullOrEmpty(e.NewElement.AutomationId))
+				{
 					Control.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, e.NewElement.AutomationId);
+				} ((ITitleProvider)this).BarBackgroundBrush = (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
+				UpdateToolbarPlacement();
+				UpdateToolbarDynamicOverflowEnabled();
 
-				((ITitleProvider)this).BarBackgroundBrush = (WBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
+				_defaultAutomationPropertiesName = Control.SetAutomationPropertiesName(Element, _defaultAutomationPropertiesName);
+				_defaultAutomationPropertiesHelpText = Control.SetAutomationPropertiesHelpText(Element, _defaultAutomationPropertiesHelpText);
+				_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, Element.Handler?.MauiContext ?? Forms.MauiContext, _defaultAutomationPropertiesLabeledBy);
+				_defaultAutomationPropertiesAccessibilityView = Control.SetAutomationPropertiesAccessibilityView(Element, _defaultAutomationPropertiesAccessibilityView);
 				UpdateToolbarPlacement();
 				UpdateToolbarDynamicOverflowEnabled();
 
@@ -196,27 +234,49 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == FlyoutPage.IsPresentedProperty.PropertyName || e.PropertyName == FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName)
+			{
 				UpdateIsPresented();
+			}
 			else if (e.PropertyName == "Master")
+			{
 				UpdateMaster();
+			}
 			else if (e.PropertyName == "Detail")
+			{
 				UpdateDetail();
+			}
 			else if (e.PropertyName == nameof(FlyoutPageControl.ShouldShowSplitMode))
+			{
 				UpdateMode();
+			}
 			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
+			{
 				UpdateToolbarPlacement();
+			}
 			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName)
+			{
 				UpdateToolbarDynamicOverflowEnabled();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 			else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+			{
 				_defaultAutomationPropertiesName = Control.SetAutomationPropertiesName(Element, _defaultAutomationPropertiesName);
+			}
 			else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+			{
 				_defaultAutomationPropertiesHelpText = Control.SetAutomationPropertiesHelpText(Element, _defaultAutomationPropertiesHelpText);
+			}
 			else if (e.PropertyName == AutomationProperties.LabeledByProperty.PropertyName)
+			{
 				_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, Element.Handler?.MauiContext ?? Forms.MauiContext, _defaultAutomationPropertiesLabeledBy);
+			}
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
+			{
 				_defaultAutomationPropertiesAccessibilityView = Control.SetAutomationPropertiesAccessibilityView(Element, _defaultAutomationPropertiesAccessibilityView);
+			}
 		}
 
 		void ClearDetail()
@@ -228,7 +288,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			titleView = null;
 
 			if (_detail == null)
+			{
 				return;
+			}
 
 			_detail.PropertyChanged -= OnDetailPropertyChanged;
 
@@ -242,7 +304,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void ClearMaster()
 		{
 			if (_master == null)
+			{
 				return;
+			}
 
 			_master.PropertyChanged -= OnMasterPropertyChanged;
 
@@ -256,7 +320,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			Element.SendAppearing();
 			UpdateBounds();
@@ -271,11 +337,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnDetailPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.TitleProperty.PropertyName)
+			{
 				UpdateDetailTitle();
+			}
 			else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName)
+			{
 				UpdateDetailTitleIcon();
+			}
 			else if (e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
+			{
 				UpdateDetailTitleView();
+			}
 			else if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
 			{
 				UpdateDetailTitle();
@@ -292,7 +364,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.TitleProperty.PropertyName)
+			{
 				Control.FlyoutTitle = _master?.Title;
+			}
 		}
 
 		void OnNativeSizeChanged(object sender, SizeChangedEventArgs e)
@@ -335,7 +409,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateDetailTitle()
 		{
 			if (_detail == null)
+			{
 				return;
+			}
 
 			Control.DetailTitle = GetCurrentPage().Title ?? Element?.Title;
 			(this as ITitleProvider).ShowTitle = !string.IsNullOrEmpty(Control.DetailTitle) || Element.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Popover;
@@ -344,7 +420,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		async void UpdateDetailTitleIcon()
 		{
 			if (_detail == null)
+			{
 				return;
+			}
 
 			Control.DetailTitleIcon = await NavigationPage.GetTitleIconImageSource(GetCurrentPage()).ToWindowsImageSourceAsync();
 			Control.InvalidateMeasure();
@@ -353,7 +431,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateDetailTitleView()
 		{
 			if (_detail == null)
+			{
 				return;
+			}
 
 			Control.DetailTitleView = NavigationPage.GetTitleView(GetCurrentPage()) as View;
 			Control.InvalidateMeasure();
@@ -369,7 +449,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// Ignore the IsPresented value being set to false for Split mode on desktop and allow the master
 			// view to be made initially visible
 			if (DeviceInfo.Idiom == DeviceIdiom.Desktop && Control.IsPaneOpen && Element.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Popover)
+			{
 				return;
+			}
 
 			Control.IsPaneOpen = Element.IsPresented;
 		}
@@ -419,8 +501,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// Enforce consistency rules on toolbar
 			Control.ShouldShowToolbar = _detail is NavigationPage || _master is NavigationPage;
 			if (_detail is NavigationPage _detailNav)
+			{
 				Control.ShouldShowNavigationBar = NavigationPage.GetHasNavigationBar(_detailNav.CurrentPage);
-
+			}
 		}
 
 		public void BindForegroundColor(AppBar appBar)
@@ -442,7 +525,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		Page GetCurrentPage()
 		{
 			if (_detail is NavigationPage page)
+			{
 				return page.CurrentPage;
+			}
 
 			return _detail;
 		}

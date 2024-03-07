@@ -164,7 +164,9 @@ namespace Microsoft.Maui.Storage
 		protected virtual IEnumerable<string> GetPlatformFileType(DevicePlatform platform)
 		{
 			if (fileTypes.TryGetValue(platform, out var type))
+			{
 				return type;
+			}
 
 			throw new PlatformNotSupportedException("This platform does not support this file type.");
 		}

@@ -505,7 +505,9 @@ namespace Microsoft.Maui.IntegrationTests
 			var indent = string.Empty.PadLeft(indentSpaces);
 			var file = wpf.File;
 			if (!string.IsNullOrEmpty(repoRoot) && wpf.File.StartsWith(repoRoot))
+			{
 				file = wpf.File.Substring(repoRoot.Length);
+			}
 
 			Console.WriteLine(indent + "new WarningsPerFile");
 			Console.WriteLine(indent + "{");

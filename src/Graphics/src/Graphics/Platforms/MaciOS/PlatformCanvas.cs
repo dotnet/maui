@@ -290,7 +290,9 @@ namespace Microsoft.Maui.Graphics.Platform
 					var scale = CurrentState.Scale;
 					var scaledStrokeSize = scale * actualStrokeSize;
 					if (scaledStrokeSize < strokeLimit)
+					{
 						actualStrokeSize = strokeLimit / scale;
+					}
 				}
 
 				var actualDashPattern = new nfloat[strokePattern.Length];
@@ -340,7 +342,9 @@ namespace Microsoft.Maui.Graphics.Platform
 					offsets[i] = linearGradientPaint.GradientStops[i].Offset;
 
 					if (vColor == null)
+					{
 						vColor = Colors.White;
+					}
 
 					gradientColors[g++] = vColor.Red;
 					gradientColors[g++] = vColor.Green;
@@ -364,7 +368,9 @@ namespace Microsoft.Maui.Graphics.Platform
 					offsets[i] = radialGradientPaint.GradientStops[i].Offset;
 
 					if (vColor == null)
+					{
 						vColor = Colors.White;
+					}
 
 					gradientColors[g++] = vColor.Red;
 					gradientColors[g++] = vColor.Green;
@@ -395,14 +401,18 @@ namespace Microsoft.Maui.Graphics.Platform
 		protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)
 		{
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(false);
+			}
 
 			_context.MoveTo(x1, y1);
 			_context.AddLineToPoint(x2, y2);
 			_context.StrokePath();
 
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(true);
+			}
 		}
 
 		protected override void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool close)
@@ -413,15 +423,22 @@ namespace Microsoft.Maui.Graphics.Platform
 			_rect.Height = height;
 
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(false);
+			}
+
 			var startAngleInRadians = GeometryUtil.DegreesToRadians(-startAngle);
 			var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 			while (startAngleInRadians < 0)
+			{
 				startAngleInRadians += (float)Math.PI * 2;
+			}
 
 			while (endAngleInRadians < 0)
+			{
 				endAngleInRadians += (float)Math.PI * 2;
+			}
 
 			if (width == height)
 			{
@@ -453,7 +470,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(true);
+			}
 		}
 
 		public override void FillArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise)
@@ -467,10 +486,14 @@ namespace Microsoft.Maui.Graphics.Platform
 			var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 			while (startAngleInRadians < 0)
+			{
 				startAngleInRadians += (float)Math.PI * 2;
+			}
 
 			while (endAngleInRadians < 0)
+			{
 				endAngleInRadians += (float)Math.PI * 2;
+			}
 
 			if (width == height)
 			{
@@ -576,10 +599,18 @@ namespace Microsoft.Maui.Graphics.Platform
 			_rect.Height = height;
 
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(false);
+			}
+
+			_context.StrokeRect(_rect);
+			}
+
 			_context.StrokeRect(_rect);
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(true);
+			}
 		}
 
 		private void DrawGradient()
@@ -633,7 +664,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				context.SetLineDash(0, EmptyNFloatArray);
 				if (_fillPatternCanvas == null)
+				{
 					_fillPatternCanvas = new PlatformCanvas(_getColorspace);
+				}
+
 				_fillPatternCanvas.Context = context;
 				fillPattern.Draw(_fillPatternCanvas);
 			}
@@ -1108,7 +1142,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			var ctFont = font?.ToCTFont(fontSize) ?? FontExtensions.GetDefaultCTFont(fontSize);
 
 			if (ctFont != null && ctFont.Handle != IntPtr.Zero)
+			{
 				attributes.Font = ctFont;
+			}
 
 			if (verticalAlignment == VerticalAlignment.Center)
 			{
@@ -1227,7 +1263,10 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			var attributedString = text.AsNSAttributedString(font, fontSize, fontColor?.ToHex(), true);
 			if (attributedString == null)
+			{
+			{
 				return;
+			}
 
 			// Create the frame setter with the attributed string.
 			var framesetter = new CTFramesetter(attributedString);
@@ -1382,10 +1421,14 @@ namespace Microsoft.Maui.Graphics.Platform
 			var rect = new CGRect(x, y, width, height);
 
 			if (finalCornerRadius > rect.Width)
+			{
 				finalCornerRadius = rect.Width / 2;
+			}
 
 			if (finalCornerRadius > rect.Height)
+			{
 				finalCornerRadius = rect.Height / 2;
+			}
 
 			var minX = rect.X;
 			var minY = rect.Y;

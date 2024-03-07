@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 			if (disposing)
@@ -185,7 +187,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateIsChecked()
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
 
 			Checked = Element.IsChecked;
 		}
@@ -200,9 +204,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateBackgroundColor()
 		{
 			if (Element.BackgroundColor == null)
+			{
 				SetBackgroundColor(AColor.Transparent);
+			}
 			else
+			{
 				SetBackgroundColor(Element.BackgroundColor.ToAndroid());
+			}
 		}
 
 		void UpdateBackground()
@@ -216,7 +224,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateOnColor()
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
 
 			var mode = PorterDuff.Mode.SrcIn;
 
@@ -234,7 +244,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		IPlatformElementConfiguration<PlatformConfiguration.Android, CheckBox> OnThisPlatform()
 		{
 			if (_platformElementConfiguration == null)
+			{
 				_platformElementConfiguration = Element.OnThisPlatform();
+			}
 
 			return _platformElementConfiguration;
 		}
@@ -242,7 +254,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void SetLabelFor(int? id)
 		{
 			if (_defaultLabelFor == null)
+			{
 				_defaultLabelFor = LabelFor;
+			}
 
 			LabelFor = (int)(id ?? _defaultLabelFor);
 		}

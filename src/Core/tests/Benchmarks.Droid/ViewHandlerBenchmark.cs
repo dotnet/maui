@@ -110,7 +110,9 @@ public class ViewHandlerBenchmark
 		public object? GetService(Type serviceType)
 		{
 			if (serviceType == typeof(IFontManager))
+			{
 				return _fontManager;
+			}
 
 			throw new NotImplementedException();
 		}

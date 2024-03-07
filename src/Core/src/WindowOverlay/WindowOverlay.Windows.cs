@@ -19,22 +19,32 @@ namespace Microsoft.Maui
 		public virtual bool Initialize()
 		{
 			if (IsPlatformViewInitialized)
+			{
 				return true;
+			}
 
 			if (Window?.Content == null)
+			{
 				return false;
+			}
 
 			_platformElement = Window.Content.ToPlatform();
 			if (_platformElement == null)
+			{
 				return false;
+			}
 
 			var handler = Window.Handler as WindowHandler;
 			if (handler?.PlatformView is not Window _window)
+			{
 				return false;
+			}
 
 			_panel = _window.Content as WindowRootViewContainer;
 			if (_panel is null)
+			{
 				return false;
+			}
 
 			// Capture when the frame is navigating.
 			// When it is, we will clear existing adorners.
@@ -46,7 +56,9 @@ namespace Microsoft.Maui
 
 			_graphicsView = new W2DGraphicsView() { Drawable = this };
 			if (_graphicsView == null)
+			{
 				return false;
+			}
 
 			_platformElement.Tapped += ViewTapped;
 			_platformElement.PointerMoved += PointerMoved;
@@ -67,7 +79,9 @@ namespace Microsoft.Maui
 		public void Invalidate()
 		{
 			if (_graphicsView is null)
+			{
 				return;
+			}
 
 			// Hide the visibility of the graphics view if there are no drawn elements.
 			// This way, the In-App Toolbar will work as expected.
@@ -81,7 +95,10 @@ namespace Microsoft.Maui
 		void DeinitializePlatformDependencies()
 		{
 			if (_frame != null)
+			{
 				_frame.Navigating -= FrameNavigating;
+			}
+
 			if (_platformElement != null)
 			{
 				_platformElement.Tapped -= ViewTapped;
@@ -92,7 +109,10 @@ namespace Microsoft.Maui
 				_graphicsView.Tapped -= ViewTapped;
 				_graphicsView.PointerMoved -= PointerMoved;
 				if (_panel != null)
+				{
 					_panel.RemoveOverlay(_graphicsView);
+				}
+
 				_graphicsView = null;
 			}
 			IsPlatformViewInitialized = false;
@@ -101,17 +121,25 @@ namespace Microsoft.Maui
 		void PointerMoved(object sender, UI.Xaml.Input.PointerRoutedEventArgs e)
 		{
 			if (!EnableDrawableTouchHandling)
+			{
 				return;
+			}
 
 			if (_windowElements.Count == 0)
+			{
 				return;
+			}
 
 			if (_graphicsView == null)
+			{
 				return;
+			}
 
 			var pointerPoint = e.GetCurrentPoint(_graphicsView);
 			if (pointerPoint == null)
+			{
 				return;
+			}
 
 			_graphicsView.IsHitTestVisible = _windowElements.Any(n => n.Contains(new Point(pointerPoint.Position.X, pointerPoint.Position.Y)));
 		}
@@ -125,14 +153,21 @@ namespace Microsoft.Maui
 		void ViewTapped(object sender, UI.Xaml.Input.TappedRoutedEventArgs e)
 		{
 			if (e == null)
+			{
 				return;
+			}
+
 			var position = e.GetPosition(_graphicsView);
 			var point = new Point(position.X, position.Y);
 
 			if (DisableUITouchEventPassthrough)
+			{
 				e.Handled = true;
+			}
 			else if (EnableDrawableTouchHandling)
+			{
 				e.Handled = _windowElements.Any(n => n.Contains(point));
+			}
 
 			OnTappedInternal(point);
 		}
@@ -140,7 +175,9 @@ namespace Microsoft.Maui
 		partial void OnDisableUITouchEventPassthroughSet()
 		{
 			if (_graphicsView != null)
+			{
 				_graphicsView.IsHitTestVisible = DisableUITouchEventPassthrough;
+			}
 		}
 	}
 }

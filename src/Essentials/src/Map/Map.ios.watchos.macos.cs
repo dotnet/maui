@@ -20,10 +20,15 @@ namespace Microsoft.Maui.ApplicationModel
 		public Task<bool> TryOpenAsync(double latitude, double longitude, MapLaunchOptions options)
 		{
 			if (options == null)
+			{
+			{
 				throw new ArgumentNullException(nameof(options));
+			}
 
 			if (string.IsNullOrWhiteSpace(options.Name))
+			{
 				options.Name = string.Empty;
+			}
 
 			NSDictionary dictionary = null;
 			var placemark = new MKPlacemark(new CLLocationCoordinate2D(latitude, longitude), dictionary);
@@ -40,10 +45,156 @@ namespace Microsoft.Maui.ApplicationModel
 		public async Task<bool> TryOpenAsync(Placemark placemark, MapLaunchOptions options)
 		{
 			if (placemark == null)
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
 				throw new ArgumentNullException(nameof(placemark));
 
 			if (options == null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+				throw new ArgumentNullException(nameof(placemark));
+
+			if (options == null)
+After:
+			{
+*/
+			{
+				throw new ArgumentNullException(nameof(placemark));
+			}
+
+			if (options == null)
+			{
+				throw new ArgumentNullException(nameof(placemark));
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+#if __IOS__
+			var address = new MKPlacemarkAddress
+			{
+				CountryCode = placemark.CountryCode,
+				Country = placemark.CountryName,
+				State = placemark.AdminArea,
+				Street = placemark.Thoroughfare,
+				City = placemark.Locality,
+				Zip = placemark.PostalCode
+			}.Dictionary;
+#else
+			var address = new NSMutableDictionary
+			{
+				[CNPostalAddressKey.City] = new NSString(placemark.Locality ?? string.Empty),
+				[CNPostalAddressKey.Country] = new NSString(placemark.CountryName ?? string.Empty),
+				[CNPostalAddressKey.State] = new NSString(placemark.AdminArea ?? string.Empty),
+				[CNPostalAddressKey.Street] = new NSString(placemark.Thoroughfare ?? string.Empty),
+				[CNPostalAddressKey.PostalCode] = new NSString(placemark.PostalCode ?? string.Empty),
+				[CNPostalAddressKey.IsoCountryCode] = new NSString(placemark.CountryCode ?? string.Empty)
+			};
+#endif
+
+			var resolvedPlacemarks = await GetPlacemarksAsync(address);
+After:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+#if __IOS__
+			var address = new MKPlacemarkAddress
+			{
+				CountryCode = placemark.CountryCode,
+				Country = placemark.CountryName,
+				State = placemark.AdminArea,
+				Street = placemark.Thoroughfare,
+				City = placemark.Locality,
+				Zip = placemark.PostalCode
+			}.Dictionary;
+#else
+			var address = new NSMutableDictionary
+			{
+				[CNPostalAddressKey.City] = new NSString(placemark.Locality ?? string.Empty),
+				[CNPostalAddressKey.Country] = new NSString(placemark.CountryName ?? string.Empty),
+				[CNPostalAddressKey.State] = new NSString(placemark.AdminArea ?? string.Empty),
+				[CNPostalAddressKey.Street] = new NSString(placemark.Thoroughfare ?? string.Empty),
+				[CNPostalAddressKey.PostalCode] = new NSString(placemark.PostalCode ?? string.Empty),
+				[CNPostalAddressKey.IsoCountryCode] = new NSString(placemark.CountryCode ?? string.Empty)
+			};
+#endif
+
+			var resolvedPlacemarks = await GetPlacemarksAsync(address);
+After:
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+#if __IOS__
+			var address = new MKPlacemarkAddress
+			{
+				CountryCode = placemark.CountryCode,
+				Country = placemark.CountryName,
+				State = placemark.AdminArea,
+				Street = placemark.Thoroughfare,
+				City = placemark.Locality,
+				Zip = placemark.PostalCode
+			}.Dictionary;
+#else
+			var address = new NSMutableDictionary
+			{
+				[CNPostalAddressKey.City] = new NSString(placemark.Locality ?? string.Empty),
+				[CNPostalAddressKey.Country] = new NSString(placemark.CountryName ?? string.Empty),
+				[CNPostalAddressKey.State] = new NSString(placemark.AdminArea ?? string.Empty),
+				[CNPostalAddressKey.Street] = new NSString(placemark.Thoroughfare ?? string.Empty),
+				[CNPostalAddressKey.PostalCode] = new NSString(placemark.PostalCode ?? string.Empty),
+				[CNPostalAddressKey.IsoCountryCode] = new NSString(placemark.CountryCode ?? string.Empty)
+			};
+#endif
+
+			var resolvedPlacemarks = await GetPlacemarksAsync(address);
+After:
+			}
+*/
+			}
+
+#if __IOS__
+			var address = new MKPlacemarkAddress
+			{
+				CountryCode = placemark.CountryCode,
+				Country = placemark.CountryName,
+				State = placemark.AdminArea,
+				Street = placemark.Thoroughfare,
+				City = placemark.Locality,
+				Zip = placemark.PostalCode
+			}.Dictionary;
+#else
+			var address = new NSMutableDictionary
+			{
+				[CNPostalAddressKey.City] = new NSString(placemark.Locality ?? string.Empty),
+				[CNPostalAddressKey.Country] = new NSString(placemark.CountryName ?? string.Empty),
+				[CNPostalAddressKey.State] = new NSString(placemark.AdminArea ?? string.Empty),
+				[CNPostalAddressKey.Street] = new NSString(placemark.Thoroughfare ?? string.Empty),
+				[CNPostalAddressKey.PostalCode] = new NSString(placemark.PostalCode ?? string.Empty),
+				[CNPostalAddressKey.IsoCountryCode] = new NSString(placemark.CountryCode ?? string.Empty)
+			};
+#endif
+
+			var resolvedPlacemarks = await GetPlacemarksAsync(address);
+			if (options == null)
+			{
 				throw new ArgumentNullException(nameof(options));
+			}
 
 #if __IOS__
 			var address = new MKPlacemarkAddress

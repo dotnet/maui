@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			// TODO: remove this as soon as the test harness can filter
 			// the iOS simulator does not emulate a flashlight
 			if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Platform == DevicePlatform.iOS)
+			{
 				return;
+			}
 #endif
 
 			Vibration.Vibrate();
@@ -45,10 +47,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			// TODO: remove this as soon as the test harness can filter
 			// the iOS simulator does not emulate a flashlight
 			if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Platform == DevicePlatform.iOS)
+			{
 				return;
+			}
 #endif
 
 			Vibration.Vibrate();
+			Vibration.Cancel();
 			Vibration.Cancel();
 		}
 	}

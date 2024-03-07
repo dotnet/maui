@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls
 			{
 				page.NavigatedFrom -= OnPageNavigatedFrom;
 				if (_contentPages.Contains(pageToRemove))
+				{
 					_contentPages.Remove(pageToRemove);
+				}
 
 				SetupHideSoftInputOnTapped();
 			}
@@ -65,10 +67,14 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (_view is not VisualElement ve)
+			{
 				return null;
+			}
 
 			if (!_view.IsFocused)
+			{
 				return null;
+			}
 
 			DisconnectFromPlatform();
 
@@ -79,6 +85,24 @@ namespace Microsoft.Maui.Controls
 				return null;
 			}
 
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			IDisposable? platformToken = SetupHideSoftInputOnTapped(platformView);
+
+#if ANDROID
+			var window = ve.Window;
+After:
+			if (ve.Window is null)
+			{
+				// This means the xplat IsFocused value has lagged behind navigation events.
+				// This might happen if navigated has fired on the incoming page but the
+				// "LostFocus" event hasn't propagated from the previous one
+				return null;
+			}
+
+			IDisposable? platformToken = ve.Window;
+*/
 			if (ve.Window is null)
 			{
 				// This means the xplat IsFocused value has lagged behind navigation events.
@@ -88,6 +112,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			IDisposable? platformToken = SetupHideSoftInputOnTapped(platformView);
+
+#if ANDROID
+			var window = SetupHideSoftInputOnTapped(platformView);
 
 #if ANDROID
 			var window = ve.Window;

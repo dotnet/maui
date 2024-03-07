@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Platform
 						.Where(c => c.Name.EndsWith("-" + countryCode)).FirstOrDefault();
 
 					if (cultureInfo == null)
+					{
 						cultureInfo = CultureInfo.InvariantCulture;
+					}
 
 					s_currentCulture = cultureInfo;
 				}

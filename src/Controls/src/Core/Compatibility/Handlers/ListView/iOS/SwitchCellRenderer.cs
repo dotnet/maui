@@ -24,7 +24,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var tvc = reusableCell as CellTableViewCell;
 			UISwitch uiSwitch = null;
 			if (tvc == null)
+			{
 				tvc = new CellTableViewCell(UITableViewCellStyle.Value1, CellName);
+			}
 			else
 			{
 				uiSwitch = tvc.AccessoryView as UISwitch;
@@ -74,15 +76,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateOnColor(realCell, boolCell);
 			}
 			else if (e.PropertyName == SwitchCell.TextProperty.PropertyName)
+			{
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 				realCell.TextLabel.Text = boolCell.Text;
+			}
 #pragma warning restore CA1416, CA1422
 			else if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled(realCell, boolCell);
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection(realCell, boolCell);
+			}
 			else if (e.PropertyName == SwitchCell.OnColorProperty.PropertyName)
+			{
 				UpdateOnColor(realCell, boolCell);
+			}
 		}
 
 		static void OnSwitchValueChanged(object sender, EventArgs eventArgs)
@@ -98,7 +108,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			if (realCell != null)
+			{
 				((SwitchCell)realCell.Cell).On = sw.On;
+			}
 		}
 
 		void UpdateFlowDirection(CellTableViewCell cell, SwitchCell switchCell)
@@ -117,7 +129,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CA1416, CA1422
 			var uiSwitch = cell.AccessoryView as UISwitch;
 			if (uiSwitch != null)
+			{
 				uiSwitch.Enabled = switchCell.IsEnabled;
+			}
 		}
 
 		void UpdateOnColor(CellTableViewCell cell, SwitchCell switchCell)
@@ -126,9 +140,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (uiSwitch != null)
 			{
 				if (switchCell.OnColor == null)
+				{
 					uiSwitch.OnTintColor = _defaultOnColor;
+				}
 				else
+				{
 					uiSwitch.OnTintColor = switchCell.OnColor.ToPlatform();
+				}
 			}
 		}
 	}

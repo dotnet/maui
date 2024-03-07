@@ -38,10 +38,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					LeftBtn.Content = options.Cancel;
 					if (options.Destruction != null)
+					{
 						RightBtn.Content = options.Destruction;
+					}
 				}
 				else if (options.Destruction != null)
+				{
 					LeftBtn.Content = options.Destruction;
+				}
 			}
 			else
 			{
@@ -49,10 +53,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					RightBtn.Content = options.Cancel;
 					if (options.Destruction != null)
+					{
 						LeftBtn.Content = options.Destruction;
+					}
 				}
 				else if (options.Destruction != null)
+				{
 					RightBtn.Content = options.Destruction;
+				}
 			}
 
 			LeftBtn.Visibility = LeftBtn.Content == null ? WVisibility.Collapsed : WVisibility.Visible;

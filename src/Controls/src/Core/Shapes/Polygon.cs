@@ -47,7 +47,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (propertyName == PointsProperty.PropertyName ||
 				propertyName == FillRuleProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
+			}
 		}
 
 		public override PathF GetPath()
@@ -59,7 +61,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				path.MoveTo((float)Points[0].X, (float)Points[0].Y);
 
 				for (int index = 1; index < Points.Count; index++)
+				{
 					path.LineTo((float)Points[index].X, (float)Points[index].Y);
+				}
 
 				path.Close();
 			}

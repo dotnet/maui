@@ -19,9 +19,13 @@ namespace Maui.Controls.Sample.Pages.ScrollViewPages
 			count++;
 
 			if (count == 1)
+			{
 				CounterBtn.Text = $"Clicked {count} time";
+			}
 			else
+			{
 				CounterBtn.Text = $"Clicked {count} times";
+			}
 		}
 	}
 

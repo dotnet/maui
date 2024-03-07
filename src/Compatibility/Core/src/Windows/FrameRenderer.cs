@@ -24,9 +24,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (e.NewElement != null)
 			{
 				if (Control == null)
+				{
 					SetNativeControl(new WBorder());
+				}
 
 				PackChild();
+				UpdateBorder();
+				UpdateCornerRadius();
 				UpdateBorder();
 				UpdateCornerRadius();
 			}
@@ -72,17 +76,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control != null)
 			{
 				if (Brush.IsNullOrEmpty(background))
+				{
 					Control.Background = backgroundColor.IsDefault() ?
 						new Microsoft.UI.Xaml.Media.SolidColorBrush((global::Windows.UI.Color)Resources["SystemAltHighColor"]) : backgroundColor.ToPlatform();
+				}
 				else
+				{
 					Control.Background = background.ToBrush();
+				}
+				}
 			}
 		}
 
 		void PackChild()
 		{
 			if (Element.Content == null)
+			{
 				return;
+			}
 
 			IVisualElementRenderer renderer = Element.Content.GetOrCreateRenderer();
 			Control.Child = renderer.ContainerElement;
@@ -106,7 +117,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			float cornerRadius = Element.CornerRadius;
 
 			if (cornerRadius == -1f)
+			{
 				cornerRadius = 5f; // default corner radius
+			}
 
 			Control.CornerRadius = WinUIHelpers.CreateCornerRadius(cornerRadius);
 		}

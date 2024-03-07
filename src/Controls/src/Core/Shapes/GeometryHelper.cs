@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			// Return empty PathGeometry if Geometry is null
 			if (geoSrc == null)
+			{
 				return new PathGeometry();
+			}
 
 			PathGeometry pathGeoDst = new PathGeometry();
 			FlattenGeometry(pathGeoDst, geoSrc, tolerance, Matrix.Identity);
@@ -78,9 +80,43 @@ namespace Microsoft.Maui.Controls.Shapes
 					Point pt = matx.Transform(new Point(x, y));
 
 					if (i == 0)
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
 						figDst.StartPoint = pt;
 					else
 						segDst.Points.Add(pt);
+After:
+					{
+						figDst.StartPoint = pt;
+					}
+					else
+					{
+						segDst.Points.Add(pt);
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+						figDst.StartPoint = pt;
+					else
+						segDst.Points.Add(pt);
+After:
+					{
+						figDst.StartPoint = pt;
+					}
+					else
+					{
+						segDst.Points.Add(pt);
+					}
+*/
+					{
+						figDst.StartPoint = pt;
+					}
+					else
+					{
+						segDst.Points.Add(pt);
+					}
 				}
 
 				figDst.IsClosed = true;
@@ -134,7 +170,9 @@ namespace Microsoft.Maui.Controls.Shapes
 							FlattenCubicBezier(points, pt0, pt1, pt2, pt3, tolerance);
 
 							for (int i = 1; i < points.Count; i++)
+							{
 								segDst.Points.Add(points[i]);
+							}
 
 							ptLast = points[points.Count - 1];
 						}
@@ -145,7 +183,9 @@ namespace Microsoft.Maui.Controls.Shapes
 							for (int bez = 0; bez < polyBezSeg.Points.Count; bez += 3)
 							{
 								if (bez + 2 > polyBezSeg.Points.Count - 1)
+								{
 									break;
+								}
 
 								Point pt0 = ptLast;
 								Point pt1 = matx.Transform(polyBezSeg.Points[bez]);
@@ -156,7 +196,9 @@ namespace Microsoft.Maui.Controls.Shapes
 								FlattenCubicBezier(points, pt0, pt1, pt2, pt3, tolerance);
 
 								for (int i = 1; i < points.Count; i++)
+								{
 									segDst.Points.Add(points[i]);
+								}
 
 								ptLast = points[points.Count - 1];
 							}
@@ -172,7 +214,9 @@ namespace Microsoft.Maui.Controls.Shapes
 							FlattenQuadraticBezier(points, pt0, pt1, pt2, tolerance);
 
 							for (int i = 1; i < points.Count; i++)
+							{
 								segDst.Points.Add(points[i]);
+							}
 
 							ptLast = points[points.Count - 1];
 						}
@@ -183,7 +227,9 @@ namespace Microsoft.Maui.Controls.Shapes
 							for (int bez = 0; bez < polyQuadBezSeg.Points.Count; bez += 2)
 							{
 								if (bez + 1 > polyQuadBezSeg.Points.Count - 1)
+								{
 									break;
+								}
 
 								Point pt0 = ptLast;
 								Point pt1 = matx.Transform(polyQuadBezSeg.Points[bez]);
@@ -193,7 +239,9 @@ namespace Microsoft.Maui.Controls.Shapes
 								FlattenQuadraticBezier(points, pt0, pt1, pt2, tolerance);
 
 								for (int i = 1; i < points.Count; i++)
+								{
 									segDst.Points.Add(points[i]);
+								}
 
 								ptLast = points[points.Count - 1];
 							}
@@ -217,7 +265,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 							// Set ptLast while transferring points
 							for (int i = 1; i < points.Count; i++)
+							{
 								segDst.Points.Add(ptLast = points[i]);
+							}
 						}
 
 						figDst.Segments.Add(segDst);
@@ -293,16 +343,24 @@ namespace Microsoft.Maui.Controls.Shapes
 			// Get vector from chord to center
 			Point vectRotated;
 			if (isLargeArc == isCounterclockwise)
+			{
 				vectRotated = new Point(-vect.Y, vect.X);
+			}
 			else
+			{
 				vectRotated = new Point(vect.Y, -vect.X);
+			}
 
 			// Normalize vectRotated
 			double vectRotatedLength = Math.Sqrt(vectRotated.X * vectRotated.X + vectRotated.Y * vectRotated.Y);
 			if (vectRotatedLength != 0)
+			{
 				vectRotated = new Point(vectRotated.X / vectRotatedLength, vectRotated.Y / vectRotatedLength);
+			}
 			else
+			{
 				vectRotated = new Point();
+			}
 
 			// Distance from chord to center
 			double centerDistance = Math.Sqrt(Math.Abs((radiusY * radiusY) - (halfChord * halfChord)));
@@ -332,9 +390,13 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (reverseArc)
 			{
 				if (angle1 < angle2)
+				{
 					angle1 += 2 * Math.PI;
+				}
 				else
+				{
 					angle2 += 2 * Math.PI;
+				}
 			}
 
 			// Invert matrix for final point calculation

@@ -24,7 +24,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (_shellItem == value)
+				{
 					return;
+				}
+
 				_shellItem = value;
 				OnShellItemSet(_shellItem);
 				CreateTabRenderers();
@@ -115,7 +118,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				bool accept = true;
 				var r = RendererForViewController(viewController);
 				if (r != null)
+				{
 					accept = ((IShellItemController)ShellItem).ProposeSection(r.ShellSection, false);
+				}
 
 				return accept;
 			};
@@ -134,26 +139,38 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (_displayedPage != null)
+			{
 				_displayedPage.PropertyChanged -= OnDisplayedPagePropertyChanged;
+			}
 
 			if (_currentSection != null)
+			{
 				((IShellSectionController)_currentSection).RemoveDisplayedPageObserver(this);
-
+			}
 
 			if (ShellItem != null)
+			{
 				ShellItem.PropertyChanged -= OnElementPropertyChanged;
+			}
 
 			if (_context?.Shell is IShellController shellController)
+			{
 				shellController.RemoveAppearanceObserver(this);
+			}
 
 			if (ShellItemController != null)
+			{
 				ShellItemController.ItemsCollectionChanged -= OnItemsCollectionChanged;
+			}
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -219,23 +236,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var renderer = RendererForShellContent(shellContent) ?? _context.CreateShellSectionRenderer(shellContent);
 
 					if (willUseMore && j >= maxTabs - 1)
+					{
 						renderer.IsInMoreTab = true;
+					}
 					else
+					{
 						renderer.IsInMoreTab = false;
+					}
 
 					renderer.ShellSection = shellContent;
 
 					AddRenderer(renderer);
 					viewControllers[i++] = renderer.ViewController;
 					if (shellContent == current)
+					{
 						goTo = true;
+					}
 				}
 
 				ViewControllers = viewControllers;
 				CustomizableViewControllers = Array.Empty<UIViewController>();
 
 				if (goTo)
+				{
 					GoTo(ShellItem.CurrentItem);
+				}
 			}
 
 			UpdateTabBarHidden();
@@ -273,7 +298,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void AddRenderer(IShellSectionRenderer renderer)
 		{
 			if (_sectionRenderers.ContainsKey(renderer.ViewController))
+			{
+			{
 				return;
+			}
+
 			_sectionRenderers[renderer.ViewController] = renderer;
 			renderer.ShellSection.PropertyChanged += OnShellSectionPropertyChanged;
 		}
@@ -281,7 +310,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void CreateTabRenderers()
 		{
 			if (ShellItem.CurrentItem == null)
+			{
 				throw new InvalidOperationException($"Content not found for active {ShellItem}. Title: {ShellItem.Title}. Route: {ShellItem.Route}.");
+			}
 
 			var items = ShellItemController.GetItems();
 			var count = items.Count;
@@ -331,7 +362,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					cell.UserInteractionEnabled = false;
 
 					if (_defaultMoreTextLabelTextColor == null)
+					{
 						_defaultMoreTextLabelTextColor = cell.TextLabel.TextColor;
+					}
 
 					cell.TextLabel.TextColor = Color.FromRgb(213, 213, 213).ToPlatform();
 				}
@@ -346,7 +379,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UITableViewCell[] GetMoreNavigationCells()
 			{
 				if (MoreNavigationController.TopViewController.View is UITableView uITableView)
+				{
 					return uITableView.VisibleCells;
+				}
 
 				return EmptyUITableViewCellArray;
 			}
@@ -355,10 +390,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void GoTo(ShellSection shellSection)
 		{
 			if (shellSection == null || _currentSection == shellSection)
+			{
+			{
 				return;
+			}
+
 			var renderer = RendererForShellContent(shellSection);
 			if (renderer?.ViewController != SelectedViewController)
+			{
 				SelectedViewController = renderer.ViewController;
+			}
+
 			CurrentRenderer = renderer;
 
 			if (_currentSection != null)
@@ -377,10 +419,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnDisplayedPageChanged(Page page)
 		{
 			if (page == _displayedPage)
+			{
+			{
 				return;
+			}
 
 			if (_displayedPage != null)
+			{
 				_displayedPage.PropertyChanged -= OnDisplayedPagePropertyChanged;
+			}
 
 			_displayedPage = page;
 
@@ -394,18 +441,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnDisplayedPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
+			{
 				UpdateTabBarHidden();
+			}
 		}
 
 		void RemoveRenderer(IShellSectionRenderer renderer)
 		{
 			if (_sectionRenderers.Remove(renderer.ViewController))
+			{
 				renderer.ShellSection.PropertyChanged -= OnShellSectionPropertyChanged;
+			}
 
 			renderer?.Dispose();
 
 			if (CurrentRenderer == renderer)
+			{
 				CurrentRenderer = null;
+			}
 		}
 
 		IShellSectionRenderer RendererForShellContent(ShellSection shellSection)
@@ -414,7 +467,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			foreach (var item in _sectionRenderers)
 			{
 				if (item.Value.ShellSection == shellSection)
+				{
 					return item.Value;
+				}
 			}
 			return null;
 		}
@@ -423,7 +478,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			// Efficient!
 			if (_sectionRenderers.TryGetValue(viewController, out var value))
+			{
 				return value;
+			}
+
 			return null;
 		}
 
@@ -436,7 +494,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateTabBarHidden()
 		{
 			if (ShellItemController == null)
+			{
+			{
 				return;
+			}
 
 			TabBar.Hidden = !ShellItemController.ShowTabs;
 		}

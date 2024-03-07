@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Accessibility
 		public void Announce(string text)
 		{
 			if (WindowStateManager.Default.GetActiveWindow() is not Window window)
+			{
 				return;
+			}
 
 			var peer = FindAutomationPeer(window.Content);
 
@@ -43,7 +45,9 @@ namespace Microsoft.Maui.Accessibility
 
 					var childItem = FindAutomationPeer(child);
 					if (childItem != null)
+					{
 						return childItem;
+					}
 				}
 			}
 			return null;

@@ -63,9 +63,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateFlowDirection();
 			}
 			else if (e.PropertyName == Switch.OnColorProperty.PropertyName)
+			{
 				UpdateOnColor();
+			}
 			else if (e.PropertyName == Switch.ThumbColorProperty.PropertyName)
+			{
 				UpdateThumbColor();
+			}
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
@@ -91,22 +95,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateOnColor()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			var grid = Control.GetFirstDescendant<WGrid>();
 			if (grid == null)
+			{
 				return;
+			}
 
 			var groups = WVisualStateManager.GetVisualStateGroups(grid);
 			foreach (var group in groups)
 			{
 				if (group.Name != ToggleSwitchCommonStates)
+				{
 					continue;
+				}
 
 				foreach (var state in group.States)
 				{
 					if (state.Name != ToggleSwitchPointerOver)
+					{
 						continue;
+					}
 
 					foreach (var timeline in state.Storyboard.Children.OfType<ObjectAnimationUsingKeyFrames>())
 					{
@@ -122,10 +134,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 								if (_originalOnHoverColor == null)
 								{
 									if (frame.Value is WColor color)
+									{
 										_originalOnHoverColor = color;
+									}
 
 									if (frame.Value is SolidColorBrush solidColorBrush)
+									{
 										_originalOnHoverColor = solidColorBrush;
+									}
 								}
 
 								if (!Element.OnColor.IsDefault())
@@ -136,7 +152,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 									};
 								}
 								else
+								{
 									frame.Value = _originalOnHoverColor;
+								}
 							}
 							break;
 						}
@@ -149,12 +167,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (rect != null)
 			{
 				if (_originalOnColorBrush == null)
+				{
 					_originalOnColorBrush = rect.Fill;
+				}
 
 				if (!Element.OnColor.IsDefault())
+				{
 					rect.Fill = new WSolidColorBrush(Element.OnColor.ToWindowsColor());
+				}
 				else
+				{
 					rect.Fill = _originalOnColorBrush;
+				}
 			}
 		}
 
@@ -162,24 +186,32 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateThumbColor()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			var grid = Control.GetFirstDescendant<WGrid>();
 
 			if (grid == null)
+			{
 				return;
+			}
 
 			var groups = WVisualStateManager.GetVisualStateGroups(grid);
 
 			foreach (var group in groups)
 			{
 				if (group.Name != ToggleSwitchCommonStates)
+				{
 					continue;
+				}
 
 				foreach (var state in group.States)
 				{
 					if (state.Name != ToggleSwitchPointerOver)
+					{
 						continue;
+					}
 
 					foreach (var timeline in state.Storyboard.Children.OfType<ObjectAnimationUsingKeyFrames>())
 					{
@@ -195,10 +227,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 								if (_originalThumbOnBrush == null)
 								{
 									if (frame.Value is global::Windows.UI.Color color)
+									{
 										_originalOnColorBrush = new WSolidColorBrush(color);
+									}
 
 									if (frame.Value is WBrush brush)
+									{
 										_originalThumbOnBrush = brush;
+									}
 								}
 
 								if (!Element.ThumbColor.IsDefault())
@@ -208,7 +244,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 									frame.Value = brush;
 								}
 								else
+								{
 									frame.Value = _originalThumbOnBrush;
+								}
 							}
 							break;
 						}
@@ -219,12 +257,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (grid.FindName(ToggleSwitchKnobOn) is WEllipse thumb)
 			{
 				if (_originalThumbOnBrush == null)
+				{
 					_originalThumbOnBrush = thumb.Fill;
+				}
 
 				if (!Element.ThumbColor.IsDefault())
+				{
 					thumb.Fill = Element.ThumbColor.ToPlatform();
+				}
 				else
+				{
 					thumb.Fill = _originalThumbOnBrush;
+				}
 			}
 		}
 	}

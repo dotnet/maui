@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
 
 			if (!visibleItems)
+			{
 				return;
+			}
 
 			var contentInset = scrollView.ContentInset;
 			var contentOffsetX = scrollView.ContentOffset.X + contentInset.Left;
@@ -58,11 +60,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					return;
 				case 0:
 					if (lastVisibleItemIndex == source.ItemCount - 1)
+					{
 						itemsView.SendRemainingItemsThresholdReached();
+					}
+
 					break;
 				default:
 					if (source.ItemCount - 1 - lastVisibleItemIndex <= itemsView.RemainingItemsThreshold)
+					{
 						itemsView.SendRemainingItemsThresholdReached();
+					}
+
 					break;
 			}
 		}
@@ -106,14 +114,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var actualWidth = collectionView.ContentSize.Width - collectionView.Bounds.Size.Width;
 				if (collectionView.ContentOffset.X >= actualWidth || collectionView.ContentOffset.X < 0)
+				{
 					return;
+				}
 			}
 			else
 			{
 				var actualHeight = collectionView.ContentSize.Height - collectionView.Bounds.Size.Height;
 
 				if (collectionView.ContentOffset.Y >= actualHeight || collectionView.ContentOffset.Y < 0)
+				{
 					return;
+				}
 			}
 		}
 
@@ -154,7 +166,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Row).ToList();
 
 			if (indexPathsForVisibleItems.Count == 0)
+			{
 				return centerItemIndex;
+			}
 
 			var firstVisibleItemIndex = indexPathsForVisibleItems.First();
 

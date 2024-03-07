@@ -25,14 +25,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var run = new Run { Text = span.Text ?? string.Empty };
 
 			if (span.TextColor.IsNotDefault())
+			{
 				run.Foreground = span.TextColor.ToPlatform();
+			}
 
 			var font = span.ToFont();
 			if (!font.IsDefault)
+			{
 				run.ApplyFont(font, fontManager);
+			}
 
 			if (span.IsSet(Span.TextDecorationsProperty))
+			{
 				run.TextDecorations = (global::Windows.UI.Text.TextDecorations)span.TextDecorations;
+			}
 
 			run.CharacterSpacing = span.CharacterSpacing.ToEm();
 
@@ -71,7 +77,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element == null)
+			{
 				return finalSize;
+			}
 
 			double childHeight = Math.Max(0, Math.Min(Element.Height, Control.DesiredSize.Height));
 			var rect = new WRect();
@@ -109,14 +117,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var heightFits = heightConstraint >= _perfectSize.Request.Height;
 
 			if (widthFits && heightFits)
+			{
 				return _perfectSize;
+			}
 
 			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
 			var tinyWidth = Math.Min(10, result.Request.Width);
 			result.Minimum = new Size(tinyWidth, result.Request.Height);
 
 			if (widthFits || Element.LineBreakMode == LineBreakMode.NoWrap)
+			{
 				return result;
+			}
 
 			bool containerIsNotInfinitelyWide = !double.IsInfinity(widthConstraint);
 
@@ -165,29 +177,53 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.IsOneOf(Label.TextProperty, Label.FormattedTextProperty, Label.TextTransformProperty, Label.TextTypeProperty))
+			{
 				UpdateText(Control);
+			}
 			else if (e.PropertyName == Label.TextColorProperty.PropertyName)
+			{
 				UpdateColor(Control);
+			}
 			else if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
+			{
 				UpdateAlign(Control);
+			}
 			else if (e.PropertyName == Label.FontAttributesProperty.PropertyName || e.PropertyName == Label.FontFamilyProperty.PropertyName || e.PropertyName == Label.FontSizeProperty.PropertyName)
+			{
 				UpdateFont(Control);
+			}
 			else if (e.PropertyName == Label.TextDecorationsProperty.PropertyName)
+			{
 				UpdateTextDecorations(Control);
+			}
 			else if (e.PropertyName == Label.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing(Control);
+			}
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
+			{
 				UpdateLineBreakMode(Control);
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateAlign(Control);
+			}
 			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
+			{
 				UpdateDetectReadingOrderFromContent(Control);
+			}
 			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
+			{
 				UpdateLineHeight(Control);
+			}
 			else if (e.PropertyName == Label.MaxLinesProperty.PropertyName)
+			{
 				UpdateMaxLines(Control);
+			}
 			else if (e.PropertyName == Label.PaddingProperty.PropertyName)
+			{
 				UpdatePadding(Control);
+			}
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -196,19 +232,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateTextDecorations(TextBlock textBlock)
 		{
 			if (!Element.IsSet(Label.TextDecorationsProperty))
+			{
 				return;
+			}
 
 			var elementTextDecorations = Element.TextDecorations;
 
 			if ((elementTextDecorations & TextDecorations.Underline) == 0)
+			{
 				textBlock.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Underline;
+			}
 			else
+			{
 				textBlock.TextDecorations |= global::Windows.UI.Text.TextDecorations.Underline;
+			}
 
 			if ((elementTextDecorations & TextDecorations.Strikethrough) == 0)
+			{
 				textBlock.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Strikethrough;
+			}
 			else
+			{
 				textBlock.TextDecorations |= global::Windows.UI.Text.TextDecorations.Strikethrough;
+			}
 
 			//TextDecorations are not updated in the UI until the text changes
 			if (textBlock.Inlines != null && textBlock.Inlines.Count > 0)
@@ -232,11 +278,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_perfectSizeValid = false;
 
 			if (textBlock == null)
+			{
 				return;
+			}
 
 			Label label = Element;
 			if (label == null)
+			{
 				return;
+			}
 
 			textBlock.TextAlignment = label.HorizontalTextAlignment.ToPlatformTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 			textBlock.VerticalAlignment = label.VerticalTextAlignment.ToPlatformVerticalAlignment();
@@ -245,7 +295,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateColor(TextBlock textBlock)
 		{
 			if (textBlock == null)
+			{
 				return;
+			}
 
 			Label label = Element;
 			if (label != null && label.TextColor.IsNotDefault())
@@ -263,23 +315,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_perfectSizeValid = false;
 
 			if (textBlock == null)
+			{
 				return;
+			}
 
 			Label label = Element;
 
 			if (label == null)
+			{
 				return;
+			}
 
 			var isLabelDefault = label.ToFont().IsDefault;
 			if (isLabelDefault && !_fontApplied)
+			{
 				return;
+			}
 
 			if (isLabelDefault && _isInitiallyDefault)
+			{
 #pragma warning disable CS0612 // Type or member is obsolete
 				textBlock.ApplyFont(Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)), Element.RequireFontManager());
+			}
 #pragma warning restore CS0612 // Type or member is obsolete
 			else
+			{
 				textBlock.ApplyFont(label.ToFont(), Element.RequireFontManager());
+			}
 
 			_fontApplied = true;
 		}
@@ -290,7 +352,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_perfectSizeValid = false;
 
 			if (textBlock == null)
+			{
 				return;
+			}
 
 			textBlock.UpdateLineBreakMode(Element.LineBreakMode);
 		}
@@ -305,9 +369,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void DetermineTruncatedTextWrapping(TextBlock textBlock)
 		{
 			if (Element.MaxLines > 1)
+			{
 				textBlock.TextWrapping = TextWrapping.Wrap;
+			}
 			else
+			{
 				textBlock.TextWrapping = TextWrapping.NoWrap;
+			}
 		}
 
 		[PortHandler]
@@ -316,7 +384,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_perfectSizeValid = false;
 
 			if (textBlock == null)
+			{
 				return;
+			}
 
 			switch (Element.TextType)
 			{
@@ -402,7 +472,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateLineHeight(TextBlock textBlock)
 		{
 			if (textBlock == null)
+			{
 				return;
+			}
 
 			if (Element.LineHeight >= 0)
 			{

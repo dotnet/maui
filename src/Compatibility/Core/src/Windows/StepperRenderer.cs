@@ -34,29 +34,45 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Stepper.ValueProperty.PropertyName)
+			{
 				UpdateValue();
+			}
 			else if (e.PropertyName == Stepper.MaximumProperty.PropertyName)
+			{
 				UpdateMaximum();
+			}
 			else if (e.PropertyName == Stepper.MinimumProperty.PropertyName)
+			{
 				UpdateMinimum();
+			}
 			else if (e.PropertyName == Stepper.IncrementProperty.PropertyName)
+			{
 				UpdateIncrement();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
 				UpdateBackgroundColor();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 		}
 
 		protected override void UpdateBackgroundColor()
 		{
 			if (Control != null)
+			{
 				Control.ButtonBackgroundColor = Element.BackgroundColor;
+			}
 		}
 
 		protected override void UpdateBackground()
 		{
 			if (Control != null)
+			{
 				Control.ButtonBackground = Element.Background;
+			}
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
@@ -94,7 +110,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (disposing && Control != null)
 			{

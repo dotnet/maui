@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Platform
 		public static void OnFocusChanged(bool gainFocus, EditText sender)
 		{
 			if (gainFocus)
+			{
 				sender.CallOnClick();
+			}
 		}
 
 		static void OnKeyPress(object? sender, AView.KeyEventArgs e)
@@ -58,7 +60,9 @@ namespace Microsoft.Maui.Platform
 		public static Java.Lang.ICharSequence GetTitle(Color titleColor, string title)
 		{
 			if (titleColor == null)
+			{
 				return new Java.Lang.String(title);
+			}
 
 			var spannableTitle = new SpannableString(title ?? string.Empty);
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962

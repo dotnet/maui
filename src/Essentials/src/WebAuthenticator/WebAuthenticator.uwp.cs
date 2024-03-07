@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Authentication
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
 
 			if (!IsUriProtocolDeclared(callbackUrl.Scheme))
+			{
 				throw new InvalidOperationException($"You need to declare the windows.protocol usage of the protocol/scheme `{callbackUrl.Scheme}` in your AppxManifest.xml file");
+			}
 
 			try
 			{

@@ -120,7 +120,9 @@ namespace Microsoft.Maui.Controls
 				DeviceInfo.Platform == DevicePlatform.Android ||
 				DeviceInfo.Platform == DevicePlatform.iOS ||
 				DeviceInfo.Platform == DevicePlatform.macOS)
+			{
 				CachingStrategy = cachingStrategy;
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='Footer']/Docs/*" />
@@ -144,10 +146,14 @@ namespace Microsoft.Maui.Controls
 			object bc = BindingContext;
 
 			if (Header is Element header)
+			{
 				SetChildInheritedBindingContext(header, bc);
+			}
 
 			if (Footer is Element footer)
+			{
 				SetChildInheritedBindingContext(footer, bc);
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='GroupDisplayBinding']/Docs/*" />
@@ -157,7 +163,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_groupDisplayBinding == value)
+				{
 					return;
+				}
 
 				OnPropertyChanging();
 				BindingBase oldValue = value;
@@ -182,7 +190,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_groupShortNameBinding == value)
+				{
 					return;
+				}
 
 				OnPropertyChanging();
 				_groupShortNameBinding = value;
@@ -305,7 +315,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_refreshAllowed == value)
+				{
 					return;
+				}
 
 				_refreshAllowed = value;
 				OnPropertyChanged();
@@ -353,7 +365,10 @@ namespace Microsoft.Maui.Controls
 		public void BeginRefresh()
 		{
 			if (!RefreshAllowed)
+			{
+			{
 				return;
+			}
 
 			SetValue(IsRefreshingProperty, true);
 			OnRefreshing(EventArgs.Empty);
@@ -384,28 +399,43 @@ namespace Microsoft.Maui.Controls
 		public void ScrollTo(object item, ScrollToPosition position, bool animated)
 		{
 			if (!Enum.IsDefined(typeof(ScrollToPosition), position))
+			{
 				throw new ArgumentException("position is not a valid ScrollToPosition", "position");
+			}
 
 			var args = new ScrollToRequestedEventArgs(item, position, animated);
 			if (IsPlatformEnabled)
+			{
 				OnScrollToRequested(args);
+			}
 			else
+			{
 				_pendingScroll = args;
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo'][2]/Docs/*" />
 		public void ScrollTo(object item, object group, ScrollToPosition position, bool animated)
 		{
 			if (!IsGroupingEnabled)
+			{
 				throw new InvalidOperationException("Grouping is not enabled");
+			}
+
 			if (!Enum.IsDefined(typeof(ScrollToPosition), position))
+			{
 				throw new ArgumentException("position is not a valid ScrollToPosition", "position");
+			}
 
 			var args = new ScrollToRequestedEventArgs(item, group, position, animated);
 			if (IsPlatformEnabled)
+			{
 				OnScrollToRequested(args);
+			}
 			else
+			{
 				_pendingScroll = args;
+			}
 		}
 
 		protected override Cell CreateDefault(object item)
@@ -442,7 +472,9 @@ namespace Microsoft.Maui.Controls
 		{
 			base.SetupContent(content, index);
 			if (content is ViewCell viewCell && viewCell.View != null && HasUnevenRows)
+			{
 				viewCell.View.ComputedConstraint = LayoutConstraint.None;
+			}
 
 			if (content != null)
 			{
@@ -457,10 +489,16 @@ namespace Microsoft.Maui.Controls
 			base.UnhookContent(content);
 
 			if (content == null)
+			{
 				return;
+			}
+
 			var index = _visualChildren.IndexOf(content);
 			if (index == -1)
+			{
 				return;
+			}
+
 			_visualChildren.RemoveAt(index);
 			content.Parent = null;
 			VisualDiagnostics.OnChildRemoved(this, content, index);
@@ -481,17 +519,23 @@ namespace Microsoft.Maui.Controls
 			int groupIndex = TemplatedItems.GetGlobalIndexOfGroup(cell);
 
 			if (groupIndex == -1)
+			{
 				return cell.ToString();
+			}
 
 			var group = TemplatedItems.GetGroup(groupIndex);
 
 			string displayBinding = null;
 
 			if (GroupDisplayBinding != null)
+			{
 				displayBinding = group.Name;
+			}
 
 			if (GroupShortNameBinding != null)
+			{
 				displayBinding = group.ShortName;
+			}
 
 			// TODO: what if they set both? should it default to the ShortName, like it will here?
 			// ShortNames binding did not appear to be functional before.
@@ -517,7 +561,9 @@ namespace Microsoft.Maui.Controls
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
 			if (SelectionMode != ListViewSelectionMode.None)
+			{
 				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0), SetValuePrivateFlags.Default, SetterSpecificity.FromHandler);
+			}
 
 			cell?.OnTapped();
 
@@ -543,7 +589,9 @@ namespace Microsoft.Maui.Controls
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
 			if (SelectionMode != ListViewSelectionMode.None)
+			{
 				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0), SetValuePrivateFlags.Default, SetterSpecificity.FromHandler);
+			}
 
 			if (isContextMenuRequested || cell == null)
 			{
@@ -576,7 +624,9 @@ namespace Microsoft.Maui.Controls
 				NotifyRowTapped(groupIndex, leftOver - 1, cell);
 			}
 			else
+			{
 				NotifyRowTapped(0, index, cell);
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][3]/Docs/*" />
@@ -591,7 +641,9 @@ namespace Microsoft.Maui.Controls
 				NotifyRowTapped(groupIndex, leftOver - 1, cell, isContextmenuRequested);
 			}
 			else
+			{
 				NotifyRowTapped(0, index, cell, isContextmenuRequested);
+			}
 		}
 
 		internal override void OnIsPlatformEnabledChanged()
@@ -669,7 +721,9 @@ namespace Microsoft.Maui.Controls
 			{
 				var view = dataObject as Element;
 				if (view == null || view is Page)
+				{
 					view = new Label { Text = dataObject.ToString() };
+				}
 
 				view.Parent = this;
 				OnPropertyChanging(property);
@@ -738,7 +792,10 @@ namespace Microsoft.Maui.Controls
 		static bool ValidateHeaderFooterTemplate(BindableObject bindable, object value)
 		{
 			if (value == null)
+			{
 				return true;
+			}
+
 			var template = (DataTemplate)value;
 			return template.CreateContent() is View;
 		}
@@ -754,7 +811,9 @@ namespace Microsoft.Maui.Controls
 			var isRetainStrategy = CachingStrategy == ListViewCachingStrategy.RetainElement;
 			var isDataTemplateSelector = ItemTemplate is DataTemplateSelector;
 			if (isRetainStrategy && isDataTemplateSelector)
+			{
 				return false;
+			}
 
 			return true;
 		}

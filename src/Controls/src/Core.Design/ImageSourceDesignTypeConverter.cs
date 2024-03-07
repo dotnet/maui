@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Design
 			// MUST MATCH ImageSourceConverter.ConvertFrom. Note that MAUI runtime allows
 			// empty or whitespace strings.
 			if (value?.ToString() is string strValue)
+			{
 				return Uri.TryCreate(strValue, UriKind.RelativeOrAbsolute, out Uri _);
+			}
 
 			return false;
 		}

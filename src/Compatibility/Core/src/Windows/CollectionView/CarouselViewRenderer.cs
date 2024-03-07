@@ -42,21 +42,38 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, changedProperty);
 
 			if (changedProperty.IsOneOf(CarouselView.ItemsSourceProperty, LinearItemsLayout.ItemSpacingProperty))
+			{
 				UpdateItemsSource();
+			}
 			else if (changedProperty.Is(CarouselView.ItemTemplateProperty))
+			{
 				UpdateItemTemplate();
+			}
 			else if (changedProperty.Is(CarouselView.PeekAreaInsetsProperty))
+			{
+			{
 				UpdatePeekAreaInsets();
+			}
 			else if (changedProperty.Is(CarouselView.IsSwipeEnabledProperty))
+			{
 				UpdateIsSwipeEnabled();
+			}
 			else if (changedProperty.Is(CarouselView.IsBounceEnabledProperty))
+			{
 				UpdateIsBounceEnabled();
+			}
 			else if (changedProperty.Is(CarouselView.PositionProperty))
+			{
 				UpdateFromPosition();
+			}
 			else if (changedProperty.Is(CarouselView.CurrentItemProperty))
+			{
 				UpdateFromCurrentItem();
+			}
 			else if (changedProperty.Is(CarouselView.LoopProperty))
+			{
 				UpdateLoop();
+			}
 		}
 
 		protected virtual void UpdateLoop()
@@ -68,11 +85,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void HandleLayoutPropertyChanged(PropertyChangedEventArgs property)
 		{
 			if (property.Is(LinearItemsLayout.ItemSpacingProperty))
+			{
 				UpdateItemSpacing();
+			}
 			else if (property.Is(ItemsLayout.SnapPointsTypeProperty))
+			{
 				UpdateSnapPointsType();
+			}
 			else if (property.Is(ItemsLayout.SnapPointsAlignmentProperty))
+			{
 				UpdateSnapPointsAlignment();
+			}
 		}
 
 		protected override void SetUpNewElement(ItemsView newElement)
@@ -93,7 +116,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.TearDownOldElement(oldElement);
 
 			if (oldElement == null)
+			{
 				return;
+			}
 
 			oldElement.Scrolled -= CarouselScrolled;
 
@@ -101,8 +126,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				ListViewBase.SizeChanged -= InitialSetup;
 				if (CollectionViewSource?.Source is ObservableItemTemplateCollection observableItemsSource)
-					observableItemsSource.CollectionChanged -= CollectionItemsSourceChanged;
 
+/* Unmerged change from project 'Compatibility(net8.0-windows10.0.20348.0)'
+Before:
+					observableItemsSource.CollectionChanged -= CollectionItemsSourceChanged;
+After:
+				{
+					observableItemsSource.CollectionChanged -= CollectionItemsSourceChanged;
+				}
+*/
+				{
+					observableItemsSource.CollectionChanged -= CollectionItemsSourceChanged;
+				}
 			}
 
 			if (_scrollViewer != null)
@@ -118,12 +153,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var itemsSource = Element.ItemsSource;
 
 			if (itemsSource == null)
+			{
 				return;
+			}
 
 			var itemTemplate = Element.ItemTemplate;
 
 			if (itemTemplate == null)
+			{
 				return;
+			}
 
 			base.UpdateItemsSource();
 		}
@@ -135,7 +174,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					GetItemHeight(), GetItemWidth(), GetItemSpacing());
 
 			if (collectionViewSource is ObservableItemTemplateCollection observableItemsSource)
+			{
 				observableItemsSource.CollectionChanged += CollectionItemsSourceChanged;
+			}
 
 			return new CollectionViewSource
 			{
@@ -167,7 +208,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void UpdateItemTemplate()
 		{
 			if (Element == null || ListViewBase == null)
+			{
 				return;
+			}
 
 			ListViewBase.ItemTemplate = CarouselItemsViewTemplate;
 		}
@@ -246,7 +289,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateIsSwipeEnabled()
 		{
 			if (CarouselView == null)
+			{
 				return;
+			}
 
 			ListViewBase.IsSwipeEnabled = CarouselView.IsSwipeEnabled;
 
@@ -267,7 +312,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateIsBounceEnabled()
 		{
 			if (_scrollViewer != null)
+			{
 				_scrollViewer.IsScrollInertiaEnabled = CarouselView.IsBounceEnabled;
+			}
 		}
 
 		void UpdateItemSpacing()
@@ -276,36 +323,52 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			var itemSpacing = CarouselItemsLayout.ItemSpacing;
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			{
 				_scrollViewer.Padding = WinUIHelpers.CreateThickness(0, 0, itemSpacing, 0);
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+			{
 				_scrollViewer.Padding = WinUIHelpers.CreateThickness(0, 0, 0, itemSpacing);
+			}
 		}
 
 		[PortHandler]
 		void UpdateSnapPointsType()
 		{
 			if (_scrollViewer == null)
+			{
 				return;
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			{
 				_scrollViewer.HorizontalSnapPointsType = GetWindowsSnapPointsType(CarouselItemsLayout.SnapPointsType);
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+			{
 				_scrollViewer.VerticalSnapPointsType = GetWindowsSnapPointsType(CarouselItemsLayout.SnapPointsType);
+			}
 		}
 
 		[PortHandler]
 		void UpdateSnapPointsAlignment()
 		{
 			if (_scrollViewer == null)
+			{
 				return;
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			{
 				_scrollViewer.HorizontalSnapPointsAlignment = GetWindowsSnapPointsAlignment(CarouselItemsLayout.SnapPointsAlignment);
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+			{
 				_scrollViewer.VerticalSnapPointsAlignment = GetWindowsSnapPointsAlignment(CarouselItemsLayout.SnapPointsAlignment);
+			}
 		}
 
 		[PortHandler]
@@ -375,12 +438,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateFromPosition()
 		{
 			if (CollectionViewSource == null)
+			{
 				return;
+			}
 
 			var carouselPosition = CarouselView.Position;
 
 			if (carouselPosition >= ItemCount || carouselPosition < 0)
+			{
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {ItemCount} items.");
+			}
 
 			SetCarouselViewCurrentItem(carouselPosition);
 		}
@@ -394,7 +461,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 
 			if (!IsValidPosition(position))
+			{
 				return;
+			}
 
 			var currentPosition = CarouselView.Position;
 
@@ -408,10 +477,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void SetCarouselViewCurrentItem(int carouselPosition)
 		{
 			if (!IsValidPosition(carouselPosition))
+			{
 				return;
+			}
 
 			if (!(GetItem(carouselPosition) is ItemTemplateContext itemTemplateContext))
+			{
 				throw new InvalidOperationException("Visible item not found");
+			}
 
 			var item = itemTemplateContext.Item;
 			CarouselView.SetValueFromRenderer(CarouselView.CurrentItemProperty, item);
@@ -421,10 +494,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		bool IsValidPosition(int position)
 		{
 			if (ItemCount == 0)
+			{
 				return false;
+			}
 
 			if (position < 0 || position >= ItemCount)
+			{
 				return false;
+			}
 
 			return true;
 		}
@@ -493,10 +570,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var itemSpacing = CarouselItemsLayout.ItemSpacing;
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			{
 				return new Thickness(itemSpacing, 0, 0, 0);
+			}
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+			{
 				return new Thickness(0, itemSpacing, 0, 0);
+			}
 
 			return new Thickness(0);
 		}
@@ -553,9 +634,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				ListViewBase.SizeChanged -= InitialSetup;
 				if (_scrollViewer != null)
+				{
 					_scrollViewer.SizeChanged -= InitialSetup;
+				}
 
 				UpdateItemsSource();
+				UpdateSnapPointsType();
+				UpdateSnapPointsAlignment();
+				UpdateCarouselViewInitialPosition();
 				UpdateSnapPointsType();
 				UpdateSnapPointsAlignment();
 				UpdateCarouselViewInitialPosition();

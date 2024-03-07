@@ -181,7 +181,9 @@ namespace Microsoft.Maui.Foldable
 				_mainActivity = activity;
 
 				if (_mainActivity == null)
+				{
 					return;
+				}
 
 				var screenHelper = _HingeService._helper ?? new ScreenHelper(foldableInfo, _mainActivity);
 
@@ -210,7 +212,9 @@ namespace Microsoft.Maui.Foldable
 			var windowBounds = WindowBounds;
 
 			if (windowBounds.Height == 00 && windowBounds.Width == 0)
+			{
 				return;
+			}
 
 			//HACK:FOLDABLE
 			_isSpanned = _helper?.IsDualMode ?? false;
@@ -277,7 +281,9 @@ namespace Microsoft.Maui.Foldable
 			get
 			{
 				if (_mainActivity == null)
+				{
 					return false;
+				}
 				else
 				{
 					using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
@@ -294,7 +300,9 @@ namespace Microsoft.Maui.Foldable
 			var androidView = visualElement.Handler?.PlatformView as AView;
 
 			if (!androidView.IsAlive())
+			{
 				return null;
+			}
 
 			int[] location = new int[2];
 			androidView.GetLocationOnScreen(location);
@@ -310,7 +318,9 @@ namespace Microsoft.Maui.Foldable
 			add
 			{
 				if (DefaultHingeSensor == null)
+				{
 					return;
+				}
 
 				ProcessHingeAngleSubscriberCount(Interlocked.Increment(ref subscriberCount));
 				_hingeAngleChanged += value;
@@ -318,7 +328,9 @@ namespace Microsoft.Maui.Foldable
 			remove
 			{
 				if (DefaultHingeSensor == null)
+				{
 					return;
+				}
 
 				ProcessHingeAngleSubscriberCount(Interlocked.Decrement(ref subscriberCount));
 				_hingeAngleChanged -= value;
@@ -329,7 +341,9 @@ namespace Microsoft.Maui.Foldable
 		{
 			var sensor = DefaultHingeSensor;
 			if (sensor == null)
+			{
 				return;
+			}
 
 			lock (hingeAngleLock)
 			{
@@ -354,7 +368,9 @@ namespace Microsoft.Maui.Foldable
 			if (context == null)
 			{
 				if (DefaultHingeSensor != null)
+				{
 					DefaultHingeSensor.OnSensorChanged -= DefaultHingeSensorOnSensorChanged;
+				}
 
 				_singleUseHingeSensor = null;
 				DefaultHingeSensor = null;
@@ -371,7 +387,9 @@ namespace Microsoft.Maui.Foldable
 		void StartListeningForHingeChanges()
 		{
 			if (_singleUseHingeSensor is null)
+			{
 				return;
+			}
 
 			_singleUseHingeSensor.OnSensorChanged += OnSensorChanged;
 			_singleUseHingeSensor.StartListening();
@@ -380,7 +398,9 @@ namespace Microsoft.Maui.Foldable
 		void StopListeningForHingeChanges()
 		{
 			if (_singleUseHingeSensor is null)
+			{
 				return;
+			}
 
 			_singleUseHingeSensor.OnSensorChanged -= OnSensorChanged;
 			_singleUseHingeSensor.StopListening();
@@ -402,7 +422,9 @@ namespace Microsoft.Maui.Foldable
 			}
 
 			if (toSet != null)
+			{
 				toSet.SetResult(hingeAngle);
+			}
 		}
 	}
 
@@ -424,7 +446,9 @@ namespace Microsoft.Maui.Foldable
 		public static bool IsAlive(this Java.Lang.Object obj)
 		{
 			if (obj == null)
+			{
 				return false;
+			}
 
 			return !obj.IsDisposed();
 		}
@@ -432,7 +456,9 @@ namespace Microsoft.Maui.Foldable
 		public static bool IsAlive(this global::Android.Runtime.IJavaObject obj)
 		{
 			if (obj == null)
+			{
 				return false;
+			}
 
 			return !obj.IsDisposed();
 		}

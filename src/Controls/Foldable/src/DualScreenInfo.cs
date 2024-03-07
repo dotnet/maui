@@ -121,7 +121,9 @@ namespace Microsoft.Maui.Foldable
 			set
 			{
 				if (_spanningBounds == null && value == null)
+				{
 					return;
+				}
 
 				if (_spanningBounds == null ||
 					value == null ||
@@ -179,16 +181,24 @@ namespace Microsoft.Maui.Foldable
 			var hinge = guide.Hinge;
 
 			if (hinge == Rect.Zero)
+			{
 				return Array.Empty<Rect>();
+			}
 
 			if (guide.Pane2 == Rect.Zero)
+			{
 				return Array.Empty<Rect>();
+			}
 
 			//TODO: I think this should this be checking SpanMode==Wide
 			if (IsLandscape)
+			{
 				return new[] { guide.Pane1, new Rect(0, hinge.Height + guide.Pane1.Height, guide.Pane2.Width, guide.Pane2.Height) };
+			}
 			else
+			{
 				return new[] { guide.Pane1, new Rect(hinge.Width + guide.Pane1.Width, 0, guide.Pane2.Width, guide.Pane2.Height) };
+			}
 		}
 
 		Rect GetHingeBounds()
@@ -221,7 +231,9 @@ namespace Microsoft.Maui.Foldable
 			Action onChanged = null)
 		{
 			if (EqualityComparer<T>.Default.Equals(backingStore, value))
+			{
 				return false;
+			}
 
 			backingStore = value;
 			onChanged?.Invoke();
@@ -271,7 +283,10 @@ namespace Microsoft.Maui.Foldable
 		public static string ToRectStrings(this Rect[] bounds)
 		{
 			if (bounds.Length == 0)
+			{
 				return "[]";
+			}
+
 			string output = "";
 			foreach (var rect in bounds)
 			{

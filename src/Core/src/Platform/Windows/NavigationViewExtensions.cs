@@ -20,9 +20,13 @@ namespace Microsoft.Maui.Platform
 			// Background property is set via {ThemeResource NavigationViewTopPaneBackground} in the Control Template
 			// AFAICT you can't modify properties set by ThemeResource at runtime so we have to just update this value directly
 			if (paint != null)
+			{
 				navigationView.TopNavArea?.UpdateBackground(paint, null);
+			}
 			else if (Application.Current.Resources.TryGetValue("NavigationViewTopPaneBackground", out object value) && value is WBrush brush)
+			{
 				navigationView.TopNavArea?.UpdateBackground(null, brush);
+			}
 		}
 
 		public static void UpdateTopNavigationViewItemTextColor(this MauiNavigationView navigationView, Paint? paint)
@@ -197,7 +201,9 @@ namespace Microsoft.Maui.Platform
 			var paneContentGrid = navigationView.PaneContentGrid;
 
 			if (paneContentGrid is null)
+			{
 				return;
+			}
 
 			var brush = paint?.ToPlatform();
 
@@ -205,17 +211,27 @@ namespace Microsoft.Maui.Platform
 			{
 				object? color;
 				if (navigationView.IsPaneOpen)
+				{
 					color = navigationView.Resources["NavigationViewExpandedPaneBackground"];
+				}
 				else
+				{
 					color = navigationView.Resources["NavigationViewDefaultPaneBackground"];
+				}
 
 				if (color is WBrush colorBrush)
+				{
 					paneContentGrid.Background = colorBrush;
+				}
 				else if (color is global::Windows.UI.Color uiColor)
+				{
 					paneContentGrid.Background = new WSolidColorBrush(uiColor);
+				}
 			}
 			else
+			{
 				paneContentGrid.Background = brush;
+			}
 		}
 
 		public static void UpdateFlyoutVerticalScrollMode(this MauiNavigationView navigationView, ScrollMode scrollMode)
@@ -249,9 +265,13 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateFlyoutWidth(this MauiNavigationView navigationView, IFlyoutView flyoutView)
 		{
 			if (flyoutView.FlyoutWidth >= 0)
+			{
 				navigationView.OpenPaneLength = flyoutView.FlyoutWidth;
+			}
 			else
+			{
 				navigationView.OpenPaneLength = 320;
+			}
 			// At some point this Template Setting is going to show up with a bump to winui
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 		}
@@ -261,12 +281,16 @@ namespace Microsoft.Maui.Platform
 			var togglePaneButton = navigationView.TogglePaneButton;
 
 			if (togglePaneButton is null)
+			{
 				return;
+			}
 
 			var animatedIcon = togglePaneButton.GetFirstDescendant<AnimatedIcon>();
 
 			if (animatedIcon is null)
+			{
 				return;
+			}
 
 			await animatedIcon.UpdateFlyoutIconAsync(imageSource, provider);
 		}
@@ -274,7 +298,9 @@ namespace Microsoft.Maui.Platform
 		public static async Task UpdateFlyoutIconAsync(this AnimatedIcon platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			if (platformView is null)
+			{
 				return;
+			}
 
 			if (provider is not null && imageSource is not null)
 			{

@@ -21,7 +21,18 @@ namespace Microsoft.Maui.Storage
 
 			var allowedTypes = options?.FileTypes?.Value?.ToArray();
 			if (allowedTypes?.Length > 0)
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
 				intent.PutExtra(Intent.ExtraMimeTypes, allowedTypes);
+After:
+			{
+				intent.PutExtra(Intent.ExtraMimeTypes, allowedTypes);
+*/
+			{
+				intent.PutExtra(Intent.ExtraMimeTypes, allowedTypes);
+			}
+			}
 
 			var pickerIntent = Intent.CreateChooser(intent, options?.PickerTitle ?? "Select file");
 

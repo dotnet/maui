@@ -49,7 +49,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal bool MeasureIfNeeded()
 		{
 			if (View is null)
+			{
 				return false;
+			}
 
 			if (double.IsNaN(MeasuredHeight) || Frame.Width != View.Width)
 			{
@@ -100,12 +102,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
 				if (_view is not null)
+				{
 					_view.MeasureInvalidated -= OnMeasureInvalidated;
+				}
 
 				_renderer?.Dispose();
 				_renderer = null;

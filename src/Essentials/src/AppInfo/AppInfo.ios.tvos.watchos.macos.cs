@@ -52,7 +52,11 @@ namespace Microsoft.Maui.ApplicationModel
 			get
 			{
 				if ((OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) || (OperatingSystem.IsTvOS() && !OperatingSystem.IsTvOSVersionAtLeast(13, 0)))
+				{
+				{
 					return AppTheme.Unspecified;
+				}
+				}
 
 				var traits =
 					MainThread.InvokeOnMainThread(() => WindowStateManager.Default.GetCurrentUIViewController()?.TraitCollection) ??
@@ -127,26 +131,39 @@ namespace Microsoft.Maui.ApplicationModel
 
 			NSObject nsobj = null;
 			if (!NSBundle.MainBundle.InfoDictionary.TryGetValue((NSString)"CFBundleURLTypes", out nsobj))
+			{
 				return schemes;
+			}
 
 			var array = nsobj as NSArray;
 
 			if (array == null)
+			{
 				return schemes;
+			}
 
 			for (nuint i = 0; i < array.Count; i++)
 			{
 				var d = array.GetItem<NSDictionary>(i);
 				if (d == null || !d.Any())
+				{
 					continue;
+				}
 
 				if (!d.TryGetValue((NSString)"CFBundleURLSchemes", out nsobj))
+				{
 					continue;
+				}
 
 				var a = nsobj as NSArray;
 				var urls = ConvertToIEnumerable<NSString>(a).Select(x => x.ToString()).ToArray();
+				var urls = ConvertToIEnumerable<NSString>(a).Select(x => x.ToString()).ToArray();
 				foreach (var url in urls)
+				{
+				{
 					schemes.Add(url);
+				}
+				}
 			}
 
 			return schemes;
@@ -156,7 +173,10 @@ namespace Microsoft.Maui.ApplicationModel
 			where T : class, ObjCRuntime.INativeObject
 		{
 			for (nuint i = 0; i < array.Count; i++)
+			{
 				yield return array.GetItem<T>(i);
+			}
+			}
 		}
 	}
 }

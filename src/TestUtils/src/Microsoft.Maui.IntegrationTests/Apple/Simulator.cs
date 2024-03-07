@@ -11,7 +11,9 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 		public string GetUDID()
 		{
 			if (!string.IsNullOrEmpty(_udid))
+			{
 				return _udid;
+			}
 
 			return _udid = XHarness.GetSimulatorUDID(XHarnessID).Trim();
 		}

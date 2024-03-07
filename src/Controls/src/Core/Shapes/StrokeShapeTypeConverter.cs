@@ -41,6 +41,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				{
 					var parts = strValue.Split(Delimiter, 2);
 					if (parts.Length != 2)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 						return new Line();
 
 					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
@@ -100,6 +103,182 @@ namespace Microsoft.Maui.Controls.Shapes
 
 					if (points == null || points.Count == 0)
 						return new Polyline();
+
+					return new Polyline { Points = points };
+				}
+
+				if (strValue.StartsWith(Rectangle, true, culture))
+				{
+					return new Rectangle();
+				}
+
+				if (strValue.StartsWith(RoundRectangle, true, culture))
+After:
+					{
+						return new Line { X1 = p1.X, Y1 = p1.Y, X2 = p2.X, Y2 = p2.Y };
+					}
+
+					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
+					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+
+					if (strValue.StartsWith(RoundRectangle, true, culture))
+*/
+					{
+						return new Line();
+					}
+
+					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
+					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+
+					if (points == null || points.Count == 0)
+					{
+						return new Line();
+					}
+
+					Point p1 = points[0];
+
+					if (points.Count == 1)
+					{
+						return new Line { X1 = p1.X, Y1 = p1.Y };
+					}
+
+					Point p2 = points[1];
+
+					return new Line();
+				}
+
+				if (strValue.StartsWith(Path, true, culture))
+				{
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+					{
+						return new Path();
+					}
+
+					PathGeometryConverter pathGeometryConverter = new PathGeometryConverter();
+					Geometry pathGeometry = pathGeometryConverter.ConvertFromInvariantString(parts[1]) as Geometry;
+
+					if (pathGeometry == null)
+					{
+						return new Path();
+					}
+
+					return new Path { Data = pathGeometry };
+				}
+
+				if (strValue.StartsWith(Polygon, true, culture))
+				{
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+					{
+						return new Polygon();
+					}
+
+					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
+					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+
+					if (points == null || points.Count == 0)
+					{
+						return new Polygon();
+					}
+
+					return new Polygon { Points = points };
+				}
+
+				if (strValue.StartsWith(Polyline, true, culture))
+				{
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+					{
+						return new Polyline();
+					}
+
+					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
+					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+
+					if (points == null || points.Count == 0)
+					{
+						return new Polyline();
+					}
+
+					return new Polyline { Points = points };
+				}
+
+				if (strValue.StartsWith(Rectangle, true, culture))
+				{
+					return new Rectangle();
+				}
+
+				if (points == null || points.Count == 0)
+					{
+						return new Line();
+					}
+
+					Point p1 = points[0];
+
+					if (points.Count == 1)
+					{
+						return new Line { X1 = p1.X, Y1 = p1.Y };
+					}
+
+					Point p2 = points[1];
+
+					return new Line { X1 = p1.X, Y1 = p1.Y, X2 = p2.X, Y2 = p2.Y };
+				}
+
+				if (strValue.StartsWith(Path, true, culture))
+				{
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+					{
+						return new Path();
+					}
+
+					PathGeometryConverter pathGeometryConverter = new PathGeometryConverter();
+					Geometry pathGeometry = pathGeometryConverter.ConvertFromInvariantString(parts[1]) as Geometry;
+
+					if (pathGeometry == null)
+					{
+						return new Path();
+					}
+
+					return new Path { Data = pathGeometry };
+				}
+
+				if (strValue.StartsWith(Polygon, true, culture))
+				{
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+					{
+						return new Polygon();
+					}
+
+					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
+					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+
+					if (points == null || points.Count == 0)
+					{
+						return new Polygon();
+					}
+
+					return new Polygon { Points = points };
+				}
+
+				if (strValue.StartsWith(Polyline, true, culture))
+				{
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+					{
+						return new Polyline();
+					}
+
+					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
+					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+
+					if (points == null || points.Count == 0)
+					{
+						return new Polyline();
+					}
 
 					return new Polyline { Points = points };
 				}

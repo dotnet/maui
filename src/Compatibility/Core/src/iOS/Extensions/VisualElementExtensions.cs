@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public static IVisualElementRenderer GetRenderer(this VisualElement self)
 		{
 			if (self == null)
+			{
 				throw new ArgumentNullException(nameof(self));
+			}
 
 			return Platform.GetRenderer(self);
 		}

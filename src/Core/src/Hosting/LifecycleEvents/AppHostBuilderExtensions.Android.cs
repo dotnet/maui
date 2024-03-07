@@ -51,7 +51,9 @@ namespace Microsoft.Maui.LifecycleEvents
 					// even when the activity is finishing or being destroyed
 					// We check for finishing and call destroying here if so
 					if (activity.IsFinishing)
+					{
 						window?.Destroying();
+					}
 				})
 				.OnDestroy(activity =>
 				{

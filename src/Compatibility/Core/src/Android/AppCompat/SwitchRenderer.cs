@@ -40,7 +40,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				int width = widthConstraint;
 				if (widthConstraint <= 0)
+				{
 					width = (int)Context.GetThemeAttributeDp(global::Android.Resource.Attribute.SwitchMinWidth);
+				}
 
 				sizeConstraint = new SizeRequest(new Size(width, sizeConstraint.Request.Height), new Size(width, sizeConstraint.Minimum.Height));
 			}
@@ -61,7 +63,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				_disposed = true;
 
 				if (Element != null)
+				{
 					Element.Toggled -= HandleToggled;
+				}
 
 				Control?.SetOnCheckedChangeListener(null);
 
@@ -77,7 +81,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			base.OnElementChanged(e);
 
 			if (e.OldElement != null)
+			{
 				e.OldElement.Toggled -= HandleToggled;
+			}
 
 			if (e.NewElement != null)
 			{
@@ -89,7 +95,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					_defaultTrackDrawable = aswitch.TrackDrawable;
 				}
 				else
+				{
 					UpdateEnabled(); // Normally set by SetNativeControl, but not when the Control is reused.
+				}
 
 				e.NewElement.Toggled += HandleToggled;
 				Control.Checked = e.NewElement.IsToggled;
@@ -108,16 +116,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Switch.OnColorProperty.PropertyName)
+			{
 				UpdateOnColor();
+			}
 			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+			{
 				UpdateThumbColor();
+			}
 		}
 
 		[PortHandler]
 		void UpdateOnColor()
 		{
 			if (Element == null || Control == null)
+			{
 				return;
+			}
 
 			if (Control.Checked)
 			{
@@ -140,7 +154,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		void UpdateThumbColor()
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			if (Element.ThumbColor != null)
 			{

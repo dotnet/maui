@@ -58,7 +58,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			set
 			{
 				if (value == _isChecked)
+				{
 					return;
+				}
 
 				_isChecked = value;
 				UpdateDisplay();
@@ -71,7 +73,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			set
 			{
 				if (value == _isEnabled)
+				{
 					return;
+				}
 
 				_isEnabled = value;
 				UserInteractionEnabled = IsEnabled;
@@ -85,7 +89,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			set
 			{
 				if (_tintColor == value)
+				{
 					return;
+				}
 
 				_tintColor = value;
 				CheckBoxTintUIColor = CheckBoxTintColor?.ToPlatform();
@@ -102,16 +108,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			set
 			{
 				if (value == _checkBoxTintUIColor)
+				{
 					return;
+				}
 
 				_checkBoxTintUIColor = value;
 				ImageView.TintColor = value;
 				TintColor = value;
 
 				if (Enabled)
+				{
 					SetNeedsDisplay();
+				}
 				else
+				{
 					UpdateDisplay();
+				}
 			}
 		}
 
@@ -128,7 +140,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				base.Enabled = value;
 
 				if (changed)
+				{
 					UpdateDisplay();
+				}
 			}
 		}
 
@@ -139,16 +153,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!Enabled && CheckBoxTintColor != null)
 			{
 				if (IsChecked)
+				{
 					return CreateCheckBox(CreateCheckMark()).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+				}
 
 				return CreateCheckBox(null).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 			}
 
 			if (_checked == null)
+			{
 				_checked = CreateCheckBox(CreateCheckMark()).ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+			}
 
 			if (_unchecked == null)
+			{
 				_unchecked = CreateCheckBox(null).ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+			}
 
 			return IsChecked ? _checked : _unchecked;
 		}
@@ -235,11 +255,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 			if (disposing)
+			{
 				TouchUpInside -= OnTouchUpInside;
+			}
 
 			base.Dispose(disposing);
 		}

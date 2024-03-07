@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_itemsSource = new List<object>();
 
 			if (enumerable == null)
+			{
 				return;
+			}
 
 			foreach (object item in enumerable)
 			{

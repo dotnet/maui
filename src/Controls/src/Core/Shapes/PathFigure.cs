@@ -93,7 +93,10 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 
 			if (newCollection == null)
+			{
+			{
 				return;
+			}
 
 			newCollection.CollectionChanged += OnPathSegmentCollectionChanged;
 
@@ -110,7 +113,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				foreach (var oldItem in e.OldItems)
 				{
 					if (!(oldItem is PathSegment oldPathSegment))
+					{
 						continue;
+					}
 
 					oldPathSegment.PropertyChanged -= OnPathSegmentPropertyChanged;
 				}
@@ -121,7 +126,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				foreach (var newItem in e.NewItems)
 				{
 					if (!(newItem is PathSegment newPathSegment))
+					{
 						continue;
+					}
 
 					newPathSegment.PropertyChanged += OnPathSegmentPropertyChanged;
 				}

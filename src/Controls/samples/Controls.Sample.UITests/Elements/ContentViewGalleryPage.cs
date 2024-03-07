@@ -46,7 +46,9 @@ namespace Maui.Controls.Sample
 			Build(Layout);
 
 			if (SupportsScroll)
+			{
 				Content = new ScrollView { AutomationId = "GalleryScrollView", Content = Layout };
+			}
 			else
 			{
 				var content = new Grid { AutomationId = "GalleryScrollView" };

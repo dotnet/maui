@@ -18,7 +18,10 @@ namespace Microsoft.Maui.Platform
 		public static void RequestNewWindow(this IUIApplicationDelegate platformApplication, IApplication application, OpenWindowRequest? args)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext || args is null)
+			{
+			{
 				return;
+			}
 
 			var state = args?.State;
 			var userActivity = state.ToUserActivity(MauiUIApplicationDelegate.MauiSceneConfigurationKey);
@@ -48,9 +51,14 @@ namespace Microsoft.Maui.Platform
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
 			if (uiApplication.UserActivity?.UserInfo is not null)
+			{
 				dicts.Add(uiApplication.UserActivity.UserInfo);
+			}
+
 			if (launchOptions is not null)
+			{
 				dicts.Add(launchOptions);
+			}
 
 			var window = CreatePlatformWindow(application, null, dicts.ToArray());
 			if (window is not null)
@@ -67,11 +75,20 @@ namespace Microsoft.Maui.Platform
 			// Find any userinfo/dictionaries we might pass into the activation state
 			var dicts = new List<NSDictionary>();
 			if (scene.UserActivity?.UserInfo is not null)
+			{
 				dicts.Add(scene.UserActivity.UserInfo);
+			}
+
 			if (session.UserInfo is not null)
+			{
 				dicts.Add(session.UserInfo);
+			}
+
 			if (session.StateRestorationActivity?.UserInfo is not null)
+			{
 				dicts.Add(session.StateRestorationActivity.UserInfo);
+			}
+
 			try
 			{
 				using var activities = connectionOptions.UserActivities;
@@ -80,7 +97,10 @@ namespace Microsoft.Maui.Platform
 					foreach (var u in activities)
 					{
 						if (u is NSUserActivity userActivity && userActivity.UserInfo is not null)
+						{
+						{
 							dicts.Add(userActivity.UserInfo);
+						}
 					}
 				}
 			}
@@ -101,7 +121,9 @@ namespace Microsoft.Maui.Platform
 		static UIWindow? CreatePlatformWindow(IApplication application, UIWindowScene? windowScene, NSDictionary[]? states)
 		{
 			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
+			{
 				return null;
+			}
 
 			var uiWindow = windowScene is not null
 #pragma warning disable CA1416 // UIWindow(windowScene) is only supported on: ios 13.0 and later
@@ -109,6 +131,17 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CA1416
 				: new UIWindow();
 
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+			var mauiWindow = application.CreateWindow(activationState);
+
+			uiWindow.SetWindowHandler(mauiWindow, mauiContext);
+
+			return uiWindow;
+After:
+			var mauiWindow = application.CreateWindow(uiWindow, out var windowScope);
+*/
 			var mauiContext = applicationContext.MakeWindowScope(uiWindow, out var windowScope);
 
 			applicationContext.Services?.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
@@ -143,15 +176,22 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateUserInterfaceStyle(this IApplication application)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13) && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+			{
 				return;
+			}
 
 			if (application is null)
+			{
 				return;
+			}
 
 			var currentViewController = WindowStateManager.Default.GetCurrentUIViewController(false);
 
 			if (currentViewController is null)
+			{
+			{
 				return;
+			}
 
 			switch (application.UserAppTheme)
 			{

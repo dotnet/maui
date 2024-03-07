@@ -11,16 +11,22 @@ namespace Controls.Core.Design
 		{
 			// Examples: "1,2" or "1 2 3 4". 
 			if (string.IsNullOrEmpty(numberCollection))
+			{
 				return null;
+			}
 
 			string[] parts = numberCollection.Split(separator);
 			if (parts.Length > maxCount)
+			{
 				return null; // too many numbers
+			}
 
 			foreach (string part in parts)
 			{
 				if (!double.TryParse(part, NumberStyles.Number, CultureInfo.InvariantCulture, out _))
+				{
 					return null; // invalid number found
+				}
 			}
 			return parts.Length; // all numbers are valid
 		}

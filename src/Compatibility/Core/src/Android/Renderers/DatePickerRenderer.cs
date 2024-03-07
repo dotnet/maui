@@ -68,17 +68,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == DatePicker.DateProperty.PropertyName || e.PropertyName == DatePicker.FormatProperty.PropertyName)
+			{
 				SetDate(Element.Date);
+			}
 			else if (e.PropertyName == DatePicker.MinimumDateProperty.PropertyName)
+			{
 				UpdateMinimumDate();
+			}
 			else if (e.PropertyName == DatePicker.MaximumDateProperty.PropertyName)
+			{
 				UpdateMaximumDate();
+			}
 			else if (e.PropertyName == DatePicker.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == DatePicker.CharacterSpacingProperty.PropertyName)
+			{
 				UpdateCharacterSpacing();
+			}
 			else if (e.PropertyName == DatePicker.FontAttributesProperty.PropertyName || e.PropertyName == DatePicker.FontFamilyProperty.PropertyName || e.PropertyName == DatePicker.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 		}
 
 		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -88,9 +100,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (e.Focus)
 			{
 				if (Clickable)
+				{
 					CallOnClick();
+				}
 				else
+				{
 					((IPickerRenderer)this)?.OnClick();
+				}
 			}
 			else if (_dialog != null)
 			{

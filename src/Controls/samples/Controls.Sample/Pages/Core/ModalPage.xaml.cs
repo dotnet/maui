@@ -25,7 +25,9 @@ namespace Maui.Controls.Sample.Pages
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
 			if (this.Window is null)
+			{
 				return;
+			}
 
 			if (PopModal.IsVisible)
 			{

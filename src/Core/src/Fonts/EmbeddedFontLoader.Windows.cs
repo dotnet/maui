@@ -18,13 +18,17 @@ namespace Microsoft.Maui
 
 			var file = tmpdir.TryGetItemAsync(font.FontName).AsTask().Result;
 			if (file != null)
+			{
 				return CleanseFilePath(file.Path);
+			}
 
 			StorageFile? newFile = null;
 			try
 			{
 				if (font.ResourceStream == null)
+				{
 					throw new InvalidOperationException("ResourceStream was null.");
+				}
 
 				newFile = tmpdir.CreateFileAsync(font.FontName).AsTask().Result;
 				using (var fileStream = newFile.OpenStreamForWriteAsync().Result)
@@ -39,7 +43,9 @@ namespace Microsoft.Maui
 				_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable copy font {Font} to local file system.", font.FontName);
 
 				if (newFile != null)
+				{
 					newFile.DeleteAsync().AsTask().Wait();
+				}
 			}
 
 			return null;

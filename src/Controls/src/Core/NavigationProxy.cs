@@ -29,7 +29,10 @@ namespace Microsoft.Maui.Controls.Internals
 			set
 			{
 				if (_inner == value)
+				{
 					return;
+				}
+
 				_inner = value;
 				// reverse so that things go into the new stack in the same order
 				// null out to release memory that will likely never be needed again
@@ -127,7 +130,10 @@ namespace Microsoft.Maui.Controls.Internals
 		public Task PushAsync(Page root, bool animated)
 		{
 			if (root.RealParent is not null)
+			{
 				throw new InvalidOperationException("Page must not already have a parent.");
+			}
+
 			return OnPushAsync(root, animated);
 		}
 
@@ -141,7 +147,10 @@ namespace Microsoft.Maui.Controls.Internals
 		public Task PushModalAsync(Page modal, bool animated)
 		{
 			if (modal.RealParent is not null && modal.RealParent is not IWindow)
+			{
 				throw new InvalidOperationException("Page must not already have a parent.");
+			}
+
 			return OnPushModal(modal, animated);
 		}
 
@@ -170,7 +179,11 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				int index = _pushStack.Value.IndexOf(before);
 				if (index == -1)
+				{
+				{
 					throw new ArgumentException("before must be in the pushed stack of the current context");
+				}
+
 				_pushStack.Value.Insert(index, page);
 			}
 			else
@@ -197,7 +210,9 @@ namespace Microsoft.Maui.Controls.Internals
 			if (currentInner is null)
 			{
 				if (_pushStack.Value.Count == 0)
+				{
 					return Task.FromResult<Page>(null);
+				}
 
 				Page root = _pushStack.Value.Last();
 				_pushStack.Value.Clear();
@@ -246,7 +261,10 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			List<Page> list = _pushStack.Value;
 			if (list.Count == 0)
+			{
 				return null;
+			}
+
 			Page result = list[list.Count - 1];
 			list.RemoveAt(list.Count - 1);
 			return result;
@@ -256,7 +274,10 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			var list = _modalStack.Value;
 			if (list.Count == 0)
+			{
 				return null;
+			}
+
 			var result = list[list.Count - 1];
 			list.RemoveAt(list.Count - 1);
 			return result.Page;

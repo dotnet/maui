@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			// This can happen if a layout pass has not happened yet
 			if (firstVisibleItemIndex == -1)
+			{
 				return firstVisibleItemIndex;
+			}
 
 			AView centerView;
 
@@ -20,7 +22,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				float centerY = recyclerView.Top;
 
 				if (lookCenteredOnXAndY)
+				{
 					centerY = recyclerView.Height / 2;
+				}
 
 				centerView = recyclerView.FindChildViewUnder(centerX, centerY);
 			}
@@ -30,13 +34,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				float centerX = recyclerView.Left;
 
 				if (lookCenteredOnXAndY)
+				{
 					centerX = recyclerView.Width / 2;
+				}
 
 				centerView = recyclerView.FindChildViewUnder(centerX, centerY);
 			}
 
 			if (centerView != null)
+			{
 				return recyclerView.GetChildAdapterPosition(centerView);
+			}
 
 			return firstVisibleItemIndex;
 		}
@@ -44,7 +52,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static AView GetCenteredView(this RecyclerView recyclerView)
 		{
 			if (!(recyclerView.GetLayoutManager() is LinearLayoutManager linearLayoutManager))
+			{
 				return null;
+			}
 
 			AView centeredView;
 			if (linearLayoutManager.Orientation == LinearLayoutManager.Horizontal)

@@ -42,9 +42,13 @@ namespace Microsoft.Maui.Controls
 		internal static FlowDirection ToFlowDirection(this EffectiveFlowDirection self)
 		{
 			if (self.IsLeftToRight())
+			{
 				return FlowDirection.LeftToRight;
+			}
 			else
+			{
 				return FlowDirection.RightToLeft;
+			}
 
 			throw new InvalidOperationException($"Cannot convert {self} to {nameof(FlowDirection)}.");
 		}

@@ -61,10 +61,14 @@ namespace Microsoft.Maui.Controls
 		bool AreEqual(object value1, object value2)
 		{
 			if (value1 == value2)
+			{
 				return true;
+			}
 
 			if (value1 != null && value2 != null)
+			{
 				return AreEqualType(value1, value2) || AreEqualType(value2, value1);
+			}
 
 			return false;
 		}
@@ -72,9 +76,13 @@ namespace Microsoft.Maui.Controls
 		bool AreEqualType(object value1, object value2)
 		{
 			if (value2 is Enum)
+			{
 				value1 = ConvertToEnum(value2.GetType(), value1);
+			}
 			else
+			{
 				value1 = Convert.ChangeType(value1, value2.GetType(), CultureInfo.InvariantCulture);
+			}
 
 			return value2.Equals(value1);
 		}

@@ -41,13 +41,111 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_detail != null && value == null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
 					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
 
 				if (_detail == value)
 					return;
+After:
+				{
+					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
+				}
 
+				if (_detail == value)
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
+
+				if (_detail == value)
+					return;
+After:
+				{
+					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
+				}
+
+				if (_detail == value)
+				{
+					return;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
+
+				if (_detail == value)
+					return;
+After:
+				{
+					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
+
+				if (_detail == value)
+					return;
+After:
+				{
+					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
+				}
+*/
+				
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
 				if (value.RealParent != null)
 					throw new InvalidOperationException("Detail must not already have a parent.");
+After:
+				if (_detail == value)
+				{
+					return;
+				}
+
+				if (value.RealParent != null)
+				{
+					throw new InvalidOperationException("Detail must not already have a parent.");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				if (value.RealParent != null)
+					throw new InvalidOperationException("Detail must not already have a parent.");
+After:
+				if (_detail == value)
+				{
+					return;
+				}
+
+				if (value.RealParent != null)
+				{
+					throw new InvalidOperationException("Detail must not already have a parent.");
+				}
+*/
+{
+				{
+					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
+				}
+
+				if (_detail == value)
+				{
+					return;
+				}
+
+				if (value.RealParent != null)
+				{
+					throw new InvalidOperationException("Detail must not already have a parent.");
+				}
+				}
 
 				var previousDetail = _detail;
 				// TODO MAUI refine this to fire earlier
@@ -55,7 +153,10 @@ namespace Microsoft.Maui.Controls
 
 				OnPropertyChanging();
 				if (_detail != null)
+				{
 					InternalChildren.Remove(_detail);
+				}
+
 				_detail = value;
 				InternalChildren.Add(_detail);
 				OnPropertyChanged();
@@ -92,6 +193,9 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_flyout != null && value == null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
 					throw new ArgumentNullException("value", "Flyout cannot be set to null once a value is set");
 
 				if (string.IsNullOrEmpty(value.Title))
@@ -99,9 +203,142 @@ namespace Microsoft.Maui.Controls
 
 				if (_flyout == value)
 					return;
+After:
+				{
+					throw new ArgumentNullException("value", "Flyout cannot be set to null once a value is set");
+				}
+*/
 
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+					throw new ArgumentNullException("value", "Flyout cannot be set to null once a value is set");
+
+				if (string.IsNullOrEmpty(value.Title))
+					throw new InvalidOperationException("Title property must be set on Flyout page");
+
+				if (_flyout == value)
+					return;
+After:
+				{
+					throw new ArgumentNullException("value", "Flyout cannot be set to null once a value is set");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+					throw new ArgumentNullException("value", "Flyout cannot be set to null once a value is set");
+
+				if (string.IsNullOrEmpty(value.Title))
+					throw new InvalidOperationException("Title property must be set on Flyout page");
+
+				if (_flyout == value)
+					return;
+After:
+				{
+					throw new ArgumentNullException("value", "Flyout cannot be set to null once a value is set");
+				}
+*/
+				{
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+					throw new InvalidOperationException("Title property must be set on Flyout page");
+
+				if (_flyout == value)
+					return;
+After:
+					throw new InvalidOperationException("value", "Flyout cannot be set to null once a value is set");
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					throw new InvalidOperationException("Title property must be set on Flyout page");
+
+				if (_flyout == value)
+					return;
+After:
+					throw new InvalidOperationException("value", "Flyout cannot be set to null once a value is set");
+				}
+*/
+					throw new ArgumentNullException("
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				if (value.RealParent != null)
 					throw new InvalidOperationException("Flyout must not already have a parent.");
+After:
+				if (string.IsNullOrEmpty(value.Title))
+				{
+					throw new InvalidOperationException("Title property must be set on Flyout page");
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+				if (value.RealParent != null)
+					throw new InvalidOperationException("Flyout must not already have a parent.");
+After:
+				if (string.IsNullOrEmpty(value.Title))
+				{
+					throw new InvalidOperationException("Title property must be set on Flyout page");
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				if (value.RealParent != null)
+					throw new InvalidOperationException("Flyout must not already have a parent.");
+After:
+				if (string.IsNullOrEmpty(value.Title))
+				{
+					throw new InvalidOperationException("Title property must be set on Flyout page");
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				if (value.RealParent != null)
+					throw new InvalidOperationException("Flyout must not already have a parent.");
+After:
+				if (string.IsNullOrEmpty(value.Title))
+				{
+					throw new InvalidOperationException("Title property must be set on Flyout page");
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				if (value.RealParent != null)
+					throw new InvalidOperationException("Flyout must not already have a parent.");
+After:
+				if (string.IsNullOrEmpty(value.Title))
+				{
+					throw new InvalidOperationException("Title property must be set on Flyout page");
+*/
+value", "Flyout cannot be set to null once a value is set");
+				}
+
+				if (string.IsNullOrEmpty(value.Title))
+				{
+					throw new InvalidOperationException("Title property must be set on Flyout page");
+				}
+
+				if (_flyout == value)
+				{
+					return;
+				}
+
+				if (value.RealParent != null)
+				{
+					throw new InvalidOperationException("Flyout must not already have a parent.");
+				}
+				}
+
+				if (_flyout == value)
+				{
+					return;
+				}
+
+				if (value.RealParent != null)
+				{
+					throw new InvalidOperationException("Flyout must not already have a parent.");
+				}
 
 				// TODO MAUI refine this to fire earlier
 				var previousFlyout = _flyout;
@@ -110,7 +347,10 @@ namespace Microsoft.Maui.Controls
 
 				OnPropertyChanging();
 				if (_flyout != null)
+				{
 					InternalChildren.Remove(_flyout);
+				}
+
 				_flyout = value;
 				InternalChildren.Add(_flyout);
 				OnPropertyChanged();
@@ -142,7 +382,11 @@ namespace Microsoft.Maui.Controls
 			{
 				_detailBounds = value;
 				if (_detail == null)
+				{
+				{
 					throw new InvalidOperationException("Detail must be set before using a FlyoutPage");
+				}
+
 				_detail.Layout(value);
 			}
 		}
@@ -154,7 +398,11 @@ namespace Microsoft.Maui.Controls
 			{
 				_flyoutBounds = value;
 				if (_flyout == null)
+				{
+				{
 					throw new InvalidOperationException("Flyout must be set before using a FlyoutPage");
+				}
+
 				_flyout.Layout(value);
 			}
 		}
@@ -164,7 +412,11 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+				{
+				{
 					return false;
+				}
+				}
 
 				FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
 				var orientation = Window.GetOrientation();
@@ -181,7 +433,9 @@ namespace Microsoft.Maui.Controls
 		public virtual bool ShouldShowToolbarButton()
 		{
 			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+			{
 				return true;
+			}
 
 			FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
 			var orientation = DeviceDisplay.MainDisplayInfo.Orientation;
@@ -194,7 +448,15 @@ namespace Microsoft.Maui.Controls
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			if (Flyout == null || Detail == null)
+			{
+			{
 				throw new InvalidOperationException("Flyout and Detail must be set before using a FlyoutPage");
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Added:
+			}
+*/
+			}
 
 #if !ANDROID
 			_flyout.Layout(_flyoutBounds);
@@ -225,6 +487,9 @@ namespace Microsoft.Maui.Controls
 			if (IsPresented)
 			{
 				if (Flyout.SendBackButtonPressed())
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 					return true;
 			}
 
@@ -235,6 +500,162 @@ namespace Microsoft.Maui.Controls
 				handler(this, args);
 				if (args.Handled)
 					return true;
+After:
+				{
+					return true;
+				}
+			}
+
+			EventHandler<BackButtonPressedEventArgs> handler = BackButtonPressed;
+			if (handler != null)
+			{
+				var args = new BackButtonPressedEventArgs();
+				handler(this, args);
+				if (args.Handled)
+				{
+					return true;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+					return true;
+			}
+
+			EventHandler<BackButtonPressedEventArgs> handler = BackButtonPressed;
+			if (handler != null)
+			{
+				var args = new BackButtonPressedEventArgs();
+				handler(this, args);
+				if (args.Handled)
+					return true;
+After:
+				{
+					return true;
+				}
+			}
+
+			EventHandler<BackButtonPressedEventArgs> handler = BackButtonPressed;
+			if (handler != null)
+			{
+				var args = new BackButtonPressedEventArgs();
+				handler(this, args);
+				if (args.Handled)
+				{
+					return true;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					return true;
+			}
+
+			EventHandler<BackButtonPressedEventArgs> handler = BackButtonPressed;
+			if (handler != null)
+			{
+				var args = new BackButtonPressedEventArgs();
+				handler(this, args);
+				if (args.Handled)
+					return true;
+After:
+				{
+					return true;
+				}
+			}
+
+			EventHandler<BackButtonPressedEventArgs> handler = BackButtonPressed;
+			if (handler != null)
+			{
+				var args = new BackButtonPressedEventArgs();
+				handler(this, args);
+				if (args.Handled)
+				{
+					return true;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+					return true;
+			}
+
+			EventHandler<BackButtonPressedEventArgs> handler = BackButtonPressed;
+			if (handler != null)
+			{
+				var args = new BackButtonPressedEventArgs();
+				handler(this, args);
+				if (args.Handled)
+					return true;
+After:
+				{
+					return true;
+				}
+			}
+
+			EventHandler<BackButtonPressedEventArgs> handler = BackButtonPressed;
+			if (handler != null)
+			{
+				var args = new BackButtonPressedEventArgs();
+				handler(this, args);
+				if (args.Handled)
+				{
+					return true;
+				}
+*/
+				{
+				
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+			}
+After:
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			}
+After:
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+					return true;
+			}
+After:
+				{
+					return true;
+				}
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+					return true;
+			}
+After:
+				{
+					return true;
+				}
+			}
+*/
+{
+					return true;
+				}
+			}
+
+			EventHandler<BackButtonPressedEventArgs> handler = BackButtonPressed;
+			if (handler != null)
+			{
+				var args = new BackButtonPressedEventArgs();
+				handler(this, args);
+				if (args.Handled)
+				{
+					return true;
+				}
 			}
 
 			if (Detail.SendBackButtonPressed())
@@ -248,7 +669,11 @@ namespace Microsoft.Maui.Controls
 		protected override void OnParentSet()
 		{
 			if (RealParent != null && (Flyout == null || Detail == null))
+			{
+			{
 				throw new InvalidOperationException("Flyout and Detail must be set before adding FlyoutPage to a container");
+			}
+
 			base.OnParentSet();
 		}
 
@@ -268,7 +693,10 @@ namespace Microsoft.Maui.Controls
 			{
 				page.SetValue(IsPresentedProperty, true);
 				if (page.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Default)
+				{
+				{
 					fpc.CanChangeIsPresented = false;
+				}
 			}
 		}
 
@@ -280,7 +708,10 @@ namespace Microsoft.Maui.Controls
 			if (sender is Maui.IElement element && element.IsShimmed())
 			{
 				if (sender is FlyoutPage fp && fp is IFlyoutPageController fpc && !fpc.CanChangeIsPresented)
+				{
+				{
 					throw new InvalidOperationException(string.Format("Can't change IsPresented when setting {0}", fp.FlyoutLayoutBehavior));
+				}
 			}
 			else
 			{
@@ -354,7 +785,11 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (((IFlyoutPageController)this).ShouldShowSplitMode)
+				{
+				{
 					return Maui.FlyoutBehavior.Locked;
+				}
+				}
 
 				return Maui.FlyoutBehavior.Flyout;
 			}
@@ -370,7 +805,9 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+				{
 					return -1;
+				}
 
 				var scaledScreenSize = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
 				double w = scaledScreenSize.Width;

@@ -324,7 +324,9 @@ namespace Microsoft.Maui.Layouts.Flex
 			set
 			{
 				if ((order = value) != 0 && Parent != null)
+				{
 					Parent.ShouldOrderChildren = true;
+				}
 			}
 		}
 
@@ -433,7 +435,10 @@ namespace Microsoft.Maui.Layouts.Flex
 			{
 				var root = this;
 				while (root.Parent != null)
+				{
 					root = root.Parent;
+				}
+
 				return root;
 			}
 		}
@@ -441,11 +446,20 @@ namespace Microsoft.Maui.Layouts.Flex
 		public void Layout()
 		{
 			if (Parent != null)
+			{
 				throw new InvalidOperationException("Layout() must be called on a root item (that hasn't been added to another item)");
+			}
+
 			if (Double.IsNaN(Width) || Double.IsNaN(Height))
+			{
 				throw new InvalidOperationException("Layout() must be called on an item that has proper values for the Width and Height properties");
+			}
+
 			if (SelfSizing != null)
+			{
 				throw new InvalidOperationException("Layout() cannot be called on an item that has the SelfSizing property set");
+			}
+
 			layout_item(this, Width, Height);
 		}
 
@@ -462,15 +476,23 @@ namespace Microsoft.Maui.Layouts.Flex
 		void ValidateChild(Item child)
 		{
 			if (this == child)
+			{
 				throw new ArgumentException("cannot add item into self");
+			}
+
 			if (child.Parent != null)
+			{
 				throw new ArgumentException("child already has a parent");
+			}
 		}
 
 		static void layout_item(Item item, float width, float height)
 		{
 			if (item.Children == null || item.Children.Count == 0)
+			{
+			{
 				return;
+			}
 
 			var layout = new flex_layout();
 			layout.init(item, width, height);
@@ -482,7 +504,9 @@ namespace Microsoft.Maui.Layouts.Flex
 			{
 				var child = layout.child_at(item, i);
 				if (!child.IsVisible)
+				{
 					continue;
+				}
 
 				// Items with an absolute position have their frames determined
 				// directly and are skipped during layout.
@@ -506,16 +530,22 @@ namespace Microsoft.Maui.Layouts.Flex
 
 				// Main axis size defaults to 0.
 				if (float.IsNaN(child.Frame[layout.frame_size_i]))
+				{
 					child.Frame[layout.frame_size_i] = 0;
+				}
 
 				// Cross axis size defaults to the parent's size (or line size in wrap
 				// mode, which is calculated later on).
 				if (float.IsNaN(child.Frame[layout.frame_size2_i]))
 				{
 					if (layout.wrap)
+					{
 						layout.need_lines = true;
+					}
 					else
+					{
 						child.Frame[layout.frame_size2_i] = (layout.vertical ? width : height) - child.MarginThickness(!layout.vertical);
+					}
 				}
 
 				// Call the self_sizing callback if provided. Only non-NAN values
@@ -531,10 +561,15 @@ namespace Microsoft.Maui.Layouts.Flex
 					{
 						int size_off = j + 2;
 						if (size_off == layout.frame_size2_i && child_align(child, item) == AlignItems.Stretch && layout.align_dim > 0)
+						{
 							continue;
+						}
+
 						float val = size[j];
 						if (!float.IsNaN(val))
+						{
 							child.Frame[size_off] = val;
+						}
 					}
 				}
 
@@ -542,12 +577,21 @@ namespace Microsoft.Maui.Layouts.Flex
 				if (!child.Basis.IsAuto)
 				{
 					if (child.Basis.Length < 0)
+					{
 						throw new Exception("basis should >=0");
+					}
+
 					if (child.Basis.IsRelative && child.Basis.Length > 1)
+					{
 						throw new Exception("relative basis should be <=1");
+					}
+
 					float basis = child.Basis.Length;
 					if (child.Basis.IsRelative)
+					{
 						basis *= (layout.vertical ? height : width);
+					}
+
 					child.Frame[layout.frame_size_i] = basis - child.MarginThickness(layout.vertical);
 				}
 
@@ -574,7 +618,9 @@ namespace Microsoft.Maui.Layouts.Flex
 
 				if (child.Grow < 0
 					|| child.Shrink < 0)
+				{
 					throw new Exception("shrink and grow should be >= 0");
+				}
 
 				layout.flex_grows += child.Grow;
 				layout.flex_shrinks += child.Shrink;
@@ -607,7 +653,9 @@ namespace Microsoft.Maui.Layouts.Flex
 				float spacing = 0;
 				float flex_dim = layout.align_dim - layout.lines_sizes;
 				if (flex_dim > 0)
+				{
 					layout_align(item.AlignContent, flex_dim, (uint)(layout.lines?.Length ?? 0), ref pos, ref spacing);
+				}
 
 				float old_pos = 0;
 				if (layout.reverse2)
@@ -667,7 +715,10 @@ namespace Microsoft.Maui.Layouts.Flex
 		static void layout_align(Justify align, float flex_dim, int children_count, ref float pos_p, ref float spacing_p)
 		{
 			if (flex_dim < 0)
+			{
 				throw new ArgumentException();
+			}
+
 			pos_p = 0;
 			spacing_p = 0;
 
@@ -683,7 +734,10 @@ namespace Microsoft.Maui.Layouts.Flex
 					return;
 				case Justify.SpaceBetween:
 					if (children_count > 0)
+					{
 						spacing_p = flex_dim / (children_count - 1);
+					}
+
 					return;
 				case Justify.SpaceAround:
 					if (children_count > 0)
@@ -707,7 +761,10 @@ namespace Microsoft.Maui.Layouts.Flex
 		static void layout_align(AlignContent align, float flex_dim, uint children_count, ref float pos_p, ref float spacing_p)
 		{
 			if (flex_dim < 0)
+			{
 				throw new ArgumentException();
+			}
+
 			pos_p = 0;
 			spacing_p = 0;
 
@@ -723,7 +780,10 @@ namespace Microsoft.Maui.Layouts.Flex
 					return;
 				case AlignContent.SpaceBetween:
 					if (children_count > 0)
+					{
 						spacing_p = flex_dim / (children_count - 1);
+					}
+
 					return;
 				case AlignContent.SpaceAround:
 					if (children_count > 0)
@@ -750,9 +810,15 @@ namespace Microsoft.Maui.Layouts.Flex
 		static void layout_items(Item item, int child_begin, int child_end, int children_count, ref flex_layout layout)
 		{
 			if (children_count > (child_end - child_begin))
+			{
 				throw new ArgumentException();
+			}
+
 			if (children_count <= 0)
+			{
 				return;
+			}
+
 			if (layout.flex_dim > 0 && layout.extra_flex_dim > 0)
 			{
 				// If the container has a positive flexible space, let's add to it
@@ -769,8 +835,9 @@ namespace Microsoft.Maui.Layouts.Flex
 			}
 
 			if (layout.reverse)
+			{
 				pos = layout.size_dim - pos;
-
+			}
 
 			if (layout.reverse)
 			{
@@ -789,7 +856,10 @@ namespace Microsoft.Maui.Layouts.Flex
 			{
 				Item child = layout.child_at(item, i);
 				if (!child.IsVisible)
+				{
 					continue;
+				}
+
 				if (child.Position == Position.Absolute)
 				{
 					// Already positioned.
@@ -899,7 +969,9 @@ namespace Microsoft.Maui.Layouts.Flex
 				{
 					Item child = layout.child_at(item, i);
 					if (!child.IsVisible)
+					{
 						continue;
+					}
 
 					if (child.Position == Position.Absolute)
 					{
@@ -975,7 +1047,9 @@ namespace Microsoft.Maui.Layouts.Flex
 					|| item.PaddingRight < 0
 					|| item.PaddingTop < 0
 					|| item.PaddingBottom < 0)
+				{
 					throw new ArgumentException();
+				}
 
 				width = Math.Max(0, width - item.PaddingLeft + item.PaddingRight);
 				height = Math.Max(0, height - item.PaddingTop + item.PaddingBottom);

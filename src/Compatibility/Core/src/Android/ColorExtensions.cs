@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public static AColor ToAndroid(this Color self, Color defaultColor)
 		{
 			if (self == null)
+			{
 				return defaultColor.ToAndroid();
+			}
 
 			return ToAndroid(self);
 		}

@@ -86,9 +86,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				using var frame = sender.TryGetNextFrame();
 				if (frame is null)
+				{
 					tcs.SetException(new InvalidOperationException("A null frame was recieved."));
+				}
 				else
+				{
 					tcs.SetResult(CanvasBitmap.CreateFromDirect3D11Surface(device, frame.Surface));
+				}
 			}
 		}
 	}

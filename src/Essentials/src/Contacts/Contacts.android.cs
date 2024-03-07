@@ -24,11 +24,15 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			var intent = new Intent(Intent.ActionPick, ContactsContract.Contacts.ContentUri);
 			var result = await IntermediateActivity.StartAsync(intent, PlatformUtils.requestCodePickContact).ConfigureAwait(false);
 			if (result?.Data == null)
+			{
 				return null;
+			}
 
 			using var cursor = Application.Context.ContentResolver.Query(result?.Data, null, null, null, null);
 			if (cursor?.MoveToFirst() != true)
+			{
 				return null;
+			}
 
 			return GetContact(cursor);
 		}
@@ -46,7 +50,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 					{
 						var contact = GetContact(cursor);
 						if (contact != null)
+						{
 							yield return contact;
+						}
 					}
 					while (cursor.MoveToNext());
 				}
@@ -98,7 +104,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 				{
 					var data = GetString(cursor, dataKey);
 					if (data != null)
+					{
 						yield return data;
+					}
 				}
 				while (cursor.MoveToNext());
 			}
@@ -118,7 +126,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 				null);
 
 			if (cursor?.MoveToFirst() != true)
+			{
 				return (null, null, null, null, null);
+			}
 
 			var result = (
 				GetString(cursor, StructuredName.Prefix),

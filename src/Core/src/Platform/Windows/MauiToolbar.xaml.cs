@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 			titleView.Visibility = UI.Xaml.Visibility.Collapsed;
 		}
 
-		internal string? Title
+		internal static string? Title
 		{
 			get => title.Text;
 			set
@@ -39,18 +39,22 @@ namespace Microsoft.Maui.Platform
 				title.Text = value;
 
 				if (!string.IsNullOrWhiteSpace(value))
+				{
 					textBlockBorder.Visibility = UI.Xaml.Visibility.Visible;
+				}
 				else
+				{
 					textBlockBorder.Visibility = UI.Xaml.Visibility.Collapsed;
+				}
 			}
 		}
 
-		internal WImage? TitleIconImage
+		internal static WImage? TitleIconImage
 		{
 			get => titleIcon;
 		}
 
-		internal WImageSource? TitleIconImageSource
+		internal static WImageSource? TitleIconImageSource
 		{
 			get => titleIcon.Source;
 			set
@@ -58,19 +62,23 @@ namespace Microsoft.Maui.Platform
 				titleIcon.Source = value;
 
 				if (value != null)
+				{
 					titleIcon.Visibility = UI.Xaml.Visibility.Visible;
+				}
 				else
+				{
 					titleIcon.Visibility = UI.Xaml.Visibility.Collapsed;
+				}
 			}
 		}
 
-		internal UI.Xaml.Thickness TitleViewMargin
+		internal static UI.Xaml.Thickness TitleViewMargin
 		{
 			get => titleView.Margin;
 			set => titleView.Margin = value;
 		}
 
-		internal object? TitleView
+		internal static object? TitleView
 		{
 			get => titleView.Content;
 			set
@@ -78,9 +86,13 @@ namespace Microsoft.Maui.Platform
 				titleView.Content = value;
 
 				if (value != null)
+				{
 					titleView.Visibility = UI.Xaml.Visibility.Visible;
+				}
 				else
+				{
 					titleView.Visibility = UI.Xaml.Visibility.Collapsed;
+				}
 			}
 		}
 
@@ -95,28 +107,28 @@ namespace Microsoft.Maui.Platform
 			UpdateMenuBarForeground();
 		}
 
-		internal CommandBar CommandBar => commandBar;
+		internal static CommandBar CommandBar => commandBar;
 
 
-		internal UI.Xaml.Thickness ContentGridMargin
+		internal static UI.Xaml.Thickness ContentGridMargin
 		{
 			get => contentGrid.Margin;
 			set => contentGrid.Margin = value;
 		}
 
-		internal VerticalAlignment TextBlockBorderVerticalAlignment
+		internal static VerticalAlignment TextBlockBorderVerticalAlignment
 		{
 			get => textBlockBorder.VerticalAlignment;
 			set => textBlockBorder.VerticalAlignment = value;
 		}
 
-		public NavigationViewBackButtonVisible IsBackButtonVisible
+		public static NavigationViewBackButtonVisible IsBackButtonVisible
 		{
 			get => (NavigationViewBackButtonVisible)GetValue(IsBackButtonVisibleProperty);
 			set => SetValue(IsBackButtonVisibleProperty, value);
 		}
 
-		public bool IsBackEnabled
+		public static bool IsBackEnabled
 		{
 			get => (bool)GetValue(IsBackEnabledProperty);
 			set => SetValue(IsBackEnabledProperty, value);
@@ -190,15 +202,21 @@ namespace Microsoft.Maui.Platform
 			UpdateMenuBarForeground();
 
 			if (_menuBar == null || _menuBar.Items.Count == 0)
+			{
 				menuContent.Visibility = UI.Xaml.Visibility.Collapsed;
+			}
 			else
+			{
 				menuContent.Visibility = UI.Xaml.Visibility.Visible;
+			}
 		}
 
 		void UpdateMenuBarForeground()
 		{
 			if (_menuBar is null)
+			{
 				return;
+			}
 
 			// MenuBarItems currently don't respect the Foreground property due to https://github.com/microsoft/microsoft-ui-xaml/issues/7070
 			// Work around this by setting the Button's colors in the MenuBar's ResourceDictionary

@@ -48,7 +48,10 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.RenderTransform is CompositeTransform composite)
+			{
 				return composite.TranslateX;
+			}
+
 			return 0.5;
 		}
 
@@ -57,7 +60,10 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.RenderTransform is CompositeTransform composite)
+			{
 				return composite.TranslateY;
+			}
+
 			return 0.5;
 		}
 
@@ -66,9 +72,15 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.RenderTransform is ScaleTransform scale)
+			{
 				return scale.ScaleX;
+			}
+
 			if (platformView.RenderTransform is CompositeTransform composite)
+			{
 				return composite.ScaleX;
+			}
+
 			return 1;
 		}
 
@@ -77,9 +89,15 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.RenderTransform is ScaleTransform scale)
+			{
 				return scale.ScaleY;
+			}
+
 			if (platformView.RenderTransform is CompositeTransform composite)
+			{
 				return composite.ScaleY;
+			}
+
 			return 1;
 		}
 
@@ -88,7 +106,10 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.RenderTransform is CompositeTransform composite)
+			{
 				return composite.Rotation;
+			}
+
 			return 0;
 		}
 
@@ -97,7 +118,10 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.Projection is PlaneProjection projection)
+			{
 				return -projection.RotationX;
+			}
+
 			return 0;
 		}
 
@@ -106,7 +130,10 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.Projection is PlaneProjection projection)
+			{
 				return -projection.RotationY;
+			}
+
 			return 0;
 		}
 
@@ -115,11 +142,17 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = viewHandler.ToPlatform();
 
 			if (platformView.Visibility == UI.Xaml.Visibility.Visible && platformView.Opacity == 0)
+			{
 				return Visibility.Hidden;
+			}
 			else if (platformView.Visibility == UI.Xaml.Visibility.Collapsed)
+			{
 				return Visibility.Collapsed;
+			}
 			else
+			{
 				return Visibility.Visible;
+			}
 		}
 
 		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
@@ -127,7 +160,9 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = (FrameworkElement)viewHandler.PlatformView;
 
 			if (platformView.FlowDirection == UI.Xaml.FlowDirection.LeftToRight)
+			{
 				return FlowDirection.LeftToRight;
+			}
 
 			return FlowDirection.RightToLeft;
 		}

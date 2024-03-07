@@ -19,9 +19,13 @@ namespace Microsoft.Maui.AppiumTests
 			if (context != null && context.Device == device)
 			{
 				if (string.IsNullOrEmpty(message))
+				{
 					Assert.Ignore();
+				}
 				else
+				{
 					Assert.Ignore(message);
+				}
 			}
 		}
 	}

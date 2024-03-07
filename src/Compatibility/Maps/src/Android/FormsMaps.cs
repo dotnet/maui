@@ -16,7 +16,10 @@ namespace Microsoft.Maui.Controls
 		public static void Init(Activity activity, Bundle bundle)
 		{
 			if (IsInitialized)
+			{
 				return;
+			}
+
 			IsInitialized = true;
 
 			MapRenderer.Bundle = bundle;

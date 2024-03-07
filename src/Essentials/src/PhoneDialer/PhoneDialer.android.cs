@@ -26,13 +26,34 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			var phoneNumber = string.Empty;
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
 				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.GetDefault(Java.Util.Locale.Category.Format).Country) ?? phoneNumber;
+			}
 			else
+			{
 				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.Default.Country) ?? phoneNumber;
+			}
 
 			// if we are an extension then we need to encode
 			if (phoneNumber.Contains(',', StringComparison.Ordinal) || phoneNumber.Contains(';', StringComparison.Ordinal) || phoneNumber.Contains('#', StringComparison.Ordinal))
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
 				phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8") ?? phoneNumber;
+
+			var dialIntent = ResolveDialIntent(phoneNumber);
+
+			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+After:
+			{
+				phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8") ?? phoneNumber;
+			}
+
+			var dialIntent = ActivityFlags.ClearTop | ActivityFlags.NewTask;
+*/
+			{
+				phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8") ?? phoneNumber;
+			}
 
 			var dialIntent = ResolveDialIntent(phoneNumber);
 

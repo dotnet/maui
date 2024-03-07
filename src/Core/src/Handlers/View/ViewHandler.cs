@@ -111,14 +111,21 @@ namespace Microsoft.Maui.Handlers
 			set
 			{
 				if (_hasContainer == value)
+				{
+				{
 					return;
+				}
 
 				_hasContainer = value;
 
 				if (value)
+				{
 					SetupContainer();
+				}
 				else
+				{
 					RemoveContainer();
+				}
 			}
 		}
 
@@ -188,7 +195,9 @@ namespace Microsoft.Maui.Handlers
 		static void MapInitializeBatchedProperties(IViewHandler handler, IView view)
 		{
 			if (handler.PlatformView is PlatformView pv)
+			{
 				pv.Initialize(view);
+			}
 		}
 #endif
 
@@ -293,9 +302,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapVisibility(IViewHandler handler, IView view)
 		{
 			if (handler.HasContainer)
+			{
 				((PlatformView?)handler.ContainerView)?.UpdateVisibility(view);
-
-			((PlatformView?)handler.PlatformView)?.UpdateVisibility(view);
+			} ((PlatformView?)handler.PlatformView)?.UpdateVisibility(view);
+			} ((PlatformView?)handler.PlatformView)?.UpdateVisibility(view);
 		}
 
 		/// <summary>
@@ -306,7 +316,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IViewHandler handler, IView view)
 		{
 			if (handler.PlatformView is not PlatformView platformView)
+			{
+			{
 				return;
+			}
 
 			if (view.Background is ImageSourcePaint image)
 			{
@@ -345,7 +358,10 @@ namespace Microsoft.Maui.Handlers
 				((PlatformView?)handler.PlatformView)?.UpdateOpacity(1);
 			}
 			else
+			{
 				((PlatformView?)handler.PlatformView)?.UpdateOpacity(view);
+			}
+			}
 		}
 
 		/// <summary>
@@ -414,9 +430,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapContainerView(IViewHandler handler, IView view)
 		{
 			if (handler is ViewHandler viewHandler)
+			{
 				handler.HasContainer = viewHandler.NeedsContainer;
+			}
 			else
+			{
 				handler.HasContainer = view.NeedsContainer();
+			}
+			}
 		}
 
 		/// <summary>
@@ -467,9 +488,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFocus(IViewHandler handler, IView view, object? args)
 		{
 			if (args is not FocusRequest request)
+			{
+			{
 				return;
-
-			((PlatformView?)handler.PlatformView)?.Focus(request);
+			} ((PlatformView?)handler.PlatformView)?.Focus(request);
 		}
 
 		/// <summary>
@@ -483,14 +505,18 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			if (handler.ContainerView is WrapperView wrapper)
+			{
 				wrapper.InputTransparent = view.InputTransparent;
+			}
 #else
 
 #if IOS || MACCATALYST
 			// Containers on iOS/Mac Catalyst may be hit testable, so we need to
 			// propagate the the view's values to its container view.
 			if (handler.ContainerView is WrapperView wrapper)
+			{
 				wrapper.UpdateInputTransparent(handler, view);
+			}
 #endif
 
 			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(handler, view);
@@ -517,7 +543,10 @@ namespace Microsoft.Maui.Handlers
 		{
 #if PLATFORM
 			if (view is IToolTipElement tooltipContainer)
+			{
+			{
 				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
+			}
 #endif
 		}
 	}

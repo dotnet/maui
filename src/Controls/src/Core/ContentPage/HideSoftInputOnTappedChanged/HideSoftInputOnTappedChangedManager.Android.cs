@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Controls
 						);
 
 					if (location.Contains(point))
+					{
 						DispatchTouchEvent?.Invoke(this, e);
+					}
 				}
 			}
 		}
@@ -45,13 +47,15 @@ namespace Microsoft.Maui.Controls
 		IDisposable? SetupHideSoftInputOnTapped(AView aView)
 		{
 			if (aView is AViewGroup vg &&
-				vg.GetFirstChildOfType<EditText>() is {} editText)
+				vg.GetFirstChildOfType<EditText>() is { } editText)
 			{
 				aView = editText;
 			}
 
 			if (!FeatureEnabled)
+			{
 				return null;
+			}
 
 			var tracker = new TapWindowTracker(aView, this);
 			return new ActionDisposable(() =>

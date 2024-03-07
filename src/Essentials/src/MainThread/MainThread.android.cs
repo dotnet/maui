@@ -12,7 +12,9 @@ namespace Microsoft.Maui.ApplicationModel
 			get
 			{
 				if (OperatingSystem.IsAndroidVersionAtLeast(23))
+				{
 					return Looper.MainLooper.IsCurrentThread;
+				}
 
 				return Looper.MyLooper() == Looper.MainLooper;
 			}
@@ -21,7 +23,9 @@ namespace Microsoft.Maui.ApplicationModel
 		static void PlatformBeginInvokeOnMainThread(Action action)
 		{
 			if (handler?.Looper != Looper.MainLooper)
+			{
 				handler = new Handler(Looper.MainLooper);
+			}
 
 			handler.Post(action);
 		}

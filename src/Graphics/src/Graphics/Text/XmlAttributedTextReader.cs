@@ -86,7 +86,10 @@ namespace Microsoft.Maui.Graphics.Text
 		{
 			string elementName = _reader.Name;
 			if (XmlNames.Content.Equals(elementName, StringComparison.Ordinal))
+			{
+			{
 				_inContent = false;
+			}
 		}
 
 		private void HandleText()
@@ -124,7 +127,9 @@ namespace Microsoft.Maui.Graphics.Text
 					if (!(XmlNames.Start.Equals(attributeName, StringComparison.Ordinal) || XmlNames.Length.Equals(attributeName, StringComparison.Ordinal)))
 					{
 						if (Enum.TryParse(attributeName, out TextAttribute key))
+						{
 							attributes[key] = attributeValue;
+						}
 					}
 				}
 
@@ -139,7 +144,9 @@ namespace Microsoft.Maui.Graphics.Text
 		{
 			var value = _reader.GetAttribute(attribute);
 			if (value != null)
+			{
 				return ParseBool(value);
+			}
 
 			return false;
 		}
@@ -149,7 +156,9 @@ namespace Microsoft.Maui.Graphics.Text
 			if (value != null)
 			{
 				if (bool.TryParse(value, out var boolValue))
+				{
 					return boolValue;
+				}
 			}
 
 			return false;
@@ -159,7 +168,9 @@ namespace Microsoft.Maui.Graphics.Text
 		{
 			var value = _reader.GetAttribute(attribute);
 			if (value != null)
+			{
 				return ParseInt(value, defaultValue);
+			}
 
 			return defaultValue;
 		}
@@ -169,7 +180,9 @@ namespace Microsoft.Maui.Graphics.Text
 			if (value != null)
 			{
 				if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var intValue))
+				{
 					return intValue;
+				}
 			}
 
 			return defaultValue;

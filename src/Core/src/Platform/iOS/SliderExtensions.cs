@@ -20,25 +20,33 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateValue(this UISlider uiSlider, ISlider slider)
 		{
 			if ((float)slider.Value != uiSlider.Value)
+			{
 				uiSlider.Value = (float)slider.Value;
+			}
 		}
 
 		public static void UpdateMinimumTrackColor(this UISlider uiSlider, ISlider slider)
 		{
 			if (slider.MinimumTrackColor != null)
+			{
 				uiSlider.MinimumTrackTintColor = slider.MinimumTrackColor.ToPlatform();
+			}
 		}
 
 		public static void UpdateMaximumTrackColor(this UISlider uiSlider, ISlider slider)
 		{
 			if (slider.MaximumTrackColor != null)
+			{
 				uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
+			}
 		}
 
 		public static void UpdateThumbColor(this UISlider uiSlider, ISlider slider)
 		{
 			if (slider.ThumbColor != null)
+			{
 				uiSlider.ThumbTintColor = slider.ThumbColor.ToPlatform();
+			}
 		}
 
 		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)

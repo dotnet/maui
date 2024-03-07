@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Platform
 			var dateFormat = format.ToDateFormat();
 
 			if (!string.IsNullOrEmpty(dateFormat))
+			{
 				platformDatePicker.DateFormat = dateFormat;
+			}
 
 			platformDatePicker.UpdateTextColor(datePicker);
 		}

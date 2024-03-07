@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Platform
 			// If you set it to an empty string the title reverts back to the 
 			// default app title.
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && platformWindow.WindowScene is not null)
+			{
 				platformWindow.WindowScene.Title = window.Title ?? String.Empty;
+			}
 		}
 
 		internal static void UpdateX(this UIWindow platformWindow, IWindow window) =>
@@ -45,16 +47,25 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateMaximumSize(this UIWindow platformWindow, double width, double height)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				return;
+			}
 
 			var restrictions = platformWindow.WindowScene?.SizeRestrictions;
 			if (restrictions is null)
+			{
 				return;
+			}
 
 			if (!Primitives.Dimension.IsExplicitSet(width) || !Primitives.Dimension.IsMaximumSet(width))
+			{
 				width = double.MaxValue;
+			}
+
 			if (!Primitives.Dimension.IsExplicitSet(height) || !Primitives.Dimension.IsMaximumSet(height))
+			{
 				height = double.MaxValue;
+			}
 
 			restrictions.MaximumSize = new CoreGraphics.CGSize(width, height);
 		}
@@ -71,16 +82,25 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateMinimumSize(this UIWindow platformWindow, double width, double height)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				return;
+			}
 
 			var restrictions = platformWindow.WindowScene?.SizeRestrictions;
 			if (restrictions is null)
+			{
 				return;
+			}
 
 			if (!Primitives.Dimension.IsExplicitSet(width) || !Primitives.Dimension.IsMinimumSet(width))
+			{
 				width = 0;
+			}
+
 			if (!Primitives.Dimension.IsExplicitSet(height) || !Primitives.Dimension.IsMinimumSet(height))
+			{
 				height = 0;
+			}
 
 			restrictions.MinimumSize = new CoreGraphics.CGSize(width, height);
 		}
@@ -88,7 +108,9 @@ namespace Microsoft.Maui.Platform
 		internal static IWindow? GetHostedWindow(this UIWindow? uiWindow)
 		{
 			if (uiWindow is null)
+			{
 				return null;
+			}
 
 			var windows = WindowExtensions.GetWindows();
 			foreach (var window in windows)
@@ -97,7 +119,9 @@ namespace Microsoft.Maui.Platform
 				if (window.Handler?.PlatformView is UIWindow win)
 				{
 					if (win == uiWindow)
+					{
 						return window;
+					}
 				}
 			}
 

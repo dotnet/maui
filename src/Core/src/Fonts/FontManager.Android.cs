@@ -46,7 +46,9 @@ namespace Microsoft.Maui
 		public Typeface? GetTypeface(Font font)
 		{
 			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.Family) && font.Slant == FontSlant.Default))
+			{
 				return DefaultTypeface;
+			}
 
 			return _typefaces.GetOrAdd((font.Family, font.Weight, font.Slant != FontSlant.Default), CreateTypeface);
 		}
@@ -61,9 +63,13 @@ namespace Microsoft.Maui
 			ComplexUnitType units;
 
 			if (font.AutoScalingEnabled)
+			{
 				units = ComplexUnitType.Sp;
+			}
 			else
+			{
 				units = ComplexUnitType.Dip;
+			}
 
 			return new FontSize(size, units);
 		}
@@ -76,11 +82,15 @@ namespace Microsoft.Maui
 			// First check Alias
 			var asset = LoadTypefaceFromAsset(fontName, warning: true);
 			if (asset != null)
+			{
 				return asset;
+			}
 
 			// The font might be a file, such as a temporary file extracted from EmbeddedResource
 			if (File.Exists(fontName))
+			{
 				return Typeface.CreateFromFile(fontName);
+			}
 
 			var fontFile = FontFile.FromString(fontName);
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
@@ -93,7 +103,9 @@ namespace Microsoft.Maui
 				{
 					var font = FindFont(fontFile.FileNameWithExtension(ext));
 					if (font != null)
+					{
 						return font;
+					}
 				}
 			}
 
@@ -104,13 +116,17 @@ namespace Microsoft.Maui
 		{
 			var result = LoadTypefaceFromAsset(fileWithExtension, warning: false);
 			if (result != null)
+			{
 				return result;
+			}
 
 			foreach (var folder in FontFolders)
 			{
 				result = LoadTypefaceFromAsset(folder + fileWithExtension, warning: false);
 				if (result != null)
+				{
 					return result;
+				}
 			}
 
 			return null;
@@ -125,7 +141,9 @@ namespace Microsoft.Maui
 			catch (Exception ex)
 			{
 				if (warning)
+				{
 					_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable to load font '{Font}' from assets.", fontfamily);
+				}
 			}
 
 			return null;
@@ -163,17 +181,27 @@ namespace Microsoft.Maui
 			if (!string.IsNullOrWhiteSpace(fontFamily))
 			{
 				if (LoadDefaultTypeface(fontFamily) is Typeface systemTypeface)
+				{
 					result = systemTypeface;
+				}
 				else if (GetFromAssets(fontFamily) is Typeface typeface)
+				{
 					result = typeface;
+				}
 				else
+				{
 					result = Typeface.Create(fontFamily, style);
+				}
 			}
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(28))
+			{
 				result = Typeface.Create(result, (int)weight, italic);
+			}
 			else
+			{
 				result = Typeface.Create(result, style);
+			}
 
 			return result;
 		}
@@ -183,11 +211,18 @@ namespace Microsoft.Maui
 			var style = TypefaceStyle.Normal;
 			var bold = weight >= FontWeight.Bold;
 			if (bold && italic)
+			{
 				style = TypefaceStyle.BoldItalic;
+			}
 			else if (bold)
+			{
 				style = TypefaceStyle.Bold;
+			}
 			else if (italic)
+			{
 				style = TypefaceStyle.Italic;
+			}
+
 			return style;
 		}
 
@@ -197,7 +232,9 @@ namespace Microsoft.Maui
 
 			int hashtagIndex = fontFamily.IndexOf('#', StringComparison.Ordinal);
 			if (hashtagIndex >= 0)
+			{
 				return fontFamily.Substring(0, hashtagIndex);
+			}
 
 			return fontFamily;
 		}

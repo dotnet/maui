@@ -19,7 +19,9 @@ namespace Maui.Controls.Sample.Controls
 					if (newValue != null)
 					{
 						if (!((Type)newValue).GetTypeInfo().IsEnum)
+						{
 							throw new ArgumentException("EnumPicker: EnumType property must be enumeration type");
+						}
 
 						picker.ItemsSource = Enum.GetValues((Type)newValue);
 					}

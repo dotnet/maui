@@ -39,14 +39,20 @@ namespace Microsoft.Maui.Controls
 			var uri = ShellUriHandler.CreateUri(location);
 
 			if (uri.IsAbsoluteUri)
+			{
 				uri = new Uri($"/{uri.PathAndQuery}", UriKind.Relative);
+			}
 
 			FullLocation = uri;
 
 			if (trimForUser)
+			{
 				Location = TrimDownImplicitAndDefaultPaths(FullLocation);
+			}
 			else
+			{
 				Location = FullLocation;
+			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
@@ -65,7 +71,9 @@ namespace Microsoft.Maui.Controls
 
 			// don't trim relative pushes
 			if (!uri.OriginalString.StartsWith("//", StringComparison.Ordinal))
+			{
 				return uri;
+			}
 
 			string[] parts = uri.OriginalString.TrimEnd(Routing.PathSeparator[0]).Split(Routing.PathSeparator[0]);
 
@@ -83,7 +91,9 @@ namespace Microsoft.Maui.Controls
 					// if all the routes are default then just put the last
 					// shell content page as the route
 					if (toKeep.Count == 0)
+					{
 						toKeep.Add(parts[i]);
+					}
 				}
 			}
 

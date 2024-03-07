@@ -67,12 +67,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (item.Element is IMenuItemController)
 			{
 				if (DefaultMenuItemTemplate != null && Shell.MenuItemTemplate == dataTemplate)
+				{
 					dataTemplate = DefaultMenuItemTemplate;
+				}
 			}
 			else
 			{
 				if (DefaultItemTemplate != null && Shell.ItemTemplate == dataTemplate)
+				{
 					dataTemplate = DefaultItemTemplate;
+				}
 			}
 
 			var template = dataTemplate.SelectDataTemplate(item.Element, Shell);
@@ -95,7 +99,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				if (!found)
+				{
 					evh.Element = null;
+				}
 			}
 
 			base.OnViewRecycled(holder);
@@ -153,7 +159,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			List<List<Element>> grouping = ((IShellController)_shellContext.Shell).GenerateFlyoutGrouping();
 
 			if (_flyoutGroupings == grouping)
+			{
 				return _listItems;
+			}
 
 			_flyoutGroupings = grouping;
 
@@ -198,7 +206,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -213,7 +223,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal void Disconnect()
 		{
 			if (Shell is IShellController scc)
+			{
 				scc.FlyoutItemsChanged -= OnFlyoutItemsChanged;
+			}
 
 			_listItems = null;
 			_selectedCallback = null;
@@ -264,12 +276,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				set
 				{
 					if (_element == value)
+					{
 						return;
+					}
 
 					if (View.Parent is BaseShellItem bsi)
+					{
 						bsi.RemoveLogicalChild(View);
+					}
 					else
+					{
 						_shell.RemoveLogicalChild(View);
+					}
 
 					if (_element != null && _element is BaseShellItem)
 					{
@@ -284,9 +302,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_element != null)
 					{
 						if (value is BaseShellItem bsiNew)
+						{
 							bsiNew.AddLogicalChild(View);
+						}
 						else
+						{
 							_shell.AddLogicalChild(View);
+						}
 
 						_element.PropertyChanged += OnElementPropertyChanged;
 						UpdateVisualState();
@@ -299,22 +321,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (Element is BaseShellItem baseShellItem && baseShellItem != null)
 				{
 					if (baseShellItem.IsChecked)
+					{
 						VisualStateManager.GoToState(View, "Selected");
+					}
 					else
+					{
 						VisualStateManager.GoToState(View, "Normal");
+					}
 				}
 			}
 
 			void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == BaseShellItem.IsCheckedProperty.PropertyName)
+				{
 					UpdateVisualState();
+				}
 			}
 
 			void OnClicked(object sender, EventArgs e)
 			{
 				if (Element == null)
+				{
 					return;
+				}
 
 				_selectedCallback(Element);
 			}
@@ -322,7 +352,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
+				{
 					return;
+				}
 
 				_disposed = true;
 

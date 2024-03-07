@@ -54,13 +54,17 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
+			{
 				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler.DatePickerDialog);
+			}
 		}
 
 		public static partial void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
+			{
 				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler.DatePickerDialog);
+			}
 		}
 
 		public static partial void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
@@ -91,23 +95,31 @@ namespace Microsoft.Maui.Handlers
 			if (sender is DatePickerHandler datePickerHandler)
 			{
 				if (datePickerHandler.UpdateImmediately)  // Platform Specific
+				{
 					datePickerHandler.SetVirtualViewDate();
+				}
 
 				if (datePickerHandler.VirtualView != null)
+				{
 					datePickerHandler.VirtualView.IsFocused = true;
+				}
 			}
 		}
 
 		static void OnStarted(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
+			{
 				datePickerHandler.VirtualView.IsFocused = true;
+			}
 		}
 
 		static void OnEnded(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
+			{
 				datePickerHandler.VirtualView.IsFocused = false;
+			}
 		}
 
 		static void OnDoneClicked(object? sender)
@@ -122,7 +134,9 @@ namespace Microsoft.Maui.Handlers
 		void SetVirtualViewDate()
 		{
 			if (VirtualView == null || DatePickerDialog == null)
+			{
 				return;
+			}
 
 			VirtualView.Date = DatePickerDialog.Date.ToDateTime().Date;
 		}
@@ -139,7 +153,9 @@ namespace Microsoft.Maui.Handlers
 				get
 				{
 					if (_handler?.TryGetTarget(out IDatePickerHandler? target) == true)
+					{
 						return target;
+					}
 
 					return null;
 				}

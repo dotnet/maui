@@ -35,7 +35,9 @@ namespace Microsoft.Maui
 		public static Task<IImageSourceServiceResult<PlatformImage>?> GetPlatformImageAsync(this IImageSource? imageSource, IMauiContext mauiContext)
 		{
 			if (imageSource == null)
+			{
 				return Task.FromResult<IImageSourceServiceResult<PlatformImage>?>(null);
+			}
 
 			var services = mauiContext.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
@@ -46,7 +48,9 @@ namespace Microsoft.Maui
 		public static Task<IImageSourceServiceResult<PlatformImage>?> GetPlatformImageAsync(this IImageSourceService imageSourceService, IImageSource? imageSource, IMauiContext mauiContext)
 		{
 			if (imageSource == null)
+			{
 				return Task.FromResult<IImageSourceServiceResult<PlatformImage>?>(null);
+			}
 
 #if IOS || MACCATALYST
 			var scale = mauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;

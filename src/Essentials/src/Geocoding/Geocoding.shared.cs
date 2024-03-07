@@ -99,7 +99,10 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(this IGeocoding geocoding, Location location)
 		{
 			if (location == null)
+			{
+			{
 				throw new ArgumentNullException(nameof(location));
+			}
 
 			return geocoding.GetPlacemarksAsync(location.Latitude, location.Longitude);
 		}
@@ -118,7 +121,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static string? GetMapServiceToken(this IGeocoding geocoding)
 		{
 			if (geocoding is not IPlatformGeocoding platform)
+			{
 				throw new PlatformNotSupportedException("This implementation of IGeocoding does not implement IPlatformGeocoding.");
+			}
 
 			return platform.MapServiceToken;
 		}
@@ -136,7 +141,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static void SetMapServiceToken(this IGeocoding geocoding, string? mapServiceToken)
 		{
 			if (geocoding is not IPlatformGeocoding platform)
+			{
 				throw new PlatformNotSupportedException("This implementation of IGeocoding does not implement IPlatformGeocoding.");
+			}
 
 			platform.MapServiceToken = mapServiceToken;
 		}

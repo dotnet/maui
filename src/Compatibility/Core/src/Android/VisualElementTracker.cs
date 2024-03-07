@@ -54,7 +54,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -141,57 +143,93 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				if (e.PropertyName == VisualElement.XProperty.PropertyName || e.PropertyName == VisualElement.YProperty.PropertyName || e.PropertyName == VisualElement.WidthProperty.PropertyName ||
 					e.PropertyName == VisualElement.HeightProperty.PropertyName)
+				{
 					_layoutNeeded = true;
+				}
 				else if (e.PropertyName == VisualElement.AnchorXProperty.PropertyName || e.PropertyName == VisualElement.AnchorYProperty.PropertyName || e.PropertyName == VisualElement.ScaleProperty.PropertyName || e.PropertyName == VisualElement.ScaleXProperty.PropertyName || e.PropertyName == VisualElement.ScaleYProperty.PropertyName ||
 						 e.PropertyName == VisualElement.RotationProperty.PropertyName || e.PropertyName == VisualElement.RotationXProperty.PropertyName || e.PropertyName == VisualElement.RotationYProperty.PropertyName ||
 						 e.PropertyName == VisualElement.IsVisibleProperty.PropertyName || e.PropertyName == VisualElement.OpacityProperty.PropertyName ||
 						 e.PropertyName == VisualElement.TranslationXProperty.PropertyName || e.PropertyName == VisualElement.TranslationYProperty.PropertyName)
 				{
 					if (!_batchedProperties.Contains(e.PropertyName))
+					{
 						_batchedProperties.Add(e.PropertyName);
+					}
 				}
 				return;
 			}
 
 			if (e.PropertyName == VisualElement.XProperty.PropertyName || e.PropertyName == VisualElement.YProperty.PropertyName || e.PropertyName == VisualElement.WidthProperty.PropertyName ||
 				e.PropertyName == VisualElement.HeightProperty.PropertyName)
+			{
 				_renderer.View.MaybeRequestLayout();
+			}
 			else if (e.PropertyName == VisualElement.AnchorXProperty.PropertyName)
+			{
 				UpdateAnchorX();
+			}
 			else if (e.PropertyName == VisualElement.AnchorYProperty.PropertyName)
+			{
 				UpdateAnchorY();
+			}
 			else if (e.PropertyName == VisualElement.ScaleProperty.PropertyName
 					 || e.PropertyName == VisualElement.ScaleXProperty.PropertyName
 					 || e.PropertyName == VisualElement.ScaleYProperty.PropertyName)
+			{
 				UpdateScale();
+			}
 			else if (e.PropertyName == VisualElement.RotationProperty.PropertyName)
+			{
 				UpdateRotation();
+			}
 			else if (e.PropertyName == VisualElement.RotationXProperty.PropertyName)
+			{
 				UpdateRotationX();
+			}
 			else if (e.PropertyName == VisualElement.RotationYProperty.PropertyName)
+			{
 				UpdateRotationY();
+			}
 			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
+			{
 				UpdateIsVisible();
+			}
 			else if (e.PropertyName == VisualElement.OpacityProperty.PropertyName)
+			{
 				UpdateOpacity();
+			}
 			else if (e.PropertyName == VisualElement.TranslationXProperty.PropertyName)
+			{
 				UpdateTranslationX();
+			}
 			else if (e.PropertyName == VisualElement.TranslationYProperty.PropertyName)
+			{
 				UpdateTranslationY();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled();
+			}
 			else if (e.PropertyName == VisualElement.ClipProperty.PropertyName)
+			{
 				UpdateClip();
+			}
 		}
 
 		void HandleRedrawNeeded(object sender, EventArg<VisualElement> e)
 		{
 			foreach (string propertyName in _batchedProperties)
+			{
 				HandlePropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+
 			_batchedProperties.Clear();
 
 			if (_layoutNeeded)
+			{
 				_renderer.View.MaybeRequestLayout();
+			}
+
 			_layoutNeeded = false;
 		}
 
@@ -234,23 +272,49 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					// ReSharper disable CompareOfFloatsByEqualityOperator
 					if (oldElement.AnchorX != newElement.AnchorX)
+					{
 						UpdateAnchorX();
+					}
+
 					if (oldElement.AnchorY != newElement.AnchorY)
+					{
 						UpdateAnchorY();
+					}
+
 					if (oldElement.IsVisible != newElement.IsVisible)
+					{
 						UpdateIsVisible();
+					}
+
 					if (oldElement.IsEnabled != newElement.IsEnabled)
+					{
 						view.Enabled = newElement.IsEnabled;
+					}
+
 					if (oldElement.Opacity != newElement.Opacity)
+					{
 						UpdateOpacity();
+					}
+
 					if (oldElement.Rotation != newElement.Rotation)
+					{
 						UpdateRotation();
+					}
+
 					if (oldElement.RotationX != newElement.RotationX)
+					{
 						UpdateRotationX();
+					}
+
 					if (oldElement.RotationY != newElement.RotationY)
+					{
 						UpdateRotationY();
+					}
+
 					if (oldElement.Scale != newElement.Scale || oldElement.ScaleX != newElement.ScaleX || oldElement.ScaleY != newElement.ScaleY)
+					{
 						UpdateScale();
+					}
 					// ReSharper restore CompareOfFloatsByEqualityOperator
 
 					_initialUpdateNeeded = false;
@@ -267,7 +331,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			float currentPivot = aview.PivotX;
 			var target = (float)(view.AnchorX * _context.ToPixels(view.Width));
 			if (currentPivot != target)
+			{
 				aview.PivotX = target;
+			}
 		}
 
 		[PortHandler]
@@ -279,7 +345,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			float currentPivot = aview.PivotY;
 			var target = (float)(view.AnchorY * _context.ToPixels(view.Height));
 			if (currentPivot != target)
+			{
 				aview.PivotY = target;
+			}
 		}
 
 		void UpdateClipToBounds()
@@ -316,9 +384,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AView aview = _renderer.View;
 
 			if (view.IsVisible && aview.Visibility != ViewStates.Visible)
+			{
 				aview.Visibility = ViewStates.Visible;
+			}
+
 			if (!view.IsVisible && aview.Visibility != ViewStates.Gone)
+			{
 				aview.Visibility = ViewStates.Gone;
+			}
 
 			aview.Invalidate();
 			aview.RequestLayout();
@@ -415,7 +488,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var scale = view.Scale;
 
 			if (double.IsNaN(scale))
+			{
 				return;
+			}
 
 			aview.ScaleX = (float)scale * (float)view.ScaleX;
 			aview.ScaleY = (float)scale * (float)view.ScaleY;
@@ -452,7 +527,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var renderer = attachedView as IVisualElementRenderer;
 				if (renderer == null || renderer.Tracker == null)
+				{
 					return;
+				}
 
 				renderer.Tracker.HandleViewAttachedToWindow();
 			}

@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Handlers
 			var platformSlider = new UISlider { Continuous = true };
 
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(15) && platformSlider.TraitCollection.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+			{
 				platformSlider.PreferredBehavioralStyle = UIBehavioralStyle.Pad;
+			}
 
 			return platformSlider;
 		}
@@ -92,7 +94,9 @@ namespace Microsoft.Maui.Handlers
 			void OnControlValueChanged(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is ISlider virtualView && sender is UISlider platformView)
+				{
 					virtualView.Value = platformView.Value;
+				}
 			}
 
 			void OnTouchDownControlEvent(object? sender, EventArgs e)

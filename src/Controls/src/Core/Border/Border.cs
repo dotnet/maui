@@ -50,12 +50,16 @@ namespace Microsoft.Maui.Controls
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
 					if (newvalue is not null)
+					{
 						(bindable as Border)?.StopNotifyingStrokeShapeChanges();
+					}
 				},
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
 					if (newvalue is not null)
+					{
 						(bindable as Border)?.NotifyStrokeShapeChanges();
+					}
 				});
 
 		void NotifyStrokeShapeChanges()
@@ -88,12 +92,16 @@ namespace Microsoft.Maui.Controls
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
 					if (newvalue is not null)
+					{
 						(bindable as Border)?.StopNotifyingStrokeChanges();
+					}
 				},
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
 					if (newvalue is not null)
+					{
 						(bindable as Border)?.NotifyStrokeChanges();
+					}
 				});
 
 		void NotifyStrokeChanges()
@@ -101,7 +109,10 @@ namespace Microsoft.Maui.Controls
 			var stroke = Stroke;
 
 			if (stroke is ImmutableBrush)
+			{
+			{
 				return;
+			}
 
 			if (stroke is not null)
 			{
@@ -120,7 +131,10 @@ namespace Microsoft.Maui.Controls
 			var stroke = Stroke;
 
 			if (stroke is ImmutableBrush)
+			{
+			{
 				return;
+			}
 
 			if (stroke is not null)
 			{
@@ -232,12 +246,16 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (StrokeDashArray is INotifyCollectionChanged oldCollection)
+				{
 					oldCollection.CollectionChanged -= OnStrokeDashArrayChanged;
+				}
 
 				_strokeDashPattern = StrokeDashArray?.ToFloatArray();
 
 				if (StrokeDashArray is INotifyCollectionChanged newCollection)
+				{
 					newCollection.CollectionChanged += OnStrokeDashArrayChanged;
+				}
 
 				return _strokeDashPattern;
 			}
@@ -305,11 +323,18 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == HeightProperty.PropertyName ||
 				propertyName == WidthProperty.PropertyName ||
 				propertyName == StrokeShapeProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
+			}
 			else if (propertyName == StrokeThicknessProperty.PropertyName)
+			{
+			{
 				UpdateStrokeShape();
+			}
 			else if (propertyName == StrokeDashArrayProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
+			}
 		}
 
 		void OnStrokeDashArrayChanged(object? sender, NotifyCollectionChangedEventArgs e)

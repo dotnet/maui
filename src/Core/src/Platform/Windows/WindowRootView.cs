@@ -48,11 +48,15 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				if (_toolbar != null)
+				{
 					_toolbar.SetMenuBar(null);
+				}
 
 				_toolbar = value;
 				if (NavigationViewControl != null)
+				{
 					NavigationViewControl.Toolbar = Toolbar;
+				}
 
 				_toolbar?.SetMenuBar(MenuBar);
 			}
@@ -68,7 +72,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public DataTemplate? AppTitleBarTemplate
+		public static DataTemplate? AppTitleBarTemplate
 		{
 			get => (DataTemplate?)GetValue(AppTitleBarTemplateProperty);
 			set => SetValue(AppTitleBarTemplateProperty, value);
@@ -79,15 +83,21 @@ namespace Microsoft.Maui.Platform
 			get
 			{
 				if (_appTitleBar != null)
+				{
 					return _appTitleBar;
+				}
 
 				if (AppTitleBarContentControl is null)
+				{
 					return null;
+				}
 
 				var cp = AppTitleBarContentControl.GetFirstDescendant<ContentPresenter>();
 
 				if (cp is null)
+				{
 					return null;
+				}
 
 				_appTitleBar = cp.GetFirstDescendant<FrameworkElement>();
 
@@ -105,7 +115,7 @@ namespace Microsoft.Maui.Platform
 		internal void UpdateAppTitleBar(int appTitleBarHeight, bool useCustomAppTitleBar)
 		{
 			_useCustomAppTitleBar = useCustomAppTitleBar;
-			WindowTitleBarContentControlMinHeight = appTitleBarHeight;
+			WindowRootView.WindowTitleBarContentControlMinHeight = appTitleBarHeight;
 
 			double topMargin = appTitleBarHeight;
 			if (AppTitleBarContentControl != null)
@@ -115,11 +125,11 @@ namespace Microsoft.Maui.Platform
 
 			if (useCustomAppTitleBar)
 			{
-				WindowTitleBarContentControlVisibility = UI.Xaml.Visibility.Visible;
+				WindowRootView.WindowTitleBarContentControlVisibility = UI.Xaml.Visibility.Visible;
 			}
 			else
 			{
-				WindowTitleBarContentControlVisibility = UI.Xaml.Visibility.Collapsed;
+				WindowRootView.WindowTitleBarContentControlVisibility = UI.Xaml.Visibility.Collapsed;
 			}
 
 			UpdateRootNavigationViewMargins(topMargin);
@@ -166,19 +176,27 @@ namespace Microsoft.Maui.Platform
 		void LoadAppTitleBarContainer()
 		{
 			if (AppTitleBarContentControl == null)
+			{
 				return;
+			}
 
 			if (AppTitleBar == null)
+			{
 				AppTitleBarContentControl.Loaded += OnAppTitleBarContentControlLoaded;
+			}
 			else
+			{
 				LoadAppTitleBarControls();
+			}
 
 			OnWindowTitleBarContentSizeChanged?.Invoke(AppTitleBarContentControl, EventArgs.Empty);
 			AppTitleBarContentControl.SizeChanged += (sender, args) =>
 			{
 				OnWindowTitleBarContentSizeChanged?.Invoke(sender, EventArgs.Empty);
 				if (sender is not FrameworkElement fe)
+				{
 					return;
+				}
 
 				if (_appTitleBarHeight != fe.ActualHeight)
 				{
@@ -193,13 +211,17 @@ namespace Microsoft.Maui.Platform
 			LoadAppTitleBarControls();
 
 			if (AppTitleBarContentControl != null)
+			{
 				AppTitleBarContentControl.Loaded -= OnAppTitleBarContentControlLoaded;
+			}
 		}
 
 		void UpdateRootNavigationViewMargins(double margin)
 		{
 			if (_appTitleBarHeight == margin)
+			{
 				return;
+			}
 
 			_appTitleBarHeight = margin;
 			NavigationViewControl?.UpdateAppTitleBar(_appTitleBarHeight);
@@ -213,10 +235,14 @@ namespace Microsoft.Maui.Platform
 		void LoadAppTitleBarControls()
 		{
 			if (AppTitleBar == null)
+			{
 				return;
+			}
 
 			if (AppFontIcon != null)
+			{
 				return;
+			}
 
 			AppFontIcon = (Image?)AppTitleBar?.FindName("AppFontIcon");
 			AppTitle = (TextBlock?)AppTitleBar?.FindName("AppTitle");
@@ -254,7 +280,9 @@ namespace Microsoft.Maui.Platform
 							new SolidColorBrush(UI.Colors.Transparent);
 
 						if (NavigationViewControl != null && NavigationViewControl.ButtonHolderGrid != null)
+						{
 							NavigationViewControl.ButtonHolderGrid.Background = border.Background;
+						}
 					});
 				}
 			}
@@ -344,20 +372,20 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			WThickness currMargin = WindowTitleBarContainerMargin;
+			WThickness currMargin = WindowRootView.WindowTitleBarContainerMargin;
 			var leftIndent = buttonHolderGrid.ActualWidth;
-			WindowTitleBarContainerMargin = new WThickness(leftIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
+			WindowRootView.WindowTitleBarContainerMargin = new WThickness(leftIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
 
 			// If the AppIcon loads correctly then we set a margin for the text from the image
 			if (_hasTitleBarImage)
 			{
-				WindowTitleMargin = new WThickness(12, 0, 0, 0);
-				WindowTitleIconVisibility = UI.Xaml.Visibility.Visible;
+				WindowRootView.WindowTitleMargin = new WThickness(12, 0, 0, 0);
+				WindowRootView.WindowTitleIconVisibility = UI.Xaml.Visibility.Visible;
 			}
 			else
 			{
-				WindowTitleMargin = new WThickness(0);
-				WindowTitleIconVisibility = UI.Xaml.Visibility.Collapsed;
+				WindowRootView.WindowTitleMargin = new WThickness(0);
+				WindowRootView.WindowTitleIconVisibility = UI.Xaml.Visibility.Collapsed;
 			}
 		}
 
@@ -378,7 +406,7 @@ namespace Microsoft.Maui.Platform
 				typeof(WindowRootView),
 				new PropertyMetadata(null));
 
-		internal String? WindowTitle
+		internal static String? WindowTitle
 		{
 			get => (String?)GetValue(TitleProperty);
 			set => SetValue(TitleProperty, value);
@@ -404,7 +432,9 @@ namespace Microsoft.Maui.Platform
 		void UpdateAppTitleBarTransparency()
 		{
 			if (_setTitleBarBackgroundToTransparent && _appTitleBar is Border border)
+			{
 				border.Background = null;
+			}
 		}
 
 		internal static readonly DependencyProperty WindowTitleForegroundProperty =
@@ -414,7 +444,7 @@ namespace Microsoft.Maui.Platform
 				typeof(WindowRootView),
 				new PropertyMetadata(null));
 
-		internal UI.Xaml.Media.Brush? WindowTitleForeground
+		internal static UI.Xaml.Media.Brush? WindowTitleForeground
 		{
 			get => (UI.Xaml.Media.Brush?)GetValue(WindowTitleForegroundProperty);
 			set => SetValue(WindowTitleForegroundProperty, value);
@@ -427,7 +457,7 @@ namespace Microsoft.Maui.Platform
 				typeof(WindowRootView),
 				new PropertyMetadata(new WThickness(0)));
 
-		internal WThickness WindowTitleBarContainerMargin
+		internal static WThickness WindowTitleBarContainerMargin
 		{
 			get => (WThickness)GetValue(WindowTitleBarContainerMarginProperty);
 			set => SetValue(WindowTitleBarContainerMarginProperty, value);
@@ -440,7 +470,7 @@ namespace Microsoft.Maui.Platform
 				typeof(WindowRootView),
 				new PropertyMetadata(new WThickness(0)));
 
-		internal WThickness WindowTitleMargin
+		internal static WThickness WindowTitleMargin
 		{
 			get => (WThickness)GetValue(WindowTitleMarginProperty);
 			set => SetValue(WindowTitleMarginProperty, value);
@@ -453,7 +483,7 @@ namespace Microsoft.Maui.Platform
 				typeof(WindowRootView),
 				new PropertyMetadata(UI.Xaml.Visibility.Collapsed));
 
-		internal UI.Xaml.Visibility WindowTitleIconVisibility
+		internal static UI.Xaml.Visibility WindowTitleIconVisibility
 		{
 			get => (UI.Xaml.Visibility)GetValue(WindowTitleIconVisibilityProperty);
 			set => SetValue(WindowTitleIconVisibilityProperty, value);
@@ -466,7 +496,7 @@ namespace Microsoft.Maui.Platform
 				typeof(WindowRootView),
 				new PropertyMetadata(UI.Xaml.Visibility.Visible));
 
-		internal UI.Xaml.Visibility WindowTitleBarContentControlVisibility
+		internal static UI.Xaml.Visibility WindowTitleBarContentControlVisibility
 		{
 			get => (UI.Xaml.Visibility)GetValue(WindowTitleBarContentControlVisibilityProperty);
 			set => SetValue(WindowTitleBarContentControlVisibilityProperty, value);
@@ -479,7 +509,7 @@ namespace Microsoft.Maui.Platform
 				typeof(WindowRootView),
 				new PropertyMetadata(0d));
 
-		internal double WindowTitleBarContentControlMinHeight
+		internal static double WindowTitleBarContentControlMinHeight
 		{
 			get => (double)GetValue(WindowTitleBarContentControlMinHeightProperty);
 			set => SetValue(WindowTitleBarContentControlMinHeightProperty, value);

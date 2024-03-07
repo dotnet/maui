@@ -39,7 +39,10 @@ namespace Microsoft.Maui.Controls
 		{
 			var a = (int)alignment;
 			if (a < 0 || a > 3)
+			{
 				throw new ArgumentOutOfRangeException();
+			}
+
 			_flags = (int)alignment | (expands ? (int)LayoutExpandFlag.Expand : 0);
 		}
 

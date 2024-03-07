@@ -12,21 +12,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public async void DeregisterLink(IAppLinkEntry appLink)
 		{
 			if (string.IsNullOrWhiteSpace(appLink.AppLinkUri?.ToString()))
+			{
 				throw new ArgumentNullException("AppLinkUri");
+			}
+
 			await RemoveLinkAsync(appLink.AppLinkUri?.ToString());
 		}
 
 		public async void DeregisterLink(Uri uri)
 		{
 			if (string.IsNullOrWhiteSpace(uri?.ToString()))
+			{
 				throw new ArgumentNullException(nameof(uri));
+			}
+
 			await RemoveLinkAsync(uri.ToString());
 		}
 
 		public async void RegisterLink(IAppLinkEntry appLink)
 		{
 			if (string.IsNullOrWhiteSpace(appLink.AppLinkUri?.ToString()))
+			{
 				throw new ArgumentNullException("AppLinkUri");
+			}
+
 			await AddLinkAsync(appLink);
 		}
 
@@ -60,7 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			//help increase your website url index rating
 			if (!string.IsNullOrEmpty(associatedWebPage))
+			{
 				activity.WebPageUrl = new NSUrl(associatedWebPage);
+			}
 
 			//make this search result available to Apple and to other users thatdon't have your app
 			activity.EligibleForPublicIndexing = shouldAddToPublicIndex;
@@ -70,7 +81,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			//we don't need to track if the link is active iOS will call ResignCurrent
 			if (deepLinkUri.IsLinkActive)
+			{
 				activity.BecomeCurrent();
+			}
 
 			var aL = deepLinkUri as AppLinkEntry;
 			if (aL != null)
@@ -80,9 +93,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (e.PropertyName == AppLinkEntry.IsLinkActiveProperty.PropertyName)
 					{
 						if (aL.IsLinkActive)
+						{
 							activity.BecomeCurrent();
+						}
 						else
+						{
 							activity.ResignCurrent();
+						}
 					}
 				};
 			}
@@ -92,9 +109,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var tcs = new TaskCompletionSource<bool>();
 			if (CSSearchableIndex.IsIndexingAvailable)
+			{
 				CSSearchableIndex.DefaultSearchableIndex.DeleteAll(error => tcs.TrySetResult(error == null));
+			}
 			else
+			{
 				tcs.TrySetResult(false);
+			}
+
 			return tcs.Task;
 		}
 
@@ -115,7 +137,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				using (var uiimage = await deepLinkUri.Thumbnail.GetNativeImageAsync())
 				{
 					if (uiimage == null)
+					{
 						throw new InvalidOperationException("AppLinkEntry Thumbnail must be set to a valid source");
+					}
 
 					searchableAttributeSet.ThumbnailData = uiimage.AsPNG();
 				}
@@ -130,7 +154,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var info = new NSMutableDictionary();
 			info.Add(new NSString("link"), new NSString(deepLinkUri.AppLinkUri.ToString()));
 			foreach (var item in deepLinkUri.KeyValues)
+			{
 				info.Add(new NSString(item.Key), new NSString(item.Value));
+			}
+
 			return info;
 		}
 
@@ -142,7 +169,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				CSSearchableIndex.DefaultSearchableIndex.Index(new[] { searchItem }, error => tcs.TrySetResult(error == null));
 			}
 			else
+			{
 				tcs.SetResult(false);
+			}
+
 			return tcs.Task;
 		}
 
@@ -150,9 +180,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var tcs = new TaskCompletionSource<bool>();
 			if (CSSearchableIndex.IsIndexingAvailable)
+			{
 				CSSearchableIndex.DefaultSearchableIndex.Delete(new[] { identifier }, error => tcs.TrySetResult(error == null));
+			}
 			else
+			{
 				tcs.SetResult(false);
+			}
+
 			return tcs.Task;
 		}
 
@@ -165,10 +200,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var publicIndex = string.Empty;
 
 			if (!deepLinkUri.KeyValues.TryGetValue(nameof(contentType), out contentType))
+			{
 				contentType = "View";
+			}
 
 			if (deepLinkUri.KeyValues.TryGetValue(nameof(publicIndex), out publicIndex))
+			{
 				bool.TryParse(publicIndex, out shouldAddToPublicIndex);
+			}
 
 			deepLinkUri.KeyValues.TryGetValue(nameof(associatedWebPage), out associatedWebPage);
 		}

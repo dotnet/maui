@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Platform
 		void OnTapped()
 		{
 			if (_targetView.TryGetTarget(out var targetView) && targetView.IsFirstResponder)
+			{
 				targetView.ResignFirstResponder();
+			}
 
 			Disconnect();
 		}
@@ -42,10 +44,14 @@ namespace Microsoft.Maui.Platform
 		void Disconnect()
 		{
 			if (_token != null)
+			{
 				RemoveTarget(_token);
+			}
 
 			if (_targetView.TryGetTarget(out var targetView) && targetView?.Window is UIWindow window)
+			{
 				window.RemoveGestureRecognizer(this);
+			}
 
 			_token = null;
 
@@ -56,7 +62,9 @@ namespace Microsoft.Maui.Platform
 			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
 			{
 				if (v != null && (v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder))
+				{
 					return false;
+				}
 			}
 
 			return true;
@@ -114,10 +122,14 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (!ConnectToPlatformEvents(uiView))
+			{
 				return null;
+			}
 
 			if (uiView.IsFirstResponder)
+			{
 				OnEditingDidBegin(uiView, EventArgs.Empty);
+			}
 
 			var localWindow = window;
 			var localControl = uiView;

@@ -5,7 +5,10 @@
 		internal static void SetValue(ref Toolbar? toolbar, Toolbar? value, IElementHandler handler)
 		{
 			if (toolbar == value)
+			{
+			{
 				return;
+			}
 
 			toolbar?.Handler?.DisconnectHandler();
 			toolbar = value;

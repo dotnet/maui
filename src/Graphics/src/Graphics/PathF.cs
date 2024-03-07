@@ -83,7 +83,11 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				if (_operations.Count > 0)
+				{
+				{
 					return _operations[_operations.Count - 1] == PathOperation.Close;
+				}
+				}
 
 				return false;
 			}
@@ -94,7 +98,11 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				if (_points != null && _points.Count > 0)
+				{
+				{
 					return _points[0];
+				}
+				}
 
 				return default;
 			}
@@ -105,7 +113,9 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				for (var i = 0; i < _operations.Count; i++)
+				{
 					yield return _operations[i];
+				}
 			}
 		}
 
@@ -114,7 +124,9 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				for (var i = 0; i < _points.Count; i++)
+				{
 					yield return _points[i];
+				}
 			}
 		}
 
@@ -123,7 +135,11 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				if (_points != null && _points.Count > 0)
+				{
+				{
 					return _points[_points.Count - 1];
+				}
+				}
 
 				return default;
 			}
@@ -134,7 +150,11 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				if (_points != null && _points.Count > 0)
+				{
+				{
 					return _points.Count - 1;
+				}
+				}
 
 				return -1;
 			}
@@ -145,7 +165,11 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				if (index < 0 || index >= _points.Count)
+				{
+				{
 					return default;
+				}
+				}
 
 				return _points[index];
 			}
@@ -436,42 +460,57 @@ namespace Microsoft.Maui.Graphics
 					if (operation == PathOperation.Move)
 					{
 						if (operationIndex == index)
+						{
 							return pointIndex;
+						}
 
 						pointIndex++;
 					}
 					else if (operation == PathOperation.Line)
 					{
 						if (operationIndex == index)
+						{
 							return pointIndex;
+						}
 
 						pointIndex++;
 					}
 					else if (operation == PathOperation.Quad)
 					{
 						if (operationIndex == index)
+						{
 							return pointIndex;
+						}
 
 						pointIndex += 2;
 					}
 					else if (operation == PathOperation.Cubic)
 					{
 						if (operationIndex == index)
+						{
 							return pointIndex;
+						}
 
 						pointIndex += 3;
 					}
 					else if (operation == PathOperation.Arc)
 					{
 						if (operationIndex == index)
+						{
 							return pointIndex;
+						}
 
 						pointIndex += 2;
 					}
 					else if (operation == PathOperation.Close)
 					{
 						if (operationIndex == index)
+						{
+						{
 							return pointIndex;
+						}
+						}
+						}
 					}
 				}
 			}
@@ -493,32 +532,46 @@ namespace Microsoft.Maui.Graphics
 					if (type == PathOperation.Move)
 					{
 						if (s == segmentIndex)
+						{
 							return type;
+						}
 
 						pointIndex++;
 					}
 					else if (type == PathOperation.Line)
 					{
 						if (s == segmentIndex)
+						{
 							return type;
+						}
+
 						pointIndex++;
 					}
 					else if (type == PathOperation.Quad)
 					{
 						if (s == segmentIndex)
+						{
 							return type;
+						}
+
 						pointIndex += 2;
 					}
 					else if (type == PathOperation.Cubic)
 					{
 						if (s == segmentIndex)
+						{
 							return type;
+						}
+
 						pointIndex += 3;
 					}
 					else if (type == PathOperation.Arc)
 					{
 						if (s == segmentIndex)
+						{
 							return type;
+						}
+
 						pointIndex += 2;
 						arcAngleIndex += 2;
 						arcClockwiseIndex++;
@@ -526,7 +579,10 @@ namespace Microsoft.Maui.Graphics
 					else if (type == PathOperation.Close)
 					{
 						if (s == segmentIndex)
+						{
 							return type;
+						}
+						}
 					}
 				}
 			}
@@ -931,7 +987,9 @@ namespace Microsoft.Maui.Graphics
 		public void Transform(Matrix3x2 transform)
 		{
 			for (var i = 0; i < _points.Count; i++)
+			{
 				_points[i] = Vector2.Transform((Vector2)_points[i], transform);
+			}
 
 			Invalidate();
 		}
@@ -940,7 +998,9 @@ namespace Microsoft.Maui.Graphics
 		{
 			var paths = new List<PathF>();
 			if (_points == null || _operations == null)
+			{
 				return paths;
+			}
 
 			PathF path = null;
 
@@ -1224,10 +1284,14 @@ namespace Microsoft.Maui.Graphics
 		private float ClampCornerRadius(float cornerRadius, float w, float h)
 		{
 			if (cornerRadius > h / 2)
+			{
 				cornerRadius = h / 2;
+			}
 
 			if (cornerRadius > w / 2)
+			{
 				cornerRadius = w / 2;
+			}
 
 			return cornerRadius;
 		}
@@ -1266,7 +1330,9 @@ namespace Microsoft.Maui.Graphics
 		private void ReleaseNative()
 		{
 			if (_platformPath is IDisposable disposable)
+			{
 				disposable.Dispose();
+			}
 
 			_platformPath = null;
 		}
@@ -1292,20 +1358,99 @@ namespace Microsoft.Maui.Graphics
 			if (obj is PathF compareTo)
 			{
 				if (OperationCount != compareTo.OperationCount)
-					return false;
-
+				{
+				
+/* Unmerged change from project 'Graphics(net8.0-android)'
+Before:
 				for (var i = 0; i < _operations.Count; i++)
 				{
 					var segmentType = _operations[i];
 					if (segmentType != compareTo.GetSegmentType(i))
 						return false;
 				}
+After:
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+						return false;
+				}
+After:
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+						return false;
+				}
+After:
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+						return false;
+				}
+After:
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+						return false;
+				}
+After:
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+						return false;
+				}
+After:
+				}
+*/
+{
+					return false;
+				}
+
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+					{
+						return false;
+					}
+				}
 
 				for (var i = 0; i < _points.Count; i++)
 				{
 					var point = _points[i];
 					if (!point.Equals(compareTo[i], GeometryUtil.Epsilon))
+					{
 						return false;
+					}
 				}
 
 				if (_arcAngles != null)
@@ -1314,7 +1459,9 @@ namespace Microsoft.Maui.Graphics
 					{
 						var arcAngle = _arcAngles[i];
 						if (Math.Abs(arcAngle - compareTo.GetArcAngle(i)) > GeometryUtil.Epsilon)
+						{
 							return false;
+						}
 					}
 				}
 
@@ -1324,7 +1471,9 @@ namespace Microsoft.Maui.Graphics
 					{
 						var arcClockwise = _arcClockwise[i];
 						if (arcClockwise != compareTo.GetArcClockwise(i))
+						{
 							return false;
+						}
 					}
 				}
 			}
@@ -1349,20 +1498,99 @@ namespace Microsoft.Maui.Graphics
 			if (obj is PathF compareTo)
 			{
 				if (OperationCount != compareTo.OperationCount)
-					return false;
-
+				{
+				
+/* Unmerged change from project 'Graphics(net8.0-android)'
+Before:
 				for (var i = 0; i < _operations.Count; i++)
 				{
 					var segmentType = _operations[i];
 					if (segmentType != compareTo.GetSegmentType(i))
 						return false;
 				}
+After:
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+						return false;
+				}
+After:
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+						return false;
+				}
+After:
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+						return false;
+				}
+After:
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+						return false;
+				}
+After:
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+						return false;
+				}
+After:
+				}
+*/
+{
+					return false;
+				}
+
+				for (var i = 0; i < _operations.Count; i++)
+				{
+					var segmentType = _operations[i];
+					if (segmentType != compareTo.GetSegmentType(i))
+					{
+						return false;
+					}
+				}
 
 				for (var i = 0; i < _points.Count; i++)
 				{
 					var point = _points[i];
 					if (!point.Equals(compareTo[i], epsilon))
+					{
 						return false;
+					}
 				}
 
 				if (_arcAngles != null)
@@ -1371,7 +1599,9 @@ namespace Microsoft.Maui.Graphics
 					{
 						var arcAngle = _arcAngles[i];
 						if (Math.Abs(arcAngle - compareTo.GetArcAngle(i)) > epsilon)
+						{
 							return false;
+						}
 					}
 				}
 
@@ -1381,7 +1611,9 @@ namespace Microsoft.Maui.Graphics
 					{
 						var arcClockwise = _arcClockwise[i];
 						if (arcClockwise != compareTo.GetArcClockwise(i))
+						{
 							return false;
+						}
 					}
 				}
 			}
@@ -1394,7 +1626,11 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				if (_cachedBounds != null)
+				{
+				{
 					return (RectF)_cachedBounds;
+				}
+				}
 
 #if IOS || MACCATALYST || __IOS__
 
@@ -1415,7 +1651,9 @@ namespace Microsoft.Maui.Graphics
 		public RectF GetBoundsByFlattening(float flatness = 0.001f)
 		{
 			if (_cachedBounds != null)
+			{
 				return (RectF)_cachedBounds;
+			}
 
 			var path = GetFlattenedPath(flatness, true);
 
@@ -1436,13 +1674,29 @@ namespace Microsoft.Maui.Graphics
 				{
 					var point = path[i];
 					if (point.X < l)
+					{
 						l = point.X;
+					}
+
 					if (point.Y < t)
+					{
 						t = point.Y;
+					}
+
+					if (point.Y < t)
+					{
+						t = point.Y;
+					}
+
 					if (point.X > r)
+					{
 						r = point.X;
+					}
+
 					if (point.Y > b)
+					{
 						b = point.Y;
+					}
 				}
 			}
 
@@ -1479,7 +1733,10 @@ namespace Microsoft.Maui.Graphics
 						QuadToCubic(pointIndex, curvePoints);
 						FlattenCubicSegment(0, flatness, curvePoints, flattenedPoints);
 						foreach (var point in flattenedPoints)
+						{
 							flattenedPath.LineTo(point);
+						}
+
 						pointIndex += 2;
 						break;
 					case PathOperation.Cubic:
@@ -1487,7 +1744,10 @@ namespace Microsoft.Maui.Graphics
 						flattenedPoints.Clear();
 						FlattenCubicSegment(pointIndex - 1, flatness, _points, flattenedPoints);
 						foreach (var point in flattenedPoints)
+						{
 							flattenedPath.LineTo(point);
+						}
+
 						pointIndex += 3;
 						break;
 					case PathOperation.Arc:
@@ -1498,7 +1758,28 @@ namespace Microsoft.Maui.Graphics
 						var clockwise = GetArcClockwise(arcClockwiseIndex++);
 						var flattenedArcPath = FlattenArc(topLeft, bottomRight, startAngle, endAngle, clockwise, flatness);
 						foreach (var point in flattenedArcPath.Points)
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
 							flattenedPath.LineTo(point);
+After:
+						{
+							flattenedPath.LineTo(point);
+						}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+							flattenedPath.LineTo(point);
+After:
+						{
+							flattenedPath.LineTo(point);
+						}
+*/
+						{
+							flattenedPath.LineTo(point);
+						}
+
 						break;
 					case PathOperation.Close:
 						flattenedPath.Close();
@@ -1552,7 +1833,9 @@ namespace Microsoft.Maui.Graphics
 				double r = vectors[0].Length();
 
 				if (r > rCurve)
+				{
 					rCurve = r;
+				}
 			}
 
 			if (rCurve <= 0.5 * flatness)
@@ -1564,7 +1847,9 @@ namespace Microsoft.Maui.Graphics
 
 			numberOfPoints = (int)(Math.Sqrt(rCurve / flatness)) + 3;
 			if (numberOfPoints > 1000)
+			{
 				numberOfPoints = 1000;
+			}
 
 			var d = 1.0f / numberOfPoints;
 
@@ -1576,13 +1861,286 @@ namespace Microsoft.Maui.Graphics
 			}
 
 			for (i = 1; i <= 3; i++)
-				for (k = 0; k <= (3 - i); k++)
+			{
+			
+/* Unmerged change from project 'Graphics(net8.0)'
+Before:
 					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-ios)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-android)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.19041.0)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.19041.0)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					vectors[k] = vectors[k + 1] - vectors[k];
+After:
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
+*/
+{
+				for (k = 0; k <= (3 - i); k++)
+				{
+					vectors[k] = vectors[k + 1] - vectors[k];
+				}
+			}
 
 			for (i = 4; i <= numberOfPoints; i++)
+
+/* Unmerged change from project 'Graphics(net8.0)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-ios)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-android)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.19041.0)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-windows10.0.20348.0)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-ios)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-maccatalyst)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-android)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.19041.0)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-windows10.0.20348.0)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
+
+/* Unmerged change from project 'Graphics(net7.0-macos)'
+Before:
+					vectors[k] += vectors[k - 1];
+After:
+				{
+					vectors[k] += vectors[k - 1];
+				}
+*/
 			{
 				for (k = 1; k <= 3; k++)
+				{
 					vectors[k] += vectors[k - 1];
+				}
 
 				flattenedPoints.Add(new Point(vectors[3].X, vectors[3].Y));
 			}

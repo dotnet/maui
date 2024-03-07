@@ -17,20 +17,28 @@ namespace Microsoft.Maui.Handlers
 		protected override void SetupContainer()
 		{
 			if (PlatformView == null || ContainerView != null)
+			{
 				return;
+			}
 
 			var oldParent = (Panel?)PlatformView.Parent;
 			var oldIndex = oldParent?.Children.IndexOf(PlatformView);
 			if (oldIndex is int oldIdx && oldIdx >= 0)
+			{
 				oldParent?.Children.RemoveAt(oldIdx);
+			}
 
 			ContainerView ??= new WrapperView();
 			((WrapperView)ContainerView).Child = PlatformView;
 
 			if (oldIndex is int idx && idx >= 0)
+			{
 				oldParent?.Children.Insert(idx, ContainerView);
+			}
 			else
+			{
 				oldParent?.Children.Add(ContainerView);
+			}
 		}
 
 		protected override void RemoveContainer()
@@ -45,15 +53,21 @@ namespace Microsoft.Maui.Handlers
 			var oldParent = (Panel?)ContainerView.Parent;
 			var oldIndex = oldParent?.Children.IndexOf(ContainerView);
 			if (oldIndex is int oldIdx && oldIdx >= 0)
+			{
 				oldParent?.Children.RemoveAt(oldIdx);
+			}
 
 			CleanupContainerView(ContainerView);
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)
+			{
 				oldParent?.Children.Insert(idx, PlatformView);
+			}
 			else
+			{
 				oldParent?.Children.Add(PlatformView);
+			}
 
 			void CleanupContainerView(FrameworkElement? containerView)
 			{

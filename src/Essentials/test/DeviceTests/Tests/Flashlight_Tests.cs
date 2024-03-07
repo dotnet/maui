@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasFlash)
+			{
 				return Task.CompletedTask;
+			}
 
 #if __ANDROID__
 			(Flashlight.Default as FlashlightImplementation).AlwaysUseCameraApi = oldCameraApi;

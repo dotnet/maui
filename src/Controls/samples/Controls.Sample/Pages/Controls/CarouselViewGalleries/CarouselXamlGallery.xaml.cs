@@ -59,7 +59,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			Count = Items.Count - 1;
 
 			if (startCurrentItem != -1)
+			{
 				Selected = Items[startCurrentItem];
+			}
 		}
 
 		public bool IsLoop
@@ -136,7 +138,10 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 		public CarouselItem(int index, string? image = null)
 		{
 			if (!string.IsNullOrEmpty(image))
+			{
 				FeaturedImage = image;
+			}
+
 			Index = index;
 			Image = "https://placeimg.com/700/300/any";
 		}
@@ -158,7 +163,10 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			field = value;
 			var handler = PropertyChanged;
 			if (handler != null)
+			{
 				handler(this, new PropertyChangedEventArgs(propertyName));
+			}
+
 			return this;
 		}
 	}

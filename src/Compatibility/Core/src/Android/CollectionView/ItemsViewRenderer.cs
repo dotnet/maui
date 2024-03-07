@@ -352,12 +352,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == ScrollBarVisibility.Default)
+			{
 				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+			}
 
 			var newVerticalScrollVisibility = ItemsView.VerticalScrollBarVisibility;
 
 			if (newVerticalScrollVisibility == ScrollBarVisibility.Default)
+			{
 				newVerticalScrollVisibility = _defaultVerticalScrollVisibility;
+			}
 
 			VerticalScrollBarEnabled = newVerticalScrollVisibility == ScrollBarVisibility.Always;
 		}
@@ -365,13 +369,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void UpdateHorizontalScrollBarVisibility()
 		{
 			if (_defaultHorizontalScrollVisibility == ScrollBarVisibility.Default)
+			{
 				_defaultHorizontalScrollVisibility =
 					HorizontalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+			}
 
 			var newHorizontalScrollVisiblility = ItemsView.HorizontalScrollBarVisibility;
 
 			if (newHorizontalScrollVisiblility == ScrollBarVisibility.Default)
+			{
 				newHorizontalScrollVisiblility = _defaultHorizontalScrollVisibility;
+			}
 
 			HorizontalScrollBarEnabled = newHorizontalScrollVisiblility == ScrollBarVisibility.Always;
 		}
@@ -462,12 +470,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void UpdateBackgroundColor(Color color = null)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			var backgroundColor = color ?? Element.BackgroundColor;
 
 			if (backgroundColor == null)
+			{
 				return;
+			}
 
 			SetBackgroundColor(backgroundColor.ToAndroid());
 		}
@@ -475,10 +487,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void UpdateBackground(Brush brush = null)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			if (!(this is RecyclerView recyclerView))
+			{
 				return;
+			}
 
 			Brush background = Element.Background;
 
@@ -610,7 +626,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void ScrollTo(ScrollToRequestEventArgs args)
 		{
 			if (ItemsView == null)
+			{
 				return;
+			}
 
 			var position = DetermineTargetPosition(args);
 
@@ -644,9 +662,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (ItemsView is StructuredItemsView itemsView)
 			{
 				if (itemsView.Header != null || itemsView.HeaderTemplate != null)
+				{
 					itemCount++;
+				}
+
 				if (itemsView.Footer != null || itemsView.FooterTemplate != null)
+				{
 					itemCount++;
+				}
 			}
 
 			var showEmptyView = ItemsView?.EmptyView != null && ItemsViewAdapter.ItemCount == itemCount;
@@ -690,7 +713,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void RemoveScrollListener()
 		{
 			if (_recyclerViewScrollListener == null)
+			{
 				return;
+			}
 
 			_recyclerViewScrollListener.Dispose();
 			ClearOnScrollListeners();

@@ -224,7 +224,9 @@ namespace Microsoft.Maui.DeviceTests
 				// This is a view that always has a container
 				// so there's nothing to test here
 				if (handler.HasContainer)
+				{
 					return;
+				}
 
 				await AttachAndRun(view,
 					async (handler) =>

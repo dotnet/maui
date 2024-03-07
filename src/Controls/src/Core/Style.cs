@@ -43,14 +43,24 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_basedOnStyle == value)
+				{
+				{
 					return;
+				}
+
 				if (!ValidateBasedOn(value))
+				{
 					throw new ArgumentException("BasedOn.TargetType is not compatible with TargetType");
+				}
+
 				Style oldValue = _basedOnStyle;
 				_basedOnStyle = value;
 				BasedOnChanged(oldValue, value);
 				if (value != null)
+				{
+				{
 					BaseResourceKey = null;
+				}
 			}
 		}
 
@@ -61,17 +71,25 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_baseResourceKey == value)
+				{
+				{
 					return;
+				}
+
 				_baseResourceKey = value;
 				//update all DynamicResources
 				foreach (var target in (IEnumerable<KeyValuePair<BindableObject, object>>)(object)_targets)
 				{
 					target.Key.RemoveDynamicResource(_basedOnResourceProperty);
 					if (value != null)
+					{
 						target.Key.SetDynamicResource(_basedOnResourceProperty, value);
+					}
 				}
 				if (value != null)
+				{
 					BasedOn = null;
+				}
 			}
 		}
 
@@ -103,7 +121,10 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (BaseResourceKey != null)
+			{
 				bindable.SetDynamicResource(_basedOnResourceProperty, BaseResourceKey);
+			}
+
 			ApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable), specificity);
 		}
 
@@ -123,37 +144,57 @@ namespace Microsoft.Maui.Controls
 		internal bool CanBeAppliedTo(Type targetType)
 		{
 			if (TargetType == targetType)
+			{
 				return true;
+			}
+
 			if (!ApplyToDerivedTypes)
+			{
 				return false;
+			}
+
 			do
 			{
 				targetType = targetType.BaseType;
 				if (TargetType == targetType)
-					return true;
+				{
+				
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
 			} while (targetType != typeof(Element));
-			return false;
-		}
+After:
+				}
+			} while (targetType != typeof(Element));
+*/
 
-		void BasedOnChanged(Style oldValue, Style newValue)
-		{
-			foreach (var target in (IEnumerable<KeyValuePair<BindableObject, object>>)(object)_targets)
-			{
-				UnApplyCore(target.Key, oldValue);
-				ApplyCore(target.Key, newValue, (SetterSpecificity)target.Value);
-			}
-		}
-
-		Style GetBasedOnResource(BindableObject bindable) => (Style)bindable.GetValue(_basedOnResourceProperty);
-
-		static void OnBasedOnResourceChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			Style style = (bindable as IStyleElement).Style;
-			if (style == null)
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			} while (targetType != typeof(Element));
+After:
+				}
+			} while (targetType != typeof(Element));
+*/
+{
+					return true;
+		
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
 				return;
 			if (!style._targets.TryGetValue(bindable, out var objectspecificity))
-				return;
+After:
+			{
+*/
 
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return;
+			if (!style._targets.TryGetValue(bindable, out var objectspecificity))
+After:
+			{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
 			style.UnApplyCore(bindable, (Style)oldValue);
 			style.ApplyCore(bindable, (Style)newValue, (SetterSpecificity)objectspecificity);
 		}
@@ -176,6 +217,202 @@ namespace Microsoft.Maui.Controls
 				setter.Apply(bindable, specificity);
 
 			((AttachedCollection<Behavior>)Behaviors).AttachTo(bindable);
+After:
+			}
+
+			if (!style._targets.TryGetValue(bindable, out var objectspecificity))
+			{
+				return;
+			}
+
+			style.UnApplyCore(bindable, (Style)oldValue);
+			style.ApplyCore(bindable, (Style)newValue, (SetterSpecificity)objectspecificity);
+		}
+
+		ConditionalWeakTable<BindableObject, object> specificities = new();
+
+		void ApplyCore(BindableObject bindable, Style basedOn, SetterSpecificity specificity)
+		{
+			if (basedOn != null)
+			{
+				((IStyle)basedOn).Apply(bindable, new SetterSpecificity(specificity.Style - 1, 0, 0, 0));
+			}
+
+#if NETSTANDARD2_0
+			specificities.Remove(bindable);
+			specificities.Add(bindable, specificity);
+#else
+			specificities.AddOrUpdate(bindable, specificity);
+#endif
+
+			foreach (Setter setter in Setters)
+			{
+				setter.Apply(bindable, specificity);
+			} ((AttachedCollection<Behavior>)Behaviors).AttachTo(bindable);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			style.UnApplyCore(bindable, (Style)oldValue);
+			style.ApplyCore(bindable, (Style)newValue, (SetterSpecificity)objectspecificity);
+		}
+
+		ConditionalWeakTable<BindableObject, object> specificities = new();
+
+		void ApplyCore(BindableObject bindable, Style basedOn, SetterSpecificity specificity)
+		{
+			if (basedOn != null)
+				((IStyle)basedOn).Apply(bindable, new SetterSpecificity(specificity.Style - 1, 0, 0, 0));
+
+#if NETSTANDARD2_0
+			specificities.Remove(bindable);
+			specificities.Add(bindable, specificity);
+#else
+			specificities.AddOrUpdate(bindable, specificity);
+#endif
+
+			foreach (Setter setter in Setters)
+				setter.Apply(bindable, specificity);
+
+			((AttachedCollection<Behavior>)Behaviors).AttachTo(bindable);
+After:
+			}
+
+			if (!style._targets.TryGetValue(bindable, out var objectspecificity))
+			{
+				return;
+			}
+
+			style.UnApplyCore(bindable, (Style)oldValue);
+			style.ApplyCore(bindable, (Style)newValue, (SetterSpecificity)objectspecificity);
+		}
+
+		ConditionalWeakTable<BindableObject, object> specificities = new();
+
+		void ApplyCore(BindableObject bindable, Style basedOn, SetterSpecificity specificity)
+		{
+			if (basedOn != null)
+			{
+				((IStyle)basedOn).Apply(bindable, new SetterSpecificity(specificity.Style - 1, 0, 0, 0));
+			}
+
+#if NETSTANDARD2_0
+			specificities.Remove(bindable);
+			specificities.Add(bindable, specificity);
+#else
+			specificities.AddOrUpdate(bindable, specificity);
+#endif
+
+			foreach (Setter setter in Setters)
+			{
+				setter.Apply(bindable, specificity);
+			} ((AttachedCollection<Behavior>)Behaviors).AttachTo(bindable);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return;
+After:
+			{
+				return;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				setter.UnApply(bindable, (SetterSpecificity)specificity);
+After:
+			{
+				setter.UnApply(bindable, (SetterSpecificity)specificity);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				setter.UnApply(bindable, (SetterSpecificity)specificity);
+After:
+			{
+				setter.UnApply(bindable, (SetterSpecificity)specificity);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				((IStyle)basedOn).UnApply(bindable);
+After:
+			{
+				((IStyle)basedOn).UnApply(bindable);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				((IStyle)basedOn).UnApply(bindable);
+After:
+			{
+				((IStyle)basedOn).UnApply(bindable);
+*/
+		}
+			} while (targetType != typeof(Element));
+			return false;
+		}
+
+		void BasedOnChanged(Style oldValue, Style newValue)
+		{
+			foreach (var target in (IEnumerable<KeyValuePair<BindableObject, object>>)(object)_targets)
+			{
+				UnApplyCore(target.Key, oldValue);
+				ApplyCore(target.Key, newValue, (SetterSpecificity)target.Value);
+			}
+		}
+
+		Style GetBasedOnResource(BindableObject bindable) => (Style)bindable.GetValue(_basedOnResourceProperty);
+
+		static void OnBasedOnResourceChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			Style style = (bindable as IStyleElement).Style;
+			if (style == null)
+			{
+				return;
+			}
+
+			if (!style._targets.TryGetValue(bindable, out var objectspecificity))
+			{
+				return;
+			}
+
+			style.UnApplyCore(bindable, (Style)oldValue);
+			style.ApplyCore(bindable, (Style)newValue, (SetterSpecificity)objectspecificity);
+		}
+
+		ConditionalWeakTable<BindableObject, object> specificities = new();
+
+		void ApplyCore(BindableObject bindable, Style basedOn, SetterSpecificity specificity)
+		{
+			if (basedOn != null)
+			{
+				((IStyle)basedOn).Apply(bindable, new SetterSpecificity(specificity.Style - 1, 0, 0, 0));
+			}
+
+#if NETSTANDARD2_0
+			specificities.Remove(bindable);
+			specificities.Add(bindable, specificity);
+#else
+			specificities.AddOrUpdate(bindable, specificity);
+#endif
+
+			foreach (Setter setter in Setters)
+			{
+				setter.Apply(bindable, specificity);
+			} ((AttachedCollection<Behavior>)Behaviors).AttachTo(bindable);
 			((AttachedCollection<TriggerBase>)Triggers).AttachTo(bindable);
 		}
 
@@ -185,13 +422,20 @@ namespace Microsoft.Maui.Controls
 			((AttachedCollection<Behavior>)Behaviors).DetachFrom(bindable);
 
 			if (!specificities.TryGetValue(bindable, out var specificity))
+			{
 				return;
+			}
 
 			foreach (Setter setter in Setters)
+			{
 				setter.UnApply(bindable, (SetterSpecificity)specificity);
+			}
 
 			if (basedOn != null)
+			{
 				((IStyle)basedOn).UnApply(bindable);
+			}
+			}
 		}
 
 		bool ValidateBasedOn(Style value)

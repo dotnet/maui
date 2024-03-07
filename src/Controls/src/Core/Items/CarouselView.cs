@@ -206,7 +206,10 @@ namespace Microsoft.Maui.Controls
 		static void LinkToIndicatorView(CarouselView carouselView, IndicatorView indicatorView)
 		{
 			if (indicatorView == null)
+			{
+			{
 				return;
+			}
 
 			indicatorView.SetBinding(IndicatorView.PositionProperty, new Binding
 			{

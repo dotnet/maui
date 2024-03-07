@@ -19,10 +19,15 @@ namespace Microsoft.Maui.Controls.Internals
 			var binding = bindingBase as Binding;
 			//This will allow setting bindings from Xaml by reusing the MarkupExtension
 			if (IsNullOrEmpty(updateSourceEventName) && binding != null && !IsNullOrEmpty(binding.UpdateSourceEventName))
+			{
 				updateSourceEventName = binding.UpdateSourceEventName;
+			}
+
 			INotifyPropertyChanged eventWrapper = null;
 			if (!IsNullOrEmpty(updateSourceEventName))
+			{
 				eventWrapper = new EventWrapper(target, targetProperty, updateSourceEventName);
+			}
 
 			SetBinding(target, targetProperty, bindingBase, eventWrapper);
 		}
@@ -30,9 +35,14 @@ namespace Microsoft.Maui.Controls.Internals
 		public static void SetBinding<TPlatformView>(TPlatformView target, string targetProperty, BindingBase bindingBase, INotifyPropertyChanged propertyChanged) where TPlatformView : class
 		{
 			if (target == null)
+			{
 				throw new ArgumentNullException(nameof(target));
+			}
+
 			if (IsNullOrEmpty(targetProperty))
+			{
 				throw new ArgumentNullException(nameof(targetProperty));
+			}
 
 			var binding = bindingBase as Binding;
 			var proxy = BindableObjectProxy<TPlatformView>.BindableObjectProxies.GetValue(target, (TPlatformView key) => new BindableObjectProxy<TPlatformView>(key));
@@ -43,17 +53,24 @@ namespace Microsoft.Maui.Controls.Internals
 			var defaultValue = targetPropertyInfo?.GetMethod.Invoke(target, Array.Empty<object>());
 			bindableProperty = CreateBindableProperty<TPlatformView>(targetProperty, propertyType, defaultValue);
 			if (binding != null && binding.Mode != BindingMode.OneWay && propertyChanged != null)
+			{
 				propertyChanged.PropertyChanged += (sender, e) =>
 				{
 					if (e.PropertyName != targetProperty)
+					{
 						return;
+					}
+
 					SetValueFromNative<TPlatformView>(sender as TPlatformView, targetProperty, bindableProperty);
 					//we need to keep the listener around he same time we have the proxy
 					proxy.NativeINPCListener = propertyChanged;
 				};
+			}
 
 			if (binding != null && binding.Mode != BindingMode.OneWay)
+			{
 				SetValueFromNative(target, targetProperty, bindableProperty);
+			}
 
 			proxy.SetBinding(bindableProperty, bindingBase);
 		}
@@ -72,7 +89,9 @@ namespace Microsoft.Maui.Controls.Internals
 				{
 					TPlatformView platformView;
 					if ((bindable as BindableObjectProxy<TPlatformView>).TargetReference.TryGetTarget(out platformView))
+					{
 						SetPlatformValue(platformView, targetProperty, newValue);
+					}
 				}
 			);
 		}
@@ -81,7 +100,10 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			var mi = target.GetType().GetProperty(targetProperty)?.SetMethod;
 			if (mi == null)
+			{
 				throw new InvalidOperationException(Format("Native Binding on {0}.{1} failed due to missing or inaccessible property", target.GetType(), targetProperty));
+			}
+
 			mi.Invoke(target, new[] { newValue });
 		}
 
@@ -89,7 +111,11 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			BindableObjectProxy<TPlatformView> proxy;
 			if (!BindableObjectProxy<TPlatformView>.BindableObjectProxies.TryGetValue(target, out proxy))
+			{
+			{
 				return;
+			}
+
 			SetValueFromRenderer(proxy, bindableProperty, target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, Array.Empty<object>()));
 		}
 
@@ -101,11 +127,19 @@ namespace Microsoft.Maui.Controls.Internals
 		public static void SetBinding<TPlatformView>(TPlatformView target, BindableProperty targetProperty, BindingBase binding) where TPlatformView : class
 		{
 			if (target == null)
+			{
 				throw new ArgumentNullException(nameof(target));
+			}
+
 			if (targetProperty == null)
+			{
 				throw new ArgumentNullException(nameof(targetProperty));
+			}
+
 			if (binding == null)
+			{
 				throw new ArgumentNullException(nameof(binding));
+			}
 
 			var proxy = BindableObjectProxy<TPlatformView>.BindableObjectProxies.GetValue(target, (TPlatformView key) => new BindableObjectProxy<TPlatformView>(key));
 			proxy.BindingsBackpack.Add(new KeyValuePair<BindableProperty, BindingBase>(targetProperty, binding));
@@ -114,9 +148,14 @@ namespace Microsoft.Maui.Controls.Internals
 		public static void SetValue<TPlatformView>(TPlatformView target, BindableProperty targetProperty, object value) where TPlatformView : class
 		{
 			if (target == null)
+			{
 				throw new ArgumentNullException(nameof(target));
+			}
+
 			if (targetProperty == null)
+			{
 				throw new ArgumentNullException(nameof(targetProperty));
+			}
 
 			var proxy = BindableObjectProxy<TPlatformView>.BindableObjectProxies.GetValue(target, (TPlatformView key) => new BindableObjectProxy<TPlatformView>(key));
 			proxy.ValuesBackpack.Add(new KeyValuePair<BindableProperty, object>(targetProperty, value));
@@ -125,18 +164,30 @@ namespace Microsoft.Maui.Controls.Internals
 		public static void SetBindingContext<TPlatformView>(TPlatformView target, object bindingContext, Func<TPlatformView, IEnumerable<TPlatformView>> getChild = null) where TPlatformView : class
 		{
 			if (target == null)
+			{
 				throw new ArgumentNullException(nameof(target));
+			}
 
 			var proxy = BindableObjectProxy<TPlatformView>.BindableObjectProxies.GetValue(target, (TPlatformView key) => new BindableObjectProxy<TPlatformView>(key));
 			proxy.BindingContext = bindingContext;
 			if (getChild == null)
+			{
 				return;
+			}
+
 			var children = getChild(target);
 			if (children == null)
+			{
 				return;
+			}
+
 			foreach (var child in children)
+			{
 				if (child != null)
+				{
 					SetBindingContext(child, bindingContext, getChild);
+				}
+			}
 		}
 
 		public static void TransferBindablePropertiesToWrapper<TPlatformView, TPlatformWrapper>(TPlatformView platformView, TPlatformWrapper wrapper)
@@ -145,7 +196,11 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			BindableObjectProxy<TPlatformView> proxy;
 			if (!BindableObjectProxy<TPlatformView>.BindableObjectProxies.TryGetValue(platformView, out proxy))
+			{
+			{
 				return;
+			}
+
 			proxy.TransferAttachedPropertiesTo(wrapper);
 		}
 
@@ -169,7 +224,9 @@ namespace Microsoft.Maui.Controls.Internals
 					throw new ArgumentException(Format("No declared or accessible event {0} on {1}", updateSourceEventName, target.GetType()), nameof(updateSourceEventName));
 				}
 				if (updateSourceEvent != null && handlerDelegate != null)
+				{
 					updateSourceEvent.AddEventHandler(target, handlerDelegate);
+				}
 			}
 
 			[Preserve]
@@ -198,9 +255,14 @@ namespace Microsoft.Maui.Controls.Internals
 			public void TransferAttachedPropertiesTo(View wrapper)
 			{
 				foreach (var kvp in BindingsBackpack)
+				{
 					wrapper.SetBinding(kvp.Key, kvp.Value);
+				}
+
 				foreach (var kvp in ValuesBackpack)
+				{
 					wrapper.SetValue(kvp.Key, kvp.Value);
+				}
 			}
 		}
 	}

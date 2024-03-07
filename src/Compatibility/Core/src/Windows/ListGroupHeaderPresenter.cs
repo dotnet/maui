@@ -16,10 +16,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				var list = element as Microsoft.UI.Xaml.Controls.ListView;
 				if (list != null)
+				{
 					element = list.SemanticZoomOwner;
+				}
 
 				if (element == null)
+				{
 					break;
+				}
 
 				var zoom = element as SemanticZoom;
 				if (zoom != null)

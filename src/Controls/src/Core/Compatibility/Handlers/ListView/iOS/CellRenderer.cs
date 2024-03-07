@@ -67,25 +67,41 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public virtual void SetAccessibility(UITableViewCell tableViewCell, Cell cell)
 		{
 			if (cell.IsSet(AutomationProperties.IsInAccessibleTreeProperty))
+			{
 				tableViewCell.IsAccessibilityElement = cell.GetValue(AutomationProperties.IsInAccessibleTreeProperty).Equals(true);
+			}
 			else
+			{
 				tableViewCell.IsAccessibilityElement = false;
+			}
 
 			if (cell.IsSet(AutomationProperties.ExcludedWithChildrenProperty))
+			{
 				tableViewCell.AccessibilityElementsHidden = cell.GetValue(AutomationProperties.ExcludedWithChildrenProperty).Equals(true);
+			}
 			else
+			{
 				tableViewCell.AccessibilityElementsHidden = false;
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			if (cell.IsSet(AutomationProperties.NameProperty))
+			{
 				tableViewCell.AccessibilityLabel = cell.GetValue(AutomationProperties.NameProperty).ToString();
+			}
 			else
+			{
 				tableViewCell.AccessibilityLabel = null;
+			}
 
 			if (cell.IsSet(AutomationProperties.HelpTextProperty))
+			{
 				tableViewCell.AccessibilityHint = cell.GetValue(AutomationProperties.HelpTextProperty).ToString();
+			}
 			else
+			{
 				tableViewCell.AccessibilityHint = null;
+			}
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		}
@@ -128,7 +144,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 				{
 					if (cell.RealParent is VisualElement element && element.BackgroundColor != null)
+					{
 						uiBgColor = element.BackgroundColor.ToPlatform();
+					}
 				}
 			}
 
@@ -141,6 +159,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			cell.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
 
 			if (inpc != null)
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 				inpc.PropertyChanged -= _onPropertyChangedEventHandler;
 
 			_onForceUpdateSizeRequested = (sender, e) =>
@@ -173,7 +194,92 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			cell.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;
 			if (inpc != null)
 				inpc.PropertyChanged += _onPropertyChangedEventHandler;
+After:
+			{
+				inpc.PropertyChanged -= _onPropertyChangedEventHandler;
+			}
 
+			_onForceUpdateSizeRequested = (sender, e) =>
+			{
+				var index = tableView?.IndexPathForCell(platformCell);
+				if (index == null && sender is Cell c)
+				{
+					index = Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(c);
+				}
+
+				if (index != null)
+				{
+					tableView?.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
+				}
+			};
+
+			_onPropertyChangedEventHandler = (sender, e) =>
+			{
+				if (e.PropertyName == "RealCell" && sender is BindableObject bo && GetRealCell(bo) == null)
+				{
+					if (sender is ICellController icc)
+					{
+						icc.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
+					}
+
+					if (sender is INotifyPropertyChanged notifyPropertyChanged)
+					{
+						notifyPropertyChanged.PropertyChanged -= _onPropertyChangedEventHandler;
+					}
+
+					_onForceUpdateSizeRequested = null;
+					_onPropertyChangedEventHandler = null;
+				}
+			};
+
+			cell.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;
+			if (inpc != null)
+			{
+				inpc.PropertyChanged += _onPropertyChangedEventHandler;
+			}
+*/
+			{
+				inpc.PropertyChanged -= _onPropertyChangedEventHandler;
+			}
+
+			_onForceUpdateSizeRequested = (sender, e) =>
+			{
+				var index = tableView?.IndexPathForCell(platformCell);
+				if (index == null && sender is Cell c)
+				{
+					index = Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(c);
+				}
+
+				if (index != null)
+				{
+					tableView?.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
+				}
+			};
+
+			_onPropertyChangedEventHandler = (sender, e) =>
+			{
+				if (e.PropertyName == "RealCell" && sender is BindableObject bo && GetRealCell(bo) == null)
+				{
+					if (sender is ICellController icc)
+					{
+						icc.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
+					}
+
+					if (sender is INotifyPropertyChanged notifyPropertyChanged)
+					{
+						notifyPropertyChanged.PropertyChanged -= _onPropertyChangedEventHandler;
+					}
+
+					_onForceUpdateSizeRequested = null;
+					_onPropertyChangedEventHandler = null;
+				}
+			};
+
+			cell.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;
+			if (inpc != null)
+			{
+				inpc.PropertyChanged += _onPropertyChangedEventHandler;
+			}
 		}
 
 		void Ncp_PropertyChanged(object sender, PropertyChangedEventArgs e)

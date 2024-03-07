@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Platform
 		public override void OnPageStarted(WebView? view, string? url, Bitmap? favicon)
 		{
 			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null || url == WebViewHandler.AssetBaseUrl)
+			{
 				return;
+			}
 
 			if (!string.IsNullOrWhiteSpace(url))
 			{
@@ -33,7 +35,9 @@ namespace Microsoft.Maui.Platform
 			var cancel = false;
 
 			if (!GetValidUrl(url).Equals(handler.UrlCanceled, StringComparison.OrdinalIgnoreCase))
+			{
 				cancel = NavigatingCanceled(url);
+			}
 
 			handler.UrlCanceled = null;
 
@@ -52,18 +56,24 @@ namespace Microsoft.Maui.Platform
 		public override void OnPageFinished(WebView? view, string? url)
 		{
 			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null || string.IsNullOrWhiteSpace(url) || url == WebViewHandler.AssetBaseUrl)
+			{
 				return;
+			}
 
 			bool navigate = _navigationResult != WebNavigationResult.Failure || !GetValidUrl(url).Equals(_lastUrlNavigatedCancel, StringComparison.OrdinalIgnoreCase);
 			_lastUrlNavigatedCancel = _navigationResult == WebNavigationResult.Cancel ? url : null;
 
 			if (navigate)
+			{
 				handler.VirtualView.Navigated(handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
+			}
 
 			handler.SyncPlatformCookiesToVirtualView(url);
 
 			if (handler != null)
+			{
 				handler.PlatformView.UpdateCanGoBackForward(handler.VirtualView);
+			}
 
 			base.OnPageFinished(view, url);
 		}
@@ -76,7 +86,9 @@ namespace Microsoft.Maui.Platform
 				_navigationResult = WebNavigationResult.Failure;
 
 				if (error?.ErrorCode == ClientError.Timeout)
+				{
 					_navigationResult = WebNavigationResult.Timeout;
+				}
 			}
 
 			base.OnReceivedError(view, request, error);
@@ -88,7 +100,9 @@ namespace Microsoft.Maui.Platform
 		static string GetValidUrl(string? url)
 		{
 			if (string.IsNullOrEmpty(url))
+			{
 				return string.Empty;
+			}
 
 			return url;
 		}
@@ -96,7 +110,9 @@ namespace Microsoft.Maui.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				Disconnect();
+			}
 
 			base.Dispose(disposing);
 		}

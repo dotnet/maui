@@ -130,13 +130,19 @@ namespace Microsoft.Maui.Animations
 		public void Add(double beginAt, double duration, Animation animation)
 		{
 			if (beginAt < 0 || beginAt > 1)
+			{
 				throw new ArgumentOutOfRangeException(nameof(beginAt));
+			}
 
 			if (duration < 0 || duration > 1)
+			{
 				throw new ArgumentOutOfRangeException(nameof(duration));
+			}
 
 			if (duration <= beginAt)
+			{
 				throw new ArgumentException($"{nameof(duration)} must be greater than {nameof(beginAt)}");
+			}
 
 			animation.StartDelay = beginAt;
 			animation.Duration = duration;
@@ -150,7 +156,10 @@ namespace Microsoft.Maui.Animations
 		public void Tick(double milliseconds)
 		{
 			if (IsPaused)
+			{
+			{
 				return;
+			}
 
 			if (0 == Interlocked.Exchange(ref _usingResource, 1))
 			{
@@ -189,7 +198,10 @@ namespace Microsoft.Maui.Animations
 		protected virtual void OnTick(double millisecondsSinceLastUpdate)
 		{
 			if (HasFinished)
+			{
+			{
 				return;
+			}
 
 			var secondsSinceLastUpdate = millisecondsSinceLastUpdate / 1000.0;
 			CurrentTime += secondsSinceLastUpdate;
@@ -201,8 +213,9 @@ namespace Microsoft.Maui.Animations
 				{
 					animation.OnTick(millisecondsSinceLastUpdate);
 					if (!animation.HasFinished)
+					{
 						hasFinished = false;
-
+					}
 				}
 
 				HasFinished = hasFinished;
@@ -212,7 +225,9 @@ namespace Microsoft.Maui.Animations
 				var start = CurrentTime - StartDelay;
 
 				if (CurrentTime < StartDelay)
+				{
 					return;
+				}
 
 				var percent = Math.Min(start / Duration, 1);
 				Update(percent);
@@ -223,7 +238,9 @@ namespace Microsoft.Maui.Animations
 				Finished?.Invoke();
 
 				if (Repeats)
+				{
 					Reset();
+				}
 			}
 		}
 
@@ -309,7 +326,9 @@ namespace Microsoft.Maui.Animations
 			HasFinished = false;
 
 			foreach (var x in childrenAnimations)
+			{
 				x.Reset();
+			}
 		}
 
 		/// <summary>
@@ -338,7 +357,9 @@ namespace Microsoft.Maui.Animations
 		{
 			IAnimator? view = null;
 			if (Parent?.TryGetTarget(out view) ?? false)
+			{
 				view?.RemoveAnimation(this);
+			}
 		}
 
 		/// <summary>
@@ -355,7 +376,9 @@ namespace Microsoft.Maui.Animations
 				if (disposing)
 				{
 					foreach (var child in childrenAnimations)
+					{
 						child.Dispose();
+					}
 
 					childrenAnimations.Clear();
 				}

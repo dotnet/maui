@@ -69,7 +69,9 @@ namespace Microsoft.Maui.Platform
 				{
 					await Task.Delay(500);
 					if (_handler.TryGetTarget(out var handler))
+					{
 						await handler.FirstLoadUrlAsync(closure);
+					}
 				});
 			}
 
@@ -82,16 +84,23 @@ namespace Microsoft.Maui.Platform
 			var url = CurrentUrl;
 
 			if (url == null || url == $"file://{NSBundle.MainBundle.BundlePath}/")
+			{
+			{
 				return;
+			}
 
 			if (_handler.TryGetTarget(out var handler))
+			{
 				await handler.ProcessNavigatedAsync(url);
+			}
 		}
 
 		public void LoadHtml(string? html, string? baseUrl)
 		{
 			if (html != null)
+			{
 				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
+			}
 		}
 
 		async Task LoadUrlAsync(string? url)
@@ -128,14 +137,18 @@ namespace Microsoft.Maui.Platform
 					if (!LoadFile(url))
 					{
 						if (_handler.TryGetTarget(out var handler))
+						{
 							handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning($"Unable to Load Url {url}: {formatException}");
+						}
 					}
 				}
 			}
 			catch (Exception exc)
 			{
 				if (_handler.TryGetTarget(out var handler))
+				{
 					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning($"Unable to Load Url {url}: {exc}");
+				}
 			}
 		}
 
@@ -166,9 +179,13 @@ namespace Microsoft.Maui.Platform
 				config.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
 			}
 			if (SharedPool == null)
+			{
 				SharedPool = config.ProcessPool;
+			}
 			else
+			{
 				config.ProcessPool = SharedPool;
+			}
 
 			return config;
 		}
@@ -194,7 +211,9 @@ namespace Microsoft.Maui.Platform
 			catch (Exception ex)
 			{
 				if (_handler.TryGetTarget(out var handler))
+				{
 					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning($"Could not load {url} as local file: {ex}");
+				}
 			}
 
 			return false;

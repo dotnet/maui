@@ -31,12 +31,18 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 			TaskCompletionSource load = new();
 			element.Loaded += (s, e) => load.TrySetResult();
 			if (element.IsLoaded)
+			{
 				load.TrySetResult();
+			}
+
 			await load.Task;
 			TaskCompletionSource<IViewHandler> tcs = new();
-			element.HandlerChanged += (s, e) => { if (element.Handler != null) tcs.TrySetResult(element.Handler); };
+			element.HandlerChanged += (s, e) => { if (element.Handler != null) { tcs.TrySetResult(element.Handler); } };
 			if (element.Handler is not null)
+			{
 				tcs.TrySetResult(element.Handler);
+			}
+
 			var getHandler = await tcs.Task;
 			var platformView = getHandler.PlatformView;
 #if WINDOWS
@@ -87,7 +93,9 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 			var pixelBuffer = buffer.ToArray();
 			var bytesPerPixel = cgimage.BitsPerPixel / 8;
 			if (cgimage.ByteOrderInfo != CGImageByteOrderInfo.ByteOrder32Little)
+			{
 				throw new NotImplementedException($"ByteOrderInfo CGImageByteOrderInfo.{cgimage.ByteOrderInfo} not implemented");
+			}
 
 			byte[] rawData = new byte[(int)(cgimage.Width * cgimage.Height * 4)];
 			int index = 0;
@@ -114,7 +122,10 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 		private static async Task<RawBitmap> CaptureView(Android.Views.View view)
 		{
 			while (!AndroidX.Core.View.ViewCompat.IsLaidOut(view))
+			{
 				await Task.Delay(10); // Wait for Android to render the view
+			}
+
 			var bitmap = Android.Graphics.Bitmap.CreateBitmap(view.Width, view.Height, Android.Graphics.Bitmap.Config.Argb8888);
 			Android.Graphics.Canvas canvas = new (bitmap);
 			view.Draw(canvas);

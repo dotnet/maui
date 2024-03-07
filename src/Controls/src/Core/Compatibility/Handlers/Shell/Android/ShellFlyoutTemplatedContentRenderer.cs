@@ -66,7 +66,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (e.NewState != DrawerLayout.StateIdle)
 			{
 				if (_flyoutContentView == null)
+				{
 					UpdateFlyoutContent();
+				}
 
 				_shellContext.CurrentDrawerLayout.DrawerStateChanged -= OnFlyoutStateChanging;
 			}
@@ -113,7 +115,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateFlyoutFooter();
 
 			if (FlyoutView.FlyoutBehavior == FlyoutBehavior.Locked)
+			{
 				OnFlyoutViewLayoutChanging();
+			}
 
 			if (View is ShellFlyoutLayout sfl)
 			{
@@ -130,7 +134,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					OnFlyoutViewLayoutChanging();
 
 					if (_flyoutContentView == null || ggll == null)
+					{
 						return;
+					}
 
 					ggll = null;
 					listener.Invalidate();
@@ -142,7 +148,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnFlyoutHeaderMeasureInvalidated(object sender, EventArgs e)
 		{
 			if (_headerView != null)
+			{
 				UpdateFlyoutHeaderBehavior();
+			}
 		}
 
 		protected void OnElementSelected(Element element)
@@ -153,33 +161,47 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.FlyoutHeaderBehaviorProperty.PropertyName)
+			{
 				UpdateFlyoutHeaderBehavior();
+			}
 			else if (e.IsOneOf(
 				Shell.FlyoutBackgroundColorProperty,
 				Shell.FlyoutBackgroundProperty,
 				Shell.FlyoutBackgroundImageProperty,
 				Shell.FlyoutBackgroundImageAspectProperty))
+			{
 				UpdateFlyoutBackground();
+			}
 			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
+			{
 				UpdateVerticalScrollMode();
+			}
 			else if (e.IsOneOf(
 				Shell.FlyoutHeaderProperty,
 				Shell.FlyoutHeaderTemplateProperty))
+			{
 				UpdateFlyoutHeader();
+			}
 			else if (e.IsOneOf(
 				Shell.FlyoutFooterProperty,
 				Shell.FlyoutFooterTemplateProperty))
+			{
 				UpdateFlyoutFooter();
+			}
 			else if (e.IsOneOf(
 				Shell.FlyoutContentProperty,
 				Shell.FlyoutContentTemplateProperty))
+			{
 				UpdateFlyoutContent();
+			}
 		}
 
 		protected virtual void UpdateFlyoutContent()
 		{
 			if (!_rootView.IsAlive())
+			{
 				return;
+			}
 
 			var index = 0;
 			if (_flyoutContentView != null)
@@ -190,7 +212,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_flyoutContentView = CreateFlyoutContent(_rootView);
 			if (_flyoutContentView == null)
+			{
 				return;
+			}
 
 			_rootView.AddView(_flyoutContentView, index);
 			UpdateContentPadding();
@@ -310,10 +334,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var footer = ((IShellController)_shellContext.Shell).FlyoutFooter;
 
 			if (footer == null)
+			{
 				return;
+			}
 
 			if (_flyoutWidth == 0)
+			{
 				return;
+			}
 
 			_footerView = new ContainerView(_shellContext.AndroidContext, footer, MauiContext)
 			{
@@ -339,7 +367,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (_footerView?.LayoutParameters is CoordinatorLayout.LayoutParams cl)
+			{
 				UpdateFooterLayout(cl);
+			}
 		}
 
 		void UpdateFooterLayout(CoordinatorLayout.LayoutParams cl)
@@ -353,7 +383,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var margin = Thickness.Zero;
 			var measuredHeight = (FooterView?.MeasuredHeight ?? 0);
 			if (_footerView?.View != null)
+			{
 				margin = _footerView.View.Margin;
+			}
 
 			return measuredHeight + (int)(_rootView.Context.ToPixels(margin.VerticalThickness));
 		}
@@ -383,7 +415,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					var headerViewMinHeight = _headerView?.MinimumHeight ?? 0;
 					if (bottomOffset > headerViewMinHeight)
+					{
 						bottomOffset -= headerViewMinHeight;
+					}
 				}
 
 				if (cl.BottomMargin != bottomOffset)
@@ -397,7 +431,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// If you try to use Margin the RecylcerView won't render anything.
 				if (flyoutView is AndroidX.Core.View.IScrollingView &&
 					flyoutView is ViewGroup vg)
-				{				
+				{
 					if (vg.PaddingBottom != bottomOffset)
 					{
 						vg.SetPadding(0, 0, 0, bottomOffset);
@@ -451,7 +485,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				// We wait to instantiate the flyout footer until we know the WxH of the flyout container
 				if (_footerView == null)
+				{
 					UpdateFlyoutFooter();
+				}
 
 				UpdateFooterLayout();
 				UpdateContentPadding();
@@ -474,12 +510,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var color = _shellContext.Shell.FlyoutBackgroundColor;
 				if (_defaultBackgroundColor == null)
+				{
 					_defaultBackgroundColor = _rootView.Background;
+				}
 
 				_rootView.Background = color == null ? _defaultBackgroundColor : new ColorDrawable(color.ToPlatform());
 			}
 			else
+			{
 				_rootView.UpdateBackground(brush);
+			}
 
 			UpdateFlyoutBgImageAsync();
 		}
@@ -491,7 +531,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (imageSource == null || !_shellContext.Shell.IsSet(Shell.FlyoutBackgroundImageProperty))
 			{
 				if (_rootView.IndexOfChild(_bgImage) != -1)
+				{
 					_rootView.RemoveView(_bgImage);
+				}
+
 				return;
 			}
 
@@ -504,12 +547,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_bgImage.SetImageDrawable(result?.Value);
 
 				if (!_rootView.IsAlive())
+				{
 					return;
+				}
 
 				if (result?.Value == null)
 				{
 					if (_rootView.IndexOfChild(_bgImage) != -1)
+					{
 						_rootView.RemoveView(_bgImage);
+					}
 
 					return;
 				}
@@ -531,9 +578,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_rootView.IndexOfChild(_bgImage) == -1)
 				{
 					if (_bgImage.SetElevation(float.MinValue))
+					{
 						_rootView.AddView(_bgImage);
+					}
 					else
+					{
 						_rootView.AddView(_bgImage, 0);
+					}
 				}
 			});
 		}
@@ -541,7 +592,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void UpdateFlyoutHeaderBehavior()
 		{
 			if (_headerView == null)
+			{
 				return;
+			}
 
 			_headerView.SetFlyoutHeaderBehavior(_shellContext.Shell.FlyoutHeaderBehavior);
 
@@ -574,12 +627,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public void OnOffsetChanged(AppBarLayout appBarLayout, int verticalOffset)
 		{
 			if (_lastAppbarLayoutOffset == verticalOffset)
+			{
 				return;
+			}
 
 			_lastAppbarLayoutOffset = verticalOffset;
 
 			if (_headerView == null)
+			{
 				return;
+			}
 
 			var headerBehavior = _shellContext.Shell.FlyoutHeaderBehavior;
 			if (headerBehavior != FlyoutHeaderBehavior.CollapseOnScroll)
@@ -595,27 +652,37 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal void Disconnect()
 		{
 			if (_shellContext?.Shell != null)
+			{
 				_shellContext.Shell.PropertyChanged -= OnShellPropertyChanged;
+			}
 
 			if (_flyoutHeader != null)
+			{
 				_flyoutHeader.MeasureInvalidated -= OnFlyoutHeaderMeasureInvalidated;
+			}
 
 			_flyoutHeader = null;
 
 			if (_footerView != null)
+			{
 				_footerView.View = null;
+			}
 
 			_headerView?.Disconnect();
 			DisconnectRecyclerView();
 
 			if (_contentView != null)
+			{
 				_contentView.View = null;
+			}
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -628,20 +695,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_appBar.RemoveOnOffsetChangedListener(this);
 
 					if (_headerFrameLayout != null)
+					{
 						_appBar.RemoveView(_headerFrameLayout);
+					}
 				}
 
 				if (_rootView != null && _footerView != null)
+				{
 					_rootView.RemoveView(_footerView);
+				}
 
 				if (View != null && View is ShellFlyoutLayout sfl)
+				{
 					sfl.LayoutChanging -= OnFlyoutViewLayoutChanging;
+				}
 
 				if (_headerView != null)
+				{
 					_headerView.LayoutChange -= OnHeaderViewLayoutChange;
+				}
 
 				if (_contentView != null)
+				{
 					_contentView.View = null;
+				}
 
 				_flyoutContentView?.Dispose();
 				_headerView?.Dispose();
@@ -678,7 +755,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			void Initialize(View view)
 			{
 				if (view != null)
+				{
 					view.PropertyChanged += OnViewPropertyChanged;
+				}
 			}
 
 			void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -692,7 +771,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			void UpdateElevation()
 			{
 				if (Parent is AView view)
+				{
 					ElevationHelper.SetElevation(view, View);
+				}
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -725,12 +806,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			protected override void Dispose(bool disposing)
 			{
 				if (_isdisposed)
+				{
 					return;
+				}
 
 				_isdisposed = true;
 
 				if (disposing)
+				{
 					Disconnect();
+				}
 
 				base.Dispose(disposing);
 			}
@@ -747,7 +832,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			internal void SetFlyoutHeaderBehavior(FlyoutHeaderBehavior flyoutHeaderBehavior)
 			{
 				if (_flyoutHeaderBehavior == flyoutHeaderBehavior)
+				{
 					return;
+				}
 
 				_flyoutHeaderBehavior = flyoutHeaderBehavior;
 				UpdateMinimumHeight();
@@ -771,7 +858,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				if (MinimumHeight != minHeight)
+				{
 					this.SetMinimumHeight(minHeight);
+				}
 
 				if (Parent is AView frameLayoutView &&
 					minHeight > frameLayoutView.MinimumHeight)
@@ -802,7 +891,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 			if (disposing)

@@ -8,11 +8,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var page = value as Page;
 			if (page == null)
+			{
 				return null;
+			}
 
 			IVisualElementRenderer renderer = page.GetOrCreateRenderer();
 			if (renderer == null)
+			{
 				return null;
+			}
 
 			return renderer.ContainerElement;
 		}

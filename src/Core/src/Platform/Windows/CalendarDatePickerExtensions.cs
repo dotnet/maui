@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Platform
 			// https://docs.microsoft.com/en-us/uwp/api/Windows.Globalization.DateTimeFormatting.DateTimeFormatter?redirectedfrom=MSDN&view=winrt-22621#code-snippet-2
 
 			if (string.IsNullOrEmpty(dateFormat) || CheckDateFormat(dateFormat))
+			{
 				return string.Empty;
+			}
 
 			string result = string.Empty;
 			string separator = GetSeparator(dateFormat);
@@ -24,9 +26,13 @@ namespace Microsoft.Maui.Platform
 				for (int i = 0; i < parts.Length; i++)
 				{
 					if (i < parts.Length - 1)
+					{
 						result += GetPart(parts[i]) + separator;
+					}
 					else
+					{
 						result += GetPart(parts[i]);
+					}
 				}
 			}
 
@@ -38,13 +44,21 @@ namespace Microsoft.Maui.Platform
 			string separator;
 
 			if (format.Contains('/', StringComparison.CurrentCultureIgnoreCase))
+			{
 				separator = "/";
+			}
 			else if (format.Contains('-', StringComparison.CurrentCultureIgnoreCase))
+			{
 				separator = "-";
+			}
 			else if (format.Contains(' ', StringComparison.CurrentCultureIgnoreCase))
+			{
 				separator = " ";
+			}
 			else
+			{
 				separator = string.Empty;
+			}
 
 			return separator;
 		}
@@ -52,19 +66,29 @@ namespace Microsoft.Maui.Platform
 		internal static string GetPart(string format)
 		{
 			if (IsDay(format))
+			{
 				return GetDayFormat(format);
+			}
 			else if (IsMonth(format))
+			{
 				return GetMonthFormat(format);
+			}
 			else if (IsYear(format))
+			{
 				return GetYearFormat(format);
+			}
 			else
+			{
 				return string.Empty;
+			}
 		}
 
 		internal static bool IsDay(string day)
 		{
 			if (day.Contains('d', StringComparison.OrdinalIgnoreCase))
+			{
 				return true;
+			}
 
 			return false;
 		}
@@ -84,18 +108,26 @@ namespace Microsoft.Maui.Platform
 				var day = format.Count(x => x == 'd');
 
 				if (day == 3)
+				{
 					return "{day.integer} {dayofweek.abbreviated}";
+				}
 				else if (day == 4)
+				{
 					return "{dayofweek.full}";
+				}
 				else
+				{
 					return $"{{day.integer({day})}}";
+				}
 			}
 		}
 
 		internal static bool IsMonth(string day)
 		{
 			if (day.Contains('m', StringComparison.OrdinalIgnoreCase))
+			{
 				return true;
+			}
 
 			return false;
 		}
@@ -115,18 +147,26 @@ namespace Microsoft.Maui.Platform
 				var month = format.Count(x => string.Equals(new string(new char[] { x }), "M", StringComparison.OrdinalIgnoreCase));
 
 				if (month <= 2)
+				{
 					return $"{{month.integer({month})}}";
+				}
 				else if (month == 3)
+				{
 					return "{month.abbreviated}";
+				}
 				else
+				{
 					return "{month.full}";
+				}
 			}
 		}
 
 		internal static bool IsYear(string day)
 		{
 			if (day.Contains('y', StringComparison.OrdinalIgnoreCase))
+			{
 				return true;
+			}
 
 			return false;
 		}
@@ -146,9 +186,13 @@ namespace Microsoft.Maui.Platform
 				var year = format.Count(x => x == 'y');
 
 				if (year <= 2)
+				{
 					return "{year.abbreviated}";
+				}
 				else
+				{
 					return "{year.full}";
+				}
 			}
 		}
 

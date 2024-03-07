@@ -68,9 +68,13 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			Content = layout;
 
 			if (addItemsWithTimer)
+			{
 				generator.GenerateEmptyObservableCollectionAndAddItemsEverySecond(resetBeforeAddItemsWithTimer);
+			}
 			else
+			{
 				generator.GenerateItems();
+			}
 		}
 	}
 }

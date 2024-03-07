@@ -27,30 +27,46 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public virtual void LayoutViews(CGRect bounds, nfloat openPercent, UIView flyout, UIView shell, FlyoutBehavior behavior)
 		{
 			if (behavior == FlyoutBehavior.Locked)
+			{
 				openPercent = 1;
+			}
 
 			nfloat flyoutHeight;
 			nfloat flyoutWidth;
 
 			if (Width != -1d)
+			{
 				flyoutWidth = (nfloat)Width;
+			}
 			else if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+			{
 				flyoutWidth = 320;
+			}
 			else
+			{
 				flyoutWidth = (nfloat)(Math.Min(bounds.Width, bounds.Height) * 0.8);
+			}
 
 			if (Height == -1d)
+			{
 				flyoutHeight = bounds.Height;
+			}
 			else
+			{
 				flyoutHeight = (nfloat)Height;
+			}
 
 			nfloat openLimit = flyoutWidth;
 			nfloat openPixels = openLimit * openPercent;
 
 			if (behavior == FlyoutBehavior.Locked)
+			{
 				shell.Frame = new CGRect(bounds.X + flyoutWidth, bounds.Y, bounds.Width - flyoutWidth, flyoutHeight);
+			}
 			else
+			{
 				shell.Frame = bounds;
+			}
 
 			var shellWidth = shell.Frame.Width;
 

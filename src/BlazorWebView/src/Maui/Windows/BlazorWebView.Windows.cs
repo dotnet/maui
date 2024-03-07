@@ -10,7 +10,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			base.OnPropertyChanging(propertyName);
 
 			if (propertyName == nameof(Window) && Window is not null)
+			{
 				Window.Destroying -= Window_Destroying;
+			}
 		}
 
 		/// <inheritdoc/>
@@ -19,7 +21,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			base.OnPropertyChanged(propertyName);
 
 			if (propertyName == nameof(Window) && Window is not null)
+			{
 				Window.Destroying += Window_Destroying;
+			}
 		}
 
 		private void Window_Destroying(object? sender, EventArgs e)

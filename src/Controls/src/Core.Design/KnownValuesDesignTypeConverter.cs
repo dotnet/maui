@@ -27,7 +27,9 @@
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			if (!ExclusiveToKnownValues)
+			{
 				return true;
+			}
 
 			return KnownValues.Any(v => value?.ToString()?.Equals(v, StringComparison.Ordinal) ?? false);
 		}

@@ -15,9 +15,14 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				case TextType.Text:
 					if (label.FormattedText != null)
+					{
 						textView.TextFormatted = label.ToSpannableString();
+					}
 					else
+					{
 						textView.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					}
+
 					break;
 				case TextType.Html:
 					textView.UpdateTextHtml(label);
@@ -43,9 +48,13 @@ namespace Microsoft.Maui.Controls.Platform
 				// Without setting the MaxLines property, to equalize behaviors across platforms
 				// we set the max to 1.
 				if (lineBreakMode == LineBreakMode.TailTruncation)
+				{
 					maxLines = 1;
+				}
 				else
+				{
 					maxLines = int.MaxValue;
+				}
 			}
 
 			bool singleLine = false;
@@ -78,7 +87,9 @@ namespace Microsoft.Maui.Controls.Platform
 					// We don't have a mechanism for setting MaxLines on other controls (e.g., Button) right now, so we need to force it here or
 					// they will potentially exceed a single line. 
 					if (textView is AppCompatButton)
+					{
 						maxLines = 1;
+					}
 
 					textView.Ellipsize = TextUtils.TruncateAt.End;
 					break;

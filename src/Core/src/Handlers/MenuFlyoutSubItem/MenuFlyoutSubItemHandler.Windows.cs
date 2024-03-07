@@ -95,7 +95,9 @@ namespace Microsoft.Maui.Handlers
 					var index = items.IndexOf(PlatformView);
 
 					if (index < 0)
+					{
 						return;
+					}
 
 					items.RemoveAt(index);
 

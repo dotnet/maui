@@ -139,7 +139,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public Task<bool> CanOpenAsync(Uri uri)
 		{
 			if (uri == null)
+			{
 				throw new ArgumentNullException(nameof(uri));
+			}
 
 			return PlatformCanOpenAsync(uri);
 		}
@@ -147,7 +149,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public Task<bool> OpenAsync(Uri uri)
 		{
 			if (uri == null)
+			{
 				throw new ArgumentNullException(nameof(uri));
+			}
 
 			return PlatformOpenAsync(uri);
 		}
@@ -155,9 +159,14 @@ namespace Microsoft.Maui.ApplicationModel
 		public Task<bool> OpenAsync(OpenFileRequest request)
 		{
 			if (request == null)
+			{
 				throw new ArgumentNullException(nameof(request));
+			}
+
 			if (request.File == null)
+			{
 				throw new ArgumentNullException(nameof(request.File));
+			}
 
 			return PlatformOpenAsync(request);
 		}
@@ -165,7 +174,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public Task<bool> TryOpenAsync(Uri uri)
 		{
 			if (uri == null)
+			{
 				throw new ArgumentNullException(nameof(uri));
+			}
 
 			return PlatformTryOpenAsync(uri);
 		}

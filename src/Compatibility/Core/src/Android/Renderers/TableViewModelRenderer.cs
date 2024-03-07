@@ -23,7 +23,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			get
 			{
 				if (_cellCache == null)
+				{
 					FillCache();
+				}
+
 				return _cellCache;
 			}
 		}
@@ -33,7 +36,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			get
 			{
 				if (_isHeaderCache == null)
+				{
 					FillCache();
+				}
+
 				return _isHeaderCache;
 			}
 		}
@@ -43,7 +49,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			get
 			{
 				if (_nextIsHeaderCache == null)
+				{
 					FillCache();
+				}
+
 				return _nextIsHeaderCache;
 			}
 		}
@@ -66,7 +75,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			get
 			{
 				if (position < 0 || position >= CellCache.Length)
+				{
 					return null;
+				}
 
 				return CellCache[position];
 			}
@@ -79,8 +90,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				// 1 for the headers + 1 for each non header cell
 				var viewTypeCount = 1;
 				foreach (var b in IsHeaderCache)
+				{
 					if (!b)
+					{
 						viewTypeCount++;
+					}
+				}
+
 				return viewTypeCount;
 			}
 		}
@@ -100,7 +116,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			bool isHeader, nextIsHeader;
 			Cell item = GetCellForPosition(position, out isHeader, out nextIsHeader);
 			if (item == null)
+			{
 				return new AView(Context);
+			}
 
 			var makeBline = true;
 			var layout = convertView as ConditionalFocusLayout;
@@ -110,7 +128,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				convertView = layout.GetChildAt(0);
 			}
 			else
+			{
 				layout = new ConditionalFocusLayout(Context) { Orientation = Orientation.Vertical };
+			}
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			AView aview = CellFactory.GetCell(item, convertView, parent, Context, _view);
@@ -125,7 +145,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 			}
 			else
+			{
 				layout.AddView(aview, 0);
+			}
 
 			AView bline;
 			if (makeBline)
@@ -135,21 +157,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				layout.AddView(bline);
 			}
 			else
+			{
 				bline = layout.GetChildAt(1);
+			}
 
 			if (isHeader)
+			{
 				bline.SetBackgroundColor(Application.AccentColor.ToAndroid());
+			}
 			else if (nextIsHeader)
+			{
 				bline.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+			}
 			else
 			{
 				using (var value = new TypedValue())
 				{
 					int id = global::Android.Resource.Drawable.DividerHorizontalDark;
 					if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ListDivider, value, true))
+					{
 						id = value.ResourceId;
+					}
 					else if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.Divider, value, true))
+					{
 						id = value.ResourceId;
+					}
 
 					bline.SetBackgroundResource(id);
 				}
@@ -160,12 +192,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (_restoreFocus == item)
 			{
 				if (!aview.HasFocus)
+				{
 					aview.RequestFocus();
+				}
 
 				_restoreFocus = null;
 			}
 			else if (aview.HasFocus)
+			{
 				aview.ClearFocus();
+			}
 
 			return layout;
 		}
@@ -188,10 +224,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			ITableModel model = Controller.Model;
 
 			if (position < 0 || position >= CellCache.Length)
+			{
 				return;
+			}
 
 			if (IsHeaderCache[position])
+			{
 				return;
+			}
 
 			model.RowSelected(CellCache[position]);
 		}
@@ -202,7 +242,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			nextIsHeader = false;
 
 			if (position < 0 || position >= CellCache.Length)
+			{
 				return null;
+			}
 
 			isHeader = IsHeaderCache[position];
 			nextIsHeader = NextIsHeaderCache[position];
@@ -228,7 +270,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					Cell headerCell = model.GetHeaderCell(sectionIndex);
 					if (headerCell == null)
+					{
 						headerCell = new TextCell { Text = sectionTitle, TextColor = sectionTextColor };
+					}
+
 					headerCell.Parent = _view;
 
 					newIsHeaderCache.Add(true);

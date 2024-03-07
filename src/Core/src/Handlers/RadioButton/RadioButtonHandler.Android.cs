@@ -26,13 +26,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			AppCompatRadioButton? platformRadioButton = GetPlatformRadioButton(this);
 			if (platformRadioButton != null)
+			{
 				platformRadioButton.CheckedChange += OnCheckChanged;
+			}
 		}
 
 		protected override void DisconnectHandler(View platformView)
 		{
 			if (platformView is AppCompatRadioButton platformRadioButton)
+			{
 				platformRadioButton.CheckedChange -= OnCheckChanged;
+			}
 		}
 
 		public static void MapBackground(IRadioButtonHandler handler, IRadioButton radioButton)
@@ -85,7 +89,9 @@ namespace Microsoft.Maui.Handlers
 		void OnCheckChanged(object? sender, CompoundButton.CheckedChangeEventArgs e)
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			VirtualView.IsChecked = e.IsChecked;
 		}

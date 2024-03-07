@@ -52,10 +52,14 @@ namespace Microsoft.Maui.Handlers
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
 				if (platformView.WebViewClient is MauiWebViewClient webViewClient)
+				{
 					webViewClient.Disconnect();
+				}
 
 				if (platformView.WebChromeClient is MauiWebChromeClient webChromeClient)
+				{
 					webChromeClient.Disconnect();
+				}
 			}
 
 			platformView.SetWebViewClient(null!);
@@ -79,13 +83,17 @@ namespace Microsoft.Maui.Handlers
 		public static void MapWebViewClient(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
+			{
 				handler.PlatformView.SetWebViewClient(new MauiWebViewClient(platformHandler));
+			}
 		}
 
 		public static void MapWebChromeClient(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
+			{
 				handler.PlatformView.SetWebChromeClient(new MauiWebChromeClient(platformHandler));
+			}
 		}
 
 		public static void MapWebViewSettings(IWebViewHandler handler, IWebView webView)
@@ -96,7 +104,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler.PlatformView.CanGoBack() && handler is WebViewHandler w)
+			{
 				w.CurrentNavigationEvent = WebNavigationEvent.Back;
+			}
 
 			handler.PlatformView.UpdateGoBack(webView);
 		}
@@ -104,7 +114,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapGoForward(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler.PlatformView.CanGoForward() && handler is WebViewHandler w)
+			{
 				w.CurrentNavigationEvent = WebNavigationEvent.Forward;
+			}
 
 			handler.PlatformView.UpdateGoForward(webView);
 		}
@@ -112,23 +124,31 @@ namespace Microsoft.Maui.Handlers
 		public static void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler is WebViewHandler w)
+			{
 				w.CurrentNavigationEvent = WebNavigationEvent.Refresh;
+			}
 
 			handler.PlatformView.UpdateReload(webView);
 
 			string? url = handler.PlatformView.Url?.ToString();
 
 			if (url == null)
+			{
 				return;
+			}
 
 			if (handler is WebViewHandler platformHandler)
+			{
 				platformHandler.SyncPlatformCookies(url);
+			}
 		}
 
 		public static void MapEval(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (arg is not string script)
+			{
 				return;
+			}
 
 			handler.PlatformView?.Eval(webView, script);
 		}
@@ -144,17 +164,23 @@ namespace Microsoft.Maui.Handlers
 		protected internal bool NavigatingCanceled(string? url)
 		{
 			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
+			{
 				return true;
+			}
 
 			if (url == AssetBaseUrl)
+			{
 				return false;
+			}
 
 			SyncPlatformCookies(url);
 			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
 
 			// if the user disconnects from the handler we want to exit
 			if (!PlatformView.IsAlive())
+			{
 				return true;
+			}
 
 			PlatformView?.UpdateCanGoBackForward(VirtualView);
 
@@ -169,7 +195,9 @@ namespace Microsoft.Maui.Handlers
 			//and settings were called already
 			var platformHandler = handler as WebViewHandler;
 			if (platformHandler == null || platformHandler._firstRun)
+			{
 				return;
+			}
 
 			IWebViewDelegate? webViewDelegate = handler.PlatformView as IWebViewDelegate;
 			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
@@ -180,27 +208,37 @@ namespace Microsoft.Maui.Handlers
 			var myCookieJar = VirtualView.Cookies;
 
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
 
 			if (retrieveCurrentWebCookies == null)
+			{
 				return;
+			}
 
 			foreach (Cookie cookie in cookies)
 			{
 				var platformCookie = retrieveCurrentWebCookies[cookie.Name];
 
 				if (platformCookie == null)
+				{
 					cookie.Expired = true;
+				}
 				else
+				{
 					cookie.Value = platformCookie.Value;
+				}
 			}
 
 			SyncPlatformCookies(url);
@@ -211,28 +249,38 @@ namespace Microsoft.Maui.Handlers
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return;
+			}
 
 			var myCookieJar = VirtualView.Cookies;
 
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
 
 			if (cookies == null)
+			{
 				return;
+			}
 
 			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
 
 			if (retrieveCurrentWebCookies == null)
+			{
 				return;
+			}
 
 			var cookieManager = CookieManager.Instance;
 
 			if (cookieManager == null)
+			{
 				return;
+			}
 
 			cookieManager.SetAcceptCookie(true);
 			for (var i = 0; i < cookies.Count; i++)
@@ -245,7 +293,9 @@ namespace Microsoft.Maui.Handlers
 			foreach (Cookie cookie in retrieveCurrentWebCookies)
 			{
 				if (cookies[cookie.Name] != null)
+				{
 					continue;
+				}
 
 				var cookieString = $"{cookie.Name}=; max-age=0;expires=Sun, 31 Dec 2017 00:00:00 UTC";
 				cookieManager.SetCookie(cookie.Domain, cookieString);
@@ -257,15 +307,21 @@ namespace Microsoft.Maui.Handlers
 			var myCookieJar = VirtualView.Cookies;
 
 			if (myCookieJar == null)
+			{
 				return;
+			}
 
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return;
+			}
 
 			if (!_loadedCookies.Add(uri.Host))
+			{
 				return;
+			}
 
 			var cookies = myCookieJar.GetCookies(uri);
 
@@ -278,7 +334,9 @@ namespace Microsoft.Maui.Handlers
 					foreach (Cookie cookie in existingCookies)
 					{
 						if (cookies[cookie.Name] == null)
+						{
 							myCookieJar.Add(cookie);
+						}
 					}
 				}
 			}
@@ -290,19 +348,25 @@ namespace Microsoft.Maui.Handlers
 			var cookieManager = CookieManager.Instance;
 
 			if (cookieManager == null)
+			{
 				return null;
+			}
 
 			var currentCookies = cookieManager.GetCookie(url);
 
 			var uri = CreateUriForCookies(url);
 
 			if (uri == null)
+			{
 				return null;
+			}
 
 			if (currentCookies != null)
 			{
 				foreach (var cookie in currentCookies.Split(';'))
+				{
 					existingCookies.SetCookies(uri, cookie);
+				}
 			}
 
 			return existingCookies.GetCookies(uri);
@@ -311,17 +375,23 @@ namespace Microsoft.Maui.Handlers
 		static Uri? CreateUriForCookies(string url)
 		{
 			if (url == null)
+			{
 				return null;
+			}
 
 			Uri? uri;
 
 			if (url.Length > 2000)
+			{
 				url = url.Substring(0, 2000);
+			}
 
 			if (Uri.TryCreate(url, UriKind.Absolute, out uri))
 			{
 				if (string.IsNullOrWhiteSpace(uri.Host))
+				{
 					return null;
+				}
 
 				return uri;
 			}

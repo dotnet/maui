@@ -21,9 +21,15 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		public object GetService(Type serviceType)
 		{
 			if (serviceType == typeof(IProvideValueTarget))
+			{
 				return vtProvider;
+			}
+
 			if (serviceType == typeof(IConverterOptions))
+			{
 				return convOptions;
+			}
+
 			return null;
 		}
 

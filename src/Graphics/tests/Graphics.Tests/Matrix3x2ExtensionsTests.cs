@@ -173,9 +173,14 @@ namespace Microsoft.Maui.Graphics.Tests
 			var y = Vector2.Normalize(new Vector2(transform.M21, transform.M22));
 			var d = Vector2.Dot(x, y);
 			if (d < -1)
+			{
 				d = -1;
+			}
+
 			if (d > 1)
+			{
 				d = 1;
+			}
 
 			var skewAngle = (float)((Math.PI / 2) - Math.Acos(d));
 

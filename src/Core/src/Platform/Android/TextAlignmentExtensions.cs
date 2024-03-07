@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Platform
 				view.Gravity = (view.Gravity & ~HorizontalGravityMask) | alignment.ToHorizontalGravityFlags() | orMask;
 			}
 			else
+			{
 				view.TextAlignment = alignment.ToTextAlignment();
+			}
 		}
 
 		public static void UpdateVerticalAlignment(this EditText view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)

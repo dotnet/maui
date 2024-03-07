@@ -50,16 +50,24 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var view = GetView();
 			if (view == null)
+			{
 				return;
+			}
 
 			var control = GetControl();
 			if (control == null)
+			{
 				return;
+			}
 
 			if (HasAnyPointerGestures())
+			{
 				control.SetOnHoverListener(this);
+			}
 			else
+			{
 				control.SetOnHoverListener(null);
+			}
 
 			return;
 		}
@@ -68,11 +76,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var gestures = GetView().GetCompositeGestureRecognizers();
 			if (gestures == null || gestures.Count == 0)
+			{
 				return false;
+			}
 
 			foreach (var gesture in gestures)
+			{
 				if (gesture is PointerGestureRecognizer)
+				{
 					return true;
+				}
+			}
 
 			return false;
 		}

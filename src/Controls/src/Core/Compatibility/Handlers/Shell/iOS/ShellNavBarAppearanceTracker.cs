@@ -44,9 +44,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+			{
 				UpdateiOS13NavigationBarAppearance(controller, appearance);
+			}
 			else
+			{
 				UpdateNavigationBarAppearance(controller, appearance);
+			}
 		}
 
 		#region IDisposable Support
@@ -67,7 +71,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				// Don't do anything if user hasn't changed the shadow to true
 				if (!hasShadow)
+				{
 					return;
+				}
 
 				_shadowOpacity = navigationBar.Layer.ShadowOpacity;
 				_shadowColor = navigationBar.Layer.ShadowColor;
@@ -111,19 +117,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var foreground = appearance.ForegroundColor;
 
 			if (foreground != null)
+			{
 				navBar.TintColor = foreground.ToPlatform();
+			}
 
 			// Set BackgroundColor
 			var background = appearance.BackgroundColor;
 
 			if (background != null)
+			{
 				navigationBarAppearance.BackgroundColor = background.ToPlatform();
+			}
 
 			// Set TitleColor
 			var titleColor = appearance.TitleColor;
 
 			if (titleColor != null)
+			{
 				navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToPlatform() };
+			}
 
 			navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
 		}
@@ -143,9 +155,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				if (background != null)
-				navBar.BarTintColor = background.ToPlatform();
+				{
+					navBar.BarTintColor = background.ToPlatform();
+				}
+
 				if (foreground != null)
+				{
 					navBar.TintColor = foreground.ToPlatform();
+				}
 			}
 
 			if (titleColor != null)

@@ -100,7 +100,9 @@ namespace Microsoft.Maui.Handlers
 				var thumb = platformView.GetFirstDescendant<Thumb>();
 
 				if (thumb is not null)
+				{
 					_thumbSize = new Size(thumb.Width, thumb.Height);
+				}
 
 				platformView.ValueChanged += OnPlatformValueChanged;
 			}
@@ -109,7 +111,9 @@ namespace Microsoft.Maui.Handlers
 		void OnPlatformValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
 		{
 			if (VirtualView != null)
+			{
 				VirtualView.Value = e.NewValue;
+			}
 		}
 
 		void OnPointerPressed(object? sender, PointerRoutedEventArgs e)

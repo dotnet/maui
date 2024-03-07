@@ -19,7 +19,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 			var actions = new List<AppAction>();
 			foreach (var item in jumpList.Items)
+			{
 				actions.Add(item.ToAction());
+			}
 
 			return actions;
 		}
@@ -37,7 +39,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 			// Add each action
 			foreach (var a in actions)
+			{
 				jumpList.Items.Add(a.ToJumpListItem());
+			}
 
 			// Save the changes
 			await jumpList.SaveAsync();
@@ -53,7 +57,10 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				var cliArgs = Environment.GetCommandLineArgs();
 				if (cliArgs?.Length > 1)
+				{
 					args = cliArgs[1];
+				}
+				}
 			}
 #endif
 
@@ -67,7 +74,11 @@ namespace Microsoft.Maui.ApplicationModel
 					var appAction = actions.FirstOrDefault(a => a.Id == id);
 
 					if (appAction != null)
+					{
+					{
 						AppActionActivated?.Invoke(null, new AppActionEventArgs(appAction));
+					}
+					}
 				}
 			}
 		}
@@ -83,7 +94,9 @@ namespace Microsoft.Maui.ApplicationModel
 		internal static string ArgumentsToId(this string arguments)
 		{
 			if (arguments?.StartsWith(AppActionPrefix) ?? false)
+			{
 				return Encoding.Default.GetString(Convert.FromBase64String(arguments.Substring(AppActionPrefix.Length)));
+			}
 
 			return default;
 		}
@@ -97,17 +110,28 @@ namespace Microsoft.Maui.ApplicationModel
 			var item = JumpListItem.CreateWithArguments(id, action.Title);
 
 			if (!string.IsNullOrEmpty(action.Subtitle))
+			{
+			{
 				item.Description = action.Subtitle;
+			}
+			}
 
 			if (!string.IsNullOrEmpty(action.Icon))
 			{
 				var dir = iconDirectory?.Trim('/', '\\').Replace('\\', '/');
 				if (!string.IsNullOrEmpty(dir))
+				{
 					dir += "/";
+				}
 
 				var ext = iconExtension;
 				if (!string.IsNullOrEmpty(ext) && !ext.StartsWith("."))
+				{
 					ext = "." + ext;
+				}
+
+				item.Logo = new Uri($"ms-appx:///{dir}{action.Icon}{ext}");
+				}
 
 				item.Logo = new Uri($"ms-appx:///{dir}{action.Icon}{ext}");
 			}

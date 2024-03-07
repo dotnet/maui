@@ -44,7 +44,9 @@ namespace Maui.Controls.Sample
 		public void ReportSuccessEvent()
 		{
 			if (_numberOfTimesFailedFired > 0)
+			{
 				return;
+			}
 
 			_numberOfTimesSuccessFired++;
 			_eventLabel.Text = $"Event: {_key} (SUCCESS {_numberOfTimesSuccessFired})";

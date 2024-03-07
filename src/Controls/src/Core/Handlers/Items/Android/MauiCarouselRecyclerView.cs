@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
 			if (!IsSwipeEnabled)
+			{
 				return false;
+			}
 
 			return base.OnInterceptTouchEvent(ev);
 		}
@@ -44,13 +46,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override int DetermineTargetPosition(ScrollToRequestEventArgs args)
 		{
 			if (args.Mode == ScrollToMode.Element)
+			{
 				return ItemsViewAdapter.GetPositionForItem(args.Item);
+			}
 
 			if (!Carousel.Loop)
+			{
 				return args.Index;
+			}
 
 			if (_carouselViewLoopManager == null)
+			{
 				return -1;
+			}
 
 			var carouselPosition = GetCarouselViewCurrentIndex(Carousel.Position);
 			var getGoIndex = _carouselViewLoopManager.GetGoToIndex(this, carouselPosition, args.Index);
@@ -61,7 +69,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			if (Carousel.Loop)
+			{
 				_carouselViewLoopManager.CenterIfNeeded(this, IsHorizontal);
+			}
 
 			return base.OnTouchEvent(e);
 		}
@@ -102,7 +112,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void TearDownOldElement(CarouselView oldElement)
 		{
 			if (ItemsView != null)
+			{
 				ItemsView.Scrolled -= CarouselViewScrolled;
+			}
 
 			ClearLayoutListener();
 			base.TearDownOldElement(oldElement);
@@ -180,7 +192,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var position = DetermineTargetPosition(args);
 
 			if (_carouselViewLoopManager == null)
+			{
 				return;
+			}
 
 			// Special case here
 			// We could have a race condition where we are scrolling our collection to center the first item
@@ -188,7 +202,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (position == -1)
 			{
 				if (Carousel.Loop)
+				{
 					_carouselViewLoopManager.AddPendingScrollTo(args);
+				}
 
 				return;
 			}
@@ -206,19 +222,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter<CarouselView, IItemsViewSource> oldItemViewAdapter)
 		{
 			if (oldItemViewAdapter?.ItemsSource is ObservableItemsSource oldObservableItemsSource)
+			{
 				oldObservableItemsSource.CollectionItemsSourceChanged -= CollectionItemsSourceChanged;
+			}
 		}
 
 		void SubscribeCollectionItemsSourceChanged(ItemsViewAdapter<CarouselView, IItemsViewSource> oldItemViewAdapter)
 		{
 			if (oldItemViewAdapter?.ItemsSource is ObservableItemsSource oldObservableItemsSource)
+			{
 				oldObservableItemsSource.CollectionItemsSourceChanged += CollectionItemsSourceChanged;
+			}
 		}
 
 		void CollectionItemsSourceChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			if (!(ItemsViewAdapter.ItemsSource is IItemsViewSource observableItemsSource))
+			{
 				return;
+			}
 
 			var carouselPosition = Carousel.Position;
 			var currentItemPosition = observableItemsSource.GetPosition(Carousel.CurrentItem);
@@ -242,9 +264,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				if (removingFirstElement)
+				{
 					carouselPosition = 0;
+				}
 				else if (removingLastElement)
+				{
 					carouselPosition = Carousel.Position - 1;
+				}
 
 				if (Carousel.Loop)
 				{
@@ -290,7 +316,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateItemDecoration()
 		{
 			if (_itemDecoration != null)
+			{
 				RemoveItemDecoration(_itemDecoration);
+			}
+
 			_itemDecoration = CreateSpacingDecoration(ItemsLayout);
 			AddItemDecoration(_itemDecoration);
 		}
@@ -299,7 +328,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			//if we don't have any items don't update position
 			if (ItemsViewAdapter == null || ItemsViewAdapter.ItemsSource.Count == 0)
+			{
 				return;
+			}
 
 			int itemCount = 0;
 			int position;
@@ -319,7 +350,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				Carousel.Position = position;
 			}
 			else
+			{
 				position = Carousel.Position;
+			}
 
 			_oldPosition = position;
 
@@ -344,7 +377,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdatePositionFromVisibilityChanges()
 		{
 			if (_isVisible != ItemsView.IsVisible)
+			{
 				UpdateInitialPosition();
+			}
 
 			_isVisible = ItemsView.IsVisible;
 		}
@@ -352,14 +387,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateVisualStates()
 		{
 			if (!(GetLayoutManager() is LinearLayoutManager layoutManager))
+			{
 				return;
+			}
 
 			var first = layoutManager.FindFirstVisibleItemPosition();
 			var last = layoutManager.FindLastVisibleItemPosition();
 
 
 			if (first == -1)
+			{
 				return;
+			}
 
 			var newViews = new List<View>();
 			var carouselPosition = this.CalculateCenterItemIndex(first, layoutManager, false);
@@ -370,7 +409,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var cell = layoutManager.FindViewByPosition(i);
 				if (!((cell as ItemContentView)?.View is View itemView))
+				{
 					return;
+				}
 
 				if (i == carouselPosition)
 				{
@@ -415,7 +456,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
 			if (!_initialized || !_isVisible)
+			{
 				return;
+			}
 
 			_noNeedForScroll = false;
 			var index = e.CenterItemIndex;
@@ -425,7 +468,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			if (index == -1)
+			{
 				return;
+			}
 
 			UpdatePosition(index);
 			UpdateVisualStates();
@@ -454,16 +499,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// We arrived center
 			if (position == _gotoPosition)
+			{
 				_gotoPosition = -1;
+			}
 
 			if (_gotoPosition == -1 && carouselPosition != position)
+			{
 				Carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
+			}
 		}
 
 		void SetCurrentItem(int carouselPosition)
 		{
 			if (ItemsViewAdapter?.ItemsSource?.Count == 0)
+			{
 				return;
+			}
 
 			var item = ItemsViewAdapter.ItemsSource.GetItem(carouselPosition);
 			Carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, item);
@@ -502,10 +553,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 
 			if (carouselPosition >= itemCount || carouselPosition < 0)
+			{
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {itemCount} items.");
+			}
 
 			if (carouselPosition == _gotoPosition)
+			{
 				_gotoPosition = -1;
+			}
 
 			if (_noNeedForScroll)
 			{
@@ -526,7 +581,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void AddLayoutListener()
 		{
 			if (_carouselViewLayoutListener is not null)
+			{
 				return;
+			}
 
 			_carouselViewLayoutListener = new CarouselViewOnGlobalLayoutListener(this);
 			ViewTreeObserver.AddOnGlobalLayoutListener(_carouselViewLayoutListener);
@@ -535,7 +592,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void LayoutReady()
 		{
 			if (ItemsView is null)
+			{
 				return;
+			}
 
 			if (!_initialized)
 			{
@@ -556,7 +615,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void ClearLayoutListener()
 		{
 			if (_carouselViewLayoutListener == null)
+			{
 				return;
+			}
 
 			ViewTreeObserver?.RemoveOnGlobalLayoutListener(_carouselViewLayoutListener);
 			_carouselViewLayoutListener = null;

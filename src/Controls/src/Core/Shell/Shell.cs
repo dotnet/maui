@@ -34,9 +34,16 @@ namespace Microsoft.Maui.Controls
 		static void OnBackButonBehaviorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is BackButtonBehavior oldHandlerBehavior)
+			{
 				SetInheritedBindingContext(oldHandlerBehavior, null);
+			}
+
 			if (newValue is BackButtonBehavior newHandlerBehavior)
+			{
+			{
 				SetInheritedBindingContext(newHandlerBehavior, bindable.BindingContext);
+			}
+			}
 		}
 
 		/// <summary>Bindable property for attached property <c>PresentationMode</c>.</summary>
@@ -75,9 +82,16 @@ namespace Microsoft.Maui.Controls
 		static void OnSearchHandlerPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is SearchHandler oldHandler)
+			{
 				SetInheritedBindingContext(oldHandler, null);
+			}
+
 			if (newValue is SearchHandler newHandler)
+			{
+			{
 				SetInheritedBindingContext(newHandler, bindable.BindingContext);
+			}
+			}
 		}
 
 		/// <summary>Bindable property for attached property <c>FlyoutItemIsVisible</c>.</summary>
@@ -89,9 +103,12 @@ namespace Microsoft.Maui.Controls
 		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is Element element)
+			{
 				element
 					.FindParentOfType<Shell>()
 					?.SendFlyoutItemsChanged();
+			}
+			}
 		}
 
 		/// <summary>Bindable property for attached property <c>TabBarIsVisible</c>.</summary>
@@ -174,7 +191,10 @@ namespace Microsoft.Maui.Controls
 			while (!Application.IsApplicationOrWindowOrNull(element))
 			{
 				if (element is Shell shell)
+				{
 					shell.NotifyFlyoutBehaviorObservers();
+				}
+
 				element = element.Parent;
 			}
 		}
@@ -330,9 +350,37 @@ namespace Microsoft.Maui.Controls
 			if (bo is IMenuItemController)
 			{
 				if (bo is MenuItem mi && mi.Parent != null && mi.Parent.IsSet(MenuItemTemplateProperty))
-					return mi.Parent;
+				{
+				
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
 				else if (bo is MenuShellItem msi && msi.MenuItem != null && msi.MenuItem.IsSet(MenuItemTemplateProperty))
 					return msi.MenuItem;
+After:
+				}
+				else if (bo is MenuShellItem msi && msi.MenuItem != null && msi.MenuItem.IsSet(MenuItemTemplateProperty))
+				{
+					return msi.MenuItem;
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				else if (bo is MenuShellItem msi && msi.MenuItem != null && msi.MenuItem.IsSet(MenuItemTemplateProperty))
+					return msi.MenuItem;
+After:
+				}
+				else if (bo is MenuShellItem msi && msi.MenuItem != null && msi.MenuItem.IsSet(MenuItemTemplateProperty))
+				{
+					return msi.MenuItem;
+*/
+{
+					return mi.Parent;
+				}
+				else if (bo is MenuShellItem msi && msi.MenuItem != null && msi.MenuItem.IsSet(MenuItemTemplateProperty))
+				{
+					return msi.MenuItem;
+				}
+				}
 			}
 
 			return bo;
@@ -406,7 +454,11 @@ namespace Microsoft.Maui.Controls
 			// We need to wait until the visible page has been created before we try to calculate
 			// the flyout behavior
 			if (GetVisiblePage() != null)
+			{
+			{
 				observer.OnFlyoutBehaviorChanged(GetEffectiveFlyoutBehavior());
+			}
+			}
 		}
 
 		void UpdateToolbarAppearanceFeatures(Element pivot, ShellAppearance appearance)
@@ -538,6 +590,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (shellItem == null || !shellItem.IsEnabled)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				return Task.CompletedTask;
 
 			shellSection = shellSection ?? shellItem.CurrentItem;
@@ -550,6 +605,233 @@ namespace Microsoft.Maui.Controls
 				shellItem.PropertyChanged += OnShellItemPropertyChanged;
 			else if (shellContent == null)
 				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+After:
+			{
+				return Task.CompletedTask;
+			}
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+			{
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+			}
+
+			if (shellSection == null)
+			{
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			}
+			else if (shellContent == null)
+			{
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+				return Task.CompletedTask;
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+
+			if (shellSection == null)
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			else if (shellContent == null)
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+After:
+			{
+				return Task.CompletedTask;
+			}
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+			{
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+			}
+
+			if (shellSection == null)
+			{
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			}
+			else if (shellContent == null)
+			{
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				return Task.CompletedTask;
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+
+			if (shellSection == null)
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			else if (shellContent == null)
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+After:
+			{
+				return Task.CompletedTask;
+			}
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+			{
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+			}
+
+			if (shellSection == null)
+			{
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			}
+			else if (shellContent == null)
+			{
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return Task.CompletedTask;
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+
+			if (shellSection == null)
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			else if (shellContent == null)
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+After:
+			{
+				return Task.CompletedTask;
+			}
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+			{
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+			}
+
+			if (shellSection == null)
+			{
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			}
+			else if (shellContent == null)
+			{
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				return Task.CompletedTask;
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+
+			if (shellSection == null)
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			else if (shellContent == null)
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+After:
+			{
+				return Task.CompletedTask;
+			}
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+			{
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+			}
+
+			if (shellSection == null)
+			{
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			}
+			else if (shellContent == null)
+			{
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return Task.CompletedTask;
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+
+			if (shellSection == null)
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			else if (shellContent == null)
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+After:
+			{
+				return Task.CompletedTask;
+			}
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+			{
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+			}
+
+			if (shellSection == null)
+			{
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			}
+			else if (shellContent == null)
+			{
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+			}
+*/
+			{
+				return Task.CompletedTask;
+			}
+
+			shellSection = shellSection ?? shellItem.CurrentItem;
+			shellContent = shellContent ?? shellSection?.CurrentItem;
+
+			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+			{
+				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+			}
+
+			if (shellSection == null)
+			{
+				shellItem.PropertyChanged += OnShellItemPropertyChanged;
+			}
+			else if (shellContent == null)
+			{
+				shellSection.PropertyChanged += OnShellItemPropertyChanged;
+			}
 			else
 			{
 				if (this.CurrentItem == null)
@@ -604,9 +886,15 @@ namespace Microsoft.Maui.Controls
 			{
 				(sender as BindableObject).PropertyChanged -= OnShellItemPropertyChanged;
 				if (sender is ShellItem item)
+				{
+				{
 					OnFlyoutItemSelected(item, false);
+				}
 				else if (sender is ShellSection section)
+				{
+				{
 					OnFlyoutItemSelected(section.Parent, false);
+				}
 			}
 		}
 
@@ -663,11 +951,19 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (Application.Current == null)
+				{
+				{
 					return null;
+				}
+				}
 
 				foreach (var window in Application.Current.Windows)
+				{
 					if (window is Window && window.IsActivated && window.Page is Shell shell)
+					{
 						return shell;
+					}
+				}
 
 				return Application.Current?.MainPage as Shell;
 			}
@@ -824,13 +1120,27 @@ namespace Microsoft.Maui.Controls
 			base.OnHandlerChangingCore(args);
 
 			if (Application.Current == null)
+			{
+			{
 				return;
+			}
 
 			if (args.NewHandler == null)
+			{
 				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+			}
+
+			if (args.NewHandler == null)
+			{
+				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+			}
 
 			if (args.NewHandler != null && args.OldHandler == null)
+			{
+			{
 				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+			}
+			}
 		}
 
 		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
@@ -841,10 +1151,10 @@ namespace Microsoft.Maui.Controls
 		void Initialize()
 		{
 			if (CurrentItem != null)
+			{
 				SetCurrentItem()
 					.FireAndForget();
-
-			((ShellElementCollection)Items).VisibleItemsChangedInternal += async (s, e) =>
+			} ((ShellElementCollection)Items).VisibleItemsChangedInternal += async (s, e) =>
 			{
 				await SetCurrentItem();
 
@@ -857,7 +1167,10 @@ namespace Microsoft.Maui.Controls
 				var shellItems = ShellController.GetItems();
 
 				if (CurrentItem != null && shellItems.Contains(CurrentItem))
+				{
+				{
 					return;
+				}
 
 				ShellItem shellItem = null;
 
@@ -885,10 +1198,14 @@ namespace Microsoft.Maui.Controls
 							bool IsValidRoute(BaseShellItem baseShellItem)
 							{
 								if (baseShellItem == null)
+								{
 									return true;
+								}
 
 								if (!baseShellItem.IsVisible)
+								{
 									return false;
+								}
 
 								return baseShellItem.IsPartOfVisibleTree();
 							}
@@ -913,7 +1230,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (shellItem != null)
+				{
 					await OnFlyoutItemSelectedAsync(shellItem, false).ConfigureAwait(false);
+				}
 			}
 		}
 
@@ -1085,13 +1404,26 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 
 			if (FlyoutHeaderView != null)
+			{
 				SetInheritedBindingContext(FlyoutHeaderView, BindingContext);
+			}
 
 			if (FlyoutFooterView != null)
+			{
+			{
 				SetInheritedBindingContext(FlyoutFooterView, BindingContext);
+			}
 
 			if (FlyoutContentView != null)
+			{
 				SetInheritedBindingContext(FlyoutContentView, BindingContext);
+			}
+			}
+
+			if (FlyoutContentView != null)
+			{
+				SetInheritedBindingContext(FlyoutContentView, BindingContext);
+			}
 		}
 
 
@@ -1126,7 +1458,9 @@ namespace Microsoft.Maui.Controls
 #endif
 
 			if (GetVisiblePage() is Page page && page.SendBackButtonPressed())
+			{
 				return true;
+			}
 
 			var currentContent = CurrentItem?.CurrentItem;
 			if (currentContent != null && currentContent.Stack.Count > 1)
@@ -1160,6 +1494,9 @@ namespace Microsoft.Maui.Controls
 			OnNavigated(args);
 
 			if (_previousPage != null)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
 			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
@@ -1180,6 +1517,255 @@ namespace Microsoft.Maui.Controls
 
 			if (e.Is(Shell.TabBarIsVisibleProperty))
 				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+After:
+			{
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			}
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+			{
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			}
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
+
+		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			CurrentPagePropertyChanged?.Invoke(this, e);
+
+			if (e.Is(Shell.TabBarIsVisibleProperty))
+				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+After:
+			{
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			}
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+			{
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			}
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
+
+		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			CurrentPagePropertyChanged?.Invoke(this, e);
+
+			if (e.Is(Shell.TabBarIsVisibleProperty))
+				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+After:
+			{
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			}
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+			{
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			}
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
+
+		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			CurrentPagePropertyChanged?.Invoke(this, e);
+
+			if (e.Is(Shell.TabBarIsVisibleProperty))
+				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+After:
+			{
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			}
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+			{
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			}
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
+
+		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			CurrentPagePropertyChanged?.Invoke(this, e);
+
+			if (e.Is(Shell.TabBarIsVisibleProperty))
+				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+After:
+			{
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			}
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+			{
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			}
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
+
+		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			CurrentPagePropertyChanged?.Invoke(this, e);
+
+			if (e.Is(Shell.TabBarIsVisibleProperty))
+				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+After:
+			{
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			}
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+			{
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			}
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+*/
+			{
+				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+			}
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+
+			if (CurrentPage != null)
+			{
+				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
+			}
+
+			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
+
+		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			CurrentPagePropertyChanged?.Invoke(this, e);
+
+			if (e.Is(Shell.TabBarIsVisibleProperty))
+			{
+				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+			}
+		}
+
+		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
+
+		void OnCurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			CurrentPagePropertyChanged?.Invoke(this, e);
+
+			if (e.Is(Shell.TabBarIsVisibleProperty))
+			{
+				CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+			}
 		}
 
 		void SendNavigating(ShellNavigatingEventArgs args)
@@ -1206,13 +1792,19 @@ namespace Microsoft.Maui.Controls
 		static void OnCurrentItemChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is ShellItem oldShellItem)
+			{
 				oldShellItem.SendDisappearing();
+			}
 
 			if (newValue == null)
+			{
 				return;
+			}
 
 			if (newValue is ShellItem newShellItem)
+			{
 				newShellItem.SendAppearing();
+			}
 
 			var shell = (Shell)bindable;
 			UpdateChecked(shell);
@@ -1221,7 +1813,10 @@ namespace Microsoft.Maui.Controls
 			shell.ShellController.UpdateCurrentState(ShellNavigationSource.ShellItemChanged);
 
 			if (shell.CurrentItem?.CurrentItem != null)
+			{
 				shell.ShellController.AppearanceChanged(shell.CurrentItem.CurrentItem, false);
+			}
+			}
 		}
 
 		static void OnCurrentItemChanging(BindableObject bindable, object oldValue, object newValue)
@@ -1230,7 +1825,9 @@ namespace Microsoft.Maui.Controls
 			var shellItem = (ShellItem)newValue;
 
 			if (!shell.Items.Contains(shellItem))
+			{
 				shell.Items.Add(shellItem);
+			}
 
 			var shellSection = shellItem.CurrentItem;
 			var shellContent = shellSection.CurrentItem;
@@ -1243,7 +1840,11 @@ namespace Microsoft.Maui.Controls
 			if (root is BaseShellItem baseItem)
 			{
 				if (!isChecked && !baseItem.IsChecked)
+				{
+				{
 					return;
+				}
+
 				baseItem.SetValue(BaseShellItem.IsCheckedPropertyKey, isChecked);
 			}
 
@@ -1316,12 +1917,18 @@ namespace Microsoft.Maui.Controls
 				() =>
 				{
 					if (this.IsSet(FlyoutBehaviorProperty))
+					{
 						return FlyoutBehavior;
+					}
 
 					if (rootItem is FlyoutItem)
+					{
 						return FlyoutBehavior.Flyout;
+					}
 					else if (rootItem is TabBar)
+					{
 						return FlyoutBehavior.Disabled;
+					}
 					// This means the user hasn't specified
 					// a ShellItem so we don't want the flyout to show up
 					// if there is only one ShellItem.
@@ -1331,7 +1938,9 @@ namespace Microsoft.Maui.Controls
 					else if (rootItem != null && Routing.IsImplicit(rootItem))
 					{
 						if (Items.Count <= 1)
+						{
 							return FlyoutBehavior.Disabled;
+						}
 					}
 
 					return FlyoutBehavior;
@@ -1364,13 +1973,46 @@ namespace Microsoft.Maui.Controls
 					// So we let the code just go to the next parent.
 				}
 				else if (element.IsSet(property))
+				{
+				
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Added:
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Added:
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+				return default(T);
+After:
+			{
+				return default(T);
+			}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+				return default(T);
+After:
+			{
+				return default(T);
+			}
+*/
+{
 					return (T)element.GetValue(property);
+				}
 
 				element = element.Parent;
 			}
 
 			if (defaultValue == null)
+			{
 				return default(T);
+			}
 
 			return defaultValue();
 		}
@@ -1392,6 +2034,9 @@ namespace Microsoft.Maui.Controls
 			while (!Application.IsApplicationOrWindowOrNull(pivot))
 			{
 				if (pivot is ShellContent)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 					foundShellContent = true;
 
 				// One minor deviation here. Even though a pushed page is technically the child of
@@ -1403,10 +2048,213 @@ namespace Microsoft.Maui.Controls
 				{
 					if (result.Ingest(shellSection.CurrentItem))
 						anySet = true;
+After:
+				{
+					foundShellContent = true;
+				}
+
+				// One minor deviation here. Even though a pushed page is technically the child of
+				// a ShellSection and not the ShellContent, we want the root ShellContent to 
+				// be taken into account. Yes this could behave oddly if the developer switches
+				// tabs while a page is pushed, however that is in the developers wheelhouse
+				// and this will be the generally expected behavior.
+				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
+				{
+					if (result.Ingest(shellSection.CurrentItem))
+					{
+						anySet = true;
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+					foundShellContent = true;
+
+				// One minor deviation here. Even though a pushed page is technically the child of
+				// a ShellSection and not the ShellContent, we want the root ShellContent to 
+				// be taken into account. Yes this could behave oddly if the developer switches
+				// tabs while a page is pushed, however that is in the developers wheelhouse
+				// and this will be the generally expected behavior.
+				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
+				{
+					if (result.Ingest(shellSection.CurrentItem))
+						anySet = true;
+After:
+				{
+					foundShellContent = true;
+				}
+
+				// One minor deviation here. Even though a pushed page is technically the child of
+				// a ShellSection and not the ShellContent, we want the root ShellContent to 
+				// be taken into account. Yes this could behave oddly if the developer switches
+				// tabs while a page is pushed, however that is in the developers wheelhouse
+				// and this will be the generally expected behavior.
+				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
+				{
+					if (result.Ingest(shellSection.CurrentItem))
+					{
+						anySet = true;
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					foundShellContent = true;
+
+				// One minor deviation here. Even though a pushed page is technically the child of
+				// a ShellSection and not the ShellContent, we want the root ShellContent to 
+				// be taken into account. Yes this could behave oddly if the developer switches
+				// tabs while a page is pushed, however that is in the developers wheelhouse
+				// and this will be the generally expected behavior.
+				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
+				{
+					if (result.Ingest(shellSection.CurrentItem))
+						anySet = true;
+After:
+				{
+					foundShellContent = true;
+				}
+
+				// One minor deviation here. Even though a pushed page is technically the child of
+				// a ShellSection and not the ShellContent, we want the root ShellContent to 
+				// be taken into account. Yes this could behave oddly if the developer switches
+				// tabs while a page is pushed, however that is in the developers wheelhouse
+				// and this will be the generally expected behavior.
+				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
+				{
+					if (result.Ingest(shellSection.CurrentItem))
+					{
+						anySet = true;
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+					foundShellContent = true;
+
+				// One minor deviation here. Even though a pushed page is technically the child of
+				// a ShellSection and not the ShellContent, we want the root ShellContent to 
+				// be taken into account. Yes this could behave oddly if the developer switches
+				// tabs while a page is pushed, however that is in the developers wheelhouse
+				// and this will be the generally expected behavior.
+				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
+				{
+					if (result.Ingest(shellSection.CurrentItem))
+						anySet = true;
+After:
+				{
+					foundShellContent = true;
+				}
+
+				// One minor deviation here. Even though a pushed page is technically the child of
+				// a ShellSection and not the ShellContent, we want the root ShellContent to 
+				// be taken into account. Yes this could behave oddly if the developer switches
+				// tabs while a page is pushed, however that is in the developers wheelhouse
+				// and this will be the generally expected behavior.
+				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
+				{
+					if (result.Ingest(shellSection.CurrentItem))
+					{
+						anySet = true;
+					}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+					foundShellContent = true;
+
+				// One minor deviation here. Even though a pushed page is technically the child of
+				// a ShellSection and not the ShellContent, we want the root ShellContent to 
+				// be taken into account. Yes this could behave oddly if the developer switches
+				// tabs while a page is pushed, however that is in the developers wheelhouse
+				// and this will be the generally expected behavior.
+				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
+				{
+					if (result.Ingest(shellSection.CurrentItem))
+						anySet = true;
+After:
+				{
+					foundShellContent = true;
+				}
+
+				// One minor deviation here. Even though a pushed page is technically the child of
+				// a ShellSection and not the ShellContent, we want the root ShellContent to 
+				// be taken into account. Yes this could behave oddly if the developer switches
+				// tabs while a page is pushed, however that is in the developers wheelhouse
+				// and this will be the generally expected behavior.
+				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
+				{
+					if (result.Ingest(shellSection.CurrentItem))
+					{
+						anySet = true;
+					}
+*/
+				
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
+					anySet = true;
+After:
+				{
+					anySet = true;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-ios)'
+Before:
+					anySet = true;
+After:
+				{
+					anySet = true;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+					anySet = true;
+After:
+				{
+					anySet = true;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
+					anySet = true;
+After:
+				{
+					anySet = true;
+				}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.19041.0)'
+Before:
+					anySet = true;
+After:
+				{
+					anySet = true;
+				}
+*/
+{
+					foundShellContent = true;
+				}
+
+				// One minor deviation here. Even though a pushed page is technically the child of
+				// a ShellSection and not the ShellContent, we want the root ShellContent to 
+				// be taken into account. Yes this could behave oddly if the developer switches
+				// tabs while a page is pushed, however that is in the developers wheelhouse
+				// and this will be the generally expected behavior.
+				if (!foundShellContent && pivot is ShellSection shellSection && shellSection.CurrentItem != null)
+				{
+					if (result.Ingest(shellSection.CurrentItem))
+					{
+						anySet = true;
+					}
 				}
 
 				if (result.Ingest(pivot))
+				{
 					anySet = true;
+				}
 
 				pivot = pivot.Parent;
 			}
@@ -1422,11 +2270,16 @@ namespace Microsoft.Maui.Controls
 		void NotifyFlyoutBehaviorObservers()
 		{
 			if (CurrentItem == null || GetVisiblePage() == null)
+			{
+			{
 				return;
+			}
 
 			var behavior = (this as IFlyoutView).FlyoutBehavior;
 			for (int i = 0; i < _flyoutBehaviorObservers.Count; i++)
+			{
 				_flyoutBehaviorObservers[i].OnFlyoutBehaviorChanged(behavior);
+			}
 
 			Handler?.UpdateValue(nameof(IFlyoutView.FlyoutBehavior));
 		}
@@ -1476,7 +2329,9 @@ namespace Microsoft.Maui.Controls
 		internal Element GetVisiblePage()
 		{
 			if (CurrentItem?.CurrentItem is IShellSectionController scc)
+			{
 				return scc.PresentedPage;
+			}
 
 			return null;
 		}
@@ -1484,7 +2339,12 @@ namespace Microsoft.Maui.Controls
 		internal void SendPageAppearing(Page page)
 		{
 			if (Toolbar is ShellToolbar shellToolbar)
+			{
 				shellToolbar.ApplyChanges();
+			}
+
+			page.SendAppearing();
+			}
 
 			page.SendAppearing();
 		}
@@ -1556,7 +2416,10 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IFlyoutView.IsPresented));
+			}
+			}
 		}
 
 		#region Shell Flyout Content
@@ -1656,7 +2519,9 @@ namespace Microsoft.Maui.Controls
 				var modalPopped = await base.OnPopModal(animated);
 
 				if (ModalStack.Count == 0 && !_shell.CurrentItem.CurrentItem.IsPoppingModalStack)
+				{
 					_shell.CurrentItem.SendAppearing();
+				}
 
 				return modalPopped;
 			}
@@ -1678,7 +2543,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (ModalStack.Count == 0)
+				{
 					_shell.CurrentItem.SendDisappearing();
+				}
 
 				await base.OnPushModal(modal, animated);
 

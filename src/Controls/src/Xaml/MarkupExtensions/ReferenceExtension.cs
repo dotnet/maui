@@ -13,6 +13,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)
+
+/* Unmerged change from project 'Controls.Xaml(net8.0-android)'
+Before:
 				throw new ArgumentNullException(nameof(serviceProvider));
 			var referenceProvider = serviceProvider.GetService<IReferenceProvider>();
 			var value = referenceProvider?.FindByName(Name);
@@ -31,6 +34,104 @@ namespace Microsoft.Maui.Controls.Xaml
 				value = ns.FindByName(Name);
 				if (value != null)
 					return value;
+			}
+
+			throw new XamlParseException($"Can not find the object referenced by `{Name}`", serviceProvider);
+After:
+			{
+				throw new XamlParseException($"Can not find the object referenced by `{Name}`", serviceProvider);
+*/
+
+/* Unmerged change from project 'Controls.Xaml(net8.0-windows10.0.20348.0)'
+Before:
+				throw new ArgumentNullException(nameof(serviceProvider));
+			var referenceProvider = serviceProvider.GetService<IReferenceProvider>();
+			var value = referenceProvider?.FindByName(Name);
+			if (value != null)
+				return value;
+
+			//fallback
+			var valueProvider = serviceProvider.GetService<IProvideValueTarget>() as IProvideParentValues
+								   ?? throw new ArgumentException("serviceProvider does not provide an IProvideValueTarget");
+			foreach (var target in valueProvider.ParentObjects)
+			{
+				if (!(target is BindableObject bo))
+					continue;
+				if (!(NameScope.GetNameScope(bo) is INameScope ns))
+					continue;
+				value = ns.FindByName(Name);
+				if (value != null)
+					return value;
+			}
+
+			throw new XamlParseException($"Can not find the object referenced by `{Name}`", serviceProvider);
+After:
+			{
+				throw new XamlParseException($"Can not find the object referenced by `{Name}`", serviceProvider);
+*/
+			{
+				throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			var referenceProvider = serviceProvider.GetService<IReferenceProvider>();
+			var value = referenceProvider?.FindByName(Name);
+			if (value != null)
+			{
+				return value;
+			}
+
+			//fallback
+			var valueProvider = serviceProvider.GetService<IProvideValueTarget>() as IProvideParentValues
+								   ?? throw new ArgumentException("serviceProvider does not provide an IProvideValueTarget");
+			foreach (var target in valueProvider.ParentObjects)
+			{
+				if (!(target is BindableObject bo))
+				{
+					continue;
+				}
+
+				if (!(NameScope.GetNameScope(bo) is INameScope ns))
+				{
+					continue;
+				}
+
+				value = ns.FindByName(Name);
+				if (value != null)
+				{
+					return value;
+				}
+			}
+
+			throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
+			var referenceProvider = serviceProvider.GetService<IReferenceProvider>();
+			var value = referenceProvider?.FindByName(Name);
+			if (value != null)
+			{
+				return value;
+			}
+
+			//fallback
+			var valueProvider = serviceProvider.GetService<IProvideValueTarget>() as IProvideParentValues
+								   ?? throw new ArgumentException("serviceProvider does not provide an IProvideValueTarget");
+			foreach (var target in valueProvider.ParentObjects)
+			{
+				if (!(target is BindableObject bo))
+				{
+					continue;
+				}
+
+				if (!(NameScope.GetNameScope(bo) is INameScope ns))
+				{
+					continue;
+				}
+
+				value = ns.FindByName(Name);
+				if (value != null)
+				{
+					return value;
+				}
 			}
 
 			throw new XamlParseException($"Can not find the object referenced by `{Name}`", serviceProvider);

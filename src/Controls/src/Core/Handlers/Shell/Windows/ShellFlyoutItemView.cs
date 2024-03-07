@@ -34,18 +34,26 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnDataContextChanged(Microsoft.UI.Xaml.FrameworkElement sender, Microsoft.UI.Xaml.DataContextChangedEventArgs args)
 		{
 			if (_previousDataContext == args.NewValue)
+			{
 				return;
+			}
 
 			_previousDataContext = args.NewValue;
 			if (_content != null)
 			{
 				if (_content.BindingContext is INotifyPropertyChanged inpc)
+				{
 					inpc.PropertyChanged -= ShellElementPropertyChanged;
+				}
 
 				if (_content.Parent is BaseShellItem bsi)
+				{
 					bsi.RemoveLogicalChild(_content);
+				}
 				else
+				{
 					_shell?.RemoveLogicalChild(_content);
+				}
 
 				_content.Cleanup();
 				_content.BindingContext = null;
@@ -56,16 +64,22 @@ namespace Microsoft.Maui.Controls.Platform
 			BindableObject bo = null;
 
 			if (args.NewValue is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject)
+			{
 				bo = bindableObject;
+			}
 			else
+			{
 				bo = (BindableObject)args.NewValue;
+			}
 
 			var element = bo as Element;
 			_shell = element?.FindParentOfType<Shell>();
 			DataTemplate dataTemplate = (_shell as IShellController)?.GetFlyoutItemDataTemplate(bo);
 
 			if (bo != null)
+			{
 				bo.PropertyChanged += ShellElementPropertyChanged;
+			}
 
 			if (dataTemplate != null)
 			{
@@ -75,10 +89,13 @@ namespace Microsoft.Maui.Controls.Platform
 				_content.BindingContext = bo;
 
 				if (bo is BaseShellItem bsi)
+				{
 					bsi.AddLogicalChild(_content);
+				}
 				else
+				{
 					_shell.AddLogicalChild(_content);
-
+				}
 
 				var platformView = _content.ToPlatform(_shell.Handler.MauiContext);
 
@@ -90,19 +107,27 @@ namespace Microsoft.Maui.Controls.Platform
 		void ShellElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.Is(BaseShellItem.IsCheckedProperty))
+			{
 				UpdateVisualState();
+			}
 		}
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (ShellView == null)
+			{
 				return base.MeasureOverride(availableSize);
+			}
 
 			if (!ShellView.IsPaneOpen)
+			{
 				return base.MeasureOverride(availableSize);
+			}
 
 			if (ShellView.OpenPaneLength < availableSize.Width)
+			{
 				return base.MeasureOverride(availableSize);
+			}
 
 			if (_content is IView view)
 			{
@@ -142,9 +167,13 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_content?.BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
 			{
 				if (baseShellItem.IsChecked)
+				{
 					VisualStateManager.GoToState(_content, "Selected");
+				}
 				else
+				{
 					VisualStateManager.GoToState(_content, "Normal");
+				}
 			}
 		}
 

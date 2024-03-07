@@ -10,7 +10,9 @@
 		public override bool Equals(object? obj)
 		{
 			if (obj == null || obj is not Matrix transform)
+			{
 				return false;
+			}
 
 			const double tolerance = 0.01;
 			bool result =

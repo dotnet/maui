@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Storage
 		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
 		{
 			if (filename == null)
+			{
 				throw new ArgumentNullException(nameof(filename));
+			}
 
 			if (AppInfoUtils.IsPackagedApp)
 			{

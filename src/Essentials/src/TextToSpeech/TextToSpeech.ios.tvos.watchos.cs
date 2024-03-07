@@ -36,10 +36,15 @@ namespace Microsoft.Maui.Media
 				// the platform has a range of 0.5 - 2.0
 				// anything lower than 0.5 is set to 0.5
 				if (options.Pitch.HasValue)
+				{
 					speechUtterance.PitchMultiplier = options.Pitch.Value;
+				}
 
 				if (options.Volume.HasValue)
+				{
 					speechUtterance.Volume = options.Volume.Value;
+				}
+				}
 			}
 
 			return speechUtterance;
@@ -71,7 +76,10 @@ namespace Microsoft.Maui.Media
 			void OnFinishedSpeechUtterance(object sender, AVSpeechSynthesizerUteranceEventArgs args)
 			{
 				if (speechUtterance == args.Utterance)
+				{
 					tcsUtterance?.TrySetResult(true);
+				}
+				}
 			}
 		}
 #pragma warning restore CA1416

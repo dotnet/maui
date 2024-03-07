@@ -65,10 +65,242 @@ namespace Microsoft.Maui.Devices
 		DevicePlatform(string devicePlatform)
 		{
 			if (devicePlatform == null)
+
+/* Unmerged change from project 'Essentials(net8.0)'
+Before:
 				throw new ArgumentNullException(nameof(devicePlatform));
 
 			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-ios)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-android)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.19041.0)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.20348.0)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.19041.0)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Before:
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+			if (devicePlatform.Length == 0)
+After:
+			{
+*/
+			{
+				throw new ArgumentNullException(nameof(devicePlatform));
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentNullException(nameof(devicePlatform));
+
+/* Unmerged change from project 'Essentials(net8.0)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
 				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-ios)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-maccatalyst)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-android)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.19041.0)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net8.0-windows10.0.20348.0)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-ios)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-maccatalyst)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-android)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.19041.0)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+
+/* Unmerged change from project 'Essentials(net7.0-windows10.0.20348.0)'
+Added:
+			}
+
+			if (devicePlatform.Length == 0)
+			{
+				throw new ArgumentException(nameof(devicePlatform));
+			}
+*/
+			}
 
 			this.devicePlatform = devicePlatform;
 		}

@@ -41,7 +41,10 @@ namespace Microsoft.Maui
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
 			if (!viewHandler.CanInvokeMappers())
+			{
+			{
 				return;
+			}
 
 			var action = GetProperty(key);
 			action?.Invoke(viewHandler, virtualView);
@@ -50,14 +53,19 @@ namespace Microsoft.Maui
 		public virtual Action<IElementHandler, IElement>? GetProperty(string key)
 		{
 			if (_mapper.TryGetValue(key, out var action))
+			{
 				return action;
+			}
+			}
 			else if (Chained is not null)
 			{
 				foreach (var ch in Chained)
 				{
 					var returnValue = ch.GetProperty(key);
 					if (returnValue != null)
+					{
 						return returnValue;
+					}
 				}
 			}
 
@@ -67,7 +75,10 @@ namespace Microsoft.Maui
 		public void UpdateProperty(IElementHandler viewHandler, IElement? virtualView, string property)
 		{
 			if (virtualView == null)
+			{
+			{
 				return;
+			}
 
 			UpdatePropertyCore(property, viewHandler, virtualView);
 		}
@@ -75,7 +86,10 @@ namespace Microsoft.Maui
 		public void UpdateProperties(IElementHandler viewHandler, IElement? virtualView)
 		{
 			if (virtualView == null)
+			{
+			{
 				return;
+			}
 
 			foreach (var key in UpdateKeys)
 			{
@@ -113,13 +127,19 @@ namespace Microsoft.Maui
 		public virtual IEnumerable<string> GetKeys()
 		{
 			foreach (var key in _mapper.Keys)
+			{
 				yield return key;
+			}
 
 			if (Chained is not null)
 			{
 				foreach (var chain in Chained)
+				{
 					foreach (var key in chain.GetKeys())
+					{
 						yield return key;
+					}
+				}
 			}
 		}
 	}
@@ -169,7 +189,9 @@ namespace Microsoft.Maui
 			SetPropertyCore(key, (h, v) =>
 			{
 				if (v is TVirtualView vv)
+				{
 					action?.Invoke((TViewHandler)h, vv);
+				}
 				else if (Chained != null)
 				{
 					foreach (var chain in Chained)

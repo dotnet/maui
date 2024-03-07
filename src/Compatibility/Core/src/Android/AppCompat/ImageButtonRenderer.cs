@@ -86,7 +86,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -204,7 +206,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override void Draw(Canvas canvas)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			canvas.ClipShape(Context, Element);
 
@@ -222,7 +226,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					var heightRatio = 1f;
 
 					if (Element.Aspect == Aspect.AspectFill && OnThisPlatform().GetIsShadowEnabled())
+					{
 						Application.Current?.FindMauiContext()?.CreateLogger<ImageButtonRenderer>()?.LogWarning("AspectFill isn't fully supported when using shadows. Image may be clipped incorrectly to Border");
+					}
 
 					switch (Element.Aspect)
 					{
@@ -239,7 +245,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 
 				if (drawableBounds != null)
+				{
 					Drawable.SetBounds((int)drawableBounds.Left, (int)drawableBounds.Top, (int)drawableBounds.Right, (int)drawableBounds.Bottom);
+				}
 			}
 
 			if (_backgroundTracker?.BackgroundDrawable != null)
@@ -256,7 +264,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void IVisualElementRenderer.SetLabelFor(int? id)
 		{
 			if (_defaultLabelFor == null)
+			{
 				_defaultLabelFor = LabelFor;
+			}
 
 			LabelFor = (int)(id ?? _defaultLabelFor);
 		}
@@ -264,7 +274,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			if (!Enabled || (_inputTransparent && Enabled))
+			{
 				return false;
+			}
 
 			return base.OnTouchEvent(e);
 		}
@@ -298,9 +310,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
+			{
 				UpdateInputTransparent();
+			}
 			else if (e.PropertyName == ImageButton.PaddingProperty.PropertyName)
+			{
 				UpdatePadding();
+			}
 
 			ElementPropertyChanged?.Invoke(this, e);
 		}
@@ -337,7 +353,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		IPlatformElementConfiguration<PlatformConfiguration.Android, ImageButton> OnThisPlatform()
 		{
 			if (_platformElementConfiguration == null)
+			{
 				_platformElementConfiguration = Element.OnThisPlatform();
+			}
 
 			return _platformElementConfiguration;
 		}

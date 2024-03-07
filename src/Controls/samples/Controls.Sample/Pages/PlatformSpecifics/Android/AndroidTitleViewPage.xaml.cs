@@ -22,7 +22,9 @@ namespace Maui.Controls.Sample.Pages
 		void OnReturnButtonClicked(object sender, EventArgs e)
 		{
 			if (_returnToPlatformSpecificsPage == null)
+			{
 				return;
+			}
 
 			_returnToPlatformSpecificsPage.Execute(null);
 		}

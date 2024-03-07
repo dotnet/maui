@@ -20,14 +20,24 @@ namespace Microsoft.Maui.Controls
 			if (strValue != null)
 			{
 				if (Enum.TryParse(strValue, out FlowDirection direction))
+				{
 					return direction;
+				}
 
 				if (strValue.Equals("ltr", StringComparison.OrdinalIgnoreCase))
+				{
 					return FlowDirection.LeftToRight;
+				}
+
 				if (strValue.Equals("rtl", StringComparison.OrdinalIgnoreCase))
+				{
 					return FlowDirection.RightToLeft;
+				}
+
 				if (strValue.Equals("inherit", StringComparison.OrdinalIgnoreCase))
+				{
 					return FlowDirection.MatchParent;
+				}
 			}
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(FlowDirection)}");
 		}
@@ -35,7 +45,10 @@ namespace Microsoft.Maui.Controls
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not FlowDirection direction)
+			{
 				throw new NotSupportedException();
+			}
+
 			return direction.ToString();
 		}
 	}

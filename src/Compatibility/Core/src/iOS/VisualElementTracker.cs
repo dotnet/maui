@@ -75,17 +75,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void Disconnect(VisualElement oldElement)
 		{
 			if (oldElement == null)
+			{
 				return;
+			}
 
 			oldElement.PropertyChanged -= _propertyChangedHandler;
 			oldElement.SizeChanged -= _sizeChangedEventHandler;
+			oldElement.BatchCommitted -= _batchCommittedHandler;
 			oldElement.BatchCommitted -= _batchCommittedHandler;
 		}
 
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -150,7 +155,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void OnRendererElementChanged(object s, VisualElementChangedEventArgs e)
 		{
 			if (_element == e.NewElement)
+			{
 				return;
+			}
 
 			SetElement(_element, e.NewElement);
 		}
@@ -161,7 +168,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var uiview = Renderer.NativeView;
 
 			if (view == null || view.Batched)
+			{
 				return;
+			}
 
 			bool shouldInteract;
 
@@ -218,7 +227,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			void update()
 			{
 				if (updateTarget != _updateCount)
+				{
+				{
 					return;
+				}
 #if __MOBILE__
 				var visualElement = view;
 #endif
@@ -232,7 +244,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 					caLayer.Hidden = false;
 					if (!caLayer.Frame.IsEmpty)
+					{
 						shouldRelayoutSublayers = true;
+					}
 				}
 
 				if (!isVisible && !caLayer.Hidden)
@@ -269,12 +283,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 					// must reset transform prior to setting frame...
 					if (caLayer.AnchorPoint != _originalAnchor)
+					{
 						caLayer.AnchorPoint = _originalAnchor;
+					}
 
 					caLayer.Transform = transform;
 					uiview.Frame = target;
 					if (shouldRelayoutSublayers)
+					{
 						caLayer.LayoutSublayers();
+					}
 				}
 				else if (width <= 0 || height <= 0)
 				{
@@ -309,27 +327,43 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #else
 				// position is relative to anchor point
 				if (Math.Abs(anchorX - .5) > epsilon)
+				{
 					transform = transform.Translate((anchorX - .5f) * width, 0, 0);
+				}
+
 				if (Math.Abs(anchorY - .5) > epsilon)
+				{
 					transform = transform.Translate(0, (anchorY - .5f) * height, 0);
+				}
 #endif
 
 				if (Math.Abs(translationX) > epsilon || Math.Abs(translationY) > epsilon)
+				{
 					transform = transform.Translate(translationX, translationY, 0);
+				}
 
 				// not just an optimization, iOS will not "pixel align" a view which has M34 set
 				if (Math.Abs(rotationY % 180) > epsilon || Math.Abs(rotationX % 180) > epsilon)
+				{
 					transform.M34 = 1.0f / -400f;
+				}
 
 				if (Math.Abs(rotationX % 360) > epsilon)
+				{
 					transform = transform.Rotate(rotationX * (float)Math.PI / 180.0f, 1.0f, 0.0f, 0.0f);
+				}
+
 				if (Math.Abs(rotationY % 360) > epsilon)
+				{
 					transform = transform.Rotate(rotationY * (float)Math.PI / 180.0f, 0.0f, 1.0f, 0.0f);
+				}
 
 				transform = transform.Rotate(rotation * (float)Math.PI / 180.0f, 0.0f, 0.0f, 1.0f);
 
 				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
+				{
 					transform = transform.Scale(scaleX, scaleY, scale);
+				}
 
 				if (Foundation.NSThread.IsMain)
 				{
@@ -344,9 +378,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 #if __MOBILE__
 			if (thread)
+			{
 				view.Dispatcher.DispatchIfRequired(update);
+			}
 			else
+			{
 				update();
+			}
 #else
 			update();
 #endif
@@ -382,7 +420,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			Performance.Start(out string reference);
 
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (_layer == null)
 			{
@@ -408,7 +448,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateClip()
 		{
 			if (!ShouldUpdateClip())
+			{
 				return;
+			}
 
 			var element = Renderer.Element;
 			var uiview = Renderer.NativeView;
@@ -426,9 +468,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (Forms.IsiOS11OrNewer)
 			{
 				if (formsGeometry != null)
+				{
 					uiview.Layer.Mask = maskLayer;
+				}
 				else
+				{
 					uiview.Layer.Mask = null;
+				}
 			}
 			else
 			{
@@ -444,7 +490,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					uiview.MaskView = maskView;
 				}
 				else
+				{
 					uiview.MaskView = null;
+				}
 			}
 #else
 			if (formsGeometry != null)
@@ -460,15 +508,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var uiview = Renderer?.NativeView;
 
 			if (element == null || uiview == null)
+			{
 				return false;
+			}
 
 			bool hasClipShapeLayer = false;
 #if __MOBILE__
 			if (Forms.IsiOS11OrNewer)
+			{
 				hasClipShapeLayer =
 					uiview.Layer != null &&
 					uiview.Layer.Mask != null &&
 					uiview.Layer.Mask?.Name == ClipShapeLayer;
+			}
 			else
 			{
 				hasClipShapeLayer =
@@ -486,10 +538,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var formsGeometry = element.Clip;
 
 			if (formsGeometry != null)
+			{
 				return true;
+			}
 
 			if (formsGeometry == null && hasClipShapeLayer)
+			{
 				return true;
+			}
 
 			return false;
 		}

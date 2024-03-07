@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Controls
 				Element element = LogicalChildrenInternal[i];
 				var child = element as View;
 				if (child != null)
+				{
 					LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
+				}
 			}
 		}
 
@@ -70,9 +72,15 @@ namespace Microsoft.Maui.Controls
 
 			var result = LayoutConstraint.None;
 			if (isFixedVertically && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
+			{
 				result |= LayoutConstraint.VerticallyFixed;
+			}
+
 			if (isFixedHorizontally && view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
+			{
 				result |= LayoutConstraint.HorizontallyFixed;
+			}
+
 			view.ComputedConstraint = result;
 		}
 

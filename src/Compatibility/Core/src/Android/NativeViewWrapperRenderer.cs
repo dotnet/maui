@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
 			if (Element?.GetDesiredSizeDelegate == null)
+			{
 				return base.GetDesiredSize(widthConstraint, heightConstraint);
+			}
 
 			// The user has specified a different implementation of GetDesiredSizeDelegate
 			SizeRequest? result = Element.GetDesiredSizeDelegate(this, widthConstraint, heightConstraint);
@@ -56,7 +58,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			// If the delegate wasn't able to handle the request, fall back to the default implementation
 			if (!handled)
+			{
 				base.OnLayout(changed, l, t, r, b);
+			}
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -72,7 +76,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			// If the delegate wasn't able to handle the request, fall back to the default implementation
 			if (!handled)
+			{
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+			}
 		}
 
 		protected override bool ManageNativeControlLifetime => false;

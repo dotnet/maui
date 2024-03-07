@@ -39,11 +39,15 @@ namespace Microsoft.Maui.Platform
 
 			var scrollViewer = element?.GetDescendantByName<ScrollViewer>(ContentElementName);
 			if (scrollViewer is not null)
+			{
 				scrollViewer.VerticalAlignment = verticalAlignment;
+			}
 
 			var placeholder = element?.GetDescendantByName<TextBlock>(PlaceholderTextContentPresenterName);
 			if (placeholder is not null)
+			{
 				placeholder.VerticalAlignment = verticalAlignment;
+			}
 		}
 
 		// IsDeleteButtonEnabled
@@ -68,7 +72,9 @@ namespace Microsoft.Maui.Platform
 			VisualState? buttonVisibleState = null;
 			var deleteButton = element?.GetDescendantByName<Button>(DeleteButtonElementName);
 			if (deleteButton?.Parent is Grid rootGrid)
+			{
 				(buttonStates, buttonVisibleState) = InterceptDeleteButtonVisualStates(rootGrid);
+			}
 
 			var states = buttonStates?.States;
 			if (element is not null && states is not null && buttonVisibleState is not null)
@@ -76,9 +82,13 @@ namespace Microsoft.Maui.Platform
 				var isEnabled = GetIsDeleteButtonEnabled(element);
 				var contains = states.Contains(buttonVisibleState);
 				if (isEnabled && !contains)
+				{
 					states.Add(buttonVisibleState);
+				}
 				else if (!isEnabled && contains)
+				{
 					states.Remove(buttonVisibleState);
+				}
 			}
 		}
 
@@ -86,7 +96,9 @@ namespace Microsoft.Maui.Platform
 		{
 			// not the content we expected
 			if (element is null)
+			{
 				return (null, null);
+			}
 
 			// find "ButtonStates"
 			var visualStateGroups = VisualStateManager.GetVisualStateGroups(element);
@@ -94,18 +106,24 @@ namespace Microsoft.Maui.Platform
 			foreach (var group in visualStateGroups)
 			{
 				if (group.Name == ButtonStatesName)
+				{
 					buttonStates = group;
+				}
 			}
 
 			// no button states
 			if (buttonStates is null)
+			{
 				return (null, null);
+			}
 
 			// find and return the "ButtonVisible" state
 			foreach (var state in buttonStates.States)
 			{
 				if (state.Name == ButtonVisibleStateName)
+				{
 					return (buttonStates, state);
+				}
 			}
 
 			// no button visible state

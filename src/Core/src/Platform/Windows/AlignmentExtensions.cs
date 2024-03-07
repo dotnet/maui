@@ -38,14 +38,35 @@ namespace Microsoft.Maui.Platform
 					return UI.Xaml.TextAlignment.Center;
 				case TextAlignment.End:
 					if (isLtr)
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
 						return UI.Xaml.TextAlignment.Right;
 					else
+After:
+					{
+						return UI.Xaml.TextAlignment.Right;
+					}
+					else
+					{
+*/
+					{
+						return UI.Xaml.TextAlignment.Right;
+					}
+					else
+					{
 						return UI.Xaml.TextAlignment.Left;
+					}
+
 				default:
 					if (isLtr)
+					{
 						return UI.Xaml.TextAlignment.Left;
+					}
 					else
+					{
 						return UI.Xaml.TextAlignment.Right;
+					}
 			}
 		}
 	}

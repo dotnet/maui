@@ -38,7 +38,9 @@ namespace Microsoft.Maui.Handlers
 					ClearIndicators();
 					handler = indicatorsLayoutOverride.ToPlatform(MauiContext);
 					if (handler != null)
+					{
 						PlatformView.ItemsSource = new ObservableCollection<FrameworkElement>() { handler };
+					}
 				}
 			}
 

@@ -17,18 +17,24 @@ namespace Microsoft.Maui
 		public async Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IUriImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
+			{
 				return null;
+			}
 
 			// TODO: use a real caching library with the URI
 			if (imageSource is not IStreamImageSource streamImageSource)
+			{
 				throw new InvalidOperationException("Unable to load URI as a stream.");
+			}
 
 			try
 			{
 				using var stream = await streamImageSource.GetStreamAsync(cancellationToken);
 
 				if (stream == null)
+				{
 					throw new InvalidOperationException("Unable to load image stream.");
+				}
 
 				var image = new BitmapImage();
 

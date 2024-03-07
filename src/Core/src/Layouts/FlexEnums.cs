@@ -84,9 +84,15 @@ namespace Microsoft.Maui.Layouts
 		public FlexBasis(float length, bool isRelative = false)
 		{
 			if (length < 0)
+			{
 				throw new ArgumentException("should be a positive value", nameof(length));
+			}
+
 			if (isRelative && length > 1)
+			{
 				throw new ArgumentException("relative length should be in [0, 1]", nameof(length));
+			}
+
 			_isLength = !isRelative;
 			_isRelative = isRelative;
 			Length = length;

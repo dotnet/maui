@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (dependencyImplementation == null)
+			{
 				return null;
+			}
 
 			if (fetchTarget == DependencyFetchTarget.GlobalInstance)
 			{
@@ -74,7 +76,9 @@ namespace Microsoft.Maui.Controls
 			AddDependencyTypeIfNeeded(targetType);
 
 			lock (s_dependencyLock)
+			{
 				DependencyImplementations[targetType] = new DependencyData { ImplementorType = implementorType };
+			}
 		}
 
 		public static void RegisterSingleton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T>(T instance) where T : class
@@ -84,14 +88,18 @@ namespace Microsoft.Maui.Controls
 			AddDependencyTypeIfNeeded(targetType);
 
 			lock (s_dependencyLock)
+			{
 				DependencyImplementations[targetType] = new DependencyData { ImplementorType = implementorType, GlobalInstance = instance };
+			}
 		}
 
 		static void AddDependencyTypeIfNeeded(
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{
 			if (!DependencyTypes.Any(t => t.Type == type))
+			{
 				DependencyTypes.Add(new DependencyType { Type = type });
+			}
 		}
 
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
@@ -109,12 +117,17 @@ namespace Microsoft.Maui.Controls
 		static void Initialize()
 		{
 			if (s_initialized)
+			{
+			{
 				return;
+			}
 
 			lock (s_initializeLock)
 			{
 				if (s_initialized)
+				{
 					return;
+				}
 
 				Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 				if (Internals.Registrar.ExtraAssemblies != null)
@@ -136,7 +149,9 @@ namespace Microsoft.Maui.Controls
 				{
 					object[] attributes = assembly.GetCustomAttributesSafe(typeof(DependencyAttribute));
 					if (attributes == null)
+					{
 						continue;
+					}
 
 					for (int i = 0; i < attributes.Length; i++)
 					{
@@ -150,12 +165,17 @@ namespace Microsoft.Maui.Controls
 		internal static void Initialize(Assembly[] assemblies)
 		{
 			if (s_initialized)
+			{
+			{
 				return;
+			}
 
 			lock (s_initializeLock)
 			{
 				if (s_initialized)
+				{
 					return;
+				}
 
 				Register(assemblies);
 

@@ -160,25 +160,45 @@ namespace Maui.Controls.Sample.Controls
 			base.OnPropertyChanged(propertyName);
 
 			if (propertyName == ValueProperty.PropertyName)
+			{
 				UpdateValue();
+			}
 			else if (propertyName == IconProperty.PropertyName)
+			{
 				UpdateIcon();
+			}
 			else if (propertyName == ItemCountProperty.PropertyName)
+			{
 				UpdateItemCount();
+			}
 			else if (propertyName == ItemSizeProperty.PropertyName)
+			{
 				UpdateItemSize();
+			}
 			else if (propertyName == SelectedFillProperty.PropertyName)
+			{
 				UpdateSelectedFill();
+			}
 			else if (propertyName == UnSelectedFillProperty.PropertyName)
+			{
 				UpdateUnSelectedFill();
+			}
 			else if (propertyName == SelectedStrokeProperty.PropertyName)
+			{
 				UpdateSelectedStroke();
+			}
 			else if (propertyName == UnSelectedStrokeProperty.PropertyName)
+			{
 				UpdateUnSelectedStroke();
+			}
 			else if (propertyName == SelectedStrokeWidthProperty.PropertyName)
+			{
 				UpdateSelectedStrokeWidth();
+			}
 			else if (propertyName == UnSelectedStrokeWidthProperty.PropertyName)
+			{
 				UpdateUnSelectedStrokeWidth();
+			}
 		}
 
 		void UpdateRateItems()
@@ -208,7 +228,9 @@ namespace Maui.Controls.Sample.Controls
 			if (IsReadOnly)
 			{
 				foreach (var rateItem in _rateLayout.Children)
+				{
 					(rateItem as View)?.GestureRecognizers.Clear();
+				}
 			}
 			else
 			{
@@ -224,7 +246,9 @@ namespace Maui.Controls.Sample.Controls
 		void UpdateIcon()
 		{
 			foreach (var child in _rateLayout.Children)
+			{
 				((RateItem)child).Icon = Icon;
+			}
 		}
 
 		void UpdateItemCount()
@@ -235,49 +259,65 @@ namespace Maui.Controls.Sample.Controls
 		void UpdateItemSize()
 		{
 			foreach (var child in _rateLayout.Children)
+			{
 				((RateItem)child).ItemSize = ItemSize;
+			}
 		}
 
 		void UpdateSelectedFill()
 		{
 			foreach (var child in _rateLayout.Children)
+			{
 				((RateItem)child).SelectedFill = SelectedFill;
+			}
 		}
 
 		void UpdateUnSelectedFill()
 		{
 			foreach (var child in _rateLayout.Children)
+			{
 				((RateItem)child).UnSelectedFill = UnSelectedFill;
+			}
 		}
 
 		void UpdateSelectedStroke()
 		{
 			foreach (var child in _rateLayout.Children)
+			{
 				((RateItem)child).SelectedFill = SelectedFill;
+			}
 		}
 
 		void UpdateUnSelectedStroke()
 		{
 			foreach (var child in _rateLayout.Children)
+			{
 				((RateItem)child).UnSelectedFill = UnSelectedFill;
+			}
 		}
 
 		void UpdateSelectedStrokeWidth()
 		{
 			foreach (var child in _rateLayout.Children)
+			{
 				((RateItem)child).SelectedStrokeWidth = SelectedStrokeWidth;
+			}
 		}
 
 		void UpdateUnSelectedStrokeWidth()
 		{
 			foreach (var child in _rateLayout.Children)
+			{
 				((RateItem)child).UnSelectedStrokeWidth = UnSelectedStrokeWidth;
+			}
 		}
 
 		void UpdateValue()
 		{
 			for (int i = 0; i < ItemCount; i++)
+			{
 				((RateItem)_rateLayout.Children[i]).IsSelected = i < Value;
+			}
 
 			ValueChanged?.Invoke(this, new ValueChangedEventArgs(Value));
 		}

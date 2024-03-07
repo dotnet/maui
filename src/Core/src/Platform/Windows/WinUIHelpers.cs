@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Platform
 		public static WCornerRadius CreateCornerRadius(double all)
 		{
 			if (all <= 0)
+			{
 				return new WCornerRadius();
+			}
 
 			return new WCornerRadius
 			{

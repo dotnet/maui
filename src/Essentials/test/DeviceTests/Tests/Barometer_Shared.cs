@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasBarometer)
+			{
 				return;
+			}
 
 			var tcs = new TaskCompletionSource<BarometerData>();
 
@@ -41,7 +43,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasBarometer)
+			{
 				return;
+			}
 
 			var tcs = new TaskCompletionSource<BarometerData>();
 			Barometer.ReadingChanged += Barometer_ReadingChanged;
@@ -64,7 +68,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasBarometer)
+			{
 				return;
+			}
 
 			var tcs = new TaskCompletionSource<BarometerData>();
 			Barometer.ReadingChanged += Barometer_ReadingChanged;

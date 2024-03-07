@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Platform
 			foreach (var item in base.GetChildrenCore())
 			{
 				if (item is TextBlockAutomationPeer tba)
+				{
 					return tba;
+				}
 			}
 
 			return null;

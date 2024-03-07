@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 		protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
 		{
 			if (_drawable == null)
+			{
 				return;
+			}
 
 			var scale = (float)Dpi;
 

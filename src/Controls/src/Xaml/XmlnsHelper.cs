@@ -59,7 +59,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					typeName = decl.Substring(nsind + 1, decl.Length - nsind - 1);
 				}
 				else
+				{
 					typeName = decl;
+				}
 			}
 		}
 

@@ -13,11 +13,19 @@ namespace Microsoft.Maui.Controls.Xaml
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (serviceProvider is null)
+			{
 				throw new ArgumentNullException(nameof(serviceProvider));
+			}
+
 			if (Key is null)
+			{
 				throw new XamlParseException("you must specify a key in {StaticResource}", serviceProvider);
+			}
+
 			if (serviceProvider.GetService(typeof(IProvideValueTarget)) is not IProvideParentValues valueProvider)
+			{
 				throw new ArgumentException(null, nameof(serviceProvider));
+			}
 
 			if (!TryGetResource(Key, valueProvider.ParentObjects, out var resource, out var resourceDictionary)
 				&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
@@ -40,7 +48,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			Type valueType = value.GetType();
 			var propertyType = bp?.ReturnType ?? pi?.PropertyType;
 			if (propertyType is null || propertyType.IsAssignableFrom(valueType))
+			{
 				return value;
+			}
 
 			MethodInfo implicit_op;
 
@@ -56,7 +66,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			implicit_op = valueType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType)
 							?? propertyType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType);
 			if (implicit_op != null)
+			{
 				return implicit_op.Invoke(value, new[] { value });
+			}
 
 			return value;
 		}
@@ -70,9 +82,14 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				var resDict = p is IResourcesProvider irp && irp.IsResourcesCreated ? irp.Resources : p as ResourceDictionary;
 				if (resDict == null)
+				{
 					continue;
+				}
+
 				if (resDict.TryGetValueAndSource(key, out resource, out resourceDictionary))
+				{
 					return true;
+				}
 			}
 			return false;
 		}

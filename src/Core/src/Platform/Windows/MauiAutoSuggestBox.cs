@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Platform
 			var element = d as FrameworkElement;
 			var textBox = element?.GetDescendantByName<TextBox>("TextBox");
 			if (textBox != null)
+			{
 				textBox.IsReadOnly = true;
+			}
 		}
 	}
 }

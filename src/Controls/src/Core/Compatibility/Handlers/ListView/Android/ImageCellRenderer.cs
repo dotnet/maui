@@ -21,9 +21,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.OnCellPropertyChanged(sender, args);
 			if (args.PropertyName == ImageCell.ImageSourceProperty.PropertyName)
+			{
 				UpdateImage();
+			}
 			else if (args.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 		}
 
 		void UpdateImage()
@@ -35,7 +39,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				View.SetImageSource(cell.ImageSource);
 			}
 			else
+			{
 				View.SetImageVisible(false);
+			}
 		}
 
 		void UpdateFlowDirection()

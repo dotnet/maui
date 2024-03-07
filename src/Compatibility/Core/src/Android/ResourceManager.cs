@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				foreach (var type in _assembly.GetTypes())
 				{
 					if (type.Name == name || type.Name == altName)
+					{
 						return type;
+					}
 				}
 			}
 			return null;
@@ -54,7 +56,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			get
 			{
 				if (_drawableClass == null)
+				{
 					_drawableClass = FindType("Drawable", "Resource_Drawable");
+				}
+
 				return _drawableClass;
 			}
 			[param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
@@ -70,7 +75,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			get
 			{
 				if (_resourceClass == null)
+				{
 					_resourceClass = FindType("Id", "Resource_Id");
+				}
+
 				return _resourceClass;
 			}
 			[param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
@@ -86,7 +94,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			get
 			{
 				if (_styleClass == null)
+				{
 					_styleClass = FindType("Style", "Resource_Style");
+				}
+
 				return _styleClass;
 			}
 			[param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
@@ -102,7 +113,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			get
 			{
 				if (_layoutClass == null)
+				{
 					_layoutClass = FindType("Layout", "Resource_Layout");
+				}
+
 				return _layoutClass;
 			}
 			[param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
@@ -115,7 +129,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		internal static async Task<Drawable> GetFormsDrawableAsync(this Context context, ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (imageSource == null || imageSource.IsEmpty)
+			{
 				return null;
+			}
 
 			// try take a shortcut for files
 			if (imageSource is FileImageSource fileImageSource)
@@ -128,7 +144,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					var drawable = AndroidAppCompat.GetDrawable(context, id);
 					if (drawable != null)
+					{
 						return drawable;
+					}
 				}
 
 				// try a direct file on the file system
@@ -137,7 +155,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					using (var bitmap = await BitmapFactory.DecodeFileAsync(file).ConfigureAwait(false))
 					{
 						if (bitmap != null)
+						{
 							return new BitmapDrawable(context.Resources, bitmap);
+						}
 					}
 				}
 
@@ -147,7 +167,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					using (var bitmap = await BitmapFactory.DecodeResourceAsync(context.Resources, id).ConfigureAwait(false))
 					{
 						if (bitmap != null)
+						{
 							return new BitmapDrawable(context.Resources, bitmap);
+						}
 					}
 				}
 			}
@@ -156,7 +178,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			using (var bitmap = await context.GetFormsBitmapAsync(imageSource, cancellationToken).ConfigureAwait(false))
 			{
 				if (bitmap != null)
+				{
 					return new BitmapDrawable(context.Resources, bitmap);
+				}
 			}
 
 			return null;
@@ -165,11 +189,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		internal static async Task<Bitmap> GetFormsBitmapAsync(this Context context, ImageSource imageSource, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (imageSource == null || imageSource.IsEmpty)
+			{
 				return null;
+			}
 
 			var handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(imageSource);
 			if (handler == null)
+			{
 				return null;
+			}
 
 			try
 			{
@@ -194,11 +222,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		static bool IsDrawableSourceValid(this IVisualElementRenderer renderer, BindableObject bindable, out BindableObject element)
 		{
 			if ((renderer is IDisposedState disposed && disposed.IsDisposed) || (renderer != null && renderer.View == null))
+			{
 				element = null;
+			}
 			else if (bindable != null)
+			{
 				element = bindable;
+			}
 			else
+			{
 				element = renderer.Element;
+			}
 
 			return element != null;
 		}
@@ -230,7 +264,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			BindableObject element = null;
 
 			if (!renderer.IsDrawableSourceValid(bindable, out element))
+			{
 				return;
+			}
 
 			onLoading?.Invoke(true);
 			if (element.GetValue(imageSourceProperty) is ImageSource initialSource && !initialSource.IsEmpty)
@@ -252,18 +288,26 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 						Drawable returnValue = null;
 						if (cacheObject is Bitmap bitmap)
+						{
 							returnValue = new BitmapDrawable(context.Resources, bitmap);
+						}
 						else
+						{
 							returnValue = cacheObject as Drawable;
+						}
 
 						if (!renderer.IsDrawableSourceValid(bindable, out element))
+						{
 							return;
+						}
 
 						// only set if we are still on the same image
 						if (element.GetValue(imageSourceProperty) == initialSource)
 						{
 							using (returnValue)
+							{
 								onSet(returnValue);
+							}
 						}
 					}
 					else
@@ -272,7 +316,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						using (var drawable = await context.GetFormsDrawableAsync(initialSource, cancellationToken))
 						{
 							if (!renderer.IsDrawableSourceValid(bindable, out element))
+							{
 								return;
+							}
 
 							// only set if we are still on the same image
 							if (element.GetValue(imageSourceProperty) == initialSource)
@@ -288,7 +334,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					{
 						// only mark as finished if we are still on the same image
 						if (element.GetValue(imageSourceProperty) == initialSource)
+						{
 							onLoading.Invoke(false);
+						}
 					}
 				}
 			}
@@ -316,7 +364,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var bitmap = GetBitmap(resource, file);
 			if (bitmap != null)
+			{
 				return bitmap;
+			}
 
 			return BitmapFactory.DecodeFile(file);
 		}
@@ -395,35 +445,51 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			int id = 0;
 			if (title == null)
+			{
 				return id;
+			}
 
 			string name;
 
 			if (defType == "style" || (resourceType != null && resourceType == StyleClass))
+			{
 				name = title;
+			}
 			else
+			{
 				name = title.ToLowerInvariant();
+			}
 
 			if (defType == _drawableDefType || (resourceType != null && resourceType == DrawableClass))
+			{
 				name = IOPath.GetFileNameWithoutExtension(name);
+			}
 
 			if ((id = SearchByIdentifier(name, defType, resource, packageName)) > 0)
+			{
 				return id;
+			}
 
 			// When searching by reflection you would use a "_" instead of a "."
 			// So this accounts for cases where users were searching with an "_"
 			if ((id = SearchByIdentifier(name.Replace("_", ".", StringComparison.Ordinal), defType, resource, packageName)) > 0)
+			{
 				return id;
+			}
 
 			int SearchByIdentifier(string n, string d, Resources r, string p)
 			{
 				int returnValue = 0;
 
 				if (p != null)
+				{
 					returnValue = r.GetIdentifier(n, d, p);
+				}
 
 				if (returnValue == 0)
+				{
 					returnValue = r.GetIdentifier(n, d, null);
+				}
 
 				return returnValue;
 			}
@@ -435,7 +501,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			// This may legitimately be null in designer scenarios
 			if (type == null)
+			{
 				return 0;
+			}
 
 			object value = null;
 			var fields = type.GetFields();
@@ -464,7 +532,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			if (value is int result)
+			{
 				return result;
+			}
+
 			return 0;
 		}
 	}

@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Platform
 			// which causes a crash during draw
 
 			if (scrollView.ScrollBarsInitialized)
+			{
 				scrollView.AwakenScrollBars();
+			}
 
 			// The scrollbar drawable won't initialize if ScrollbarFadingEnabled == false
 			if (!scrollView.ScrollbarFadingEnabled)

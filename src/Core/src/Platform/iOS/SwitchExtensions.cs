@@ -15,12 +15,16 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTrackColor(this UISwitch uiSwitch, ISwitch view)
 		{
 			if (view == null)
+			{
 				return;
+			}
 
 			var uIView = GetTrackSubview(uiSwitch);
 
 			if (uIView is null)
+			{
 				return;
+			}
 
 			if (!view.IsOn)
 			{
@@ -39,19 +43,28 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateThumbColor(this UISwitch uiSwitch, ISwitch view)
 		{
 			if (view == null)
+			{
+			{
 				return;
+			}
 
 			Graphics.Color thumbColor = view.ThumbColor;
 			if (thumbColor != null)
+			{
 				uiSwitch.ThumbTintColor = thumbColor?.ToPlatform();
+			}
 		}
 
 		internal static UIView? GetTrackSubview(this UISwitch uISwitch)
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+			{
 				return uISwitch.Subviews?.FirstOrDefaultNoLinq()?.Subviews?.FirstOrDefaultNoLinq();
+			}
 			else
+			{
 				return uISwitch.Subviews?.FirstOrDefaultNoLinq()?.Subviews?.FirstOrDefaultNoLinq()?.Subviews?.FirstOrDefaultNoLinq();
+			}
 		}
 
 		internal static UIColor? GetTrackColor(this UISwitch uISwitch)

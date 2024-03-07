@@ -36,7 +36,10 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (parentNode is IElementNode parentElement
 				&& parentElement.Properties.TryGetValue(XmlName._CreateContent, out var createContent)
 				&& createContent == node)
+			{
 				return true;
+			}
+
 			return false;
 		}
 

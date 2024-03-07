@@ -14,11 +14,11 @@ public class XFIssue2681 : TestContentPage
 	const string NavigateToPage = "Click Me.";
 	protected override void Init()
 	{
-		Content = new Button() 
-		{ 
-			Text = NavigateToPage, 
-			AutomationId = "ClickMe", 
-			Command = new Command(async () => await this.Navigation.PushAsync(new FreezeMe())) 
+		Content = new Button()
+		{
+			Text = NavigateToPage,
+			AutomationId = "ClickMe",
+			Command = new Command(async () => await this.Navigation.PushAsync(new FreezeMe()))
 		};
 	}
 
@@ -54,9 +54,9 @@ public class XFIssue2681 : TestContentPage
 						new StackLayout()
 						{
 							Orientation = StackOrientation.Horizontal,
-							Children = 
+							Children =
 							{
-								lv 
+								lv
 							}
 						},
 						new Button(){

@@ -31,10 +31,14 @@ namespace Microsoft.Maui
 		{
 #if PLATFORM
 			if (view?.ToPlatform() is not PlatformView platformView)
+			{
 				return Task.FromResult<IScreenshotResult?>(null);
+			}
 
 			if (!Screenshot.Default.IsCaptureSupported)
+			{
 				return Task.FromResult<IScreenshotResult?>(null);
+			}
 
 			return CaptureAsync(platformView);
 #else
@@ -52,6 +56,49 @@ namespace Microsoft.Maui
 		internal static bool NeedsContainer(this IView? view)
 		{
 			if (view?.Clip != null || view?.Shadow != null)
+
+/* Unmerged change from project 'Core(net8.0-ios)'
+Before:
+				return true;
+
+#if ANDROID
+			if (view?.InputTransparent == true)
+				return true;
+#endif
+
+#if ANDROID || IOS
+			if (view is IBorder border && border.Border != null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-maccatalyst)'
+Before:
+				return true;
+
+#if ANDROID
+			if (view?.InputTransparent == true)
+				return true;
+#endif
+
+#if ANDROID || IOS
+			if (view is IBorder border && border.Border != null)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-android)'
+Before:
+				return true;
+
+#if ANDROID
+			if (view?.InputTransparent == true)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.19041.0)'
+Before:
 				return true;
 
 #if ANDROID
@@ -64,7 +111,85 @@ namespace Microsoft.Maui
 				return true;
 #elif WINDOWS
 			if (view is IBorderView border)
+After:
+			{
+*/
+
+/* Unmerged change from project 'Core(net8.0-windows10.0.20348.0)'
+Before:
+				return true;
+
+#if ANDROID
+			if (view?.InputTransparent == true)
+				return true;
+#endif
+
+#if ANDROID || IOS
+			if (view is IBorder border && border.Border != null)
+				return true;
+#elif WINDOWS
+			if (view is IBorderView border)
+After:
+			{
+*/
+			{
+				return true;
+			}
+
+#if ANDROID
+			if (view?.InputTransparent == true)
+				return true;
+			}
+
+#if ANDROID
+			if (view?.InputTransparent == true)
+			{
+				return true;
+			}
+#endif
+
+#if ANDROID || IOS
+			if (view is IBorder border && border.Border != null)
+			{
+				return true;
+
+/* Unmerged change from project 'Core(net8.0-android)'
+Before:
+#elif WINDOWS
+After:
+			}
+#elif WINDOWS
+*/
+			}
+
+#if ANDROID
+			if (view?.InputTransparent == true)
+				return true;
+#endif
+
+#if ANDROID || IOS
+			if (view is IBorder border && border.Border != null)
+			{
+				return true;
+			}
+#elif WINDOWS
+			if (view is IBorderView border)
+				return true;
+			}
+
+#if ANDROID
+			if (view?.InputTransparent == true)
+				return true;
+#endif
+
+#if ANDROID || IOS
+			if (view is IBorder border && border.Border != null)
+				return true;
+#elif WINDOWS
+			if (view is IBorderView border)
+			{
 				return border?.Shape != null || border?.Stroke != null;
+			}
 #endif
 			return false;
 		}

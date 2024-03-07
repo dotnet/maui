@@ -50,7 +50,9 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 		else
 		{
 			if (bindable.Handler != null)
+			{
 				FireAttachedTo(bindable);
+			}
 
 			bindable.HandlerChanged += OnHandlerChanged;
 		}
@@ -112,12 +114,37 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 	void OnHandlerChanged(object? sender, EventArgs e)
 	{
 		if (sender is not TView visualElement)
+		{
 			return;
+		}
 
 		if (visualElement.Handler is not null)
+
+/* Unmerged change from project 'Controls.Core(net8.0)'
+Before:
 			FireAttachedTo(visualElement);
+After:
+		{
+			FireAttachedTo(visualElement);
+		}
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
+			FireAttachedTo(visualElement);
+After:
+		{
+			FireAttachedTo(visualElement);
+		}
+*/
+		{
+			FireAttachedTo(visualElement);
+		}
 		else
+		{
+		{
 			FireDetachedFrom(visualElement);
+		}
 	}
 
 	/// <summary>

@@ -38,9 +38,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ActivityIndicator.IsRunningProperty.PropertyName || e.PropertyName == VisualElement.OpacityProperty.PropertyName)
+			{
 				UpdateIsRunning();
+			}
 			else if (e.PropertyName == ActivityIndicator.ColorProperty.PropertyName)
+			{
 				UpdateColor();
+			}
 		}
 
 		void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)

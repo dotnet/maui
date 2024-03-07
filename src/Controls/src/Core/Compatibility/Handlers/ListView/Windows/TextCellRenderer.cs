@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (cell.RealParent is ListView)
 			{
 				if (cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
+				{
 					return (WDataTemplate)WApplication.Current.Resources["ListViewHeaderTextCell"];
+				}
 
 				//return (WDataTemplate) WApplication.Current.Resources["ListViewTextCell"];
 			}

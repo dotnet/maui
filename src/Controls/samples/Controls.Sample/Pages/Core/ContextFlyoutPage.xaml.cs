@@ -193,9 +193,13 @@ namespace Maui.Controls.Sample.Pages
 			}
 
 			if (index == -1)
+			{
 				parent.Add(newMenuItem);
+			}
 			else
+			{
 				parent.Insert(index, newMenuItem);
+			}
 
 			newMenuItemCount++;
 		}

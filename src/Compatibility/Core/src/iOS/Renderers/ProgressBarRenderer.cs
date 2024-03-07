@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (e.NewElement != null)
 			{
 				if (Control == null)
+				{
 					SetNativeControl(new UIProgressView(UIProgressViewStyle.Default));
+				}
 
 				UpdateProgressColor();
 				UpdateProgress();
@@ -44,9 +46,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName)
+			{
 				UpdateProgressColor();
+			}
 			else if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
+			{
 				UpdateProgress();
+			}
 		}
 
 		protected override void SetBackgroundColor(Color color)
@@ -54,7 +60,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.SetBackgroundColor(color);
 
 			if (Control == null)
+			{
 				return;
+			}
 
 			Control.TrackTintColor = color != null ? color.ToPlatform() : null;
 		}

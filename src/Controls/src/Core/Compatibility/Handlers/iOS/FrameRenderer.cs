@@ -38,9 +38,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void AddSubview(UIView view)
 		{
 			if (view != _actualView)
+			{
 				_actualView.AddSubview(view);
+			}
 			else
+			{
 				base.AddSubview(view);
+			}
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
@@ -66,9 +70,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.PropertyName == Microsoft.Maui.Controls.Frame.CornerRadiusProperty.PropertyName ||
 				e.PropertyName == Microsoft.Maui.Controls.Frame.IsClippedToBoundsProperty.PropertyName ||
 				e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
+			{
 				SetupLayer();
+			}
 			else if (e.PropertyName == Controls.Frame.HasShadowProperty.PropertyName)
+			{
 				UpdateShadow();
+			}
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -78,26 +86,37 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the control adheres to changes in UI theme
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			{
 				SetupLayer();
+			}
 		}
 
 		public virtual void SetupLayer()
 		{
 			if (_actualView == null)
+			{
 				return;
+			}
+
 			if (Element is not Frame element)
+			{
 				return;
+			}
 
 			float cornerRadius = element.CornerRadius;
 
 			if (cornerRadius == -1f)
+			{
 				cornerRadius = 5f; // default corner radius
+			}
 
 			_actualView.Layer.CornerRadius = cornerRadius;
 			_actualView.Layer.MasksToBounds = cornerRadius > 0;
 
 			if (element.BackgroundColor == null)
+			{
 				_actualView.Layer.BackgroundColor = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor.CGColor;
+			}
 			else
 			{
 				// BackgroundColor gets set on the base class too which messes with
@@ -149,7 +168,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateShadow()
 		{
 			if (Element is IElement element)
+			{
 				element.Handler?.UpdateValue(nameof(IView.Shadow));
+			}
 		}
 
 		public override void LayoutSubviews()
@@ -171,7 +192,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void Draw(CGRect rect)
 		{
 			if (_actualView != null)
+			{
 				_actualView.Frame = Bounds;
+			}
 
 			base.Draw(rect);
 
@@ -181,7 +204,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
@@ -192,10 +217,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_actualView != null)
 				{
 					for (var i = 0; i < _actualView.GestureRecognizers?.Length; i++)
+					{
 						_actualView.GestureRecognizers.Remove(_actualView.GestureRecognizers[i]);
+					}
 
 					for (var j = 0; j < _actualView.Subviews.Length; j++)
+					{
 						_actualView.Subviews.Remove(_actualView.Subviews[j]);
+					}
 
 					_actualView.RemoveFromSuperview();
 					_actualView.Dispose();
@@ -227,7 +256,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				foreach (var view in Subviews)
 				{
 					if (view.HitTest(ConvertPointToView(point, view), uievent) != null)
+					{
 						return true;
+					}
 				}
 
 				return false;

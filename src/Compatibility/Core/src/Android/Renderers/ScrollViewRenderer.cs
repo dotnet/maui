@@ -106,7 +106,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				element.SendViewInitialized(this);
 
 				if (!string.IsNullOrEmpty(element.AutomationId))
+				{
 					ContentDescription = element.AutomationId;
+				}
 			}
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
@@ -163,7 +165,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
 			if (Element.InputTransparent)
+			{
 				return false;
+			}
 
 			// set the start point for the bidirectional scroll; 
 			// Down is swallowed by other controls, so we'll just sneak this in here without actually preventing
@@ -180,7 +184,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override bool OnTouchEvent(MotionEvent ev)
 		{
 			if (!_isEnabled)
+			{
 				return false;
+			}
 
 			if (ShouldSkipOnTouch)
 			{
@@ -253,7 +259,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			EventHandler<VisualElementChangedEventArgs> changed = ElementChanged;
 			if (changed != null)
+			{
 				changed(this, e);
+			}
 		}
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
@@ -268,9 +276,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				MeasureSpecFactory.MakeMeasureSpec(bottom - top, MeasureSpecMode.Unspecified));
 			base.OnLayout(changed, left, top, right, bottom);
 			if (_view.Content != null && _hScrollView != null)
+			{
 				_hScrollView.Layout(0, 0, right - left, Math.Max(bottom - top, (int)Context.ToPixels(_view.Content.Height)));
+			}
 			else if (_view.Content != null && requestContainerLayout)
+			{
 				_container?.RequestLayout();
+			}
 
 			// if the target sdk >= 17 then setting the LayoutDirection on the scroll view natively takes care of the scroll
 			if (!_checkedForRtlScroll && _hScrollView != null && Element is IVisualElementController controller && controller.EffectiveFlowDirection.IsRightToLeft())
@@ -298,10 +310,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					var context = Context;
 
 					if (x == 0)
+					{
 						x = context.FromPixels(_hScrollView.ScrollX);
+					}
 
 					if (y == 0)
+					{
 						y = context.FromPixels(ScrollY);
+					}
 				}
 
 				Controller.SetScrolledPosition(x, y);
@@ -312,7 +328,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			var platformEffect = effect as PlatformEffect;
 			if (platformEffect != null)
+			{
 				OnRegisterEffect(platformEffect);
+			}
 		}
 
 		void OnRegisterEffect(PlatformEffect effect)
@@ -331,21 +349,37 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			ElementPropertyChanged?.Invoke(this, e);
 
 			if (e.PropertyName == "Content")
+			{
 				LoadContent();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
 				UpdateBackgroundColor();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == ScrollView.OrientationProperty.PropertyName)
+			{
 				UpdateOrientation();
+			}
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled();
+			}
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateHorizontalScrollBarVisibility();
+			}
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
+			{
 				UpdateVerticalScrollBarVisibility();
+			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
 				UpdateFlowDirection();
+			}
 		}
 
 		void UpdateIsEnabled()
@@ -382,12 +416,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				await Task.Delay(TimeSpan.FromMilliseconds(1));
 
 				if (_disposed)
+				{
 					return;
+				}
 
 				cycle++;
 
 				if (cycle >= 10)
+				{
 					break;
+				}
 			}
 
 			var context = Context;
@@ -437,7 +475,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				animator.AnimationEnd += delegate
 				{
 					if (Controller == null)
+					{
 						return;
+					}
+
 					Controller.SendScrollFinished();
 				};
 
@@ -505,7 +546,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					_container.RemoveFromParent();
 					if (_hScrollView != null)
+					{
 						_hScrollView.RemoveFromParent();
+					}
+
 					AddView(_container);
 				}
 			}
@@ -534,12 +578,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == 0)
+			{
 				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
+			}
 
 			var newVerticalScrollVisibility = _view.VerticalScrollBarVisibility;
 
 			if (newVerticalScrollVisibility == ScrollBarVisibility.Default)
+			{
 				newVerticalScrollVisibility = _defaultVerticalScrollVisibility;
+			}
 
 			VerticalScrollBarEnabled = newVerticalScrollVisibility == ScrollBarVisibility.Always;
 

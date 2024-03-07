@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			// Ignore calls to this method if the new layout is the same as the old one
 			if (CollectionView.CollectionViewLayout == newLayout)
+			{
 				return;
+			}
 
 			ItemsViewLayout = newLayout;
 			_initialized = false;
@@ -56,7 +58,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -136,7 +140,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ItemsSource = CreateItemsViewSource();
 
 			if (!Forms.IsiOS11OrNewer)
+			{
 				AutomaticallyAdjustsScrollViewInsets = false;
+			}
 			else
 			{
 				// We set this property to keep iOS from trying to be helpful about insetting all the 
@@ -285,7 +291,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void CellContentSizeChanged(object sender, EventArgs e)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (!(sender is TemplatedCell cell))
 			{
@@ -415,7 +423,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (view == null)
 			{
 				if (formsElement != null)
+				{
 					Platform.GetRenderer(formsElement)?.DisposeRendererAndChildren();
+				}
 
 				uiView?.Dispose();
 				uiView = null;
@@ -474,9 +484,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			bool isRtl;
 
 			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
+			{
 				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
+			}
 			else
+			{
 				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
+			}
 
 			if (isRtl)
 			{
@@ -558,7 +572,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_emptyUIView.Frame = frame;
 
 			if (_emptyViewFormsElement != null && ((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
+			{
 				_emptyViewFormsElement.Layout(frame.ToRectangle());
+			}
 		}
 
 		TemplatedCell CreateAppropriateCellForLayout()

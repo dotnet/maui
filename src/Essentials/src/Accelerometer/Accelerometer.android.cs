@@ -58,7 +58,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			var values = e?.Values ?? Array.Empty<float>();
 			if (values.Count < 3)
+			{
 				return;
+			}
 
 			var data = new AccelerometerData(values[0] / gravity, values[1] / gravity, values[2] / gravity);
 			ChangeHandler?.Invoke(data);

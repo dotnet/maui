@@ -34,12 +34,16 @@ namespace Microsoft.Maui.Platform
 				var layer = GetLayer();
 
 				if (layer is not null && _maskLayer is not null)
+				{
 					layer.Mask = null;
+				}
 
 				_maskLayer = value;
 
 				if (layer is not null)
+				{
 					layer.Mask = value;
+				}
 			}
 		}
 
@@ -51,12 +55,16 @@ namespace Microsoft.Maui.Platform
 				var backgroundLayer = GetBackgroundLayer();
 
 				if (backgroundLayer is not null && _backgroundMaskLayer is not null)
+				{
 					backgroundLayer.Mask = null;
+				}
 
 				_backgroundMaskLayer = value;
 
 				if (backgroundLayer is not null)
+				{
 					backgroundLayer.Mask = value;
+				}
 			}
 		}
 
@@ -69,7 +77,9 @@ namespace Microsoft.Maui.Platform
 				_shadowLayer = value;
 
 				if (_shadowLayer != null)
+				{
 					Layer.InsertSublayer(_shadowLayer, 0);
+				}
 			}
 		}
 
@@ -78,26 +88,39 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			if (Subviews.Length == 0)
+			{
+			{
 				return;
+			}
 
 			if (_borderView is not null)
+			{
 				BringSubviewToFront(_borderView);
+			}
 
 			var child = Subviews[0];
 
 			child.Frame = Bounds;
 
 			if (MaskLayer is not null)
+			{
 				MaskLayer.Frame = Bounds;
+			}
 
 			if (BackgroundMaskLayer is not null)
+			{
 				BackgroundMaskLayer.Frame = Bounds;
+			}
 
 			if (ShadowLayer is not null)
+			{
 				ShadowLayer.Frame = Bounds;
+			}
 
 			if (_borderView is not null)
+			{
 				_borderView.Frame = Bounds;
+			}
 
 			SetClip();
 			SetShadow();
@@ -116,7 +139,9 @@ namespace Microsoft.Maui.Platform
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (Subviews.Length == 0)
+			{
 				return base.SizeThatFits(size);
+			}
 
 			var child = Subviews[0];
 
@@ -137,7 +162,9 @@ namespace Microsoft.Maui.Platform
 		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight)
 		{
 			if (Subviews.Length == 0)
+			{
 				return base.SizeThatFits(originalSpec);
+			}
 
 			var child = Subviews[0];
 
@@ -176,7 +203,10 @@ namespace Microsoft.Maui.Platform
 			var backgroundMask = BackgroundMaskLayer;
 
 			if (mask is null && Clip is null)
+			{
+			{
 				return;
+			}
 
 			var frame = Frame;
 			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
@@ -191,7 +221,10 @@ namespace Microsoft.Maui.Platform
 			// We wrap some controls for certain visual effects like applying background gradient etc.
 			// For this reason, we have to clip the background layer as well if it exists.
 			if (backgroundLayer is null)
+			{
+			{
 				return;
+			}
 
 			backgroundMask ??= BackgroundMaskLayer = new CAShapeLayer();
 			backgroundMask.Path = nativePath;
@@ -208,7 +241,10 @@ namespace Microsoft.Maui.Platform
 			var shadowLayer = ShadowLayer;
 
 			if (shadowLayer == null && Shadow == null)
+			{
+			{
 				return;
+			}
 
 			shadowLayer ??= ShadowLayer = new CAShapeLayer();
 
@@ -222,9 +258,13 @@ namespace Microsoft.Maui.Platform
 			shadowLayer.Path = nativePath;
 
 			if (Shadow == null)
+			{
 				shadowLayer.ClearShadow();
+			}
 			else
+			{
 				shadowLayer.SetShadow(Shadow);
+			}
 		}
 
 		void DisposeShadow()
@@ -256,11 +296,19 @@ namespace Microsoft.Maui.Platform
 		CALayer? GetLayer()
 		{
 			if (Layer is null || Layer.Sublayers is null)
+			{
+			{
 				return null;
+			}
+			}
 
 			foreach (var subLayer in Layer.Sublayers)
+			{
 				if (subLayer.Delegate is not null)
+				{
 					return subLayer;
+				}
+			}
 
 			return Layer;
 		}
@@ -268,11 +316,17 @@ namespace Microsoft.Maui.Platform
 		CALayer? GetBackgroundLayer()
 		{
 			if (Layer is null || Layer.Sublayers is null)
+			{
 				return null;
+			}
 
 			foreach (var subLayer in Layer.Sublayers)
+			{
 				if (subLayer.Name == ViewExtensions.BackgroundLayerName)
+				{
 					return subLayer;
+				}
+			}
 
 			return Layer;
 		}

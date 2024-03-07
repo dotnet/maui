@@ -58,7 +58,10 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 
 			if (newCollection == null)
+			{
+			{
 				return;
+			}
 
 			newCollection.CollectionChanged += OnChildrenCollectionChanged;
 
@@ -75,7 +78,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				foreach (var oldItem in e.OldItems)
 				{
 					if (!(oldItem is Geometry oldGeometry))
+					{
 						continue;
+					}
 
 					oldGeometry.PropertyChanged -= OnChildrenPropertyChanged;
 				}
@@ -86,7 +91,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				foreach (var newItem in e.NewItems)
 				{
 					if (!(newItem is Geometry newGeometry))
+					{
 						continue;
+					}
 
 					newGeometry.PropertyChanged += OnChildrenPropertyChanged;
 				}

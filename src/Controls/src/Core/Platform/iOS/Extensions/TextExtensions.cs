@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.Platform
 				var color = entry.OnThisPlatform().GetCursorColor();
 
 				if (color != null)
+				{
 					textField.TintColor = color.ToPlatform();
+				}
 			}
 		}
 
@@ -53,7 +55,9 @@ namespace Microsoft.Maui.Controls.Platform
 				);
 
 			if (!string.IsNullOrWhiteSpace(oldText))
+			{
 				newTextLength = newText.Length;
+			}
 
 			if (oldText != newText)
 			{
@@ -85,9 +89,13 @@ namespace Microsoft.Maui.Controls.Platform
 			if (maxLines < 0)
 			{
 				if (label.LineBreakMode == LineBreakMode.TailTruncation)
+				{
 					maxLines = 1;
+				}
 				else
+				{
 					maxLines = 0;
+				}
 			}
 
 			switch (label.LineBreakMode)

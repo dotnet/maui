@@ -297,7 +297,11 @@ namespace Microsoft.Maui.Controls
 			if (ControlTemplate == null)
 			{
 				if (Handler != null)
+				{
+				{
 					return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
+				}
+				}
 
 				_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
 				return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
@@ -368,13 +372,18 @@ namespace Microsoft.Maui.Controls
 		void SelectRadioButton(object sender, EventArgs e)
 		{
 			if (IsEnabled)
+			{
 				SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+			}
+			}
 		}
 
 		void OnIsCheckedPropertyChanged(bool isChecked)
 		{
 			if (isChecked)
+			{
 				RadioButtonGroup.UpdateRadioButtonGroup(this);
+			}
 
 			ChangeVisualState();
 			CheckedChanged?.Invoke(this, new CheckedChangedEventArgs(isChecked));

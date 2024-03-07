@@ -39,14 +39,19 @@ namespace Microsoft.Maui.Controls.Platform
 			TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			if (formattedString == null)
+			{
 				return new NSAttributedString(string.Empty);
+			}
 
 			var attributed = new NSMutableAttributedString();
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
 				if (span.Text == null)
+				{
+				{
 					continue;
+				}
 
 				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform));
 			}
@@ -69,7 +74,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
 			if (text is null)
+			{
 				return new NSAttributedString(string.Empty);
+			}
 
 			var style = new NSMutableParagraphStyle();
 			var lineHeight = span.LineHeight >= 0
@@ -79,54 +86,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (lineHeight >= 0)
 			{
 				style.LineHeightMultiple = new nfloat(lineHeight);
-			}
 
-			style.Alignment = defaultHorizontalAlignment switch
-			{
-				TextAlignment.Start => UITextAlignment.Left,
-				TextAlignment.Center => UITextAlignment.Center,
-				TextAlignment.End => UITextAlignment.Right,
-				_ => UITextAlignment.Left
-			};
-
-			var font = span.ToFont(defaultFontSize);
-			if (font.IsDefault && defaultFont.HasValue)
-				font = defaultFont.Value;
-
-			var hasUnderline = false;
-			var hasStrikethrough = false;
-			if (span.IsSet(Span.TextDecorationsProperty))
-			{
-				var textDecorations = span.TextDecorations;
-				hasUnderline = (textDecorations & TextDecorations.Underline) != 0;
-				hasStrikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
-			}
-
-			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
-
-#if !MACOS
-			var attrString = new NSAttributedString(
-				text,
-				platformFont,
-				(span.TextColor ?? defaultColor)?.ToPlatform(),
-				span.BackgroundColor?.ToPlatform(),
-				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
-				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
-				paragraphStyle: style,
-				kerning: (float)span.CharacterSpacing);
-#else
-			var attrString = new NSAttributedString(
-				text,
-				platformFont,
-				(span.TextColor ?? defaultColor)?.ToPlatform(),
-				span.BackgroundColor?.ToPlatform(),
-				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
-				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
-				paragraphStyle: style,
-				kerningAdjustment: (float)span.CharacterSpacing);
-#endif
-
-			return attrString;
+/* Unmerged change from project 'Controls.Core(net8.0-maccatalyst)'
+Before:
 		}
 
 		internal static void RecalculateSpanPositions(this UILabel control, Label element)
@@ -175,6 +137,228 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (length == 0 || span?.Text is null)
 					continue;
+After:
+			}
+
+			style.Alignment = defaultHorizontalAlignment switch
+			{
+				TextAlignment.Start => UITextAlignment.Left,
+				TextAlignment.Center => UITextAlignment.Center,
+				TextAlignment.End => UITextAlignment.Right,
+				_ => UITextAlignment.Left
+			};
+
+			var font = span.ToFont(defaultFontSize);
+			if (font.IsDefault && defaultFont.HasValue)
+			{
+				font = defaultFont.Value;
+			}
+
+			var hasUnderline = false;
+			var hasStrikethrough = false;
+			if (span.IsSet(Span.TextDecorationsProperty))
+			{
+				var textDecorations = span.TextDecorations;
+				hasUnderline = (textDecorations & TextDecorations.Underline) != 0;
+				hasStrikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
+			}
+
+			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
+
+#if !MACOS
+			var attrString = new NSAttributedString(
+				text,
+				platformFont,
+				(span.TextColor ?? defaultColor)?.ToPlatform(),
+				span.BackgroundColor?.ToPlatform(),
+				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				paragraphStyle: style,
+				kerning: (float)span.CharacterSpacing);
+#else
+			var attrString = new NSAttributedString(
+				text,
+				platformFont,
+				(span.TextColor ?? defaultColor)?.ToPlatform(),
+				span.BackgroundColor?.ToPlatform(),
+				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				paragraphStyle: style,
+				kerningAdjustment: (float)span.CharacterSpacing);
+#endif
+
+			return attrString;
+		}
+
+		internal static void RecalculateSpanPositions(this UILabel control, Label element)
+		{
+			if (element is null)
+			{
+				return;
+			}
+
+			if (element.TextType == TextType.Html)
+			{
+				return;
+			}
+
+			if (element?.FormattedText?.Spans is null
+				|| element.FormattedText.Spans.Count == 0)
+			{
+				return;
+			}
+
+			var finalSize = control.Frame;
+
+			if (finalSize.Width <= 0 || finalSize.Height <= 0)
+			{
+				return;
+			}
+
+			var inline = control.AttributedText;
+
+			if (inline is null)
+			{
+				return;
+			}
+
+			NSTextStorage textStorage = new NSTextStorage();
+			textStorage.SetString(inline);
+
+			var layoutManager = new NSLayoutManager();
+			textStorage.AddLayoutManager(layoutManager);
+
+			var textContainer = new NSTextContainer(size: finalSize.Size)
+			{
+				LineFragmentPadding = 0
+			};
+
+			layoutManager.AddTextContainer(textContainer);
+
+			var currentLocation = 0;
+
+			for (int i = 0; i < element.FormattedText.Spans.Count; i++)
+			{
+				var span = element.FormattedText.Spans[i];
+
+				var location = currentLocation;
+				var length = span.Text?.Length ?? 0;
+
+				if (length == 0 || span?.Text is null)
+				{
+					continue;
+				}
+*/
+			}
+
+			style.Alignment = defaultHorizontalAlignment switch
+			{
+				TextAlignment.Start => UITextAlignment.Left,
+				TextAlignment.Center => UITextAlignment.Center,
+				TextAlignment.End => UITextAlignment.Right,
+				_ => UITextAlignment.Left
+			};
+
+			var font = span.ToFont(defaultFontSize);
+			if (font.IsDefault && defaultFont.HasValue)
+			{
+				font = defaultFont.Value;
+			}
+
+			var hasUnderline = false;
+			var hasStrikethrough = false;
+			if (span.IsSet(Span.TextDecorationsProperty))
+			{
+				var textDecorations = span.TextDecorations;
+				hasUnderline = (textDecorations & TextDecorations.Underline) != 0;
+				hasStrikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
+			}
+
+			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
+
+#if !MACOS
+			var attrString = new NSAttributedString(
+				text,
+				platformFont,
+				(span.TextColor ?? defaultColor)?.ToPlatform(),
+				span.BackgroundColor?.ToPlatform(),
+				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				paragraphStyle: style,
+				kerning: (float)span.CharacterSpacing);
+#else
+			var attrString = new NSAttributedString(
+				text,
+				platformFont,
+				(span.TextColor ?? defaultColor)?.ToPlatform(),
+				span.BackgroundColor?.ToPlatform(),
+				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				paragraphStyle: style,
+				kerningAdjustment: (float)span.CharacterSpacing);
+#endif
+
+			return attrString;
+		}
+
+		internal static void RecalculateSpanPositions(this UILabel control, Label element)
+		{
+			if (element is null)
+			{
+				return;
+			}
+
+			if (element.TextType == TextType.Html)
+			{
+				return;
+			}
+
+			if (element?.FormattedText?.Spans is null
+				|| element.FormattedText.Spans.Count == 0)
+			{
+				return;
+			}
+
+			var finalSize = control.Frame;
+
+			if (finalSize.Width <= 0 || finalSize.Height <= 0)
+			{
+				return;
+			}
+
+			var inline = control.AttributedText;
+
+			if (inline is null)
+			{
+				return;
+			}
+
+			NSTextStorage textStorage = new NSTextStorage();
+			textStorage.SetString(inline);
+
+			var layoutManager = new NSLayoutManager();
+			textStorage.AddLayoutManager(layoutManager);
+
+			var textContainer = new NSTextContainer(size: finalSize.Size)
+			{
+				LineFragmentPadding = 0
+			};
+
+			layoutManager.AddTextContainer(textContainer);
+
+			var currentLocation = 0;
+
+			for (int i = 0; i < element.FormattedText.Spans.Count; i++)
+			{
+				var span = element.FormattedText.Spans[i];
+
+				var location = currentLocation;
+				var length = span.Text?.Length ?? 0;
+
+				if (length == 0 || span?.Text is null)
+				{
+					continue;
+				}
 
 				var startRect = GetCharacterBounds(new NSRange(location, 1), layoutManager, textContainer);
 				var endRect = GetCharacterBounds(new NSRange(location + length, 1), layoutManager, textContainer);
@@ -204,9 +388,9 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				// if the span is multiline, we need to calculate the bounds for each line individually
-				if (lineHeights.Count > 1) 
+				if (lineHeights.Count > 1)
 				{
-					var spanRectangles = GetMultilinedBounds(new NSRange(location, length), layoutManager, textContainer, startRect, endRect, lineHeights, span.Text.EndsWith('\n') ||  span.Text.EndsWith("\r\n"));
+					var spanRectangles = GetMultilinedBounds(new NSRange(location, length), layoutManager, textContainer, startRect, endRect, lineHeights, span.Text.EndsWith('\n') || span.Text.EndsWith("\r\n"));
 					((ISpatialElement)span).Region = Region.FromRectangles(spanRectangles).Inflate(5);
 				}
 				else
@@ -237,16 +421,17 @@ namespace Microsoft.Maui.Controls.Platform
 				stop = false;
 			});
 
-			return CreateSpanRects (startRect, endRect, lineHeights, multilineRects, endsWithNewLine);
+			return CreateSpanRects(startRect, endRect, lineHeights, multilineRects, endsWithNewLine);
 		}
 
-		static Rect[] CreateSpanRects (CGRect startRect, CGRect endRect, List<double> lineHeights, List<CGRect> multilineRects, bool endsWithNewLine)
+		static Rect[] CreateSpanRects(CGRect startRect, CGRect endRect, List<double> lineHeights, List<CGRect> multilineRects, bool endsWithNewLine)
 		{
 			List<Rect> spanRectangles = new List<Rect>();
 			var curHeight = (double)startRect.Top;
 
 			// go through each line and create a Rect for the text contained
-			for (int i = 0; i < multilineRects.Count; i++){
+			for (int i = 0; i < multilineRects.Count; i++)
+			{
 				var rect = multilineRects[i];
 
 				// top line
@@ -279,12 +464,16 @@ namespace Microsoft.Maui.Controls.Platform
 		static double FindDefaultLineHeight(this UILabel control, int start, int length)
 		{
 			if (length == 0)
+			{
 				return 0.0;
+			}
 
 			var textStorage = new NSTextStorage();
 
 			if (control.AttributedText is not null)
+			{
 				textStorage.SetString(control.AttributedText.Substring(start, length));
+			}
 
 			var layoutManager = new NSLayoutManager();
 			textStorage.AddLayoutManager(layoutManager);

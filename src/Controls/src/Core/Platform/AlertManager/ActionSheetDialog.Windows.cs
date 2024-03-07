@@ -39,10 +39,14 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					LeftBtn.Content = _options.Cancel;
 					if (_options.Destruction != null)
+					{
 						RightBtn.Content = _options.Destruction;
+					}
 				}
 				else if (_options.Destruction != null)
+				{
 					LeftBtn.Content = _options.Destruction;
+				}
 			}
 			else
 			{
@@ -50,10 +54,14 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					RightBtn.Content = _options.Cancel;
 					if (_options.Destruction != null)
+					{
 						LeftBtn.Content = _options.Destruction;
+					}
 				}
 				else if (_options.Destruction != null)
+				{
 					RightBtn.Content = _options.Destruction;
+				}
 			}
 
 			LeftBtn.Visibility = LeftBtn.Content == null ? UI.Xaml.Visibility.Collapsed : UI.Xaml.Visibility.Visible;

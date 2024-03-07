@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		internal static string GetEscapedAddress(this Placemark placemark)
 		{
 			if (placemark == null)
+			{
 				throw new ArgumentNullException(nameof(placemark));
+			}
 
 			var address = $"{placemark.Thoroughfare} {placemark.Locality} {placemark.AdminArea} {placemark.PostalCode} {placemark.CountryName}";
 

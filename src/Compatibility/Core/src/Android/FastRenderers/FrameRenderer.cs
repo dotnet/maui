@@ -52,7 +52,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			set
 			{
 				if (_element == value)
+				{
 					return;
+				}
 
 				Frame oldElement = _element;
 				_element = value;
@@ -76,18 +78,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		{
 			var frame = element as Frame;
 			if (frame == null)
+			{
 				throw new ArgumentException("Element must be of type Frame");
+			}
+
 			Element = frame;
 			_motionEventHelper.UpdateElement(frame);
 
 			if (!string.IsNullOrEmpty(Element.AutomationId))
+			{
 				ContentDescription = Element.AutomationId;
+			}
 		}
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
 		{
 			if (_defaultLabelFor == null)
+			{
 				_defaultLabelFor = ViewCompat.GetLabelFor(this);
+			}
 
 			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
 		}
@@ -108,7 +117,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -153,7 +164,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				if (Element != null)
 				{
 					if (Platform.GetRenderer(Element) == this)
+					{
 						Element.ClearValue(Platform.RendererProperty);
+					}
 				}
 			}
 
@@ -197,14 +210,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
 			if (Element == null)
+			{
 				return;
+			}
 
 			var children = ((IElementController)Element).LogicalChildren;
 			for (var i = 0; i < children.Count; i++)
 			{
 				var visualElement = children[i] as VisualElement;
 				if (visualElement == null)
+				{
 					continue;
+				}
+
 				IVisualElementRenderer renderer = Platform.GetRenderer(visualElement);
 				renderer?.UpdateLayout();
 			}
@@ -234,7 +252,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			base.OnSizeChanged(w, h, oldw, oldh);
 
 			if (w != _width || h != _height)
+			{
 				UpdateBackground();
+			}
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -252,17 +272,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 
 			if (e.PropertyName == Frame.HasShadowProperty.PropertyName)
+			{
 				UpdateShadow();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
 				UpdateBackgroundColor();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
+			{
 				UpdateCornerRadius();
+			}
 			else if (e.PropertyName == Frame.BorderColorProperty.PropertyName)
+			{
 				UpdateBorderColor();
+			}
 			else if (e.Is(Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty))
+			{
 				UpdateClippedToBounds();
+			}
 		}
 
 		void UpdateClippedToBounds()
@@ -276,7 +308,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void UpdateBackgroundColor()
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			Color bgColor = Element.BackgroundColor;
 			_backgroundDrawable.SetColor(bgColor?.ToAndroid() ?? AColor.White);
@@ -285,7 +319,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void UpdateBackground()
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			Brush background = Element.Background;
 
@@ -315,36 +351,52 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void UpdateBorderColor()
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			Color borderColor = Element.BorderColor;
 
 			if (borderColor == null)
+			{
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
+			}
 			else
+			{
 				_backgroundDrawable.SetStroke(3, borderColor.ToAndroid());
+			}
 		}
 
 		void UpdateShadow()
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			float elevation = _defaultElevation;
 
 			if (elevation == -1f)
+			{
 				_defaultElevation = elevation = CardElevation;
+			}
 
 			if (Element.HasShadow)
+			{
 				CardElevation = elevation;
+			}
 			else
+			{
 				CardElevation = 0f;
+			}
 		}
 
 		void UpdateCornerRadius()
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (_defaultCornerRadius == -1f)
 			{
@@ -354,9 +406,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			float cornerRadius = Element.CornerRadius;
 
 			if (cornerRadius == -1f)
+			{
 				cornerRadius = _defaultCornerRadius;
+			}
 			else
+			{
 				cornerRadius = Context.ToPixels(cornerRadius);
+			}
 
 			_backgroundDrawable.SetCornerRadius(cornerRadius);
 

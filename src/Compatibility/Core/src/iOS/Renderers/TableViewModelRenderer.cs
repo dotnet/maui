@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			View.ModelChanged += (s, e) =>
 			{
 				if (Table != null)
+				{
 					Table.ReloadData();
+				}
 			};
 			AutomaticallyDeselect = true;
 		}
@@ -40,7 +42,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override nfloat GetHeightForHeader(UITableView tableView, nint section)
 		{
 			if (!_headerCells.ContainsKey((int)section))
+			{
 				_headerCells[section] = View.Model.GetHeaderCell((int)section);
+			}
 
 			var result = _headerCells[section];
 
@@ -50,7 +54,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override UIView GetViewForHeader(UITableView tableView, nint section)
 		{
 			if (!_headerCells.ContainsKey((int)section))
+			{
 				_headerCells[section] = View.Model.GetHeaderCell((int)section);
+			}
 
 			var result = _headerCells[section];
 
@@ -84,7 +90,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var point = gesture.LocationInView(Table);
 			var indexPath = Table.IndexPathForRowAtPoint(point);
 			if (indexPath == null)
+			{
 				return;
+			}
 
 			View.Model.RowLongPressed(indexPath.Section, indexPath.Row);
 		}
@@ -99,7 +107,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			View.Model.RowSelected(indexPath.Section, indexPath.Row);
 			if (AutomaticallyDeselect)
+			{
 				tableView.DeselectRow(indexPath, true);
+			}
 		}
 
 		public override nint RowsInSection(UITableView tableview, nint section)
@@ -120,7 +130,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void BindGestures(UITableView tableview)
 		{
 			if (HasBoundGestures)
+			{
 				return;
+			}
 
 			HasBoundGestures = true;
 
@@ -158,7 +170,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return UITableView.AutomaticDimension;
 			}
 			else if (h == -1)
+			{
 				return tableView.RowHeight;
+			}
+
 			return (nfloat)h;
 		}
 	}

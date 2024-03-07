@@ -127,7 +127,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var font = span.ToFont(defaultFontSize);
 			if (font.IsDefault && defaultFont.HasValue)
+			{
 				font = defaultFont.Value;
+			}
 
 			if (!font.IsDefault)
 			{
@@ -135,7 +137,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (span.IsSet(Span.TextDecorationsProperty))
+			{
 				run.TextDecorations = (global::Windows.UI.Text.TextDecorations)span.TextDecorations;
+			}
 
 			run.CharacterSpacing = span.CharacterSpacing.ToEm();
 

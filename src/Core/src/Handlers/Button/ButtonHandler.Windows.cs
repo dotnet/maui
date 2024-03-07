@@ -110,7 +110,9 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(ImageSource? platformImage)
 			{
 				if (Handler?.PlatformView is not Button button)
+				{
 					return;
+				}
 
 				button.UpdateImageSource(platformImage);
 			}

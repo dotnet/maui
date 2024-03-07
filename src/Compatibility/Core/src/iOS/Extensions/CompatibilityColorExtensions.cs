@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var image = UIImage.FromBundle(bgImage);
 			if (image == null)
+			{
 				return UIColor.White;
+			}
 
 			return UIColor.FromPatternImage(image);
 		}

@@ -51,11 +51,18 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static void SetPreferredStatusBarUpdateAnimation(BindableObject element, UIStatusBarAnimation value)
 		{
 			if (value == UIStatusBarAnimation.Fade)
+			{
 				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
 			else if (value == UIStatusBarAnimation.Slide)
+			{
 				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
 			else
+			{
 				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
+			}
+			}
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='PreferredStatusBarUpdateAnimation']/Docs/*" />

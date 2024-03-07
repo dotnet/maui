@@ -90,7 +90,9 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-maccatalyst\\maccatalyst-x64\\resizetizer\\r\\the_image.png")),
 			"Mac Catalyst was missing the image file.");
 		if (TestEnvironment.IsWindows)
+		{
 			Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win10-x64\\resizetizer\\r\\the_image.scale-100.png")),
 				"Windows was missing the image file.");
+		}
 	}
 }

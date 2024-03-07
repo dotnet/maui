@@ -40,7 +40,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 				}
 
 				if (s_platformWindow is null)
+				{
 					throw new InvalidOperationException($"Test app did not provide a window.");
+				}
 
 				return s_platformWindow;
 			}

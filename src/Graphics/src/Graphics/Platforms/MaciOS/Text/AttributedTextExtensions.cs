@@ -60,7 +60,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			ctattributes.Font = font;
 
 			if (contextFontColor != null)
+			{
+			{
 				ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+			}
 
 			return ctattributes;
 		}
@@ -98,22 +101,32 @@ namespace Microsoft.Maui.Graphics.Platform
 			ctattributes.Font = font;
 
 			if (attributes.GetUnderline())
+			{
 				ctattributes.UnderlineStyle = CTUnderlineStyle.Single;
+			}
 
 			var foreground = attributes.GetForegroundColor();
 			if (foreground != null)
+			{
 				ctattributes.ForegroundColor = foreground.Parse().ToCGColor();
+			}
 			else
 			{
 				if (contextFontColor != null)
+				{
 					ctattributes.ForegroundColor = contextFontColor.Parse().ToCGColor();
+				}
 				else
+				{
 					ctattributes.ForegroundColorFromContext = true;
+				}
 			}
 
 			var background = attributes.GetBackgroundColor();
 			if (background != null)
+			{
 				ctattributes.BackgroundColor = background.Parse().ToCGColor();
+			}
 
 			attributedString.AddAttributes(ctattributes, new NSRange(start, length));
 
@@ -175,14 +188,20 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (attributes.GetSuperscript())
 			{
 				if (dictionary == null)
+				{
 					dictionary = new NSMutableDictionary();
+				}
+
 				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(contextFontSize * .5f));
 			}
 
 			if (attributes.GetSubscript())
 			{
 				if (dictionary == null)
+				{
 					dictionary = new NSMutableDictionary();
+				}
+
 				dictionary.Add(NSStringAttributeKey.BaselineOffset, NSNumber.FromFloat(-contextFontSize * .2f));
 			}
 
@@ -191,7 +210,9 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 
 			if (dictionary != null)
+			{
 				attributedString.AddAttributes(dictionary, new NSRange(start, length));
+			}
 		}
 	}
 }

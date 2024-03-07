@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 						value = element.GetValue(property);
 						brush = value as WSolidColorBrush;
 						if (brush != null && brush.Color == Colors.Transparent)
+						{
 							brush = null;
+						}
 					}
 
 					element = VisualTreeHelper.GetParent(element) as FrameworkElement;
@@ -42,7 +44,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				double delta = Shift;
 				if (color.GetLuminosity() > .6)
+				{
 					delta = -Shift;
+				}
 
 				color = color.AddLuminosity((float)delta);
 
@@ -60,9 +64,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static DependencyProperty GetBackgroundProperty(FrameworkElement element)
 		{
 			if (element is Control)
+			{
 				return Control.BackgroundProperty;
+			}
+
 			if (element is Panel)
+			{
 				return Panel.BackgroundProperty;
+			}
 
 			return null;
 		}

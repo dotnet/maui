@@ -27,7 +27,10 @@ namespace Microsoft.Maui
 		private protected virtual void InvokeCore(string key, IElementHandler viewHandler, IElement virtualView, object? args)
 		{
 			if (!viewHandler.CanInvokeMappers())
+			{
+			{
 				return;
+			}
 
 			var action = GetCommand(key);
 			action?.Invoke(viewHandler, virtualView, args);
@@ -36,17 +39,26 @@ namespace Microsoft.Maui
 		public virtual Command? GetCommand(string key)
 		{
 			if (_mapper.TryGetValue(key, out var action))
+			{
 				return action;
+			}
 			else if (Chained is not null)
+			{
 				return Chained.GetCommand(key);
+			}
 			else
+			{
 				return null;
+			}
 		}
 
 		public void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args)
 		{
 			if (virtualView == null)
+			{
+			{
 				return;
+			}
 
 			InvokeCore(property, viewHandler, virtualView, args);
 		}

@@ -2,9 +2,9 @@
 // https://github.com/luberda-molinet/FFImageLoading/blob/bb675c6011b39ddccecbe6125d1853de81e6396a/source/FFImageLoading.Shared.IosMac/Decoders/GifDecoder.cs
 
 using System;
-using ImageIO;
-using Foundation;
 using CoreGraphics;
+using Foundation;
+using ImageIO;
 using UIKit;
 
 namespace Microsoft.Maui;
@@ -23,9 +23,14 @@ static class ImageAnimationHelper
 		public ImageDataHelper(nint imageCount, nfloat scale)
 		{
 			if (imageCount <= 0)
+			{
 				throw new ArgumentOutOfRangeException(nameof(imageCount), $"{nameof(imageCount)} is 0, no images to animate.");
+			}
+
 			if (scale < 1)
+			{
 				throw new ArgumentOutOfRangeException(nameof(scale), $"{nameof(scale)} is < 1, cannot scale up.");
+			}
 
 			_scale = scale;
 			_keyFrames = new CGImage[imageCount];
@@ -43,7 +48,9 @@ static class ImageAnimationHelper
 		public void AddFrameData(CGImageSource imageSource, int index)
 		{
 			if (index < 0 || index >= _imageCount || index >= imageSource.ImageCount)
+			{
 				throw new ArgumentOutOfRangeException(nameof(index), $"Error adding frame data. {nameof(index)} is less than 0, or more than or equal to image count.");
+			}
 
 			var imageProperties = imageSource.GetProperties(index, null);
 			using var gifImageProperties = imageProperties?.Dictionary[ImageIO.CGImageProperties.GIFDictionary];
@@ -52,13 +59,19 @@ static class ImageAnimationHelper
 
 			var delayTime = 0.1;
 			if (unclampedDelayTimeValue is NSNumber unclampedDelay)
+			{
 				delayTime = unclampedDelay.DoubleValue;
+			}
 			else if (delayTimeValue is NSNumber delay)
+			{
 				delayTime = delay.DoubleValue;
+			}
 
 			var image = imageSource.CreateImage(index, null!);
 			if (image is null)
+			{
 				throw new ArgumentException($"Image source did not contain an image at index {index}.");
+			}
 
 			AddFrameData(image, index, delayTime);
 		}
@@ -66,13 +79,20 @@ static class ImageAnimationHelper
 		public void AddFrameData(CGImage image, int index, double delayTime = 0.1)
 		{
 			if (index < 0 || index >= _imageCount)
+			{
 				throw new ArgumentOutOfRangeException(nameof(index), $"Error adding frame data. {nameof(index)} is less than 0, or more than or equal to image count.");
+			}
+
 			if (image is null)
+			{
 				throw new ArgumentNullException(nameof(image));
+			}
 
 			// Frame delay compability adjustment.
 			if (delayTime <= 0.02)
+			{
 				delayTime = 0.1;
+			}
 
 			// GIF only has centiseconds data
 			var centiseconds = (int)(delayTime * 100.0);
@@ -90,7 +110,9 @@ static class ImageAnimationHelper
 		{
 			var frames = ToConsistentImageArray(out _, out var totalDuration);
 			if (frames.Length == 0)
+			{
 				return null;
+			}
 
 			var seconds = totalDuration / 100.0;
 			return UIImage.CreateAnimatedImage(frames, seconds);
@@ -122,7 +144,9 @@ static class ImageAnimationHelper
 			{
 				var frame = UIImage.FromImage(_keyFrames[i], _scale, UIImageOrientation.Up);
 				for (var repeats = _delayTimes[i] / gcd; repeats > 0; --repeats)
+				{
 					frames[f++] = frame;
+				}
 			}
 
 			frameDuration = gcd;
@@ -138,7 +162,9 @@ static class ImageAnimationHelper
 			{
 				gcd = CheckPair(delays[i], gcd);
 				if (gcd == 1)
+				{
 					break;
+				}
 			}
 
 			return gcd;
@@ -146,15 +172,22 @@ static class ImageAnimationHelper
 			static int CheckPair(int a, int b)
 			{
 				if (a is 0 or 1)
+				{
 					return b;
+				}
+
 				if (b is 0 or 1)
+				{
 					return a;
+				}
 
 				while (true)
 				{
 					var r = a % b;
 					if (r == 0)
+					{
 						return b;
+					}
 
 					a = b;
 					b = r;
@@ -165,7 +198,10 @@ static class ImageAnimationHelper
 		public void Dispose()
 		{
 			if (_disposed)
+			{
+			{
 				return;
+			}
 
 			for (int i = 0; i < _imageCount; i++)
 			{
@@ -184,7 +220,9 @@ static class ImageAnimationHelper
 	{
 		var imageCount = imageSource.ImageCount;
 		if (imageCount <= 0)
+		{
 			return null;
+		}
 
 		// Load repeat data
 		var repeatCount = 0.0;
@@ -195,9 +233,13 @@ static class ImageAnimationHelper
 			using var repeatCountValue = gifImageProperties?.ValueForKey(ImageIO.CGImageProperties.GIFLoopCount);
 
 			if (repeatCountValue is NSNumber number)
+			{
 				repeatCount = number.DoubleValue;
+			}
 			else if (repeatCountValue is not null)
+			{
 				_ = double.TryParse(repeatCountValue.ToString(), out repeatCount);
+			}
 		}
 
 		// load image data

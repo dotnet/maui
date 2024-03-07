@@ -68,7 +68,9 @@ namespace Microsoft.Maui.Graphics.Tests
 				.Select(f => f.Name);
 
 			foreach (var namedColor in namedColors)
+			{
 				Assert.Contains(standardValues, c => c.Equals(namedColor, StringComparison.OrdinalIgnoreCase));
+			}
 		}
 	}
 }

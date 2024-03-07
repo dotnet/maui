@@ -51,10 +51,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// keep lightweight, anything long winded should be executed asynchronously on a secondary thread.
 			// application:didFinishLaunchingWithOptions
 			if (Window == null)
+			{
 				Window = new UIWindow(UIScreen.MainScreen.Bounds);
+			}
 
 			if (_application == null)
+			{
 				throw new InvalidOperationException("You MUST invoke LoadApplication () before calling base.FinishedLaunching ()");
+			}
 
 			SetMainPage();
 			_application.SendStart();
@@ -132,7 +136,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected void LoadApplication(Application application)
 		{
 			if (application == null)
+			{
 				throw new ArgumentNullException("application");
+			}
 
 			Application.SetCurrentApplication(application);
 			_application = application;
@@ -145,13 +151,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void ApplicationOnPropertyChanging(object sender, PropertyChangingEventArgs args)
 		{
 			if (args.PropertyName == nameof(_application.MainPage))
+			{
 				UpdatingMainPage();
+			}
 		}
 
 		void ApplicationOnPropertyChanged(object sender, PropertyChangedEventArgs args)
 		{
 			if (args.PropertyName == "MainPage")
+			{
 				UpdateMainPage();
+			}
 		}
 
 		void CheckForAppLink(NSUserActivity userActivity)
@@ -165,16 +175,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					break;
 				case "com.apple.corespotlightitem":
 					if (userActivity.UserInfo.ContainsKey(CSSearchableItem.ActivityIdentifier))
+					{
 						strLink = userActivity.UserInfo.ObjectForKey(CSSearchableItem.ActivityIdentifier).ToString();
+					}
+
 					break;
 				default:
 					if (userActivity.UserInfo.ContainsKey(new NSString("link")))
+					{
 						strLink = userActivity.UserInfo[new NSString("link")].ToString();
+					}
+
 					break;
 			}
 
 			if (!string.IsNullOrEmpty(strLink))
+			{
 				_application.SendOnAppLinkRequestReceived(new Uri(strLink));
+			}
 		}
 
 		void SetMainPage()
@@ -186,7 +204,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdatingMainPage()
 		{
 			if (_application.MainPage == null)
+			{
 				return;
+			}
 
 			var platformRenderer = Window.RootViewController as PlatformRenderer;
 			platformRenderer.Platform.MarkForRemoval();
@@ -195,11 +215,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateMainPage()
 		{
 			if (_application.MainPage == null)
+			{
 				return;
+			}
 
 			var platformRenderer = Window.RootViewController as PlatformRenderer;
 			if (platformRenderer != null)
+			{
 				((IDisposable)platformRenderer.Platform).Dispose();
+			}
 
 			Window.RootViewController = _application.MainPage.CreateViewController();
 		}

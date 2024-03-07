@@ -33,7 +33,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var viewCell = item as ViewCell;
 			if (viewCell?.View == null)
+			{
 				return;
+			}
 
 			var renderer = viewCell.View.ToPlatform(item.Handler.MauiContext);
 			GetEditText(renderer)?.SetOnTouchListener(this);
@@ -42,7 +44,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var element = descendant as VisualElement;
 				if (element == null)
+				{
 					continue;
+				}
+
 				renderer = element.ToPlatform(item.Handler.MauiContext);
 				GetEditText(renderer)?.SetOnTouchListener(this);
 			}
@@ -51,10 +56,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		internal EditText GetEditText(global::Android.Views.View v)
 		{
 			if (v is EditText editText)
+			{
 				return editText;
+			}
 
 			if (v is ViewGroup vg)
+			{
 				return vg.GetFirstChildOfType<EditText>();
+			}
 
 			return null;
 		}

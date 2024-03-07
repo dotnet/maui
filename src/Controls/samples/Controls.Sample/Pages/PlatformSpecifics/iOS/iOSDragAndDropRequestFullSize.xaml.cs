@@ -77,24 +77,34 @@ namespace Maui.Controls.Sample.Pages
 		void Drawn_Switch_Toggled(object sender, ToggledEventArgs e)
 		{
 			if (e.Value)
+			{
 				dotnetBotImageSwitch.IsToggled = false;
+			}
 		}
 
 		void DotnetBot_Switch_Toggled(object sender, ToggledEventArgs e)
 		{
 			if (e.Value)
+			{
 				drawnImageSwitch.IsToggled = false;
+			}
 		}
 
 		void DropGestureRecognizer_DragOver(System.Object sender, Microsoft.Maui.Controls.DragEventArgs e)
 		{
 #if IOS || MACCATALYST
 			if (copySwitch.IsToggled)
+			{
 				e.PlatformArgs!.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Copy));
+			}
 			else if (moveSwitch.IsToggled)
+			{
 				e.PlatformArgs!.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Move));
+			}
 			else if (forbiddenSwitch.IsToggled)
+			{
 				e.PlatformArgs!.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Forbidden));
+			}
 #endif
 		}
 

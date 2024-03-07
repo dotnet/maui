@@ -17,13 +17,21 @@ namespace Microsoft.Maui.Controls
 		public ShellNavigationQueryParameters(IEnumerable<KeyValuePair<string, object>> collection)
 		{
 			foreach (var item in collection)
+			{
+			{
 				this.Add(item.Key, item.Value);
+			}
+			}
 		}
 
 		public ShellNavigationQueryParameters(IDictionary<string, object> dictionary)
 		{
 			foreach (var item in dictionary)
+			{
+			{
 				this.Add(item.Key, item.Value);
+			}
+			}
 		}
 
 		internal ShellNavigationQueryParameters SetToReadOnly()
@@ -35,7 +43,11 @@ namespace Microsoft.Maui.Controls
 		void CheckReadOnlyState()
 		{
 			if (_isReadonly)
+			{
+			{
 				throw new InvalidOperationException($"ShellNavigationQueryParameters are ReadOnly");
+			}
+			}
 		}
 
 		public object this[string key]

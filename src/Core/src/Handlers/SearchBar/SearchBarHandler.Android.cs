@@ -129,7 +129,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFocus(ISearchBarHandler handler, ISearchBar searchBar, object? args)
 		{
 			if (args is FocusRequest request)
+			{
 				handler.QueryEditor?.Focus(request);
+			}
 		}
 
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
@@ -151,12 +153,16 @@ namespace Microsoft.Maui.Handlers
 			public void OnFocusChange(View? v, bool hasFocus)
 			{
 				if (Handler == null)
+				{
 					return;
+				}
 
 				var virtualView = Handler.VirtualView;
 
 				if (virtualView != null)
+				{
 					virtualView.IsFocused = hasFocus;
+				}
 			}
 		}
 	}

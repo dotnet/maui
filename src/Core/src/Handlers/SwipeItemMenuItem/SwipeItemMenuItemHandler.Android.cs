@@ -51,7 +51,9 @@ namespace Microsoft.Maui.Handlers
 			(handler.PlatformView as TextView)?.UpdateTextPlainText(view);
 
 			if (handler is SwipeItemMenuItemHandler platformHandler)
+			{
 				platformHandler.UpdateSize();
+			}
 		}
 
 		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
@@ -63,7 +65,9 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView is TextView textView)
 			{
 				if (textColor != null)
+				{
 					textView.SetTextColor(textColor.Value);
+				}
 
 				textView.TextAlignment = ATextAlignment.Center;
 			}
@@ -73,7 +77,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			var swipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)
+			{
 				swipeView.UpdateIsVisibleSwipeItem(view);
+			}
 
 			handler.PlatformView.Visibility = view.Visibility.ToPlatformVisibility();
 		}
@@ -86,7 +92,9 @@ namespace Microsoft.Maui.Handlers
 			swipeButton.SetOnTouchListener(null);
 
 			if (!string.IsNullOrEmpty(VirtualView.AutomationId))
+			{
 				swipeButton.ContentDescription = VirtualView.AutomationId;
+			}
 
 			return swipeButton;
 		}
@@ -94,12 +102,16 @@ namespace Microsoft.Maui.Handlers
 		static int GetIconSize(ISwipeItemMenuItemHandler handler)
 		{
 			if (handler.VirtualView is not IImageSourcePart imageSourcePart || imageSourcePart.Source is null)
+			{
 				return 0;
+			}
 
 			var mauiSwipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 
 			if (mauiSwipeView is null || handler.MauiContext?.Context is null)
+			{
 				return 0;
+			}
 
 			int contentHeight = mauiSwipeView.MeasuredHeight;
 			int contentWidth = (int)handler.MauiContext.Context.ToPixels(SwipeViewExtensions.SwipeItemWidth);
@@ -112,7 +124,9 @@ namespace Microsoft.Maui.Handlers
 			var mauiSwipeView = PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 
 			if (mauiSwipeView == null)
+			{
 				return;
+			}
 
 			var contentHeight = mauiSwipeView.MeasuredHeight;
 
@@ -148,7 +162,9 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(Drawable? platformImage)
 			{
 				if (Handler?.PlatformView is not TextView button || Handler?.VirtualView is not ISwipeItemMenuItem item)
+				{
 					return;
+				}
 
 				if (platformImage is not null)
 				{
@@ -171,7 +187,9 @@ namespace Microsoft.Maui.Handlers
 					}
 
 					if (textColor != null)
+					{
 						platformImage.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
+					}
 				}
 
 				button.SetCompoundDrawables(null, platformImage, null, null);

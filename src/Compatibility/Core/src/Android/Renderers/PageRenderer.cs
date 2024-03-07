@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -51,7 +53,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnAttachedToWindow();
 			var pageContainer = Parent as PageContainer;
 			if (pageContainer != null && (pageContainer.IsInFragment || pageContainer.Visibility == ViewStates.Gone))
+			{
 				return;
+			}
+
 			PageController.SendAppearing();
 		}
 
@@ -60,7 +65,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnDetachedFromWindow();
 			var pageContainer = Parent as PageContainer;
 			if (pageContainer != null && pageContainer.IsInFragment)
+			{
 				return;
+			}
+
 			PageController.SendDisappearing();
 		}
 
@@ -81,13 +89,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
+			{
 				UpdateBackground(true);
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
 				UpdateBackground(false);
+			}
 			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				UpdateBackground(false);
+			}
 			else if (e.PropertyName == VisualElement.HeightProperty.PropertyName)
+			{
 				UpdateHeight();
+			}
 		}
 
 		void UpdateHeight()
@@ -131,7 +147,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					Brush background = Element.Background;
 
 					if (!Brush.IsNullOrEmpty(background))
+					{
 						this.UpdateBackground(background);
+					}
 					else
 					{
 						Color backgroundColor = page.BackgroundColor;

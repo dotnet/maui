@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Platform
 			if (color.IsDefault())
 			{
 				if (foregroundDefault != null)
+				{
 					platformActivityIndicator.RestoreForegroundCache(foregroundDefault);
+				}
 			}
 			else
 			{

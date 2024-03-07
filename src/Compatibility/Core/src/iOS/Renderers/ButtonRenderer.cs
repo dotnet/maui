@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
@@ -87,7 +89,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Brush brush = Element.Background;
 
 				if (!Brush.IsNullOrEmpty(brush))
+				{
 					SetBackground(brush);
+				}
 
 				SetNeedsDisplay();
 			}
@@ -136,12 +140,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Button.TextColorProperty.PropertyName)
+			{
 				UpdateTextColor();
+			}
 			else if (e.PropertyName == FontElement.FontAttributesProperty.PropertyName
 					 || e.PropertyName == FontElement.FontAutoScalingEnabledProperty.PropertyName
 					 || e.PropertyName == FontElement.FontFamilyProperty.PropertyName
 					 || e.PropertyName == FontElement.FontSizeProperty.PropertyName)
+			{
 				UpdateFont();
+			}
 		}
 
 		protected override void SetAccessibilityLabel()
@@ -154,7 +162,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var elemValue = (string)Element?.GetValue(AutomationProperties.NameProperty);
 			if (string.IsNullOrWhiteSpace(elemValue) && Control?.AccessibilityLabel == Control?.Title(UIControlState.Normal))
+			{
 				return;
+			}
 
 			base.SetAccessibilityLabel();
 		}
@@ -162,14 +172,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected override void SetBackground(Brush brush)
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			UIColor backgroundColor = Element.BackgroundColor == null ? null : Element.BackgroundColor.ToPlatform();
 
 			if (!Brush.IsNullOrEmpty(brush))
 			{
 				if (brush is SolidColorBrush solidColorBrush)
+				{
 					backgroundColor = solidColorBrush.Color.ToPlatform();
+				}
 				else
 				{
 					var backgroundImage = this.GetBackgroundImage(brush);

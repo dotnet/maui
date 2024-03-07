@@ -67,7 +67,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var collectionView = CollectionView;
 			if (collectionView == null)
+			{
+			{
 				return;
+			}
 
 			var location = gestureRecognizer.LocationInView(collectionView);
 

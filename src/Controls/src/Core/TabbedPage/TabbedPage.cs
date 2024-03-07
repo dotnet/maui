@@ -63,7 +63,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var page = new Page();
 			if (item != null)
+			{
 				page.Title = item.ToString();
+			}
 
 			return page;
 		}
@@ -115,16 +117,46 @@ namespace Microsoft.Maui.Controls
 				foreach (var page in Children)
 				{
 					if (wire)
+
+/* Unmerged change from project 'Controls.Core(net8.0-android)'
+Before:
 						page.PropertyChanged += OnPagePropertyChanged;
 					else
+After:
+					{
+						page.PropertyChanged += OnPagePropertyChanged;
+					}
+					else
+					{
+*/
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+						page.PropertyChanged += OnPagePropertyChanged;
+					else
+After:
+					{
+						page.PropertyChanged += OnPagePropertyChanged;
+					}
+					else
+					{
+*/
+					{
+						page.PropertyChanged += OnPagePropertyChanged;
+					}
+					else
+					{
 						page.PropertyChanged -= OnPagePropertyChanged;
+					}
 				}
 			}
 
 			void OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == Page.TitleProperty.PropertyName)
+				{
 					Handler?.UpdateValue(TabbedPage.ItemsSourceProperty.PropertyName);
+				}
 			}
 		}
 	}

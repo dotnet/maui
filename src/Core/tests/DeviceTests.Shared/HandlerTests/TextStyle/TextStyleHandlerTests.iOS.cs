@@ -18,7 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var view = new TStub();
 			if (view is not ITextStyle)
+			{
 				return;
+			}
 
 			view.GetType().GetProperty("Font").SetValue(view, Font.OfSize(family, 10));
 
@@ -31,9 +33,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
 			if (string.IsNullOrEmpty(family))
+			{
 				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+			}
 			else
+			{
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+			}
 		}
 
 		protected bool GetNativeIsBold(THandler handler) =>
@@ -58,17 +64,80 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Device doesn't have larger fonts enabled
 				if (scale == 1)
+				{
 					return returnValue;
+				}
 
 				var fontScaling = returnValue / scale;
 
 				// Just see if it scaled close-ish
 				if (Math.Abs(font.Size - fontScaling) <= 1.5)
+				{
 					return font.Size;
+				}
 			}
 
 			return returnValue;
 		}
+
+			var handler = await CreateHandlerAsync(view);
+			var nativeFont = await GetValueAsync(view, handler => GetNativeFont(handler));
+
+			var fontManager = (handler as ElementHandler).Services.GetRequiredService<IFontManager>();
+
+			var expectedNativeFont = await InvokeOnMainThreadAsync(() => fontManager.GetFont(Font.OfSize(family, 0.0)));
+
+			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
+			if (string.IsNullOrEmpty(family))
+			{
+				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+			}
+			else
+			{
+				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
+			}
+		}
+
+		protected bool GetNativeIsBold(THandler handler) =>
+			GetNativeFont(handler).FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
+
+		protected bool GetNativeIsItalic(THandler handler) =>
+			GetNativeFont(handler).FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+
+		protected double GetNativeUnscaledFontSize(THandler handler, bool autoScalingEnabled)
+		{
+			var returnValue = GetNativeFont(handler).PointSize;
+
+			if (autoScalingEnabled && handler.VirtualView is ITextStyle ts)
+			{
+				// I'm not sure the math that iOS uses to scale fonts
+				// I tried passing a 1 into GetScaledValue to retrieve the ratio but the ratio
+				// wasn't correct. It seems like iOS uses different ratios based on the passed in font traits
+				// so I'm just testing here if it's scaled compared to the original and then return
+				// ts.Font.Size so the test can pass
+				var font = ts.Font;
+				var scale = UIFontMetrics.DefaultMetrics.GetScaledValue(1);
+
+				// Device doesn't have larger fonts enabled
+				if (scale == 1)
+				{
+					return returnValue;
+				}
+
+				var fontScaling = returnValue / scale;
+
+				// Just see if it scaled close-ish
+				if (Math.Abs(font.Size - fontScaling) <= 1.5)
+				{
+					return font.Size;
+				}
+			}
+
+			return returnValue;
+		}
+
+		protected UIFont GetNativeFont(THandler handler) =>
+			GetNativeFont(handler as ElementHandler);
 
 		protected UIFont GetNativeFont(THandler handler) =>
 			GetNativeFont(handler as ElementHandler);

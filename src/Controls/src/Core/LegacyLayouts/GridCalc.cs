@@ -12,7 +12,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			if (!InternalChildren.Any())
+			{
+			{
 				return;
+			}
 
 			// grab a snapshot of this grid, fully-measured, so we can do the layout
 			var structure = new GridStructure(this, width, height);
@@ -21,7 +24,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				var child = (View)InternalChildren[index];
 				if (!child.IsVisible)
+				{
 					continue;
+				}
+
 				int r = GetRow(child);
 				int c = GetColumn(child);
 				int rs = GetRowSpan(child);
@@ -29,17 +35,27 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 				double posx = x + c * ColumnSpacing;
 				for (var i = 0; i < c; i++)
+				{
 					posx += structure.Columns[i].ActualWidth;
+				}
+
 				double posy = y + r * RowSpacing;
 				for (var i = 0; i < r; i++)
+				{
 					posy += structure.Rows[i].ActualHeight;
+				}
 
 				double w = structure.Columns[c].ActualWidth;
 				for (var i = 1; i < cs; i++)
+				{
 					w += ColumnSpacing + structure.Columns[c + i].ActualWidth;
+				}
+
 				double h = structure.Rows[r].ActualHeight;
 				for (var i = 1; i < rs; i++)
+				{
 					h += RowSpacing + structure.Rows[r + i].ActualHeight;
+				}
 
 				// in the future we can might maybe optimize by passing the already calculated size request
 				LayoutChildIntoBoundingRegion(child, new Rect(posx, posy, w, h));
@@ -49,7 +65,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (!InternalChildren.Any())
+			{
 				return new SizeRequest(new Size(0, 0));
+			}
 
 			// grab a snapshot of this grid, fully-measured, so we can do the layout
 			var structure = new GridStructure(this, widthConstraint, heightConstraint, true);
@@ -61,16 +79,37 @@ namespace Microsoft.Maui.Controls.Compatibility
 				ColumnDefinition c = structure.Columns[index];
 				columnWidthSum += c.ActualWidth;
 				if (!c.Width.IsStar)
+				{
 					nonStarColumnWidthSum += c.ActualWidth;
+				}
 			}
 			double rowHeightSum = 0;
 			double nonStarRowHeightSum = 0;
+
+/* Unmerged change from project 'Controls.Core(net8.0-windows10.0.20348.0)'
+Before:
+			var result = new SizeRequest(request, minimum);
+After:
 			for (var index = 0; index < structure.Rows.Count; index++)
 			{
 				RowDefinition r = structure.Rows[index];
 				rowHeightSum += r.ActualHeight;
 				if (!r.Height.IsStar)
+				{
 					nonStarRowHeightSum += r.ActualHeight;
+				}
+			}
+
+			var request = new SizeRequest(request, minimum);
+*/
+			for (var index = 0; index < structure.Rows.Count; index++)
+			{
+				RowDefinition r = structure.Rows[index];
+				rowHeightSum += r.ActualHeight;
+				if (!r.Height.IsStar)
+				{
+					nonStarRowHeightSum += r.ActualHeight;
+				}
 			}
 
 			var request = new Size(columnWidthSum + (structure.Columns.Count - 1) * ColumnSpacing, rowHeightSum + (structure.Rows.Count - 1) * RowSpacing);
@@ -120,7 +159,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					RowDefinition row = _rows[index];
 					if (row.Height.IsStar)
+					{
 						totalStarsHeight += row.Height.Value;
+					}
 				}
 
 				double totalStarsWidth = 0;
@@ -128,7 +169,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					ColumnDefinition col = _columns[index];
 					if (col.Width.IsStar)
+					{
 						totalStarsWidth += col.Width.Value;
+					}
 				}
 
 				if (requestSize)
@@ -153,14 +196,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					RowDefinition row = _rows[index];
 					if (row.Height.IsAbsolute)
+					{
 						row.ActualHeight = row.Height.Value;
+					}
 				}
 
 				for (var index = 0; index < _columns.Count; index++)
 				{
 					ColumnDefinition col = _columns[index];
 					if (col.Width.IsAbsolute)
+					{
 						col.ActualWidth = col.Width.Value;
+					}
 				}
 			}
 
@@ -176,9 +223,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 						{
 							RowDefinition row = _rows[i];
 							if (!row.Height.IsAuto)
+							{
 								continue;
+							}
+
 							if (row.ActualHeight >= 0) // if Actual is already set (by a smaller span), skip till pass 3
+							{
 								continue;
+							}
 
 							double actualHeight = row.ActualHeight;
 							double minimumHeight = row.MinimumHeight;
@@ -186,7 +238,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 							{
 								var child = (View)(grid.InternalChildren[index]);
 								if (!child.IsVisible || GetRowSpan(child) != rowspan || !IsInRow(child, i) || NumberOfUnsetRowHeight(child) > 1)
+								{
 									continue;
+								}
+
 								double assignedWidth = GetAssignedColumnWidth(child);
 								double assignedHeight = GetAssignedRowHeight(child);
 								double widthRequest = assignedWidth + GetUnassignedWidth(width, grid.ColumnSpacing);
@@ -197,9 +252,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 								minimumHeight = Math.Max(minimumHeight, sizeRequest.Minimum.Height - assignedHeight - grid.RowSpacing * (GetRowSpan(child) - 1));
 							}
 							if (actualHeight >= 0)
+							{
 								row.ActualHeight = actualHeight;
+							}
+
 							if (minimumHeight >= 0)
+							{
 								row.MinimumHeight = minimumHeight;
+							}
 						}
 					}
 
@@ -209,9 +269,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 						{
 							ColumnDefinition col = _columns[i];
 							if (!col.Width.IsAuto)
+							{
 								continue;
+							}
+
 							if (col.ActualWidth >= 0) // if Actual is already set (by a smaller span), skip
+							{
 								continue;
+							}
 
 							double actualWidth = col.ActualWidth;
 							double minimumWidth = col.MinimumWidth;
@@ -219,7 +284,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 							{
 								var child = (View)(grid.InternalChildren)[index];
 								if (!child.IsVisible || GetColumnSpan(child) != colspan || !IsInColumn(child, i) || NumberOfUnsetColumnWidth(child) > 1)
+								{
 									continue;
+								}
+
 								double assignedWidth = GetAssignedColumnWidth(child);
 								double assignedHeight = GetAssignedRowHeight(child);
 								double widthRequest = double.IsPositiveInfinity(width) ? double.PositiveInfinity : assignedWidth + GetUnassignedWidth(width, grid.ColumnSpacing);
@@ -230,9 +298,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 								minimumWidth = Math.Max(minimumWidth, sizeRequest.Minimum.Width - assignedWidth - (GetColumnSpan(child) - 1) * grid.ColumnSpacing);
 							}
 							if (actualWidth >= 0)
+							{
 								col.ActualWidth = actualWidth;
+							}
+
 							if (minimumWidth >= 0)
+							{
 								col.MinimumWidth = minimumWidth;
+							}
 						}
 					}
 				}
@@ -247,14 +320,42 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					ColumnDefinition col = _columns[index];
 					if (col.Width.IsStar)
+					{
 						col.ActualWidth = col.Width.Value * starColWidth;
+					}
 				}
 
 				for (var index = 0; index < _rows.Count; index++)
 				{
 					RowDefinition row = _rows[index];
 					if (row.Height.IsStar)
+					{
 						row.ActualHeight = row.Height.Value * starRowHeight;
+					}
+				}
+			}
+
+			void CalculateStarCells(double width, double height, double totalStarsWidth, double totalStarsHeight, double columnSpacing, double rowSpacing)
+			{
+				double starColWidth = GetUnassignedWidth(width, columnSpacing) / totalStarsWidth;
+				double starRowHeight = GetUnassignedHeight(height, rowSpacing) / totalStarsHeight;
+
+				for (var index = 0; index < _columns.Count; index++)
+				{
+					ColumnDefinition col = _columns[index];
+					if (col.Width.IsStar)
+					{
+						col.ActualWidth = col.Width.Value * starColWidth;
+					}
+				}
+
+				for (var index = 0; index < _rows.Count; index++)
+				{
+					RowDefinition row = _rows[index];
+					if (row.Height.IsStar)
+					{
+						row.ActualHeight = row.Height.Value * starRowHeight;
+					}
 				}
 			}
 
@@ -304,7 +405,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					ColumnDefinition c = _columns[index];
 					if (c.Width.IsAuto)
+					{
 						contractionSpace += c.ActualWidth - c.MinimumWidth;
+					}
 				}
 				if (contractionSpace > 0)
 				{
@@ -316,7 +419,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 					{
 						ColumnDefinition col = _columns[index];
 						if (!col.Width.IsAuto)
+						{
+						{
 							continue;
+						}
+
 						double availableSpace = col.ActualWidth - Math.Max(col.MinimumWidth, 0);
 						double contraction = availableSpace * contractFactor;
 						col.ActualWidth -= contraction;
@@ -339,10 +446,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					RowDefinition r = _rows[index];
 					if (r.Height.IsAuto)
+					{
 						contractionSpace += r.ActualHeight - r.MinimumHeight;
+					}
 				}
 				if (!(contractionSpace > 0))
+				{
 					return;
+				}
 				// contract as much as we can but no more
 				double contractionNeeded = Math.Min(contractionSpace, Math.Max(currentSize.Height - targetHeight, 0));
 				double contractFactor = contractionNeeded / contractionSpace;
@@ -350,7 +461,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					RowDefinition row = _rows[index];
 					if (!row.Height.IsAuto)
+					{
 						continue;
+					}
+
 					double availableSpace = row.ActualHeight - row.MinimumHeight;
 					double contraction = availableSpace * contractFactor;
 					row.ActualHeight -= contraction;
@@ -505,9 +619,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 				lastCol = Math.Max(lastCol, grid.ColumnDefinitions.Count - 1);
 
 				while (_columns.Count <= lastCol)
+				{
 					_columns.Add(new ColumnDefinition());
+				}
+
 				while (_rows.Count <= lastRow)
+				{
 					_rows.Add(new RowDefinition());
+				}
 
 				for (var index = 0; index < _columns.Count; index++)
 				{
@@ -528,11 +647,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 					Element element = grid.InternalChildren[index];
 					var child = (View)element;
 					if (!child.IsVisible)
+					{
 						continue;
+					}
 
 					ColumnDefinition col = GetLastAutoColumn(child);
 					if (col == null)
+					{
 						continue;
+					}
 
 					double assignedWidth = GetAssignedColumnWidth(child);
 					double w = double.IsPositiveInfinity(width) ? double.PositiveInfinity : assignedWidth + GetUnassignedWidth(width, grid.ColumnSpacing);
@@ -553,11 +676,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 					Element element = grid.InternalChildren[index];
 					var child = (View)element;
 					if (!child.IsVisible)
+					{
 						continue;
+					}
 
 					RowDefinition row = GetLastAutoRow(child);
 					if (row == null)
+					{
 						continue;
+					}
 
 					double assignedHeight = GetAssignedRowHeight(child);
 					var unassignedHeight = GetUnassignedHeight(height, grid.RowSpacing);
@@ -594,7 +721,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 					{
 						ColumnDefinition col = _columns[index];
 						if (col.Width.IsStar)
+						{
 							col.ActualWidth = 0;
+						}
 					}
 
 					starColWidth = Math.Max(starColWidth, GetUnassignedWidth(width, columnSpacing) / totalStarsWidth);
@@ -604,7 +733,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					ColumnDefinition col = _columns[index];
 					if (col.Width.IsStar)
+					{
 						col.ActualWidth = col.Width.Value * starColWidth;
+					}
 				}
 
 				ContractStarColumnsIfNeeded(width, columnSpacing, rowSpacing);
@@ -624,7 +755,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 					{
 						RowDefinition row = _rows[index];
 						if (row.Height.IsStar)
+						{
 							row.ActualHeight = 0;
+						}
 					}
 
 					starRowHeight = Math.Max(starRowHeight, GetUnassignedHeight(height, rowSpacing) / totalStarsHeight);
@@ -634,7 +767,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					RowDefinition row = _rows[index];
 					if (row.Height.IsStar)
+					{
 						row.ActualHeight = row.Height.Value * starRowHeight;
+					}
 				}
 
 				ContractStarRowsIfNeeded(height, columnSpacing, rowSpacing);
@@ -650,9 +785,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 						{
 							ColumnDefinition col = _columns[i];
 							if (!col.Width.IsStar)
+							{
 								continue;
+							}
+
 							if (col.ActualWidth >= 0) // if Actual is already set (by a smaller span), skip
+							{
 								continue;
+							}
 
 							double actualWidth = col.ActualWidth;
 							double minimumWidth = col.MinimumWidth;
@@ -660,7 +800,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 							{
 								var child = (View)(grid.InternalChildren)[index];
 								if (!child.IsVisible || GetColumnSpan(child) != colspan || !IsInColumn(child, i) || NumberOfUnsetColumnWidth(child) > 1)
+								{
 									continue;
+								}
+
 								double assignedWidth = GetAssignedColumnWidth(child);
 
 								// If we already have row height info, use it when measuring
@@ -673,10 +816,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 								minimumWidth = Math.Max(minimumWidth, sizeRequest.Minimum.Width - assignedWidth - columnSpacing);
 							}
 							if (actualWidth >= 0)
+							{
 								col.ActualWidth = actualWidth;
+							}
 
 							if (minimumWidth >= 0)
+							{
 								col.MinimumWidth = minimumWidth;
+							}
 						}
 					}
 				}
@@ -687,7 +834,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					ColumnDefinition col = _columns[index];
 					if (!col.Width.IsStar || col.Width.Value == 0 || col.ActualWidth <= 0)
+					{
 						continue;
+					}
 
 					starColRequestWidth = Math.Max(starColRequestWidth, col.ActualWidth / col.Width.Value);
 					starColMinWidth = Math.Max(starColMinWidth, col.MinimumWidth / col.Width.Value);
@@ -711,9 +860,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 						{
 							RowDefinition row = _rows[i];
 							if (!row.Height.IsStar)
+							{
 								continue;
+							}
+
 							if (row.ActualHeight >= 0) // if Actual is already set (by a smaller span), skip till pass 3
+							{
 								continue;
+							}
 
 							double actualHeight = row.ActualHeight;
 							double minimumHeight = row.MinimumHeight;
@@ -721,7 +875,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 							{
 								var child = (View)(grid.InternalChildren)[index];
 								if (!child.IsVisible || GetRowSpan(child) != rowspan || !IsInRow(child, i) || NumberOfUnsetRowHeight(child) > 1)
+								{
 									continue;
+								}
+
 								double assignedHeight = GetAssignedRowHeight(child);
 
 								// If we already have column width info, use it when measuring
@@ -734,10 +891,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 								minimumHeight = Math.Max(minimumHeight, sizeRequest.Minimum.Height - assignedHeight - rowSpacing);
 							}
 							if (actualHeight >= 0)
+							{
 								row.ActualHeight = actualHeight;
+							}
 
 							if (minimumHeight >= 0)
+							{
 								row.MinimumHeight = minimumHeight;
+							}
 						}
 					}
 				}
@@ -748,7 +909,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					RowDefinition row = _rows[index];
 					if (!row.Height.IsStar || row.Height.Value == 0 || row.ActualHeight <= 0)
+					{
 						continue;
+					}
 
 					starRowRequestHeight = Math.Max(starRowRequestHeight, row.ActualHeight / row.Height.Value);
 					starRowMinHeight = Math.Max(starRowMinHeight, row.MinimumHeight / row.Height.Value);
@@ -768,13 +931,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					ColumnDefinition col = _columns[index];
 					if (col.ActualWidth < 0)
+					{
 						col.ActualWidth = 0;
+					}
 				}
 				for (var index = 0; index < _rows.Count; index++)
 				{
 					RowDefinition row = _rows[index];
 					if (row.ActualHeight < 0)
+					{
 						row.ActualHeight = 0;
+					}
 				}
 			}
 
@@ -800,8 +967,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				int index = GetColumn(child);
 				int span = GetColumnSpan(child);
 				for (int i = index; i < index + span; i++)
+				{
 					if (_columns[i].ActualWidth <= 0)
+					{
 						n++;
+					}
+				}
+
 				return n;
 			}
 
@@ -811,8 +983,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				int index = GetRow(child);
 				int span = GetRowSpan(child);
 				for (int i = index; i < index + span; i++)
+				{
 					if (_rows[i].ActualHeight <= 0)
+					{
 						n++;
+					}
+				}
+
 				return n;
 			}
 
@@ -822,8 +999,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				int index = GetColumn(child);
 				int span = GetColumnSpan(child);
 				for (int i = index; i < index + span; i++)
+				{
 					if (_columns[i].ActualWidth >= 0)
+					{
 						actual += _columns[i].ActualWidth;
+					}
+				}
+
 				return actual;
 			}
 
@@ -833,8 +1015,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				int index = GetRow(child);
 				int span = GetRowSpan(child);
 				for (int i = index; i < index + span; i++)
+				{
 					if (_rows[i].ActualHeight >= 0)
+					{
 						actual += _rows[i].ActualHeight;
+					}
+				}
+
 				return actual;
 			}
 
@@ -843,8 +1030,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				int index = GetColumn(child);
 				int span = GetColumnSpan(child);
 				for (int i = index + span - 1; i >= index; i--)
+				{
 					if (_columns[i].Width.IsAuto)
+					{
 						return _columns[i];
+					}
+				}
+
 				return null;
 			}
 
@@ -853,8 +1045,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				int index = GetRow(child);
 				int span = GetRowSpan(child);
 				for (int i = index + span - 1; i >= index; i--)
+				{
 					if (_rows[i].Height.IsAuto)
+					{
 						return _rows[i];
+					}
+				}
+
 				return null;
 			}
 
@@ -865,7 +1062,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					double actual = _rows[i].ActualHeight;
 					if (actual >= 0)
+					{
 						assigned += actual;
+					}
 				}
 				return heightRequest - assigned;
 			}
@@ -877,7 +1076,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					double actual = _columns[i].ActualWidth;
 					if (actual >= 0)
+					{
 						assigned += actual;
+					}
 				}
 				return widthRequest - assigned;
 			}

@@ -35,7 +35,9 @@ internal class CustomPressGestureRecognizer : UIGestureRecognizer
 		public void Activated(UIGestureRecognizer sender)
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				action(sender);
+			}
 		}
 	}
 

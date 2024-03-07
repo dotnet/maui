@@ -33,7 +33,10 @@ namespace Maui.Controls.Sample
 			set
 			{
 				if (_labelWithBounds == value)
+				{
 					return;
+				}
+
 				_labelWithBounds = value;
 				OnPropertyChanged();
 			}
@@ -45,7 +48,9 @@ namespace Maui.Controls.Sample
 		{
 			PropertyChangedEventHandler handler = PropertyChanged;
 			if (handler != null)
+			{
 				handler(this, new PropertyChangedEventArgs(propertyName));
+			}
 		}
 	}
 }

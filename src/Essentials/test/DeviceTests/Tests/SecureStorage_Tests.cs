@@ -146,7 +146,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			// Set a couple keys
 			foreach (var key in keys)
+			{
 				await SecureStorage.SetAsync(key, "Irrelevant Data");
+			}
 
 			// Remove them all
 			SecureStorage.RemoveAll();

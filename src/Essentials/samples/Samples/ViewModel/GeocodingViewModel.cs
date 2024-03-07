@@ -57,7 +57,9 @@ namespace Samples.ViewModel
 		async void OnGetPosition()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
 
 			IsBusy = true;
 			try
@@ -88,7 +90,9 @@ namespace Samples.ViewModel
 		async void OnGetAddress()
 		{
 			if (IsBusy)
+			{
 				return;
+			}
 
 			IsBusy = true;
 			try

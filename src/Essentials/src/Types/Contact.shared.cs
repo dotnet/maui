@@ -110,9 +110,14 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		string BuildDisplayName()
 		{
 			if (string.IsNullOrWhiteSpace(GivenName))
+			{
 				return FamilyName;
+			}
+
 			if (string.IsNullOrWhiteSpace(FamilyName))
+			{
 				return GivenName;
+			}
 
 			return $"{GivenName} {FamilyName}";
 		}

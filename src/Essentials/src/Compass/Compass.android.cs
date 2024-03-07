@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		void PlatformStop()
 		{
 			if (listener == null)
+			{
 				return;
+			}
 
 			SensorManager.UnregisterListener(listener, Accelerometer);
 			SensorManager.UnregisterListener(listener, MagneticField);
@@ -91,7 +93,9 @@ namespace Microsoft.Maui.Devices.Sensors
 				SensorManager.GetOrientation(r, orientation);
 
 				if (orientation.Length <= 0)
+				{
 					return;
+				}
 
 				var azimuthInRadians = orientation[0];
 				if (applyLowPassFilter)

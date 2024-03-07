@@ -113,7 +113,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				if (view.VerticalOptions.Alignment == LayoutAlignment.Fill &&
 					view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
+				{
 					view.ComputedConstraint = Constraint;
+				}
 
 				return;
 			}
@@ -125,21 +127,30 @@ namespace Microsoft.Maui.Controls.Compatibility
 				bool widthLocked = layoutBounds.Width != AutoSize;
 				result = Constraint & LayoutConstraint.VerticallyFixed;
 				if (widthLocked)
+				{
 					result |= LayoutConstraint.HorizontallyFixed;
+				}
 			}
 			else if ((layoutFlags & AbsoluteLayoutFlags.WidthProportional) != 0)
 			{
 				bool heightLocked = layoutBounds.Height != AutoSize;
 				result = Constraint & LayoutConstraint.HorizontallyFixed;
 				if (heightLocked)
+				{
 					result |= LayoutConstraint.VerticallyFixed;
+				}
 			}
 			else
 			{
 				if (layoutBounds.Width != AutoSize)
+				{
 					result |= LayoutConstraint.HorizontallyFixed;
+				}
+
 				if (layoutBounds.Height != AutoSize)
+				{
 					result |= LayoutConstraint.VerticallyFixed;
+				}
 			}
 
 			view.ComputedConstraint = result;

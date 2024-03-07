@@ -14,10 +14,14 @@ namespace Microsoft.Maui.ApplicationModel
 			var dispatcher = TryGetDispatcherQueue();
 
 			if (dispatcher == null)
+			{
 				throw new InvalidOperationException("Unable to find main thread.");
+			}
 
 			if (!dispatcher.TryEnqueue(DispatcherQueuePriority.Normal, () => action()))
+			{
 				throw new InvalidOperationException("Unable to queue on the main thread.");
+			}
 		}
 
 		static DispatcherQueue? TryGetDispatcherQueue() =>

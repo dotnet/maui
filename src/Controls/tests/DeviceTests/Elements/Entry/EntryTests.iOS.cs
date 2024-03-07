@@ -30,7 +30,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = GetPlatformControl(entryHandler);
 
 			if (textField != null && textField.SelectedTextRange != null)
+			{
 				return (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, textField.SelectedTextRange.Start);
+			}
 
 			return -1;
 		}
@@ -40,7 +42,9 @@ namespace Microsoft.Maui.DeviceTests
 			var textField = GetPlatformControl(entryHandler);
 
 			if (textField != null && textField.SelectedTextRange != null)
+			{
 				return (int)textField.GetOffsetFromPosition(textField.SelectedTextRange.Start, textField.SelectedTextRange.End);
+			}
 
 			return -1;
 		}

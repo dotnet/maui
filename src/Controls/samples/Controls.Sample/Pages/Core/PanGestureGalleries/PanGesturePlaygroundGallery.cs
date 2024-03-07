@@ -39,7 +39,9 @@ namespace Maui.Controls.Sample.Pages
 				set
 				{
 					if (Children.Count > 0)
+					{
 						Remove(Children[0]);
+					}
 
 					Add(value);
 				}

@@ -18,7 +18,11 @@ namespace Microsoft.Maui.Controls
 		public void Dispose()
 		{
 			if (_disposed)
+			{
+			{
 				return;
+			}
+
 			_disposed = true;
 
 			_enumerator.Dispose();

@@ -65,14 +65,55 @@ namespace Microsoft.Maui.Graphics.Platform
 
 				formatAttributes.SetFontSize((float)actualFont.PointSize);
 				if (!fontName.StartsWith(".", System.StringComparison.Ordinal))
+				{
 					formatAttributes.SetFontName(fontName);
+				}
 				else
 				{
 					if (fontName.Contains("Italic", StringComparison.Ordinal))
+
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
 						formatAttributes.SetItalic(true);
+After:
+					{
+						formatAttributes.SetItalic(true);
+					}
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+						formatAttributes.SetItalic(true);
+After:
+					{
+						formatAttributes.SetItalic(true);
+					}
+*/
+					
+/* Unmerged change from project 'Graphics(net8.0-maccatalyst)'
+Before:
+						formatAttributes.SetBold(true);
+After:
+					{
+						formatAttributes.SetBold(true);
+*/
+
+/* Unmerged change from project 'Graphics(net8.0-macos)'
+Before:
+						formatAttributes.SetBold(true);
+After:
+					{
+						formatAttributes.SetBold(true);
+*/
+{
+						formatAttributes.SetItalic(true);
+					}
 
 					if (fontName.Contains("Bold", StringComparison.Ordinal))
+					{
 						formatAttributes.SetBold(true);
+					}
+					}
 				}
 			}
 
@@ -81,7 +122,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				var number = underline as NSNumber;
 				if (number != null && number.Int32Value > 0)
+				{
+				{
 					formatAttributes.SetUnderline(true);
+				}
 			}
 
 			NSObject strikethrough;
@@ -89,7 +133,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				var number = strikethrough as NSNumber;
 				if (number != null && number.Int32Value > 0)
+				{
 					formatAttributes.SetStrikethrough(true);
+				}
 			}
 
 #if MONOMAC
@@ -109,7 +155,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				var colorObject = color as NSColor;
 				if (colorObject != null)
+				{
 					formatAttributes.SetForegroundColor(colorObject.ToHex());
+				}
 			}
 
 			NSObject backgroundColor;
@@ -117,7 +165,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				var colorObject = backgroundColor as NSColor;
 				if (colorObject != null)
+				{
 					formatAttributes.SetBackgroundColor(colorObject.ToHex());
+				}
 			}
 
 #if MONOMAC
@@ -148,7 +198,9 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 
 			if (run.Attributes.Count > 0)
+			{
 				runs.Add(run);
+			}
 
 			writer.Write(text);
 			return false;

@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Hosting.Internal
 		public void Add(FontDescriptor item)
 		{
 			if (!_descriptors.Contains(item))
+			{
 				_descriptors.Add(item);
+			}
 		}
 
 		public void Clear() => _descriptors.Clear();

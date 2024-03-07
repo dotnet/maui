@@ -22,9 +22,13 @@ namespace Microsoft.Maui.Controls.Platform
 			Control = (PlatformView)Element.Handler.PlatformView;
 
 			if (Element.Handler is IViewHandler vh)
+			{
 				Container = (PlatformView)(vh.ContainerView ?? vh.PlatformView);
+			}
 			else
+			{
 				Container = Control;
+			}
 
 			base.SendAttached();
 		}

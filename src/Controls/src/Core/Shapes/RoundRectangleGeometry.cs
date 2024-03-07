@@ -72,20 +72,28 @@ namespace Microsoft.Maui.Controls.Shapes
 			};
 
 			if (CornerRadius.TopLeft > 0)
+			{
 				roundedRectGeometry.Children.Add(
 					new EllipseGeometry(new Point(Rect.Location.X + CornerRadius.TopLeft, Rect.Location.Y + CornerRadius.TopLeft), CornerRadius.TopLeft, CornerRadius.TopLeft));
+			}
 
 			if (CornerRadius.TopRight > 0)
+			{
 				roundedRectGeometry.Children.Add(
 					new EllipseGeometry(new Point(Rect.Location.X + Rect.Width - CornerRadius.TopRight, Rect.Location.Y + CornerRadius.TopRight), CornerRadius.TopRight, CornerRadius.TopRight));
+			}
 
 			if (CornerRadius.BottomRight > 0)
+			{
 				roundedRectGeometry.Children.Add(
 					new EllipseGeometry(new Point(Rect.Location.X + Rect.Width - CornerRadius.BottomRight, Rect.Location.Y + Rect.Height - CornerRadius.BottomRight), CornerRadius.BottomRight, CornerRadius.BottomRight));
+			}
 
 			if (CornerRadius.BottomLeft > 0)
+			{
 				roundedRectGeometry.Children.Add(
 					new EllipseGeometry(new Point(Rect.Location.X + CornerRadius.BottomLeft, Rect.Location.Y + Rect.Height - CornerRadius.BottomLeft), CornerRadius.BottomLeft, CornerRadius.BottomLeft));
+			}
 
 			PathFigure pathFigure = new PathFigure
 			{

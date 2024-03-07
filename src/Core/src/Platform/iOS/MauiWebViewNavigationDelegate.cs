@@ -29,25 +29,36 @@ namespace Microsoft.Maui.Platform
 			var virtualView = handler?.VirtualView;
 
 			if (handler == null || virtualView == null)
+			{
 				return;
+			}
 
 			handler.PlatformView?.UpdateCanGoBackForward(handler.VirtualView);
 
 			if (webView.IsLoading)
+			{
 				return;
+			}
 
 			var url = GetCurrentUrl();
 
 			if (url == $"file://{NSBundle.MainBundle.BundlePath}/")
+			{
+			{
 				return;
+			}
 
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Success);
 
 			// ProcessNavigatedAsync calls UpdateCanGoBackForward
 			if (handler is WebViewHandler webViewHandler)
+			{
 				webViewHandler.ProcessNavigatedAsync(url).FireAndForget();
+			}
 			else
+			{
 				handler.PlatformView?.UpdateCanGoBackForward(virtualView);
+			}
 		}
 
 		[Export("webView:didFailNavigation:withError:")]
@@ -57,7 +68,9 @@ namespace Microsoft.Maui.Platform
 			var virtualView = handler?.VirtualView;
 
 			if (handler == null || virtualView == null)
+			{
 				return;
+			}
 
 			var url = GetCurrentUrl();
 
@@ -73,7 +86,10 @@ namespace Microsoft.Maui.Platform
 			var virtualView = handler?.VirtualView;
 
 			if (handler == null || virtualView == null)
+			{
+			{
 				return;
+			}
 
 			var url = GetCurrentUrl();
 
@@ -104,7 +120,9 @@ namespace Microsoft.Maui.Platform
 					navEvent = WebNavigationEvent.NewPage;
 
 					if (navigationAction.TargetFrame == null)
+					{
 						webView?.LoadRequest(navigationAction.Request);
+					}
 
 					break;
 				case WKNavigationType.FormSubmitted:

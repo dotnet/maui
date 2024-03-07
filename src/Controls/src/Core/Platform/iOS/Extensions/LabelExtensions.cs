@@ -19,9 +19,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 				default:
 					if (label.FormattedText != null)
+					{
 						platformLabel.AttributedText = label.ToNSAttributedString();
+					}
 					else
+					{
 						platformLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					}
+
 					break;
 			}
 		}

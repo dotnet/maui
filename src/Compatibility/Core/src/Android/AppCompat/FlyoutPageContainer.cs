@@ -44,13 +44,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (_childView == null)
+			{
 				return;
+			}
 
 			var bounds = GetBounds(_isFlyout, l, t, r, b);
 			if (_isFlyout)
+			{
 				FlyoutPageController.FlyoutBounds = bounds;
+			}
 			else
+			{
 				FlyoutPageController.DetailBounds = bounds;
+			}
 
 			IVisualElementRenderer renderer = APlatform.GetRenderer(_childView);
 			renderer?.UpdateLayout();
@@ -88,16 +94,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			set
 			{
 				if (_childView == value)
+				{
 					return;
+				}
 
 				RemoveAllViews();
 				if (_childView != null)
+				{
 					DisposeChildRenderers();
+				}
 
 				_childView = value;
 
 				if (_childView == null)
+				{
 					return;
+				}
 
 				AddChildView(_childView);
 			}
@@ -116,7 +128,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_currentFragment != null)
 				{
 					if (!_parent.IsAttachedToRoot())
+					{
 						return;
+					}
 
 					// But first, if the previous occupant of this container was a fragment, we need to remove it properly
 					FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
@@ -124,21 +138,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					transaction.SetTransitionEx((int)FragmentTransit.None);
 
 					if (IsAttachedToWindow)
+					{
 						ExecuteTransaction(transaction);
+					}
 					else
+					{
 						_transaction = transaction;
+					}
 
 					_currentFragment = null;
 				}
 
 				IVisualElementRenderer renderer = APlatform.GetRenderer(childView);
 				if (renderer == null)
+				{
 					APlatform.SetRenderer(childView, renderer = APlatform.CreateRenderer(childView, Context));
+				}
 
 				if (renderer.View.Parent != this)
 				{
 					if (renderer.View.Parent != null)
+					{
 						renderer.View.RemoveFromParent();
+					}
+
 					SetDefaultBackgroundColor(renderer);
 					AddView(renderer.View);
 					renderer.UpdateLayout();
@@ -147,7 +170,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 			{
 				if (!_parent.IsAttachedToRoot())
+				{
 					return;
+				}
 
 				// The renderers for NavigationPage and TabbedPage both host fragments, so they need to be wrapped in a 
 				// FragmentContainer in order to get isolated fragment management
@@ -165,15 +190,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
 
 				if (_currentFragment != null)
+				{
 					transaction.RemoveEx(_currentFragment);
+				}
 
 				transaction.AddEx(Id, fragment);
 				transaction.SetTransitionEx((int)FragmentTransit.None);
 
 				if (IsAttachedToWindow)
+				{
 					ExecuteTransaction(transaction);
+				}
 				else
+				{
 					_transaction = transaction;
+				}
 
 				_currentFragment = fragment;
 			}
@@ -184,7 +215,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnAttachedToWindow();
 
 			if (_transaction == null)
+			{
 				return;
+			}
 
 			ExecuteTransaction(_transaction);
 
@@ -206,7 +239,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			bool isShowingPopover = _parent.IsPresented && !FlyoutPageController.ShouldShowSplitMode;
 			if (!_isFlyout && isShowingPopover)
+			{
 				return true;
+			}
+
 			return base.OnInterceptTouchEvent(ev);
 		}
 
@@ -246,7 +282,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public void SetFragmentManager(FragmentManager fragmentManager)
 		{
 			if (_fragmentManager == null)
+			{
 				_fragmentManager = fragmentManager;
+			}
 		}
 
 		void ExecuteTransaction(FragmentTransaction transaction)

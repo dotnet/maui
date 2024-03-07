@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		internal static void UpdateFlowDirection(this AView view, IVisualElementController controller)
 		{
 			if (view == null || controller == null)
+			{
 				return;
+			}
 
 			if (controller is IView v)
 			{
@@ -23,14 +25,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				view.LayoutDirection = ALayoutDirection.Rtl;
 
 				if (view is TextView textView)
+				{
 					textView.TextDirection = ATextDirection.Rtl;
+				}
 			}
 			else if (controller.EffectiveFlowDirection.IsLeftToRight())
 			{
 				view.LayoutDirection = ALayoutDirection.Ltr;
 
 				if (view is TextView textView)
+				{
 					textView.TextDirection = ATextDirection.Ltr;
+				}
 			}
 		}
 	}

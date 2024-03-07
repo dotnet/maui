@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls
 		protected TableSectionBase(string title)
 		{
 			if (title == null)
+			{
 				throw new ArgumentNullException("title");
+			}
 
 			Title = title;
 		}

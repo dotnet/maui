@@ -51,7 +51,9 @@ namespace Microsoft.Maui.DeviceTests
 		public Page GetNextPageType()
 		{
 			if (IsFinished())
+			{
 				return null;
+			}
 
 			var result = _pageCombinations[index];
 			index++;
@@ -59,7 +61,9 @@ namespace Microsoft.Maui.DeviceTests
 			Page = CreateNewPage();
 			Page returnValue = null;
 			if (result == typeof(ContentPage))
+			{
 				returnValue = Page;
+			}
 			else if (result == typeof(WindowPageSwapTestCases.FlyoutPageWithNavPage))
 			{
 				Page.Title ??= "Details Page";
@@ -140,7 +144,9 @@ namespace Microsoft.Maui.DeviceTests
 			foreach (var type in _pageCombinations)
 			{
 				if (!String.IsNullOrWhiteSpace(debugName))
+				{
 					debugName += ", ";
+				}
 
 				debugName += $"{type}";
 			}

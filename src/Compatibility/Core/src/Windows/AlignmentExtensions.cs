@@ -14,14 +14,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					return Microsoft.UI.Xaml.TextAlignment.Center;
 				case TextAlignment.End:
 					if (isLtr)
+					{
 						return Microsoft.UI.Xaml.TextAlignment.Right;
+					}
 					else
+					{
 						return Microsoft.UI.Xaml.TextAlignment.Left;
+					}
+
 				default:
 					if (isLtr)
+					{
 						return Microsoft.UI.Xaml.TextAlignment.Left;
+					}
 					else
+					{
 						return Microsoft.UI.Xaml.TextAlignment.Right;
+					}
 			}
 		}
 		[PortHandler]

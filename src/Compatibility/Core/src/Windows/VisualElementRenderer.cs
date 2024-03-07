@@ -54,7 +54,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set
 			{
 				if (_tracker == value)
+				{
 					return;
+				}
 
 				if (_tracker != null)
 				{
@@ -78,7 +80,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var platformEffect = effect as PlatformEffect;
 			if (platformEffect != null)
+			{
 				OnRegisterEffect(platformEffect);
+			}
 		}
 
 		public FrameworkElement ContainerElement
@@ -96,9 +100,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			add
 			{
 				if (_elementChangedHandlers == null)
+				{
 					_elementChangedHandlers = value;
+				}
 				else
+				{
 					_elementChangedHandlers = (EventHandler<VisualElementChangedEventArgs>)Delegate.Combine(_elementChangedHandlers, value);
+				}
+				}
 			}
 
 			remove { _elementChangedHandlers = (EventHandler<VisualElementChangedEventArgs>)Delegate.Remove(_elementChangedHandlers, value); }
@@ -107,7 +116,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (Children.Count == 0 || Control == null)
+			{
 				return new SizeRequest();
+			}
 
 			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			TNativeElement child = Control;
@@ -140,7 +151,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Element.FocusChangeRequested += OnElementFocusChangeRequested;
 
 				if (AutoPackage && Packager == null)
+				{
 					Packager = new VisualElementPackager(this);
+				}
 
 				if (AutoTrack && Tracker == null)
 				{
@@ -155,7 +168,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				//Loaded += (sender, args) =>
 				//{
 				if (Packager != null)
+				{
 					Packager.Load();
+				}
 				//};
 			}
 
@@ -169,7 +184,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			controller = element;
 			if (controller != null)
+			{
 				controller.EffectControlProvider = this;
+			}
 		}
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
@@ -193,7 +210,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element == null || finalSize.Width * finalSize.Height == 0)
+			{
 				return finalSize;
+			}
 
 			Element.IsInPlatformLayout = true;
 
@@ -209,10 +228,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				var child = ElementController.LogicalChildren[i] as VisualElement;
 				if (child == null)
+				{
 					continue;
+				}
+
 				IVisualElementRenderer renderer = Platform.GetRenderer(child);
 				if (renderer == null)
+				{
 					continue;
+				}
+
 				var bounds = child.Bounds;
 
 				renderer.ContainerElement.Arrange(new WRect(bounds.X, bounds.Y, Math.Max(0, bounds.Width), Math.Max(0, bounds.Height)));
@@ -220,7 +245,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (ArrangeNativeChildren)
 				{
 					if (arrangedChildren == null)
+					{
 						arrangedChildren = new List<UIElement>();
+					}
+
 					arrangedChildren.Add(renderer.ContainerElement);
 				}
 			}
@@ -234,11 +262,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					var nativeChild = nativeChildren[i];
 					if (arrangedChildren?.Contains(nativeChild) == true)
+					{
 						// don't try to rearrange renderers that were just arranged, 
 						// lest you suffer a layout cycle
 						continue;
+					}
 					else
+					{
 						nativeChild.Arrange(myRect);
+					}
 				}
 			}
 
@@ -258,7 +290,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!disposing || _disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -275,7 +309,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Element == null || availableSize.Width * availableSize.Height == 0)
+			{
 				return new global::Windows.Foundation.Size(0, 0);
+			}
 
 			Element.IsInPlatformLayout = true;
 
@@ -283,10 +319,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				var child = ElementController.LogicalChildren[i] as VisualElement;
 				if (child == null)
+				{
 					continue;
+				}
+
 				IVisualElementRenderer renderer = Platform.GetRenderer(child);
 				if (renderer == null)
+				{
 					continue;
+				}
 
 				renderer.ContainerElement.Measure(availableSize);
 			}
@@ -299,9 +340,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				double w = Element.Width;
 				double h = Element.Height;
 				if (w == -1)
+				{
 					w = availableSize.Width;
+				}
+
 				if (h == -1)
+				{
 					h = availableSize.Height;
+				}
+
 				w = Math.Max(0, w);
 				h = Math.Max(0, h);
 				Control.Measure(new global::Windows.Foundation.Size(w, h));
@@ -316,37 +363,60 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
 			if (_elementChangedHandlers != null)
+			{
 				_elementChangedHandlers(this, args);
+			}
 
 			EventHandler<ElementChangedEventArgs<TElement>> changed = ElementChanged;
 			if (changed != null)
+			{
 				changed(this, e);
+			}
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateEnabled();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
 				UpdateBackgroundColor();
+			}
 			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			{
 				UpdateBackground();
+			}
 			else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+			{
 				SetAutomationPropertiesHelpText();
+			}
 			else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+			{
 				SetAutomationPropertiesName();
+			}
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
+			{
 				SetAutomationPropertiesAccessibilityView();
+			}
 			else if (e.PropertyName == AutomationProperties.LabeledByProperty.PropertyName)
+			{
 				SetAutomationPropertiesLabeledBy();
+			}
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName ||
 					e.PropertyName == Layout.CascadeInputTransparentProperty.PropertyName)
+			{
 				UpdateInputTransparent();
+			}
+
 			if (e.PropertyName == Specifics.AccessKeyProperty.PropertyName ||
 					e.PropertyName == Specifics.AccessKeyPlacementProperty.PropertyName ||
 					e.PropertyName == Specifics.AccessKeyHorizontalOffsetProperty.PropertyName ||
 					e.PropertyName == Specifics.AccessKeyVerticalOffsetProperty.PropertyName)
+			{
 				UpdateAccessKey();
+			}
 
 			_elementPropertyChanged?.Invoke(this, e);
 		}
@@ -366,7 +436,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected virtual void SetAutomationPropertiesName()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			_defaultAutomationPropertiesName = Control.SetAutomationPropertiesName(Element, _defaultAutomationPropertiesName);
 		}
@@ -374,7 +446,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected virtual void SetAutomationPropertiesAccessibilityView()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			_defaultAutomationPropertiesAccessibilityView = Control.SetAutomationPropertiesAccessibilityView(Element, _defaultAutomationPropertiesAccessibilityView);
 		}
@@ -382,7 +456,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected virtual void SetAutomationPropertiesHelpText()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			_defaultAutomationPropertiesHelpText = Control.SetAutomationPropertiesHelpText(Element, _defaultAutomationPropertiesHelpText);
 		}
@@ -390,7 +466,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected virtual void SetAutomationPropertiesLabeledBy()
 		{
 			if (Control == null)
+			{
 				return;
+			}
 
 			// TODO MAUI
 			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, null, _defaultAutomationPropertiesLabeledBy);
@@ -423,9 +501,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 
 			if (Element == null)
+			{
 				throw new InvalidOperationException(
 					"Cannot assign a native control without an Element; Renderer unbound and/or disposed. " +
 					"Please consult Microsoft.Maui.Controls.Compatibility renderers for reference implementation of OnElementChanged.");
+			}
 
 			Element.IsPlatformStateConsistent = false;
 			control.Loaded += OnControlLoaded;
@@ -438,7 +518,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateBackground();
 
 			if (Element != null && !string.IsNullOrEmpty(Element.AutomationId))
+			{
 				SetAutomationId(Element.AutomationId);
+			}
 
 			_controlChanged?.Invoke(this, EventArgs.Empty);
 		}
@@ -494,11 +576,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_control != null)
 			{
 				if (!Brush.IsNullOrEmpty(background))
+				{
 					_control.Background = background.ToBrush();
+				}
 				else
 				{
 					if (!backgroundColor.IsDefault())
+					{
 						_control.Background = backgroundColor.ToPlatform();
+					}
 					else
 					{
 						_control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
@@ -509,13 +595,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			else
 			{
 				if (!Brush.IsNullOrEmpty(background))
+				{
 					backgroundLayer.Background = background.ToBrush();
+				}
 				else
 				{
 					if (!backgroundColor.IsDefault())
+					{
 						backgroundLayer.Background = backgroundColor.ToPlatform();
+					}
 					else
+					{
 						backgroundLayer.ClearValue(BackgroundProperty);
+					}
 				}
 			}
 		}
@@ -526,7 +618,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var element = Element as IElementConfiguration<TElement>;
 
 			if (element != null && control != null)
+			{
 				AccessKeyHelper.UpdateAccessKey(Control, Element);
+			}
 		}
 
 		protected virtual void UpdateNativeControl()
@@ -544,10 +638,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		internal virtual void OnElementFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
 		{
 			if (_control == null)
+			{
 				return;
+			}
 
 			if (args.Focus)
+			{
 				args.Result = _control.Focus(FocusState.Programmatic);
+			}
 			else
 			{
 				UnfocusControl(_control);
@@ -559,7 +657,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		internal void UnfocusControl(Control control)
 		{
 			if (control == null || !control.IsEnabled)
+			{
 				return;
+			}
 
 			// "Unfocusing" doesn't really make sense on Windows; for accessibility reasons,
 			// something always has focus. So forcing the unfocusing of a control would normally 
@@ -619,9 +719,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateEnabled()
 		{
 			if (_control != null)
+			{
 				_control.IsEnabled = Element.IsEnabled;
+			}
 			else
+			{
 				IsHitTestVisible = Element.IsEnabled && !Element.InputTransparent;
+			}
 		}
 
 		void UpdateInputTransparent()
@@ -708,7 +812,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateTracker()
 		{
 			if (_tracker == null)
+			{
 				return;
+			}
 
 			_tracker.Control = Control;
 			_tracker.Element = Element;
