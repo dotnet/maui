@@ -11,6 +11,6 @@ public class PlatformSpecificSampleTest : UITest
 	[Test]
 	public void SampleTest()
 	{
-		Driver.GetScreenshot().SaveAsFile($"{nameof(SampleTest)}.png");
+		Driver?.GetScreenshot().SaveAsFile($"{nameof(SampleTest)}.png");
 	}
 }

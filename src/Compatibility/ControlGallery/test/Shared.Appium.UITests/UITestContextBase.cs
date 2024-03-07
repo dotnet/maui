@@ -1,4 +1,5 @@
 ﻿using OpenQA.Selenium.Appium;
+using UITest.Appium;
 using UITest.Core;
 
 namespace UITests
@@ -16,7 +17,18 @@ namespace UITests
 
 		public static IUIClientContext? UITestContext { get { return UiTestContext; } }
 		
-		protected AppiumDriver Driver => AppiumSetup.App;
+		protected AppiumDriver? Driver
+		{
+			get
+			{
+				if (App is AppiumApp app)
+				{
+					return app.Driver;
+				}
+
+				return null;
+			}
+		}
 
 		public TestDevice Device
 		{
