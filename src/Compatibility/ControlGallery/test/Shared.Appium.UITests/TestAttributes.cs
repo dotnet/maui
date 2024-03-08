@@ -18,6 +18,25 @@
 			LineBreakMode
 		}
 
+		public enum ImageButton
+		{
+			Source,
+			Aspect,
+			IsOpaque,
+			IsLoading,
+			AspectFill,
+			AspectFit,
+			Fill,
+			BorderColor,
+			CornerRadius,
+			BorderWidth,
+			Clicked,
+			Command,
+			Image,
+			Pressed,
+			Padding
+		}
+
 		public enum VisualElement
 		{
 			IsEnabled,

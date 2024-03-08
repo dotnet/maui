@@ -9,6 +9,9 @@ namespace UITests
 		protected override void NavigateToGallery()
 		{
 			App.NavigateToGallery(GalleryQueries.ImageGallery);
+
+			// Let remote images load
+			Thread.Sleep(2000);
 		}
 
 		protected override void FixtureTeardown()
