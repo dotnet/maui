@@ -840,6 +840,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task PushWithoutWrappingIntoNavigationPage()
+		{
+			var window = new TestWindow(new ContentPage());
+			var contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, contentPage1);
+			Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PushAsync(contentPage1));
+		}
+
+		[Fact]
 		public async Task TabBarSetsOnFlyoutPageInsideModalPage()
 		{
 			var window = new TestWindow(new ContentPage());
