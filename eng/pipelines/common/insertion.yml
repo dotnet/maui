@@ -1,29 +1,22 @@
 parameters:
   poolName: VSEngSS-MicroBuild2022-1ES
   vmImage: ''
+  os: windows
+  dependsOn: []
+  stageName: 'sdk_insertion'
+  displayName: 'SDK Insertion'
   pushMauiPackagesToMaestro: false
 
 stages:
-  - stage: sdk_insertion
-    displayName: 'SDK Insertion'
-    dependsOn: nuget_signing
+  - stage: ${{ parameters.stageName }}
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
     condition: and(succeeded(), eq(variables.signingCondition, true))
     jobs:
-    - template: sdk-insertion.yml
+    - template: /eng/pipelines/common/sdk-insertion.yml@self
       parameters:
         poolName: ${{ parameters.poolName }}
         vmImage: ${{ parameters.vmImage }}
+        os: ${{ parameters.os }}
         pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
 
-  - stage: sbom
-    displayName: 'Software Bill of Materials'
-    dependsOn: nuget_signing
-    condition: and(succeeded(), eq(variables.signingCondition, true))
-    jobs:
-    - template: compliance/sbom/job.v1.yml@yaml-templates
-      parameters:
-        artifactNames: [ nuget, vs-msi-nugets, vsdrop-signed ]
-        artifactMap: [ nuget/signed ]                           # Use artifacts that match the filter from the signed directory and not the top-level directory for the nuget artifact
-        packageName: 'Microsoft Maui'
-        packageFilter: '*.msi;*.nupkg'
-        condition: and(succeeded(), eq(variables.signingCondition, true))

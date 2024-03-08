@@ -12,6 +12,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "CarouselView Content disappears when 'Loop' is false and inside ScrollView";
 
 		[Test]
+		[Category(UITestCategories.CarouselView)]
 		public void CarouselItemLoadsInCorrectPosition()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },

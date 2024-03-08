@@ -11,6 +11,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Editor Background works";
 
 		[Test]
+		[Category(UITestCategories.Editor)]
 		public void EditorBackgroundWorks()
 		{
 			App.WaitForElement("WaitForStubControl");

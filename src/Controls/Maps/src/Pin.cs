@@ -5,6 +5,9 @@ using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {
+	/// <summary>
+	/// Represents a pin on the <see cref="Map"/> control.
+	/// </summary>
 	public partial class Pin : Element
 	{
 		/// <summary>Bindable property for <see cref="Type"/>.</summary>
@@ -42,14 +45,20 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
-		/// The kind of pin.
+		/// Gets or sets the kind of pin. The default value is <see cref="PinType.Generic"/>.
+		/// This is a bindable property.
 		/// </summary>
+		/// <remarks>Depending on the platform, and versions of the platform, this might change the visual representation. This varies between the different platforms.</remarks>
 		public PinType Type
 		{
 			get { return (PinType)GetValue(TypeProperty); }
 			set { SetValue(TypeProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the platform counterpart of this pin element.
+		/// </summary>
+		/// <remarks>This should typically not be set by the developer. Doing so might result in unpredictable behavior.</remarks>
 		public object? MarkerId
 		{
 			get => _markerId;
@@ -69,17 +78,28 @@ namespace Microsoft.Maui.Controls.Maps
 		/// </summary>
 		public event EventHandler<PinClickedEventArgs>? InfoWindowClicked;
 
+		/// <inheritdoc cref="object.Equals(object)"/>
 		public override bool Equals(object? obj)
 		{
 			if (obj is null)
+			{
 				return false;
+			}
+
 			if (ReferenceEquals(this, obj))
+			{
 				return true;
+			}
+
 			if (obj.GetType() != GetType())
+			{
 				return false;
+			}
+
 			return Equals((Pin)obj);
 		}
 
+		/// <inheritdoc cref="object.GetHashCode"/>
 		public override int GetHashCode()
 		{
 			unchecked
@@ -99,16 +119,33 @@ namespace Microsoft.Maui.Controls.Maps
 			}
 		}
 
+		/// <summary>
+		/// Equality operator for equals.
+		/// </summary>
+		/// <param name="left">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
+		/// <returns><see langword="true"/> if objects are equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator ==(Pin? left, Pin? right)
 		{
 			return Equals(left, right);
 		}
 
+		/// <summary>
+		/// Inequality operator.
+		/// </summary>
+		/// <param name="left">Left to compare.</param>
+		/// <param name="right">Right to compare.</param>
+		/// <returns><see langword="true"/> if objects are not equal, otherwise <see langword="false"/>.</returns>
 		public static bool operator !=(Pin? left, Pin? right)
 		{
 			return !Equals(left, right);
 		}
 
+		/// <summary>
+		/// Triggers the click/tap event for a pin.
+		/// </summary>
+		/// <returns><see langword="true"/> if the info window associated to this pin will hide after this event has occurred, otherwise <see langword="false"/></returns>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool SendMarkerClick()
 		{
@@ -117,6 +154,11 @@ namespace Microsoft.Maui.Controls.Maps
 			return args.HideInfoWindow;
 		}
 
+		/// <summary>
+		/// Triggers the click/tap event for a info window of a pin.
+		/// </summary>
+		/// <returns><see langword="true"/> if the info window associated to this pin will hide after this event has occurred, otherwise <see langword="false"/></returns>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool SendInfoWindowClick()
 		{
