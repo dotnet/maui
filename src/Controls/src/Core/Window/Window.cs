@@ -679,6 +679,11 @@ namespace Microsoft.Maui.Controls
 				_owner = owner;
 			}
 
+			protected override Task OnPushAsync(Page page, bool animated)
+			{
+				throw new InvalidOperationException("Page must be wrapped into a navigation page to perform navigation");
+			}
+
 			protected override IReadOnlyList<Page> GetModalStack()
 			{
 				return _owner.ModalNavigationManager.ModalStack;
