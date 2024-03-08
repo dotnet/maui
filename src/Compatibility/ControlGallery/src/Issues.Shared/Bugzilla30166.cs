@@ -25,11 +25,13 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			{
 				Content = new Button
 				{
+					AutomationId = "PushModal",
 					Text = "Push Modal",
 					Command = new Command(async () => await Navigation.PushModalAsync(new ContentPage
 					{
 						Content = new Button
 						{
+							AutomationId = "Back",
 							Text = "Back",
 							Command = new Command(async () => await Navigation.PopModalAsync()),
 						},
