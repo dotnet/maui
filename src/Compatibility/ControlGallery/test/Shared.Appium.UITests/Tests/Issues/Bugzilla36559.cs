@@ -2,7 +2,7 @@
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 
-namespace UITests.Tests.Issues
+namespace UITests
 {
 	public class Bugzilla36559 : IssuesUITest
 	{
