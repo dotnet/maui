@@ -24,7 +24,7 @@ namespace UITests
 			RunningApp.WaitForElement("back");
 			RunningApp.Screenshot("I see the back button");
 			RunningApp.Tap("back");
-			RunningApp.WaitForElement("btnPush"));
+			RunningApp.WaitForElement("btnPush");
 		}
 	}
 }

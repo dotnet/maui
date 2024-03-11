@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 
@@ -8,6 +7,33 @@ namespace UITests
 	public abstract class ViewUITest : UITest
 	{
 		public ViewUITest(TestDevice device) : base(device) { }
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		[Category(UITestCategories.ManualReview)]
+		public virtual void Focus()
+		{
+			var remote = new ViewContainerRemote(App, Test.VisualElement.Focus);
+			remote.GoTo();
+		}
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		[Category(UITestCategories.ManualReview)]
+		public virtual void UnFocus()
+		{
+			var remote = new ViewContainerRemote(App, Test.VisualElement.Unfocus);
+			remote.GoTo();
+		}
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		[Category(UITestCategories.ManualReview)]
+		public virtual void InputTransparent()
+		{
+			var remote = new ViewContainerRemote(App, Test.VisualElement.InputTransparent);
+			remote.GoTo();
+		}
 
 		[Test]
 		[Category(UITestCategories.ViewBaseTests)]
@@ -28,7 +54,52 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.ViewBaseTests)]
 		[Category(UITestCategories.ManualReview)]
-		public virtual void _TranslationX()
+		public virtual void Opacity()
+		{
+			var remote = new ViewContainerRemote(App, Test.VisualElement.Opacity);
+			remote.GoTo();
+		}
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		[Category(UITestCategories.ManualReview)]
+		public virtual void Rotation()
+		{
+			var remote = new ViewContainerRemote(App, Test.VisualElement.Rotation);
+			remote.GoTo();
+		}
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		[Category(UITestCategories.ManualReview)]
+		public virtual void RotationX()
+		{
+			var remote = new ViewContainerRemote(App, Test.VisualElement.RotationX);
+			remote.GoTo();
+		}
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		[Category(UITestCategories.ManualReview)]
+		public virtual void RotationY()
+		{
+			var remote = new ViewContainerRemote(App, Test.VisualElement.RotationY);
+			remote.GoTo();
+		}
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		[Category(UITestCategories.ManualReview)]
+		public virtual void Scale()
+		{
+			var remote = new ViewContainerRemote(App, Test.VisualElement.Scale);
+			remote.GoTo();
+		}
+
+		[Test]
+		[Category(UITestCategories.ViewBaseTests)]
+		[Category(UITestCategories.ManualReview)]
+		public virtual void TranslationX()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.TranslationX);
 			remote.GoTo();
@@ -37,7 +108,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.ViewBaseTests)]
 		[Category(UITestCategories.ManualReview)]
-		public virtual void _TranslationY()
+		public virtual void TranslationY()
 		{
 			var remote = new ViewContainerRemote(App, Test.VisualElement.TranslationY);
 			remote.GoTo();

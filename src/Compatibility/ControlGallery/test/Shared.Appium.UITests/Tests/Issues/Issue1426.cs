@@ -23,7 +23,7 @@ namespace UITests
 			RunningApp.WaitForElement("NextButtonID");
 			RunningApp.Tap("NextButtonID");
 			RunningApp.WaitForElement("PopButtonId");
-			RunningApp.Tap("PopButtonId"));
+			RunningApp.Tap("PopButtonId");
 			RunningApp.WaitForElement("CoffeeImageId");
 			RunningApp.Screenshot("Coffe mug Image is still there on the bottom");
 		}
