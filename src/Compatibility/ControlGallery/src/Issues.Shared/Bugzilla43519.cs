@@ -64,6 +64,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			Children.Add(mdp);
 			Children.Add(new ContentPage
 			{
+				AutomationId = Page2,
 				Title = Page2,
 				Content = new StackLayout
 				{
