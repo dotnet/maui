@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using MacIdiom;
 
 namespace Maui.Controls.Sample
 {
@@ -12,6 +13,7 @@ namespace Maui.Controls.Sample
 				.CreateBuilder()
 				.UseMauiMaps()
 				.UseMauiApp<App>()
+				.ApplyPlatformStylingAdjustmentsForCurrentIdiom()
 				.Build();
 	}
 

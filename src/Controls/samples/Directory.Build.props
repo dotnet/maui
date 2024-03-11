@@ -6,4 +6,8 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0023</WarningsNotAsErrors>
   </PropertyGroup>
   <Import Project="../../../Directory.Build.props" />
+
+  <PropertyGroup>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
 </Project>

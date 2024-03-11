@@ -13,6 +13,15 @@ namespace Maui.Controls.Sample
 		public MainPage()
 		{
 			InitializeComponent();
+
+			Content = new VerticalStackLayout(){
+				new Button()
+				{
+					Text = "Click Me",
+					ImageSource = "groceries.png",
+					ContentLayout= new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Right,100)
+				}
+			};
 		}
 	}
 }
