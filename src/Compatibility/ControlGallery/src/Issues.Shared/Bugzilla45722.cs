@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			lv.ItemsSource = items;
 			lv.ItemTemplate = dt;
 
-			var button = new Button { Text = Update };
+			var button = new Button { AutomationId = Update, Text = Update };
 			button.Clicked += (sender, args) =>
 			{
 				items.Clear();
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				}
 			};
 
-			var collect = new Button() { Text = Collect };
+			var collect = new Button() { AutomationId = Collect, Text = Collect };
 			collect.Clicked += (sender, args) =>
 			{
 				GarbageCollectionHelper.Collect();

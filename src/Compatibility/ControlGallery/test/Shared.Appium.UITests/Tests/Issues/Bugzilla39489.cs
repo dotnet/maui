@@ -14,7 +14,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Maps)]
 		[Category(UITestCategories.Performance)]
-		public async Task AppDoesntCrashWhenResettingPage()
+		public async Task Bugzilla39489Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 

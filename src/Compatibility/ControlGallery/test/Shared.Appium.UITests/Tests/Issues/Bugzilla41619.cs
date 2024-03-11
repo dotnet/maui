@@ -15,7 +15,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
-		public void AppDoesntCrashWhenResettingPage()
+		public void SliderBinding()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
 

@@ -15,7 +15,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		public void AppDoesntCrashWhenResettingPage()
+		public void CreateDefaultPassesStringInsteadOfObject()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
 
