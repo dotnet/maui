@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Manages the bottom tabbar visibility.
+		/// Manages the bottom tab bar visibility.
 		/// The tab bar and tabs are visible in <see cref = "Shell" /> applications by default. 
 		/// </summary>
 		public static readonly BindableProperty TabBarIsVisibleProperty =
