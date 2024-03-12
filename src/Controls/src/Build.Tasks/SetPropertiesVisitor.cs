@@ -292,7 +292,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
 				if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension"
-					&& (node.Properties == null || !node.Properties.ContainsKey(new XmlName("", "Source"))) //do not compile bindings if Source is set
 					&& bpRef != null //do not compile bindings if we're not gonna SetBinding
 					)
 					foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition))
