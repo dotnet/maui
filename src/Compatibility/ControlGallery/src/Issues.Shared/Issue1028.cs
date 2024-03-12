@@ -10,6 +10,10 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1028, "ViewCell in TableView raises exception - root page is ContentPage, Content is TableView", PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
+
+#if UITEST
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TableView)]
+#endif
 	public class Issue1028 : TestContentPage
 	{
 		// Issue1028, ViewCell with StackLayout causes exception when nested in a table section. This occurs when the app's root page is a ContentPage with a TableView.

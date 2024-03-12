@@ -159,11 +159,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformButton.GetContent<WImage>() is WImage nativeImage)
 			{
-				nativeImage.Source = nativeImageSource;
-
 				// Stretch to the size of the button
-				nativeImage.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
-				nativeImage.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+				nativeImage.Stretch = UI.Xaml.Media.Stretch.Uniform;
+				nativeImage.Source = nativeImageSource;
 
 				nativeImage.Visibility = nativeImageSource == null
 					? UI.Xaml.Visibility.Collapsed

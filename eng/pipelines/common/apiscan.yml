@@ -1,6 +1,6 @@
 parameters:
-  poolName: VSEngSS-MicroBuild2022-1ES
-  vmImage: ''
+  poolName: MAUI-1ESPT
+  vmImage: '1ESPT-Windows2022'
   os: windows
   softwareName: 'MAUI'
   softwareVersion: 8.0
