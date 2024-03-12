@@ -9,7 +9,7 @@
 
         <CollectionView.ItemsSource>
             <x:Array Type="{x:Type x:String}">
-                <x:String>asdf</x:String>
+                <x:String>ONE</x:String>
                 <x:String>asdf</x:String>
                 <x:String>asdf</x:String>
                 <x:String>asdf</x:String>
@@ -48,12 +48,12 @@
         </CollectionView.ItemsLayout>
 
         <CollectionView.Footer>
-            <Label HeightRequest="45" Text="FOOOTER"></Label>
+            <Label HeightRequest="45" Text="FOOTER" AutomationId="FOOTER"></Label>
         </CollectionView.Footer>
         
         <CollectionView.ItemTemplate>
             <DataTemplate x:DataType="x:String">
-                <Border
+                <Border AutomationId="{Binding}"
                     StrokeThickness="0.2">
                     <Label
                         Text="{Binding}"
