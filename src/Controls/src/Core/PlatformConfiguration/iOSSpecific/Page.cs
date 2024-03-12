@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Sets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
-		/// <param name="value">True when hide the home indicator, or false if you want the indicator to show at all times.</param>
+		/// <param name="value">true if hide the home indicator; otherwise, false.</param>
 		public static void SetPrefersHomeIndicatorAutoHidden(BindableObject element, bool value)
 		{
 			element.SetValue(PrefersHomeIndicatorAutoHiddenProperty, value);
@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Gets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-		/// <returns>True when hide the home indicator, or false if you want the indicator to show at all times.</returns>
+		/// <returns>true if hide the home indicator; otherwise, false.</returns>
 		public static bool PrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetPrefersHomeIndicatorAutoHidden(config.Element);
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Sets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-		/// <param name="value">True when hide the home indicator, or false if you want the indicator to show at all times.</param>
+		/// <param name="value">true if hide the home indicator; otherwise, false.</param>
 		/// <returns></returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
