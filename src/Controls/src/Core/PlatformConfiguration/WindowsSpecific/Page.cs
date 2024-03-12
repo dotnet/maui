@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <summary>
 		/// Gets a value that indicates whether toolbar items automatically move to the overflow menu when space is limited.
 		/// </summary>
-		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <param name="element">A page, the <see cref="VisualElement"/> that occupies the entire screen.</param>
 		/// <returns><see langword="true"/> if toolbar items automatically move to the overflow menu when space is limited; otherwise, <see langword="false"/>.</returns>
 		public static bool GetToolbarDynamicOverflowEnabled(BindableObject element)
 		{
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <summary>
 		/// Sets a value that indicates whether toolbar items automatically move to the overflow menu when space is limited.
 		/// </summary>
-		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <param name="element">A page, the <see cref="VisualElement"/> that occupies the entire screen.</param>
 		/// <param name="value">A value that indicates whether toolbar items automatically move to the overflow menu when space is limited</param>
 		public static void SetToolbarDynamicOverflowEnabled(BindableObject element, bool value)
 		{

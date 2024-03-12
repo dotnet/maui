@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Gets a value that indicates whether padding values are overridden with values that conform to the safe area on the device.
 		/// </summary>
 		/// <param name="element">The element whose safe area behavior to get.</param>
-		/// <returns>A Boolean value that tells whether padding values are overridden or not.</returns>
+		/// <returns>true if the padding values are overridden; otherwise, false.</returns>
 		public static bool GetUseSafeArea(BindableObject element)
 		{
 			return (bool)element.GetValue(UseSafeAreaProperty);
