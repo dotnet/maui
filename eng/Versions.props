@@ -29,6 +29,10 @@
     <MicrosoftmacOSSdkPackageVersion>14.2.8047</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>17.2.8047</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>17.2.8047</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdknet80_172PackageVersion>17.2.8257-ci.main</MicrosoftMacCatalystSdknet80_172PackageVersion>
+    <MicrosoftmacOSSdknet80_142PackageVersion>17.2.8257-ci.main</MicrosoftmacOSSdknet80_142PackageVersion>
+    <MicrosoftiOSSdknet80_172PackageVersion>17.2.8257-ci.main</MicrosoftiOSSdknet80_172PackageVersion>
+    <MicrosofttvOSSdknet80_172PackageVersion>17.2.8257-ci.main</MicrosofttvOSSdknet80_172PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.130</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
@@ -103,5 +107,9 @@
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>$(DotNetVersionBand)</DotNetTizenManifestVersionBand>
+    <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet80_172PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet80_142PackageVersion)</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet80_172PackageVersion)</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>$(MicrosofttvOSSdknet80_172PackageVersion)</MicrosofttvOSSdkPackageVersion>
   </PropertyGroup>
 </Project>
