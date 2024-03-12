@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 
 			if (strokeShape is VisualElement visualElement)
 			{
-				AddLogicalChild(visualElement);
+				SetInheritedBindingContext(visualElement, BindingContext);
 				_strokeShapeChanged ??= (sender, e) => OnPropertyChanged(nameof(StrokeShape));
 				_strokeShapeProxy ??= new();
 				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls
 
 			if (strokeShape is VisualElement visualElement)
 			{
-				RemoveLogicalChild(visualElement);
+				SetInheritedBindingContext(visualElement, null);
 				_strokeShapeProxy?.Unsubscribe();
 			}
 		}
