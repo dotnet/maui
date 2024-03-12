@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Sets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
+		/// Sets a value that indicates whether the visual indicator should hide upon returning to the home screen.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
 		/// <param name="value">True when hide the home indicator, or false if you want the indicator to show at all times.</param>
