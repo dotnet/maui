@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 		public Page CurrentPage => GetVisiblePage() as Page;
 
 		/// <summary>
-		/// Controls the behavior of the page's back button
+		/// Controls the behavior of the page's back button.
 		/// </summary>
 		public static readonly BindableProperty BackButtonBehaviorProperty =
 			BindableProperty.CreateAttached("BackButtonBehavior", typeof(BackButtonBehavior), typeof(Shell), null, BindingMode.OneTime,
@@ -1922,7 +1922,7 @@ namespace Microsoft.Maui.Controls
 
 
 		/// <summary>
-		/// Flyout items, which represent the flyout content, can optionally be replaced with your own content.
+		/// Flyout items, which represent the flyout content, can optionally be replaced with custom content.
 		/// </summary>
 		public static readonly BindableProperty FlyoutContentProperty =
 			BindableProperty.Create(nameof(FlyoutContent), typeof(object), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentChanging);
