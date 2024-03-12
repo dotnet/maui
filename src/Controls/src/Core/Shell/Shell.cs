@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 		public Page CurrentPage => GetVisiblePage() as Page;
 
 		/// <summary>
-		/// Controls the behavior of the page's back button
+		/// Controls the behavior of the page's back button.
 		/// </summary>
 		public static readonly BindableProperty BackButtonBehaviorProperty =
 			BindableProperty.CreateAttached("BackButtonBehavior", typeof(BackButtonBehavior), typeof(Shell), null, BindingMode.OneTime,
