@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Returns a Boolean value that tells whether the padding is overridden with the safe area.
 		/// </summary>
 		/// <param name="config">The element whose safe area behavior to get.</param>
-		/// <returns>A Boolean value that tells whether the padding is overridden with the safe area.</returns>
+		/// <returns>true if the padding is overridden with the safe area; otherwise, false.</returns>
 		public static bool UsingSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetUseSafeArea(config.Element);
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Sets the modal presentation style.
+		/// Sets the modal presentation style of the <see cref="Page"/>.
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
 		/// <param name="value">The modal presentation style.</param>
@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Gets the current value of the UIModalPresentationStyle enumeration that's applied to the <see cref="Page"/>.
+		/// Gets the current value of the <see cref="UIModalPresentationStyle"/> enumeration that's applied to the <see cref="Page"/>.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
 		/// <returns>The current value of the UIModalPresentationStyle enumeration that's applied to the Page.</returns>
