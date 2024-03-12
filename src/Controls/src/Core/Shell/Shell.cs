@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.CreateAttached("TitleView", typeof(View), typeof(Shell), null, propertyChanged: OnTitleViewChanged);
 
 		/// <summary>
-		/// Customize the appearance of each <see cref = "MenuItem" />.
+		/// Customizes the appearance of each <see cref = "MenuItem" />.
 		/// </summary>
 		public static readonly BindableProperty MenuItemTemplateProperty =
 			BindableProperty.CreateAttached(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
