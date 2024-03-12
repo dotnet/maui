@@ -69,8 +69,7 @@ namespace Microsoft.Maui.Controls
 
 		[RequiresUnreferencedCode("The method uses reflection to find implicit conversion operators. " +
 			"It is not possible to guarantee that trimming does not remove some of the implicit operators. " +
-			"Consider preserving op_Implicit methods through DynamicDependency or DynamicallyAccessedMembers attributes.",
-			Url = "https://learn.microsoft.com/dotnet/core/deploying/trimming/prepare-libraries-for-trimming")]
+			"Consider adding a custom TypeConverter that can perform the conversion instead.")]
 		private static bool TryConvertUsingImplicitCastOperator(object value, Type targetType, [NotNullWhen(true)] out object? result)
 		{
 			Type valueType = value.GetType();
@@ -87,8 +86,8 @@ namespace Microsoft.Maui.Controls
 			result = null;
 			return false;
 
-			[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070:RequiresUnreferencedCode",
-				Justification = "We add our own RequiresUnreferencedCode attribute to the parent method.")]
+			[RequiresUnreferencedCode("The method looks for op_Implicit methods using reflection. " +
+				"We cannot guarantee that the method is preserved when the code is trimmed.")]
 			static MethodInfo? GetImplicitConversionOperator(Type onType, Type fromType, Type toType)
 			{
 				const BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
