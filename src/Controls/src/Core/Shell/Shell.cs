@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Controls
 		/// Sets the behavior of the back button.
 		/// </summary>
 		/// <param name="obj">The object that sets the behavior of the back button.</param>
-		/// <param name="behavior">Sets the back button behavior.</param>
+		/// <param name="behavior">The back button behavior.</param>
 		public static void SetBackButtonBehavior(BindableObject obj, BackButtonBehavior behavior) => obj.SetValue(BackButtonBehaviorProperty, behavior);
 
 		/// <summary>
