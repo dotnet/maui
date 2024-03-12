@@ -35,18 +35,6 @@ namespace Microsoft.Maui.Controls
 				valueType = wrappedType;
 			}
 
-			if (TryGetTypeConverter(valueType, out var converter) && converter is not null && converter.CanConvertTo(targetType))
-			{
-				convertedValue = converter.ConvertTo(value, targetType) ?? throw new InvalidOperationException($"The {converter.GetType()} returned null when converting {valueType} to {targetType}");
-				return true;
-			}
-
-			if (TryGetTypeConverter(targetType, out converter) && converter is not null && converter.CanConvertFrom(valueType))
-			{
-				convertedValue = converter.ConvertFrom(value) ?? throw new InvalidOperationException($"The {converter.GetType()} returned null when converting from {valueType}");
-				return true;
-			}
-
 			if (RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported)
 			{
 				if (TryConvertUsingImplicitCastOperator(value, targetType, out convertedValue))
@@ -56,6 +44,18 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
+				if (TryGetTypeConverter(valueType, out var converter) && converter is not null && converter.CanConvertTo(targetType))
+				{
+					convertedValue = converter.ConvertTo(value, targetType) ?? throw new InvalidOperationException($"The {converter.GetType()} returned null when converting {valueType} to {targetType}");
+					return true;
+				}
+
+				if (TryGetTypeConverter(targetType, out converter) && converter is not null && converter.CanConvertFrom(valueType))
+				{
+					convertedValue = converter.ConvertFrom(value) ?? throw new InvalidOperationException($"The {converter.GetType()} returned null when converting from {valueType}");
+					return true;
+				}
+
 				WarnIfImplicitOperatorIsAvailable(value, targetType);
 			}
 
