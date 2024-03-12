@@ -4,9 +4,9 @@ using UITest.Core;
 
 namespace UITests
 {
-    internal class Bugzilla53834 : IssuesUITest
+	public class Bugzilla53834 : IssuesUITest
 	{
-		public Issue10182(TestDevice testDevice) : base(testDevice)
+		public Bugzilla53834(TestDevice testDevice) : base(testDevice)
 		{
 		}
 

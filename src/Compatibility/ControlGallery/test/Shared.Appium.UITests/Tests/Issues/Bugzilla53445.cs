@@ -29,7 +29,7 @@ namespace UITests
 			RunningApp.WaitForElement("Success");
 
 			// Tap the stacklayout button; the event should not fire and the label should not change
-			RunningApp.Tap("stacklayoutbutton"));
+			RunningApp.Tap("stacklayoutbutton");
 			RunningApp.WaitForElement("Success");
 		}
 	}
