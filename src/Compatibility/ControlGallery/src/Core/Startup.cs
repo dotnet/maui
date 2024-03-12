@@ -25,7 +25,8 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		{
 			var builder = MauiApp.CreateBuilder();
 			builder
-				.UseMauiApp<App>();
+				.UseMauiApp<App>()
+				.UseMauiMaps();
 
 
 #if COMPATIBILITY_ENABLED

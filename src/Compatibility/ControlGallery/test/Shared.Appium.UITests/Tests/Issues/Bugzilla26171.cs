@@ -15,6 +15,7 @@ namespace UITests
 		[Category(UITestCategories.Maps)]
 		public void Bugzilla26171Test()
 		{
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS], "To use the Maps functionality, you need to add an API key.");
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement("lblValue");

@@ -16,8 +16,7 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public void DoesntCrashOnNavigatingBackToThePage()
 		{
-			this.IgnoreIfPlatform(TestDevice.Android, "MultiWindowService not implemented.");
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
 
 			RunningApp.WaitForElement("btnPush");
 			RunningApp.Tap("btnPush");
