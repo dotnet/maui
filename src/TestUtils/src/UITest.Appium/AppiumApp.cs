@@ -38,7 +38,7 @@ namespace UITest.Appium
 		public FileInfo Screenshot(string fileName)
 		{
 			Screenshot screenshot = _driver.GetScreenshot();
-			screenshot.SaveAsFile(fileName, ScreenshotImageFormat.Png);
+			screenshot.SaveAsFile(fileName);
 			var file = new FileInfo(fileName);
 			return file;
 		}

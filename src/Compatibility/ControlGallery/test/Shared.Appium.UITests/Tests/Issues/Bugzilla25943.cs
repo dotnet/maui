@@ -27,7 +27,7 @@ namespace UITests
 			RunningApp.WaitForElement(OuterLayout);
 			RunningApp.Tap(OuterLayout);
 
-			RunningApp.WaitForElement(Success);
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }
