@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the DataTemplate applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
 		/// </summary>
-		/// <param name="obj">The object that sets the DataTemplate applied to MenuItem objects.</param>
+		/// <param name="obj">The object that sets the DataTemplate to be applied to the MenuItem objects.</param>
 		/// <returns>The DataTemplate applied to MenuItem objects.</returns>
 		public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
 
