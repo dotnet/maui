@@ -181,13 +181,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Defines the modal presentation style of the Page.
+		/// Defines the modal presentation style of the <see cref="Page"/>.
 		/// </summary>
 		public static readonly BindableProperty ModalPresentationStyleProperty =
 			BindableProperty.Create(nameof(ModalPresentationStyle), typeof(UIModalPresentationStyle), typeof(Page), UIModalPresentationStyle.FullScreen);
 
 		/// <summary>
-		/// Gets the modal presentation style of the Page.
+		/// Gets the modal presentation style of the <see cref="Page"/>.
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
 		/// <returns>The modal presentation style.</returns>
@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Gets the current value of the UIModalPresentationStyle enumeration that's applied to the Page.
+		/// Gets the current value of the UIModalPresentationStyle enumeration that's applied to the <see cref="Page"/>.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
 		/// <returns>The current value of the UIModalPresentationStyle enumeration that's applied to the Page.</returns>
@@ -219,12 +219,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Sets the modal presentation style on a Page by specifying one of the following UIModalPresentationStyle enumeration values:
-		/// - FullScreen, which sets the modal presentation style to encompass the whole screen.By default, modal pages are displayed using this presentation style.
-		/// - FormSheet, which sets the modal presentation style to be centered on and smaller than the screen.
-		/// - Automatic, which sets the modal presentation style to the default chosen by the system. For most view controllers, UIKit maps this to UIModalPresentationStyle.PageSheet, but some system view controllers may map it to a different style.
-		/// - OverFullScreen, which sets the modal presentation style to cover the screen.
-		/// - PageSheet, which sets the modal presentation style to cover the underlying content.
+		/// Sets the modal presentation style on a Page.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
 		/// <param name="value">The modal presentation style.</param>
