@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>
 		/// Gets a value that indicates whether padding values are overridden with values that conform to the safe area on the device.
 		/// </summary>
-		/// <param name="element">The element whose safe area behavior to get.</param>
+		/// <param name="element">The element to get the safe area behavior from.</param>
 		/// <returns>true if the padding values are overridden; otherwise, false.</returns>
 		public static bool GetUseSafeArea(BindableObject element)
 		{
@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), false);
 
 		/// <summary>
-		/// Gets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
+		/// Gets a value that indicates whether the visual indicator should hide upon returning to the home screen.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
 		/// <returns></returns>
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Sets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
+		/// Sets a value that indicates whether the visual indicator should hide upon returning to the home screen.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
 		/// <param name="value">true if hide the home indicator; otherwise, false.</param>
