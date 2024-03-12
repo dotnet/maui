@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), false);
 
 		/// <summary>
-		/// Gets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
+		/// Gets a value that indicates whether the visual indicator should hide upon returning to the home screen.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
 		/// <returns></returns>
