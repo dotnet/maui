@@ -48,11 +48,12 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty PresentationModeProperty = BindableProperty.CreateAttached("PresentationMode", typeof(PresentationMode), typeof(Shell), PresentationMode.Animated);
 
-		/// <summary>
-		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen. 
-		/// This behavior can be changed by setting the FlyoutBehavior property.
-		/// </summary>
-		public static readonly BindableProperty FlyoutBehaviorProperty =
+        /// <summary>
+        /// Manages the behavior used to open the flyout.
+        /// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen. 
+        /// This behavior can be changed by setting the FlyoutBehavior property.
+        /// </summary>
+        public static readonly BindableProperty FlyoutBehaviorProperty =
 			BindableProperty.CreateAttached("FlyoutBehavior", typeof(FlyoutBehavior), typeof(Shell), FlyoutBehavior.Flyout,
 				propertyChanged: OnFlyoutBehaviorChanged);
 
@@ -147,7 +148,7 @@ namespace Microsoft.Maui.Controls
 
         /// <summary>
         /// Sets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
-        /// Shell provides the Text and IconImageSource properties to the BindingContext of the MenuItemTemplate. 
+        /// Shell provides the Text and IconImageSource properties to the BindingContext of the <see cref = "MenuItemTemplate" />. 
         /// You can also use Title in place of Text and Icon in place of IconImageSource which will let you reuse the same template for menu items and flyout items.
         /// </summary>
         /// <param name="obj">The object that sets the DataTemplate applied to MenuItem objects.</param>
@@ -160,19 +161,19 @@ namespace Microsoft.Maui.Controls
         public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.CreateAttached(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
-		/// <summary>
-		/// Gets DataTemplate applied to each <see cref = "FlyoutItem" /> object managed by Shell.
-		/// </summary>
-		/// <param name="obj">The object that sets the DataTemplate applied to Item objects.</param>
-		/// <returns>The DataTemplate applied to Item objects.</returns>
-		public static DataTemplate GetItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(ItemTemplateProperty);
+        /// <summary>
+        /// Gets the <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
+        /// </summary>
+        /// <param name="obj">The object that sets the DataTemplate applied to Item objects.</param>
+        /// <returns>The DataTemplate applied to Item objects.</returns>
+        public static DataTemplate GetItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(ItemTemplateProperty);
 
-		/// <summary>
-		/// Sets DataTemplate applied to each <see cref = "FlyoutItem" /> object managed by Shell.
-		/// </summary>
-		/// <param name="obj">The object that sets the DataTemplate applied to Item objects.</param>
-		/// <param name="itemTemplate">The DataTemplate applied to Item objects.</param>
-		public static void SetItemTemplate(BindableObject obj, DataTemplate itemTemplate) => obj.SetValue(ItemTemplateProperty, itemTemplate);
+        /// <summary>
+        /// Sets the <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
+        /// </summary>
+        /// <param name="obj">The object that sets the DataTemplate applied to Item objects.</param>
+        /// <param name="itemTemplate">The DataTemplate applied to Item objects.</param>
+        public static void SetItemTemplate(BindableObject obj, DataTemplate itemTemplate) => obj.SetValue(ItemTemplateProperty, itemTemplate);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetBackButtonBehavior']/Docs/*" />
 		public static BackButtonBehavior GetBackButtonBehavior(BindableObject obj) => (BackButtonBehavior)obj.GetValue(BackButtonBehaviorProperty);
