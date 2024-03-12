@@ -30,7 +30,7 @@
     <MicrosoftiOSSdkPackageVersion>17.2.8047</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>17.2.8047</MicrosofttvOSSdkPackageVersion>
     <MicrosoftMacCatalystSdknet80_172PackageVersion>17.2.8257-ci.main</MicrosoftMacCatalystSdknet80_172PackageVersion>
-    <MicrosoftmacOSSdknet80_142PackageVersion>17.2.8257-ci.main</MicrosoftmacOSSdknet80_142PackageVersion>
+    <MicrosoftmacOSSdknet80_142PackageVersion>14.2.8257-ci.main</MicrosoftmacOSSdknet80_142PackageVersion>
     <MicrosoftiOSSdknet80_172PackageVersion>17.2.8257-ci.main</MicrosoftiOSSdknet80_172PackageVersion>
     <MicrosofttvOSSdknet80_172PackageVersion>17.2.8257-ci.main</MicrosofttvOSSdknet80_172PackageVersion>
     <!-- Samsung/Tizen.NET -->
