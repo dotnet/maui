@@ -44,7 +44,10 @@ namespace UITest.Appium
 			parameters.TryGetValue("element", out var value);
 			var element = GetAppiumElement(value);
 
-			double swipePercentage = (double)parameters["swipePercentage"];
+            if (element is null)
+                return CommandResponse.FailedEmptyResponse;
+
+            double swipePercentage = (double)parameters["swipePercentage"];
 			int swipeSpeed = (int)parameters["swipeSpeed"];
 			bool withInertia = (bool)parameters["withInertia"];
 
@@ -58,7 +61,10 @@ namespace UITest.Appium
 			parameters.TryGetValue("element", out var value);
 			var element = GetAppiumElement(value);
 
-			double swipePercentage = (double)parameters["swipePercentage"];
+            if (element is null)
+                return CommandResponse.FailedEmptyResponse;
+
+            double swipePercentage = (double)parameters["swipePercentage"];
 			int swipeSpeed = (int)parameters["swipeSpeed"];
 			bool withInertia = (bool)parameters["withInertia"];
 

@@ -140,10 +140,10 @@ namespace UITest.Appium
 
 		static void ScrollToLeft(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
-			var position = element.Location;
-			var size = element.Size;
+            var position = element is not null ? element.Location : System.Drawing.Point.Empty;
+            var size = element is not null ? element.Size : driver.Manage().Window.Size;
 
-			int startX = (int)(position.X + (size.Width * 0.05));
+            int startX = (int)(position.X + (size.Width * 0.05));
 			int startY = position.Y + size.Height / 2;
 
 			int endX = (int)(position.X + (size.Width * swipePercentage));
@@ -160,10 +160,10 @@ namespace UITest.Appium
 
 		static void ScrollToDown(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
-			var position = element.Location;
-			var size = element.Size;
+            var position = element is not null ? element.Location : System.Drawing.Point.Empty;
+            var size = element is not null ? element.Size : driver.Manage().Window.Size;
 
-			int startX = position.X + size.Width / 2;
+            int startX = position.X + size.Width / 2;
 			int startY = (int)(position.Y + (size.Height * swipePercentage));
 
 			int endX = startX;
@@ -180,10 +180,10 @@ namespace UITest.Appium
 
 		static void ScrollToRight(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
-			var position = element.Location;
-			var size = element.Size;
+            var position = element is not null ? element.Location : System.Drawing.Point.Empty;
+            var size = element is not null ? element.Size : driver.Manage().Window.Size;
 
-			int startX = (int)(position.X + (size.Width * swipePercentage));
+            int startX = (int)(position.X + (size.Width * swipePercentage));
 			int startY = position.Y + size.Height / 2;
 
 			int endX = (int)(position.X + (size.Width * 0.05));
@@ -200,10 +200,10 @@ namespace UITest.Appium
 
 		static void ScrollToUp(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
-			var position = element.Location;
-			var size = element.Size;
+            var position = element is not null ? element.Location : System.Drawing.Point.Empty;
+            var size = element is not null ? element.Size : driver.Manage().Window.Size;
 
-			int startX = position.X + size.Width / 2;
+            int startX = position.X + size.Width / 2;
 			int startY = (int)(position.Y + (size.Height * 0.05));
 
 			int endX = startX;
