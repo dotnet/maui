@@ -138,26 +138,26 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty MenuItemTemplateProperty =
 			BindableProperty.CreateAttached(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
-		/// <summary>
-		/// Gets the DataTemplate applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
-		/// </summary>
-		/// <param name="obj">The object that sets the DataTemplate to be applied to the MenuItem objects.</param>
-		/// <returns>The DataTemplate applied to MenuItem objects.</returns>
-		public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
+        /// <summary>
+        /// Gets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
+        /// </summary>
+        /// <param name="obj">The object that sets the DataTemplate to be applied to the MenuItem objects.</param>
+        /// <returns>The DataTemplate applied to MenuItem objects.</returns>
+        public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
 
-		/// <summary>
-		/// Sets the DataTemplate applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
-		/// Shell provides the Text and IconImageSource properties to the BindingContext of the MenuItemTemplate. 
-		/// You can also use Title in place of Text and Icon in place of IconImageSource which will let you reuse the same template for menu items and flyout items.
-		/// </summary>
-		/// <param name="obj">The object that sets the DataTemplate applied to MenuItem objects.</param>
-		/// <param name="menuItemTemplate">The DataTemplate applied to MenuItem objects.</param>
-		public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
+        /// <summary>
+        /// Sets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
+        /// Shell provides the Text and IconImageSource properties to the BindingContext of the MenuItemTemplate. 
+        /// You can also use Title in place of Text and Icon in place of IconImageSource which will let you reuse the same template for menu items and flyout items.
+        /// </summary>
+        /// <param name="obj">The object that sets the DataTemplate applied to MenuItem objects.</param>
+        /// <param name="menuItemTemplate">The DataTemplate applied to MenuItem objects.</param>
+        public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
 
-		/// <summary>
-		///  DataTemplate applied to each <see cref = "FlyoutItem" /> object managed by Shell.
-		/// </summary>
-		public static readonly BindableProperty ItemTemplateProperty =
+        /// <summary>
+        ///  The <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
+        /// </summary>
+        public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.CreateAttached(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
 		/// <summary>
@@ -1065,17 +1065,17 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlyoutFooter), typeof(object), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutFooterChanging);
 
-		/// <summary>
-		/// The flyout header appearance can be defined by setting a DataTemplate.
-		/// </summary>
-		public static readonly BindableProperty FlyoutHeaderTemplateProperty =
+        /// <summary>
+        /// The flyout header appearance can be defined by setting a <see cref = "DataTemplate" />.
+        /// </summary>
+        public static readonly BindableProperty FlyoutHeaderTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutHeaderTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutHeaderTemplateChanging);
 
-		/// <summary>
-		/// The flyout footer appearance can be defined by setting a DataTemplate.
-		/// </summary>
-		public static readonly BindableProperty FlyoutFooterTemplateProperty =
+        /// <summary>
+        /// The flyout footer appearance can be defined by setting a <see cref = "DataTemplate" />.
+        /// </summary>
+        public static readonly BindableProperty FlyoutFooterTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutFooterTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutFooterTemplateChanging);
 
@@ -1370,19 +1370,19 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FlyoutHeaderBehaviorProperty, value);
 		}
 
-		/// <summary>
-		/// Gets or sets the flyout header appearance using a DataTemplate.
-		/// </summary>
-		public DataTemplate FlyoutHeaderTemplate
+        /// <summary>
+        /// Gets or sets the flyout header appearance using a <see cref = "DataTemplate" />.
+        /// </summary>
+        public DataTemplate FlyoutHeaderTemplate
 		{
 			get => (DataTemplate)GetValue(FlyoutHeaderTemplateProperty);
 			set => SetValue(FlyoutHeaderTemplateProperty, value);
 		}
 
-		/// <summary>
-		/// Gets or sets the flyout footer appearance using a DataTemplate.
-		/// </summary>
-		public DataTemplate FlyoutFooterTemplate
+        /// <summary>
+        /// Gets or sets the flyout footer appearance using a <see cref = "DataTemplate" />.
+        /// </summary>
+        public DataTemplate FlyoutFooterTemplate
 		{
 			get => (DataTemplate)GetValue(FlyoutFooterTemplateProperty);
 			set => SetValue(FlyoutFooterTemplateProperty, value);
@@ -1401,19 +1401,19 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='Items']/Docs/*" />
 		public IList<ShellItem> Items => (IList<ShellItem>)GetValue(ItemsProperty);
 
-		/// <summary>
-		/// Gets or sets DataTemplate applied to each of the Items.
-		/// </summary>
-		public DataTemplate ItemTemplate
+        /// <summary>
+        /// Gets or sets <see cref = "DataTemplate" /> applied to each of the Items.
+        /// </summary>
+        public DataTemplate ItemTemplate
 		{
 			get => GetItemTemplate(this);
 			set => SetItemTemplate(this, value);
 		}
 
-		/// <summary>
-		/// Gets or sets the DataTemplate applied to MenuItem objects in the MenuItems collection.
-		/// </summary>
-		public DataTemplate MenuItemTemplate
+        /// <summary>
+        /// Gets or sets the <see cref = "DataTemplate" /> applied to MenuItem objects in the MenuItems collection.
+        /// </summary>
+        public DataTemplate MenuItemTemplate
 		{
 			get => GetMenuItemTemplate(this);
 			set => SetMenuItemTemplate(this, value);
