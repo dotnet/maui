@@ -158,9 +158,7 @@ extends:
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:
             dependsOn: ['pack_net']
-            poolName: ${{ parameters.VM_IMAGE_HOST.name }}
-            vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
-            os: ${{ parameters.VM_IMAGE_HOST.os }}
+            os: windows
             scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
 
         

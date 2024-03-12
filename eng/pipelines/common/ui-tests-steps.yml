@@ -116,7 +116,8 @@ steps:
 
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic  --runtimevariant="${{ parameters.runtimeVariant }}"
     displayName: $(Agent.JobName)
-    retryCountOnTaskFailure: 1
+    ${{ if ne(parameters.platform, 'android')}}:
+      retryCountOnTaskFailure: 1
 
   - bash: |
       suffix=$(date +%Y%m%d%H%M%S)

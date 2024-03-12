@@ -41,17 +41,26 @@ namespace Microsoft.Maui.Controls.Platform
 			// position if needed when the text was modified by a Converter.
 			var textRange = textInput.GetTextRange(textInput.BeginningOfDocument, textInput.EndOfDocument);
 			var oldText = textInput.TextInRange(textRange) ?? string.Empty;
+
+			// We need this variable because in some cases because of the iOS's
+			// auto correction eg. eg '--' => '—' the actual text in the input might have
+			// a different length that the one that has been set in the control.
+			var newTextLength = !string.IsNullOrWhiteSpace(inputView.Text) ? textInput.TextInRange(textRange)?.Length ?? 0 : 0;
+
 			var newText = TextTransformUtilites.GetTransformedText(
 				inputView?.Text,
 				textInput.GetSecureTextEntry() ? TextTransform.Default : inputView.TextTransform
 				);
 
+			if (!string.IsNullOrWhiteSpace(oldText))
+				newTextLength = newText.Length;
+
 			if (oldText != newText)
 			{
 				// Re-calculate the cursor offset position if the text was modified by a Converter.
 				// but if the text is being set by code, let's just move the cursor to the end.
-				var cursorOffset = newText.Length - oldText.Length;
-				var cursorPosition = isEditing ? textInput.GetCursorPosition(cursorOffset) : newText.Length;
+				var cursorOffset = newTextLength - oldText.Length;
+				var cursorPosition = isEditing ? textInput.GetCursorPosition(cursorOffset) : newTextLength;
 
 				textInput.ReplaceText(textRange, newText);
 

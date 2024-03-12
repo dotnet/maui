@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Crash using Pinvoke.SetParent to create Window as Child";
 
 		[Test]
+  		[Ignore("This broke with WinAPPSDK 1.4 and we currently don't have an alternative https://github.com/dotnet/maui/issues/20253")]
 		[Category(UITestCategories.Window)]
 		public void AppDoesntCrashWhenOpeningWinUIWindowParentedToCurrentWindow()
 		{
