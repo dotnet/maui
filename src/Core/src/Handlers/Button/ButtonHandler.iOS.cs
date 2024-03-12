@@ -21,6 +21,15 @@ namespace Microsoft.Maui.Handlers
 		protected override UIButton CreatePlatformView()
 		{
 			var button = new UIButton(UIButtonType.System);
+
+			// Starting with iOS 15, we can use the button.Configuration and assign future UIButton.Configuration.ContentInsets here instead of the deprecated UIButton.ContentEdgeInsets.
+			// It is important to note that the configuration will change any set style changes so we will do this right after creating the button.
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				var config = UIButtonConfiguration.PlainButtonConfiguration;
+				button.Configuration = config;
+			}
+
 			SetControlPropertiesFromProxy(button);
 			return button;
 		}
@@ -202,50 +211,12 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(UIImage? platformImage)
 			{
 				if (Handler?.PlatformView is not UIButton button)
- 					return;
+					return;
 
- 				nfloat buttonSize = 0;
+				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
- #pragma warning disable CA1422 // Validate platform compatibility
- 				var contentEdgeInsets = button.ContentEdgeInsets;
- #pragma warning restore CA1422 // Validate platform compatibility
-
- 				if (button.Bounds != CGRect.Empty)
- 				{
- 					if (button.Bounds.Height > button.Bounds.Width)
- 						buttonSize = button.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right);
- 					else
- 						buttonSize = button.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom);
- 				}
-
- 				try
- 				{
- 					if (buttonSize != 0)
- 						platformImage = ResizeImageSource(platformImage, buttonSize, buttonSize);
-
- 					platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
-
- 					button.SetImage(platformImage, UIControlState.Normal);
- 				}
- 				catch (Exception)
- 				{
- 					Handler.MauiContext?.CreateLogger<ButtonHandler>()?.LogWarning("Can not load Button ImageSource");
- 				}
+				button.SetImage(platformImage, UIControlState.Normal);
 			}
-			
-			static UIImage? ResizeImageSource(UIImage? sourceImage, nfloat maxWidth, nfloat maxHeight)
- 			{
- 				if (sourceImage is null || sourceImage.CGImage is null)
- 					return null;
-
- 				var sourceSize = sourceImage.Size;
- 				float maxResizeFactor = (float)Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
-
- 				if (maxResizeFactor > 1)
- 					return sourceImage;
-
- 				return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
- 			}
 		}
 	}
 }
