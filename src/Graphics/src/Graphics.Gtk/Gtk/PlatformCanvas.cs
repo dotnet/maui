@@ -37,7 +37,7 @@ public partial class PlatformCanvas : AbstractCanvas<PlatformCanvasState>
 
 	public override bool Antialias
 	{
-		set => CurrentState.Antialias = CanvasExtensions.ToAntialias(value);
+		set => CurrentState.Antialias = CairoExtensions.ToAntialias(value);
 	}
 
 	public override float MiterLimit
@@ -249,7 +249,7 @@ public partial class PlatformCanvas : AbstractCanvas<PlatformCanvasState>
 	{
 		if (image is PlatformImage { NativeImage: { } pixbuf })
 		{
-			DrawPixbuf(Context, pixbuf, x, y, width, height);
+			Context.DrawPixbuf(pixbuf, x, y, width, height);
 		}
 	}
 
