@@ -15,6 +15,9 @@ namespace UITest.Appium
 
 	public class AppiumScrollActions : ICommandExecutionGroup
 	{
+		const int ScrollTouchDownTime = 100;
+		const int ProgrammaticallyScrollTime = 0;
+
 		const string ScrollLeftCommand = "scrollLeft";
 		const string ScrollDownCommand = "scrollDown";
 		const string ScrollRightCommand = "scrollRight";
@@ -153,7 +156,8 @@ namespace UITest.Appium
 			var scrollSequence = new ActionSequence(touchDevice, 0);
 			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
 			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
+			scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(ScrollTouchDownTime)));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : ProgrammaticallyScrollTime)));
 			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([scrollSequence]);
 		}
@@ -173,7 +177,8 @@ namespace UITest.Appium
 			var scrollSequence = new ActionSequence(touchDevice, 0);
 			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
 			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
+			scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(ScrollTouchDownTime)));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : ProgrammaticallyScrollTime)));
 			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([scrollSequence]);
 		}
@@ -193,7 +198,8 @@ namespace UITest.Appium
 			var scrollSequence = new ActionSequence(touchDevice, 0);
 			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
 			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
+			scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(ScrollTouchDownTime)));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : ProgrammaticallyScrollTime)));
 			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([scrollSequence]);
 		}
@@ -213,7 +219,8 @@ namespace UITest.Appium
 			var scrollSequence = new ActionSequence(touchDevice, 0);
 			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
 			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMicroseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)));
+			scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(ScrollTouchDownTime)));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : ProgrammaticallyScrollTime)));
 			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([scrollSequence]);
 		}
