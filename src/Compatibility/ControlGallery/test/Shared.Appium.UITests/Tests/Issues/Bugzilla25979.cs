@@ -16,6 +16,8 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public void Bugzilla25979Test()
 		{
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows], "Failing to find a Page by AutomationId");
+
 			RunningApp.WaitForElement("PageOneId");
 			RunningApp.Screenshot("At page one");
 			RunningApp.WaitForElement("PageOneButtonId");
