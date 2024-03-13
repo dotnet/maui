@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Returns a Boolean value that tells whether the padding is overridden with the safe area.
+		/// Gets a value that represents whether the padding is overridden with the safe area.
 		/// </summary>
 		/// <param name="config">The element whose safe area behavior to get.</param>
 		/// <returns>true if the padding is overridden with the safe area; otherwise, false.</returns>
