@@ -54,18 +54,6 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateFont(this UIButton platformButton, ITextStyle textStyle, IFontManager fontManager)
 		{
 			platformButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
-
-			// If iOS 15+, update the configuration with the new font
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config)
-			{
-				config.TitleTextAttributesTransformer = (incoming) =>
-				{
-					var outgoing = incoming;
-					outgoing[UIStringAttributeKey.Font] = platformButton.TitleLabel.Font;
-					return outgoing;
-				};
-				platformButton.Configuration = config;
-			}
 		}
 
 		public static void UpdatePadding(this UIButton platformButton, IButton button, Thickness? defaultPadding = null) =>
@@ -85,24 +73,15 @@ namespace Microsoft.Maui.Platform
 			if (bottom == 0.0)
 				bottom = AlmostZero;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is not null)
-			{
-				var config = platformButton.Configuration;
-				config.ContentInsets = new NSDirectionalEdgeInsets(
-					(float)top,
-					(float)padding.Left,
-					(float)bottom,
-					(float)padding.Right);
-				platformButton.Configuration = config;
-			}
-			else if (!OperatingSystem.IsIOSVersionAtLeast(15))
-			{
-				platformButton.ContentEdgeInsets = new UIEdgeInsets(
-					(float)top,
-					(float)padding.Left,
-					(float)bottom,
-					(float)padding.Right);
-			}
+#pragma warning disable CA1416 // TODO: 'UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later.
+#pragma warning disable CA1422 // Validate platform compatibility
+			platformButton.ContentEdgeInsets = new UIEdgeInsets(
+				(float)top,
+				(float)padding.Left,
+				(float)bottom,
+				(float)padding.Right);
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416
 		}
 	}
 }
