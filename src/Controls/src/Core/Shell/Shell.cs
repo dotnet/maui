@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets the navigation animation that occurs when a page is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
 		/// </summary>
 		/// <param name="obj">The object that modify the Shell tabs visibility.</param>
-		/// <returns>The navigation animation that occurs when a page is navigated.</returns>
+		/// <returns>The navigation animation that occurs when a page is navigated to.</returns>
 		public static PresentationMode GetPresentationMode(BindableObject obj) => (PresentationMode)obj.GetValue(PresentationModeProperty);
 
 		/// <summary>
