@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the navigation animation that occurs when a page is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
 		/// </summary>
-		/// <param name="obj">The object that modify the Shell tabs visibility.</param>
+		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
 		/// <returns>The navigation animation that occurs when a page is navigated to.</returns>
 		public static PresentationMode GetPresentationMode(BindableObject obj) => (PresentationMode)obj.GetValue(PresentationModeProperty);
 
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the navigation animation that occurs when a page is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
 		/// </summary>
-		/// <param name="obj">The object that modify the Shell tabs visibility.</param>
+		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
 		/// <returns>The navigation animation that occurs when a page is navigated.</returns>
 		public static FlyoutBehavior GetFlyoutBehavior(BindableObject obj) => (FlyoutBehavior)obj.GetValue(FlyoutBehaviorProperty);
 
@@ -212,14 +212,14 @@ namespace Microsoft.Maui.Controls
 		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen.
 		/// However, this behavior can be changed by setting the <see cref = "FlyoutBehavior" /> attached property.
 		/// </summary>
-		/// <param name="obj">The object that modify the Shell behavior used to open the flyout.</param>
+		/// <param name="obj">The object that modifies the Shell behavior used to open the flyout.</param>
 		/// <param name="value">The behavior used to open the flyout.</param>
 		public static void SetFlyoutBehavior(BindableObject obj, FlyoutBehavior value) => obj.SetValue(FlyoutBehaviorProperty, value);
 
 		/// <summary>
 		/// Gets the width of the flyout.
 		/// </summary>
-		/// <param name="obj">The object that modify the width of the flyout.</param>
+		/// <param name="obj">The object that modifies the width of the flyout.</param>
 		/// <returns>The width of the flyout.</returns>
 		public static double GetFlyoutWidth(BindableObject obj) => (double)obj.GetValue(FlyoutWidthProperty);
 
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the height of the flyout.
 		/// </summary>
-		/// <param name="obj">The object that modify the height of the flyout.</param>
+		/// <param name="obj">The object that modifies the height of the flyout.</param>
 		/// <returns>The height of the flyout.</returns>
 		public static double GetFlyoutHeight(BindableObject obj) => (double)obj.GetValue(FlyoutHeightProperty);
 
@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls
 		/// The height of the flyout can be customized by setting the Shell.FlyoutHeight attached properties to double value.
 		/// This enables scenarios such as reducing the height of the flyout so that it doesn't obscure the tab bar.
 		/// </remarks>
-		/// <param name="obj">The object that modify the height of the flyout.</param>
+		/// <param name="obj">The object that modifies the height of the flyout.</param>
 		/// <param name="value">Defines the height of the flyout.</param>
 		public static void SetFlyoutHeight(BindableObject obj, double value) => obj.SetValue(FlyoutHeightProperty, value);
 
@@ -260,14 +260,14 @@ namespace Microsoft.Maui.Controls
 		/// Controls if the navigation bar is visible when a page is presented. 
 		/// By default the value of the property is <see langword="true"/>.
 		/// </summary>
-		/// <param name="obj">The object that modify the navigation bar visibility.</param>
+		/// <param name="obj">The object that modifies the navigation bar visibility.</param>
 		/// <param name="value">true to set the navigation bar as visible; otherwise, false.</param>
 		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, value);
 
 		/// <summary>
 		/// Gets if the navigation bar has a shadow. 
 		/// </summary>
-		/// <param name="obj">The object that modify if the navigation bar has a shadow.</param>
+		/// <param name="obj">The object that modifies if the navigation bar has a shadow.</param>
 		/// <returns>Returns if the navigation bar has a shadow.</returns>
 		public static bool GetNavBarHasShadow(BindableObject obj) => (bool)obj.GetValue(NavBarHasShadowProperty);
 
@@ -275,14 +275,14 @@ namespace Microsoft.Maui.Controls
 		/// Controls whether the navigation bar has a shadow. 
 		/// By default the value of the property is <see langword="true"/> on Android, and <see langword="false"/> on other platforms.
 		/// </summary>
-		/// <param name="obj">The object that modify if the navigation bar has a shadow.</param>
+		/// <param name="obj">The object that modifies if the navigation bar has a shadow.</param>
 		/// <param name="value">Manages if the navigation bar has a shadow.</param>
 		public static void SetNavBarHasShadow(BindableObject obj, bool value) => obj.SetValue(NavBarHasShadowProperty, value);
 
 		/// <summary>
 		/// Gets the integrated search functionality in Shell.
 		/// </summary>
-		/// <param name="obj">The object that modify the Shell search functionality.</param>
+		/// <param name="obj">The object that modifies the Shell search functionality.</param>
 		/// <returns>The integrated search functionality in Shell.</returns>
 		public static SearchHandler GetSearchHandler(BindableObject obj) => (SearchHandler)obj.GetValue(SearchHandlerProperty);
 
@@ -290,14 +290,14 @@ namespace Microsoft.Maui.Controls
 		/// Enable the integrated search functionality in Shell.
 		/// Enabling it results in a search box being added at the top of the page.
 		/// </summary>
-		/// <param name="obj">The object that modify the Shell search functionality.</param>
+		/// <param name="obj">The object that modifies the Shell search functionality.</param>
 		/// <param name="handler">Defines the integrated search functionality in Shell.</param>
 		public static void SetSearchHandler(BindableObject obj, SearchHandler handler) => obj.SetValue(SearchHandlerProperty, handler);
 
 		/// <summary>
 		/// Gets the tabs visibility in Shell.
 		/// </summary>
-		/// <param name="obj">The object that modify the Shell tabs visibility.</param>
+		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
 		/// <returns>true if the tab bar is visible; otherwise, false.</returns>
 		public static bool GetTabBarIsVisible(BindableObject obj) => (bool)obj.GetValue(TabBarIsVisibleProperty);
 
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls
 		/// The tab bar and tabs are visible in Shell applications by default. However, the tab bar can be hidden by setting the Shell.TabBarIsVisible attached property to false.
 		/// While this property can be set on a subclassed Shell object, it's typically set on any ShellContent or ContentPage objects that want to make the tab bar invisible.
 		/// </summary>
-		/// <param name="obj">The object that modify the Shell tabs visibility.</param>
+		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
 		/// <param name="value">true to set the tab bar as visible; otherwise, false.</param>
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
 
