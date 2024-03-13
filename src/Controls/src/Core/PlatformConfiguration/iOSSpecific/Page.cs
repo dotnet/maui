@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>
 		/// Sets a value that controls whether padding values are overridden with the safe area insets.
 		/// </summary>
-		/// <param name="element">The element whose safe area use behavior to set.</param>
+		/// <param name="element">The element whose safe area behavior will be set.</param>
 		/// <param name="value">The new safe area inset behavior.</param>
 		public static void SetUseSafeArea(BindableObject element, bool value)
 		{
