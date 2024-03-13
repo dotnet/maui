@@ -8,12 +8,10 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Handlers
 {
-
 	// https://docs.gtk.org/gtk3/class.ScrolledWindow.html
 
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollView>, ICrossPlatformLayout
 	{
-
 		protected override ScrollView CreatePlatformView()
 		{
 			var s = new ScrollView();
@@ -58,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			return (VirtualView as ICrossPlatformLayout).CrossPlatformArrange(bounds);
 		}
-		
+
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
@@ -66,7 +64,6 @@ namespace Microsoft.Maui.Handlers
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -94,7 +91,6 @@ namespace Microsoft.Maui.Handlers
 			if (child != platformContent)
 			{
 				platformView.Child = platformContent;
-
 			}
 		}
 
@@ -110,7 +106,6 @@ namespace Microsoft.Maui.Handlers
 			ConnectButtonEvents(platformView);
 			ConnectButtonEvents(platformView.VScrollbar);
 			ConnectButtonEvents(platformView.HScrollbar);
-
 		}
 
 		protected virtual void ConnectButtonEvents(Widget? widget)
@@ -132,7 +127,6 @@ namespace Microsoft.Maui.Handlers
 			widget.ButtonReleaseEvent -= OnNativeViewButtonReleaseEvent;
 			widget.ScrollEvent -= OnNativeViewScrollEvent;
 			widget.MotionNotifyEvent -= OnNativeViewMotionNotifyEvent;
-
 		}
 
 		protected override void DisconnectHandler(ScrollView platformView)
@@ -177,7 +171,6 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				EndScrolling();
-
 			}
 		}
 
@@ -188,17 +181,14 @@ namespace Microsoft.Maui.Handlers
 
 			if (delta != 0)
 			{
-
 				if (delta < 0 && _lastDelta > 0 || delta > 0 && _lastDelta < 0)
 				{
 					_intermediate = false;
-
 				}
 
 				_lastDelta = delta;
 				_lastscroll = new Point(args.Event.X, args.Event.Y);
 				_scrolling = true;
-
 			}
 			else
 			{
@@ -206,7 +196,6 @@ namespace Microsoft.Maui.Handlers
 				_valueChanged = false;
 				EndScrolling();
 			}
-
 		}
 
 		[GLib.ConnectBeforeAttribute]
@@ -220,7 +209,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			_intermediate = false;
 			OnScrollFinished();
-
 		}
 
 		protected virtual void OnNativeViewValueChanged(object? sender, EventArgs e)
@@ -232,18 +220,15 @@ namespace Microsoft.Maui.Handlers
 			{
 				virtualView.HorizontalOffset = adjustment.Value;
 				_valueChanged = true;
-
 			}
 
 			if (nativeView.Hadjustment == adjustment && adjustment.Value != virtualView.HorizontalOffset)
 			{
 				virtualView.VerticalOffset = adjustment.Value;
 				_valueChanged = true;
-
 			}
 
 			OnScrollFinished();
-
 		}
 
 		[MissingMapper("detect more finishing of scroll")]
@@ -257,7 +242,6 @@ namespace Microsoft.Maui.Handlers
 
 			_valueChanged = false;
 			_intermediate = true;
-
 		}
 
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
@@ -272,7 +256,6 @@ namespace Microsoft.Maui.Handlers
 
 				if (nativeView.HScrollbar?.Visible ?? false)
 					nativeView.Hadjustment.Value = request.HorizontalOffset;
-
 			}
 		}
 
@@ -280,6 +263,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler?.PlatformView is not { } platformView)
 				return;
+
 
 			switch (view.Orientation)
 			{
@@ -317,7 +301,8 @@ namespace Microsoft.Maui.Handlers
 
 					break;
 				default:
-					throw new ArgumentOutOfRangeException();
+					// remark: view.Orientation can be -1
+					return;
 			}
 
 			platformView.ScrollOrientation = view.Orientation;
@@ -329,7 +314,6 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			nativeView.HscrollbarPolicy = view.HorizontalScrollBarVisibility.ToNative();
-
 		}
 
 		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView view)
@@ -338,9 +322,6 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			nativeView.VscrollbarPolicy = view.VerticalScrollBarVisibility.ToNative();
-
 		}
-
 	}
-
 }
