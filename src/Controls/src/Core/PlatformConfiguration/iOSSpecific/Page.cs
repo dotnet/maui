@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Controls whether padding values are overridden with the safe area insets.
+		/// This iOS platform-specific controls whether padding values are overridden with the safe area insets.
 		/// </summary>
 #if MACCATALYST
 		public static readonly BindableProperty UseSafeAreaProperty = BindableProperty.Create("UseSafeArea", typeof(bool), typeof(Page), true);
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Sets a value that controls whether padding values are overridden with the safe area insets.
 		/// </summary>
 		/// <param name="element">The element whose safe area use behavior to set.</param>
-		/// <param name="value">The new safe area inset behavior.</param>
+		/// <param name="value">true to use the safe area inset behavior; otherwise, false.</param>
 		public static void SetUseSafeArea(BindableObject element, bool value)
 		{
 			element.SetValue(UseSafeAreaProperty, value);
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Sets a value that controls whether padding values are overridden with the safe area insets.
 		/// </summary>
 		/// <param name="config">The element whose safe area behavior to get.</param>
-		/// <param name="value">The new safe area inset behavior.</param>
+		/// <param name="value">true to use the safe area inset behavior; otherwise, false.</param>
 		/// <returns></returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUseSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Gets a value that indicates whether the visual indicator should hide upon returning to the home screen.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
-		/// <returns></returns>
+		/// <returns>true if the home visual indicator is hidden; otherwise, false.</returns>
 		public static bool GetPrefersHomeIndicatorAutoHidden(BindableObject element)
 		{
 			return (bool)element.GetValue(PrefersHomeIndicatorAutoHiddenProperty);
