@@ -3,10 +3,11 @@ using System.IO;
 
 namespace Microsoft.Maui.Graphics.Platform.Gtk;
 
-public static class ImageExtensions {
-
+public static class ImageExtensions
+{
 	public static string ToImageExtension(this ImageFormat imageFormat) =>
-		imageFormat switch {
+		imageFormat switch
+		{
 			ImageFormat.Bmp => "bmp",
 			ImageFormat.Png => "png",
 			ImageFormat.Jpeg => "jpeg",
@@ -15,30 +16,38 @@ public static class ImageExtensions {
 			_ => throw new ArgumentOutOfRangeException(nameof(imageFormat), imageFormat, null)
 		};
 
-	public static Gdk.Pixbuf? SaveToStream(this Cairo.ImageSurface? surface, Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1) {
+	public static Gdk.Pixbuf? SaveToStream(this Cairo.ImageSurface? surface, Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
+	{
 		if (surface == null)
 			return null;
-		try {
+		try
+		{
 			var px = surface.CreatePixbuf();
 			SaveToStream(px, stream, format, quality);
 
 			return px;
-		} catch (Exception ex) {
+		}
+		catch (Exception ex)
+		{
 			System.Diagnostics.Debug.WriteLine(ex);
 
 			return default;
 		}
 	}
 
-	public static bool SaveToStream(this Gdk.Pixbuf? pixbuf, Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1) {
+	public static bool SaveToStream(this Gdk.Pixbuf? pixbuf, Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
+	{
 		if (pixbuf == null)
 			return false;
 
-		try {
+		try
+		{
 			var puf = pixbuf.SaveToBuffer(format.ToImageExtension());
 			stream.Write(puf, 0, puf.Length);
 			puf = null;
-		} catch (Exception ex) {
+		}
+		catch (Exception ex)
+		{
 			System.Diagnostics.Debug.WriteLine(ex);
 
 			return false;
@@ -47,7 +56,9 @@ public static class ImageExtensions {
 		return true;
 	}
 
-	public static Gdk.Pixbuf? CreatePixbuf(this Cairo.ImageSurface? surface) {
+
+	public static Gdk.Pixbuf? CreatePixbuf(this Cairo.ImageSurface? surface)
+	{
 		if (surface == null)
 			return null;
 
@@ -60,18 +71,21 @@ public static class ImageExtensions {
 		var stride = surface.Stride;
 		var ncols = surface.Width;
 
-		if (BitConverter.IsLittleEndian) {
+		if (BitConverter.IsLittleEndian)
+		{
 			var row = surface.Height;
 
-			while (row-- > 0) {
+			while (row-- > 0)
+			{
 				var prevPos = n;
 				var col = ncols;
 
-				while (col-- > 0) {
+				while (col-- > 0)
+				{
 					var alphaFactor = nbytes == 4 ? 255d / surfaceData[n + 3] : 1;
-					pixData[i] = (byte) (surfaceData[n + 2] * alphaFactor + 0.5);
-					pixData[i + 1] = (byte) (surfaceData[n + 1] * alphaFactor + 0.5);
-					pixData[i + 2] = (byte) (surfaceData[n + 0] * alphaFactor + 0.5);
+					pixData[i] = (byte)(surfaceData[n + 2] * alphaFactor + 0.5);
+					pixData[i + 1] = (byte)(surfaceData[n + 1] * alphaFactor + 0.5);
+					pixData[i + 2] = (byte)(surfaceData[n + 0] * alphaFactor + 0.5);
 
 					if (nbytes == 4)
 						pixData[i + 3] = surfaceData[n + 3];
@@ -82,18 +96,22 @@ public static class ImageExtensions {
 
 				n = prevPos + stride;
 			}
-		} else {
+		}
+		else
+		{
 			var row = surface.Height;
 
-			while (row-- > 0) {
+			while (row-- > 0)
+			{
 				var prevPos = n;
 				var col = ncols;
 
-				while (col-- > 0) {
+				while (col-- > 0)
+				{
 					var alphaFactor = nbytes == 4 ? 255d / surfaceData[n + 3] : 1;
-					pixData[i] = (byte) (surfaceData[n + 1] * alphaFactor + 0.5);
-					pixData[i + 1] = (byte) (surfaceData[n + 2] * alphaFactor + 0.5);
-					pixData[i + 2] = (byte) (surfaceData[n + 3] * alphaFactor + 0.5);
+					pixData[i] = (byte)(surfaceData[n + 1] * alphaFactor + 0.5);
+					pixData[i + 1] = (byte)(surfaceData[n + 2] * alphaFactor + 0.5);
+					pixData[i + 2] = (byte)(surfaceData[n + 3] * alphaFactor + 0.5);
 
 					if (nbytes == 4)
 						pixData[i + 3] = surfaceData[n + 0];
@@ -109,13 +127,14 @@ public static class ImageExtensions {
 		return new Gdk.Pixbuf(pixData, Gdk.Colorspace.Rgb, nbytes == 4, 8, surface.Width, surface.Height, surface.Width * nbytes, null);
 	}
 
-	public static Cairo.Pattern? CreatePattern(this Gdk.Pixbuf? pixbuf, double scaleFactor) {
+	public static Cairo.Pattern? CreatePattern(this Gdk.Pixbuf? pixbuf, double scaleFactor)
+	{
 		if (pixbuf == null)
 			return null;
 
-		using var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, (int) (pixbuf.Width * scaleFactor), (int) (pixbuf.Height * scaleFactor));
+		using var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, (int)(pixbuf.Width * scaleFactor), (int)(pixbuf.Height * scaleFactor));
 		using var context = new Cairo.Context(surface);
-		context.Scale(surface.Width / (double) pixbuf.Width, surface.Height / (double) pixbuf.Height);
+		context.Scale(surface.Width / (double)pixbuf.Width, surface.Height / (double)pixbuf.Height);
 		Gdk.CairoHelper.SetSourcePixbuf(context, pixbuf, 0, 0);
 		context.Paint();
 		surface.Flush();
@@ -127,7 +146,32 @@ public static class ImageExtensions {
 		pattern.Matrix = matrix;
 
 		return pattern;
-
 	}
 
+	public static void DrawPixbuf(this Cairo.Context context, Gdk.Pixbuf pixbuf, double x, double y, double width, double height)
+	{
+		context.Save();
+		context.Translate(x, y);
+
+		context.Scale(width / pixbuf.Width, height / pixbuf.Height);
+		Gdk.CairoHelper.SetSourcePixbuf(context, pixbuf, 0, 0);
+
+		using (var p = context.GetSource())
+		{
+			if (p is Cairo.SurfacePattern pattern)
+			{
+				if (width > pixbuf.Width || height > pixbuf.Height)
+				{
+					// Fixes blur issue when rendering on an image surface
+					pattern.Filter = Cairo.Filter.Fast;
+				}
+				else
+					pattern.Filter = Cairo.Filter.Good;
+			}
+		}
+
+		context.Paint();
+
+		context.Restore();
+	}
 }

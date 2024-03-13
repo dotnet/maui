@@ -10,7 +10,7 @@ public partial class PlatformCanvas {
 
 			Context.Save();
 
-			var shadowSurface = CreateSurface(Context);
+			var shadowSurface = Context.CreateSurface();
 
 			var shadowCtx = new Cairo.Context(shadowSurface);
 
