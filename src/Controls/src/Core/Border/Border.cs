@@ -305,7 +305,10 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == HeightProperty.PropertyName ||
 				propertyName == WidthProperty.PropertyName ||
 				propertyName == StrokeShapeProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
+				UpdateStrokeShape();
+			}
 			else if (propertyName == StrokeThicknessProperty.PropertyName)
 				UpdateStrokeShape();
 			else if (propertyName == StrokeDashArrayProperty.PropertyName)
