@@ -6,6 +6,7 @@ using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
+
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
 		protected override ImageView CreatePlatformView()
@@ -16,7 +17,13 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapAspect(IImageHandler handler, IImage image) { }
+		public static void MapAspect(IImageHandler handler, IImage image)
+		{
+			if (handler.PlatformView is not { } platformView)
+				return;
+
+			platformView.UpdateAspect(image);
+		}
 
 		[MissingMapper]
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) { }
@@ -26,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static async Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
-			if (handler.PlatformView == null)
+			if (handler.PlatformView is not { })
 				return;
 
 			await handler.SourceLoader.UpdateImageSourceAsync();
@@ -43,4 +50,5 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 	}
+
 }

@@ -17,7 +17,7 @@ using PlatformImage = Microsoft.Maui.Platform.MauiImageSource;
 using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif GTK
 using PlatformImage = Gdk.Pixbuf;
-using PlatformView = Gtk.Image;
+using PlatformView = Microsoft.Maui.Platform.ImageView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 using PlatformView = System.Object;
