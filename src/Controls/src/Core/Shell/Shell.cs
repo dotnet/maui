@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Defines the navigation animation that occurs when a page is navigated to with the <see cref="GoToAsync(ShellNavigationState, bool)"/> method.
+		/// Also controls if the content is presented in a modal way or not.
 		/// </summary>
 		public static readonly BindableProperty PresentationModeProperty = BindableProperty.CreateAttached("PresentationMode", typeof(PresentationMode), typeof(Shell), PresentationMode.Animated);
 
