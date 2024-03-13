@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 using Microsoft.Maui.Platform;
+using PlatformView = Microsoft.Maui.Platform.ImageView;
 
 namespace Microsoft.Maui
 {
@@ -16,7 +17,9 @@ namespace Microsoft.Maui
 		{ }
 
 		public static void UpdateAspect(this ImageView imageView, IImage image)
-		{ }
+		{
+			imageView.Aspect = image.Aspect;
+		}
 
 		public static void UpdateIsAnimationPlaying(this ImageView imageView, IImageSourcePart image)
 		{
@@ -39,11 +42,10 @@ namespace Microsoft.Maui
 				imageView.Image = p;
 				imageView.UpdateIsAnimationPlaying(image);
 			}, cancellationToken);
-
 		}
 
 		public static async Task<IImageSourceServiceResult<Gdk.Pixbuf>?> UpdateSourceAsync(this IImageSourcePart? part,
-			Gtk.Image? image, IImageSourceServiceProvider provider, Action<Gdk.Pixbuf?> onResult, CancellationToken cancellationToken = default)
+			PlatformView? image, IImageSourceServiceProvider provider, Action<Gdk.Pixbuf?> onResult, CancellationToken cancellationToken = default)
 		{
 			if (part == null)
 				return null;
@@ -68,7 +70,6 @@ namespace Microsoft.Maui
 				if (applied)
 				{
 					onResult(pixbuf);
-
 				}
 
 				return result;
@@ -76,7 +77,6 @@ namespace Microsoft.Maui
 			catch (OperationCanceledException)
 			{
 				// no-op
-
 			}
 #pragma warning disable CS0168
 			catch (Exception ex)
@@ -122,7 +122,6 @@ namespace Microsoft.Maui
 				if (applied)
 				{
 					onResult(pixbuf);
-
 				}
 
 				events?.LoadingCompleted(applied);
@@ -137,7 +136,6 @@ namespace Microsoft.Maui
 			catch (Exception ex)
 			{
 				events?.LoadingFailed(ex);
-
 			}
 			finally
 			{
@@ -149,12 +147,10 @@ namespace Microsoft.Maui
 			}
 
 			return null;
-
 		}
 
 		public static async Task<IImageSourceServiceResult<Gdk.Pixbuf>?> UpdateImageSourceAsync(this IImageSource? imageSource, float scale, IImageSourceServiceProvider provider, Action<Gdk.Pixbuf?> onResult, CancellationToken cancellationToken = default)
 		{
-
 			if (imageSource == null)
 				return null;
 
@@ -168,7 +164,6 @@ namespace Microsoft.Maui
 				if (applied)
 				{
 					onResult(pixbuf);
-
 				}
 
 				return result;
@@ -180,11 +175,9 @@ namespace Microsoft.Maui
 			catch (Exception)
 			{
 				// no-op
-
 			}
 
 			return null;
-
 		}
 
 		public static TempFile? TempFileFor(this Gdk.Pixbuf? p, ImageFormat format = ImageFormat.Png)
@@ -198,7 +191,6 @@ namespace Microsoft.Maui
 
 			return tmpfile;
 		}
-
 	}
 
 }
