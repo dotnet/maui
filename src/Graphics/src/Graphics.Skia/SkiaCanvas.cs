@@ -595,9 +595,10 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (skPath is null)
 			{
 				skPath = path.AsSkiaPath();
-				skPath.FillType = fillType;
 				path.PlatformPath = skPath;
 			}
+
+			skPath.FillType = fillType;
 
 			return skPath;
 		}
