@@ -1,7 +1,7 @@
 namespace Microsoft.Maui.Platform
 {
 
-	// https://docs.gtk.org/gtk3/class.Imgage.html 
+	// https://docs.gtk.org/gtk3/class.Image.html 
 
 	// GtkImage has nothing like Aspect; maybe an ownerdrawn class is needed 
 	// could be: https://docs.gtk.org/gtk3/class.DrawingArea.html
