@@ -68,7 +68,7 @@
     </style>
 
     <style name="MauiAlertDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-      <item name="colorPrimary">?attr/colorOnSurface</item>
+      <item name="colorPrimary">@color/colorPrimary</item>
     </style>
 
   <!-- 
