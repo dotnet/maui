@@ -240,9 +240,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Sets the height of the flyout.
+		/// </summary>
+		/// <remarks>
 		/// The height of the flyout can be customized by setting the Shell.FlyoutHeight attached properties to double value.
 		/// This enables scenarios such as reducing the height of the flyout so that it doesn't obscure the tab bar.
-		/// </summary>
+		/// </remarks>
 		/// <param name="obj">The object that modify the height of the flyout.</param>
 		/// <param name="value">Defines the height of the flyout.</param>
 		public static void SetFlyoutHeight(BindableObject obj, double value) => obj.SetValue(FlyoutHeightProperty, value);
@@ -250,7 +252,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets if the navigation bar is visible when a page is presented. 
 		/// </summary>
-		/// <param name="obj">The object that modify the navigation bar visibility.</param>
+		/// <param name="obj">The object that that gets the navigation bar visibility.</param>
 		/// <returns>true if the navigation bar is visible; otherwise, false.</returns>
 		public static bool GetNavBarIsVisible(BindableObject obj) => (bool)obj.GetValue(NavBarIsVisibleProperty);
 
