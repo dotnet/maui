@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls
 		/// Sets the width of the flyout.
 		/// This enables scenarios such as expanding the flyout across the entire screen.
 		/// </summary>
-		/// <param name="obj">The object that modify the width of the flyout.</param>
+		/// <param name="obj">The object that modifies the width of the flyout.</param>
 		/// <param name="value">Defines the width of the flyout.</param>
 		public static void SetFlyoutWidth(BindableObject obj, double value) => obj.SetValue(FlyoutWidthProperty, value);
 
