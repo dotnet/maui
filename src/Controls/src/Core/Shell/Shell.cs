@@ -1363,8 +1363,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Setting the FlyoutHeaderBehavior to CollapseOnScroll collapses the flyout as scrolling occurs. 
-		/// The other valid FlyoutHeaderBehavior values are Default, Fixed, and Scroll (scroll with the menu items).
+		/// Gets or sets the header behavior for the flyout.
 		/// </summary>
 		public FlyoutHeaderBehavior FlyoutHeaderBehavior
 		{
@@ -1930,7 +1929,8 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlyoutContent), typeof(object), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentChanging);
 
 		/// <summary>
-		/// The flyout content can be defined by setting a DataTemplate.
+		/// The flyout content can be defined by setting a <see cref = "DataTemplate" />.
+		/// A flyout header can optionally be displayed above your flyout content, and a flyout footer can optionally be displayed below your flyout content.
 		/// </summary>
 		public static readonly BindableProperty FlyoutContentTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutContentTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentTemplateChanging);
