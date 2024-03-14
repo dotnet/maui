@@ -17,6 +17,8 @@ public class Issue10947 : _IssuesUITest
     [Test]
 	public void CollectionViewHeaderShouldNotScroll()
 	{
+		this.IgnoreIfPlatform(TestDevice.Windows, "GetRect not implemented on Windows");
+
 		var headerEntry = App.WaitForElement(HeaderEntry);
 		var headerLocation = headerEntry.GetRect();
         var footerEntry = App.WaitForElement(FooterEntry);

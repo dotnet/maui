@@ -32,6 +32,11 @@ public class LabelUITests : _ViewUITests
 			Assert.Ignore("Click (x, y) pointer type mouse is not implemented.");
 		}
 
+		if (Device == TestDevice.Windows)
+		{
+			Assert.Ignore("GetRect not implemented on Windows.");
+		}
+
 		var remote = new EventViewContainerRemote(UITestContext, Test.FormattedString.SpanTapped);
 		remote.GoTo();
 

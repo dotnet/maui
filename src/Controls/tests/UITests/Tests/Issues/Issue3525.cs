@@ -25,6 +25,11 @@ public class Issue3525 : _IssuesUITest
 			Assert.Ignore("Click (x, y) pointer type mouse is not implemented.");
 		}
 
+		if (Device == TestDevice.Windows)
+		{
+			Assert.Ignore("GetRect not implemented on Windows.");
+		}
+		
 		var label = App.WaitForElement(kLabelTestAutomationId);
 		var location = label.GetRect();
 
