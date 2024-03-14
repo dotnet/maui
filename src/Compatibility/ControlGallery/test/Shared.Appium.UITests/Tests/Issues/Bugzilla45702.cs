@@ -15,8 +15,6 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public void Issue45702Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("ClickMe");
 			RunningApp.Tap("ClickMe");
 			RunningApp.WaitForNoElement("Success");

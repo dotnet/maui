@@ -13,10 +13,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnIOS]
 		public void AppDoesntCrashWhenResettingPage()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("TapMe");
 			RunningApp.Tap("TapMe"); // Crashes the app if the issue isn't fixed
 			RunningApp.WaitForElement("TapMe");

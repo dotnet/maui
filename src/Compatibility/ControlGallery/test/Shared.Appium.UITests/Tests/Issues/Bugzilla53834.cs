@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,6 +15,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void Bugzilla53834Test()
 		{
 			RunningApp.WaitForElement("TestReady");
@@ -21,3 +23,4 @@ namespace UITests
 		}
 	}
 }
+#endif

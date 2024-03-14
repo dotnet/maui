@@ -13,10 +13,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnIOS]
 		public void Bugzilla49069Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("lblLong");
 		}
 	}

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -20,8 +21,6 @@ namespace UITests
 		[Category(UITestCategories.ListView)]
 		public void LabelsInListViewTemplatesShouldBeCollected()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			RunningApp.WaitForElement(Update);
 
 			for (int n = 0; n < 10; n++)
@@ -34,3 +33,4 @@ namespace UITests
 		}
 	}
 }
+#endif

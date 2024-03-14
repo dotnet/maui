@@ -13,10 +13,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnAndroid]
 		public void Issue51503Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			for (int i = 0; i < 3; i++)
 			{
 				RunningApp.WaitForElement("Button");

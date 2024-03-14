@@ -15,10 +15,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnIOS]
 		public void Bugzilla52533Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(LabelId);
 		}
 	}

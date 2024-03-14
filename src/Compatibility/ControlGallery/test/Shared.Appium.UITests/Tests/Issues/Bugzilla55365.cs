@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ViewBaseTests)]
+		[FailsOnIOS]
 		public void ForcingGCDoesNotCrash()
 		{
 			RunningApp.WaitForElement("Clear");

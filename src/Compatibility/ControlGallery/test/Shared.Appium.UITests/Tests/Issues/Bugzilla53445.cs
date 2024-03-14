@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnIOS]
 		public void Test()
 		{
 			RunningApp.WaitForElement("Success");

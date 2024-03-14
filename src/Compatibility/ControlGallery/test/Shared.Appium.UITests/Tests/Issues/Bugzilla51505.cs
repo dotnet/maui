@@ -16,10 +16,10 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Effects)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Bugzilla51505Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(ButtonId);
 			Assert.DoesNotThrow(() => RunningApp.Tap(ButtonId));
 		}

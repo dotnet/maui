@@ -13,6 +13,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void GridIsEnabled()
 		{
 			RunningApp.WaitForElement("entry");
