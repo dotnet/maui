@@ -42,16 +42,33 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			var availableWidth = MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified
-				? int.MaxValue
-				: MeasureSpec.GetSize(widthMeasureSpec);
+			if (Icon is MauiResizeableDrawable currentIcon)
+			{
+				// if there is BOTH an icon AND text, but the text layout has NOT been measured yet,
+				// we need to measure JUST the text first to get the remaining space for the icon
+				if (Layout is null && TextFormatted?.Length() > 0)
+				{
+					// remove the icon and measure JUST the text
+					Icon = null;
+					base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 
-			var availableHeight = MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified
-				? int.MaxValue
-				: MeasureSpec.GetSize(heightMeasureSpec);
+					// restore the icon
+					Icon = currentIcon;
+				}
 
-			CalculateIconSize(availableWidth, availableHeight);
+				// determine the total client area available for BOTH the icon AND text to fit
+				var availableWidth = MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified
+					? int.MaxValue
+					: MeasureSpec.GetSize(widthMeasureSpec);
+				var availableHeight = MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified
+					? int.MaxValue
+					: MeasureSpec.GetSize(heightMeasureSpec);
 
+				// calculate the icon size based on the remaining space
+				CalculateIconSize(currentIcon, availableWidth, availableHeight);
+			}
+
+			// re-measure with both text and icon
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
@@ -71,15 +88,15 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal void CalculateIconSize(int availableWidth, int availableHeight)
+		void CalculateIconSize(MauiResizeableDrawable resizable, int availableWidth, int availableHeight)
 		{
-			// bail if the icon isn't resizeable or the text layout is not available yet
-			if (Icon is not MauiResizeableDrawable resizeable || Layout is null)
+			// bail if the text layout is not available yet, this is most likely a bug
+			if (Layout is null)
 			{
 				return;
 			}
 
-			var actual = resizeable.Drawable;
+			var actual = resizable.Drawable;
 
 			var remainingWidth = availableWidth - PaddingLeft - PaddingRight;
 			var remainingHeight = availableHeight - PaddingTop - PaddingBottom;
@@ -100,13 +117,13 @@ namespace Microsoft.Maui.Platform
 				(double)iconWidth / actual.IntrinsicWidth,
 				(double)iconHeight / actual.IntrinsicHeight);
 
-			resizeable.SetPreferredSize(
+			resizable.SetPreferredSize(
 				Math.Max(0, (int)(actual.IntrinsicWidth * ratio)),
 				Math.Max(0, (int)(actual.IntrinsicHeight * ratio)));
 
 			// trigger a layout re-calculation
 			Icon = null;
-			Icon = resizeable;
+			Icon = resizable;
 		}
 
 		bool IsIconGravityHorizontal =>
