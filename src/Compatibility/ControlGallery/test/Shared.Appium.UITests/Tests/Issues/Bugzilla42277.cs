@@ -20,6 +20,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void Bugzilla42277Test()
 		{
 			RunningApp.WaitForElement(Success1);

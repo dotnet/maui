@@ -14,10 +14,9 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Frame)]
 		[Category(UITestCategories.Gestures)]
+		[FailsOnIOS]
 		public void TapGestureFiresOnFrame()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-		
 			RunningApp.WaitForNoElement("No taps yet");
 			RunningApp.WaitForElement("TapHere");
 			RunningApp.Tap("TapHere");

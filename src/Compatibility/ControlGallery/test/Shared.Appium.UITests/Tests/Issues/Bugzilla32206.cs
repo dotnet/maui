@@ -13,10 +13,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Page)]
+		[FailsOnIOS]
 		public void Bugzilla32206Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-		
 			for (var n = 0; n < 10; n++)
 			{
 				RunningApp.WaitForElement("Push");

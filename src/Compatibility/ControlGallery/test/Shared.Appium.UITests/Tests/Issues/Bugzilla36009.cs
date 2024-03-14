@@ -13,10 +13,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.BoxView)]
+		[FailsOnAndroid("The content is not visible. The test is failing.")]
+		[FailsOnIOS]
 		public void Bugzilla36009Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows], "The content is not visible. The test is failing.");
-
 			RunningApp.WaitForElement("Victory");
 		}
 	}

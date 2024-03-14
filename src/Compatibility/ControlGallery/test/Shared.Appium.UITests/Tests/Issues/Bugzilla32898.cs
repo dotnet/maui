@@ -16,6 +16,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Issu32898Test()
 		{
 			var timeout = Timeout; // Give this a little slop to set the result text

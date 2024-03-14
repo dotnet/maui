@@ -15,10 +15,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
+		[FailsOnIOS]
 		public void SliderBinding()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			RunningApp.WaitForNoElement(Success.ToString());
 		}
 	}

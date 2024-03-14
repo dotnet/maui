@@ -14,10 +14,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnIOS]
 		public void Bugzilla35733Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("btnGo");
 			RunningApp.Tap("btnGo");
 			RunningApp.WaitForElement("WebViewTest");

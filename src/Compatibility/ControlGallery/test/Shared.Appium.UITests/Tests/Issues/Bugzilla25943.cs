@@ -17,10 +17,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
+		[FailsOnIOS]
 		public void VerifyNestedStacklayoutTapsBubble()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(InnerLayout);
 			RunningApp.Tap(InnerLayout);
 

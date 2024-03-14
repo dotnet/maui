@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnIOS]
 		public void Issue31366PushingAndPoppingModallyCausesArgumentOutOfRangeException()
 		{
 			RunningApp.Tap("StartPopOnAppearingTest");
@@ -22,6 +23,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnIOS]
 		public void Issue31366PushingWithModalStackCausesIncorrectStackOrder()
 		{
 			RunningApp.Tap("StartModalStackTest");

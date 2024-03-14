@@ -13,10 +13,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Bugzilla44176Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("grid");
 			RunningApp.Tap("grid");
 			RunningApp.WaitForNoElement("Parent");

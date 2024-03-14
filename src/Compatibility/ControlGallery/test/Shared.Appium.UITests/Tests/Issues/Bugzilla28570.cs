@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,11 +15,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnAndroid("Scroll to end not working.")]
 		public void Bugzilla28570Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android], "Scroll to end not working.");
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("Tap");
 			RunningApp.Screenshot("At test page");
 			RunningApp.Tap("Tap");
@@ -27,3 +26,4 @@ namespace UITests
 		}
 	}
 }
+#endif

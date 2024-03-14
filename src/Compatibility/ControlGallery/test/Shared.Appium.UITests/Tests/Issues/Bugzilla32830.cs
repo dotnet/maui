@@ -17,10 +17,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
+		[FailsOnAllPlatforms]
 		public void Bugzilla32830Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForNoElement(BottomLabel);
 			RunningApp.WaitForElement(Button1);
 			RunningApp.Tap(Button1);

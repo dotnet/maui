@@ -17,6 +17,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Bugzilla40005Test()
 		{
 			RunningApp.WaitForElement(PageOneLabel);

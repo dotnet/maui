@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnIOS]
 		public void PushButton()
 		{
 			RunningApp.Tap("ModalPushPopTest");

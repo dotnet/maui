@@ -1,5 +1,4 @@
-﻿/*
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,10 +15,9 @@ namespace UITests
 		[Test]
 		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.Layout)]
+		[FailsOnAllPlatforms("The sample is crashing. More information: https://github.com/dotnet/maui/issues/21204")]
 		public void Bugzilla34061Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows], "The sample is crashing. More information: https://github.com/dotnet/maui/issues/21204");
-
 			RunningApp.Screenshot("I am at Bugzilla34061 ");
 			RunningApp.WaitForElement("btnAdd");
 			RunningApp.Tap("btnAdd");
@@ -28,4 +26,3 @@ namespace UITests
 		}
 	}
 }
-*/

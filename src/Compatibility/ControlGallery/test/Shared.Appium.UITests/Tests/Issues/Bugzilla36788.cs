@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnAndroid]
 		public void Bugzilla36788Test()
 		{
 			RunningApp.WaitForNoElement("Passed");

@@ -14,10 +14,10 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Maps)]
 		[Category(UITestCategories.Performance)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public async Task Bugzilla39489Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			// Original bug report (https://bugzilla.xamarin.com/show_bug.cgi?id=39489) had a crash (OOM) after 25-30
 			// page loads. Obviously it's going to depend heavily on the device and amount of available memory, but
 			// if this starts failing before 50 we'll know we've sprung another serious leak

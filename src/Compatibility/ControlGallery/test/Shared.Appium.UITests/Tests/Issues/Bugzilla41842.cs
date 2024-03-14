@@ -1,5 +1,4 @@
-﻿/*
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -15,12 +14,10 @@ namespace UITests
 		[Test]
 		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.FlyoutPage)]
+		[FailsOnAllPlatforms("The sample is crashing. More information: https://github.com/dotnet/maui/issues/21205")]
 		public void Bugzilla41842Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows], "The sample is crashing. More information: https://github.com/dotnet/maui/issues/21205");
-
 			RunningApp.WaitForElement("Success");
 		}
 	}
 }
-*/

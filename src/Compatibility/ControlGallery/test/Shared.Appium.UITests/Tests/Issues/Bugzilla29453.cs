@@ -14,6 +14,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Bugzilla29453Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);

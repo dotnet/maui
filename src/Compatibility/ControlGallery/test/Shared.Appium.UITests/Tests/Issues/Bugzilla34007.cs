@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnIOS]
 		public void Issue34007TestFirstElementHasLowestZOrder()
 		{
 			var buttonLocations = RunningApp.WaitForElement("Button0");

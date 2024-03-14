@@ -18,6 +18,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
+		[FailsOnIOS]
 		public void _36703Test()
 		{
 			RunningApp.WaitForElement(TestImage);

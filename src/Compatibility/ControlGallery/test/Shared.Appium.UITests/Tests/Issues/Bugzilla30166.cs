@@ -16,8 +16,6 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public void Issue10222Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("PushModal");
 			RunningApp.Tap("PushModal");
 			RunningApp.WaitForElement("Back");

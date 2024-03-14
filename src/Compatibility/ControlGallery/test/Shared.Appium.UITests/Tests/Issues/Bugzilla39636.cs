@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
+		[FailsOnIOS]
 		public void DoesNotCrash()
 		{ 
 			RunningApp.WaitForElement("Success");

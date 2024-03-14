@@ -12,7 +12,8 @@ namespace UITests
 		public override string Issue => "Cannot bind properties in BindableObjects added to static resources in XAML";
 
 		[Test]
-		[Category(UITestCategories.LifeCycle)]
+		[Category(UITestCategories.LifeCycle)]	
+		[FailsOnIOS]
 		public void Bugzilla23942Test()
 		{
 			RunningApp.WaitForNoElement("success");

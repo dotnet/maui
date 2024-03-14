@@ -15,10 +15,9 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.TableView)]
+		[FailsOnIOS]
 		public void Bugzilla36559Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			RunningApp.WaitForElement("entry");
 			var result = RunningApp.WaitForElement("entry");
 			ClassicAssert.AreNotEqual(result.GetRect().Height, -1);

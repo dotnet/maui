@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 
@@ -14,10 +15,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Editor)]
+		[FailsOnIOS("Fails sometimes")]
 		public void Bugzilla35736Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("Bugzilla35736Editor");
 			RunningApp.EnterText("Bugzilla35736Editor", "Testig");
 			RunningApp.Tap("Bugzilla35736Button");
@@ -25,3 +25,4 @@ namespace UITests
 		}
 	}
 }
+#endif

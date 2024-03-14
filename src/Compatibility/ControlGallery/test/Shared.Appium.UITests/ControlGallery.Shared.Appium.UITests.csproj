@@ -21,4 +21,16 @@
     <Folder Include="snapshots\windows\" />
   </ItemGroup>
 
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <DefineConstants>$(DefineConstants);IOS</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
+  
 </Project>

@@ -18,10 +18,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
+		[FailsOnIOS]
 		public void MultipleTapGestures()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(TestImage);
 			RunningApp.Tap(TestImage);
 

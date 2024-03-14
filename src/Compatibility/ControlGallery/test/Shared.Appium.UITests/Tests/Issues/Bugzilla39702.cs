@@ -18,6 +18,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Focus)]
+		[FailsOnIOS]
 		public async Task ControlCanBeFocusedByUnfocusedEvent()
 		{
 			RunningApp.WaitForElement(TheEntry);

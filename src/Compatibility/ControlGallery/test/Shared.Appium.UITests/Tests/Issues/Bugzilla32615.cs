@@ -13,10 +13,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnIOS]
 		public async Task Bugzilla32615Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.Tap("btnModal");
 			RunningApp.Tap("btnPop");
 			await Task.Delay(1000);

@@ -14,10 +14,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void Bugzilla36802Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("TestReady");
 			RunningApp.Screenshot("AccessoryView partially hidden test");
 		}

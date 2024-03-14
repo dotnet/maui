@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -19,8 +20,6 @@ namespace UITests
 		[Category(UITestCategories.TabbedPage)]
 		public void TabbedModalNavigation()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			RunningApp.WaitForElement(Page2);
 			RunningApp.Tap(Page2);
 			RunningApp.WaitForElement(Push);
@@ -31,3 +30,4 @@ namespace UITests
 		}
 	}
 }
+#endif

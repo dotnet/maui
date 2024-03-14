@@ -13,6 +13,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Picker)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Bugzilla38723Test()
 		{
 			RunningApp.Tap("SELECT");

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -20,8 +21,6 @@ namespace UITests
 		[Category(UITestCategories.ListView)]
 		public void Bugzilla41600Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(BtnScrollToNonExistentItem);
 			RunningApp.WaitForElement(BtnScrollToExistentItem);
 
@@ -33,3 +32,4 @@ namespace UITests
 		}
 	}
 }
+#endif

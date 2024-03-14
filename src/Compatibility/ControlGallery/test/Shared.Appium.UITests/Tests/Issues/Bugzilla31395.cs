@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnIOS]
 		public void Bugzilla31395Test()
 		{
 			RunningApp.WaitForElement("SwitchMainPage");

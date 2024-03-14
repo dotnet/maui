@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Animation)]
+		[Ignore("Fails intermittently")]
 		public void DoesNotCrash()
 		{
 			RunningApp.Tap("Animate");

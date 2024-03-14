@@ -14,10 +14,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
+		[FailsOnIOS]
 		public void Bugzilla29128Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("SliderId");
 			RunningApp.Screenshot("Slider and button should be centered");
 		}
