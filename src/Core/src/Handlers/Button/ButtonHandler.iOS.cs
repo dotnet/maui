@@ -52,8 +52,8 @@ namespace Microsoft.Maui.Handlers
 		//TODO: make this public on NET8
 		internal static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			//If this is a Mac optimized interface
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+			// Use UIButton.Configuration for iOS 15+
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
 				if (button?.Background is Paint paint)
@@ -104,8 +104,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			//If this is a Mac optimized interface
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+			// Use UIButton.Configuration for iOS 15+
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
 				if (button?.TextColor != null && handler.PlatformView != null)
