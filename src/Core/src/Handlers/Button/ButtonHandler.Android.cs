@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Handlers
 
 				button.Icon = platformImage is null
 					? null
-					: new MauiMaterialButton.MauiResizeableDrawable(platformImage);
+					: new MauiMaterialButton.MauiResizableDrawable(platformImage);
 			}
 		}
 	}

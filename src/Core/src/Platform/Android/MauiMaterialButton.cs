@@ -25,14 +25,12 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		internal MauiResizeableDrawable? ResizeableIcon => Icon as MauiResizeableDrawable;
-
 		public override int IconGravity
 		{
 			get => base.IconGravity;
 			set
 			{
-				// Intercept the grvity value and set the flag if it's bottom.
+				// Intercept the gravity value and set the flag if it's bottom.
 				ForceBottomIconGravity = value == IconGravityBottom;
 				base.IconGravity = ForceBottomIconGravity ? IconGravityTop : value;
 			}
@@ -42,7 +40,7 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (Icon is MauiResizeableDrawable currentIcon)
+			if (Icon is MauiResizableDrawable currentIcon)
 			{
 				// if there is BOTH an icon AND text, but the text layout has NOT been measured yet,
 				// we need to measure JUST the text first to get the remaining space for the icon
@@ -88,7 +86,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void CalculateIconSize(MauiResizeableDrawable resizable, int availableWidth, int availableHeight)
+		void CalculateIconSize(MauiResizableDrawable resizable, int availableWidth, int availableHeight)
 		{
 			// bail if the text layout is not available yet, this is most likely a bug
 			if (Layout is null)
@@ -147,9 +145,9 @@ namespace Microsoft.Maui.Platform
 			return layoutHeight;
 		}
 
-		internal class MauiResizeableDrawable : LayerDrawable
+		internal class MauiResizableDrawable : LayerDrawable
 		{
-			public MauiResizeableDrawable(Drawable drawable)
+			public MauiResizableDrawable(Drawable drawable)
 				: base([drawable])
 			{
 				PaddingMode = (int)LayerDrawablePaddingMode.Stack;
