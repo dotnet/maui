@@ -28,6 +28,10 @@ function Write-Both {
     }
 }
 
+if (!$Solution) {
+    $Solution = Get-Location
+}
+
 if (!(Test-Path $Solution)) {
     Write-Error "The specified solution path '$Solution' does not exist."
     exit 1
