@@ -3,36 +3,79 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 x:Class="Maui.Controls.Sample.Issues.Issue18242"
 			 Title="Issue 18242">
-	<VerticalStackLayout
-		Padding="12">
-		<Label
-			AutomationId="WaitForStubControl"
-			Text="1. The image must adapt to the size of the Button and be in the position determined by the ContentLayout property."/>
-		<Label 
-			Text="Button with Height"/>
-		<Button
-			HeightRequest="50"
-			ImageSource="dotnet_bot.png"
-			ContentLayout="Left,10"
-			Text="Button"/>
-		<Label 
-			Text="Button without Height"/>
-		<Button
-			ImageSource="dotnet_bot.png"
-			ContentLayout="Left,10"
-			Text="Button"/>
-		<Label 
-			Text="2. The image must adapt to the size of the ImageButton."/>
-		<Label 
-			Text="ImageButton with Height"/>
-		<ImageButton 
-			HeightRequest="30" 
-			WidthRequest="50" 
-			Source="dotnet_bot.png"/>
-		<Label 
-		   Text="ImageButton without Height"/>
-		<ImageButton 
-		   WidthRequest="50" 
-		   Source="dotnet_bot.png"/>
-	</VerticalStackLayout>
+    <Grid
+        ColumnDefinitions="*,*">
+        <VerticalStackLayout
+		    Padding="12"
+            Grid.Column="0">
+            <Label
+			    AutomationId="WaitForStubControl"
+			    Text="1. The image must adapt to the size of the Button and be in the position determined by the ContentLayout property."/>
+            <Label 
+			    Text="Button with Height"/>
+            <Button
+			    HeightRequest="50"
+			    ImageSource="dotnet_bot.png"
+			    ContentLayout="Left,10"
+			    Text="Button"/>
+            <Label 
+			    Text="Button without Height"/>
+            <Button
+			    ImageSource="dotnet_bot.png"
+			    ContentLayout="Left,10"
+			    Text="Button"/>
+            <Label 
+			    Text="2. The image must adapt to the size of the ImageButton."/>
+            <Label 
+			    Text="ImageButton with Height"/>
+            <ImageButton 
+			    HeightRequest="30" 
+			    WidthRequest="50" 
+			    Source="dotnet_bot.png"/>
+            <Label 
+		       Text="ImageButton without Height"/>
+            <ImageButton 
+		       WidthRequest="50" 
+		       Source="dotnet_bot.png"/>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout
+            Padding="12"
+            Grid.Column="1">
+            <Label 
+                Text="3. Font image source should not be stretched on button with height requested."/>
+            <Button
+                FontSize="18"
+                HeightRequest="60"
+                HorizontalOptions="Fill"
+                Text="Button with height request set"
+                TextTransform="Uppercase">
+                <Button.ImageSource>
+                    <FontImageSource Glyph="A" />
+                </Button.ImageSource>
+            </Button>
+            <Label
+                Text="4. Font image source should not be stretched on button without height requested."/>
+            <Button
+                 FontSize="18"
+                 HorizontalOptions="Fill"
+                 Text="Button without height request"
+                 TextTransform="Uppercase">
+                <Button.ImageSource>
+                    <FontImageSource Glyph="A" />
+                </Button.ImageSource>
+            </Button>
+            <Label
+                Text="5. Button without height request should resize to font image source size."/>
+            <Button
+                 FontSize="18"
+                 HorizontalOptions="Fill"
+                 Text="Button without height request, resize to font image"
+                 TextTransform="Uppercase">
+                <Button.ImageSource>
+                    <FontImageSource Glyph="A" Size="60"/>
+                </Button.ImageSource>
+            </Button>
+        </VerticalStackLayout>
+    </Grid>
 </ContentPage>
