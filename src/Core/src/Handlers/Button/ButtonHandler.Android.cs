@@ -123,7 +123,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override void PlatformArrange(Rect frame)
 		{
+			// The TextView might need an additional measurement pass at the final size
 			this.PrepareForTextViewArrange(frame);
+
 			base.PlatformArrange(frame);
 		}
 
