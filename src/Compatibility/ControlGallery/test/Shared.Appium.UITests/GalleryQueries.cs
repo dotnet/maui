@@ -22,7 +22,7 @@
 		public const string ScrollViewGallery = "ScrollView Gallery";
 		public const string SearchBarGallery = "SearchBar Gallery";
 		public const string SliderGallery = "Slider Gallery";
-		public const string StepperGallery = "tepper Gallery";
+		public const string StepperGallery = "Stepper Gallery";
 		public const string SwitchGallery = "Switch Gallery";
 		public const string TimePickerGallery = "TimePicker Gallery";
 		public const string WebViewGallery = "WebView Gallery";
