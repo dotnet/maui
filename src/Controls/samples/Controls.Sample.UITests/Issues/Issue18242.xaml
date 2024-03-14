@@ -49,31 +49,34 @@
                 HeightRequest="60"
                 HorizontalOptions="Fill"
                 Text="Button with height request set"
-                TextTransform="Uppercase">
+                TextTransform="Uppercase"
+                FontFamily="OpenSansRegular">
                 <Button.ImageSource>
-                    <FontImageSource Glyph="A" />
+                    <FontImageSource Glyph="A" Color="Black" FontFamily="OpenSansRegular"/>
                 </Button.ImageSource>
             </Button>
             <Label
                 Text="4. Font image source should not be stretched on button without height requested."/>
             <Button
-                 FontSize="18"
-                 HorizontalOptions="Fill"
-                 Text="Button without height request"
-                 TextTransform="Uppercase">
+                FontSize="18"
+                HorizontalOptions="Fill"
+                Text="Button without height request"
+                TextTransform="Uppercase"
+                FontFamily="OpenSansRegular">
                 <Button.ImageSource>
-                    <FontImageSource Glyph="A" />
+                    <FontImageSource Glyph="A" Color="Black" FontFamily="OpenSansRegular"/>
                 </Button.ImageSource>
             </Button>
             <Label
                 Text="5. Button without height request should resize to font image source size."/>
             <Button
-                 FontSize="18"
-                 HorizontalOptions="Fill"
-                 Text="Button without height request, resize to font image"
-                 TextTransform="Uppercase">
+                FontSize="18"
+                HorizontalOptions="Fill"
+                Text="Button without height request, resize to font image"
+                TextTransform="Uppercase"
+                FontFamily="OpenSansRegular">
                 <Button.ImageSource>
-                    <FontImageSource Glyph="A" Size="60"/>
+                    <FontImageSource Glyph="A" Size="60" Color="Black" FontFamily="OpenSansRegular"/>
                 </Button.ImageSource>
             </Button>
         </VerticalStackLayout>
