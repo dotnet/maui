@@ -18,10 +18,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void ListViewsWithManyElementsPerformanceCheck()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(InstructionsId);
 			RunningApp.WaitForElement(ConstructorCountId);
 			RunningApp.WaitForElement(TimeId);

@@ -17,10 +17,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void _57114BothTypesOfGesturesFire()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForNoElement(Testing);
 			RunningApp.Tap(ViewAutomationId);
 			RunningApp.WaitForNoElement(Success);

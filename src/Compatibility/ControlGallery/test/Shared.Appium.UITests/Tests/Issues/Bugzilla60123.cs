@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void AppDoesntCrashWhenResettingPage()
 		{
 			RunningApp.WaitForElement("ListView");

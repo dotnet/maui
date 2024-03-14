@@ -14,10 +14,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void Bugzilla57674Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			RunningApp.Screenshot("Initial Status");
 			RunningApp.WaitForElement("IssueListView");
 			RunningApp.Tap("IssueButton");

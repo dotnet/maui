@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -16,13 +17,13 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void AppDoesntCrashWhenResettingPage()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(BtnAdd);
 			RunningApp.Tap(BtnAdd);
 			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }
+#endif

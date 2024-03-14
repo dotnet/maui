@@ -15,10 +15,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void Bugzilla55745Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(ButtonId);
 			RunningApp.Tap(ButtonId);
 			RunningApp.Tap(ButtonId);

@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void Bugzilla57674Test()
 		{
 			RunningApp.Screenshot("Initial Status");

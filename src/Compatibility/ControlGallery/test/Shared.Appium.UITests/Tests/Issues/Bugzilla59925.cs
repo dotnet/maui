@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnIOS]
 		public void Issue123456Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

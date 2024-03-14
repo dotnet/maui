@@ -15,10 +15,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Image)]
+		[FailsOnIOS]
 		public void RemovingImageWithGestureFromLayoutWithinGestureHandlerDoesNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(ImageId);
 			RunningApp.Tap(ImageId);
 		}

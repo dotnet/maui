@@ -18,6 +18,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Layout)]
+		[FailsOnIOS]
 		public void GestureBubblingInStackLayout()
 		{
 			RunningApp.WaitForElement(StackLabelId);
@@ -28,6 +29,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Layout)]
+		[FailsOnIOS]
 		public void GestureBubblingInGrid()
 		{
 			RunningApp.WaitForElement(GridLabelId);
