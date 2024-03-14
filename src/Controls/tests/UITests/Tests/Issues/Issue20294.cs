@@ -14,7 +14,11 @@ public class Issue20294 : _IssuesUITest
 	[Test]
 	public void ScrollToEndDoesntCrash()
 	{
- 		App.ScrollDown("FOOTER");
-		App.ScrollUp("ONE");
+		App.ScrollTo("FOOTER");
+		App.ScrollUp("theCollectionView", ScrollStrategy.Gesture, 0.5);
+		App.ScrollDown("theCollectionView", ScrollStrategy.Gesture, 0.5);
+		App.ScrollDown("theCollectionView", ScrollStrategy.Gesture, 0.5);
+		App.ScrollUp("theCollectionView", ScrollStrategy.Gesture, 0.5);
+		App.ScrollDown("theCollectionView", ScrollStrategy.Gesture, 0.5);
 	}
 }
