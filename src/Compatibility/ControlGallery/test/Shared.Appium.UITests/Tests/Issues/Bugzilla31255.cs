@@ -18,7 +18,7 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public async Task Bugzilla31255Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows], "The sample is crashing.");
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows], "The sample is crashing. More information: https://github.com/dotnet/maui/issues/21206");
 
 			RunningApp.Screenshot("I am at Bugzilla 31255");
 			await Task.Delay(5000);

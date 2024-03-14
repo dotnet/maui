@@ -17,7 +17,7 @@ namespace UITests
 		[Category(UITestCategories.FlyoutPage)]
 		public void Bugzilla41842Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows], "The sample is crashing.");
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows], "The sample is crashing. More information: https://github.com/dotnet/maui/issues/21205");
 
 			RunningApp.WaitForElement("Success");
 		}
