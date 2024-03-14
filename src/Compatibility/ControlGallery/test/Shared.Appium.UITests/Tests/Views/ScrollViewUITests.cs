@@ -4,13 +4,16 @@ using UITest.Core;
 
 namespace UITests
 {
-	public class ScrollViewGalleryTests : ViewUITest
+	public class ScrollViewUITests : UITest
 	{
-		public ScrollViewGalleryTests(TestDevice device) : base(device) { }
+		const string ScrollViewGallery = "ScrollView Gallery";
 
-		protected override void NavigateToGallery()
+		public ScrollViewUITests(TestDevice device) : base(device) { }
+
+		protected override void FixtureSetup()
 		{
-			App.NavigateToGallery(GalleryQueries.ScrollViewGallery);
+			base.FixtureSetup();
+			App.NavigateToGallery(ScrollViewGallery);
 		}
 
 		protected override void FixtureTeardown()

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿/*
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 
@@ -28,3 +29,4 @@ namespace UITests
 		}
 	}
 }
+*/

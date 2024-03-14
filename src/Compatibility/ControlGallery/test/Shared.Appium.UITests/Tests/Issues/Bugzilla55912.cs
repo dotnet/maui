@@ -22,7 +22,7 @@ namespace UITests
 		{
 			RunningApp.WaitForElement(StackLabelId);
 			RunningApp.Tap(StackLabelId);
-			RunningApp.WaitForNoElement(Success);
+			RunningApp.WaitForElement(Success);
 		}
 
 		[Test]
@@ -32,7 +32,7 @@ namespace UITests
 		{
 			RunningApp.WaitForElement(GridLabelId);
 			RunningApp.Tap(GridLabelId);
-			RunningApp.WaitForNoElement(Success);
+			RunningApp.WaitForElement(Success);
 		}
 	}
 }

@@ -20,7 +20,6 @@ namespace UITests
 
 			RunningApp.WaitForElement("SliderId");
 			RunningApp.Screenshot("Slider and button should be centered");
-			Assert.Inconclusive("For visual review only");
 		}
 	}
 }

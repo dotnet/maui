@@ -17,6 +17,7 @@ namespace UITests
 		{
 			RunningApp.Tap("StartPopOnAppearingTest");
 			RunningApp.WaitForNoElement("If this is visible, the PopOnAppearing test has passed.");
+			RunningApp.Back();
 		}
 
 		[Test]
@@ -25,6 +26,7 @@ namespace UITests
 		{
 			RunningApp.Tap("StartModalStackTest");
 			RunningApp.WaitForNoElement("If this is visible, the modal stack test has passed.");
+			RunningApp.Back();
 		}
 	}
 }

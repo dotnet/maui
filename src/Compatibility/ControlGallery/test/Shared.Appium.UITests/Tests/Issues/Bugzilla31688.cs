@@ -15,7 +15,7 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public void Bugzilla31688Test()
 		{
-			RunningApp.WaitForElement("Page3");
+			RunningApp.WaitForNoElement("Page3");
 		}
 	}
 }

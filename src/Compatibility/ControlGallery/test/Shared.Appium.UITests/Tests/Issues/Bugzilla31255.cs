@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿/*
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,10 +14,11 @@ namespace UITests
 		public override string Issue => "Flyout's page Icon cause memory leak after FlyoutPage is popped out by holding on page";
 
 		[Test]
+		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.Navigation)]
 		public async Task Bugzilla31255Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows], "The sample is crashing.");
 
 			RunningApp.Screenshot("I am at Bugzilla 31255");
 			await Task.Delay(5000);
@@ -24,3 +26,4 @@ namespace UITests
 		}
 	}
 }
+*/

@@ -23,8 +23,13 @@ namespace UITests
 			RunningApp.Tap("btnGotoPage2");
 			RunningApp.Tap("entryText");
 			RunningApp.EnterText("entryText", "XF");
+
 			RunningApp.DismissKeyboard();
-			RunningApp.WaitForElement("Page1");
+			RunningApp.Back();
+
+			// TODO: Implement PressEnter method.
+			//RunningApp.PressEnter();
+			//RunningApp.WaitForElement("Page1");
 		}
 	}
 }

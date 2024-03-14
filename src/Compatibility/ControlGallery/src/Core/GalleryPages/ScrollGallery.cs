@@ -30,9 +30,9 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 			var btn = new Button { Text = "Scroll to 100" };
 			var btn4 = new Button { Text = "Scroll to 100 no anim" };
-			var btn1 = new Button { Text = "Start" };
-			var btn2 = new Button { Text = "Center" };
-			var btn3 = new Button { Text = "End" };
+			var btn1 = new Button { AutomationId = "Start", Text = "Start" };
+			var btn2 = new Button { AutomationId = "Center", Text = "Center" };
+			var btn3 = new Button { AutomationId = "End", Text = "End" };
 			var btn7 = new Button { Text = "Toggle Scroll Bar Visibility", WidthRequest = 120 };
 			var btn6 = new Button { Text = "MakeVisible", HorizontalOptions = LayoutOptions.CenterAndExpand };
 			var btn8 = new Button { Text = "Toggle Orientation", WidthRequest = 120 };

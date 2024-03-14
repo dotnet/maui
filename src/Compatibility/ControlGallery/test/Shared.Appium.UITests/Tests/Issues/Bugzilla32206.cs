@@ -9,7 +9,7 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "ContextActions cause memory leak: Page is never destroyed\"";
+		public override string Issue => "ContextActions cause memory leak: Page is never destroyed";
 
 		[Test]
 		[Category(UITestCategories.Page)]
