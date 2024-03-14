@@ -95,8 +95,12 @@ namespace UITest.Appium
 
 			if (_app.GetTestDevice() == TestDevice.Windows)
 			{
-				CloseApp(parameters);
-				_app.Driver.ActivateApp(_app.GetAppId());
+				if (!string.IsNullOrEmpty(_app.Driver.CurrentWindowHandle))
+				{
+					_app.Driver.CloseApp();
+				}
+				
+				_app.Driver.LaunchApp();
 			}
 			else
 			{
@@ -112,7 +116,15 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			_app.Driver.TerminateApp(_app.GetAppId());
+			if (_app.GetTestDevice() == TestDevice.Windows)
+			{
+				if (!string.IsNullOrEmpty(_app.Driver.CurrentWindowHandle))
+				{
+					_app.Driver.CloseApp();
+				}
+			}
+			else
+				_app.Driver.TerminateApp(_app.GetAppId());
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
