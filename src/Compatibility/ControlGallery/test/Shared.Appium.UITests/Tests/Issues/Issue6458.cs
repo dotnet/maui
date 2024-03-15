@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 
@@ -16,8 +17,6 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public void Issue6458Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("IssuePageLabel");
 			var element = RunningApp.WaitForElement("banktitleicon");
 
@@ -29,3 +28,4 @@ namespace UITests
 		}
 	}
 }
+#endif

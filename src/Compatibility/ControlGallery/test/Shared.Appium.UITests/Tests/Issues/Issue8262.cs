@@ -13,9 +13,12 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Image)]
+		[Category(UITestCategories.LifeCycle)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void ScrollingQuicklyOnCollectionViewDoesntCrashOnDestroyedImage()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement("ScrollMe");
 			App.ScrollDown("ScrollMe", ScrollStrategy.Gesture, swipeSpeed: 20000);

@@ -13,9 +13,11 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Button)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void ImageShouldLayoutOnTopOfButton()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement("ClickMe");
 			RunningApp.Tap("ClickMe");

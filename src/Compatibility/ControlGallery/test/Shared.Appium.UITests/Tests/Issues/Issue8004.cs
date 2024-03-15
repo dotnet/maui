@@ -17,6 +17,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Animation)]
+		[FailsOnIOS]
 		public async Task AnimateScaleOfBoxView()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Windows]);

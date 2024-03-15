@@ -13,9 +13,10 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.Button)]
+		[FailsOnIOS]
 		public void Issue6705Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			for (var i = 1; i < 6; i++)
 			{

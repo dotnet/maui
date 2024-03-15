@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,10 +20,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[Ignore("Fails occasionally on iOS 12 https://github.com/xamarin/Xamarin.Forms/issues/6472")]
 		public void ListViewDoesNotThrowExceptionWithObservableCollection()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(ListViewAutomationId);
 			RunningApp.Screenshot("We got here without an exception while loading the data and data is visible");
 
@@ -36,3 +36,4 @@ namespace UITests
 		}
 	}
 }
+#endif

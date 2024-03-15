@@ -15,8 +15,6 @@ namespace UITests
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderDoesNotBreakIndexes()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("entryInsert");
 			RunningApp.Tap("entryInsert");
 			RunningApp.ClearText("entryInsert");

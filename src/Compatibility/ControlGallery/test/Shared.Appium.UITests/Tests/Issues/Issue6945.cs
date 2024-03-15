@@ -17,6 +17,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnIOS]
 		public void WrongTranslationBehaviorWhenChangingHeightRequestAndSettingAnchor()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

@@ -13,9 +13,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.RefreshView)]
+		[FailsOnAndroid]
 		public async Task RefreshingListViewCrashesWhenDisposedTest()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			await Task.Delay(500);
 			RunningApp.WaitForElement("Success");

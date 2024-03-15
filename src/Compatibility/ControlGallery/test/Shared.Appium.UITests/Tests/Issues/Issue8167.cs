@@ -15,10 +15,9 @@ namespace UITests
 		public override string Issue => "[Bug] XF 4.3 UWP Crash - Element not found";
 
 		[Test]
+		[FailsOnIOS]
 		public void ThreadpoolBindingUpdateShouldNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(Run);
 			RunningApp.Tap(Run);
 			RunningApp.WaitForNoElement(Success);

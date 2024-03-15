@@ -13,9 +13,10 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.Button)]
+		[FailsOnIOS]
 		public void NullPointerExceptionOnFastLabelTextColorChange()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement("Click me");
 			RunningApp.Tap("Click me");

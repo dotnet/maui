@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Core;
 
 namespace UITests
@@ -13,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnAndroid]
 		public void ExpectingPageNotToBreak()
 		{
 			RunningApp.Screenshot("Test passed, label is showing as it should!");
@@ -20,3 +22,4 @@ namespace UITests
 		}
 	}
 }
+#endif

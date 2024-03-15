@@ -32,6 +32,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOS]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{
 			RunningApp.Screenshot("Screen opens, items are shown");

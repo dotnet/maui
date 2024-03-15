@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -15,11 +16,10 @@ namespace UITests
 		[Category(UITestCategories.ListView)]
 		public void RefreshControlTurnsOffSuccessfully()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForNoElement("If you see the refresh circle this test has failed");
 
 			RunningApp.WaitForNoElement("RefreshControl");
 		}
 	}
 }
+#endif

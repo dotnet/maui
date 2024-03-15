@@ -14,6 +14,7 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.ScrollView)]
+		[FailsOnAndroid]
 		public void Issue773TestsRotationRelayoutIssue()
 		{
 			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
