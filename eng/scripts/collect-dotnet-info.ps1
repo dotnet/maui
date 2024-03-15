@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory = $true)]
+    [Parameter(ValueFromPipeline=$true)]
     [string]
     $Solution
 )
