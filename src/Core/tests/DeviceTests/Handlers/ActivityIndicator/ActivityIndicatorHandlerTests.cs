@@ -37,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(activityIndicator, expected, () => activityIndicator.Background = new SolidPaintStub(expected), nameof(activityIndicator.Background));
 		}
 
-
+#if WINDOWS
 		[Theory(DisplayName = "Foreground Updates Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
@@ -54,5 +54,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateHasColor(activityIndicator, expected, () => activityIndicator.Color = expected, nameof(activityIndicator.Color));
 		}
+#endif
 	}
 }
