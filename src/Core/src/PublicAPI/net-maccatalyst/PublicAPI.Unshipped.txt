@@ -26,6 +26,7 @@ Microsoft.Maui.ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint,
 Microsoft.Maui.ICrossPlatformLayoutBacking
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
+Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminated! webProcessTerminated) -> void
 Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.KeyboardAcceleratorModifiers.Alt = 4 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.KeyboardAcceleratorModifiers.Cmd = 8 -> Microsoft.Maui.KeyboardAcceleratorModifiers
@@ -45,11 +46,14 @@ Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.get -> Microsoft.Maui.ICros
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.MauiView.InvalidateConstraintsCache() -> void
 Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double heightConstraint) -> bool
+Microsoft.Maui.Platform.MauiWKWebView.ContentProcessDidTerminate(WebKit.WKWebView! webView) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.Platform.MauiScrollView
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView() -> void
 Microsoft.Maui.Platform.KeyboardAutoManagerScroll
 Microsoft.Maui.SoftInputExtensions
+Microsoft.Maui.WebProcessTerminated
+Microsoft.Maui.WebProcessTerminated.Sender.get -> WebKit.WKWebView!
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.ButtonHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void

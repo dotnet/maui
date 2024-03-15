@@ -62,6 +62,8 @@ Microsoft.Maui.Controls.InputView.FontSize.get -> double
 Microsoft.Maui.Controls.InputView.FontSize.set -> void
 Microsoft.Maui.Controls.InputView.SelectionLength.get -> int
 Microsoft.Maui.Controls.InputView.SelectionLength.set -> void
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.Sender.get -> WebKit.WKWebView!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
@@ -72,6 +74,10 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+Microsoft.Maui.Controls.WebView.ProcessTerminated -> System.EventHandler<Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs>
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.WebViewProcessTerminatedEventArgs() -> void
+override Microsoft.Maui.Controls.Handlers.Items.TemplatedCell.PrepareForReuse() -> void
 override Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.LoadView() -> void
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -107,7 +113,6 @@ Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> b
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
 Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
 Microsoft.Maui.Controls.VisualElement.~VisualElement() -> void
-override Microsoft.Maui.Controls.Handlers.Items.TemplatedCell.PrepareForReuse() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillLayoutSubviews() -> void
 override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.LayoutSubviews() -> void
@@ -131,6 +136,7 @@ Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 ~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
 ~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
+~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewController.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
@@ -217,7 +223,6 @@ Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> UIKit.UIView!
 ~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.get -> bool
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.CursorPosition.get -> int
@@ -230,7 +235,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.CursorPosition.get -> int
@@ -243,7 +247,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.CursorPosition.get -> int
@@ -256,4 +259,3 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
-
