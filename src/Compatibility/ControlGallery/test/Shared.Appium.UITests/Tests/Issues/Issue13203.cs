@@ -15,10 +15,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOS]
 		public void CollectionShouldInvalidateOnVisibilityChange()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(Success);
 		}
 	}

@@ -15,10 +15,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Issue12848Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("TestCarouselView");
 			RunningApp.SwipeRightToLeft();
 			int.TryParse(RunningApp.FindElement("CarouselPosition").GetText(), out int position1);

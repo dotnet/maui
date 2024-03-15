@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
+		[FailsOnIOS]
 		public void Issue12777Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);

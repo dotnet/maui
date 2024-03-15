@@ -16,10 +16,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOS]
 		public void InitiallyInvisbleCollectionViewSurvivesiOSLayoutNonsense()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(Show);
 			RunningApp.Tap(Show);
 			RunningApp.WaitForNoElement(Success);

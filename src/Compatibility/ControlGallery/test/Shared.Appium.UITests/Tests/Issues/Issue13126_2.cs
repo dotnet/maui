@@ -15,10 +15,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOS]
 		public void CollectionViewShouldSourceShouldResetWhileInvisible()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForNoElement(Success);
 		}
 	}

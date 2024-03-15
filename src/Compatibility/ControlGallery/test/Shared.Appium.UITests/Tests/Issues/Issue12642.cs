@@ -1,4 +1,4 @@
-﻿/*
+﻿#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 
@@ -16,8 +16,6 @@ namespace UITests
 		[Category(UITestCategories.Shell)]
 		public void ClickingQuicklyBetweenTopTabsBreaksContent()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.Tap("AutomatedRun");
 			RunningApp.WaitForElement("Success");
 			RunningApp.Tap("AutomatedRun");
@@ -25,4 +23,4 @@ namespace UITests
 		}
 	}
 }
-*/
+#endif
