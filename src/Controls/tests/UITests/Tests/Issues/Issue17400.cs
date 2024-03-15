@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "CollectionView wrong Layout";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void Issue17400Test()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Android, TestDevice.Mac },

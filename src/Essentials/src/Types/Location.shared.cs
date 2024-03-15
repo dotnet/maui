@@ -49,40 +49,45 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Location"/> class with the specified latitude and longitude.
 		/// </summary>
-		/// <param name="latitude">Default latitude for location.</param>
-		/// <param name="longitude">Default longitude for location.</param>
-		public Location(double latitude, double longitude)
+		/// <param name="latitude">Latitude in degrees. Must be in the interval [-90, 90].</param>
+		/// <param name="longitude">Longitude in degrees. Will be projected to the interval (-180, 180].</param>
+		public Location(double latitude, double longitude) : this(latitude, longitude, DateTimeOffset.UtcNow)
 		{
-			Latitude = Math.Min(Math.Max(latitude, -90.0), 90.0);
-			Longitude = Math.Min(Math.Max(longitude, -180.0), 180.0);
-			Timestamp = DateTimeOffset.UtcNow;
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Location"/> class with the specified latitude, longitude, and timestamp.
 		/// </summary>
-		/// <param name="latitude">Default latitude for location.</param>
-		/// <param name="longitude">Default longitude for location.</param>
+		/// <param name="latitude">Latitude in degrees. Must be in the interval [-90, 90].</param>
+		/// <param name="longitude">Longitude in degrees. Will be projected to the interval (-180, 180].</param>
 		/// <param name="timestamp">UTC timestamp for the location.</param>
 		public Location(double latitude, double longitude, DateTimeOffset timestamp)
 		{
-			Latitude = latitude;
+			// check if latitude is in [-90, 90]
+			if (Math.Abs(latitude) > 90)
+				throw new ArgumentOutOfRangeException(nameof(latitude));
+			else
+				Latitude = latitude;
+
+			// make sure that longitude is in (-180, 180]
 			Longitude = longitude;
+			while (Longitude > 180)
+				Longitude -= 360;
+			while (Longitude <= -180)
+				Longitude += 360;
+
 			Timestamp = timestamp;
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Location"/> class with the specified latitude, longitude, and altitude.
 		/// </summary>
-		/// <param name="latitude">Default latitude for location.</param>
-		/// <param name="longitude">Default longitude for location.</param>
-		/// <param name="altitude">Default altitude for location.</param>
-		public Location(double latitude, double longitude, double altitude)
+		/// <param name="latitude">Latitude in degrees. Must be in the interval [-90, 90].</param>
+		/// <param name="longitude">Longitude in degrees. Will be projected to the interval (-180, 180].</param>
+		/// <param name="altitude">Altitude in meters.</param>
+		public Location(double latitude, double longitude, double altitude) : this(latitude, longitude)
 		{
-			Latitude = latitude;
-			Longitude = longitude;
 			Altitude = altitude;
-			Timestamp = DateTimeOffset.UtcNow;
 		}
 
 		/// <summary>
