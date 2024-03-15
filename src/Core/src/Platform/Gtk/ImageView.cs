@@ -3,7 +3,6 @@ using Microsoft.Maui.Graphics.Platform.Gtk;
 
 namespace Microsoft.Maui.Platform
 {
-
 	// https://docs.gtk.org/gtk3/class.Image.html 
 
 	// GtkImage has nothing like Aspect; maybe an ownerdrawn class is needed 
@@ -35,7 +34,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (Image is not { } image)
 				return true;
-			
+
 			var a = Allocation;
 
 			// HACK: Gtk sends sometimes an expose/draw event while the widget reallocates.
@@ -53,8 +52,8 @@ namespace Microsoft.Maui.Platform
 			if (y < 0) y = 0;
 
 			cr.DrawPixbuf(image, x, y, a.Width, a.Height);
-			
-			return true;
+
+			return base.OnDrawn(cr);
 		}
 	}
 
