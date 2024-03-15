@@ -95,12 +95,9 @@ namespace UITest.Appium
 
 			if (_app.GetTestDevice() == TestDevice.Windows)
 			{
-				if (!string.IsNullOrEmpty(_app.Driver.CurrentWindowHandle))
-				{
-#pragma warning disable CS0618 // Type or member is obsolete
-					_app.Driver.CloseApp();
-#pragma warning restore CS0618 // Type or member is obsolete
-				}
+
+				CloseApp(parameters);
+
 #pragma warning disable CS0618 // Type or member is obsolete
 				_app.Driver.LaunchApp();
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -119,14 +116,14 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
+			if (_app.AppState == ApplicationState.NotRunning)
+				return CommandResponse.SuccessEmptyResponse;
+
 			if (_app.GetTestDevice() == TestDevice.Windows)
 			{
-				if (!string.IsNullOrEmpty(_app.Driver.CurrentWindowHandle))
-				{
 #pragma warning disable CS0618 // Type or member is obsolete
-					_app.Driver.CloseApp();
+				_app.Driver.CloseApp();
 #pragma warning restore CS0618 // Type or member is obsolete
-				}
 			}
 			else
 				_app.Driver.TerminateApp(_app.GetAppId());

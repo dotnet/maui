@@ -15,8 +15,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.Entry)]
 		public void TableViewViewCellVanishesAfterContentIsUpdated()
 		{
-			this.IgnoreIfPlatform(TestDevice.Windows, "GetRect not implemented on Windows");
-
 			App.WaitForElement("entry");
 			App.EnterText("entry", "I haven't disappeared");
 
