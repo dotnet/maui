@@ -27,8 +27,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// https://github.com/dotnet/maui/issues/17435
 			this.IgnoreIfPlatforms(new[]
 			{
-				TestDevice.Mac,
-				TestDevice.Windows
+				TestDevice.Mac
 			});
 
 			if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
