@@ -17,9 +17,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Switch)]
+		[FailsOnIOS]
 		public void Issue1769Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement(GoToPageTwoButtonText);
 			RunningApp.Tap(GoToPageTwoButtonText);

@@ -16,8 +16,6 @@ namespace UITests
 		[Category(UITestCategories.Label)]
 		public void Issue181TestsLabelShouldHaveRedText()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("TestLabel");
 			RunningApp.Screenshot("Label should have red text");
 		}

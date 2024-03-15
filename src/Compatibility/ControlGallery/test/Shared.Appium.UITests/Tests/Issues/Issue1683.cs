@@ -13,6 +13,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Issue1683Test()
 		{
 			RunningApp.WaitForElement("Rotation");

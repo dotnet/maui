@@ -13,9 +13,10 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void ListViewIsGroupingEnabledDoesNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement("First");
 		}

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -15,11 +16,10 @@ namespace UITests
 		[Category(UITestCategories.CarouselView)]
 		public void Issue13616Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("AddItemButtonId");
 			RunningApp.Tap("AddItemButtonId");
 			RunningApp.WaitForElement("CarouselViewId");
 		}
 	}
 }
+#endif

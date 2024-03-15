@@ -13,9 +13,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void Issue1851Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement("btn");
 			RunningApp.Tap("btn");

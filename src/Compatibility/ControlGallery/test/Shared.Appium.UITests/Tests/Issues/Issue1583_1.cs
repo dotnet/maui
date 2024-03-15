@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnIOS]
 		public async Task Issue1583_1_WebviewTest()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

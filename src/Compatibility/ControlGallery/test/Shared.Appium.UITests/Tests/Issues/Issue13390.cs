@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿/*
+#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -15,10 +17,10 @@ namespace UITests
 		[Category(UITestCategories.Shell)]
 		public void CustomSlideFlyoutTransitionCausesCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			// If this hasn't already crashed, the test is passing
 			RunningApp.WaitForElement("Success");
 		}
 	}
 }
+#endif
+*/

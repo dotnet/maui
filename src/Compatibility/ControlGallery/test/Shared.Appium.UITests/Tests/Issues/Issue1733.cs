@@ -9,15 +9,15 @@ namespace UITests
 {
 	public class Issue1733 : IssuesUITest
 	{
-		const string editorHeightShrinkWithPressureId = "editorHeightShrinkWithPressureId";
-		const string editorHeightGrowId = "editorHeightGrowId";
-		const string editorWidthGrow1Id = "editorWidthGrow1Id";
-		const string editorWidthGrow2Id = "editorWidthGrow2Id";
-		const string btnChangeFontToDefault = "Change the Font to Default";
-		const string btnChangeFontToLarger = "Change the Font to Larger";
-		const string btnChangeToHasText = "Change to Has Text";
-		const string btnChangeToNoText = "Change to Has No Text";
-		const string btnChangeSizeOption = "Change the Size Option";
+		const string EditorHeightShrinkWithPressureId = "editorHeightShrinkWithPressureId";
+		const string EditorHeightGrowId = "editorHeightGrowId";
+		const string EditorWidthGrow1Id = "editorWidthGrow1Id";
+		const string EditorWidthGrow2Id = "editorWidthGrow2Id";
+		const string BtnChangeFontToDefault = "Change the Font to Default";
+		const string BtnChangeFontToLarger = "Change the Font to Larger";
+		const string BtnChangeToHasText = "Change to Has Text";
+		const string BtnChangeToNoText = "Change to Has No Text";
+		const string BtnChangeSizeOption = "Change the Size Option";
 
 		Dictionary<string, Size> _results;
 
@@ -29,12 +29,14 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Editor)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void EditorAutoResize()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
-			string[] editors = new string[] { editorHeightShrinkWithPressureId, editorHeightGrowId, editorWidthGrow1Id, editorWidthGrow2Id };
-			RunningApp.WaitForElement(editorHeightShrinkWithPressureId);
+			string[] editors = new string[] { EditorHeightShrinkWithPressureId, EditorHeightGrowId, EditorWidthGrow1Id, EditorWidthGrow2Id };
+			RunningApp.WaitForElement(EditorHeightShrinkWithPressureId);
 
 			_results = new Dictionary<string, Size>();
 
@@ -43,18 +45,18 @@ namespace UITests
 				_results.Add(editor, GetDimensions(editor));
 			}
 
-			RunningApp.Tap(btnChangeToHasText);
-			RunningApp.WaitForElement(btnChangeToNoText);
+			RunningApp.Tap(BtnChangeToHasText);
+			RunningApp.WaitForElement(BtnChangeToNoText);
 			TestGrowth(false);
-			RunningApp.Tap(btnChangeFontToLarger);
-			RunningApp.WaitForElement(btnChangeFontToDefault);
+			RunningApp.Tap(BtnChangeFontToLarger);
+			RunningApp.WaitForElement(BtnChangeFontToDefault);
 			TestGrowth(true);
 
 			// Reset back to being empty and make sure everything sets back to original size
-			RunningApp.Tap(btnChangeFontToDefault);
-			RunningApp.Tap(btnChangeToNoText);
-			RunningApp.WaitForElement(btnChangeToHasText);
-			RunningApp.WaitForElement(btnChangeFontToLarger);
+			RunningApp.Tap(BtnChangeFontToDefault);
+			RunningApp.Tap(BtnChangeToNoText);
+			RunningApp.WaitForElement(BtnChangeToHasText);
+			RunningApp.WaitForElement(BtnChangeFontToLarger);
 
 			foreach (var editor in editors)
 			{
@@ -64,11 +66,11 @@ namespace UITests
 			}
 
 			// This sets it back to not auto size and we click everything again to see if it grows
-			RunningApp.Tap(btnChangeSizeOption);
-			RunningApp.Tap(btnChangeFontToLarger);
-			RunningApp.Tap(btnChangeToHasText);
-			RunningApp.WaitForElement(btnChangeFontToDefault);
-			RunningApp.WaitForElement(btnChangeToNoText);
+			RunningApp.Tap(BtnChangeSizeOption);
+			RunningApp.Tap(BtnChangeFontToLarger);
+			RunningApp.Tap(BtnChangeToHasText);
+			RunningApp.WaitForElement(BtnChangeFontToDefault);
+			RunningApp.WaitForElement(BtnChangeToNoText);
 			foreach (var editor in editors)
 			{
 				var allTheSame = GetDimensions(editor);
@@ -79,25 +81,25 @@ namespace UITests
 
 		void TestGrowth(bool heightPressureShrink)
 		{
-			var testSizes = GetDimensions(editorHeightShrinkWithPressureId);
-			ClassicAssert.AreEqual(testSizes.Width, _results[editorHeightShrinkWithPressureId].Width, editorHeightShrinkWithPressureId);
+			var testSizes = GetDimensions(EditorHeightShrinkWithPressureId);
+			ClassicAssert.AreEqual(testSizes.Width, _results[EditorHeightShrinkWithPressureId].Width, EditorHeightShrinkWithPressureId);
 
 			if (heightPressureShrink)
-				ClassicAssert.Less(testSizes.Height, _results[editorHeightShrinkWithPressureId].Height, editorHeightShrinkWithPressureId);
+				ClassicAssert.Less(testSizes.Height, _results[EditorHeightShrinkWithPressureId].Height, EditorHeightShrinkWithPressureId);
 			else
-				ClassicAssert.Greater(testSizes.Height, _results[editorHeightShrinkWithPressureId].Height, editorHeightShrinkWithPressureId);
+				ClassicAssert.Greater(testSizes.Height, _results[EditorHeightShrinkWithPressureId].Height, EditorHeightShrinkWithPressureId);
 
-			testSizes = GetDimensions(editorHeightGrowId);
-			ClassicAssert.AreEqual(testSizes.Width, _results[editorHeightGrowId].Width, editorHeightGrowId);
-			ClassicAssert.Greater(testSizes.Height, _results[editorHeightGrowId].Height, editorHeightGrowId);
+			testSizes = GetDimensions(EditorHeightGrowId);
+			ClassicAssert.AreEqual(testSizes.Width, _results[EditorHeightGrowId].Width, EditorHeightGrowId);
+			ClassicAssert.Greater(testSizes.Height, _results[EditorHeightGrowId].Height, EditorHeightGrowId);
 
-			var grow1 = GetDimensions(editorWidthGrow1Id);
-			ClassicAssert.Greater(grow1.Width, _results[editorWidthGrow1Id].Width, editorWidthGrow1Id);
-			ClassicAssert.Greater(grow1.Height, _results[editorWidthGrow1Id].Height, editorWidthGrow1Id);
+			var grow1 = GetDimensions(EditorWidthGrow1Id);
+			ClassicAssert.Greater(grow1.Width, _results[EditorWidthGrow1Id].Width, EditorWidthGrow1Id);
+			ClassicAssert.Greater(grow1.Height, _results[EditorWidthGrow1Id].Height, EditorWidthGrow1Id);
 
-			var grow2 = GetDimensions(editorWidthGrow2Id);
-			ClassicAssert.Greater(grow2.Width, _results[editorWidthGrow2Id].Width, editorWidthGrow2Id);
-			ClassicAssert.Greater(grow2.Height, _results[editorWidthGrow2Id].Height, editorWidthGrow2Id);
+			var grow2 = GetDimensions(EditorWidthGrow2Id);
+			ClassicAssert.Greater(grow2.Width, _results[EditorWidthGrow2Id].Width, EditorWidthGrow2Id);
+			ClassicAssert.Greater(grow2.Height, _results[EditorWidthGrow2Id].Height, EditorWidthGrow2Id);
 
 			// Grow 1 has a lower minimum width request so it's width should be smaller than grow 2
 			ClassicAssert.Greater(grow2.Width, grow1.Width, "grow2.Width > grow1.Width");

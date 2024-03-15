@@ -15,9 +15,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Image)]
+		[FailsOnIOS]
 		public void LongImageURLsShouldNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			// Give the images some time to load (or fail)
 			Task.Delay(3000).Wait();

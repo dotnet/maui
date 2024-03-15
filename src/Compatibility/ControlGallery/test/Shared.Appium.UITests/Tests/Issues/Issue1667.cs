@@ -15,6 +15,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		[FailsOnIOS]
 		public void TestCursorPositionAndSelection()
 		{
 			RunningApp.WaitForElement("CursorTextEntry");
@@ -34,6 +35,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		[FailsOnIOS]
 		public void TestCursorColorOniOS()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

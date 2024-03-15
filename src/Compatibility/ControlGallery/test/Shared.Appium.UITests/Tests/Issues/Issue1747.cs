@@ -17,10 +17,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Switch)]
+		[FailsOnIOS]
 		public void Issue1747Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			RunningApp.WaitForElement(ToggleButtonAutomationId);
 			RunningApp.WaitForElement(ToggleSwitchAutomationId);
 

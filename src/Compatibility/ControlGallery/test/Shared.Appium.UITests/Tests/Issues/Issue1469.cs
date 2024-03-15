@@ -16,10 +16,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
+		[FailsOnIOS]
 		public void Issue1469Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			RunningApp.WaitForElement(Go);
 			RunningApp.Tap(Go);
 			RunningApp.WaitForElement(Success);

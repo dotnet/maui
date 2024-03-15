@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,10 +17,9 @@ namespace UITests
 		[Category(UITestCategories.Image)]
 		public void Issue1908Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("OASIS1");
 			RunningApp.Screenshot("For manual review. Images load");
 		}
 	}
 }
+#endif

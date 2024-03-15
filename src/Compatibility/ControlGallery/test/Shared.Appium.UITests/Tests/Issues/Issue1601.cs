@@ -14,9 +14,10 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnIOS]
 		public void Issue1601Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.Screenshot("Start G1601");
 			RunningApp.WaitForElement("CrashButton");
