@@ -62,7 +62,6 @@ Information("Windows version: {0}", windowsVersion);
 Setup(context =>
 {
 	Cleanup();
-	setBinLogDir();
 });
 
 Teardown(context =>
@@ -74,38 +73,6 @@ void Cleanup()
 {
 	if (!DEVICE_CLEANUP)
 		return;
-}
-
-void setBinLogDir()
-{
-	Information("Attempting to set bin log dir");
-
-	var binDir = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
-	var regKeyPath = @"SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps";
-	RegistryKey key = null;
-	try 
-	{
-		using (var hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
-		{
-			key = hklm.OpenSubKey(regKeyPath);
-			if (key == null)
-			{
-				key = hklm.CreateSubKey(regKeyPath);
-			}
-			key.SetValue("DumpFolder", binDir);
-			key.SetValue("DumpType", 2);
-		}
-		Information($"Successfully set dump log file path to {binDir}");
-	} catch 
-	{ 
-		Information("Error setting bin log dir");
-	} finally 
-	{
-		if (key != null)
-		{
-			key.Dispose();
-		}
-	}
 }
 
 Task("Cleanup");
