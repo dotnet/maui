@@ -14,9 +14,10 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.Switch)]
+		[FailsOnIOS]
 		public void SwitchOnOffVisualStatesTest()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement("Switch");
 			RunningApp.Screenshot("Switch Default");

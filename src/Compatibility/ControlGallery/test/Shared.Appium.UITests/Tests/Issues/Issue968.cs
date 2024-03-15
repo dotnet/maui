@@ -13,10 +13,12 @@ namespace UITests
 		public override string Issue => "StackLayout does not relayout on device rotation";
 
 		[Test]
+		[Description("Verify the layout lays out on rotations")]
 		[Category(UITestCategories.Layout)]
+		[FailsOnAndroid]
 		public void Issue968TestsRotationRelayoutIssue()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement("TestReady");
 			RunningApp.SetOrientationLandscape();

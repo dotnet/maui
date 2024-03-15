@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +19,6 @@ namespace UITests
 		[Category(UITestCategories.Switch)]
 		public async Task SwitchColorTest()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(SwitchId);
 
 			RunningApp.Screenshot("Initial switch state");
@@ -33,3 +32,4 @@ namespace UITests
 		}
 	}
 }
+#endif

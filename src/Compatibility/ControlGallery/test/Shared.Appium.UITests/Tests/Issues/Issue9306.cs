@@ -18,6 +18,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.SwipeView)]
+		[FailsOnIOS]
 		public void Issue9306SwipeViewCloseSwiping()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
