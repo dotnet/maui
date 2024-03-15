@@ -6,10 +6,8 @@ using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui
 {
-
 	public static class WidgetExtensions
 	{
-
 		public static void UpdateIsEnabled(this Widget platformView, bool isEnabled) =>
 			platformView.Sensitive = isEnabled;
 
@@ -53,65 +51,46 @@ namespace Microsoft.Maui
 			int naturalWidth = 0;
 #pragma warning disable CS0162 // Unreachable code detected
 
-			if (false && (!widthConstrained && !heightConstrained))
+			if (false && !widthConstrained && !heightConstrained)
 			{
 				platformView.GetSizeRequest(out var w, out var h);
 
 				return new SizeRequest(new Size(w, h));
 			}
 
-			if (platformView.RequestMode == SizeRequestMode.WidthForHeight)
+			var requestMode = platformView.RequestMode;
+			if (!(widthConstrained || heightConstrained))
 			{
-				if ((heightConstrained) && (widthConstrained))
+				switch (requestMode)
 				{
-					minimumWidth = naturalWidth = (int)widthConstraint;
-					minimumHeight = naturalHeight = (int)heightConstraint;
-				}
-				else if (widthConstrained)
-				{
-					minimumWidth = naturalWidth = (int)widthConstraint;
-					platformView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
-				}
-				else if (heightConstrained)
-				{
-					minimumHeight = naturalHeight = (int)heightConstraint;
-					platformView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
-				}
-
-				else
-				{
-					platformView.GetPreferredHeight(out minimumHeight, out naturalHeight);
-					platformView.GetPreferredWidthForHeight(minimumHeight, out minimumWidth, out naturalWidth);
-				}
-			}
-			else if (platformView.RequestMode == Gtk.SizeRequestMode.HeightForWidth)
-			{
-				if ((heightConstrained) && (widthConstrained))
-				{
-					minimumWidth = naturalWidth = (int)widthConstraint;
-					minimumHeight = naturalHeight = (int)heightConstraint;
-				}
-				else if (heightConstrained)
-				{
-					minimumHeight = naturalHeight = (int)heightConstraint;
-					platformView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
-				}
-				else if (widthConstrained)
-				{
-					minimumWidth = naturalWidth = (int)widthConstraint;
-					platformView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
-				}
-
-				else
-				{
-					platformView.GetPreferredWidth(out minimumWidth, out naturalWidth);
-					platformView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
+					case SizeRequestMode.WidthForHeight:
+						platformView.GetPreferredHeight(out minimumHeight, out naturalHeight);
+						platformView.GetPreferredWidthForHeight(minimumHeight, out minimumWidth, out naturalWidth);
+						break;
+					case SizeRequestMode.HeightForWidth:
+						platformView.GetPreferredWidth(out minimumWidth, out naturalWidth);
+						platformView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
+						break;
+					default:
+						platformView.GetPreferredWidth(out minimumWidth, out naturalWidth);
+						platformView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
+						break;
 				}
 			}
 			else
 			{
-				platformView.GetPreferredWidth(out minimumWidth, out naturalWidth);
-				platformView.GetPreferredHeightForWidth(minimumWidth, out minimumHeight, out naturalHeight);
+				minimumWidth = naturalWidth = (int)widthConstraint;
+				minimumHeight = naturalHeight = (int)heightConstraint;
+
+				if (widthConstrained)
+				{
+					platformView.GetPreferredHeightForWidth((int)widthConstraint, out minimumHeight, out naturalHeight);
+				}
+
+				if (heightConstrained)
+				{
+					platformView.GetPreferredWidthForHeight((int)heightConstraint, out minimumWidth, out naturalWidth);
+				}
 			}
 
 			if (platformView.WidthRequest > minimumWidth)
@@ -258,7 +237,5 @@ namespace Microsoft.Maui
 
 		[MissingMapper]
 		public static void UpdateMaximumWidth(this Widget platformView, IView view) { }
-
 	}
-
 }
