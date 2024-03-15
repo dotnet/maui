@@ -125,5 +125,7 @@ New-Module -Name Collect-DotNet-Maui-Info -ScriptBlock {
         Write-Host ""
     }
 
+    Set-Alias cdnmi -Value Collect-DotNet-Maui-Info
+
     Export-ModuleMember -Function Collect-DotNet-Maui-Info -Alias cdnmi
 }
