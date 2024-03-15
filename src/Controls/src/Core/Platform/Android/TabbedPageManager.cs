@@ -17,6 +17,7 @@ using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Google.Android.Material.Tabs;
+using Google.Android.Material.Resources;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
@@ -658,8 +659,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 			else
 			{
-				var styledAttributes = 
-					TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
+				var styledAttributes = _context.Context.ObtainStyledAttributes(null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
 
 				try
 				{
