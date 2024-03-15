@@ -4,6 +4,8 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using WBinding = Microsoft.UI.Xaml.Data.Binding;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -70,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
 		{
-			_foregroundDefault = Control.GetForegroundCache();
+			_foregroundDefault = GetForegroundCache();
 			UpdateProgressColor();
 		}
 
@@ -81,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (color.IsDefault())
 			{
-				Control.RestoreForegroundCache(_foregroundDefault);
+				RestoreForegroundCache();
 			}
 			else
 			{
@@ -98,6 +100,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateFlowDirection()
 		{
 			Control.UpdateFlowDirection(Element);
+		}
+
+		private object GetForegroundCache()
+		{
+			return Control.GetBindingExpression(Microsoft.UI.Xaml.Controls.Control.ForegroundProperty)?.ParentBinding
+				?? Control.GetValue(Microsoft.UI.Xaml.Controls.Control.ForegroundProperty);
+		}
+
+		private void RestoreForegroundCache()
+		{
+			if (_foregroundDefault is WBinding binding)
+			{
+				Control.SetBinding(Microsoft.UI.Xaml.Controls.Control.ForegroundProperty, binding);
+			}
+			else
+			{
+				Control.SetValue(Microsoft.UI.Xaml.Controls.Control.ForegroundProperty, (WBrush)_foregroundDefault);
+			}
 		}
 	}
 }

@@ -1,7 +1,10 @@
 ﻿#nullable enable
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml.Controls;
+using WBinding = Microsoft.UI.Xaml.Data.Binding;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Platform
 {
@@ -49,6 +52,21 @@ namespace Microsoft.Maui.Platform
 				platformActivityIndicator.Height = activityIndicator.Height;
 			}
 			// Otherwise, don't set it to anything (even NaN) because it will try to fill all the space you give it
+		}
+
+		private static void RestoreForegroundCache(this ProgressRing progressRing, object cache)
+		{
+			if (progressRing == null)
+				throw new ArgumentNullException(nameof(progressRing));
+
+			if (cache is WBinding binding)
+			{
+				progressRing.SetBinding(Control.ForegroundProperty, binding);
+			}
+			else
+			{
+				progressRing.SetValue(Control.ForegroundProperty, (WBrush)cache);
+			}
 		}
 	}
 }
