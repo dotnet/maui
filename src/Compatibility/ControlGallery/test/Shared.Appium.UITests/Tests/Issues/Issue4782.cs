@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -17,9 +18,8 @@ namespace UITests
 		[Category(UITestCategories.ImageButton)]
 		public void ImageButtonNullDrawable()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(Success);
 		}
 	}
 }
+#endif

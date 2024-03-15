@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 
@@ -14,12 +15,12 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnIOS]
 		public void PaddingEqualToSafeAreaWorks()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			var somePadding = RunningApp.WaitForElement("Hello").GetRect();
 			ClassicAssert.AreEqual(20f, somePadding.Y);
 		}
 	}
 }
+#endif

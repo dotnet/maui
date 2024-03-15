@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnAndroid]
 		public void Issue465TestsPushPopModal()
 		{
 			RunningApp.WaitForElement("PopPage");

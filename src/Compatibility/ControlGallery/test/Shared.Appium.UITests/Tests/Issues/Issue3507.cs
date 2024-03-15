@@ -15,6 +15,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
+		[FailsOnIOS]
 		public void NullContentOnScrollViewDoesntCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);

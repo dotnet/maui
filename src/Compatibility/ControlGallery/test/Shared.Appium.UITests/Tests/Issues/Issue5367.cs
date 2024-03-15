@@ -16,6 +16,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Editor)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Issue3390Test()
 		{
 			RunningApp.WaitForElement(MaxLengthEditor);

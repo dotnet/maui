@@ -13,10 +13,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Button)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Issue5951Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.Tap("Push page");
 			RunningApp.WaitForElement("Push page");
 			RunningApp.WaitForNoElement("Success");

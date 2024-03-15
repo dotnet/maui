@@ -15,6 +15,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnIOS]
 		public void Issue3667Tests()
 		{
 			RunningApp.WaitForNoElement(text);

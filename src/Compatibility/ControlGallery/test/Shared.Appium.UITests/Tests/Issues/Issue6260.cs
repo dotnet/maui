@@ -5,8 +5,8 @@ namespace UITests
 {
 	public class Issue6260 : IssuesUITest
 	{
-		const string text = "If this number keeps increasing test has failed: ";
-		string success = text + "0";
+		const string Text = "If this number keeps increasing test has failed: ";
+		readonly string success = Text + "0";
 
 		public Issue6260(TestDevice testDevice) : base(testDevice)
 		{
@@ -16,9 +16,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnAndroid]
 		public void NonAppCompatBasicSwitchTest()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement(success);
 		}

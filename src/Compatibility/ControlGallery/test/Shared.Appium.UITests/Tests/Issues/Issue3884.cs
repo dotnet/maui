@@ -14,9 +14,10 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.BoxView)]
+		[FailsOnIOS]
 		public void Issue3884Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement("TestReady");
 			RunningApp.Screenshot("I see a blue circle");
