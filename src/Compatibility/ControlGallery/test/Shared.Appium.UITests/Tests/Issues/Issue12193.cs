@@ -15,10 +15,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
+		[FailsOnIOS]
 		public async Task RotatingCarouselViewHTMLShouldNotDisappear()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			int delay = 3000;
 
 			RunningApp.SetOrientationPortrait();

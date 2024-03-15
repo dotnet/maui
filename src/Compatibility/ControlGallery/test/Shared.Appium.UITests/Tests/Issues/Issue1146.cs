@@ -14,10 +14,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Switch)]
+		[FailsOnIOS]
 		public void TestSwitchDisable()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("switch");
 			RunningApp.Screenshot("Is the button here?");
 		}

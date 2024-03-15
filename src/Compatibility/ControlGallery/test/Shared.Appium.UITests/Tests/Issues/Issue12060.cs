@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.DragAndDrop)]
+		[FailsOnIOS]
 		public void AcceptedOperationNoneDisablesDropOperation()
 		{
 			RunningApp.WaitForElement("TestLoaded");

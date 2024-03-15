@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -16,13 +17,13 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.SwipeView)]
+		[FailsOnIOS]
 		public void TapSwipeViewAndNavigateTest()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(SwipeViewContent);
 			RunningApp.Tap(SwipeViewContent);
 			RunningApp.WaitForElement(Success);
 		}
 	}
 }
+#endif

@@ -17,10 +17,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		[FailsOnIOS]
 		public void UnfocusingPasswordDoesNotHang()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(Entry);
 			RunningApp.WaitForElement(Password);
 

@@ -1,5 +1,4 @@
-﻿/*
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -14,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Shell)]
+		[FailsOnAndroid]
 		public void DelayedAddingOfShellContentDoesntCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
@@ -32,6 +32,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Shell)]
+		[FailsOnAndroid]
 		public void DelayedAddingOfShellSectionDoesntCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
@@ -50,6 +51,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Shell)]
+		[FailsOnAndroid]
 		public void DelayedAddingOfShellItemDoesntCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
@@ -58,4 +60,3 @@ namespace UITests
 		}
 	}
 }
-*/

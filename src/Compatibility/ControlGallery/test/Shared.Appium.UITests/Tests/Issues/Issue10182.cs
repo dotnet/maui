@@ -13,11 +13,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
+		[FailsOnAndroid("MultiWindowService not implemented.")]
 		public void AppDoesntCrashWhenResettingPage()
 		{
-			this.IgnoreIfPlatform(TestDevice.Android, "MultiWindowService not implemented.");		
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("Success");
 		}
 	}

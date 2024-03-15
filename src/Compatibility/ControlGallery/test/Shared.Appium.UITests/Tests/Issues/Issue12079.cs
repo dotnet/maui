@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,8 +20,6 @@ namespace UITests
 		[Category(UITestCategories.SwipeView)]
 		public void SwipeItemNoTextWindows()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			RunningApp.WaitForElement(SwipeViewId);
 			RunningApp.SwipeLeftToRight(SwipeViewId);
 			RunningApp.Tap(SwipeViewId);
@@ -29,3 +28,4 @@ namespace UITests
 		}
 	}
 }
+#endif

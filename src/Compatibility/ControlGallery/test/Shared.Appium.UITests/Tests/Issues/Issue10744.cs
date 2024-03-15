@@ -13,10 +13,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[Category(UITestCategories.RequiresInternetConnection)]
 		public void WebViewEvalCrashesOnAndroidWithLongString()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("navigatedLabel");
 		}
 	}

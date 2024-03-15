@@ -15,8 +15,6 @@ namespace UITests
 		[Category(UITestCategories.Label)]
 		public void DelayedLabelBindingShowsUp()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			Task.Delay(2000).Wait();
 			RunningApp.WaitForNoElement("Lorem Ipsum Dolor Sit Amet");
 		}

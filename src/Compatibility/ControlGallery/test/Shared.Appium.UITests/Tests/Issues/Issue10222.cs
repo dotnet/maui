@@ -15,8 +15,6 @@ namespace UITests
 		[Category(UITestCategories.LifeCycle)]
 		public void Issue10222Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("goTo");
 			RunningApp.Tap("goTo");
 			RunningApp.WaitForElement("collectionView");

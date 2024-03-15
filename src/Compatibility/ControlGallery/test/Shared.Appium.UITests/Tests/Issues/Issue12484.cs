@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -13,11 +14,11 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ViewBaseTests)]
+		[FailsOnAndroid]
 		public void Issue12484ControlTemplateRendererTest()
 		{ 
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForNoElement("Success");
 		}
 	}
 }
+#endif

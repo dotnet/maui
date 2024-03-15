@@ -12,10 +12,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.TabbedPage)]
 		public void CollectionViewWithFooterShouldNotCrashOnDisplay()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			// If this hasn't already crashed, the test is passing
 			RunningApp.FindElement("Success");
 		}

@@ -15,8 +15,6 @@ namespace UITests
 		[Category(UITestCategories.WebView)]
 		public void WebViewDisposesProperly()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.Tap("NextButton");
 			RunningApp.Tap("BackButton");
 			RunningApp.Tap("NextButton");

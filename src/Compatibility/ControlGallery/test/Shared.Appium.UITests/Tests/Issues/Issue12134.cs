@@ -13,10 +13,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[Category(UITestCategories.RequiresInternetConnection)]
 		public void CookiesCorrectlyLoadWithMultipleWebViews()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			for (int i = 0; i < 10; i++)
 			{
 				RunningApp.WaitForNoElement("Success", $"Failied on: {i}");

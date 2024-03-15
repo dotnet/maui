@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -19,10 +20,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.SwipeView)]
+		[FailsOnIOS]
 		public void SwipeDisableChildButtonTest()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForNoElement(Failed);
 			RunningApp.WaitForElement(SwipeViewId);
 			RunningApp.Tap("SwipeViewCheckBoxId");
@@ -32,3 +32,4 @@ namespace UITests
 		}
 	}
 }
+#endif

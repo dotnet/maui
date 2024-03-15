@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,10 +21,9 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.SwipeView)]
+		[FailsOnIOS]
 		public void Issue10563OpenSwipeViewTest()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(OpenLeftId);
 			RunningApp.Tap(OpenLeftId);
 			RunningApp.Screenshot("Left SwipeItems");
@@ -47,3 +47,4 @@ namespace UITests
 		}
 	}
 }
+#endif
