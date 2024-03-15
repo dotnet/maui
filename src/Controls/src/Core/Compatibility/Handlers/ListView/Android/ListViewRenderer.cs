@@ -84,8 +84,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
-
 			_isAttached = false;
+			_adapter.CloseContextActions();
 			_adapter.IsAttachedToWindow = _isAttached;
 		}
 
