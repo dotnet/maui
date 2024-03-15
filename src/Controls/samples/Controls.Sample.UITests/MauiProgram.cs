@@ -1,7 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
@@ -11,24 +8,18 @@ namespace Maui.Controls.Sample
 {
 	public static class MauiProgram
 	{
-		public static MauiApp CreateMauiApp()
-		{
-			var builder = MauiApp
+		public static MauiApp CreateMauiApp() =>
+			MauiApp
 				.CreateBuilder()
-#if IOS || ANDROID
+	#if IOS || ANDROID
 				.UseMauiMaps()
-#endif
+	#endif
 				.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
-					fonts.AddEmbeddedResourceFont(Assembly.GetExecutingAssembly(), "OpenSans-Regular.ttf", "OpenSansRegular");
-				});
-
-			var root = Path.Combine(Path.GetTempPath(), "Microsoft.Maui.Controls.Sample.UITests", "ConfigureFontsRegistersFonts", Guid.NewGuid().ToString());
-			builder.Services.AddSingleton<IEmbeddedFontLoader>(_ => new FileSystemEmbeddedFontLoader(root));
-
-			return builder.Build();
-		}
+					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+				})
+				.Build();
 	}
 
 	class App : Application
