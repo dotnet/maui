@@ -9,6 +9,9 @@
 #
 #     . { iwr https://aka.ms/collect-maui-info.ps1 } | iex; cdnmi </path/to/sln>
 #
+# For an added shortcut, if you append ` | scb ` to the command, the output will
+# be copied to the clipboard!
+#
 ################################################################################
 
 New-Module -Name Collect-DotNet-Maui-Info -ScriptBlock {
