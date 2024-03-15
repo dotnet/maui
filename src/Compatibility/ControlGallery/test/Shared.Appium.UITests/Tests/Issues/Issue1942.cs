@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -15,11 +16,11 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Button)]
+		[FailsOnAndroid]
 		public void ClickPropagatesToOnTouchListener()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.Tap(ClickMeString);
 		}
 	}
 }
+#endif

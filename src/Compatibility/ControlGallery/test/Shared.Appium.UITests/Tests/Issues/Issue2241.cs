@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +17,6 @@ namespace UITests
 		[Category(UITestCategories.ScrollView)]
 		public void ChangeOrientationCheckScroll()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			var grid1 = RunningApp.FindElement("MainGrid").GetRect();
 			RunningApp.SetOrientationLandscape();
 			App.ScrollDown("TestScrollView", ScrollStrategy.Programmatically);
@@ -29,3 +28,4 @@ namespace UITests
 		}
 	}
 }
+#endif

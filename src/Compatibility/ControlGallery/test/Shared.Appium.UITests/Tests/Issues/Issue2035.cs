@@ -15,9 +15,10 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.TabbedPage)]
+		[FailsOnIOS]
 		public void Issue2035Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement(Success);
 			//if it doesn't crash, we're good.

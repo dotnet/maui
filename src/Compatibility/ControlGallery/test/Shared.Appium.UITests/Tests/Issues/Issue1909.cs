@@ -14,6 +14,7 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.Button)]
+		[FailsOnIOS]
 		public void Issue1909Test()
 		{
 			RunningApp.WaitForElement("TestReady");

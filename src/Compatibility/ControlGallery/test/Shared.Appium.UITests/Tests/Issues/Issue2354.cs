@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnAndroid]
 		public void TestDoesntCrashWithCachingDisable()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);

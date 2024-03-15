@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -44,3 +45,4 @@ namespace UITests
 		}
 	}
 }
+#endif

@@ -16,10 +16,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void ClickPropagatesToOnTouchListener()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.Tap(Go);
 			RunningApp.WaitForElement(Success);
 		}

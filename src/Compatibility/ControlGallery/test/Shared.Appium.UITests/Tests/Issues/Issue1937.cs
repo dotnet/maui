@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 
@@ -16,8 +17,6 @@ namespace UITests
 		[Category(UITestCategories.Animation)]
 		public void Issue1937Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			RunningApp.Tap("FAST_TIMER");
 			RunningApp.WaitForElement("COMPLETE", timeout: TimeSpan.FromSeconds(2));
 			var result = RunningApp.WaitForElement("RESULT");
@@ -35,3 +34,4 @@ namespace UITests
 		}
 	}
 }
+#endif

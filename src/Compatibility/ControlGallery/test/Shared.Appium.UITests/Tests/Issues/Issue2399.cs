@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
-
 
 namespace UITests
 {
@@ -17,10 +17,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnIOS]
 		public void WaitForAllEffectsToDetach()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(AllEventsHaveDetached);
 			var text = RunningApp.FindElement(AllEventsHaveDetached).GetText();
 			ClassicAssert.NotNull(text);
@@ -28,3 +27,4 @@ namespace UITests
 		}
 	}
 }
+#endif

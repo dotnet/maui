@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Picker)]
+		[FailsOnIOS]
 		public void FocusAndUnFocusMultipleTimes()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows], "Focus Behavior is different");

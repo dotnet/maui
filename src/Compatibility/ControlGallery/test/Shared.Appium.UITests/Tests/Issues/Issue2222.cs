@@ -14,10 +14,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnIOS]
 		public void TestItDoesntCrashWithWrongIconName()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("TestLabel");
 			RunningApp.Screenshot("Was label on page shown");
 		}

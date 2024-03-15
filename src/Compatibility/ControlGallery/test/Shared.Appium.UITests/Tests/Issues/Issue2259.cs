@@ -14,9 +14,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void Issue2259Tests()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac]);
 
 			for (int i = 0; i < 20; i++)
 			{
