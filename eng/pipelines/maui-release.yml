@@ -22,7 +22,7 @@ trigger:
 
 
 variables:
-  - template: /eng/pipelines/common/variables.yml
+  - template: /eng/pipelines/common/variables.yml@self
   - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
@@ -34,13 +34,23 @@ parameters:
     type: string
     default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
 
-  - name: PackPlatforms
+  - name: VM_IMAGE_HOST
     type: object
     default:
-      - name: Windows
-        poolName: $(windowsNet6VmPool)
-        vmImage: $(windowsNet6VmImage)
-        artifact: nuget
+      name: AzurePipelines-EO
+      image: 1ESPT-Windows2022
+      os: windows
+
+  - name: PackPlatform
+    type: object
+    default:
+      name: Windows
+      artifact: nuget
+      binariesArtifact: pack-binaries
+      docsArtifact: xml-docs
+
+  - name: Skip1ESComplianceTasks
+    default: false
 
 resources:
   repositories:
@@ -54,36 +64,101 @@ resources:
       name: xamarin/sdk-insertions
       ref: refs/heads/main
       endpoint: xamarin
+    - repository: 1ESPipelineTemplates
+      type: git
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
 
-stages:
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool: ${{ parameters.VM_IMAGE_HOST }}
+    sdl:
+      ${{ if eq('${{ parameters.Skip1ESComplianceTasks }}', 'true') }}:
+        enableAllTools: false
+      binskim:
+        scanOutputDirectoryOnly: true
+      codeql:
+        runSourceLanguagesInSourceAnalysis: true
+      policheck:
+        enabled: true
+      spotBugs:
+        enabled: false
+        justification: 'Failing with "Could not successfully find the java tool launcher"'
+      sourceRepositoriesToScan:
+        exclude:
+        - repository: yaml-templates
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
+    stages:
+      - stage: pack_net
+        displayName: Pack .NET MAUI
+        dependsOn: []
+        jobs:
+          - job: pack_net_${{ parameters.PackPlatform.name }}
+            workspace:
+              clean: all
+            displayName: ${{ parameters.PackPlatform.name }}
+            timeoutInMinutes: 240
+           
+            pool: ${{ parameters.VM_IMAGE_HOST }}
+              
+            templateContext:
+              outputs:
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.artifact }}
+                  targetPath: '(Build.ArtifactStagingDirectory)'
+                
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
+                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
 
-  - stage: pack_net
-    displayName: Pack .NET MAUI
-    dependsOn: []
-    jobs:
-      - ${{ each PackPlatform in parameters.PackPlatforms }}:
-        - job: pack_net_${{ PackPlatform.name }}
-          workspace:
-            clean: all
-          displayName: ${{ PackPlatform.name }}
-          timeoutInMinutes: 240
-          pool:
-            name: ${{ PackPlatform.poolName }}
-            vmImage: ${{ PackPlatform.vmImage }}
-            ${{ if startsWith(PackPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
-              demands:
-                - macOS.Name -equals Ventura
-                - macOS.Architecture -equals x64
-          steps:
-            - template: common/pack.yml
-              parameters:
-                platform: ${{ PackPlatform.name }}
-                poolName: ${{ PackPlatform.poolName }}
-                provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                artifact:  ${{ PackPlatform.artifact }}
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.docsArtifact }}
+                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
 
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - template: common/sign.yml                                     # Sign only using the private server
-    - template: common/insertion.yml                                # Insert on VS and SDK
-      parameters:
-        pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
+            steps:
+              - template: /eng/pipelines/common/pack.yml@self
+                parameters:
+                  publishArtifacts: false
+                  platform: ${{ parameters.PackPlatform.name }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  artifact: ${{ parameters.PackPlatform.artifact }}
+                  artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
+                  artifactsPath: '(Build.ArtifactStagingDirectory)'
+                  prepareSteps:
+                    - template: /eng/pipelines/common/provision.yml@self
+                      parameters:
+                        checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                        skipAndroidImages: true
+
+      - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:                           # Sign only using the private server   
+        - template: /eng/pipelines/common/sign.yml@self                                 
+          parameters:
+            dependsOn: ['pack_net']
+            stageName: 'nuget_signing'
+            poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+            vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+            os: ${{ parameters.VM_IMAGE_HOST.os }}                                   
+        
+        - template: /eng/pipelines/common/insertion.yml@self                                # Insert on VS and SDK
+          parameters:
+            dependsOn: ['nuget_signing']
+            stageName: 'sdk_insertion'
+            poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+            vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+            os: ${{ parameters.VM_IMAGE_HOST.os }}
+            pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
+
+        - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
+          parameters:
+            dependsOn: ['pack_net']
+            os: windows
+            scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
+
+        
