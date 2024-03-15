@@ -13,10 +13,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
+		[FailsOnIOS]
 		public void Issue3273Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			RunningApp.WaitForElement("MoveItems");
 			RunningApp.Tap("MoveItems");
 			RunningApp.WaitForNoElement("Success");

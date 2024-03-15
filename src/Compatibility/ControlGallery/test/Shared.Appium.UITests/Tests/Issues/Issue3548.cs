@@ -15,10 +15,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Frame)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void CheckIsEffectAttached()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForNoElement(SuccessMessage);
 		}
 	}

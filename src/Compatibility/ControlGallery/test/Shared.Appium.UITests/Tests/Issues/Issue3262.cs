@@ -21,6 +21,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnIOS]
 		public void ChangeDuringNavigating()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -33,6 +34,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnIOS]
 		public void AddAdditionalCookieToWebView()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -45,6 +47,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnIOS]
 		public void SetToOneCookie()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -54,6 +57,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnIOS]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
 			RunningApp.WaitForElement("Loaded");

@@ -15,6 +15,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.Navigation)]
 		public void SettingBindingContextToNullBeforingPoppingPageCrashes()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);

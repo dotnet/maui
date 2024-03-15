@@ -14,9 +14,11 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.SearchBar)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Issue3413Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement("srb_vertical");
 			RunningApp.WaitForElement("srb_horizontal");

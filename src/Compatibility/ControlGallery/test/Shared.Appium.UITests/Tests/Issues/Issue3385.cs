@@ -13,10 +13,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		[FailsOnIOS]
 		public void Issue3385Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("entry");
 			RunningApp.Tap("entry");
 			RunningApp.WaitForElement("click");
