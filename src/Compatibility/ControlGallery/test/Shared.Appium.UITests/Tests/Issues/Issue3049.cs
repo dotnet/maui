@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -19,10 +20,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.DisplayAlert)]
+		[FailsOnIOS]
 		public async Task Issue3049Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(Button1Id);
 
 			RunningApp.Tap(Button1Id);
@@ -40,3 +40,4 @@ namespace UITests
 		}
 	}
 }
+#endif

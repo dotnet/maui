@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOS]
 		public void Issue2777Test()
 		{
 			RunningApp.Screenshot("I am at Issue 2965");

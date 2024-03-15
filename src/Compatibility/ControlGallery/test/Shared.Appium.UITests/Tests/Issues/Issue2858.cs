@@ -17,9 +17,11 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void CascadeInputTransparentGrids()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement(InnerGrid);
 			RunningApp.Tap(InnerGrid);

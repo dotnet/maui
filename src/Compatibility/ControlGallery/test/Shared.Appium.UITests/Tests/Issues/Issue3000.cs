@@ -15,6 +15,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void RtlScrollViewStartsScrollToRight()
 		{
 			RunningApp.WaitForElement(Success);

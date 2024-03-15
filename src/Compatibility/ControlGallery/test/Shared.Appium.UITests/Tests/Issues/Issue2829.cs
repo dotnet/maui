@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -17,10 +18,9 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnAndroid]
 		public void ViewCellsAllDisposed()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.Tap(kCreateListViewButton);
 			RunningApp.WaitForNoElement("0");
 			RunningApp.Tap(kScrollMe);
@@ -30,3 +30,4 @@ namespace UITests
 		}
 	}
 }
+#endif

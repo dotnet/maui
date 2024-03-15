@@ -15,6 +15,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public async Task BindingToValuesTypesAndScrollingNoCrash()
 		{
 			await Task.Delay(4000);

@@ -16,9 +16,10 @@ namespace UITests
 	
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void NullItemSourceDoesNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Android, TestDevice.Mac]);
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac]);
 
 			// If we can see the Success label, it means we didn't crash. 
 			RunningApp.WaitForElement(Success);
@@ -26,9 +27,10 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void SettingItemsSourceToNullDoesNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Android, TestDevice.Mac]);
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac]);
 			
 			RunningApp.WaitForElement(Go);
 			RunningApp.Tap(Go);

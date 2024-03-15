@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -18,11 +19,10 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public void Issue3001Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(ButtonId);
 			RunningApp.Tap(ButtonId);
 			RunningApp.WaitForElement(ReadyId, timeout: TimeSpan.FromSeconds(5));
 		}
 	}
 }
+#endif

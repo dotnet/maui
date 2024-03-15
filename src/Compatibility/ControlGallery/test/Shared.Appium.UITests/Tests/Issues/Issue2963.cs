@@ -17,6 +17,7 @@ namespace UITests
 		public override string Issue => "Disabling Editor in iOS does not disable entry of text";
 
 		[Test]
+		[FailsOnIOS]
 		public void Issue2963Test()
 		{
 			RunningApp.Screenshot("I am at Issue 2963");

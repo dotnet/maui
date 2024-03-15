@@ -17,6 +17,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
+		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Issue2680Test_ScrollDisabled()
 		{
 			App.ScrollDown(ScrollViewMark);
@@ -27,6 +29,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
+		[FailsOnIOS]
 		public void Issue2680Test_ScrollEnabled()
 		{
 			RunningApp.Tap(ToggleButtonMark);

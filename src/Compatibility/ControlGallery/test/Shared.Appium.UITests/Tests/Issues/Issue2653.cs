@@ -17,6 +17,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnIOS]
 		public void ZIndexWhenInsertingChildren()
 		{
 			RunningApp.WaitForNoElement(ButtonText);

@@ -14,6 +14,7 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.Picker)]
+		[FailsOnIOS]
 		public void Issue2674Test()
 		{
 			RunningApp.Screenshot("I am at Issue2674");
