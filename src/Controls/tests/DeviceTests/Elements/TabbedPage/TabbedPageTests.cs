@@ -426,7 +426,6 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		[Fact(DisplayName = "Does Not Leak")]
 		[Fact(DisplayName = "Does Not Leak"
 #if WINDOWS
 			, Skip = "FIXME: fails on Windows"
