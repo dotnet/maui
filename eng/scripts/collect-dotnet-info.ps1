@@ -1,4 +1,4 @@
-New-Module -Name Collect-DotNet-Info -ScriptBlock {
+New-Module -Name Collect-DotNet-Maui-Info -ScriptBlock {
     
     function Write-Both {
         [CmdletBinding(PositionalBinding=$false)]
@@ -23,7 +23,7 @@ New-Module -Name Collect-DotNet-Info -ScriptBlock {
         }
     }
 
-    function Collect {
+    function Collect-DotNet-Maui-Info {
         [CmdletBinding()]
         param (
             [Parameter(ValueFromPipeline=$true)]
@@ -112,5 +112,5 @@ New-Module -Name Collect-DotNet-Info -ScriptBlock {
         Write-Host ""
     }
 
-    Export-ModuleMember -Function Collect
+    Export-ModuleMember -Function Collect-DotNet-Maui-Info
 }
