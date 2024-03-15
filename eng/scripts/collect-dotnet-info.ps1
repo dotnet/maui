@@ -7,8 +7,6 @@
 #
 # Specific sln/folder:
 #
-#     . { iwr https://aka.ms/collect-maui-info.ps1 } | iex; cdnmi -Solution </path/to/sln>
-# OR
 #     . { iwr https://aka.ms/collect-maui-info.ps1 } | iex; cdnmi </path/to/sln>
 #
 ################################################################################
