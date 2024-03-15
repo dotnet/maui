@@ -113,8 +113,8 @@ namespace Microsoft.Maui.Controls
 		BindableProperty ConvertFrom(Type type, string propertyName, IXmlLineInfo lineinfo)
 		{
 			string name = propertyName + "Property";
-			FieldInfo bpinfo = type.GetField(fi => fi.Name == name && fi.IsStatic && fi.IsPublic && fi.FieldType == typeof(BindableProperty));
-			if (bpinfo == null)
+			FieldInfo bpinfo = type.GetField(name, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+			if (bpinfo == null || bpinfo.FieldType != typeof(BindableProperty))
 				throw new XamlParseException($"Can't resolve {name} on {type.Name}", lineinfo);
 			var bp = bpinfo.GetValue(null) as BindableProperty;
 			var isObsolete = bpinfo.GetCustomAttribute<ObsoleteAttribute>() != null;
