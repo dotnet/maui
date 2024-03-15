@@ -97,10 +97,13 @@ namespace UITest.Appium
 			{
 				if (!string.IsNullOrEmpty(_app.Driver.CurrentWindowHandle))
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					_app.Driver.CloseApp();
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
-				
+#pragma warning disable CS0618 // Type or member is obsolete
 				_app.Driver.LaunchApp();
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 			else
 			{
@@ -120,7 +123,9 @@ namespace UITest.Appium
 			{
 				if (!string.IsNullOrEmpty(_app.Driver.CurrentWindowHandle))
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					_app.Driver.CloseApp();
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			}
 			else
