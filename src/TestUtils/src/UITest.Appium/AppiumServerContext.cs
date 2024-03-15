@@ -75,7 +75,7 @@ namespace UITest.Appium
 				var logFile = Environment.GetEnvironmentVariable("APPIUM_LOG_FILE") ?? "appium.log";
 
 				var service = new AppiumServiceBuilder()
-					.WithArguments(arguments)
+					.WithArguments(arguments)					
 					.UsingPort(port)
 					.WithLogFile(new FileInfo(logFile))
 					.Build();

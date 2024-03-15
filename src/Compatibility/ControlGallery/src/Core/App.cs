@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		{
 			var layout = new StackLayout { BackgroundColor = Colors.Red };
 			layout.Children.Add(new Label { Text = "This is master Page" });
-			var master = new ContentPage { Title = "Flyout", Content = layout, BackgroundColor = Colors.SkyBlue, IconImageSource = "menuIcon" };
+			var master = new ContentPage { Title = "Flyout", Content = layout, BackgroundColor = Colors.SkyBlue, IconImageSource = "menuIcon.png" };
 			master.On<iOS>().SetUseSafeArea(true);
 			var mdp = new FlyoutPage
 			{
