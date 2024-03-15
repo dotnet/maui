@@ -118,7 +118,12 @@ public class MemoryTests : ControlsHandlerTestBase
 			}
 			else if (view is ItemsView items)
 			{
-				items.ItemTemplate = new DataTemplate(() => new Label());
+				items.ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				});
 				items.ItemsSource = observable;
 			}
 			else if (view is WebView webView)
