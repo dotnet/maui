@@ -24,7 +24,7 @@ public class Issue3525 : _IssuesUITest
 		{
 			Assert.Ignore("Click (x, y) pointer type mouse is not implemented.");
 		}
-		
+
 		var label = App.WaitForElement(kLabelTestAutomationId);
 		var location = label.GetRect();
 
