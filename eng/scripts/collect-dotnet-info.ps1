@@ -8,7 +8,7 @@ param (
 function Write-Both {
     [CmdletBinding(PositionalBinding=$false)]
     param (
-        [Parameter(ValueFromPipeline=$true, ValueFromRemainingArguments=$true, Position=0)]
+        [Parameter(Position=0)]
         [AllowNull()]
         [AllowEmptyString()]
         [AllowEmptyCollection()]
@@ -32,15 +32,11 @@ if (!$Solution) {
     $Solution = Get-Location
 }
 
-if (!(Test-Path $Solution)) {
-    Write-Error "The specified solution path '$Solution' does not exist."
-    exit 1
-}
-
 $WorkingDir = $Solution
 if (Test-Path $Solution -PathType Leaf) {
     $WorkingDir = Split-Path $Solution
 }
+
 Write-Host ""
 Write-Host "===================================" -ForegroundColor Magenta
 Write-Host "= .NET MAUI Information Collector =" -ForegroundColor Magenta
@@ -89,18 +85,20 @@ try {
     Write-Both ""
 
     # Read VS information
-    Write-Both "**Visual Studio Information:**"
-    Write-Both ""
-    Write-Both "``````"
-    [xml]$vsInfo = $(& 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -prerelease -format xml)
-    foreach ($instanceItem in $vsinfo.instances) {
-        $instance = $instanceItem.instance
-
-        Write-Both "Name                                    Version"
-        Write-Both "-----------------------------------------------------------------------------------"
-        Write-Both "$($instance.displayName.PadRight(38))  $($instance.catalog.productDisplayVersion)"
+    if (Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe') {
+        Write-Both "**Visual Studio Information:**"
+        Write-Both ""
+        Write-Both "``````"
+        [xml]$vsInfo = $(& 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -prerelease -format xml)
+        foreach ($instanceItem in $vsinfo.instances) {
+            $instance = $instanceItem.instance
+    
+            Write-Both "Name                                    Version"
+            Write-Both "-----------------------------------------------------------------------------------"
+            Write-Both "$($instance.displayName.PadRight(38))  $($instance.catalog.productDisplayVersion)"
+        }
+        Write-Both "``````"
     }
-    Write-Both "``````"
 } finally {
     Pop-Location
 }
