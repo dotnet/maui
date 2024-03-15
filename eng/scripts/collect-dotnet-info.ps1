@@ -1,3 +1,16 @@
+################################################################################
+# Usage:
+#
+# Current directory:
+#
+#   . { iwr https://aka.ms/collect-maui-info.ps1 } | iex; cdnmi
+#
+# Specific sln/folder:
+#
+#   . { iwr https://aka.ms/collect-maui-info.ps1 } | iex; cdnmi -Solution </path/to/sln>
+#
+################################################################################
+
 New-Module -Name Collect-DotNet-Maui-Info -ScriptBlock {
     
     function Write-Both {
@@ -112,5 +125,5 @@ New-Module -Name Collect-DotNet-Maui-Info -ScriptBlock {
         Write-Host ""
     }
 
-    Export-ModuleMember -Function Collect-DotNet-Maui-Info
+    Export-ModuleMember -Function Collect-DotNet-Maui-Info -Alias cdnmi
 }
