@@ -25,6 +25,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
+				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
@@ -83,6 +84,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(TimePicker))]
 	[InlineData(typeof(TableView))]
 	[InlineData(typeof(WebView))]
+	[InlineData(typeof(CollectionView))]
 	public async Task HandlerDoesNotLeak(Type type)
 	{
 		SetupBuilder();
