@@ -90,7 +90,6 @@ steps:
   - ${{ if eq(parameters.platform, 'windows')}}:
     - pwsh: |
         $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
-        New-PSDrive -Name HKLM -PSProvider Registry -Root HKEY_LOCAL_MACHINE
         New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value $(TestResultsDirectory)
         New-ItemProperty -Path $errorPath -Name DumpType -PropertyType DWORD -Value 2
       displayName: 'Set dump file location'
