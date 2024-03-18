@@ -96,7 +96,9 @@ namespace UITest.Appium
 			if (_app.GetTestDevice() == TestDevice.Windows)
 			{
 				CloseApp(parameters);
-				LaunchApp();
+#pragma warning disable CS0618 // Type or member is obsolete
+				_app.Driver.LaunchApp();
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 			else
 			{
