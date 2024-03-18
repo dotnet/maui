@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Platform
 {
 
-	public class ContentView : EventBox, ICrossPlatformLayoutBacking
+	public class ContentView : Bin, ICrossPlatformLayoutBacking
 	{
 		public ContentView() : base() { }
 
@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 				{
 					//PackStart(value, true, false, 0);
 					Child = value;
+					Child.Expand = true;
 				}
 
 				_content = value;
