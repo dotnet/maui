@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19673Page2"
+             Title="Page 2">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem 
+            AutomationId="TestToolbarItem"
+            Text="new"
+            IconImageSource="shopping_cart.png"
+            x:Name="Page2Item"
+            Clicked="OnToolbarItemClicked">
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+    <VerticalStackLayout>
+        <Label 
+            x:Name="LabelResult"
+            AutomationId="TestLabelResult"
+            Text="Page 2 - Content"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</ContentPage>
