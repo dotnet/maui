@@ -15,8 +15,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void TextInButtonShouldBeTruncated()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android | TestDevice.Windows | TestDevice.Mac });
-
 			App.WaitForElement("button");
 
 			//Text in the button should be truncated and fit within the frame
