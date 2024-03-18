@@ -30,7 +30,7 @@
     <MicrosoftiOSSdknet90_172PackageVersion>17.2.9331-net9-p3</MicrosoftiOSSdknet90_172PackageVersion>
     <MicrosofttvOSSdknet90_172PackageVersion>17.2.9331-net9-p3</MicrosofttvOSSdknet90_172PackageVersion>
     <!-- Samsung/Tizen.NET -->
-    <SamsungTizenSdkPackageVersion>8.0.137</SamsungTizenSdkPackageVersion>
+    <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>9.0.0-preview.3.24128.1</MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
@@ -103,7 +103,7 @@
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
-    <DotNetTizenManifestVersionBand>9.0.100-preview.2</DotNetTizenManifestVersionBand>
+    <DotNetTizenManifestVersionBand>$(DotNetVersionBand)</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet90_172PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet90_142PackageVersion)</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet90_172PackageVersion)</MicrosoftiOSSdkPackageVersion>
