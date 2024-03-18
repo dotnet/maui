@@ -95,12 +95,17 @@ namespace UITest.Appium
 
 			if (_app.GetTestDevice() == TestDevice.Windows)
 			{
-
-				CloseApp(parameters);
-
+				try
+				{
 #pragma warning disable CS0618 // Type or member is obsolete
-				_app.Driver.LaunchApp();
+					_app.Driver.CloseApp();
 #pragma warning restore CS0618 // Type or member is obsolete
+					LaunchApp();
+				}
+				catch
+				{
+					return CommandResponse.FailedEmptyResponse;
+				}
 			}
 			else
 			{
@@ -121,9 +126,16 @@ namespace UITest.Appium
 
 			if (_app.GetTestDevice() == TestDevice.Windows)
 			{
+				try
+				{
 #pragma warning disable CS0618 // Type or member is obsolete
-				_app.Driver.CloseApp();
+					_app.Driver.CloseApp();
 #pragma warning restore CS0618 // Type or member is obsolete
+				}
+				catch
+				{
+					return CommandResponse.FailedEmptyResponse;
+				}
 			}
 			else
 				_app.Driver.TerminateApp(_app.GetAppId());
@@ -140,6 +152,32 @@ namespace UITest.Appium
 			_app.Driver.Navigate().Back();
 
 			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		void LaunchApp(int maxRetries = 5)
+		{
+			int retries = 0;
+			while (true)
+			{
+				try
+				{
+#pragma warning disable CS0618 // Type or member is obsolete
+					_app.Driver.LaunchApp();
+#pragma warning restore CS0618 // Type or member is obsolete
+					break;
+				}
+				catch
+				{
+					if (retries++ < maxRetries)
+					{
+						LaunchApp();
+					}
+					else
+					{
+						throw;
+					}
+				}
+			}
 		}
 	}
 }
