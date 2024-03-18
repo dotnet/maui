@@ -54,7 +54,23 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			_app.Driver.ActivateApp(_app.GetAppId());
+			if (_app.GetTestDevice() == TestDevice.Mac)
+			{	
+				_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+				{
+					{ "bundleId", _app.GetAppId() },
+				});
+			}
+			else if (_app.GetTestDevice() == TestDevice.Windows)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				_app.Driver.LaunchApp();
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
+			else 
+			{
+				_app.Driver.ActivateApp(_app.GetAppId());
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -93,7 +109,15 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			if (_app.GetTestDevice() == TestDevice.Windows)
+			if (_app.GetTestDevice() == TestDevice.Mac)
+			{	
+				CloseApp(parameters);
+				_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+				{
+					{ "bundleId", _app.GetAppId() },
+				});
+			}
+			else if (_app.GetTestDevice() == TestDevice.Windows)
 			{
 				CloseApp(parameters);
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -117,7 +141,14 @@ namespace UITest.Appium
 			if (_app.AppState == ApplicationState.NotRunning)
 				return CommandResponse.SuccessEmptyResponse;
 
-			if (_app.GetTestDevice() == TestDevice.Windows)
+			if (_app.GetTestDevice() == TestDevice.Mac)
+			{
+				_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
+				{
+					{ "bundleId", _app.GetAppId() },
+				});
+			}
+			else if (_app.GetTestDevice() == TestDevice.Windows)
 			{
 #pragma warning disable CS0618 // Type or member is obsolete
 				_app.Driver.CloseApp();
@@ -138,32 +169,6 @@ namespace UITest.Appium
 			_app.Driver.Navigate().Back();
 
 			return CommandResponse.SuccessEmptyResponse;
-		}
-
-		void LaunchApp(int maxRetries = 5)
-		{
-			int retries = 0;
-			while (true)
-			{
-				try
-				{
-#pragma warning disable CS0618 // Type or member is obsolete
-					_app.Driver.LaunchApp();
-#pragma warning restore CS0618 // Type or member is obsolete
-					break;
-				}
-				catch
-				{
-					if (retries++ < maxRetries)
-					{
-						LaunchApp();
-					}
-					else
-					{
-						throw;
-					}
-				}
-			}
 		}
 	}
 }
