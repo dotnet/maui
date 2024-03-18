@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), new Rectangle(),
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
-					if (newvalue is not null)
+					if (oldvalue is not null)
 						(bindable as Border)?.StopNotifyingStrokeShapeChanges();
 				},
 				propertyChanged: (bindable, oldvalue, newvalue) =>
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
-					if (newvalue is not null)
+					if (oldvalue is not null)
 						(bindable as Border)?.StopNotifyingStrokeChanges();
 				},
 				propertyChanged: (bindable, oldvalue, newvalue) =>
