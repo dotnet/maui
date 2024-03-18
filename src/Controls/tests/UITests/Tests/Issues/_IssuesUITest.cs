@@ -39,8 +39,7 @@ namespace Microsoft.Maui.AppiumTests
 			base.FixtureTeardown();
 			try
 			{
-				this.Back();
-				App.Click("GoBackToGalleriesButton");
+				Reset();
 			}
 			catch (Exception e)
 			{
