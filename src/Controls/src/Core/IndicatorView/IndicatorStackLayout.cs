@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 		{
 			_indicatorView = indicatorView;
 			Orientation = StackOrientation.Horizontal;
-			_indicatorView.PropertyChanged += _indicatorViewPropertyChanged;
+			_indicatorView.PropertyChanged += IndicatorViewPropertyChanged;
 		}
 
 		protected override void OnChildAdded(Element child)
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void _indicatorViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		void IndicatorViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == IndicatorView.IndicatorsShapeProperty.PropertyName
 				|| e.PropertyName == IndicatorView.IndicatorTemplateProperty.PropertyName)
