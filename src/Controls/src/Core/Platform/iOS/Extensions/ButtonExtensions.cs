@@ -4,7 +4,6 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using UIKit;
-using Microsoft.Extensions.Logging;
 using static Microsoft.Maui.Controls.Button;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -217,6 +216,20 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 				platformButton.TitleLabel.Layer.Hidden = true;
 
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration buttonConfig)
+			{
+				// If there is an image above or below the Title, the top and bottom insets will be updated and need to be redrawn.
+				if ((buttonConfig.ImagePlacement == NSDirectionalRectEdge.Top || buttonConfig.ImagePlacement == NSDirectionalRectEdge.Bottom)
+					&& ((button.Padding.IsNaN && buttonConfig.ContentInsets == ConvertPaddingToInsets(ButtonHandler.DefaultPadding)) 
+						|| buttonConfig.ContentInsets == ConvertPaddingToInsets(button.Padding)
+						|| (IsCloseToZero(buttonConfig.ContentInsets) && button.Padding == Thickness.Zero)))
+				{
+					platformButton.UpdatePadding(button);
+					platformButton.Superview?.SetNeedsLayout();
+					return;
+				}
+			}
+
 			platformButton.UpdatePadding(button);
 
 			if (!OperatingSystem.IsIOSVersionAtLeast(15))
@@ -229,6 +242,18 @@ namespace Microsoft.Maui.Controls.Platform
 					platformButton.Superview?.SetNeedsLayout();
 				}
 			}
+		}
+
+		static NSDirectionalEdgeInsets ConvertPaddingToInsets(Thickness thickness) =>
+		new NSDirectionalEdgeInsets((nfloat)thickness.Top, (nfloat)thickness.Left, (nfloat)thickness.Bottom, (nfloat)thickness.Right);
+
+		static bool IsCloseToZero(NSDirectionalEdgeInsets inset)
+		{
+			// The system sets the Top and Bottom insets to very small fractions when set to zero
+			if (inset.Top < 0.0001 && inset.Leading < 0.0001 && inset.Bottom < 0.0001 && inset.Trailing < 0.0001)
+				return true;
+
+			return false;
 		}
 
 		public static void UpdateText(this UIButton platformButton, Button button)

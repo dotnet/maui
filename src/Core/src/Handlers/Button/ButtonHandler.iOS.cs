@@ -52,8 +52,8 @@ namespace Microsoft.Maui.Handlers
 		//TODO: make this public on NET8
 		internal static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			// Use UIButton.Configuration for iOS 15+
-			if (OperatingSystem.IsIOSVersionAtLeast(15))
+			//If this is a Mac optimized interface
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
 			{
 				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
 				if (button?.Background is Paint paint)
