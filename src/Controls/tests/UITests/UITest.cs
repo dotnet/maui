@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using NUnit.Framework;
+using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
 using VisualTestUtils;
@@ -83,6 +84,11 @@ namespace Microsoft.Maui.AppiumTests
 			}
 
 			return config;
+		}
+
+		public override void Reset()
+		{
+			App.ResetApp();
 		}
 
 		public void VerifyScreenshot(string? name = null)

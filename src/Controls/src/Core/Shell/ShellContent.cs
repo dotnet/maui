@@ -212,9 +212,27 @@ namespace Microsoft.Maui.Controls
 			shellContent.Route = Routing.GenerateImplicitRoute(pageRoute);
 
 			shellContent.Content = page;
-			shellContent.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: page));
-			shellContent.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: page));
-			shellContent.SetBinding(FlyoutIconProperty, new Binding(nameof(FlyoutIcon), BindingMode.OneWay, source: page));
+			shellContent.SetBinding(
+				TitleProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(TemplatedPage.Title),
+					static (TemplatedPage page) => page.Title,
+					mode: BindingMode.OneWay,
+					source: page));
+			shellContent.SetBinding(
+				IconProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(TemplatedPage.IconImageSource),
+					static (TemplatedPage page) => page.IconImageSource,
+					mode: BindingMode.OneWay,
+					source: page));
+			shellContent.SetBinding(
+				FlyoutIconProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(TemplatedPage.IconImageSource),
+					static (TemplatedPage page) => page.IconImageSource,
+					mode: BindingMode.OneWay,
+					source: page));
 
 			return shellContent;
 		}
@@ -295,42 +313,45 @@ namespace Microsoft.Maui.Controls
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			var type = content.GetType();
-			var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
-			if (queryPropertyAttributes.Length == 0)
+			if (RuntimeFeature.IsQueryPropertyAttributeSupported)
 			{
-				ClearQueryIfAppliedToPage(query, content);
-				return;
-			}
-
-			foreach (QueryPropertyAttribute attrib in queryPropertyAttributes)
-			{
-				if (query.TryGetValue(attrib.QueryId, out var value))
+				var type = content.GetType();
+				var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
+				if (queryPropertyAttributes.Length == 0)
 				{
-					PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
+					ClearQueryIfAppliedToPage(query, content);
+					return;
+				}
 
-					if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
+				foreach (QueryPropertyAttribute attrib in queryPropertyAttributes)
+				{
+					if (query.TryGetValue(attrib.QueryId, out var value))
 					{
-						if (prop.PropertyType == typeof(string))
-						{
-							if (value != null)
-								value = global::System.Net.WebUtility.UrlDecode((string)value);
+						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
 
-							prop.SetValue(content, value);
-						}
-						else
+						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
 						{
-							var castValue = Convert.ChangeType(value, prop.PropertyType);
-							prop.SetValue(content, castValue);
+							if (prop.PropertyType == typeof(string))
+							{
+								if (value != null)
+									value = global::System.Net.WebUtility.UrlDecode((string)value);
+
+								prop.SetValue(content, value);
+							}
+							else
+							{
+								var castValue = Convert.ChangeType(value, prop.PropertyType);
+								prop.SetValue(content, castValue);
+							}
 						}
 					}
-				}
-				else if (oldQuery.TryGetValue(attrib.QueryId, out var oldValue))
-				{
-					PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
+					else if (oldQuery.TryGetValue(attrib.QueryId, out var oldValue))
+					{
+						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
 
-					if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-						prop.SetValue(content, null);
+						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
+							prop.SetValue(content, null);
+					}
 				}
 			}
 

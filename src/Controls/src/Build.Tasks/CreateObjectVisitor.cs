@@ -51,17 +51,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var typeref = Module.ImportReference(node.XmlType.GetTypeReference(Context.Cache, Module, node));
 			TypeDefinition typedef = typeref.ResolveCached(Context.Cache);
 
-			if (IsXaml2009LanguagePrimitive(node))
-			{
-				var vardef = new VariableDefinition(typeref);
-				Context.Variables[node] = vardef;
-				Context.Body.Variables.Add(vardef);
-
-				Context.IL.Append(PushValueFromLanguagePrimitive(typedef, node));
-				Context.IL.Emit(Stloc, vardef);
-				return;
-			}
-
 			//if this is a MarkupExtension that can be compiled directly, compile and returns the value
 			var compiledMarkupExtensionName = typeref
 				.GetCustomAttribute(Context.Cache, Module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))
@@ -89,6 +78,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						node.SkipProperties.Add(prop.Key);
 				node.CollectionItems.Clear();
 
+				return;
+			}
+
+			if (IsXaml2009LanguagePrimitive(node))
+			{
+				var vardef = new VariableDefinition(typeref);
+				Context.Variables[node] = vardef;
+				Context.Body.Variables.Add(vardef);
+
+				Context.IL.Append(PushValueFromLanguagePrimitive(typedef, node));
+				Context.IL.Emit(Stloc, vardef);
 				return;
 			}
 

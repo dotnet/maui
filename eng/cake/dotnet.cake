@@ -9,6 +9,7 @@ var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
+string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
 string TestTFM = Argument("testtfm", "");
 var useNuget = Argument("usenuget", true);
@@ -25,6 +26,14 @@ var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Maps.*.nupkg",
     "Microsoft.AspNetCore.Components.WebView.*.nupkg",
 };
+public enum RuntimeVariant
+{
+	Mono,
+	NativeAOT
+}
+
+RuntimeVariant RUNTIME_VARIANT = Argument("runtimevariant", RuntimeVariant.Mono);
+bool USE_NATIVE_AOT = RUNTIME_VARIANT == RuntimeVariant.NativeAOT ? true : false;
 
 ProcessTFMSwitches();
 
@@ -168,7 +177,25 @@ Task("dotnet-samples")
                 ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
             };
         }
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
+
+        string projectsToBuild;
+        if (USE_NATIVE_AOT)
+        {
+            if (configuration.Equals("Debug", StringComparison.OrdinalIgnoreCase))
+            {
+                var errMsg = $"Error: Building dotnet-samples with NativeAOT is only supported in Release configuration";
+                Error(errMsg);
+                throw new Exception(errMsg);
+            }
+            projectsToBuild = "./src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
+            properties["_UseNativeAot"] = "true";
+        }
+        else
+        {
+            projectsToBuild = "./Microsoft.Maui.Samples.slnf";
+        }
+
+        RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
     });
 
 Task("dotnet-legacy-controlgallery")
@@ -553,7 +580,6 @@ void SetDotNetEnvironmentVariables(string dotnetDir = null)
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
     SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
-    SetEnvironmentVariable("ForceNet8Current", "true");
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 
     // Get "full" .binlog in Project System Tools
@@ -670,7 +696,10 @@ void RunMSBuildWithDotNet(
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
-        .EnableBinaryLogger(binlog);
+        .EnableBinaryLogger(binlog)
+        
+       // .SetVerbosity(Verbosity.Diagnostic)
+        ;
 
     if (warningsAsError)
     {
@@ -697,9 +726,7 @@ void RunMSBuildWithDotNet(
 
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
-
-        //args.Append("/tl");
-
+    
         return args;
     };
 
@@ -711,6 +738,16 @@ void RunMSBuildWithDotNet(
 
 void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
 {
+    if (string.IsNullOrWhiteSpace(filter))
+    {
+        filter = testFilter;
+    }
+
+    if (!string.IsNullOrWhiteSpace(filter))
+    {
+        Information("Run Tests With Filter {0}", filter);	
+    }
+
     string binlog;
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);

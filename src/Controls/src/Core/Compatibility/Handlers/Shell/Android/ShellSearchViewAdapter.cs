@@ -5,6 +5,7 @@ using System.ComponentModel;
 using Android.Views;
 using Android.Widget;
 using Java.Lang;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using AView = Android.Views.View;
 
@@ -66,7 +67,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_defaultTemplate = new DataTemplate(() =>
 					{
 						var label = new Label();
-						label.SetBinding(Label.TextProperty, _searchHandler.DisplayMemberName ?? ".");
+
+						if (RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported)
+						{
+#pragma warning disable CS0618
+							label.SetBinding(Label.TextProperty, _searchHandler.DisplayMemberName ?? ".");
+#pragma warning restore CS0618
+						}
+						else
+						{
+#pragma warning disable CS0618
+							if (_searchHandler.DisplayMemberName is not null)
+							{
+								Application.Current?.FindMauiContext()?.CreateLogger<ShellSearchViewAdapter>()?.LogError(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
+								throw new InvalidOperationException(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
+							}
+#pragma warning restore CS0618
+						}
+
 						label.HorizontalTextAlignment = TextAlignment.Center;
 						label.VerticalTextAlignment = TextAlignment.Center;
 

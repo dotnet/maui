@@ -84,10 +84,9 @@ namespace Microsoft.Maui.Controls.Platform
 					nativeToolbar.Context ??
 					toolbar.Handler?.MauiContext?.Context;
 
-				nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!)
-				{
-					Progress = 1
-				};
+				nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!);
+				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+					iconDrawable.Progress = 1;
 
 				var backButtonTitle = toolbar.BackButtonTitle;
 				ImageSource image = toolbar.TitleIcon;
@@ -110,6 +109,9 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
+					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+						iconDrawable.Progress = 0;
+
 					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
 				}
 			}

@@ -16,10 +16,12 @@ namespace Microsoft.Maui
 	{
 		private const bool IsXamlRuntimeParsingSupportedByDefault = true;
 		private const bool IsIVisualAssemblyScanningEnabledByDefault = false;
+		private const bool IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault = true;
+		private const bool IsQueryPropertyAttributeSupportedByDefault = true;
 
 		internal static bool IsXamlRuntimeParsingSupported
-			=> AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported", out bool isEnabled)
-				? isEnabled
+			=> AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported", out bool isSupported)
+				? isSupported
 				: IsXamlRuntimeParsingSupportedByDefault;
 
 		internal const string XamlRuntimeParsingNotSupportedErrorMessage = "XAML runtime parsing is not supported. " +
@@ -31,5 +33,15 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled", out bool isEnabled)
 				? isEnabled
 				: IsIVisualAssemblyScanningEnabledByDefault;
+
+		internal static bool IsShellSearchResultsRendererDisplayMemberNameSupported
+			=> AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported", out bool isSupported)
+				? isSupported
+				: IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault;
+
+		internal static bool IsQueryPropertyAttributeSupported =>
+			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported", out bool isSupported)
+				? isSupported
+				: IsQueryPropertyAttributeSupportedByDefault;
 	}
 }

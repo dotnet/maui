@@ -108,7 +108,6 @@ namespace Microsoft.Maui.IntegrationTests
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;
-			pinfo.EnvironmentVariables["ForceNet8Current"] = "true";
 
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);
 		}

@@ -292,7 +292,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
 				if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension"
-					&& (node.Properties == null || !node.Properties.ContainsKey(new XmlName("", "Source"))) //do not compile bindings if Source is set
 					&& bpRef != null //do not compile bindings if we're not gonna SetBinding
 					)
 					foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition))
@@ -402,7 +401,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if (n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 					break;
-				n = n.Parent as IElementNode;
+				if (n.Parent is ListNode listNode)
+					n = listNode.Parent as IElementNode;
+				else
+					n = n.Parent as IElementNode;
 			}
 
 			if (dataTypeNode is null)
@@ -435,12 +437,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (dataType is null)
 				throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
 
-			var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
-			var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix) ?? "";
-			if (!string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(namespaceuri))
+			XmlType dtXType = null;
+			try
+			{
+				dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
+					?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+			}
+			catch (XamlParseException)
+			{
+				var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
 				throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
-
-			var dtXType = new XmlType(namespaceuri, dataType, null);
+			}
 
 			var tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
 			if (tSourceRef == null)
@@ -530,7 +537,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (p.Length > 0)
 				{
-					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic, out var propDeclTypeRef)
+					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic && !pd.GetMethod.IsStatic, out var propDeclTypeRef)
 						?? throw new BuildException(BuildExceptionCode.BindingPropertyNotFound, lineInfo, null, p, previousPartTypeRef);
 					properties.Add((property, propDeclTypeRef, null));
 					previousPartTypeRef = property.PropertyType.ResolveGenericParameters(propDeclTypeRef);
