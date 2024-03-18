@@ -34,18 +34,30 @@ namespace Microsoft.Maui.Platform
 			{
 				var (mainNode, subnode) = borderView.GetBorderCssNode();
 
+				void SetRadius(int radius)
+				{
+					platformView.SetStyleValueNode($"{radius}px", mainNode, "border-radius", subnode);
+
+					if (border.StrokeThickness == 0)
+					{
+						platformView.SetStyleValueNode($"{radius*2}px", mainNode, "border-width", subnode);
+					}
+				}
+
 				if (border.Shape is IRoundRectangle roundRectangle)
 				{
 
 					// border-top-left-radius, border-top-right-radius, border-bottom-right-radius, border-bottom-left-radius
+					// maybe radius can be calculated from path??:
 					var path = shape.PathForBounds(platformView.Allocation.ToRect());
-					platformView.SetStyleValueNode($"5px", mainNode, "border-radius", subnode);
 					path.Dispose();
+
+					SetRadius(5);
 
 				}
 				else
 				{
-					platformView.SetStyleValueNode($"0px", mainNode, "border-radius", subnode);
+					SetRadius(0);
 				}
 			}
 		}
