@@ -136,7 +136,7 @@
     <comment>0 is indexer type name</comment>
   </data>
   <data name="BindingWithoutDataType" xml:space="preserve">
-    <value>Binding could be compiled if x:DataType is specified.</value>
+    <value>Binding could be compiled if x:DataType is specified. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
   </data>  
   <data name="BindingWithNullDataType" xml:space="preserve">
     <value>Binding could be compiled if x:DataType is not explicitly null.</value>
