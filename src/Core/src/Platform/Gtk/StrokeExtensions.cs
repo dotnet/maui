@@ -1,4 +1,5 @@
-﻿using Gtk;
+﻿using System;
+using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 
@@ -30,6 +31,55 @@ namespace Microsoft.Maui.Platform
 			{
 				platformView.SetStyleValueNode($"{BorderStyle.Solid}", mainNode, "border-style", subnode);
 			}
+
+			// no effect:
+			// platformView.SetStyleValueNode("content-box", mainNode, "background-clip");
+		}
+
+		// radius can be calculated from path
+		static (PointF from, PointF to)[] Corners(IRoundRectangle shape, Rect bounds)
+		{
+			using var path = shape.PathForBounds(bounds);
+
+			var corners = new (PointF from, PointF to)[4];
+			var iCorner = 0;
+			PointF fromP = default;
+			PointF toP = default;
+			for (var i = 0; i < path.OperationCount; i++)
+			{
+				var type = path.GetSegmentType(i);
+				var points = path.GetPointsForSegment(i);
+
+				if (type == PathOperation.Cubic)
+				{
+					toP = points[2];
+				}
+
+				if (type == PathOperation.Move)
+				{
+					fromP = points[0];
+				}
+
+				if (type == PathOperation.Line)
+				{
+					corners[iCorner] = (fromP, toP);
+					iCorner++;
+					if (iCorner > corners.Length)
+						break;
+					fromP = points[0];
+				}
+			}
+
+			corners[iCorner] = (fromP, toP);
+
+			return corners;
+		}
+
+		static float[] Radii((PointF from, PointF to)[] corners)
+		{
+			float cornerOffset(int i) => Math.Abs(corners[i].to.X - corners[i].from.X);
+
+			return [cornerOffset(0), cornerOffset(1), cornerOffset(2), cornerOffset(3)];
 		}
 
 		[MissingMapper]
@@ -42,24 +92,27 @@ namespace Microsoft.Maui.Platform
 			{
 				var (mainNode, subnode) = borderView.GetBorderCssNode();
 
-				void SetRadius(int radius)
+				// border-top-left-radius, border-top-right-radius, border-bottom-right-radius, border-bottom-left-radius
+				void SetRadius(float radius, float? tr = default, float? br = default, float? bl = default)
 				{
-					platformView.SetStyleValueNode($"{radius}px", mainNode, "border-radius", subnode);
-
-					if (border.StrokeThickness == 0)
+					if (tr is not { } || br is not { } || bl is not { } ||
+					    (radius == tr && radius == br && radius == bl))
 					{
-						platformView.SetStyleValueNode($"{radius * 2}px", mainNode, "border-width", subnode);
+						platformView.SetStyleValueNode($"{radius}px", mainNode, "border-radius", subnode);
+						return;
 					}
+
+					platformView.SetStyleValueNode($"{(int)radius}px", mainNode, "border-top-left-radius", subnode);
+					platformView.SetStyleValueNode($"{(int)tr}px", mainNode, "border-top-right-radius", subnode);
+					platformView.SetStyleValueNode($"{(int)br}px", mainNode, "border-bottom-right-radius", subnode);
+					platformView.SetStyleValueNode($"{(int)bl}px", mainNode, "border-bottom-left-radius", subnode);
 				}
 
 				if (border.Shape is IRoundRectangle roundRectangle)
 				{
-					// border-top-left-radius, border-top-right-radius, border-bottom-right-radius, border-bottom-left-radius
-					// maybe radius can be calculated from path??:
-					var path = shape.PathForBounds(platformView.Allocation.ToRect());
-					path.Dispose();
+					var radii = Radii(Corners(roundRectangle, platformView.Allocation.ToRect()));
 
-					SetRadius(5);
+					SetRadius(radii[0], radii[1], radii[2], radii[3]);
 				}
 				else
 				{
