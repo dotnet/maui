@@ -845,9 +845,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var contentPage1 = new ContentPage();
 			var contentPage2 = new ContentPage();
 
-			Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PushAsync(contentPage1));
-			Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopAsync());
-			Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopToRootAsync());
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PushAsync(contentPage1));
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopAsync());
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopToRootAsync());
 			Assert.Throws<InvalidOperationException>(() => window.Navigation.InsertPageBefore(contentPage1, contentPage2));
 			Assert.Throws<InvalidOperationException>(() => window.Navigation.RemovePage(contentPage1));
 		}
@@ -858,7 +858,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var window = new TestWindow(new ContentPage());
 			var contentPage1 = new ContentPage();
 			var navigationPage = new TestNavigationPage(true, contentPage1);
-			Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PushAsync(contentPage1));
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PushAsync(contentPage1));
 		}
 
 		[Fact]
