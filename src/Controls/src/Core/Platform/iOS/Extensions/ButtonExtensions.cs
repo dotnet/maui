@@ -74,6 +74,14 @@ namespace Microsoft.Maui.Controls.Platform
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
 
+			var config = platformButton.Configuration;
+
+			if (config is UIButtonConfiguration)
+			{
+				config.ImagePadding = spacing;
+				platformButton.Configuration = config;
+			}
+
 			var image = platformButton.CurrentImage;
 
 
@@ -81,10 +89,10 @@ namespace Microsoft.Maui.Controls.Platform
 			// depending on the position the user has picked
 			// This makes the behavior consistent with android
 			var contentMode = UIViewContentMode.Center;
-			if (platformButton.Configuration is UIButtonConfiguration startingConfig)
+			if (config is UIButtonConfiguration)
 			{
-				startingConfig.ImagePlacement = NSDirectionalRectEdge.None;
-				platformButton.Configuration = startingConfig;
+				config.ImagePlacement = NSDirectionalRectEdge.None;
+				platformButton.Configuration = config;
 			}
 
 			if (image != null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
@@ -111,7 +119,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
-					if (platformButton.Configuration is UIButtonConfiguration config)
+					if (config is UIButtonConfiguration)
 					{
 						config.ImagePlacement = NSDirectionalRectEdge.Top;
 						platformButton.Configuration = config;
@@ -132,7 +140,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
-					if (platformButton.Configuration is UIButtonConfiguration config)
+					if (config is UIButtonConfiguration)
 					{
 						config.ImagePlacement = NSDirectionalRectEdge.Bottom;
 						platformButton.Configuration = config;
@@ -153,7 +161,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
 				{
-					if (platformButton.Configuration is UIButtonConfiguration config)
+					if (config is UIButtonConfiguration)
 					{
 						if ((button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft)
 							config.ImagePlacement = NSDirectionalRectEdge.Trailing;
@@ -178,7 +186,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					if (platformButton.Configuration is UIButtonConfiguration config)
+					if (config is UIButtonConfiguration)
 					{
 						if ((button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft)
 							config.ImagePlacement = NSDirectionalRectEdge.Leading;
@@ -216,13 +224,13 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 				platformButton.TitleLabel.Layer.Hidden = true;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration buttonConfig)
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && config is UIButtonConfiguration)
 			{
 				// If there is an image above or below the Title, the top and bottom insets will be updated and need to be redrawn.
-				if ((buttonConfig.ImagePlacement == NSDirectionalRectEdge.Top || buttonConfig.ImagePlacement == NSDirectionalRectEdge.Bottom)
-					&& ((button.Padding.IsNaN && buttonConfig.ContentInsets == ConvertPaddingToInsets(ButtonHandler.DefaultPadding)) 
-						|| buttonConfig.ContentInsets == ConvertPaddingToInsets(button.Padding)
-						|| (IsCloseToZero(buttonConfig.ContentInsets) && button.Padding == Thickness.Zero)))
+				if ((config.ImagePlacement == NSDirectionalRectEdge.Top || config.ImagePlacement == NSDirectionalRectEdge.Bottom)
+					&& ((button.Padding.IsNaN && config.ContentInsets == ConvertPaddingToInsets(ButtonHandler.DefaultPadding)) 
+						|| config.ContentInsets == ConvertPaddingToInsets(button.Padding)
+						|| (IsCloseToZero(config.ContentInsets) && button.Padding == Thickness.Zero)))
 				{
 					platformButton.UpdatePadding(button);
 					platformButton.Superview?.SetNeedsLayout();
