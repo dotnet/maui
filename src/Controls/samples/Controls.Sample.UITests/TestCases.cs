@@ -62,9 +62,7 @@ namespace Maui.Controls.Sample
 						TrackOnInsights(page);
 						if (page is ContentPage /*|| page is CarouselPage*/)
 						{
-
 							await Navigation.PushAsync(page);
-
 						}
 						else if (page is Shell)
 						{
