@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			public override void SetImageSource(Gdk.Pixbuf? platformImage)
 			{
-				if (Handler?.PlatformView is not ImageView image)
+				if (Handler?.PlatformView is not { } image)
 					return;
 
 				image.Image = platformImage;
