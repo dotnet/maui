@@ -1,12 +1,11 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using Gtk;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
 
 namespace Microsoft.Maui.Platform
 {
-
 	public static class StrokeExtensions
 	{
-
 		static (string mainNode, string subNode) GetBorderCssNode(this BorderView platformView)
 		{
 			var mainNode = platformView.CssMainNode();
@@ -17,11 +16,20 @@ namespace Microsoft.Maui.Platform
 		[MissingMapper]
 		public static void UpdateStroke(this BorderView platformView, IBorderStroke border)
 		{
-
 			var (mainNode, subnode) = platformView.GetBorderCssNode();
 			platformView.SetStyleColor(border.Stroke.ToColor(), mainNode, "border-color", subnode);
 			platformView.SetStyleValueNode($"{(int)border.StrokeThickness}px", mainNode, "border-width", subnode);
-
+			if (border.StrokeDashPattern is { Length: > 1 })
+			{
+				if (border.StrokeDashPattern[0] > 1)
+					platformView.SetStyleValueNode($"{BorderStyle.Dashed}", mainNode, "border-style", subnode);
+				else
+					platformView.SetStyleValueNode($"{BorderStyle.Dotted}", mainNode, "border-style", subnode);
+			}
+			else
+			{
+				platformView.SetStyleValueNode($"{BorderStyle.Solid}", mainNode, "border-style", subnode);
+			}
 		}
 
 		[MissingMapper]
@@ -40,20 +48,18 @@ namespace Microsoft.Maui.Platform
 
 					if (border.StrokeThickness == 0)
 					{
-						platformView.SetStyleValueNode($"{radius*2}px", mainNode, "border-width", subnode);
+						platformView.SetStyleValueNode($"{radius * 2}px", mainNode, "border-width", subnode);
 					}
 				}
 
 				if (border.Shape is IRoundRectangle roundRectangle)
 				{
-
 					// border-top-left-radius, border-top-right-radius, border-bottom-right-radius, border-bottom-left-radius
 					// maybe radius can be calculated from path??:
 					var path = shape.PathForBounds(platformView.Allocation.ToRect());
 					path.Dispose();
 
 					SetRadius(5);
-
 				}
 				else
 				{
@@ -124,7 +130,5 @@ namespace Microsoft.Maui.Platform
 
 			UpdateStroke(borderView, border);
 		}
-
 	}
-
 }
