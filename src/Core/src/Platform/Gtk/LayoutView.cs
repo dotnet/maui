@@ -13,22 +13,21 @@ using Point = Microsoft.Maui.Graphics.Point;
 
 namespace Microsoft.Maui.Platform
 {
-
 	// refactored from: https://github.com/mono/xwt/blob/501f6b529fca632655295169094f637627c74c47/Xwt.Gtk/Xwt.GtkBackend/BoxBackend.cs
 
 	// see: https://github.com/linuxmint/gtk/blob/master/gtk/gtkcontainer.c
 
 	public class LayoutView : Container, IGtkContainer, ICrossPlatformLayoutBacking
 	{
-
 		protected override bool OnDrawn(Cairo.Context cr)
 		{
 			var stc = this.StyleContext;
 			stc.RenderBackground(cr, 0, 0, Allocation.Width, Allocation.Height);
 
-			var r = base.OnDrawn(cr);
+			var r = true; 
+			foreach (var c in _children.ToArray())
+				PropagateDraw(c.widget, cr);
 #if TRACE_ALLOCATION
-
 			cr.Save();
 			cr.SetSourceColor(Graphics.Colors.Red.ToCairoColor());
 			cr.Rectangle(0, 0, Allocation.Width, Allocation.Height);
@@ -78,9 +77,9 @@ namespace Microsoft.Maui.Platform
 			var orientation = GetOrientation();
 
 			var focusChain = _children
-			   .Select(c => c.widget)
+				.Select(c => c.widget)
 				// .OrderBy(kvp => orientation == Orientation.Horizontal ? kvp.Value.Rect.X : kvp.Value.Rect.Y)
-			   .ToArray();
+				.ToArray();
 
 			FocusChain = focusChain;
 		}
@@ -290,7 +289,6 @@ namespace Microsoft.Maui.Platform
 
 		public Size Measure(double widthConstraint, double heightConstraint, SizeRequestMode mode = SizeRequestMode.ConstantSize)
 		{
-
 			if (CrossPlatformLayout is not { } virtualView)
 			{
 				return Size.Zero;
@@ -299,7 +297,6 @@ namespace Microsoft.Maui.Platform
 			var measured = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 #if TRACE_ALLOCATION
-
 			_measureCount++;
 #endif
 
@@ -487,7 +484,5 @@ namespace Microsoft.Maui.Platform
 		}
 
 		protected int ToSize(double it) => double.IsPositiveInfinity(it) ? 0 : (int)it;
-
 	}
-
 }
