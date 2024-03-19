@@ -3,7 +3,7 @@ using UITest.Core;
 
 namespace UITest.Appium
 {
-	public class AppiumIOSPointerActions : ICommandExecutionGroup
+	public class AppiumIOSTouchActions : ICommandExecutionGroup
 	{
 		const string DoubleClickCommand = "doubleClick";
 		const string DragAndDropCommand = "dragAndDrop";
@@ -15,7 +15,7 @@ namespace UITest.Appium
 		};
 		readonly AppiumApp _appiumApp;
 
-		public AppiumIOSPointerActions(AppiumApp appiumApp)
+		public AppiumIOSTouchActions(AppiumApp appiumApp)
 		{
 			_appiumApp = appiumApp;
 		}

@@ -32,10 +32,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.EnterText("RtlEntry", "Simple Text");
 
 			// Set focus
-			App.Click(rtlEntryRect.X, rtlEntryRect.Y);
+			App.Tap(rtlEntryRect.X, rtlEntryRect.Y);
 
 			// Tap on the entry but not on the clear button
-			App.Click(rtlEntryRect.CenterX(), rtlEntryRect.CenterY());
+			App.Tap(rtlEntryRect.CenterX(), rtlEntryRect.CenterY());
 
 			rtlEntryText = App.FindElement("RtlEntry").GetText();
 
@@ -63,11 +63,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			var rtlEntryRect = App.FindElement("RtlEntry").GetRect();
 
 			// Set focus
-			App.Click(rtlEntryRect.X, rtlEntryRect.Y);
+			App.Tap(rtlEntryRect.X, rtlEntryRect.Y);
 
 			// Tap Clear Button
 			var margin = 30;
-			App.Click(rtlEntryRect.X + margin, rtlEntryRect.Y + margin);
+			App.Tap(rtlEntryRect.X + margin, rtlEntryRect.Y + margin);
 
 			rtlEntryText = App.FindElement("RtlEntry").GetText();
 
