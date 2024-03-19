@@ -71,8 +71,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			{
 				// Windows will throw an error if we try to execute Taps with a TouchAction
 				// or if we try to use ExecuteScript, so we'll just use TapCoordinates instead
-				App.Tap(point1.X, point1.Y);
-				App.Tap(point2.X, point2.Y);
+				app.TapCoordinates(point1.X, point1.Y);
+				app.TapCoordinates(point2.X, point2.Y);
 			}
 			else if (driver is IOSDriver)
 			{
