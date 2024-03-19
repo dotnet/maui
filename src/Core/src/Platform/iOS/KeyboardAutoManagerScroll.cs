@@ -282,7 +282,7 @@ public static class KeyboardAutoManagerScroll
 		// while we have the keyboard up, we need a delay to recalculate
 		// the height of the InputAccessoryView
 		if (IsKeyboardShowing && View?.InputAccessoryView is not null)
-			await Task.Delay(20);
+			await Task.Delay(30);
 
 		if (entranceCount == DebounceCount)
 		{
@@ -317,7 +317,7 @@ public static class KeyboardAutoManagerScroll
 		nfloat statusBarHeight;
 		nfloat navigationBarAreaHeight;
 
-		if (ContainerView.FindResponder<UINavigationController>() is UINavigationController navigationController)
+		if (View.FindResponder<UINavigationController>() is UINavigationController navigationController)
 		{
 			navigationBarAreaHeight = navigationController.NavigationBar.Frame.GetMaxY();
 		}
