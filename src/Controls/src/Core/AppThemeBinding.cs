@@ -8,13 +8,14 @@ namespace Microsoft.Maui.Controls
 {
 	class AppThemeBinding : BindingBase
 	{
+		public const string AppThemeResource = "__MAUI_ApplicationTheme__";
 		class AppThemeProxy : Element
 		{
 			public AppThemeProxy(Element parent, AppThemeBinding binding)
 			{
 				_parent = parent;
 				Binding = binding;
-				this.SetDynamicResource(AppThemeProperty, "__ApplicationTheme__");
+				this.SetDynamicResource(AppThemeProperty, AppThemeResource);
 				((IElementDefinition)parent).AddResourcesChangedListener(OnParentResourcesChanged);
 			}
 
