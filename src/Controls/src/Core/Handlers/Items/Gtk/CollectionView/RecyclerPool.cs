@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
         {
             foreach (var item in _pool)
             {
-                adaptor.RemoveNativeView(item.Content!);
+                adaptor.RemovePlatformView(item.Content!);
                 item.Unparent();
                 item.Dispose();
             }
@@ -41,10 +41,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
         {
             if (_pool.First != null)
             {
-                var fisrt = _pool.First;
+                var first = _pool.First;
                 _pool.RemoveFirst();
                 Count--;
-                return fisrt.Value;
+                return first.Value;
             }
             return null;
         }

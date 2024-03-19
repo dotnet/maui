@@ -1,4 +1,4 @@
-﻿using NView = Gtk.Widget;
+﻿using PlatformView = Gtk.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return _groupItemSource.GetAbsoluteIndex(group, inGroup);
 		}
 
-		public override NView CreateNativeView(int index)
+		public override PlatformView CreatePlatformView(int index)
 		{
 			var (_, inGroup) = _groupItemSource.GetGroupAndIndex(index);
 			if (inGroup == -1)
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				ItemTemplate = _groupFooterTemplate;
 			}
-			var nativeView = base.CreateNativeView(index);
+			var nativeView = base.CreatePlatformView(index);
 
 			ItemTemplate = _itemTemplate;
 			return nativeView;

@@ -41,27 +41,27 @@ public static class WidgetExtensions
 		return it.Allocation.ToRect();
 	}
 
-	public static void UpdateSize(this Widget nativeView, Size size)
+	public static void UpdateSize(this Widget platformView, Size size)
 	{
 		var widthRequest = Microsoft.Maui.WidgetExtensions.Request(size.Width);
 		var doResize = false;
 
-		if (widthRequest != -1 && widthRequest != nativeView.AllocatedWidth)
+		if (widthRequest != -1 && widthRequest != platformView.AllocatedWidth)
 		{
-			nativeView.WidthRequest = widthRequest;
+			platformView.WidthRequest = widthRequest;
 			doResize = true;
 		}
 
 		var heightRequest = Microsoft.Maui.WidgetExtensions.Request(size.Height);
 
-		if (heightRequest != -1 && heightRequest != nativeView.AllocatedHeight)
+		if (heightRequest != -1 && heightRequest != platformView.AllocatedHeight)
 		{
-			nativeView.HeightRequest = heightRequest;
+			platformView.HeightRequest = heightRequest;
 			doResize = true;
 		}
 
 		if (doResize)
-			nativeView.QueueResize();
+			platformView.QueueResize();
 	}
 
 	[MissingMapper]

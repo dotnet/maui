@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
-using NView = Gtk.Widget;
+using PlatformView = Gtk.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
         /// </summary>
         /// <param name="view">A view to update</param>
         /// <param name="state">State of view</param>
-        public virtual void UpdateViewState(NView view, ViewHolderState state)
+        public virtual void UpdateViewState(PlatformView view, ViewHolderState state)
         {
         }
 
@@ -125,30 +125,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
         /// Create a new view
         /// </summary>
         /// <returns>Created view</returns>
-        public abstract NView CreateNativeView();
+        public abstract PlatformView CreatePlatformView();
 
         /// <summary>
         /// Create a new view
         /// </summary>
         /// <param name="index">To used item when create a view</param>
         /// <returns>Created view</returns>
-        public abstract NView CreateNativeView(int index);
+        public abstract PlatformView CreatePlatformView(int index);
 
         /// <summary>
         /// Create a header view, if header is not existed, null will be returned
         /// </summary>
         /// <returns>A created view</returns>
-        public abstract NView? GetHeaderView();
+        public abstract PlatformView? GetHeaderView();
 
         public abstract IView? GetTemplatedView(int index);
         
-        public abstract IView? GetTemplatedView(NView view);
+        public abstract IView? GetTemplatedView(PlatformView view);
         
         /// <summary>
         /// Remove header view, a created view by Adaptor, should be removed by Adaptor
         /// </summary>
         /// <param name="header">A view to remove</param>
-        public virtual void RemoveHeaderView(NView header)
+        public virtual void RemoveHeaderView(PlatformView header)
         {
             header.Dispose();
         }
@@ -157,13 +157,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
         /// Create a footer view, if footer is not existed, null will be returned
         /// </summary>
         /// <returns>A created view</returns>
-        public abstract NView? GetFooterView();
+        public abstract PlatformView? GetFooterView();
 
         /// <summary>
         /// Remove footer view, a created view by Adaptor, should be removed by Adaptor
         /// </summary>
         /// <param name="footer">A view to remove</param>
-        public virtual void RemoveFooterView(NView footer)
+        public virtual void RemoveFooterView(PlatformView footer)
         {
             footer.Dispose();
         }
@@ -172,20 +172,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
         /// Remove view, a created view by Adaptor, should be removed by Adaptor
         /// </summary>
         /// <param name="native">A view to remove</param>
-        public abstract void RemoveNativeView(NView native);
+        public abstract void RemovePlatformView(PlatformView native);
 
         /// <summary>
         /// Set data binding between view and item
         /// </summary>
         /// <param name="view">A target view</param>
         /// <param name="index">A target item</param>
-        public abstract void SetBinding(NView view, int index);
+        public abstract void SetBinding(PlatformView view, int index);
 
         /// <summary>
         /// Unset data binding on view
         /// </summary>
         /// <param name="view">A view to unbinding</param>
-        public abstract void UnBinding(NView view);
+        public abstract void UnBinding(PlatformView view);
 
         /// <summary>
         /// Measure item size

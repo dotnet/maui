@@ -209,7 +209,7 @@ public partial class CollectionContainer : Container
 
 			if (w is ViewHolder holder)
 			{
-				cAlloc = new Rect(new Point(holder.Bounds.X + allocation.X, holder.Bounds.Y + allocation.Y), holder.Bounds.Size).ToNative();
+				cAlloc = new Rect(new Point(allocation.X + holder.Bounds.X, allocation.Y + holder.Bounds.Y), holder.Bounds.Size).ToNative();
 			}
 
 			// if (cAlloc != w.Allocation) // it's always needed to implicit arrange children:

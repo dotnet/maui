@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Handlers.Items.Platform;
 using IMeasurable = Gtk.UIExtensions.Common.IMeasurable;
 using TCollectionView = Microsoft.Maui.Controls.Handlers.Items.Platform.CollectionView;
 using TScrollToPosition = Microsoft.Maui.Controls.ScrollToPosition;
-using TSize = Microsoft.Maui.Graphics.Size;
+using Size = Microsoft.Maui.Graphics.Size;
 using TSnapPointsAlignment = Microsoft.Maui.Controls.Handlers.Items.Platform.SnapPointsAlignment;
 using TSnapPointsType = Microsoft.Maui.Controls.Handlers.Items.Platform.SnapPointsType;
 
@@ -159,12 +159,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public abstract IItemsLayout GetItemsLayout();
 
-		TSize IMeasurable.Measure(double availableWidth, double availableHeight)
+		Size IMeasurable.Measure(double availableWidth, double availableHeight)
 		{
-			if (Adaptor == null || LayoutManager == null || AllocatedSize == TSize.Zero)
+			if (Adaptor == null || LayoutManager == null || AllocatedSize == Size.Zero)
 			{
 				var scaled = Devices.DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
-				var size = new TSize(availableWidth, availableHeight);
+				var size = new Size(availableWidth, availableHeight);
 
 				if (size.Width == double.PositiveInfinity)
 					size.Width = scaled.Width.ToScaledPixel();

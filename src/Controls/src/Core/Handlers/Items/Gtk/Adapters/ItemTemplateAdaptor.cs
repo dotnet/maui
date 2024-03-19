@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Handlers.Items.Platform;
-using NView = Gtk.Widget;
-using TSize = Microsoft.Maui.Graphics.Size;
-using XLabel = Microsoft.Maui.Controls.Label;
+using PlatformView = Gtk.Widget;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -17,8 +16,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 	public class ItemTemplateAdaptor : ItemAdaptor
 	{
-		Dictionary<NView, View> _nativeMauiTable = new Dictionary<NView, View>();
-		Dictionary<object, View?> _dataBindedViewTable = new Dictionary<object, View?>();
+		Dictionary<PlatformView, View> _platformTable = new();
+		Dictionary<object, View?> _dataBindedViewTable = new();
 		protected View? _headerCache;
 		protected View? _footerCache;
 
@@ -67,11 +66,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			SelectionChanged?.Invoke(this, new CollectionViewSelectionChangedEventArgs { SelectedItems = items });
 		}
 
-		public override void UpdateViewState(NView view, ViewHolderState state)
+		public override void UpdateViewState(PlatformView view, ViewHolderState state)
 		{
 			base.UpdateViewState(view, state);
 
-			if (_nativeMauiTable.TryGetValue(view, out View? formsView))
+			if (_platformTable.TryGetValue(view, out View? formsView))
 			{
 				switch (state)
 				{
@@ -94,9 +93,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public override IView? GetTemplatedView(NView view)
+		public override IView? GetTemplatedView(PlatformView view)
 		{
-			return _nativeMauiTable.TryGetValue (view, out View? value) ? value : null;
+			return _platformTable.TryGetValue (view, out View? value) ? value : null;
 		}
 
 		public override IView? GetTemplatedView(int index)
@@ -121,7 +120,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return base.GetViewCategory(index);
 		}
 
-		public override NView CreateNativeView(int index)
+		public override PlatformView CreatePlatformView(int index)
 		{
 			View view;
 
@@ -134,19 +133,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				view = (View)ItemTemplate.CreateContent();
 			}
 
-			var native = view.ToPlatform(MauiContext);
-			_nativeMauiTable[native] = view;
+			var platformView = view.ToPlatform(MauiContext);
+			_platformTable[platformView] = view;
 
-			return native;
+			return platformView;
 		}
 
-		public override NView CreateNativeView()
+		public override PlatformView CreatePlatformView()
 		{
-			return CreateNativeView(0);
+			return CreatePlatformView(0);
 		}
 
 #pragma warning disable CS8764
-		public override NView? GetHeaderView()
+		public override PlatformView? GetHeaderView()
 #pragma warning restore CS8764
 		{
 			if (_headerCache != null)
@@ -173,7 +172,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 #pragma warning disable CS8764
-		public override NView? GetFooterView()
+		public override PlatformView? GetFooterView()
 #pragma warning restore CS8764
 		{
 			if (_footerCache != null)
@@ -199,15 +198,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return null;
 		}
 
-		public override void RemoveNativeView(NView native)
+		public override void RemovePlatformView(PlatformView native)
 		{
 			UnBinding(native);
 
-			if (_nativeMauiTable.TryGetValue(native, out View? view))
+			if (_platformTable.TryGetValue(native, out View? view))
 			{
 				if (view.Handler is IPlatformViewHandler handler)
 				{
-					_nativeMauiTable.Remove(handler.PlatformView!);
+					_platformTable.Remove(handler.PlatformView!);
 
 					if (handler is IDisposable d)
 						d.Dispose();
@@ -217,9 +216,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public override void SetBinding(NView native, int index)
+		public override void SetBinding(PlatformView native, int index)
 		{
-			if (_nativeMauiTable.TryGetValue(native, out View? view))
+			if (_platformTable.TryGetValue(native, out View? view))
 			{
 				ResetBindedView(view);
 				view.BindingContext = this[index];
@@ -230,24 +229,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public override void UnBinding(NView native)
+		public override void UnBinding(PlatformView native)
 		{
-			if (_nativeMauiTable.TryGetValue(native, out View? view))
+			if (_platformTable.TryGetValue(native, out View? view))
 			{
 				view.MeasureInvalidated -= OnItemMeasureInvalidated;
 				ResetBindedView(view);
 			}
 		}
 
-		public override TSize MeasureItem(double widthConstraint, double heightConstraint)
+		public override Size MeasureItem(double widthConstraint, double heightConstraint)
 		{
 			return MeasureItem(0, widthConstraint, heightConstraint);
 		}
 
-		public override TSize MeasureItem(int index, double widthConstraint, double heightConstraint)
+		public override Size MeasureItem(int index, double widthConstraint, double heightConstraint)
 		{
 			if (index < 0 || index >= Count || this[index] == null)
-				return new TSize(0, 0);
+				return new Size(0, 0);
 
 			widthConstraint = widthConstraint.ToScaledDP();
 			heightConstraint = heightConstraint.ToScaledDP();
@@ -289,7 +288,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public override TSize MeasureHeader(double widthConstraint, double heightConstraint)
+		public override Size MeasureHeader(double widthConstraint, double heightConstraint)
 		{
 			// TODO. It is workaround code, if update Tizen.UIExtensions.NUI, this code will be removed
 			if (CollectionView is Platform.CollectionView cv)
@@ -303,12 +302,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 			}
 
-			return (_headerCache as IView)?.Measure(widthConstraint.ToScaledDP(), heightConstraint.ToScaledDP()).ToPixel() ?? new TSize(0, 0);
+			return (_headerCache as IView)?.Measure(widthConstraint.ToScaledDP(), heightConstraint.ToScaledDP()).ToPixel() ?? new Size(0, 0);
 		}
 
-		public override TSize MeasureFooter(double widthConstraint, double heightConstraint)
+		public override Size MeasureFooter(double widthConstraint, double heightConstraint)
 		{
-			return (_footerCache as IView)?.Measure(widthConstraint.ToScaledDP(), heightConstraint.ToScaledDP()).ToPixel() ?? new TSize(0, 0);
+			return (_footerCache as IView)?.Measure(widthConstraint.ToScaledDP(), heightConstraint.ToScaledDP()).ToPixel() ?? new Size(0, 0);
 		}
 
 		protected virtual View? CreateHeaderView()
@@ -330,7 +329,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 					else if (structuredItemsView.Header is string str)
 					{
-						header = new XLabel { Text = str, };
+						header = new Label { Text = str, };
 					}
 
 					return header;
@@ -359,7 +358,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 					else if (structuredItemsView.Footer is string str)
 					{
-						footer = new XLabel { Text = str, };
+						footer = new Label { Text = str, };
 					}
 
 					return footer;
@@ -442,14 +441,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		public CarouselViewItemTemplateAdaptor(ItemsView itemsView) : base(itemsView) { }
 
-		public override TSize MeasureItem(double widthConstraint, double heightConstraint)
+		public override Size MeasureItem(double widthConstraint, double heightConstraint)
 		{
 			return MeasureItem(0, widthConstraint, heightConstraint);
 		}
 
-		public override TSize MeasureItem(int index, double widthConstraint, double heightConstraint)
+		public override Size MeasureItem(int index, double widthConstraint, double heightConstraint)
 		{
-			return (CollectionView as NView)!.Size();
+			return (CollectionView as PlatformView)!.Size();
 		}
 	}
 
@@ -470,9 +469,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		static View CreateView()
 		{
-			var label = new XLabel { TextColor = Colors.Black, };
+			var label = new Label { TextColor = Colors.Black, };
 
-			label.SetBinding(XLabel.TextProperty, new Binding(".", converter: new ToTextConverter()));
+			label.SetBinding(Label.TextProperty, new Binding(".", converter: new ToTextConverter()));
 
 			return new Controls.StackLayout { BackgroundColor = Colors.White, Padding = 30, Children = { label } };
 		}

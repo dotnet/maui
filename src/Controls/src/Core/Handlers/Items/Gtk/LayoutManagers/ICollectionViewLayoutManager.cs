@@ -1,7 +1,6 @@
 using Gtk;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
-using View = Gtk.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {

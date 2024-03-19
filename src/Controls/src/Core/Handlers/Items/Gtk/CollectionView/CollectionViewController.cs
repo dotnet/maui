@@ -109,7 +109,7 @@ public class CollectionViewController : ICollectionViewController
 		}
 		else
 		{
-			var content = Adaptor.CreateNativeView(index);
+			var content = Adaptor.CreatePlatformView(index);
 			holder = CreateViewHolder();
 			holder.RequestSelected += OnRequestItemSelected;
 			holder.StateUpdated += OnItemStateUpdated;
@@ -204,7 +204,7 @@ public class CollectionViewController : ICollectionViewController
 			var content = view.Content;
 
 			if (content != null)
-				Adaptor.RemoveNativeView(content);
+				Adaptor.RemovePlatformView(content);
 
 			view.Content = null;
 			RemoveFromContainer?.Invoke(view);

@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Maui.Controls;
-using Point = Microsoft.Maui.Graphics.Point;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
-using NView = Gtk.Widget;
+using PlatformView = Gtk.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 {
@@ -398,7 +396,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform
 
 			for (int i = startIndex; i <= endIndex; i++)
 			{
-				NView? itemView = null;
+				PlatformView? itemView = null;
 
 				if (!_realizedItem.ContainsKey(i))
 				{

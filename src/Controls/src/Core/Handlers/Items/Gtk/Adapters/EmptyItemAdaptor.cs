@@ -2,15 +2,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Handlers.Items.Platform;
-using NView = Gtk.Widget;
-using TSize = Microsoft.Maui.Graphics.Size;
+using PlatformView = Gtk.Widget;
+using Size = Microsoft.Maui.Graphics.Size;
 using XLabel = Microsoft.Maui.Controls.Label;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class EmptyItemAdaptor : ItemTemplateAdaptor
 	{
-		static DataTemplate s_defaultEmptyTemplate = new DataTemplate(typeof(EmptyView));
+		static DataTemplate s_defaultEmptyTemplate = new(typeof(EmptyView));
 
 		View? _createdEmptyView;
 
@@ -36,12 +36,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return new EmptyItemAdaptor(itemsView, new List<object>(), template);
 		}
 
-		public override NView? GetFooterView()
+		public override PlatformView? GetFooterView()
 		{
 			return null;
 		}
 
-		public override NView? GetHeaderView()
+		public override PlatformView? GetHeaderView()
 		{
 			View emptyView = (View)ItemTemplate.CreateContent();
 
@@ -135,14 +135,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return layout.ToPlatform(MauiContext);
 		}
 
-		public override TSize MeasureHeader(double widthConstraint, double heightConstraint)
+		public override Size MeasureHeader(double widthConstraint, double heightConstraint)
 		{
-			return (CollectionView as NView)!.Size();
+			return (CollectionView as PlatformView)!.Size();
 		}
 
-		public override TSize MeasureItem(double widthConstraint, double heightConstraint)
+		public override Size MeasureItem(double widthConstraint, double heightConstraint)
 		{
-			return new TSize(widthConstraint, heightConstraint);
+			return new Size(widthConstraint, heightConstraint);
 		}
 
 		class EmptyView : StackLayout
