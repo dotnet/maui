@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 {
 	// refactored from: https://github.com/mono/xwt/blob/501f6b529fca632655295169094f637627c74c47/Xwt.Gtk/Xwt.GtkBackend/BoxBackend.cs
 
-	// see: https://github.com/linuxmint/gtk/blob/master/gtk/gtkcontainer.c
+	// see: https://github.com/GNOME/gtk/blob/gtk-3-22/gtk/gtkcontainer.c
 
 	public class LayoutView : Container, IGtkContainer, ICrossPlatformLayoutBacking
 	{
@@ -386,7 +386,7 @@ namespace Microsoft.Maui.Platform
 #endif
 
 #if USE_ADJUSTSIZEREQUEST
-		// see: https://github.com/linuxmint/gtk/blob/158a2b0e1e8d582bc041acc7fe323922747d7787/gtk/gtksizerequest.c#L362
+		// see: https://github.com/GNOME/gtk/blob/gtk-3-22/gtk/gtksizerequest.c#L362
 
 		protected override void OnAdjustSizeRequest(Orientation orientation, out int minimumSize, out int naturalSize)
 		{
