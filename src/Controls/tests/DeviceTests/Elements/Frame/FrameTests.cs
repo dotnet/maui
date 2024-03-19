@@ -10,6 +10,11 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
+#if WINDOWS
+using WPanel = Microsoft.UI.Xaml.Controls.Panel;
+using WSize = Windows.Foundation.Size;
+#endif
+
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Frame)]
