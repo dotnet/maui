@@ -6,7 +6,62 @@ namespace Microsoft.Maui.Platform
 	{
 		internal Button BackButton { get; }
 
+		Label? _titleLabel;
+
+		internal Label TitleLabel
+		{
+			get
+			{
+				if (_titleLabel != null)
+				{
+					return _titleLabel;
+				}
+
+				_titleLabel = new Label();
+				PackStart(_titleLabel, false, false, 0);
+				QueueResize();
+				
+				return _titleLabel;
+			}
+		}
+
+		void RemoveTitleLabel()
+		{
+			if (_titleLabel is not { })
+			{
+				return;
+			}
+
+			Remove(_titleLabel);
+			QueueResize();
+			_titleLabel = default;
+		}
+
+		string _title = string.Empty;
+
+		public string Title
+		{
+			get => _title;
+			set
+			{
+				if (_title == value)
+					return;
+
+				_title = value;
+				if (_title != string.Empty)
+				{
+					TitleLabel.Text = _title;
+					TitleLabel.QueueAllocate();
+				}
+				else
+				{
+					RemoveTitleLabel();
+				}
+			}
+		}
+
 		public delegate void BackButtonClickedEventHandler(object? sender);
+
 		public event BackButtonClickedEventHandler? BackButtonClicked;
 
 		public MauiToolbar() : base(Orientation.Horizontal, 0)
