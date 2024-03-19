@@ -45,15 +45,14 @@ namespace Microsoft.Maui.Controls.XamlC
 			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 
 			//fail early
-			var resourceType = XamlCTask.GetTypeForPath(context.Cache, module, resourcePath);
+			var resourceType = GetTypeForPath(context.Cache, module, resourcePath);
 			if (resourceType == null)
 				throw new BuildException(BuildExceptionCode.ResourceMissing, node, null, value);
 
 			// validate that the resourceType has a default ctor
-			var resourceTypeDef = resourceType.ResolveCached(context.Cache);
-			var defaultCtor = resourceTypeDef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters);
+			var defaultCtor = resourceType.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters);
 			if (defaultCtor == null)
-				throw new BuildException(BuildExceptionCode.ConstructorDefaultMissing, node, null, resourceTypeDef);
+				throw new BuildException(BuildExceptionCode.ConstructorDefaultMissing, node, null, resourceType);
 
 			var resourceDictionaryType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary");
 			var resourceDictionaryTypeDefinition = currentModule.GetTypeDefinition(context.Cache, resourceDictionaryType);
@@ -100,6 +99,19 @@ namespace Microsoft.Maui.Controls.XamlC
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;
 				return ca.ConstructorArguments[1].Value as string;
+			}
+			return null;
+		}
+
+		private static TypeDefinition GetTypeForPath(XamlCache cache, ModuleDefinition module, string path)
+		{
+			foreach (var ca in module.GetCustomAttributes())
+			{
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
+					continue;
+				if (ca.ConstructorArguments[1].Value as string != path)
+					continue;
+				return module.ImportReference((TypeReference)ca.ConstructorArguments[2].Value).ResolveCached(cache);
 			}
 			return null;
 		}
