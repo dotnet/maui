@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Controls
 				{
 					var formattedString = ((FormattedString)oldvalue);
 					var label = ((Label)bindable);
+
 					formattedString.SpansCollectionChanged -= label.Span_CollectionChanged;
 					formattedString.PropertyChanged -= label.OnFormattedTextChanged;
 					formattedString.PropertyChanging -= label.OnFormattedTextChanging;
