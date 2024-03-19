@@ -116,13 +116,6 @@ namespace Microsoft.Maui.Controls.Platform
 				if (font.IsDefault && defaultFont.HasValue)
 					font = defaultFont.Value;
 
-				var fontAttribs = span.IsSet(Span.FontAttributesProperty)
-					? font.GetFontAttributes()
-					: defaultFont.GetValueOrDefault().GetFontAttributes();
-
-				if (fontAttribs != FontAttributes.None)
-					font = font.WithAttributes (fontAttribs);
-
 				if (!font.IsDefault)
 					spannable.SetSpan(new FontSpan(font, fontManager, context), start, end, SpanTypes.InclusiveInclusive);
 

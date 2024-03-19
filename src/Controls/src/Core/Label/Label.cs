@@ -55,7 +55,6 @@ namespace Microsoft.Maui.Controls
 				{
 					var formattedString = ((FormattedString)oldvalue);
 					var label = ((Label)bindable);
-
 					formattedString.SpansCollectionChanged -= label.Span_CollectionChanged;
 					formattedString.PropertyChanged -= label.OnFormattedTextChanged;
 					formattedString.PropertyChanging -= label.OnFormattedTextChanging;
@@ -284,6 +283,41 @@ namespace Microsoft.Maui.Controls
 		{
 			foreach (Span span in spans)
 			{
+				// Configure spans to inherit formatting options explicitly set in their parent label
+				if (IsSet(BackgroundColorProperty) && !span.IsSet(Span.BackgroundColorProperty)) {
+					span.BackgroundColor = BackgroundColor;
+				}
+				if (IsSet(CharacterSpacingProperty) && !span.IsSet(Span.CharacterSpacingProperty)) {
+					span.CharacterSpacing = CharacterSpacing;
+				}
+				if (IsSet(FontAttributesProperty) && !span.IsSet(Span.FontAttributesProperty)) {
+					span.FontAttributes = FontAttributes;
+				}
+				if (IsSet(FontAutoScalingEnabledProperty) && !span.IsSet(Span.FontAutoScalingEnabledProperty)) {
+					span.FontAutoScalingEnabled = FontAutoScalingEnabled;
+				}
+				if (IsSet(FontFamilyProperty) && !span.IsSet(Span.FontFamilyProperty)) {
+					span.FontFamily = FontFamily;
+				}
+				if (IsSet(FontSizeProperty) && !span.IsSet(Span.FontSizeProperty)) {
+					span.FontSize = FontSize;
+				}
+				if (IsSet(LineHeightProperty) && !span.IsSet(Span.LineHeightProperty)) {
+					span.LineHeight = LineHeight;
+				}
+				if (IsSet(StyleProperty) && !span.IsSet(Span.StyleProperty)) {
+					span.Style = Style;
+				}
+				if (IsSet(TextColorProperty) && !span.IsSet(Span.TextColorProperty)) {
+					span.TextColor = TextColor;
+				}
+				if (IsSet(TextDecorationsProperty) && !span.IsSet(Span.TextDecorationsProperty)) {
+					span.TextDecorations = TextDecorations;
+				}
+				if (IsSet(TextTransformProperty) && !span.IsSet(Span.TextTransformProperty)) {
+					span.TextTransform = TextTransform;
+				}
+
 				span.GestureRecognizersCollectionChanged += Span_GestureRecognizer_CollectionChanged;
 				SetupSpanGestureRecognizers(span.GestureRecognizers);
 			}

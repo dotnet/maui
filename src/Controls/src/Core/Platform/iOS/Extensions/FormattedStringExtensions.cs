@@ -27,8 +27,7 @@ namespace Microsoft.Maui.Controls.Platform
 				label.HorizontalTextAlignment,
 				label.ToFont(),
 				label.TextColor,
-				label.TextTransform,
-				label.TextDecorations);
+				label.TextTransform);
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -37,8 +36,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
-			TextTransform defaultTextTransform = TextTransform.Default,
-			TextDecorations defaultTextDecorations = TextDecorations.None)
+			TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			if (formattedString == null)
 				return new NSAttributedString(string.Empty);
@@ -50,7 +48,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (span.Text == null)
 					continue;
 
-				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultTextDecorations));
+				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform));
 			}
 
 			return attributed;
@@ -63,8 +61,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
-			TextTransform defaultTextTransform = TextTransform.Default,
-			TextDecorations defaultTextDecorations = TextDecorations.None)
+			TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
@@ -96,20 +93,16 @@ namespace Microsoft.Maui.Controls.Platform
 			if (font.IsDefault && defaultFont.HasValue)
 				font = defaultFont.Value;
 
-			var fontAttribs = span.IsSet(Span.FontAttributesProperty)
-				? font.GetFontAttributes()
-				: defaultFont.GetValueOrDefault().GetFontAttributes();
-
-			if (fontAttribs != FontAttributes.None)
-				font = font.WithAttributes (fontAttribs);
+			var hasUnderline = false;
+			var hasStrikethrough = false;
+			if (span.IsSet(Span.TextDecorationsProperty))
+			{
+				var textDecorations = span.TextDecorations;
+				hasUnderline = (textDecorations & TextDecorations.Underline) != 0;
+				hasStrikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
+			}
 
 			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
-
-			var textDecorations = span.IsSet(Span.TextDecorationsProperty)
-					? span.TextDecorations
-					: defaultTextDecorations;
-			var hasUnderline = textDecorations.HasFlag(TextDecorations.Underline);
-			var hasStrikethrough = textDecorations.HasFlag(TextDecorations.Strikethrough);
 
 #if !MACOS
 			var attrString = new NSAttributedString(
