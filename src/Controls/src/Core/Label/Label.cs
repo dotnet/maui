@@ -306,9 +306,6 @@ namespace Microsoft.Maui.Controls
 				if (IsSet(LineHeightProperty) && !span.IsSet(Span.LineHeightProperty)) {
 					span.LineHeight = LineHeight;
 				}
-				if (IsSet(StyleProperty) && !span.IsSet(Span.StyleProperty)) {
-					span.Style = Style;
-				}
 				if (IsSet(TextColorProperty) && !span.IsSet(Span.TextColorProperty)) {
 					span.TextColor = TextColor;
 				}
