@@ -890,6 +890,7 @@ namespace UITest.Appium
 
 		/// <summary>
 		/// Lock the screen.
+		/// Functionality that's only available on Android and iOS.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <exception cref="InvalidOperationException">Lock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
@@ -905,7 +906,7 @@ namespace UITest.Appium
 
 		/// <summary>
 		/// Unlock the screen.
-		/// Functionality that's only available on Android.
+		/// Functionality that's only available on Android and iOS.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <exception cref="InvalidOperationException">Unlock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
@@ -921,7 +922,7 @@ namespace UITest.Appium
 
 		/// <summary>
 		/// Start recording screen.
-		/// Functionality that's only available on Android.
+		/// Functionality that's only available on Android, iOS and Windows.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <exception cref="InvalidOperationException">StartRecordingScreen is only supported on <see cref="AppiumAndroidApp"/>.</exception>
@@ -937,7 +938,7 @@ namespace UITest.Appium
 
 		/// <summary>
 		/// Stop recording screen.
-		/// Functionality that's only available on Android.
+		/// Functionality that's only available on Android, iOS and Windows.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <exception cref="InvalidOperationException">StopRecordingScreen is only supported on <see cref="AppiumAndroidApp"/>.</exception>
@@ -981,6 +982,22 @@ namespace UITest.Appium
 			}
 
 			app.CommandExecutor.Execute("toggleWifi", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Simulate the device shaking.
+		/// Functionality that's only available on iOS.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void Shake(this IApp app)
+		{
+			if (app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"Shake is only supported on AppiumIOSApp");
+			}
+
+			app.CommandExecutor.Execute("shake", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
