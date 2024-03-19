@@ -33,7 +33,9 @@ namespace Microsoft.Maui.Platform
 		protected CGRect AdjustForSafeArea(CGRect bounds)
 		{
 			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
+			{
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
+			}
 
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
 			{
