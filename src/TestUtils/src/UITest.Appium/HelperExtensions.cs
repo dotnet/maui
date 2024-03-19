@@ -185,10 +185,10 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void DoubleClick(this IApp app, string element)
 		{
-			var elementToClick = app.FindElement(element);
+			var elementToDoubleClick = app.FindElement(element);
 			app.CommandExecutor.Execute("doubleClick", new Dictionary<string, object>
 			{
-				{ "element", elementToClick },
+				{ "element", elementToDoubleClick },
 			});
 		}
 
@@ -214,10 +214,10 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void DoubleTap(this IApp app, string element)
 		{
-			var elementToClick = app.FindElement(element);
+			var elementToTap = app.FindElement(element);
 			app.CommandExecutor.Execute("doubleTap", new Dictionary<string, object>
 			{
-				{ "element", elementToClick },
+				{ "element", elementToTap },
 			});
 		}
 
@@ -243,10 +243,10 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void LongPress(this IApp app, string element)
 		{
-			var elementToClick = app.FindElement(element);
+			var elementToLongPress = app.FindElement(element);
 			app.CommandExecutor.Execute("longPress", new Dictionary<string, object>
 			{
-				{ "element", elementToClick },
+				{ "element", elementToLongPress },
 			});
 		}
 
@@ -257,10 +257,10 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void TouchAndHold(this IApp app, string element)
 		{
-			var elementToClick = app.FindElement(element);
+			var elementToTouchAndHold = app.FindElement(element);
 			app.CommandExecutor.Execute("touchAndHold", new Dictionary<string, object>
 			{
-				{ "element", elementToClick },
+				{ "element", elementToTouchAndHold },
 			});
 		}
 
