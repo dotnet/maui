@@ -15,7 +15,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue18242Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android }, "Ignore Android until https://github.com/dotnet/maui/pull/19834 lands.");
 
 			App.WaitForElement("WaitForStubControl");
 
