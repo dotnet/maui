@@ -17,7 +17,7 @@ public partial class PlatformCanvas
 
 			case SolidPaint solidPaint:
 			{
-				FillColor = solidPaint.Color;
+				fillColor = solidPaint.Color;
 
 				break;
 			}
