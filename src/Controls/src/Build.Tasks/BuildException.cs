@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		//BP,BO
 		public static BuildExceptionCode BPName = new BuildExceptionCode("XFC", 0020, nameof(BPName), "");
 		public static BuildExceptionCode BPMissingGetter = new BuildExceptionCode("XFC", 0021, nameof(BPMissingGetter), "");
-		public static BuildExceptionCode BindingWithoutDataType = new BuildExceptionCode("XC", 0022, nameof(BindingWithoutDataType), ""); //warning
+		public static BuildExceptionCode BindingWithoutDataType = new BuildExceptionCode("XC", 0022, nameof(BindingWithoutDataType), "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings"); //warning
 		public static BuildExceptionCode BindingWithNullDataType = new BuildExceptionCode("XC", 0023, nameof(BindingWithNullDataType), ""); //warning
 
 		//Bindings, conversions
