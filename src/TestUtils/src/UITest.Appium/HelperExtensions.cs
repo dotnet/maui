@@ -888,6 +888,66 @@ namespace UITest.Appium
 			return element.AppiumElement.Equals(activeElement);
 		}
 
+		public static void Lock(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Lock is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("lock", ImmutableDictionary<string, object>.Empty);
+		}
+
+		public static void Unlock(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("unlock", ImmutableDictionary<string, object>.Empty);
+		}
+
+		public static void StartRecordingScreen(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"StartRecordingScreen is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("startRecordingScreen", ImmutableDictionary<string, object>.Empty);
+		}
+
+		public static void StopRecordingScreen(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"StopRecordingScreen is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("stopRecordingScreen", ImmutableDictionary<string, object>.Empty);
+		}
+
+		public static void ToggleAirplaneMode(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleAirplaneMode is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleAirplaneMode", ImmutableDictionary<string, object>.Empty);
+		}
+
+		public static void ToggleWifi(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleWifi is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleWifi", ImmutableDictionary<string, object>.Empty);
+		}
+
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
