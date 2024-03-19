@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items.Platform;
 
 public partial class CollectionContainer : Container
 {
-
 	public CollectionContainer()
 	{
 		HasWindow = false;
@@ -22,20 +21,24 @@ public partial class CollectionContainer : Container
 	{
 		get;
 		set;
-
 	}
 
 	public ICollectionViewLayoutManager? LayoutManager
 	{
 		get;
 		set;
-
 	}
-	
+
 	protected override bool OnDrawn(Cairo.Context cr)
 	{
-		var r = base.OnDrawn(cr);
+		var stc = this.StyleContext;
+		stc.RenderBackground(cr, 0, 0, Allocation.Width, Allocation.Height);
 
+		var r = true;
+		foreach (var c in _children.ToArray())
+			PropagateDraw(c, cr);
+		foreach (var c in _items.ToArray())
+			PropagateDraw(c, cr);
 		return r;
 	}
 
@@ -520,5 +523,4 @@ public partial class CollectionContainer : Container
 	}
 
 #endif
-
 }
