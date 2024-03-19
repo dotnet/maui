@@ -4,4 +4,107 @@
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
+
+        <Grid RowDefinitions="*,*, 250">
+
+
+             <ScrollView Background="LightBlue" Padding="10" Grid.Row="0">
+                <VerticalStackLayout>
+                    <Entry Text="Top Scroll" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry3" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry4" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry5" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry6" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry7" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry8" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry1" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry2" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry3" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry4" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry5" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry6" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry7" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Bottom!!" Background="Green" HeightRequest="50"/>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <BoxView Background="Blue" Grid.Row="1" />
+
+            <ScrollView Background="LightBlue" Padding="10" Grid.Row="2">
+                <VerticalStackLayout>
+                    <Entry Text="Top Scroll" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry3" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry4" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry5" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry6" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry7" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry8" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry1" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry2" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry3" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry4" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry5" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry6" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Entry7" Background="Lightgray" HeightRequest="50"/>
+                    <BoxView HeightRequest="50" />
+
+                    <Entry Text="Bottom!!" Background="Green" HeightRequest="50"/>
+                </VerticalStackLayout>
+            </ScrollView>
+
+        </Grid>
 </ContentPage>

@@ -1,4 +1,8 @@
-﻿namespace Maui.Controls.Sample;
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 public static class MauiProgram
 {
@@ -8,8 +12,19 @@ public static class MauiProgram
 #if __ANDROID__ || __IOS__
 			.UseMauiMaps()
 #endif
-			.UseMauiApp<App>()
-			.ConfigureFonts(fonts =>
+				.UseMauiApp<App>()
+				.Build();
+	}
+
+	class App : Microsoft.Maui.Controls.Application
+	{
+		protected override Window CreateWindow(IActivationState? activationState)
+		{
+			// To test shell scenarios, change this to true
+			bool useShell = false;
+			On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().UseWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize);
+
+			if (!useShell)
 			{
 				fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
 				fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");

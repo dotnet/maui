@@ -286,17 +286,17 @@ public static class KeyboardAutoManagerScroll
 
 		if (entranceCount == DebounceCount)
 		{
-			AdjustPosition();
+			await AdjustPosition();
 
 			// See if the layout requests to scroll again after our initial scroll
 			await Task.Delay(5);
 			if (ShouldScrollAgain)
-				AdjustPosition();
+				await AdjustPosition();
 		}
 	}
 
 	// main method to calculate and animate the scrolling
-	internal static void AdjustPosition()
+	internal static async Task AdjustPosition()
 	{
 		if (ContainerView is null
 			|| (View is not UITextField && View is not UITextView)
@@ -391,6 +391,8 @@ public static class KeyboardAutoManagerScroll
 			bottomBoundary = Math.Min(bottomBoundary, superScrollViewRect.Value.Bottom - TextViewDistanceFromBottom);
 		}
 
+		bool forceSetContentInsets = false;
+
 		// scenario where we go into an editor with the "Next" keyboard button,
 		// but the cursor location on the editor is scrolled below the visible section
 		if (View is UITextView && cursorRect.Y >= viewRectInWindow.GetMaxY())
@@ -413,8 +415,11 @@ public static class KeyboardAutoManagerScroll
 				move = 0;
 		}
 
-		else if (cursorRect.Y >= topBoundary && cursorRect.Y < bottomBoundary)
-			return;
+		else if (cursorRect.Y >= topBoundary && cursorRect.Y < bottomBoundary){
+			// even if we do not scroll, we still need to adjust the bottom inset
+			forceSetContentInsets = true;
+			// return;
+		}
 
 		else if (cursorRect.Y > bottomBoundary)
 			move = cursorRect.Y - (nfloat)bottomBoundary;
@@ -588,10 +593,20 @@ public static class KeyboardAutoManagerScroll
 			move += innerScrollValue;
 
 			// ContentInset logic
+			if (forceSetContentInsets && superScrollView is not null)
+			{
+				await ApplyContentInset (superScrollView, LastScrollView);
+			}
+			else
+			{
+				await ApplyContentInset (ScrolledView, LastScrollView);
+			}
+
+			/*
 			if (ScrolledView is not null)
 			{
-				var bottomInset = kbSize.Height;
-				var bottomScrollIndicatorInset = bottomInset - TextViewDistanceFromBottom;
+				var bottomInset = ScrolledView.Bounds.Height + ScrolledView.ContentOffset.Y - ScrolledView.ContentSize.Height;
+				var bottomScrollIndicatorInset = bottomInset - TextViewTopDistance;
 
 				bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
 				bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
@@ -608,6 +623,7 @@ public static class KeyboardAutoManagerScroll
 				if (LastScrollView.ContentInset != movedInsets)
 					UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(ScrolledView, movedInsets, bottomScrollIndicatorInset), () => { });
 			}
+			*/
 		}
 
 		if (move >= 0)
@@ -622,6 +638,11 @@ public static class KeyboardAutoManagerScroll
 				rect.Y = rootViewOrigin.Y;
 
 				UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
+
+				// this is the scenario where there is a scrollview, but the whole scrollview
+				// is below where the keyboard will be. We need to scroll the ContainerView and add ContentInsets
+				if (LastScrollView is not null)
+					await ApplyContentInset(LastScrollView, LastScrollView, true);
 			}
 		}
 
@@ -670,6 +691,108 @@ public static class KeyboardAutoManagerScroll
 	{
 		if (ContainerView is not null)
 			ContainerView.Frame = rect;
+	}
+
+	static async Task ApplyContentInset(UIScrollView? scrolledView, UIScrollView? lastScrollView, bool isScrollViewBelowKeyboard = false)
+	{
+		if (scrolledView is null || lastScrollView is null || ContainerView is null)
+			return;
+
+		var keyboardIntersect = CGRect.Intersect(KeyboardFrame, scrolledView.Frame);
+		nfloat movedContainerDistance = 0;
+
+		// if we are moving or have moved the containerview frame, we need to account for that
+		if (TopViewBeginOrigin != InvalidPoint && ContainerView is not null)
+		{
+			movedContainerDistance = TopViewBeginOrigin.Y - ContainerView.Frame.Y;
+		}
+
+		if (isScrollViewBelowKeyboard)
+		{
+			// we need to wait until the scrolledFrame is done scrolling
+			var originalFrame = ContainerView!.Frame;
+			await Task.Delay(5);
+			while (originalFrame.Y != ContainerView.Frame.Y)
+			{
+				originalFrame = ContainerView.Frame;
+				await Task.Delay(5);
+			}
+
+			// await Task.Delay(5);
+			// var newScrollFrame = scrolledView.Frame;
+			// newScrollFrame.Y = keyboardIntersect.Y - movedContainerDistance;
+
+			// TODO I don't think the frame for the scrollview is correct in any of these instances
+			// we are moving the ContainerView upwards and then after that, we need to calculate the 
+			// the new intersect between the keyboard and the scrollview.
+			var frameInWindow = scrolledView.ConvertRectToView(scrolledView.Frame, null);
+			keyboardIntersect = CGRect.Intersect(KeyboardFrame, frameInWindow);
+			// if we are moving or have moved the containerview frame, we need to account for that
+			if (TopViewBeginOrigin != InvalidPoint && ContainerView is not null)
+			{
+				var movedContainerDistance2 = TopViewBeginOrigin.Y - ContainerView.Frame.Y;
+			}
+		}
+
+		var bottomInset = keyboardIntersect.Height;
+		var bottomScrollIndicatorInset = bottomInset - TextViewDistanceFromBottom;
+
+		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
+		bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
+
+		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+		{
+			bottomInset -= scrolledView.SafeAreaInsets.Bottom;
+			bottomScrollIndicatorInset -= scrolledView.SafeAreaInsets.Bottom;
+		}
+
+		var movedInsets = scrolledView.ContentInset;
+		movedInsets.Bottom = bottomInset;
+
+		if (lastScrollView.ContentInset != movedInsets)
+			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(scrolledView, movedInsets, bottomScrollIndicatorInset), () => { });
+		// if (ScrolledView is not null || (forceSetContentInsets && superScrollView is not null))
+		// 	{
+		// 		if (forceSetContentInsets)
+		// 			ScrolledView = superScrollView;
+
+		// 		nfloat movedContainerDistance = 0;
+
+		// 		// if we are moving or have moved the containerview frame, we need to account for that
+		// 		if (TopViewBeginOrigin != InvalidPoint)
+		// 		{
+		// 			movedContainerDistance = TopViewBeginOrigin.Y - ContainerView.Frame.Y + move;
+		// 		}
+
+		// 		// var bottomInset1 = ScrolledView!.Bounds.Height + ScrolledView.ContentOffset.Y - ScrolledView.ContentSize.Height;
+		// 		var keyboardIntersect = CGRect.Intersect(KeyboardFrame, ScrolledView!.Frame);
+		// 		// var bottomInset = (nfloat)Math.Max(movedContainerDistance - keyboardIntersect.Height, 0);
+		// 		// var bottomInset = (nfloat)Math.Max(movedContainerDistance - keyboardIntersect.Height, -movedContainerDistance + keyboardIntersect.Height);
+		// 		// TODO maybe in the case of the low scrollview
+		// 		// do we need to add the difference in the gap between the bottom of the scrollview and the keyboard?
+		// 		// Should we just use the entire keyboard frame height?
+
+		// 		// var bottomInset = ScrolledView!.Bounds.Height - keyboardIntersect.Height;
+		// 		var bottomInset = keyboardIntersect.Height;
+		// 		// var bottomInset = kbSize.Height;
+ 		// 		// var bottomScrollIndicatorInset = bottomInset - TextViewDistanceFromBottom;
+ 		// 		var bottomScrollIndicatorInset = bottomInset;
+
+		// 		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
+		// 		bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
+
+		// 		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+		// 		{
+		// 			bottomInset -= ScrolledView!.SafeAreaInsets.Bottom;
+		// 			bottomScrollIndicatorInset -= ScrolledView.SafeAreaInsets.Bottom;
+		// 		}
+
+		// 		var movedInsets = ScrolledView!.ContentInset;
+		// 		movedInsets.Bottom = bottomInset;
+
+		// 		if (LastScrollView.ContentInset != movedInsets)
+		// 			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(ScrolledView, movedInsets, bottomScrollIndicatorInset), () => { });
+		// 	}
 	}
 
 	static UIScrollView? FindParentScroll(UIScrollView? view)
