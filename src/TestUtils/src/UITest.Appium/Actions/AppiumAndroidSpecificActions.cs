@@ -11,6 +11,7 @@ namespace UITest.Appium
 		const string StopRecordingScreenCommand = "stopRecordingScreen";
 		const string ToggleAirplaneModeCommand = "toggleAirplaneMode";
 		const string ToggleWifiCommand = "toggleWifi";
+		const string GetPerformanceDataCommand = "getPerformanceData";
 
 		readonly AppiumApp _appiumApp;
 
@@ -22,6 +23,7 @@ namespace UITest.Appium
 			StopRecordingScreenCommand,
 			ToggleAirplaneModeCommand,
 			ToggleWifiCommand,
+			GetPerformanceDataCommand,
 		};
 
 		public AppiumAndroidSpecificActions(AppiumApp appiumApp)
@@ -44,6 +46,7 @@ namespace UITest.Appium
 				StopRecordingScreenCommand => StopRecordingScreen(parameters),
 				ToggleAirplaneModeCommand => ToggleAirplaneMode(parameters),
 				ToggleWifiCommand => ToggleWifi(parameters),
+				GetPerformanceDataCommand => GetPerformanceData(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -117,6 +120,26 @@ namespace UITest.Appium
 				androidDriver.ToggleWifi();
 
 				return CommandResponse.SuccessEmptyResponse;
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse GetPerformanceData(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is AndroidDriver androidDriver)
+			{
+				string performanceDataType = (string)parameters["performanceDataType"];
+
+				if(string.IsNullOrEmpty(performanceDataType))
+				{
+					performanceDataType = "memoryinfo";
+				}
+
+				// Returns the information of the system state which is supported to read as like cpu, memory, network traffic, and battery.
+				IList<object> result = androidDriver.GetPerformanceData(_appiumApp.GetAppId(), performanceDataType);
+
+				return new CommandResponse(result, CommandResponseResult.Success);
 			}
 
 			return CommandResponse.FailedEmptyResponse;

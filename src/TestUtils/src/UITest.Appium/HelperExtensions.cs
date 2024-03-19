@@ -983,6 +983,34 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("toggleWifi", ImmutableDictionary<string, object>.Empty);
 		}
 
+		/// <summary>
+		/// Gets the information of the system state which is supported to read as like cpu, memory, network traffic, and battery.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="performanceDataType">The available performance data types(cpuinfo | batteryinfo | networkinfo | memoryinfo).</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		/// <returns>The information of the system related to the performance.</returns>
+		public static IList<object> GetPerformanceData(this IApp app, string performanceDataType)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleWifi is only supported on AppiumAndroidApp");
+			}
+
+			var response = app.CommandExecutor.Execute("getPerformanceData", new Dictionary<string, object>()
+			{
+				{ "performanceDataType", performanceDataType },
+			});
+
+			if (response?.Value != null)
+			{
+				return (IList<object>)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get the performance data");
+		}
+
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
