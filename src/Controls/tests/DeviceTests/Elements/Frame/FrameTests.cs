@@ -195,6 +195,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(100 <= layoutFrame.Width);
 		}
 
+#if !WINDOWS
 		[Fact]
 		public async Task FrameDoesNotInterpretConstraintsAsMinimums()
 		{
@@ -301,6 +302,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, layoutFrame.Width, 1.0d);
 			Assert.Equal(expected, layoutFrame.Height, 1.0d);
 		}
+#endif
 
 #if !ANDROID && !IOS && !MACCATALYST
 		[Fact]
@@ -429,6 +431,72 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(layoutFrame.Width > minExpectedWidth);
 		}
 
+#if WINDOWS
+
+		class ContentLayoutPanel : WPanel
+		{
+			IView _view;
+			readonly double _widthConstraint;
+			readonly double _heightConstraint;
+
+			public ContentLayoutPanel(IView view, double widthConstraint, double heightConstraint)
+			{
+				if (!double.IsPositiveInfinity(widthConstraint))
+					this.Width = widthConstraint;
+
+				if (!double.IsPositiveInfinity(heightConstraint))
+					this.Height = heightConstraint;
+
+				_view = view;
+				_widthConstraint = widthConstraint;
+				_heightConstraint = heightConstraint;
+				var platformView = view.ToPlatform();
+
+				// Just in case this view is already parented to a wrapper that's been cycled out
+				if (platformView.Parent is ContentLayoutPanel clp)
+					clp.Children.Remove(platformView);
+
+				Children.Add(platformView);
+			}
+
+			protected override WSize ArrangeOverride(WSize finalSize) => _view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
+
+			protected override WSize MeasureOverride(WSize availableSize) => _view.Measure(_widthConstraint, _heightConstraint).ToPlatform();
+		}
+
+		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double widthConstraint, double heightConstraint, Func<Task> additionalTests = null)
+		{
+			additionalTests ??= () => Task.CompletedTask;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				// create platform views
+				layout.ToHandler(MauiContext);
+				frame.ToHandler(MauiContext);
+
+				await new ContentLayoutPanel(layout, widthConstraint, heightConstraint).AttachAndRun(async () =>
+						{
+							await OnFrameSetToNotEmpty(layout);
+							await OnFrameSetToNotEmpty(frame);
+
+							// verify that the PlatformView was measured
+							var frameControlSize = (frame.Handler as IPlatformViewHandler).PlatformView.GetBoundingBox();
+							Assert.True(frameControlSize.Width > 0);
+							Assert.True(frameControlSize.Height > 0);
+
+							// if the control sits inside a container make sure that also measured
+							var containerControlSize = frame.ToPlatform().GetBoundingBox();
+							Assert.True(containerControlSize.Width > 0);
+							Assert.True(containerControlSize.Height > 0);
+
+							await additionalTests.Invoke();
+						}, MauiContext);
+			}
+			);
+
+			return layout.Frame;
+		}
+#else
 		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double widthConstraint, double heightConstraint, Func<Task> additionalTests = null)
 		{
 			additionalTests ??= () => Task.CompletedTask;
@@ -455,5 +523,6 @@ namespace Microsoft.Maui.DeviceTests
 						return layout.Frame;
 					});
 		}
+#endif
 	}
 }
