@@ -5,4 +5,5 @@
     xmlns:maui="using:Microsoft.Maui"
     RequestedTheme="Light"
     xmlns:local="using:Maui.Controls.Sample.Platform">
+
 </maui:MauiWinUIApplication>
