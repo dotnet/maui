@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Platform
 				MessagingCenter.Subscribe<Page, PromptArguments>(PlatformWindow, Page.PromptSignalName, OnPromptRequested);
 				MessagingCenter.Subscribe<Page, ActionSheetArguments>(PlatformWindow, Page.ActionSheetSignalName, OnActionSheetRequested);
 #pragma warning restore CS0618 // Type or member is obsolete
-				
+
 			}
 
 			public void Dispose()

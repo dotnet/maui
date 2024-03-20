@@ -100,7 +100,9 @@ namespace Microsoft.Maui.Platform
 							platformMenuBar.Show();
 						}
 					}
-				} else {
+				}
+				else
+				{
 					if (platformWindow.Child is Container container)
 					{
 						if (container.Children.FirstOrDefault(c => c is MauiMenuBar) is { } platformMenuBar)

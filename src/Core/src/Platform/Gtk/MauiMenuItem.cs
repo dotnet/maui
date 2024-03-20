@@ -30,7 +30,7 @@ public class MauiMenuItem : MenuItem
 	{
 		if (Submenu is not { })
 			return;
-		
+
 		foreach (var m in EnsureSubMenu.Children.ToArray())
 		{
 			EnsureSubMenu.Remove(m);

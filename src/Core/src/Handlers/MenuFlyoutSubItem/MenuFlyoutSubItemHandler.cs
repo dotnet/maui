@@ -17,10 +17,10 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuFlyoutSubItemHandler : 
+	public partial class MenuFlyoutSubItemHandler :
 #if !GTK
 		ElementHandler<IMenuFlyoutSubItem, PlatformView>,
- #endif
+#endif
 		IMenuFlyoutSubItemHandler
 	{
 		public static IPropertyMapper<IMenuFlyoutSubItem, IMenuFlyoutSubItemHandler> Mapper = new PropertyMapper<IMenuFlyoutSubItem, IMenuFlyoutSubItemHandler>(ElementMapper)

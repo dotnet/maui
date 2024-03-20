@@ -14,7 +14,7 @@ public static class MenuItemExtensions
 	public static void UpdateImageSource(this MenuItem platformView, IImageSource? viewSource)
 	{
 	}
-	
+
 	public static void UpdateText(this MenuItem platformView, string text)
 	{
 		platformView.Label = text;
