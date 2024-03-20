@@ -57,6 +57,6 @@ namespace Microsoft.Maui.Handlers
 #if IOS
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
 #endif
-		MauiMenuItem IMenuFlyoutItemHandler.PlatformView => PlatformView;
+		PlatformView IMenuFlyoutItemHandler.PlatformView => PlatformView;
 	}
 }
