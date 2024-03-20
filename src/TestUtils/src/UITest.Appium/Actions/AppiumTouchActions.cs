@@ -123,16 +123,13 @@ namespace UITest.Appium
 		{
 			var element = GetAppiumElement(parameters["element"]);
 
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
-			var sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
-
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(250)));
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
+			if (element != null)
+			{
+				_appiumApp.Driver.ExecuteScript("mobile: doubleTap", new Dictionary<string, object>
+				{
+					{ "elementId", element.Id },
+				});
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
