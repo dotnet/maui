@@ -1,9 +1,10 @@
+# yamllint disable rule:line-length rule:document-start
 parameters:
-  platform: '' # [ android, ios, catalyst, windows ]
-  path: '' # path to csproj
-  device: '' # the xharness device to use
-  apiversion: '' # the iOS device api version to use
-  cakeArgs: '' # additional cake args
+  platform: ''  # [ android, ios, catalyst, windows ]
+  path: ''  # path to csproj
+  device: ''  # the xharness device to use
+  apiversion: ''  # the iOS device api version to use
+  cakeArgs: ''  # additional cake args
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   artifactName: 'nuget'
@@ -14,13 +15,13 @@ parameters:
 
 steps:
   - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
-        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-      displayName: 'Clean bot'
-      continueOnError: true
-      timeoutInMinutes: 60
+      - bash: |
+          chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+          chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
+          $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        displayName: 'Clean bot'
+        continueOnError: true
+        timeoutInMinutes: 60
   - template: provision.yml
     parameters:
       ${{ if eq(parameters.platform, 'windows')}}:
@@ -46,27 +47,27 @@ steps:
 
   - ${{ if eq(parameters.useArtifacts, true) }}:
 
-    - task: DownloadBuildArtifacts@0
-      displayName: 'Download Packages'
-      inputs:
-        artifactName: ${{ parameters.artifactName }}
-        itemPattern: ${{ parameters.artifactItemPattern }}
-        downloadPath: $(System.DefaultWorkingDirectory)/artifacts
+      - task: DownloadBuildArtifacts@0
+        displayName: 'Download Packages'
+        inputs:
+          artifactName: ${{ parameters.artifactName }}
+          itemPattern: ${{ parameters.artifactItemPattern }}
+          downloadPath: $(System.DefaultWorkingDirectory)/artifacts
 
-    - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
-      displayName: Move the downloaded artifacts
+      - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
+        displayName: Move the downloaded artifacts
 
-    - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
-      displayName: 'Install .NET (Local Workloads)'
-      retryCountOnTaskFailure: 2
-      workingDirectory: ${{ parameters.checkoutDirectory }}
-      env:
-        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-        PRIVATE_BUILD: $(PrivateBuild)
+      - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
+        displayName: 'Install .NET (Local Workloads)'
+        retryCountOnTaskFailure: 2
+        workingDirectory: ${{ parameters.checkoutDirectory }}
+        env:
+          DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+          PRIVATE_BUILD: $(PrivateBuild)
 
   - ${{ else }}:
-    - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
-      displayName: 'Build the MSBuild Tasks'
+      - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
+        displayName: 'Build the MSBuild Tasks'
 
   - pwsh: |
       $platformName = 'Windows'
@@ -80,12 +81,12 @@ steps:
     displayName: 'Set Platform.Name'
 
   - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
-        if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
-      displayName: Delete Old Simulator Logs
-      condition: always()
-      continueOnError: true
+      - bash: |
+          if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+          if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
+        displayName: Delete Old Simulator Logs
+        condition: always()
+        continueOnError: true
 
   - pwsh: |
       ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
@@ -103,22 +104,22 @@ steps:
     retryCountOnTaskFailure: 1
 
   - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        suffix=$(date +%Y%m%d%H%M%S)
-        zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
-        zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
-      displayName: Zip Simulator Logs
-      condition: always()
-      continueOnError: true
+      - bash: |
+          suffix=$(date +%Y%m%d%H%M%S)
+          zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
+          zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
+        displayName: Zip Simulator Logs
+        condition: always()
+        continueOnError: true
 
 
   - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
-        zip -9r "$(LogDirectory)/DiagnosticReports.zip" "$HOME/Library/Logs/DiagnosticReports/"
-      displayName: Zip Simulator Logs
-      condition: always()
-      continueOnError: true
+      - bash: |
+          zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+          zip -9r "$(LogDirectory)/DiagnosticReports.zip" "$HOME/Library/Logs/DiagnosticReports/"
+        displayName: Zip Simulator Logs
+        condition: always()
+        continueOnError: true
 
   - task: PublishTestResults@2
     displayName: Publish the $(Agent.JobName) test results
@@ -135,7 +136,7 @@ steps:
       artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
   - ${{ if eq(parameters.rebootAgent, true) }}:
-    # This must always be placed as the last step in the job
-    - template: agent-rebooter/mac.v1.yml@yaml-templates
-      parameters:
-        AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+      # This must always be placed as the last step in the job
+      - template: agent-rebooter/mac.v1.yml@yaml-templates
+        parameters:
+          AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}

@@ -1,3 +1,4 @@
+# yamllint disable rule:line-length rule:document-start
 parameters:
   poolName: ''
   clearCaches: true
@@ -25,41 +26,41 @@ steps:
       AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@2
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      displayName: 'Provision Xcode'
-      inputs:
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-        AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+      - task: xamops.azdevex.provisionator-task.provisionator@2
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+        displayName: 'Provision Xcode'
+        inputs:
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
+        env:
+          PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+          AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
 
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@2
-      displayName: 'Provision Additional Software'
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      continueOnError: true
-      inputs:
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-        AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
-        ${{ if eq(parameters.skipAndroidSdks, true) }}:
-          SKIP_ANDROID_API_SDKS: 'true'
-        ${{ if eq(parameters.skipAndroidImages, true) }}:
-          SKIP_ANDROID_API_IMAGES: 'true'
+      - task: xamops.azdevex.provisionator-task.provisionator@2
+        displayName: 'Provision Additional Software'
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+        continueOnError: true
+        inputs:
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
+        env:
+          PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+          AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+          ${{ if eq(parameters.skipAndroidSdks, true) }}:
+            SKIP_ANDROID_API_SDKS: 'true'
+          ${{ if eq(parameters.skipAndroidImages, true) }}:
+            SKIP_ANDROID_API_IMAGES: 'true'
 
   # Setup JDK Paths (gradle needs it)
   - bash: |
       echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
       echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
     displayName: 'Setup JDK Paths'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))  
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
   # Configure VS Mac for Xcode
   # This seems to be needed or else it will pick other xcode for example on xharness
   - bash: |
@@ -74,19 +75,19 @@ steps:
   # Prepare Windows
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@2
-      displayName: 'Provision Additional Software'
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-      inputs:
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-        ${{ if eq(parameters.skipAndroidSdks, true) }}:
-          SKIP_ANDROID_API_SDKS: 'true'
-        ${{ if eq(parameters.skipAndroidImages, true) }}:
-          SKIP_ANDROID_API_IMAGES: 'true'
+      - task: xamops.azdevex.provisionator-task.provisionator@2
+        displayName: 'Provision Additional Software'
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+        inputs:
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
+        env:
+          PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+          ${{ if eq(parameters.skipAndroidSdks, true) }}:
+            SKIP_ANDROID_API_SDKS: 'true'
+          ${{ if eq(parameters.skipAndroidImages, true) }}:
+            SKIP_ANDROID_API_IMAGES: 'true'
 
   - pwsh: |
       if ($env:JAVA_HOME_11_X64) {
@@ -136,27 +137,27 @@ steps:
     displayName: 'Show .NET SDK info'
 
   - ${{ if eq(parameters.clearCaches, 'true') }}:
-    - pwsh: dotnet nuget locals all --clear
-      displayName: 'Clear all NuGet caches'
+      - pwsh: dotnet nuget locals all --clear
+        displayName: 'Clear all NuGet caches'
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - task: PowerShell@2
-      condition: eq(variables['PrivateBuild'], 'true')
-      displayName: Setup Private Feeds Credentials
-      inputs:
-        filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
-        arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
-      env:
-        Token: $(dn-bot-dnceng-artifact-feeds-rw) 
-  # Prepare for Reunion packages
-  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-  #   - task: NuGetAuthenticate@0
-  #     displayName: 'Authenticate Reunion NuGet sources'
-  #     inputs:
-  #       nuGetServiceConnections: Project.Reunion.nuget.internal
-  #   - pwsh: |
-  #       $path = '$(Build.SourcesDirectory)\NuGet.config'
-  #       [xml]$xml = Get-Content $path
-  #       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
-  #       $xml.Save($path)
-  #     displayName: 'Add "wasdk-internal" to NuGet.config'
+      - task: PowerShell@2
+        condition: eq(variables['PrivateBuild'], 'true')
+        displayName: Setup Private Feeds Credentials
+        inputs:
+          filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
+          arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
+        env:
+          Token: $(dn-bot-dnceng-artifact-feeds-rw)
+# Prepare for Reunion packages
+# - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+#   - task: NuGetAuthenticate@0
+#     displayName: 'Authenticate Reunion NuGet sources'
+#     inputs:
+#       nuGetServiceConnections: Project.Reunion.nuget.internal
+#   - pwsh: |
+#       $path = '$(Build.SourcesDirectory)\NuGet.config'
+#       [xml]$xml = Get-Content $path
+#       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
+#       $xml.Save($path)
+#     displayName: 'Add "wasdk-internal" to NuGet.config'

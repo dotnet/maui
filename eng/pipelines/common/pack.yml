@@ -1,57 +1,58 @@
+# yamllint disable rule:line-length rule:document-start
 parameters:
-- name: platform
-  type: string
-  default: ''
+  - name: platform
+    type: string
+    default: ''
 
-- name: provisionatorChannel
-  type: string
-  default: 'latest'
+  - name: provisionatorChannel
+    type: string
+    default: 'latest'
 
-- name: artifact
-  type: string
-  default: 'nuget'
+  - name: artifact
+    type: string
+    default: 'nuget'
 
-- name: artifactBinaries
-  type: string
-  default: 'pack-binaries'
+  - name: artifactBinaries
+    type: string
+    default: 'pack-binaries'
 
-- name: artifactsPath
-  type: string
-  default: (Build.ArtifactStagingDirectory)
+  - name: artifactsPath
+    type: string
+    default: (Build.ArtifactStagingDirectory)
 
-- name: nugetFolder
-  type: string
-  default: 'artifacts'
-  
-- name: prepareSteps
-  type: stepList
-  default: []
+  - name: nugetFolder
+    type: string
+    default: 'artifacts'
 
-- name: postSteps
-  type: stepList
-  default: []
+  - name: prepareSteps
+    type: stepList
+    default: []
 
-- name: gitHubToken
-  type: string
-  default: $(github--pat--vs-mobiletools-engineering-service2)
+  - name: postSteps
+    type: stepList
+    default: []
 
-- name: checkoutDirectory
-  type: string
-  default: $(System.DefaultWorkingDirectory)
+  - name: gitHubToken
+    type: string
+    default: $(github--pat--vs-mobiletools-engineering-service2)
 
-- name: additionalArtifacts
-  type: object
-  default: []
+  - name: checkoutDirectory
+    type: string
+    default: $(System.DefaultWorkingDirectory)
 
-- name: publishArtifacts
-  type: boolean
-  default: true
+  - name: additionalArtifacts
+    type: object
+    default: []
+
+  - name: publishArtifacts
+    type: boolean
+    default: true
 
 steps:
 
   - ${{ each step in parameters.prepareSteps }}:
-    - ${{ each pair in step }}:
-        ${{ pair.key }}: ${{ pair.value }}
+      - ${{ each pair in step }}:
+          ${{ pair.key }}: ${{ pair.value }}
 
   - task: PowerShell@2
     condition: eq(variables['PrivateBuild'], 'true')
@@ -60,8 +61,8 @@ steps:
       filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
       arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
     env:
-      Token: $(dn-bot-dnceng-artifact-feeds-rw) 
-      
+      Token: $(dn-bot-dnceng-artifact-feeds-rw)
+
   - pwsh: |
       if ($env:JAVA_HOME_11_X64) {
         $env:JAVA_HOME = $env:JAVA_HOME_11_X64
@@ -114,19 +115,19 @@ steps:
       PRIVATE_BUILD: $(PrivateBuild)
 
   - ${{ if eq(parameters.platform, 'Windows') }}:
-    - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
-      displayName: 'Diff .NET Maui artifacts with NuGet'
-      workingDirectory: ${{ parameters.checkoutDirectory }}
+      - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
+        displayName: 'Diff .NET Maui artifacts with NuGet'
+        workingDirectory: ${{ parameters.checkoutDirectory }}
 
-      # binaries for compliance scanning
-    - task: CopyFiles@2
-      displayName: 'Copy Binaries Files'
-      condition: succeeded()
-      inputs:
-        Contents: |
-          ${{ parameters.checkoutDirectory }}/src/Controls/src/Nuget/bin/Release/**/*.dll
-        TargetFolder: ${{ parameters.checkoutDirectory }}/artifacts/binaries
-        flattenFolders: false
+        # binaries for compliance scanning
+      - task: CopyFiles@2
+        displayName: 'Copy Binaries Files'
+        condition: succeeded()
+        inputs:
+          Contents: |
+            ${{ parameters.checkoutDirectory }}/src/Controls/src/Nuget/bin/Release/**/*.dll
+          TargetFolder: ${{ parameters.checkoutDirectory }}/artifacts/binaries
+          flattenFolders: false
 
   # artifacts
   - task: CopyFiles@2
@@ -162,31 +163,31 @@ steps:
         ${{ parameters.checkoutDirectory }}/artifacts/logs/**
       TargetFolder: ${{ parameters.artifactsPath }}/logs
       flattenFolders: true
-  
+
   - ${{ if eq(parameters.publishArtifacts, 'true') }}:
-    - task: PublishBuildArtifacts@1
-      condition: always()
-      displayName: publish artifacts
-      inputs:
-        ArtifactName: ${{ parameters.artifact }}
-        PathToPublish: ${{ parameters.artifactsPath }}
-  
-    # xml-docs
-    - ${{ if eq(parameters.platform, 'Windows') }}:
       - task: PublishBuildArtifacts@1
         condition: always()
-        displayName: publish docs artifacts
+        displayName: publish artifacts
         inputs:
-          PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/docs-packs
-          ArtifactName: xml-docs
+          ArtifactName: ${{ parameters.artifact }}
+          PathToPublish: ${{ parameters.artifactsPath }}
 
-      - task: PublishBuildArtifacts@1
-        condition: succeeded()
-        displayName: publish binaries artifacts
-        inputs:
-          PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/binaries
-          ArtifactName: ${{ parameters.artifactBinaries }}
+      # xml-docs
+      - ${{ if eq(parameters.platform, 'Windows') }}:
+          - task: PublishBuildArtifacts@1
+            condition: always()
+            displayName: publish docs artifacts
+            inputs:
+              PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/docs-packs
+              ArtifactName: xml-docs
+
+          - task: PublishBuildArtifacts@1
+            condition: succeeded()
+            displayName: publish binaries artifacts
+            inputs:
+              PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/binaries
+              ArtifactName: ${{ parameters.artifactBinaries }}
 
   - ${{ each step in parameters.postSteps }}:
-    - ${{ each pair in step }}:
-        ${{ pair.key }}: ${{ pair.value }}
+      - ${{ each pair in step }}:
+          ${{ pair.key }}: ${{ pair.value }}

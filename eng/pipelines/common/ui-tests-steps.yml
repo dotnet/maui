@@ -1,26 +1,27 @@
+# yamllint disable rule:line-length rule:document-start
 parameters:
-  platform: '' # [ android, ios, windows, catalyst ]
-  path: '' # path to csproj
-  device: '' # the xharness device to use
-  cakeArgs: '' # additional cake args
-  app: '' #path to app to test
-  version: '' #the iOS version'
+  platform: ''  # [ android, ios, windows, catalyst ]
+  path: ''  # path to csproj
+  device: ''  # the xharness device to use
+  cakeArgs: ''  # additional cake args
+  app: ''  # path to app to test
+  version: ''  # the iOS version'
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
-  configuration : "Release"
+  configuration: "Release"
 
 steps:
   - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-      displayName: 'Clean bot'
-      continueOnError: true
-      timeoutInMinutes: 60
+      - bash: |
+          chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+          $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        displayName: 'Clean bot'
+        continueOnError: true
+        timeoutInMinutes: 60
 
   - template: provision.yml
     parameters:
-      skipProvisioning:  ${{ eq(parameters.platform, 'windows') }}
+      skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
       skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
@@ -49,7 +50,7 @@ steps:
     inputs:
       version: "20.3.1"
     displayName: "Install node"
-    
+
   - bash: |
       echo "##[group]Running ls -al $(npm root -g)"
       ls -al $(npm root -g)

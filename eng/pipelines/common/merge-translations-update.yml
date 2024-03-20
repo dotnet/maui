@@ -1,11 +1,12 @@
+# yamllint disable rule:line-length rule:document-start
 stages:
   - stage: merge_translations_updates
     displayName: 'Merge Translations Updates'
     dependsOn: []
-    condition: and( succeeded(), and( eq(variables.isTargetMainBranch, true), variables.isLocPRBranch ) ) 
+    condition: and( succeeded(), and( eq(variables.isTargetMainBranch, true), variables.isLocPRBranch ) )
 
     jobs:
-      - job : validate_merge
+      - job: validate_merge
         displayName: 'Validate and Merge Translations'
         pool:
           name: $(HostedWinVS2019)

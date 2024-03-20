@@ -1,4 +1,4 @@
-
+# yamllint disable rule:line-length rule:document-start
 stages:
   - stage: localization_handback
     displayName: Localization Handback
@@ -6,9 +6,9 @@ stages:
     condition: and(succeeded(), eq(variables.isLocBranch, true))
 
     jobs:
-      - job : generate_resx
+      - job: generate_resx
         displayName: 'Process incoming translations'
-        pool:  $(HostedWinVS2019)
+        pool: $(HostedWinVS2019)
         steps:
           - checkout: self
             persistCredentials: true
@@ -44,7 +44,7 @@ stages:
           - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
             displayName: 'Localization Build'
             env:
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             inputs:
               locProj: 'eng/automation/LocProject.json'
               outDir: '$(Build.ArtifactStagingDirectory)'
@@ -92,7 +92,7 @@ stages:
               $response = Invoke-WebRequest -UseBasicParsing -Method POST -Headers $headers -Uri "https://api.github.com/repos/dotnet/maui/pulls" -Body ($payload | ConvertTo-json)
               $newPr =  $response.Content | ConvertFrom-Json
 
-              Write-Host "Response is $newPr"      
+              Write-Host "Response is $newPr"
             displayName: Open Pull Request
 
           - task: PublishBuildArtifacts@1

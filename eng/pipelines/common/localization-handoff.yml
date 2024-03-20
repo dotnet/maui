@@ -1,3 +1,4 @@
+# yamllint disable rule:line-length rule:document-start
 stages:
   - stage: localization_handoff
     displayName: Localization Handoff
@@ -5,15 +6,15 @@ stages:
     condition: and(succeeded(), eq(variables.isLocHandoffBranch, true))
 
     jobs:
-      - job : generate_lci
+      - job: generate_lci
         displayName: 'Process outgoing strings'
-        pool:  $(HostedWinVS2019)
+        pool: $(HostedWinVS2019)
         steps:
 
           - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
             displayName: 'Localization Build'
             env:
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             inputs:
               locProj: 'eng/automation/LocProject.json'
               outDir: '$(Build.ArtifactStagingDirectory)'

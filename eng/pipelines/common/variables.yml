@@ -1,66 +1,66 @@
+# yamllint disable rule:line-length rule:document-start
 variables:
-- name: BuildVersion
-  value: $[counter('buildversion-counter', 5000)]
-- name: NUGET_VERSION
-  value: 6.4.0
-- name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
-  value: true
-- name: DOTNET_VERSION
-  value: 8.0.101
-- name: REQUIRED_XCODE
-  value: 15.2.0
-- name: DEVICETESTS_REQUIRED_XCODE
-  value: 15.2.0
-- name: LocBranchPrefix
-  value: 'loc-hb'
-- name: isMainBranch
-  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
-- name: isLocBranch
-  value: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/loc'), startsWith(variables['Build.SourceBranch'], 'refs/heads/loc-'))]
-- name: isTargetMainBranch
-  value: $[eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')]
-- name: isLocPRBranch
-  value: $[startsWith(variables['System.PullRequest.SourceBranch'], 'loc-hb')]
-- name: isPullRequest
-  value: $[eq(variables['Build.Reason'], 'PullRequest')]
-- name: isLocHandoffBranch
-  value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net8.0', 'refs/heads/net7.0', 'refs/heads/main')]
-- name: signingCondition
-  value: $[or(
-            eq(variables['Sign'], 'true'),
-            in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net8.0', 'refs/heads/net7.0', 'refs/heads/main'),
-            startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
-            startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
-          )]
-# Common Agent Pools in use
-- name: LogDirectory
-  value: $(Build.ArtifactStagingDirectory)/logs
-- name: TestResultsDirectory
-  value: $(Build.ArtifactStagingDirectory)/test-results
-- name: skipProvisionator
-  value: $[ne(variables['provisioning'], 'true')]
-- name: provisionator.xcode
-  value: 'eng/provisioning/xcode.csx'
-- name: provisionator.path
-  value: 'eng/provisioning/provisioning.csx'
-- name: provisionator.extraArguments
-  value: '-vvvv'
-- name: DotNet.Dir
-  value: $(System.DefaultWorkingDirectory)/bin/dotnet
-- name: DotNet.Path
-  value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
-- name: TeamName
-  value: Maui
-- name: POWERSHELL_VERSION
-  value: 7.4.0
-- name: Codeql.Enabled
-  value: false
-- group: Xamarin-Secrets
-# Variable groups required for private builds
-# - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
-#   - name: PrivateBuild
-#     value: true
-#   # For eng/common/SetupNugetSources.ps1
-#   - group: DotNetBuilds storage account read tokens
-#   - group: AzureDevOps-Artifact-Feeds-Pats
-
+  - name: BuildVersion
+    value: $[counter('buildversion-counter', 5000)]
+  - name: NUGET_VERSION
+    value: 6.4.0
+  - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
+    value: true
+  - name: DOTNET_VERSION
+    value: 8.0.101
+  - name: REQUIRED_XCODE
+    value: 15.2.0
+  - name: DEVICETESTS_REQUIRED_XCODE
+    value: 15.2.0
+  - name: LocBranchPrefix
+    value: 'loc-hb'
+  - name: isMainBranch
+    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  - name: isLocBranch
+    value: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/loc'), startsWith(variables['Build.SourceBranch'], 'refs/heads/loc-'))]
+  - name: isTargetMainBranch
+    value: $[eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')]
+  - name: isLocPRBranch
+    value: $[startsWith(variables['System.PullRequest.SourceBranch'], 'loc-hb')]
+  - name: isPullRequest
+    value: $[eq(variables['Build.Reason'], 'PullRequest')]
+  - name: isLocHandoffBranch
+    value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net8.0', 'refs/heads/net7.0', 'refs/heads/main')]
+  - name: signingCondition
+    value: $[or(
+              eq(variables['Sign'], 'true'),
+              in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net8.0', 'refs/heads/net7.0', 'refs/heads/main'),
+              startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
+              startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
+            )]
+  # Common Agent Pools in use
+  - name: LogDirectory
+    value: $(Build.ArtifactStagingDirectory)/logs
+  - name: TestResultsDirectory
+    value: $(Build.ArtifactStagingDirectory)/test-results
+  - name: skipProvisionator
+    value: $[ne(variables['provisioning'], 'true')]
+  - name: provisionator.xcode
+    value: 'eng/provisioning/xcode.csx'
+  - name: provisionator.path
+    value: 'eng/provisioning/provisioning.csx'
+  - name: provisionator.extraArguments
+    value: '-vvvv'
+  - name: DotNet.Dir
+    value: $(System.DefaultWorkingDirectory)/bin/dotnet
+  - name: DotNet.Path
+    value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
+  - name: TeamName
+    value: Maui
+  - name: POWERSHELL_VERSION
+    value: 7.4.0
+  - name: Codeql.Enabled
+    value: false
+  - group: Xamarin-Secrets
+  # Variable groups required for private builds
+  # - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
+  #   - name: PrivateBuild
+  #     value: true
+  #   # For eng/common/SetupNugetSources.ps1
+  #   - group: DotNetBuilds storage account read tokens
+  #   - group: AzureDevOps-Artifact-Feeds-Pats

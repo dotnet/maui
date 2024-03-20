@@ -1,14 +1,15 @@
+# yamllint disable rule:line-length rule:document-start
 parameters:
-  platform: '' # [ android, ios, windows, catalyst ]
-  path: '' # path to csproj
-  device: '' # the xharness device to use
-  cakeArgs: '' # additional cake args
-  app: '' #path to app to test
-  version: '' #the iOS version'
+  platform: ''  # [ android, ios, windows, catalyst ]
+  path: ''  # path to csproj
+  device: ''  # the xharness device to use
+  cakeArgs: ''  # additional cake args
+  app: ''  # path to app to test
+  version: ''  # the iOS version'
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
-  configuration : "Release"
-  where : "cat==Issues"
+  configuration: "Release"
+  where: "cat==Issues"
   targetSample: "dotnet-legacy-controlgallery"
   provisionPlatform: "windows"
 
@@ -32,7 +33,7 @@ steps:
         skipProvisioning: false
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
- 
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3

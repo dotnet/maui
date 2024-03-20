@@ -1,3 +1,4 @@
+# yamllint disable rule:line-length rule:document-start
 parameters:
   poolName: VSEngSS-MicroBuild2022-1ES
   vmImage: ''
@@ -13,10 +14,9 @@ stages:
     dependsOn: ${{ parameters.dependsOn }}
     condition: and(succeeded(), eq(variables.signingCondition, true))
     jobs:
-    - template: /eng/pipelines/common/sdk-insertion.yml@self
-      parameters:
-        poolName: ${{ parameters.poolName }}
-        vmImage: ${{ parameters.vmImage }}
-        os: ${{ parameters.os }}
-        pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
-
+      - template: /eng/pipelines/common/sdk-insertion.yml@self
+        parameters:
+          poolName: ${{ parameters.poolName }}
+          vmImage: ${{ parameters.vmImage }}
+          os: ${{ parameters.os }}
+          pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
