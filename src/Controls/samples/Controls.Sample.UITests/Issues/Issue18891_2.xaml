@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18891_2"
+             xmlns:templates="clr-namespace:Maui.Controls.Sample.Issues">
+  <ContentPage.Resources>
+    <ResourceDictionary>
+
+      <Style TargetType="Border">
+        <Setter Property="StrokeShape" Value="Rectangle" />
+        <Setter Property="StrokeThickness" Value="1" />
+      </Style>
+      
+      <DataTemplate x:Key="Item1Template">
+        <Border Stroke="Red">
+          <StackLayout HeightRequest="100">
+            <Label Text="{Binding Name}" />
+          </StackLayout>
+        </Border>
+      </DataTemplate>
+
+      <DataTemplate x:Key="Item2Template">
+        <Border Stroke="Green">
+          <StackLayout HeightRequest="50">
+            <Label Text="{Binding Name}" />
+          </StackLayout>
+        </Border>
+      </DataTemplate>
+
+      <templates:ItemTemplateSelector 
+        x:Key="ItemTemplateSelector"                                                     
+        Item1Template="{StaticResource Item1Template}"                                         
+        Item2Template="{StaticResource Item2Template}" />
+      
+    </ResourceDictionary>
+  </ContentPage.Resources>
+  <Grid
+    RowDefinitions="Auto, Auto, *">
+    <Label
+      AutomationId="WaitForStubControl"
+      x:Name="TestLabel" />
+    <HorizontalStackLayout
+      Grid.Row="1">
+      <Button />
+      <Button />
+    </HorizontalStackLayout>
+    <CollectionView 
+      x:Name="TestCollectionView"
+      Grid.Row="2"
+      ItemTemplate="{StaticResource ItemTemplateSelector}" />
+  </Grid>
+</ContentPage>

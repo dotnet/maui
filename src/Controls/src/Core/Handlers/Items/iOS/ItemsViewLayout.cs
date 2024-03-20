@@ -66,6 +66,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// fills the screen width in landscape while your items are automatically shifted to avoid the notch)
 				SectionInsetReference = UICollectionViewFlowLayoutSectionInsetReference.ContentInset;
 			}
+
+			EstimatedItemSize = AutomaticSize;
 		}
 
 		public override bool FlipsHorizontallyInOppositeLayoutDirection => true;
