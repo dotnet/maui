@@ -10,7 +10,7 @@ using PlatformView = Microsoft.UI.Xaml.Controls.MenuBarItem;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif GTK
-using PlatformView = Gtk.Widget;
+using PlatformView = Microsoft.Maui.Platform.MauiMenuItem;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
@@ -22,10 +22,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static IPropertyMapper<IMenuBarItem, IMenuBarItemHandler> Mapper = new PropertyMapper<IMenuBarItem, IMenuBarItemHandler>(ElementMapper)
 		{
-#if WINDOWS
+#if WINDOWS || GTK
 			[nameof(IMenuBarItem.Text)] = MapText,
 #endif
-#if MACCATALYST || IOS || WINDOWS
+#if MACCATALYST || IOS || WINDOWS || GTK
 			[nameof(IMenuBarItem.IsEnabled)] = MapIsEnabled,
 #endif
 		};

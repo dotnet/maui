@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 #if WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.MenuFlyout;
+#elif GTK
+using PlatformView = Microsoft.Maui.Platform.MauiMenu;
 #else
 using PlatformView = System.Object;
 #endif

@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Platform
 				MessagingCenter.Subscribe<Page, PromptArguments>(PlatformWindow, Page.PromptSignalName, OnPromptRequested);
 				MessagingCenter.Subscribe<Page, ActionSheetArguments>(PlatformWindow, Page.ActionSheetSignalName, OnActionSheetRequested);
 #pragma warning restore CS0618 // Type or member is obsolete
-				
+
 			}
 
 			public void Dispose()
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
 			{
 				MainThread.BeginInvokeOnMainThread(
-					() => DialogHelper.ShowActionSheet(sender.Window.NativeWindow, arguments));
+					() => DialogHelper.ShowActionSheet(sender.Window.PlatformWindow, arguments));
 			}
 
 		}
