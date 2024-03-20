@@ -1,0 +1,48 @@
+# yamllint disable rule:line-length rule:document-start rule:truthy
+name: PR yamllint check
+on: pull_request
+
+# This action only need a single permission in order to autoformat the code.
+permissions:
+  contents: read
+
+jobs:
+  rebase:
+    name: yamllint check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # otherwise, you will fail to push refs to dest repo
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint YAML pipeline files
+        id: lint-pipeline
+        working-directory: ./eng/pipelines
+        run: |
+            RESULT=$(yamllint ./eng/pipelines --f github)
+            if [ -n "$RESULT" ]; then
+                echo "YAML Lint found issues"
+                echo "$RESULT"
+                echo "::set-output name=result::$RESULT"
+                exit 1
+            fi
+
+      # only post a comment if the linting fails
+      - name: Post comment
+        uses: unsplash/comment-on-pr@v1.3.0
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          msg: |
+            [yaml-lint] YamlLint found issues in the pipeline files.
+            ${{ steps.lint-pipeline.outputs.result }}
+          check_for_duplicate_msg: true
+          delete_prev_regex_msg: "YamlLint found issues in the pipeline files."
+          duplicate_msg_pattern: "YamlLint found issues in the pipeline files."
