@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Gtk;
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Platform
@@ -78,5 +80,46 @@ namespace Microsoft.Maui.Platform
 
 		public static float GetDisplayDensity(this Gtk.Window platformWindow) =>
 			(float)platformWindow.ScaleFactor;
+
+		public static void UpdateMenuBar(this Gtk.Window platformWindow, IWindow window)
+		{
+			_ = platformWindow ?? throw new ArgumentNullException(nameof(platformWindow));
+			_ = window ?? throw new ArgumentNullException(nameof(window));
+			var context = window?.Handler?.MauiContext ?? throw new ArgumentNullException(nameof(IMauiContext));
+
+			if (window is IMenuBarElement menuBarElement)
+			{
+				if (menuBarElement.MenuBar is { } menuBar)
+				{
+					if (platformWindow.Child is Container container)
+					{
+						var platformMenuBar = menuBar.ToPlatform(context);
+						if (container.Children.All(c => c != platformMenuBar))
+						{
+							container.Add(platformMenuBar);
+							platformMenuBar.Show();
+						}
+					}
+				} else {
+					if (platformWindow.Child is Container container)
+					{
+						if (container.Children.FirstOrDefault(c => c is MauiMenuBar) is { } platformMenuBar)
+						{
+							container.Remove(platformMenuBar);
+						}
+					}
+				}
+			}
+			else
+			{
+				if (platformWindow.Child is Container container)
+				{
+					if (container.Children.FirstOrDefault(c => c is MauiMenuBar) is { } platformMenuBar)
+					{
+						container.Remove(platformMenuBar);
+					}
+				}
+			}
+		}
 	}
 }

@@ -2,10 +2,8 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-
 	public partial class WindowHandler : ElementHandler<IWindow, Gtk.Window>
 	{
-
 		protected override void ConnectHandler(Gtk.Window platformView)
 		{
 			base.ConnectHandler(platformView);
@@ -13,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 			// update the platform window with the user size/position
 			platformView.UpdatePosition(VirtualView);
 			platformView.UpdateSize(VirtualView);
+			platformView.UpdateMenuBar(VirtualView);
 		}
 
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
@@ -22,9 +21,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var nativeContent = window.Content.ToPlatform(handler.MauiContext);
+			var platformContent = window.Content.ToPlatform(handler.MauiContext);
 
-			handler.PlatformView.Child = nativeContent;
+			handler.PlatformView.Child = platformContent;
 		}
 
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
@@ -51,6 +50,9 @@ namespace Microsoft.Maui.Handlers
 				ViewHandler.MapToolbar(handler, tb);
 		}
 
+		public static void MapMenuBar(IWindowHandler handler, IWindow view)
+		{
+			handler.PlatformView.UpdateMenuBar(view);
+		}
 	}
-
 }

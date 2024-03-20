@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || WINDOWS || TIZEN || GTK
 			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
-#if WINDOWS || IOS
+#if WINDOWS || IOS || GTK
 			[nameof(IMenuBarElement.MenuBar)] = MapMenuBar,
 #endif
 #if WINDOWS
