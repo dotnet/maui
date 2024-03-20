@@ -1,6 +1,8 @@
 ﻿using NUnit.Framework;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
 
@@ -44,9 +46,15 @@ namespace Microsoft.Maui.AppiumTests
 				else
 					ClickText(app, $"Entry{i}", isEditor, out didReachEndofPage);
 
-				// Scroll to the top of the page
-				var actions = new TouchAction(App.Driver);
-				actions.LongPress(null, 5, 300).MoveTo(null, 5, 650).Release().Perform();
+				// Scroll to the top of the page			
+				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+				var scrollSequence = new ActionSequence(touchDevice, 0);
+				scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 300, TimeSpan.Zero));
+				scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500)));
+				scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 650, TimeSpan.FromMilliseconds(250)));
+				scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				App.Driver.PerformActions([scrollSequence]);
 
 				if (!didReachEndofPage)
 					break;

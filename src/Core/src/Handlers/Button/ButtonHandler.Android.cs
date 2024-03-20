@@ -133,7 +133,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override void PlatformArrange(Rect frame)
 		{
+			// The TextView might need an additional measurement pass at the final size
 			this.PrepareForTextViewArrange(frame);
+
 			base.PlatformArrange(frame);
 		}
 
@@ -166,7 +168,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformViewLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 		{
-			if (sender is MaterialButton platformView && VirtualView != null)
+			if (sender is MaterialButton platformView && VirtualView is not null)
 			{
 				platformView.UpdateBackground(VirtualView);
 			}
@@ -197,7 +199,9 @@ namespace Microsoft.Maui.Handlers
 				if (Handler?.PlatformView is not MaterialButton button)
 					return;
 
-				button.Icon = platformImage;
+				button.Icon = platformImage is null
+					? null
+					: new MauiMaterialButton.MauiResizableDrawable(platformImage);
 			}
 		}
 	}
