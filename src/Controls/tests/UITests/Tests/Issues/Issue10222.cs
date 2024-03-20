@@ -16,6 +16,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void Issue10222Test()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },
+				"The CollectionView on the second page is not rendering.");
+
 			App.WaitForElement("goTo");
 			App.Click("goTo");
 			App.WaitForElement("collectionView");
