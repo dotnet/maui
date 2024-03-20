@@ -386,7 +386,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if (n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 					break;
-				n = n.Parent as IElementNode;
+				if (n.Parent is ListNode listNode)
+					n = listNode.Parent as IElementNode;
+				else
+					n = n.Parent as IElementNode;
 			}
 
 			if (dataTypeNode is null)
@@ -404,18 +407,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield break;
 			}
 
-			string dataType = null;
-
-			if (dataTypeNode is ElementNode elementNode
-				&& elementNode.XmlType.NamespaceUri == XamlParser.X2009Uri
-				&& elementNode.XmlType.Name == nameof(Microsoft.Maui.Controls.Xaml.TypeExtension)
-				&& elementNode.Properties.ContainsKey(new XmlName("", nameof(Microsoft.Maui.Controls.Xaml.TypeExtension.TypeName)))
-				&& (elementNode.Properties[new XmlName("", nameof(Microsoft.Maui.Controls.Xaml.TypeExtension.TypeName))] as ValueNode)?.Value is string stringtype)
-				dataType = stringtype;
-
-			if ((dataTypeNode as ValueNode)?.Value is string sType)
-				dataType = sType;
-
+			string dataType = (dataTypeNode as ValueNode)?.Value as string;
 			if (dataType is null)
 				throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
 
