@@ -2809,8 +2809,12 @@ static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this A
 static Microsoft.Maui.Platform.ApplicationExtensions.RequestNewWindow(this Android.App.Application! platformApplication, Microsoft.Maui.IApplication! application, Microsoft.Maui.Handlers.OpenWindowRequest? args) -> void
 static Microsoft.Maui.Platform.ApplicationExtensions.ToBundle(this Microsoft.Maui.IPersistedState? state) -> Android.OS.Bundle!
 static Microsoft.Maui.Platform.AspectExtensions.ToScaleType(this Microsoft.Maui.Aspect aspect) -> Android.Widget.ImageView.ScaleType!
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateBackground(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateCornerRadius(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Platform.ButtonExtensions.UpdatePadding(this Android.Widget.Button! platformControl, Microsoft.Maui.IPadding! padding, Microsoft.Maui.Thickness? defaultPadding = null) -> void
 static Microsoft.Maui.Platform.ButtonExtensions.UpdatePadding(this Android.Widget.Button! platformControl, Microsoft.Maui.Thickness padding, Microsoft.Maui.Thickness? defaultPadding = null) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateStrokeColor(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateStrokeThickness(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Platform.CheckBoxExtensions.UpdateBackground(this AndroidX.AppCompat.Widget.AppCompatCheckBox! platformCheckBox, Microsoft.Maui.ICheckBox! check) -> void
 static Microsoft.Maui.Platform.CheckBoxExtensions.UpdateForeground(this AndroidX.AppCompat.Widget.AppCompatCheckBox! platformCheckBox, Microsoft.Maui.ICheckBox! check) -> void
 static Microsoft.Maui.Platform.CheckBoxExtensions.UpdateIsChecked(this AndroidX.AppCompat.Widget.AppCompatCheckBox! platformCheckBox, Microsoft.Maui.ICheckBox! check) -> void

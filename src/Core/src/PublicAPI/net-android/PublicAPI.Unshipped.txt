@@ -88,8 +88,6 @@ static Microsoft.Maui.CommandMapperExtensions.ReplaceMapping<TVirtualView, TView
 static Microsoft.Maui.FontSize.operator !=(Microsoft.Maui.FontSize left, Microsoft.Maui.FontSize right) -> bool
 static Microsoft.Maui.FontSize.operator ==(Microsoft.Maui.FontSize left, Microsoft.Maui.FontSize right) -> bool
 static Microsoft.Maui.Graphics.PaintExtensions.ToDrawable(this Microsoft.Maui.Graphics.Paint? paint, Android.Content.Context? context) -> Android.Graphics.Drawables.Drawable?
-static Microsoft.Maui.Graphics.PaintExtensions.ToGradientDrawable(this Microsoft.Maui.Graphics.GradientPaint? paint, int height, int width) -> Android.Graphics.Drawables.GradientDrawable?
-static Microsoft.Maui.Graphics.PaintExtensions.ToGradientDrawable(this Microsoft.Maui.Graphics.Paint? paint, int height, int width) -> Android.Graphics.Drawables.GradientDrawable?
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
@@ -105,10 +103,6 @@ static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexB
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Platform.ButtonExtensions.UpdateBackground(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button, Android.Graphics.Drawables.Drawable? defaultDrawable = null) -> void
-static Microsoft.Maui.Platform.ButtonExtensions.UpdateCornerRadius(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button, Android.Graphics.Drawables.Drawable? defaultDrawable = null) -> void
-static Microsoft.Maui.Platform.ButtonExtensions.UpdateStrokeColor(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button, Android.Graphics.Drawables.Drawable? defaultDrawable = null) -> void
-static Microsoft.Maui.Platform.ButtonExtensions.UpdateStrokeThickness(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.IButton! button, Android.Graphics.Drawables.Drawable? defaultDrawable = null) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateIsSpellCheckEnabled(this Android.Widget.EditText! editText, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateIsSpellCheckEnabled(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateIsSpellCheckEnabled(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar, Android.Widget.EditText? editText = null) -> void

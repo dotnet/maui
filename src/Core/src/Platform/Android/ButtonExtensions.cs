@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Platform
 	{
 		const int BackgroundDrawableId = 999;
 
-		public static void UpdateBackground(this MaterialButton platformView, IButton button, Drawable? defaultDrawable = null)
+		public static void UpdateBackground(this MaterialButton platformView, IButton button)
 		{
-			platformView.UpdateBorderDrawable(button, defaultDrawable);
+			platformView.UpdateBorderDrawable(button);
 		}
 
-		public static void UpdateStrokeColor(this MaterialButton platformView, IButton button, Drawable? defaultDrawable = null)
+		public static void UpdateStrokeColor(this MaterialButton platformView, IButton button)
 		{
 			if (platformView.Background is RippleDrawable background)
 			{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 
 				if (gradientDrawable is not null)
 				{
-					platformView.UpdateBorderDrawable(button, defaultDrawable);
+					platformView.UpdateBorderDrawable(button);
 					return;
 				}
 			}
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Platform
 				platformView.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToPlatform());
 		}
 
-		public static void UpdateStrokeThickness(this MaterialButton platformView, IButton button, Drawable? defaultDrawable = null)
+		public static void UpdateStrokeThickness(this MaterialButton platformView, IButton button)
 		{
 			if (platformView.Background is RippleDrawable background)
 			{
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Platform
 
 				if (gradientDrawable is not null)
 				{
-					platformView.UpdateBorderDrawable(button, defaultDrawable);
+					platformView.UpdateBorderDrawable(button);
 					return;
 				}
 			}
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Platform
 				platformView.StrokeWidth = (int)platformView.Context.ToPixels(buttonStroke.StrokeThickness);
 		}
 
-		public static void UpdateCornerRadius(this MaterialButton platformView, IButton button, Drawable? defaultDrawable = null)
+		public static void UpdateCornerRadius(this MaterialButton platformView, IButton button)
 		{
 			if (platformView.Background is RippleDrawable background)
 			{
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 				if (gradientDrawable is not null)
 				{
-					platformView.UpdateBorderDrawable(button, defaultDrawable);
+					platformView.UpdateBorderDrawable(button);
 					return;
 				}
 			}
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Platform
 				(int)padding.Bottom);
 		}
 
-		internal static void UpdateBorderDrawable(this MaterialButton platformView, IButton button, Drawable? defaultDrawable = null)
+		internal static void UpdateBorderDrawable(this MaterialButton platformView, IButton button)
 		{
 			var background = button.Background;
 

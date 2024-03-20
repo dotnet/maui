@@ -10,8 +10,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
 	{
-		Drawable? _defaultDrawable;
-
 		// The padding value has to be done here because in the Material Components,
 		// there is a minimum size of the buttons: 88dp x 48dp
 		// So, this is calculated:
@@ -48,8 +46,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange += OnNativeViewFocusChange;
 			platformView.LayoutChange += OnPlatformViewLayoutChange;
 
-			_defaultDrawable = platformView.Background;
-
 			base.ConnectHandler(platformView);
 		}
 
@@ -66,34 +62,28 @@ namespace Microsoft.Maui.Handlers
 
 			ImageSourceLoader.Reset();
 
-			_defaultDrawable = null;
-
 			base.DisconnectHandler(platformView);
 		}
 
 		// This is a Android-specific mapping
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			if (handler is ButtonHandler buttonHandler)
-				buttonHandler.PlatformView?.UpdateBackground(button, buttonHandler._defaultDrawable);
+			handler.PlatformView?.UpdateBackground(button);
 		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButton button)
 		{
-			if (handler is ButtonHandler buttonHandler)
-				buttonHandler.PlatformView?.UpdateStrokeColor(button, buttonHandler._defaultDrawable);
+			handler.PlatformView?.UpdateStrokeColor(button);
 		}
 
 		public static void MapStrokeThickness(IButtonHandler handler, IButton button)
 		{
-			if (handler is ButtonHandler buttonHandler)
-				buttonHandler.PlatformView?.UpdateStrokeThickness(button, buttonHandler._defaultDrawable);
+			handler.PlatformView?.UpdateStrokeThickness(button);
 		}
 
 		public static void MapCornerRadius(IButtonHandler handler, IButton button)
 		{
-			if (handler is ButtonHandler buttonHandler)
-				buttonHandler.PlatformView?.UpdateCornerRadius(button, buttonHandler._defaultDrawable);
+			handler.PlatformView?.UpdateCornerRadius(button);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
@@ -169,9 +159,7 @@ namespace Microsoft.Maui.Handlers
 		void OnPlatformViewLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 		{
 			if (sender is MaterialButton platformView && VirtualView is not null)
-			{
 				platformView.UpdateBackground(VirtualView);
-			}
 		}
 
 		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
