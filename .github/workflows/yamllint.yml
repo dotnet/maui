@@ -5,6 +5,7 @@ on: pull_request
 # This action only need a single permission in order to autoformat the code.
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   rebase:
