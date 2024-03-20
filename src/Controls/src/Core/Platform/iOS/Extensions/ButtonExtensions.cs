@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Platform
 			double spacingVertical = 0;
 			double spacingHorizontal = 0;
 
-			if (button.ImageSource != null)
+			if (!OperatingSystem.IsIOSVersionAtLeast(15) && button.ImageSource != null)
 			{
 				if (button.ContentLayout.IsHorizontal())
 				{
@@ -83,7 +83,11 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var image = platformButton.CurrentImage;
-
+			NSDirectionalRectEdge? originalContentMode = null;
+			if (config is UIButtonConfiguration)
+			{
+				originalContentMode = config.ImagePlacement;
+			}
 
 			// if the image is too large then we just position at the edge of the button
 			// depending on the position the user has picked
@@ -226,11 +230,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (OperatingSystem.IsIOSVersionAtLeast(15) && config is UIButtonConfiguration)
 			{
-				// If there is an image above or below the Title, the top and bottom insets will be updated and need to be redrawn.
+				// If there is an image above or below the Title, the button will need to be redrawn the first time.
 				if ((config.ImagePlacement == NSDirectionalRectEdge.Top || config.ImagePlacement == NSDirectionalRectEdge.Bottom)
-					&& ((button.Padding.IsNaN && config.ContentInsets == ConvertPaddingToInsets(ButtonHandler.DefaultPadding)) 
-						|| config.ContentInsets == ConvertPaddingToInsets(button.Padding)
-						|| (IsCloseToZero(config.ContentInsets) && button.Padding == Thickness.Zero)))
+					&& originalContentMode != config.ImagePlacement)
 				{
 					platformButton.UpdatePadding(button);
 					platformButton.Superview?.SetNeedsLayout();
