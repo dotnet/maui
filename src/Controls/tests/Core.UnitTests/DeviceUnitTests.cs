@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		});
 
 		[Fact]
-		public async Task TestInvokeOnMainThreadWithAsyncFuncError() => DispatcherTest.Run(async () =>
+		public Task TestInvokeOnMainThreadWithAsyncFuncError() => DispatcherTest.Run(async () =>
 		{
 			bool calledFromMainThread = false;
 			MockPlatformServices(
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		});
 
 		[Fact]
-		public async Task TestInvokeOnMainThreadWithAsyncActionError() => DispatcherTest.Run(async () =>
+		public Task TestInvokeOnMainThreadWithAsyncActionError() => DispatcherTest.Run(async () =>
 		{
 			bool calledFromMainThread = false;
 			MockPlatformServices(
