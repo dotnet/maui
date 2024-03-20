@@ -1,10 +1,11 @@
 ﻿using System;
+using PlatformView = Microsoft.Maui.Platform.MauiMenuBarItem;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, MauiMenuBarItem>, IMenuBarItemHandler
+	public partial class MenuFlyoutItemHandler
 	{
-		protected override MauiMenuBarItem CreatePlatformElement()
+		protected override PlatformView CreatePlatformElement()
 		{
 			return new();
 		}
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 		
-		public static void MapIsEnabled(IMenuBarItemHandler handler, IMenuBarItem view) =>
+		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>
 			handler.PlatformView.UpdateIsEnabled(view.IsEnabled);
 	}
 }

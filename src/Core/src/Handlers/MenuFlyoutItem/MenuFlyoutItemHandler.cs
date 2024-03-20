@@ -10,7 +10,7 @@ using PlatformView = Microsoft.UI.Xaml.Controls.MenuFlyoutItem;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif GTK
-using PlatformView = Gtk.Widget;
+using PlatformView = Microsoft.Maui.Platform.MauiMenuBarItem;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMenuFlyoutItem.KeyboardAccelerators)] = MapKeyboardAccelerators,
 			[nameof(IMenuElement.Source)] = MapSource,
 #endif
-#if MACCATALYST || IOS || WINDOWS
+#if MACCATALYST || IOS || WINDOWS || GTK
 			[nameof(IMenuElement.IsEnabled)] = MapIsEnabled
 #endif
 		};
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-#if !WINDOWS && !IOS
+#if !WINDOWS && !IOS && !GTK
 		protected override PlatformView CreatePlatformElement()
 		{
 			throw new NotImplementedException();
