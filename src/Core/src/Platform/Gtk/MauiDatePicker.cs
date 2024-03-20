@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Runtime.Serialization;
-using System.Linq;
 using Gtk;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform.Gtk;
 
 namespace Microsoft.Maui.Platform
 {
@@ -52,6 +49,7 @@ namespace Microsoft.Maui.Platform
 	{
 		Box _datebox;
 		RangeCalendar _calendar;
+
 		public delegate void DateEventHandler(object sender, DateEventArgs args);
 
 		public event DateEventHandler? OnDateTimeChanged;
@@ -82,10 +80,7 @@ namespace Microsoft.Maui.Platform
 
 			Add(_datebox);
 
-			if ((Child != null))
-			{
-				Child.ShowAll();
-			}
+			Child?.ShowAll();
 
 			SelectedDate = initialDate;
 			Show();
@@ -158,10 +153,7 @@ namespace Microsoft.Maui.Platform
 
 		public void ShowCalendar()
 		{
-			if ((Child != null))
-			{
-				Child.ShowAll();
-			}
+			Child?.ShowAll();
 
 			Show();
 			GrabHelper.GrabWindow(this);
@@ -180,14 +172,8 @@ namespace Microsoft.Maui.Platform
 
 		class RangeCalendar : Calendar
 		{
-			DateTime _minimumDate;
-			DateTime _maximumDate;
-
-			public RangeCalendar()
-			{
-				_minimumDate = new DateTime(1900, 1, 1);
-				_maximumDate = new DateTime(2199, 1, 1);
-			}
+			DateTime _minimumDate = new(1900, 1, 1);
+			DateTime _maximumDate = new(2199, 1, 1);
 
 			public DateTime MinimumDate
 			{
@@ -239,21 +225,21 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 
-	public class CustomComboBox : Gtk.Box
+	public class CustomComboBox : Box
 	{
-		private Gtk.Entry _entry;
-		private Color _color = Colors.Black;
+		Entry _entry;
+		Color _color = Colors.Black;
 
 		public CustomComboBox() : base(Orientation.Horizontal, 0)
 		{
-			_entry = new Gtk.Entry();
+			_entry = new Entry();
 			_entry.CanFocus = true;
 			_entry.IsEditable = true;
-			_entry.SetIconFromIconName(Gtk.EntryIconPosition.Secondary, "pan-down-symbolic");
+			_entry.SetIconFromIconName(EntryIconPosition.Secondary, "pan-down-symbolic");
 			PackStart(_entry, true, true, 0);
 		}
 
-		public Gtk.Entry Entry
+		public Entry Entry
 		{
 			get
 			{
@@ -288,8 +274,7 @@ namespace Microsoft.Maui.Platform
 			_comboBox = new CustomComboBox();
 			Add(_comboBox);
 
-			if ((Child != null))
-				Child.ShowAll();
+			Child?.ShowAll();
 			Show();
 
 			Date = DateTime.Now;
@@ -304,7 +289,7 @@ namespace Microsoft.Maui.Platform
 			_comboBox.Entry.CanFocus = false;
 			_comboBox.Entry.IsEditable = false;
 			_comboBox.Entry.FocusGrabbed += new EventHandler(OnEntryFocused);
-			_comboBox.Entry.IconPress += new Gtk.IconPressHandler(OnBtnShowCalendarClicked);
+			_comboBox.Entry.IconPress += new IconPressHandler(OnBtnShowCalendarClicked);
 		}
 
 		public DateTime Date
@@ -339,15 +324,12 @@ namespace Microsoft.Maui.Platform
 
 		void ShowPickerWindow()
 		{
-			int x = 0;
-			int y = 0;
-
-			Window.GetOrigin(out x, out y);
+			Window.GetOrigin(out var x, out var y);
 			y += Allocation.Height;
 
-			if (_pickerWindow is null)
+			if (_pickerWindow is not { })
 			{
-				var picker = new DatePickerWindow(Date, this.Toplevel as Window);
+				var picker = new DatePickerWindow(Date, Toplevel as Window);
 				picker.Move(x, y);
 				picker.MinimumDate = MinDate;
 				picker.MaximumDate = MaxDate;
@@ -404,13 +386,13 @@ namespace Microsoft.Maui.Platform
 
 		void OnPickerClosed(object? sender, EventArgs eventArgs)
 		{
-			var window = sender as DatePickerWindow;
-
-			if (window != null)
+			if (sender is not DatePickerWindow window)
 			{
-				window.Hide();
-				LostFocus?.Invoke(this, EventArgs.Empty);
+				return;
 			}
+
+			window.Hide();
+			LostFocus?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

@@ -31,19 +31,16 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFormat(datePicker);
 		}
 
-		[MissingMapper]
 		public static partial void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
-		[MissingMapper]
 		public static partial void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView.MinDate = handler.VirtualView.MinimumDate;
 		}
 
-		[MissingMapper]
 		public static partial void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView.MaxDate = handler.VirtualView.MaximumDate;
