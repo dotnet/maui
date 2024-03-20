@@ -1,11 +1,10 @@
 ﻿using System;
-using PlatformView = Microsoft.Maui.Platform.MauiMenuBarItem;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuFlyoutItemHandler
 	{
-		protected override PlatformView CreatePlatformElement()
+		protected override MauiMenuItem CreatePlatformElement()
 		{
 			return new();
 		}

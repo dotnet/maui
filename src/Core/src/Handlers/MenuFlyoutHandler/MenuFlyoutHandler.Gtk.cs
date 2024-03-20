@@ -1,12 +1,13 @@
 ﻿using System;
+using PlatformView = Microsoft.Maui.Platform.MauiMenu;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuFlyoutHandler : ElementHandler<IMenuFlyout, object>, IMenuFlyoutHandler
+	public partial class MenuFlyoutHandler : ElementHandler<IMenuFlyout, PlatformView>, IMenuFlyoutHandler
 	{
-		protected override object CreatePlatformElement()
+		protected override PlatformView CreatePlatformElement()
 		{
-			throw new NotImplementedException();
+			return new();
 		}
 
 		public void Add(IMenuElement view)

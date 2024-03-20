@@ -7,7 +7,6 @@ using PlatformView = Microsoft.UI.Xaml.Controls.MenuFlyoutItem;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif GTK
-using PlatformView = Microsoft.Maui.Platform.MauiMenuBarItem;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
@@ -17,6 +16,6 @@ namespace Microsoft.Maui.Handlers
 	public interface IMenuFlyoutItemHandler : IElementHandler
 	{
 		new IMenuFlyoutItem VirtualView { get; }
-		new PlatformView PlatformView { get; }
+		new MauiMenuItem PlatformView { get; }
 	}
 }
