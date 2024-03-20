@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 			window.GrabFocus();
 
 			Grab.Add(window);
-			Gdk.GrabStatus grabbed =
+			var grabbed =
 				Gdk.Display.Default.DefaultSeat.Grab(window.Window, Gdk.SeatCapabilities.All, true, null, null, null);
 			if (grabbed != Gdk.GrabStatus.Success)
 			{
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Platform
 			_calendar.CanFocus = true;
 			_calendar.DisplayOptions = CalendarDisplayOptions.ShowHeading;
 			datebox.Add(_calendar);
-			Box.BoxChild dateBoxChild = ((Box.BoxChild)(datebox[_calendar]));
+			var dateBoxChild = ((Box.BoxChild)(datebox[_calendar]));
 			dateBoxChild.Position = 0;
 
 			Add(datebox);
