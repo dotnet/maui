@@ -172,10 +172,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Same template
 				if (oldElement != null)
 				{
-					oldElement.BindingContext = bindingContext;
-					oldElement.MeasureInvalidated += MeasureInvalidated;
+					if (oldElement.BindingContext == null || !(oldElement.BindingContext.Equals(bindingContext)))
+					{
+						// If the data is different, update it
 
-					UpdateCellSize();
+						// Unhook the MeasureInvalidated handler, otherwise it'll fire for every invalidation during the 
+						// BindingContext change
+						oldElement.MeasureInvalidated -= MeasureInvalidated;
+
+						oldElement.BindingContext = bindingContext;
+						oldElement.MeasureInvalidated += MeasureInvalidated;
+
+						UpdateCellSize();
+					}
 				}
 			}
 
