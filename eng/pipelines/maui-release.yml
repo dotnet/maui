@@ -1,24 +1,25 @@
+# yamllint disable rule:line-length rule:document-start
 trigger:
   branches:
     include:
-    - main
-    - release/*
+      - main
+      - release/*
   tags:
     include:
-    - '*'
+      - '*'
   paths:
     include:
-    - '*'
+      - '*'
     exclude:
-    - .github/*
-    - docs/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - SECURITY.md
-    - THIRD-PARTY-NOTICES.TXT
+      - .github/*
+      - docs/*
+      - CODE-OF-CONDUCT.md
+      - CONTRIBUTING.md
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - README.md
+      - SECURITY.md
+      - THIRD-PARTY-NOTICES.TXT
 
 
 variables:
@@ -87,7 +88,7 @@ extends:
         justification: 'Failing with "Could not successfully find the java tool launcher"'
       sourceRepositoriesToScan:
         exclude:
-        - repository: yaml-templates
+          - repository: yaml-templates
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
@@ -100,16 +101,16 @@ extends:
               clean: all
             displayName: ${{ parameters.PackPlatform.name }}
             timeoutInMinutes: 240
-           
+
             pool: ${{ parameters.VM_IMAGE_HOST }}
-              
+
             templateContext:
               outputs:
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.artifact }}
                   targetPath: '(Build.ArtifactStagingDirectory)'
-                
+
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
@@ -137,28 +138,26 @@ extends:
                         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                         skipAndroidImages: true
 
-      - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:                           # Sign only using the private server   
-        - template: /eng/pipelines/common/sign.yml@self                                 
-          parameters:
-            dependsOn: ['pack_net']
-            stageName: 'nuget_signing'
-            poolName: ${{ parameters.VM_IMAGE_HOST.name }}
-            vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
-            os: ${{ parameters.VM_IMAGE_HOST.os }}                                   
-        
-        - template: /eng/pipelines/common/insertion.yml@self                                # Insert on VS and SDK
-          parameters:
-            dependsOn: ['nuget_signing']
-            stageName: 'sdk_insertion'
-            poolName: ${{ parameters.VM_IMAGE_HOST.name }}
-            vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
-            os: ${{ parameters.VM_IMAGE_HOST.os }}
-            pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
+      - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:                           # Sign only using the private server
+          - template: /eng/pipelines/common/sign.yml@self
+            parameters:
+              dependsOn: ['pack_net']
+              stageName: 'nuget_signing'
+              poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+              vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+              os: ${{ parameters.VM_IMAGE_HOST.os }}
 
-        - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
-          parameters:
-            dependsOn: ['pack_net']
-            os: windows
-            scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
+          - template: /eng/pipelines/common/insertion.yml@self                                # Insert on VS and SDK
+            parameters:
+              dependsOn: ['nuget_signing']
+              stageName: 'sdk_insertion'
+              poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+              vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+              os: ${{ parameters.VM_IMAGE_HOST.os }}
+              pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
 
-        
+          - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
+            parameters:
+              dependsOn: ['pack_net']
+              os: windows
+              scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
