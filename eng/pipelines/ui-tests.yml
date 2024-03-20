@@ -1,46 +1,47 @@
+# yamllint disable rule:line-length rule:document-start
 trigger:
   branches:
     include:
-    - main
-    - release/*
-    - loc
+      - main
+      - release/*
+      - loc
   tags:
     include:
-    - '*'
+      - '*'
   paths:
     include:
-    - '*'
+      - '*'
     exclude:
-    - .github/*
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - SECURITY.md
-    - THIRD-PARTY-NOTICES.TXT
+      - .github/*
+      - docs/*
+      - src/Templates/*
+      - CODE-OF-CONDUCT.md
+      - CONTRIBUTING.md
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - README.md
+      - SECURITY.md
+      - THIRD-PARTY-NOTICES.TXT
 
 pr:
   branches:
     include:
-    - main
-    - release/*
+      - main
+      - release/*
   paths:
     include:
-    - '*'
+      - '*'
     exclude:
-    - .github/*
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - SECURITY.md
-    - THIRD-PARTY-NOTICES.TXT
+      - .github/*
+      - docs/*
+      - src/Templates/*
+      - CODE-OF-CONDUCT.md
+      - CONTRIBUTING.md
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - README.md
+      - SECURITY.md
+      - THIRD-PARTY-NOTICES.TXT
 
 variables:
   - template: /eng/pipelines/common/variables.yml
@@ -78,7 +79,7 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
-  
+
   - name: windowsPool
     type: object
     default:
@@ -130,27 +131,26 @@ stages:
       iosCompatibilityPool: ${{ parameters.iosCompatibilityPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
-        androidApiLevels: [ 30 ]
-        iosVersions: [ '17.2' ]
+        androidApiLevels: [30]
+        iosVersions: ['17.2']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
-        androidApiLevels: [ 30 ]
-        iosVersions: [ '17.2' ]
+        androidApiLevels: [30]
+        iosVersions: ['17.2']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if or(parameters.CompatibilityTests, ne(variables['Build.Reason'], 'PullRequest')) }}:
         runCompatibilityTests: true
       projects:
         - name: controls
           desc: Controls
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsExclude: [25]  # Ignore for now API25 since the runs's are not stable
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           app: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj
-          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
+          iosVersionsExclude: ['12.4']  # Ignore iOS 12.4 while we can't make it work on CI
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
-          compatibilityAndroidApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj 
+          compatibilityAndroidApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj
           compatibilityAndroidTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/Android.UITests/Compatibility.ControlGallery.Android.UITests.csproj
-          compatibilityiOSApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj 
+          compatibilityiOSApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj
           compatibilityiOSTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj
-
