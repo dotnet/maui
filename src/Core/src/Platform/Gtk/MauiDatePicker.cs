@@ -4,22 +4,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {
-	public class DateEventArgs : EventArgs
+	public class DateEventArgs(DateTime date) : EventArgs
 	{
-		DateTime _date;
-
-		public DateTime Date
-		{
-			get
-			{
-				return _date;
-			}
-		}
-
-		public DateEventArgs(DateTime date)
-		{
-			_date = date;
-		}
+		public DateTime Date { get; } = date;
 	}
 
 	public class GrabHelper
@@ -47,7 +34,6 @@ namespace Microsoft.Maui.Platform
 
 	public partial class DatePickerWindow : Window
 	{
-		Box _datebox;
 		RangeCalendar _calendar;
 
 		public delegate void DateEventHandler(object sender, DateEventArgs args);
@@ -68,17 +54,17 @@ namespace Microsoft.Maui.Platform
 			DestroyWithParent = true;
 			SkipPagerHint = true;
 			SkipTaskbarHint = true;
-			_datebox = new Box(Orientation.Vertical, 6);
-			_datebox.BorderWidth = 3;
+			var datebox = new Box(Orientation.Vertical, 6);
+			datebox.BorderWidth = 3;
 
 			_calendar = new RangeCalendar();
 			_calendar.CanFocus = true;
 			_calendar.DisplayOptions = CalendarDisplayOptions.ShowHeading;
-			_datebox.Add(_calendar);
-			Box.BoxChild dateBoxChild = ((Box.BoxChild)(_datebox[_calendar]));
+			datebox.Add(_calendar);
+			Box.BoxChild dateBoxChild = ((Box.BoxChild)(datebox[_calendar]));
 			dateBoxChild.Position = 0;
 
-			Add(_datebox);
+			Add(datebox);
 
 			Child?.ShowAll();
 
@@ -227,25 +213,18 @@ namespace Microsoft.Maui.Platform
 
 	public class CustomComboBox : Box
 	{
-		Entry _entry;
 		Color _color = Colors.Black;
 
 		public CustomComboBox() : base(Orientation.Horizontal, 0)
 		{
-			_entry = new Entry();
-			_entry.CanFocus = true;
-			_entry.IsEditable = true;
-			_entry.SetIconFromIconName(EntryIconPosition.Secondary, "pan-down-symbolic");
-			PackStart(_entry, true, true, 0);
+			Entry = new Entry();
+			Entry.CanFocus = true;
+			Entry.IsEditable = true;
+			Entry.SetIconFromIconName(EntryIconPosition.Secondary, "pan-down-symbolic");
+			PackStart(Entry, true, true, 0);
 		}
 
-		public Entry Entry
-		{
-			get
-			{
-				return _entry;
-			}
-		}
+		public Entry Entry { get; }
 
 		public Color Color
 		{
