@@ -4,7 +4,8 @@ using System.Linq;
 
 namespace Microsoft.Maui.Handlers
 {
-	//https://docs.gtk.org/gtk3/class.MenuShell.html
+	// https://docs.gtk.org/gtk3/class.MenuShell.html
+
 	public abstract class GtkMenuShellHandler<TVirtualView, TPlatform, TVirtualItem, TPlatformItem> : ElementHandler<TVirtualView, TPlatform>
 		where TPlatform : Gtk.MenuShell, new()
 		where TVirtualView : class, IList<TVirtualItem>, IElement
@@ -41,7 +42,6 @@ namespace Microsoft.Maui.Handlers
 			var platformItem = (TPlatformItem)view.ToPlatform(MauiContext!);
 			PlatformView.Remove(platformItem);
 		}
-
 
 		public void Insert(int index, TVirtualItem view)
 		{

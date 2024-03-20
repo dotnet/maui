@@ -1,42 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class MenuBarItemHandler : ElementHandler<IMenuBarItem, MauiMenuItem>, IMenuBarItemHandler
+	public partial class MenuBarItemHandler : GtkMenuItemHandler<IMenuBarItem, MauiMenuItem, IMenuElement, Gtk.MenuItem>, IMenuBarItemHandler
 	{
-		protected override MauiMenuItem CreatePlatformElement()
-		{
-			return new();
-		}
-
-		protected override void ConnectHandler(MauiMenuItem platformView)
-		{
-			base.ConnectHandler(platformView);
-		}
-
 		public static void MapText(IMenuBarItemHandler handler, IMenuBarItem view)
 		{
-			handler.PlatformView.Label = view.Text;
-		}
-
-		public void Add(IMenuElement view)
-		{
-			;
-		}
-
-		public void Remove(IMenuElement view)
-		{
-			;
-		}
-
-		public void Clear()
-		{
-			;
-		}
-
-		public void Insert(int index, IMenuElement view)
-		{
-			;
+			handler.PlatformView.UpdateText(view.Text);
 		}
 
 		public static void MapIsEnabled(IMenuBarItemHandler handler, IMenuBarItem view) =>

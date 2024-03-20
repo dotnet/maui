@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IMenuFlyoutItem, IMenuFlyoutItemHandler> Mapper = new PropertyMapper<IMenuFlyoutItem, IMenuFlyoutItemHandler>(ElementMapper)
 		{
-#if WINDOWS
+#if WINDOWS || GTK
 			[nameof(IMenuFlyoutSubItem.Text)] = MapText,
 			[nameof(IMenuFlyoutItem.KeyboardAccelerators)] = MapKeyboardAccelerators,
 			[nameof(IMenuElement.Source)] = MapSource,

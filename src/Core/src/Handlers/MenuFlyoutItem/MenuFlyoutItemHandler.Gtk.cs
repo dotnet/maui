@@ -10,23 +10,43 @@ namespace Microsoft.Maui.Handlers
 			return new();
 		}
 
-		public void Add(IMenuElement view)
+		protected override void ConnectHandler(PlatformView platformView)
 		{
+			base.ConnectHandler(PlatformView);
+			PlatformView.Activated += OnClicked;
 		}
 
-		public void Remove(IMenuElement view)
+
+		protected override void DisconnectHandler(PlatformView platformView)
 		{
+			base.DisconnectHandler(PlatformView);
+			PlatformView.Activated -= OnClicked;
 		}
 
-		public void Clear()
+		void OnClicked(object? sender, EventArgs e)
 		{
+			VirtualView.Clicked();
 		}
 
-		public void Insert(int index, IMenuElement view)
-		{
-		}
-		
-		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>
+		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuElement view) =>
 			handler.PlatformView.UpdateIsEnabled(view.IsEnabled);
+
+		public static void MapText(IMenuFlyoutItemHandler handler, IMenuElement view)
+		{
+			handler.PlatformView.UpdateText(view.Text);
+		}
+
+		public static void MapIsEnabled(IMenuBarItemHandler handler, IMenuBarItem view) =>
+			handler.PlatformView.UpdateIsEnabled(view.IsEnabled);
+
+		public static void MapKeyboardAccelerators(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		{
+			handler.PlatformView.UpdateKeyboardAccelerators(view.KeyboardAccelerators);
+		}
+
+		public static void MapSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		{
+			handler.PlatformView.UpdateImageSource(view.Source);
+		}
 	}
 }
