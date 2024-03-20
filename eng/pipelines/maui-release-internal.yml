@@ -1,24 +1,25 @@
+# yamllint disable rule:line-length rule:document-start
 trigger:
   branches:
     include:
-    - main
-    - release/*
+      - main
+      - release/*
   tags:
     include:
-    - '*'
+      - '*'
   paths:
     include:
-    - '*'
+      - '*'
     exclude:
-    - .github/*
-    - docs/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - SECURITY.md
-    - THIRD-PARTY-NOTICES.TXT
+      - .github/*
+      - docs/*
+      - CODE-OF-CONDUCT.md
+      - CONTRIBUTING.md
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - README.md
+      - SECURITY.md
+      - THIRD-PARTY-NOTICES.TXT
 
 
 variables:
@@ -72,7 +73,7 @@ extends:
         justification: 'Failing with "Could not successfully find the java tool launcher"'
       sourceRepositoriesToScan:
         exclude:
-        - repository: yaml-templates
+          - repository: yaml-templates
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
@@ -85,9 +86,9 @@ extends:
               clean: all
             displayName: ${{ parameters.PackPlatform.name }}
             timeoutInMinutes: 240
-           
+
             pool: ${{ parameters.VM_IMAGE_HOST }}
-              
+
             templateContext:
               outputs:
                 - output: pipelineArtifact
@@ -100,5 +101,5 @@ extends:
                 parameters:
                   platform: ${{ parameters.PackPlatform.name }}
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                  artifact:  ${{ parameters.PackPlatform.artifact }}
+                  artifact: ${{ parameters.PackPlatform.artifact }}
                   artifactsPath: '(Build.ArtifactStagingDirectory)'
