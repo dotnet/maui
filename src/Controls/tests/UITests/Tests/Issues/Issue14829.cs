@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using Newtonsoft.Json.Bson;
-using NUnit.Framework;
-using OpenQA.Selenium;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,7 +19,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.iOS }, "Only affects Windows.");
 
 			App.WaitForElement("DisplayActionSheetButton", timeout: TimeSpan.FromSeconds(4)).Click();
-			App.WaitForElementByName("WaitForActionSheet", timeout: TimeSpan.FromSeconds(4));
+			App.WaitForElement("ActionSheetTitle", timeout: TimeSpan.FromSeconds(4));
 
 			VerifyScreenshot();
 		}
