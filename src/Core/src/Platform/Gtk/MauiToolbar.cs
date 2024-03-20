@@ -19,8 +19,7 @@ namespace Microsoft.Maui.Platform
 
 				_titleLabel = new Label();
 				PackStart(_titleLabel, false, false, 0);
-				QueueResize();
-				
+				_titleLabel.Show();
 				return _titleLabel;
 			}
 		}
@@ -51,7 +50,7 @@ namespace Microsoft.Maui.Platform
 				if (_title != string.Empty)
 				{
 					TitleLabel.Text = _title;
-					TitleLabel.QueueAllocate();
+					QueueResize();
 				}
 				else
 				{
