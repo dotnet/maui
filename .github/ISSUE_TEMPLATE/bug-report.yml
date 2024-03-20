@@ -46,6 +46,7 @@ body:
       options:
         - 
         - 9.0.0-preview.1.9973
+        - 8.0.10 SR3
         - 8.0.7 SR2
         - 8.0.6 SR1
         - 8.0.3 GA
@@ -107,7 +108,8 @@ body:
         - 8.0.0-rc.2.9511
         - 8.0.3 GA
         - 8.0.6 SR1
-        - 8.0.7 SR2
+        - 8.0.7 SR2        
+        - 8.0.10 SR3
         - 9.0.0-preview.1.9973
     validations:
       required: true

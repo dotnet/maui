@@ -124,6 +124,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				Element.Disappearing -= OnTabbedPageDisappearing;
 				RemoveTabs();
 				_viewPager.LayoutChange -= OnLayoutChanged;
+				_viewPager.Adapter = null;
 			}
 
 			Element = tabbedPage;
