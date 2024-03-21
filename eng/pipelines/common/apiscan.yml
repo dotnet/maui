@@ -21,3 +21,5 @@ stages:
       tsaConfigFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\tsaoptions-v2.json'
       apiScanSoftwareName: ${{ parameters.softwareName }}
       apiScanSoftwareVersionNum: ${{ parameters.softwareVersion }}
+      apiScanAuthConnectionString: 'runAs=App;AppId=$(ApiScanClientId)'
+
