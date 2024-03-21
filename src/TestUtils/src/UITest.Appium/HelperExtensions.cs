@@ -214,10 +214,10 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void DoubleTap(this IApp app, string element)
 		{
-			var elementToTap = app.FindElement(element);
+			var elementToDoubleTap = app.FindElement(element);
 			app.CommandExecutor.Execute("doubleTap", new Dictionary<string, object>
 			{
-				{ "element", elementToTap },
+				{ "element", elementToDoubleTap },
 			});
 		}
 
