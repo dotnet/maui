@@ -49,12 +49,16 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		public abstract string Issue { get; }
+		public virtual bool ResetMainPage { get; private set; } = true;
 
 		void NavigateToIssue(string issue)
 		{
 			App.NavigateToIssues();
-			
-			App.Click("ResetMainPage");
+
+			if (ResetMainPage)
+			{
+				App.Click("ResetMainPage");
+			}
 
 			App.EnterText("SearchBarGo", issue);
 
