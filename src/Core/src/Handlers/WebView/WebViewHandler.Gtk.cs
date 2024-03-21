@@ -2,10 +2,8 @@
 
 namespace Microsoft.Maui.Handlers
 {
-
 	public partial class WebViewHandler : ViewHandler<IWebView, MauiWebView>
 	{
-
 		internal const string AssetBaseUrl = MauiWebView.AssetBaseUrl;
 
 		bool _firstRun = true;
@@ -24,6 +22,15 @@ namespace Microsoft.Maui.Handlers
 			return new(this);
 		}
 
+		public override void SetVirtualView(IView view)
+		{
+			_firstRun = true;
+			base.SetVirtualView(view);
+			// At this time all the mappers were already called
+			_firstRun = false;
+			ProcessSourceWhenReady(this, VirtualView);
+		}
+
 		protected override void ConnectHandler(MauiWebView platformView)
 		{
 			base.ConnectHandler(platformView);
@@ -32,7 +39,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiWebView platformView)
 		{
-
 			platformView.StopLoading();
 
 			base.DisconnectHandler(platformView);
@@ -91,7 +97,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapUserAgent(IWebViewHandler handler, IWebView webView)
 		{
 			handler.PlatformView.UpdateUserAgent(webView);
-
 		}
 
 		static void ProcessSourceWhenReady(IWebViewHandler handler, IWebView webView)
@@ -128,7 +133,5 @@ namespace Microsoft.Maui.Handlers
 
 			return cancel;
 		}
-
 	}
-
 }
