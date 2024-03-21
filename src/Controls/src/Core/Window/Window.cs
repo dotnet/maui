@@ -221,11 +221,11 @@ namespace Microsoft.Maui.Controls
 			SetValueCore(WidthProperty, frame.Width, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
 			SetValueCore(HeightProperty, frame.Height, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
 
-			_batchFrameUpdate--;
+			int previousValue = _batchFrameUpdate--;
 			if (_batchFrameUpdate < 0)
 				_batchFrameUpdate = 0;
 
-			if (_batchFrameUpdate == 0)
+			if (previousValue == 1)
 			{
 				SetPropertyChanged(XProperty, nameof(X), x, frame.X);
 				SetPropertyChanged(YProperty, nameof(Y), y, frame.Y);
