@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -159,37 +160,16 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformButton.GetContent<WImage>() is WImage nativeImage)
 			{
+				// Stretch to fill
+				nativeImage.Stretch = UI.Xaml.Media.Stretch.Uniform;
 				nativeImage.Source = nativeImageSource;
 
-				if (nativeImageSource is not null)
+				// If we're a CanvasImageSource (font image source), we need to explicitly set the image height
+				// to the desired size of the font, otherwise it will be stretched to the available space
+				if (nativeImage.Source is CanvasImageSource canvas)
 				{
-					// set the base size if we can
-					{
-						var imageSourceSize = nativeImageSource.GetImageSourceSize(platformButton);
-						nativeImage.Width = imageSourceSize.Width;
-						nativeImage.Height = imageSourceSize.Height;
-					}
-
-					// BitmapImage is a special case that has an event when the image is loaded
-					// when this happens, we want to resize the button
-					if (nativeImageSource is BitmapImage bitmapImage)
-					{
-						bitmapImage.ImageOpened += OnImageOpened;
-
-						void OnImageOpened(object sender, RoutedEventArgs e)
-						{
-							bitmapImage.ImageOpened -= OnImageOpened;
-
-							// Check if the image that just loaded is still the current image
-							var actualImageSource = sender as BitmapImage;
-
-							if (actualImageSource is not null && nativeImage.Source == actualImageSource)
-								nativeImage.Height = nativeImage.Width = Primitives.Dimension.Unset;
-
-							if (platformButton.Parent is FrameworkElement frameworkElement)
-								frameworkElement.InvalidateMeasure();
-						};
-					}
+					nativeImage.Width = canvas.Size.Width;
+					nativeImage.Height = canvas.Size.Height;
 				}
 
 				nativeImage.Visibility = nativeImageSource == null

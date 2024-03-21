@@ -827,10 +827,12 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			if (args.NewHandler == null)
+#pragma warning disable CS0618 // Type or member is obsolete
 				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
 
 			if (args.NewHandler != null && args.OldHandler == null)
 				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)

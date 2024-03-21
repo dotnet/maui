@@ -11,6 +11,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "The editor placeholder can't able to changed, It's default placed at center";
 
 		[Test]
+		[Category(UITestCategories.Editor)]
 		public void EditorPlaceholderPosition()
 		{
 			this.IgnoreIfPlatforms(new[]
