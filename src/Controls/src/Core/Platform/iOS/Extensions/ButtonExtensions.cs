@@ -2,7 +2,6 @@
 using System;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using UIKit;
 using static Microsoft.Maui.Controls.Button;
@@ -232,11 +231,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (config is UIButtonConfiguration)
 			{
-				ResizeImageIfNecessary(platformButton, button, image);
-			}
-
-			if (config is UIButtonConfiguration)
-			{
 				// If there is an image above or below the Title, the button will need to be redrawn the first time.
 				if ((config.ImagePlacement == NSDirectionalRectEdge.Top || config.ImagePlacement == NSDirectionalRectEdge.Bottom)
 					&& originalContentMode != config.ImagePlacement)
@@ -262,71 +256,6 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 #pragma warning restore CA1422 // Validate platform compatibility
 			}
-		}
-
-		static void ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image)
-		{
-			nfloat availableHeight = 0;
-			nfloat availableWidth = 0;
-
-			if (platformButton.Bounds != CGRect.Empty
-				&& (button.Height != double.NaN || button.Width != double.NaN)
-				&& platformButton.Configuration is UIButtonConfiguration config
-				&& config.ContentInsets is NSDirectionalEdgeInsets contentInsets)
-			{
-				// Case where the image is on top or bottom of the Title text.
-				if (config.ImagePlacement == NSDirectionalRectEdge.Top || config.ImagePlacement == NSDirectionalRectEdge.Bottom)
-				{
-					availableHeight = platformButton.Bounds.Height - (contentInsets.Top + contentInsets.Bottom + config.ImagePadding + platformButton.GetTitleBoundingRect().Height);
-					availableWidth = platformButton.Bounds.Width - (contentInsets.Leading + contentInsets.Trailing);
-				}
-
-				// Case where the image is on the left or right of the Title text.
-				else
-				{
-					availableHeight = platformButton.Bounds.Height - (contentInsets.Top + contentInsets.Bottom);
-					availableWidth = platformButton.Bounds.Width - (contentInsets.Leading + contentInsets.Trailing + config.ImagePadding + platformButton.GetTitleBoundingRect().Width);
-				}
-			}
-
-			availableHeight = (nfloat)Math.Max(availableHeight, 0);
-			availableWidth = (nfloat)Math.Max(availableWidth, 0);
-
-			try
-			{
-				if (image.Size.Height > availableHeight || image.Size.Width > availableWidth)
-				{
-					image = ResizeImageSource(image, availableWidth, availableHeight);
-				}
-				else
-				{
-					return;
-				}
-
-				image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
-
-				platformButton.SetImage(image, UIControlState.Normal);
-
-				platformButton.SetNeedsLayout();
-			}
-			catch (Exception)
-			{
-				button.Handler.MauiContext?.CreateLogger<ButtonHandler>()?.LogWarning("Can not load Button ImageSource");
-			}
-		}
-
-		static UIImage ResizeImageSource(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
-		{
-			if (sourceImage is null || sourceImage.CGImage is null)
-				return null;
-
-			var sourceSize = sourceImage.Size;
-			float maxResizeFactor = (float)Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
-
-			if (maxResizeFactor > 1)
-				return sourceImage;
-
-			return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
 		}
 
 		public static void UpdateText(this UIButton platformButton, Button button)
