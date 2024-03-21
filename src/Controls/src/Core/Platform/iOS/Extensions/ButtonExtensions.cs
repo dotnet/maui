@@ -254,18 +254,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static NSDirectionalEdgeInsets ConvertPaddingToInsets(Thickness thickness) =>
-		new NSDirectionalEdgeInsets((nfloat)thickness.Top, (nfloat)thickness.Left, (nfloat)thickness.Bottom, (nfloat)thickness.Right);
-
-		static bool IsCloseToZero(NSDirectionalEdgeInsets inset)
-		{
-			// The system sets the Top and Bottom insets to very small fractions when set to zero
-			if (inset.Top < 0.0001 && inset.Leading < 0.0001 && inset.Bottom < 0.0001 && inset.Trailing < 0.0001)
-				return true;
-
-			return false;
-		}
-
 		public static void UpdateText(this UIButton platformButton, Button button)
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
