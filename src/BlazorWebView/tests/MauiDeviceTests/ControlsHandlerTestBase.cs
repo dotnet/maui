@@ -41,20 +41,6 @@ namespace Microsoft.Maui.DeviceTests
 			return CreateHandler<THandler>(view, MauiContext);
 		}
 
-		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view)
-			where THandler : IElementHandler, new() =>
-			await InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view));
-
-		protected IElementHandler CreateHandler(IElement view)
-		{
-			var handler = view.ToHandler(MauiContext);
-			InitializeViewHandler(view, handler, MauiContext);
-			return handler;
-		}
-
-		protected async Task<IElementHandler> CreateHandlerAsync(IElement view) =>
-			await InvokeOnMainThreadAsync(() => CreateHandler(view));
-
 		protected Task<TValue> GetValueAsync<TValue, THandler>(IElement view, Func<THandler, TValue> func)
 			 where THandler : IElementHandler, new()
 		{
@@ -62,23 +48,6 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<THandler>(view);
 				return func(handler);
-			});
-		}
-
-		protected Task<TValue> GetValueAsync<TValue>(IElement view, Func<IPlatformViewHandler, TValue> func)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var handler = (IPlatformViewHandler)view.ToHandler(MauiContext);
-				return func(handler);
-			});
-		}
-		protected Task<TValue> GetValueAsync<TValue>(IElement view, Func<IPlatformViewHandler, Task<TValue>> func)
-		{
-			return InvokeOnMainThreadAsync(async () =>
-			{
-				var handler = (IPlatformViewHandler)view.ToHandler(MauiContext);
-				return await func(handler);
 			});
 		}
 
@@ -94,42 +63,6 @@ namespace Microsoft.Maui.DeviceTests
 				window = new Controls.Window(new ContentPage() { Content = (View)view });
 
 			return window;
-		}
-
-		protected Task CreateHandlerAndAddToWindow(IElement view, Func<Task> action)
-		{
-			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
-			{
-				return action();
-			}, MauiContext, null);
-		}
-
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
-			where THandler : class, IElementHandler
-		{
-			return CreateHandlerAndAddToWindow<THandler>(view, handler =>
-			{
-				return action(handler);
-			}, MauiContext, null);
-		}
-
-		protected Task CreateHandlerAndAddToWindow(IElement view, Action action)
-		{
-			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
-			{
-				action();
-				return Task.CompletedTask;
-			}, MauiContext, null);
-		}
-
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
-			where THandler : class, IElementHandler
-		{
-			return CreateHandlerAndAddToWindow<THandler>(view, handler =>
-			{
-				action(handler);
-				return Task.CompletedTask;
-			}, MauiContext, null);
 		}
 
 		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
@@ -269,73 +202,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		/// <summary>
-		/// This is more complicated as we have different logic depending on the view being focused or not.
-		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
-		/// </summary>
-		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Action<THandler> action)
-			where TType : IView, new()
-			where THandler : class, IPlatformViewHandler, IElementHandler, new()
-		{
-			Func<THandler, Task> boop = (handler) =>
-			{
-				action.Invoke(handler);
-				return Task.CompletedTask;
-			};
-
-			await AttachAndRunFocusAffectedControl<TType, THandler>(control, boop);
-		}
-
-		/// <summary>
-		/// This is more complicated as we have different logic depending on the view being focused or not.
-		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
-		/// </summary>
-		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Func<THandler, Task> action)
-			where TType : IView, new()
-			where THandler : class, IPlatformViewHandler, IElementHandler, new()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler<VerticalStackLayout, LayoutHandler>();
-					handler.AddHandler<TType, THandler>();
-				});
-			});
-
-			var layout = new VerticalStackLayout
-			{
-				WidthRequest = 200,
-				HeightRequest = 200,
-			};
-
-			var placeholder = new TType();
-			layout.Add(placeholder);
-			layout.Add(control);
-
-			await AttachAndRun(layout, handler => action(control.Handler as THandler));
-		}
-
-		async protected Task ValidatePropertyInitValue<TValue, THandler>(
-			IView view,
-			Func<TValue> GetValue,
-			Func<THandler, TValue> GetPlatformValue,
-			TValue expectedValue)
-			where THandler : IElementHandler, new()
-		{
-			var values = await GetValueAsync(view, (THandler handler) =>
-			{
-				return new
-				{
-					ViewValue = GetValue(),
-					PlatformViewValue = GetPlatformValue(handler)
-				};
-			});
-
-			Assert.Equal(expectedValue, values.ViewValue);
-			Assert.Equal(expectedValue, values.PlatformViewValue);
-		}
-
 		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
@@ -387,33 +253,6 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					throw;
 				}
-			}
-		}
-
-		protected async Task OnFrameSetToNotEmpty(VisualElement frameworkElement, TimeSpan? timeOut = null)
-		{
-			if (frameworkElement.Frame.Height > 0 &&
-				frameworkElement.Frame.Width > 0)
-			{
-				return;
-			}
-
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			frameworkElement.BatchCommitted += OnBatchCommitted;
-
-			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
-
-			void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
-			{
-				if (frameworkElement.Frame.Height <= 0 ||
-					frameworkElement.Frame.Width <= 0)
-				{
-					return;
-				}
-
-				frameworkElement.BatchCommitted -= OnBatchCommitted;
-				taskCompletionSource.SetResult(true);
 			}
 		}
 	}

@@ -59,12 +59,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		void InvokeWindowDestroying()
 		{
-			if (Window is not null)
-			{
-				//if (!Window.IsDestroyed)
-				//	_window.Destroying();
-			}
-			else
+			if (Window is null)
 			{
 				_window.Destroying();
 			}
@@ -85,12 +80,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			if (args.WindowActivationState != UI.Xaml.WindowActivationState.Deactivated)
 			{
-				if (Window is not null)
-				{
-					//if (!Window.IsActivated)
-					//	_window.Activated();
-				}
-				else
+				if (Window is null)
 				{
 					_window.Activated();
 				}

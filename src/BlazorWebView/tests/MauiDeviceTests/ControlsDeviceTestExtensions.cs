@@ -1,13 +1,8 @@
 ﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Xunit;
-#if ANDROID || IOS || MACCATALYST
-using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
-#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -17,7 +12,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return
 				mauiAppBuilder
-					//.RemapForControls()
 					.ConfigureLifecycleEvents(lifecycle =>
 					{
 #if IOS || MACCATALYST
@@ -46,7 +40,6 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
 						handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-						//handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
 						handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
 #if WINDOWS
 						handlers.AddHandler(typeof(MauiAppNewWindowStub), typeof(ApplicationHandler));
