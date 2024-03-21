@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Handlers
 			// It is important to note that the configuration will change any set style changes so we will do this right after creating the button.
 			if (OperatingSystem.IsIOSVersionAtLeast(15))
 			{
-				platformView.Configuration = UIButtonConfiguration.PlainButtonConfiguration;
+				var config = UIButtonConfiguration.PlainButtonConfiguration;
+				platformView.Configuration = config;
 			}
 
 			platformView.ClipsToBounds = true;

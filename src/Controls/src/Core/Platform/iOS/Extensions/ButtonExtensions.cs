@@ -83,6 +83,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var image = platformButton.CurrentImage;
+
 			NSDirectionalRectEdge? originalContentMode = null;
 			if (config is UIButtonConfiguration)
 			{
