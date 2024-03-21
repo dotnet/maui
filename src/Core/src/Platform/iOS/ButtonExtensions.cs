@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 			platformButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
 
 			// If iOS 15+, update the configuration with the new font
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config)
+			if (platformButton.Configuration is UIButtonConfiguration config)
 			{
 				config.TitleTextAttributesTransformer = (incoming) =>
 				{
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Platform
 			if (bottom == 0.0)
 				bottom = AlmostZero;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is not null)
+			if (platformButton.Configuration is not null)
 			{
 				var config = platformButton.Configuration;
 				config.ContentInsets = new NSDirectionalEdgeInsets (
@@ -95,13 +95,16 @@ namespace Microsoft.Maui.Platform
 					(float)padding.Right);
 				platformButton.Configuration = config;
 			}
-			else if (!OperatingSystem.IsIOSVersionAtLeast(15))
+			else
 			{
+				// ImageButton still will use the deprecated UIEdgeInsets for now.
+#pragma warning disable CA1422 // Validate platform compatibility
 				platformButton.ContentEdgeInsets = new UIEdgeInsets(
 					(float)top,
 					(float)padding.Left,
 					(float)bottom,
 					(float)padding.Right);
+#pragma warning restore CA1422 // Validate platform compatibility
 			}
 		}
 	}

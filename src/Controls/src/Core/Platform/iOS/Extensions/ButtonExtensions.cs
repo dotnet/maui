@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Platform
 			double spacingVertical = 0;
 			double spacingHorizontal = 0;
 
-			if (!OperatingSystem.IsIOSVersionAtLeast(15) && button.ImageSource != null)
+			if (platformButton.Configuration is null && button.ImageSource != null)
 			{
 				if (button.ContentLayout.IsHorizontal())
 				{
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 				platformButton.TitleLabel.Layer.Hidden = true;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && config is UIButtonConfiguration)
+			if (config is UIButtonConfiguration)
 			{
 				// If there is an image above or below the Title, the button will need to be redrawn the first time.
 				if ((config.ImagePlacement == NSDirectionalRectEdge.Top || config.ImagePlacement == NSDirectionalRectEdge.Bottom)
@@ -243,8 +243,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			platformButton.UpdatePadding(button);
 
-			if (!OperatingSystem.IsIOSVersionAtLeast(15))
+			if (config is null)
 			{
+				// ImageButton still will use the deprecated UIEdgeInsets for now.
+#pragma warning disable CA1422 // Validate platform compatibility
 				if (platformButton.ImageEdgeInsets != imageInsets ||
 					platformButton.TitleEdgeInsets != titleInsets)
 				{
@@ -252,6 +254,7 @@ namespace Microsoft.Maui.Controls.Platform
 					platformButton.TitleEdgeInsets = titleInsets;
 					platformButton.Superview?.SetNeedsLayout();
 				}
+#pragma warning restore CA1422 // Validate platform compatibility
 			}
 		}
 
