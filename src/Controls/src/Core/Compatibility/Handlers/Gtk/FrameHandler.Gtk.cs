@@ -4,28 +4,25 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-
 	public partial class FrameHandler : ViewHandler<Frame, FrameView>
 	{
-
 		public static IPropertyMapper<Frame, FrameHandler> Mapper = new PropertyMapper<Frame, FrameHandler>(ViewRenderer.VisualElementRendererMapper)
 		{
-			[VisualElement.BackgroundProperty.PropertyName] = MapBackground,
-			[Frame.ContentProperty.PropertyName] = MapContent,
+			[VisualElement.BackgroundProperty.PropertyName] = MapBackground, 
+			[Frame.ContentProperty.PropertyName] = MapContent, 
+			[Frame.CornerRadiusProperty.PropertyName] = MapCornerRadius, 
+			[Frame.BorderColorProperty.PropertyName] = MapBorderColor,
 		};
 
 		public static CommandMapper<Frame, FrameHandler> CommandMapper = new(ViewRenderer.VisualElementRendererCommandMapper) { };
 
-		public FrameHandler() : base(Mapper, CommandMapper)
-		{ }
+		public FrameHandler() : base(Mapper, CommandMapper) { }
 
 		public FrameHandler(IPropertyMapper? mapper)
-			: base(mapper ?? Mapper, CommandMapper)
-		{ }
+			: base(mapper ?? Mapper, CommandMapper) { }
 
 		public FrameHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
-			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
-		{ }
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper) { }
 
 		[MissingMapper]
 		protected override FrameView CreatePlatformView()
@@ -65,6 +62,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				platformView.Content = view.ToPlatform(mauiContext);
 		}
 
-	}
+		public static void MapCornerRadius(FrameHandler handler, Frame frame)
+		{
+			handler.PlatformView.UpdateMapCornerRadius(frame.CornerRadius);
+		}
 
+		public static void MapBorderColor(FrameHandler handler, Frame frame)
+		{
+			handler.PlatformView.UpdateBorderColor(frame.BorderColor);
+		}
+	}
 }
