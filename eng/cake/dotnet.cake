@@ -754,7 +754,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     var logDirectory = GetLogDirectory();
 
     if(localDotnet)
-        SetDotNetEnvironmentVariables(pathDotnet);
+        SetDotNetEnvironmentVariables(System.IO.Path.GetDirectoryName(pathDotnet));
 
     if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
     {
