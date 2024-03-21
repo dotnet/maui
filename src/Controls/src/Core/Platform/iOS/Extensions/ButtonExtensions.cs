@@ -333,10 +333,6 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
 			platformButton.SetTitle(text, UIControlState.Normal);
-
-			// Content layout depends on whether or not the text is empty; changing the text means
-			// we may need to update the content layout
-			platformButton.UpdateContentLayout(button);
 		}
 
 		public static void UpdateLineBreakMode(this UIButton nativeButton, Button button)
