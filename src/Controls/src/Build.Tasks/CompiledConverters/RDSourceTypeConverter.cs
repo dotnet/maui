@@ -45,17 +45,19 @@ namespace Microsoft.Maui.Controls.XamlC
 			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 
 			//fail early
-			var resourceType = GetTypeForPath(context.Cache, module, resourcePath);
-			if (resourceType == null)
+			var resourceTypeRef = GetTypeForPath(context.Cache, module, resourcePath);
+			if (resourceTypeRef == null)
 				throw new BuildException(BuildExceptionCode.ResourceMissing, node, null, value);
 
+			var resourceType = module.ImportReference(resourceTypeRef).Resolve();
+
 			// validate that the resourceType has a default ctor
-			var defaultCtor = resourceType.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters);
-			if (defaultCtor == null)
+			var hasDefaultCtor = resourceType.Methods.Any(md => md.IsConstructor && !md.HasParameters);
+			if (!hasDefaultCtor)
 				throw new BuildException(BuildExceptionCode.ConstructorDefaultMissing, node, null, resourceType);
 
 			var resourceDictionaryType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary");
-			var resourceDictionaryTypeDefinition = currentModule.GetTypeDefinition(context.Cache, resourceDictionaryType);
+			var resourceDictionaryTypeDefinition = module.GetTypeDefinition(context.Cache, resourceDictionaryType);
 
 			//abuse the converter, produce some side effect, but leave the stack untouched
 			//public void SetAndCreateSource<TResourceType>(Uri value)
@@ -76,7 +78,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			body.Variables.Add(uriVarDef);
 			yield return Create(Stloc, uriVarDef);
 
-			var method = currentModule.ImportMethodReference(
+			var method = module.ImportMethodReference(
 							context.Cache,
 							resourceDictionaryTypeDefinition,
 							methodName: "SetAndCreateSource",
@@ -85,7 +87,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			var genericInstanceMethod = new GenericInstanceMethod(method);
 			genericInstanceMethod.GenericArguments.Add(resourceType);
 
-			yield return Create(Callvirt, genericInstanceMethod);
+			yield return Create(Callvirt, currentModule.ImportReference(genericInstanceMethod));
 			//ldloc the stored uri as return value
 			yield return Create(Ldloc, uriVarDef);
 		}
@@ -103,7 +105,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			return null;
 		}
 
-		private static TypeDefinition GetTypeForPath(XamlCache cache, ModuleDefinition module, string path)
+		private static TypeReference GetTypeForPath(XamlCache cache, ModuleDefinition module, string path)
 		{
 			foreach (var ca in module.GetCustomAttributes())
 			{
@@ -111,7 +113,7 @@ namespace Microsoft.Maui.Controls.XamlC
 					continue;
 				if (ca.ConstructorArguments[1].Value as string != path)
 					continue;
-				return module.ImportReference((TypeReference)ca.ConstructorArguments[2].Value).ResolveCached(cache);
+				return ca.ConstructorArguments[2].Value as TypeReference;
 			}
 			return null;
 		}

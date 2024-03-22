@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls
 			where T : ResourceDictionary, new()
 		{
 			_source = value;
-			_mergedInstance = s_instances.GetValue(typeof(T), _ => (ResourceDictionary)new T());
+			_mergedInstance = s_instances.GetValue(typeof(T), static _ => new T());
 			OnValuesChanged(_mergedInstance.ToArray());
 		}
 
