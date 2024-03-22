@@ -107,9 +107,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		public override void CellDisplayingEnded(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
-		{			
-			
-			}
+		{
 		}
 
 		protected virtual (bool VisibleItems, NSIndexPath First, NSIndexPath Center, NSIndexPath Last) GetVisibleItemsIndexPath()
