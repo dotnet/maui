@@ -57,11 +57,10 @@ namespace Microsoft.Maui.Controls.XamlC
 				throw new BuildException(BuildExceptionCode.ConstructorDefaultMissing, node, null, resourceType);
 
 			var resourceDictionaryType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary");
-			var resourceDictionaryTypeDefinition = module.GetTypeDefinition(context.Cache, resourceDictionaryType);
 
 			//abuse the converter, produce some side effect, but leave the stack untouched
 			//public void SetAndCreateSource<TResourceType>(Uri value)
-			foreach (var instruction in context.Variables[rdNode].LoadAs(context.Cache, resourceDictionaryTypeDefinition, currentModule))
+			foreach (var instruction in context.Variables[rdNode].LoadAs(context.Cache, currentModule.GetTypeDefinition(context.Cache, resourceDictionaryType), currentModule))
 				yield return instruction;
 			//reappend assembly= in all cases, see other RD converter
 			if (!string.IsNullOrEmpty(asmName))
@@ -73,16 +72,15 @@ namespace Microsoft.Maui.Controls.XamlC
 
 			//keep the Uri for later
 			yield return Create(Dup);
-			var uriType = currentModule.ImportReference(context.Cache, ("System", "System", "Uri"));
-			var uriVarDef = new VariableDefinition(uriType);
+			var uriVarDef = new VariableDefinition(currentModule.ImportReference(context.Cache, ("System", "System", "Uri")));
 			body.Variables.Add(uriVarDef);
 			yield return Create(Stloc, uriVarDef);
 
 			var method = module.ImportMethodReference(
-							context.Cache,
-							resourceDictionaryTypeDefinition,
-							methodName: "SetAndCreateSource",
-							parameterTypes: new[] { uriType });
+				context.Cache,
+				resourceDictionaryType,
+				methodName: "SetAndCreateSource",
+				parameterTypes: new[] { ("System", "System", "Uri") });
 
 			var genericInstanceMethod = new GenericInstanceMethod(method);
 			genericInstanceMethod.GenericArguments.Add(resourceType);
