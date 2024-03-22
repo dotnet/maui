@@ -759,7 +759,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
         var localDotnetRoot = MakeAbsolute(Directory(System.IO.Path.GetDirectoryName(pathDotnet)));
     	Information("new dotnet root: {0}", localDotnetRoot);
 
-        SetDotNetEnvironmentVariables();
+        SetDotNetEnvironmentVariables(localDotnetRoot);
     }
 
     if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
