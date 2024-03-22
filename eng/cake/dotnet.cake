@@ -753,8 +753,14 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var logDirectory = GetLogDirectory();
 
-    if(localDotnet)
-        SetDotNetEnvironmentVariables(System.IO.Path.GetDirectoryName(pathDotnet));
+    if (localDotnet)
+    {
+        // Make sure the path doesn't refer to the dotnet executable and make path absolute
+        var localDotnetRoot = MakeAbsolute(Directory(System.IO.Path.GetDirectoryName(pathDotnet)));
+    	Information("new dotnet root: {0}", localDotnetRoot);
+
+        SetDotNetEnvironmentVariables();
+    }
 
     if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
     {
