@@ -99,8 +99,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(pushedPage, pageDisappeared);
 		}
 
-		
-
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
