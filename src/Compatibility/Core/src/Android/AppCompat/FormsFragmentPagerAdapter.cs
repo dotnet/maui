@@ -44,14 +44,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			return _page.Children[position].GetHashCode();
 		}
 
-		public override bool ContainsItem(long position)
-		{
-			// This is a bit of a hack, but it must be added in order to prevent IllegalStateException for
-			// viewpager2
-			// this method did not exist and was not used in the original implementation
-			return true;
-		}
-
 		public override int GetItemPosition(Object objectValue)
 		{
 			var fragContainer = objectValue as FragmentContainer;

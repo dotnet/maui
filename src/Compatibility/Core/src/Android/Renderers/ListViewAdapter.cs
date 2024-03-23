@@ -132,11 +132,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return false;
 		}
 
-		public override long GetItemId(int position)
-		{
-			return position;
-		}
-
 		public override bool ContainsItem(long itemId)
 		{
 			// This is a bit of a hack, but it must be added in order to prevent IllegalStateException for
