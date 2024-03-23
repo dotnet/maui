@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19214"
+             Title="Issue19214">
+    <VerticalStackLayout>
+        <Button Text="Push Multiple ScrollViews" Clicked="PushMultipleScrollViews" AutomationId="MultipleScrollViewsButton"/>
+        <Button Text="Push Full-screen ScrollView" Clicked="PushFullScrollView" AutomationId="FullScrollViewButton"/>
+    </VerticalStackLayout>
+</ContentPage>

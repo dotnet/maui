@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19214_FullScrollView"
+             Title="Issue19214_FullScrollView">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Button Text="Pop Page" BackgroundColor="Red" Clicked="PopButtonPressed" AutomationId="PopPageButton"/>
+
+            <Entry Text="Top Scroll" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry1" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry2" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry3" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry4" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry5" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry6" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry7" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry8" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry9" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry10" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry11" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry12" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry13" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry14" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry15" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry16" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry17" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry18" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Entry19" Background="Lightgray" HeightRequest="50"/>
+            <BoxView HeightRequest="50" />
+
+            <Entry Text="Bottom!!" Background="Green" HeightRequest="50"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
