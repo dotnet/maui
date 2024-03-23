@@ -82,14 +82,13 @@ public class Issue19214 : _IssuesUITest
     void ConfirmVisible (AppiumApp app, Rectangle rect, string scrollView, string entry)
     {
         var scrollViewRect = app.WaitForElement(scrollView).GetRect();
-        // TODO also make sure the entry is above the keyboard!
+        KeyboardScrolling.CheckIfViewAboveKeyboard(app, entry, false);
         Assert.True(rect.Y > scrollViewRect.Y && rect.Bottom < scrollViewRect.Bottom, $"{entry} was not visible in {scrollView}");
     }
 
     void ScrollScrollView (AppiumApp app, Rectangle rect, bool scrollsDown = true)
     {
         var actions = new TouchAction(app.Driver);
-        // var newY = scrollsDown ? lowPoint : topPoint;
         var newY = scrollsDown ? rect.Y - 1000 : rect.Y + 1000;
         actions.LongPress(null, rect.Left - 5, rect.Y).MoveTo(null, rect.Left - 5, newY).Release().Perform();
     }
