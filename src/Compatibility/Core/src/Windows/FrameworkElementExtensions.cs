@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!ForegroundProperties.Value.TryGetValue(type, out foregroundProperty))
 			{
 #pragma warning disable IL2075 // The Compatibility assembly is not trimmable
-				FieldInfo field = type.GetFields("ForegroundProperty", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+				FieldInfo field = type.GetField("ForegroundProperty", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 #pragma warning restore IL2075
 				if (field == null)
 					throw new ArgumentException("type is not a Foregroundable type");
