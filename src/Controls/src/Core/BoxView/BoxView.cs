@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 
 		PathAspect IShapeView.Aspect => PathAspect.None;
 
-		Paint? IShapeView.Fill => Color?.AsPaint() ?? ((IView)this).Background;
+		Paint? IShapeView.Fill => Color?.AsPaint();
 
 		Paint? IStroke.Stroke => null;
 
