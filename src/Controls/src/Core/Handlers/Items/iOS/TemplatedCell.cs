@@ -82,10 +82,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var size = UpdateCellSize();
 
-			// Adjust the preferred attributes to include space for the Forms element
-			preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
+			if(size != preferredAttributes.Size)
+			{
+				// Adjust the preferred attributes to include space for the Forms element
+				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 
-			OnLayoutAttributesChanged(preferredAttributes);
+				OnLayoutAttributesChanged(preferredAttributes);
+			}
 
 			return preferredAttributes;
 		}

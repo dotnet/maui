@@ -67,6 +67,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				SectionInsetReference = UICollectionViewFlowLayoutSectionInsetReference.ContentInset;
 			}
 
+			// Setting it to AutomaticSize, causes the collection view to query each cell for its actual size using 
+			// the cell’s PreferredLayoutAttributesFitting method.
 			EstimatedItemSize = AutomaticSize;
 		}
 
