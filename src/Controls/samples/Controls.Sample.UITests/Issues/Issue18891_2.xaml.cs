@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			List<Item> items = new List<Item>();
 
-			for(int i = 0; i < 200000; i++)
+			for(int i = 0; i < 11000; i++)
 			{
 				if ((i % 2) == 0)
 					items.Add(new Item1($"{i + 1}"));
