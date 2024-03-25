@@ -211,8 +211,8 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>
 		/// Gets the current value of the <see cref="UIModalPresentationStyle"/> enumeration that's applied to the <see cref="Page"/>.
 		/// </summary>
-		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
-		/// <returns>The current value of the UIModalPresentationStyle enumeration that's applied to the Page.</returns>
+		/// <param name="element">The <see cref="BindableObject" /> whose modal presentation style is being retrieved.</param>
+		/// <returns>The current value of the UIModalPresentationStyle enumeration that's applied to the <paramref name="element" />.</returns>
 		public static UIModalPresentationStyle GetModalPresentationStyle(BindableObject element)
 		{
 			return (UIModalPresentationStyle)element.GetValue(ModalPresentationStyleProperty);
