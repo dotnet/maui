@@ -287,7 +287,7 @@ namespace Microsoft.Maui.Controls
 		public static SearchHandler GetSearchHandler(BindableObject obj) => (SearchHandler)obj.GetValue(SearchHandlerProperty);
 
 		/// <summary>
-		/// Enable the integrated search functionality in Shell.
+		/// Sets the handler responsible for implementing the integrated search functionality in Shell.
 		/// Enabling it results in a search box being added at the top of the page.
 		/// </summary>
 		/// <param name="obj">The object that modifies the Shell search functionality.</param>
