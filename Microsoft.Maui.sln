@@ -259,10 +259,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.Android.Appi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.iOS.Appium.UITests", "src\Compatibility\ControlGallery\test\iOS.Appium.UITests\ControlGallery.iOS.Appium.UITests.csproj", "{5923B35B-EA24-4B86-A384-9DAF9F2AFD56}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.macOS.Appium.UITests", "src\Compatibility\ControlGallery\test\macOS.Appium.UITests\ControlGallery.macOS.Appium.UITests.csproj", "{A30BB319-A580-457D-9DDD-C964FF8FA8D9}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.Windows.Appium.UITests", "src\Compatibility\ControlGallery\test\Windows.Appium.UITests\ControlGallery.Windows.Appium.UITests.csproj", "{D3648B58-415C-4C1D-BA73-8200738EBF14}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.Shared.Appium.UITests", "src\Compatibility\ControlGallery\test\Shared.Appium.UITests\ControlGallery.Shared.Appium.UITests.csproj", "{07D8D4B5-C89D-4BE3-A14A-17668358587C}"
 EndProject
 Global
@@ -662,14 +658,6 @@ Global
 		{5923B35B-EA24-4B86-A384-9DAF9F2AFD56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5923B35B-EA24-4B86-A384-9DAF9F2AFD56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5923B35B-EA24-4B86-A384-9DAF9F2AFD56}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A30BB319-A580-457D-9DDD-C964FF8FA8D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A30BB319-A580-457D-9DDD-C964FF8FA8D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A30BB319-A580-457D-9DDD-C964FF8FA8D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A30BB319-A580-457D-9DDD-C964FF8FA8D9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D3648B58-415C-4C1D-BA73-8200738EBF14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D3648B58-415C-4C1D-BA73-8200738EBF14}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D3648B58-415C-4C1D-BA73-8200738EBF14}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D3648B58-415C-4C1D-BA73-8200738EBF14}.Release|Any CPU.Build.0 = Release|Any CPU
 		{07D8D4B5-C89D-4BE3-A14A-17668358587C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{07D8D4B5-C89D-4BE3-A14A-17668358587C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07D8D4B5-C89D-4BE3-A14A-17668358587C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -794,8 +782,6 @@ Global
 		{8050448A-E08F-4972-9B47-16042A5DFE82} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{F748974F-A8E4-4659-801C-804B739D6326} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 		{5923B35B-EA24-4B86-A384-9DAF9F2AFD56} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
-		{A30BB319-A580-457D-9DDD-C964FF8FA8D9} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
-		{D3648B58-415C-4C1D-BA73-8200738EBF14} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 		{07D8D4B5-C89D-4BE3-A14A-17668358587C} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
