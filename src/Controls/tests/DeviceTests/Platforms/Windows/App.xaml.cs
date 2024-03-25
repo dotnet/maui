@@ -46,6 +46,10 @@ namespace Microsoft.Maui.DeviceTests.WinUI
 				Console.WriteLine(
 					$"WinUI crash: {exception.Message}\n" +
 					$"{exception.StackTrace}");
+
+				throw new Exception(
+					$"WinUI crash: {exception.Message}\n" +
+					$"{exception.StackTrace}");
 			}
 		}
 
