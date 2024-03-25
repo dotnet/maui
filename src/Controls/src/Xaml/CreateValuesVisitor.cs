@@ -56,9 +56,17 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 			Context.Types[node] = type;
 			if (IsXaml2009LanguagePrimitive(node))
+			{
 				value = CreateLanguagePrimitive(type, node);
+			}
 			else if (node.Properties.ContainsKey(XmlName.xArguments) || node.Properties.ContainsKey(XmlName.xFactoryMethod))
+			{
 				value = CreateFromFactory(type, node);
+			}
+			else if (IsResourceDictionaryWithSourceProperty(node, out string sourceValue, out IXmlLineInfo sourceLineInfo))
+			{
+				value = ResourceDictionaryFactory.CreateFromSource(sourceValue, Context.RootElement.GetType(), sourceLineInfo);
+			}
 			else if (
 				type.GetTypeInfo()
 					.DeclaredConstructors.Any(
@@ -66,7 +74,9 @@ namespace Microsoft.Maui.Controls.Xaml
 							ci.IsPublic && ci.GetParameters().Length != 0 &&
 							ci.GetParameters().All(pi => pi.CustomAttributes.Any(attr => attr.AttributeType == typeof(ParameterAttribute)))) &&
 				ValidateCtorArguments(type, node, out string ctorargname))
+			{
 				value = CreateFromParameterizedConstructor(type, node);
+			}
 			else if (!type.GetTypeInfo().DeclaredConstructors.Any(ci => ci.IsPublic && ci.GetParameters().Length == 0) &&
 					 !ValidateCtorArguments(type, node, out ctorargname))
 			{
@@ -363,6 +373,26 @@ namespace Microsoft.Maui.Controls.Xaml
 					return urival;
 			}
 			return value;
+		}
+
+		bool IsResourceDictionaryWithSourceProperty(ElementNode node, out string source, out IXmlLineInfo lineInfo)
+		{
+			source = null;
+			lineInfo = new XmlLineInfo(-1, -1);
+
+			if (!IsResourceDictionary(node))
+				return false;
+			if (!node.Properties.TryGetValue(new XmlName("", "Source"), out INode sourceNode))
+				return false;
+			if (sourceNode is not ValueNode sourceValueNode)
+				return false;
+			if (sourceValueNode.Value is not string)
+				return false;
+
+			source = (string)sourceValueNode.Value;
+			lineInfo = (IXmlLineInfo)sourceNode;
+
+			return true;
 		}
 	}
 }

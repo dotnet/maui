@@ -53,22 +53,26 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				if (RuntimeFeature.IsXamlRuntimeParsingSupported)
-				{
-					_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateFromResource<ResourceDictionary>(resourcePath, assembly, lineInfo);
-				}
-				else
-				{
-					// This codepath is only ever hit when XamlC is explicitly disabled for a given resource dictionary.
-					// The developer had to add [XamlCompilation(XamlCompilationOptions.Skip)] or <?xaml-comp compile="false" ?> to their code.
-					// XamlC will produce a warning in this case (MAUIG0070 or XC0010).
-					throw new InvalidOperationException(
-						$"The resource '{resourcePath}' has not been compiled using XamlC and parsing XAML resources at runtime is disabled. "
-						+ "Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting "
-						+ "the MauiXamlRuntimeParsingSupport MSBuild property to true.");
-				}
+				// TODO remove the exception once https://github.com/dotnet/maui/pull/20776 is merged
+				throw new InvalidOperationException($"Resource {resourcePath} does not have a code behind class");
 			}
+
 			OnValuesChanged(_mergedInstance.ToArray());
+		}
+
+		internal static ResourceDictionary FromType(
+			Uri value,
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+		{
+			return FromInstance(value, s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type)));
+		}
+
+		internal static ResourceDictionary FromInstance(Uri value, ResourceDictionary mergedInstance)
+		{	
+			var rd = new ResourceDictionary();
+			rd._source = value;
+			rd._mergedInstance = mergedInstance;
+			return rd;
 		}
 
 		ObservableCollection<ResourceDictionary> _mergedDictionaries;
@@ -396,26 +400,29 @@ namespace Microsoft.Maui.Controls
 				if (rootObjectType == null)
 					return null;
 
-				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
-				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
-				var assembly = rootObjectType.Assembly;
+				return GetUriWithExplicitAssembly(value, rootObjectType.Assembly);
+			}
 
+			internal static Uri GetUriWithExplicitAssembly(string value, Assembly defaultAssembly)
+			{
+				(value, var assembly) = SplitUriAndAssembly(value, defaultAssembly);
+				return CombineUriAndAssembly(value, assembly);
+			}
+
+			internal static ValueTuple<string, Assembly> SplitUriAndAssembly(string value, Assembly defaultAssembly)
+			{
 				if (value.IndexOf(";assembly=", StringComparison.Ordinal) != -1)
 				{
 					var parts = value.Split(new[] { ";assembly=" }, StringSplitOptions.RemoveEmptyEntries);
-					value = parts[0];
-					var asmName = parts[1];
-					assembly = Assembly.Load(asmName);
+					return (parts[0], Assembly.Load(parts[1]));
 				}
 
-				var uri = new Uri(value, UriKind.Relative); //we don't want file:// uris, even if they start with '/'
-				var resourcePath = GetResourcePath(uri, rootTargetPath);
+				return (value, defaultAssembly);
+			}
 
-				//Re-add the assembly= in all cases, so HotReload doesn't have to make assumptions
-				uri = new Uri($"{value};assembly={assembly.GetName().Name}", UriKind.Relative);
-				targetRD.SetAndLoadSource(uri, resourcePath, assembly, lineInfo);
-
-				return uri;
+			internal static Uri CombineUriAndAssembly(string value, Assembly assembly)
+			{
+				return new Uri($"{value};assembly={assembly.GetName().Name}", UriKind.Relative);
 			}
 
 			internal static string GetResourcePath(Uri uri, string rootTargetPath)
