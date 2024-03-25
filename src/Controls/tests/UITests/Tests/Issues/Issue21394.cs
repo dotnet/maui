@@ -15,8 +15,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
         [Test]
 		public void Issue21394Test()
 		{
+			// TODO - does not appear to be OperatingSystem.IsIOS() during the tests even when iOS
 			this.Ignore(TestDevice.iOS, () => {
-                if (!OperatingSystem.IsIOSVersionAtLeast(15))
+                if (OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(15))
                     return true;
                 return false;
             }, "iOS 14 and below sizes button images differently.");
