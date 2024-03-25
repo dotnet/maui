@@ -82,7 +82,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (disposing)
 			{
-				UnbindCells();
 				_measurementCells = null;
 
 				ItemsSource?.Dispose();
@@ -776,24 +775,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else
 			{
 				CollectionView.Hidden = true;
-			}
-		}
-
-		void UnbindCells()
-		{
-			if (_measurementCells == null || _measurementCells.Count == 0)
-				return;
-
-			foreach (var cell in _measurementCells)
-			{
-				var tCell = cell.Value;
-
-				if (tCell == null)
-					continue;
-
-				tCell.Unbind();
-				tCell.ContentSizeChanged -= CellContentSizeChanged;
-				tCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
 			}
 		}
 	}
