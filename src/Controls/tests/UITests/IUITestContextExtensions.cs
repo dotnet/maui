@@ -14,14 +14,6 @@ namespace Microsoft.Maui.AppiumTests
 			}
 		}
 
-		public static void Ignore(this UITestBase? context, TestDevice device, Func<bool> action, string? message = null)
-		{
-			if (action())
-			{
-				context?.IgnoreIfPlatform(device, message);
-			}
-		}
-
 		public static void IgnoreIfPlatform(this UITestBase? context, TestDevice device, string? message = null)
 		{
 			if (context != null && context.Device == device)

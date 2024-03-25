@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapText(IButtonHandler handler, Button button)
 		{
-			handler.PlatformView?.UpdateText(button);
+			Maui.Platform.ButtonExtensions.UpdateText(handler.PlatformView, button);
 			handler.UpdateValue(nameof(ContentLayout));
 		}
 	}
