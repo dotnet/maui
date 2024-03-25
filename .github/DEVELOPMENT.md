@@ -13,6 +13,7 @@ This page contains steps to build and run the .NET MAUI repository from source. 
    ### Mac
    - Install VS Code and dependencies
       - Follow [these steps](https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?view=net-maui-8.0&tabs=visual-studio-code), installing VS Code, MAUI extension, .NET8, Xcode, OpenJDK, and Android SDK
+      - Install Mono from [Mono Project](https://www.mono-project.com)
       - For Xcode, you can install from the [App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) or [Apple Developer portal](https://developer.apple.com/download/more/?name=Xcode)
       
 ## Building the Build Tasks

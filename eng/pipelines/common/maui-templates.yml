@@ -138,6 +138,15 @@ jobs:
       - ${{ each pair in step }}:
           ${{ pair.key }}: ${{ pair.value }}
 
+    - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
+      - bash: |
+          chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+          chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
+          $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        displayName: 'Clean bot'
+        continueOnError: true
+        timeoutInMinutes: 60
+
     - template: provision.yml
       parameters:
         skipXcode: ${{ eq(RunPlatform.testName, 'RunOnAndroid') }}
@@ -161,8 +170,23 @@ jobs:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
         PRIVATE_BUILD: $(PrivateBuild)
 
+    - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
+      - bash: |
+          if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+          if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
+        displayName: Delete Old Simulator Logs
+        condition: always()
+        continueOnError: true
+
     # - script: dotnet tool update Microsoft.DotNet.XHarness.CLI --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version "9.0.0-prerelease*" -g
     #   displayName: install xharness
+
+    - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
+      - pwsh: ./build.ps1 -Script eng/devices/ios.cake --target=Cleanup --verbosity=diagnostic
+        displayName: Reset iOS simulators
+        # TODO: pass properly device type/version from top-level yml
+        env:
+          IOS_TEST_DEVICE: ios-simulator-64_17.2
 
     - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
       displayName: Build Microsoft.Maui.IntegrationTests
@@ -170,6 +194,19 @@ jobs:
     - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Name=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
       displayName: Run $(PLATFORM_NAME) templates run tests
       continueOnError: true
+      # TODO: pass properly device type/version from top-level yml
+      ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
+        env:
+            IOS_TEST_DEVICE: ios-simulator-64_17.2
+
+    - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
+      - bash: |
+          suffix=$(date +%Y%m%d%H%M%S)
+          zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
+          zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
+        displayName: Zip Simulator Logs
+        condition: always()
+        continueOnError: true
 
     - task: PublishTestResults@2
       displayName: Publish the $(PLATFORM_NAME) templates run tests

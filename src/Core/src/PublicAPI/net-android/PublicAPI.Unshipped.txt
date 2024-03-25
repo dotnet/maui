@@ -65,7 +65,10 @@ override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.MauiAppCompatActivity.DispatchTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.ContentViewGroup.GetClipPath(int width, int height) -> Android.Graphics.Path?
+override Microsoft.Maui.Platform.MauiMaterialButton.IconGravity.get -> int
+override Microsoft.Maui.Platform.MauiMaterialButton.IconGravity.set -> void
 override Microsoft.Maui.Platform.MauiScrollView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+override Microsoft.Maui.Platform.MauiMaterialButton.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.NavigationViewFragment.OnDestroy() -> void
 override Microsoft.Maui.PlatformContentViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
 override Microsoft.Maui.PlatformContentViewGroup.ThresholdClass.get -> nint
