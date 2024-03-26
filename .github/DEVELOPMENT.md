@@ -14,6 +14,19 @@ This page contains steps to build and run the .NET MAUI repository from source. 
    - Install VS Code and dependencies
       - Follow [these steps](https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?view=net-maui-8.0&tabs=visual-studio-code), installing VS Code, MAUI extension, .NET8, Xcode, OpenJDK, and Android SDK
       - For Xcode, you can install from the [App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) or [Apple Developer portal](https://developer.apple.com/download/more/?name=Xcode)
+      - As of 26 March 2024, Xcode 15.3 is not yet supported. Check [this issue](https://github.com/dotnet/maui/issues/21057) for updates
+      - Edit your `.zprofile` file to ensure that the following environment variables are set/modified (you may need to adjust the version of OpenJDK):
+      ```shell
+      export JAVA_HOME=/Library/Java/JavaVirtualMachines/microsoft-11.jdk/Contents/Home
+      export ANDROID_HOME=~/Library/Android/sdk
+      export ANDROID_SDK_ROOT=~/Library/Android/sdk
+      export PATH="$PATH:~/.dotnet/tools"
+      export PATH="$PATH:$ANDROID_HOME/platform-tools"
+      export PATH="$PATH:$ANDROID_HOME/tools"
+      export PATH="$PATH:$ANDROID_HOME/tools/bin"
+      export PATH="$PATH:$ANDROID_HOME/tools/emulator" 
+      ```
+      - In VSCode do `command--shift-P` then type `code path` and select the option `Shell Command: Install 'code' in PATH`
       
 ## Building the Build Tasks
 Before opening the solution in Visual Studio / VS Code you **MUST** build the build tasks.
@@ -141,6 +154,14 @@ These are tests that will not run on a device. This is useful for testing device
 │   ├── test
 │   │   ├── Essentials.UnitTests
 ```
+
+### Reproducing an Issue/Debugging .NET MAUI Code
+
+In VSCode, select the device that you will be testing on. Using the command palette (ctrl-shift-P/command-shift-P) type `pick` and
+you will be presented with a set of choices for your target device (Android, iOS, etc). Select one.
+There is a sample project in `src/Controls/samples/Controls.Sample.Sandbox`. This is an empty project
+into which you can add your code to reproduce an issue and also set breakpoints in .NET MAUI source code.
+*Note:* When you are committing your PR, do not include your changes to the Sandbox project.
 
 ### Integration Tests
 
