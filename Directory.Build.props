@@ -13,6 +13,7 @@
       Tools and packages produced by this repository support infrastructure and are not shipping on NuGet or via any other official channel.
     -->
     <IsShipping>false</IsShipping>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <!-- <Import Project="eng\Versions.props" /> -->
