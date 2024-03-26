@@ -150,10 +150,12 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Sets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
 		/// Shell provides the Text and IconImageSource properties to the BindingContext of the <see cref = "MenuItemTemplate" />. 
-		/// You can also use Title in place of Text and Icon in place of IconImageSource which will let you reuse the same template for menu items and flyout items.
 		/// </summary>
-		/// <param name="obj">The object that sets the <see cref = "DataTemplate" /> applied to MenuItem objects.</param>
-		/// <param name="menuItemTemplate">The <see cref = "DataTemplate" /> applied to MenuItem objects.</param>
+		/// <remarks>
+		/// Title can be used instead of Text, and Icon instead of IconImageSource. This allows reuse of the same template for menu items and flyout items.
+		/// </remarks>
+		/// <param name="obj">The object that sets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects.</param>
+		/// <param name="menuItemTemplate">The <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects.</param>
 		public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
 
 		/// <summary>
