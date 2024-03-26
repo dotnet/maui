@@ -5,6 +5,8 @@ using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Controls.Internals;
+using UIKit;
 
 namespace Microsoft.Maui.Controls
 {
@@ -32,7 +34,17 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapText(IButtonHandler handler, Button button)
 		{
-			Maui.Platform.ButtonExtensions.UpdateText(handler.PlatformView, button);
+			var platformButton = handler.PlatformView;
+			
+			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
+			platformButton.SetTitle(text, UIControlState.Normal);
+
+			if (platformButton.Configuration is UIButtonConfiguration config)
+			{
+				config.Title = text;
+			}
+
+			handler.UpdateValue(nameof(CharacterSpacing));
 			handler.UpdateValue(nameof(ContentLayout));
 		}
 	}

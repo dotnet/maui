@@ -276,6 +276,13 @@ namespace Microsoft.Maui.Controls.Platform
 				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
 				_ => throw new ArgumentOutOfRangeException()
 			};
+
+			if (nativeButton.Configuration is UIButtonConfiguration config)
+			{
+				// If there is an image above or below the Title, the button will need to be redrawn the first time.
+				config.TitleLineBreakMode = nativeButton.TitleLabel.LineBreakMode;
+			}
+
 		}
 	}
 }
