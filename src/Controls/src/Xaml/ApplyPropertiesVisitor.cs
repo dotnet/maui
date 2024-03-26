@@ -331,21 +331,16 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			// F# does not support public fields, so allow internal (Assembly) as well as public
 			const BindingFlags supportedFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
-			var bindableFieldInfo = elementType.GetFields(supportedFlags)
-												.FirstOrDefault(fi => (fi.IsAssembly || fi.IsPublic) && fi.Name == localName + "Property");
-
-			Exception exception = null;
-			if (exception == null && bindableFieldInfo == null)
+			var bindableFieldInfo = elementType.GetField(localName + "Property", supportedFlags);
+			if (bindableFieldInfo is not null && (bindableFieldInfo.IsAssembly || bindableFieldInfo.IsPublic))
 			{
-				exception =
-					new XamlParseException(
-						Format("BindableProperty {0} not found on {1}", localName + "Property", elementType.Name), lineInfo);
-			}
-
-			if (exception == null)
 				return bindableFieldInfo.GetValue(null) as BindableProperty;
+			}
 			if (throwOnError)
-				throw exception;
+			{
+				throw new XamlParseException(
+					Format("BindableProperty {0} not found on {1}", localName + "Property", elementType.Name), lineInfo);
+			}
 			return null;
 		}
 
