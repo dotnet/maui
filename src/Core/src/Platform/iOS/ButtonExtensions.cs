@@ -29,6 +29,13 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateText(this UIButton platformButton, IText button) 
 		{
 			platformButton.SetTitle(button.Text, UIControlState.Normal);
+
+			if (platformButton.Configuration is UIButtonConfiguration config)
+			{
+				config.Title = button.Text;
+				platformButton.Configuration = config;
+			}
+
 			UpdateCharacterSpacing(platformButton, button);
 		}
 
@@ -48,8 +55,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)
 		{
+			var config = platformButton.Configuration;
+
 			// This is probalby wrong and needs to be tested more
-			NSAttributedString? nSAttributedString = platformButton.TitleLabel?.AttributedText;
+			NSAttributedString? nSAttributedString = config?.AttributedTitle ?? platformButton.TitleLabel?.AttributedText;
 
 			if (nSAttributedString is null && textStyle is IText text && text.Text is not null)
 			{
@@ -64,12 +73,10 @@ namespace Microsoft.Maui.Platform
 			if (textStyle.TextColor != null)
 				attributedText = attributedText?.WithTextColor(textStyle.TextColor);
 
-			if (platformButton.Configuration is UIButtonConfiguration config)
+			if (config is UIButtonConfiguration)
 			{
 				config.AttributedTitle = attributedText;
-				platformButton.SetAttributedTitle(attributedText, UIControlState.Normal);
 				platformButton.Configuration = config;
-
 			}
 			else
 			{
@@ -79,20 +86,22 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFont(this UIButton platformButton, ITextStyle textStyle, IFontManager fontManager)
 		{
-			/*if (platformButton.TitleLabel is not null)
+			if (platformButton.TitleLabel is not null)
 				platformButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
 
 			// If iOS 15+, update the configuration with the new font
-			if (platformButton.Configuration is UIButtonConfiguration config)
+			if (platformButton.Configuration is UIButtonConfiguration config && textStyle is IText text)
 			{
-				config.TitleTextAttributesTransformer = (incoming) =>
-				{
-					var outgoing = incoming;
-					outgoing[UIStringAttributeKey.Font] =  fontManager.GetFont(textStyle.Font, UIFont.ButtonFontSize);			
-					return outgoing;
-				};
+				var attributedText = config.AttributedTitle ?? platformButton.TitleLabel?.AttributedText ??
+					new NSAttributedString (text.Text);
+
+				var newAttributedText = attributedText.WithFont(fontManager.GetFont(textStyle.Font, textStyle.Font.Size));
+
+				// TODO: this should get saved from the configuration but is not currently so we will use teh SetAttributedTitle for now.
+				platformButton.SetAttributedTitle(newAttributedText, UIControlState.Normal);
+				config.AttributedTitle = newAttributedText;
 				platformButton.Configuration = config;
-			}*/
+			}
 		}
 
 		public static void UpdatePadding(this UIButton platformButton, IButton button, Thickness? defaultPadding = null) =>

@@ -28,6 +28,21 @@ namespace Microsoft.Maui.Platform
 			return mutableAttributedString;
 		}
 
+		internal static NSMutableAttributedString? WithFont(this NSAttributedString attributedString, UIFont font)
+		{
+			if (attributedString is null || font is null)
+				return null;
+
+			var mutableAttributedString = new NSMutableAttributedString(attributedString);
+			mutableAttributedString.AddAttribute
+			(
+				UIStringAttributeKey.Font,
+				NSObject.FromObject(font),
+				new NSRange(0, mutableAttributedString.Length)
+			);
+			return mutableAttributedString;
+		}
+
 		internal static NSMutableAttributedString? WithTextColor(this NSAttributedString attributedString, Graphics.Color color)
 		{
 			if (attributedString == null || attributedString.Length == 0)
