@@ -63,21 +63,24 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 
 		internal static bool HasAnyGesturesFor<T>(this IEnumerable<IGestureRecognizer>? gestures, Func<T, bool>? predicate = null) where T : GestureRecognizer
+			=> FirstGestureOrDefault(gestures, predicate) is not null;
+
+		internal static T? FirstGestureOrDefault<T>(this IEnumerable<IGestureRecognizer>? gestures, Func<T, bool>? predicate = null) where T : GestureRecognizer
 		{
 			if (gestures is null)
 			{
-				return false;
+				return null;
 			}
 
 			foreach (IGestureRecognizer item in gestures)
 			{
 				if (item is T gesture && (predicate is null || predicate(gesture)))
 				{
-					return true;
+					return gesture;
 				}
 			}
 
-			return false;
+			return null;
 		}
 	}
 }
