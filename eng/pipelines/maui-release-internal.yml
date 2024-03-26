@@ -36,8 +36,8 @@ parameters:
   - name: VM_IMAGE_HOST
     type: object
     default:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2022
+      name: NetCore1ESPool-Internal
+      image: 1es-windows-2022
       os: windows
 
   - name: PackPlatform
