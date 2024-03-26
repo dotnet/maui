@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
 		/// <param name="value">A value that indicates whether toolbar items automatically move to the overflow menu when space is limited</param>
-		/// <returns><see langword="true"/> if toolbar items automatically move to the overflow menu when space is limited; otherwise, <see langword="false"/>.</returns>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetToolbarDynamicOverflowEnabled(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{
