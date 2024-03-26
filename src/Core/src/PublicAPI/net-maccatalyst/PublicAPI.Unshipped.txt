@@ -161,3 +161,8 @@ virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplicatio
 *REMOVED*override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
+Microsoft.Maui.Hosting.TypeConversionAppBuilderExtensions
+static Microsoft.Maui.Hosting.TypeConversionAppBuilderExtensions.ConfigureTypeConversions(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.ITypeConversionBuilder!>! configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+Microsoft.Maui.Hosting.ITypeConversionBuilder
+Microsoft.Maui.Hosting.ITypeConversionBuilder.AddTypeConverter<T, TConverter>() -> Microsoft.Maui.Hosting.ITypeConversionBuilder!
+Microsoft.Maui.Hosting.ITypeConversionBuilder.AddTypeConverter<T>(System.Func<System.ComponentModel.TypeConverter!>! createConverter) -> Microsoft.Maui.Hosting.ITypeConversionBuilder!

@@ -229,10 +229,9 @@ namespace Microsoft.Maui.Controls
 			if (returnType.IsAssignableFrom(valueType))
 				return true;
 
-			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
-			if (cast != null)
+			if (TypeConversionHelper.TryConvert(value, returnType, out var convertedValue))
 			{
-				value = cast.Invoke(null, new[] { value });
+				value = convertedValue;
 				return true;
 			}
 			if (KnownIValueConverters.TryGetValue(returnType, out IValueConverter valueConverter))
