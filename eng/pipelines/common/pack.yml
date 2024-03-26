@@ -115,7 +115,7 @@ steps:
       condition: succeeded()
       inputs:
         Contents: |
-          ${{ parameters.checkoutDirectory }}/src/Controls/src/Nuget/bin/Release/**/*.dll
+          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/Release/**/*.dll
         TargetFolder: ${{ parameters.checkoutDirectory }}/artifacts/binaries
         flattenFolders: false
 
