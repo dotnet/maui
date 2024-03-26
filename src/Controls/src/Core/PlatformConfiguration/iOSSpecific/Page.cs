@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// </summary>
 		/// <param name="config">The element whose safe area behavior to get.</param>
 		/// <param name="value"><see langword="true"/> to use the safe area inset behavior; otherwise, <see langword="false"/>.</param>
-		/// <returns></returns>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUseSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetUseSafeArea(config.Element, value);
@@ -212,14 +212,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Gets the current value of the <see cref="UIModalPresentationStyle"/> enumeration that's applied to the <see cref="Page"/>.
 		/// </summary>
 		/// <param name="element">The <see cref="BindableObject" /> whose modal presentation style is being retrieved.</param>
-		/// <returns>The current value of the UIModalPresentationStyle enumeration that's applied to the <paramref name="element" />.</returns>
+		/// <returns>The current value of the <see cref="UIModalPresentationStyle" /> enumeration that's applied to the <paramref name="element" />.</returns>
 		public static UIModalPresentationStyle GetModalPresentationStyle(BindableObject element)
 		{
 			return (UIModalPresentationStyle)element.GetValue(ModalPresentationStyleProperty);
 		}
 
 		/// <summary>
-		/// Sets the modal presentation style on a Page.
+		/// Sets the modal presentation style on a <see cref="Page"/>.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
 		/// <param name="value">The modal presentation style.</param>
@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
 		/// <param name="value"><see langword="true"/> if hide the home indicator; otherwise, <see langword="false"/>.</param>
-		/// <returns></returns>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetPrefersHomeIndicatorAutoHidden(config.Element, value);
