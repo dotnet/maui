@@ -14,10 +14,5 @@ namespace Maui.Controls.Sample
 		{
 			InitializeComponent();
 		}
-
-		private void DragGestureRecognizer_DragStarting(object sender, DragStartingEventArgs e)
-		{
-
-		}
 	}
 }
