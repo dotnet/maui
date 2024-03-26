@@ -172,6 +172,22 @@ namespace Microsoft.Maui.Platform
 					nativeImage.Height = canvas.Size.Height;
 				}
 
+				// Ensure that we only scale images down and never up
+				if (nativeImageSource is BitmapImage bitmapImage)
+				{
+					bitmapImage.ImageOpened += OnImageOpened;
+					void OnImageOpened(object sender, RoutedEventArgs e)
+					{
+						bitmapImage.ImageOpened -= OnImageOpened;
+
+						var actualImageSource = sender as BitmapImage;
+						if (actualImageSource is not null)
+						{
+							nativeImage.MaxHeight = actualImageSource.PixelHeight;
+						}
+					}
+				}
+
 				nativeImage.Visibility = nativeImageSource == null
 					? UI.Xaml.Visibility.Collapsed
 					: UI.Xaml.Visibility.Visible;
