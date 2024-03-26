@@ -39,7 +39,7 @@ parameters:
     displayName: Enable NuGet validation
     type: boolean
     default: true
-
+    
   - name: publishInstallersAndChecksums
     displayName: Publish installers and checksums
     type: boolean
@@ -95,7 +95,7 @@ stages:
     displayName: Validate Build Assets
     variables:
       - template: common-variables.yml
-      - template: /eng/common/templates/variables/pool-providers.yml
+      - template: /eng/common/templates-official/variables/pool-providers.yml
     jobs:
     - job:
       displayName: NuGet Validation
@@ -103,12 +103,15 @@ stages:
       pool:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
-          name: VSEngSS-MicroBuild2022-1ES
+          name: AzurePipelines-EO
+          image: 1ESPT-Windows2022
           demands: Cmd
+          os: windows
         # If it's not devdiv, it's dnceng
         ${{ else }}:
           name: $(DncEngInternalBuildPool)
-          demands: ImageOverride -equals windows.vs2019.amd64
+          image: 1es-windows-2022-pt
+          os: windows
 
       steps:
         - template: setup-maestro-vars.yml
@@ -131,8 +134,8 @@ stages:
           displayName: Validate
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
-            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/
-              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/
+            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ 
+              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/ 
 
     - job:
       displayName: Signing Validation
@@ -140,12 +143,15 @@ stages:
       pool:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
-          name: VSEngSS-MicroBuild2022-1ES
+          name: AzurePipelines-EO
+          image: 1ESPT-Windows2022
           demands: Cmd
+          os: windows
         # If it's not devdiv, it's dnceng
         ${{ else }}:
           name: $(DncEngInternalBuildPool)
-          demands: ImageOverride -equals windows.vs2019.amd64
+          image: 1es-windows-2022-pt
+          os: windows
       steps:
         - template: setup-maestro-vars.yml
           parameters:
@@ -187,6 +193,7 @@ stages:
           parameters:
             StageLabel: 'Validation'
             JobLabel: 'Signing'
+            BinlogToolVersion: $(BinlogToolVersion)
 
     - job:
       displayName: SourceLink Validation
@@ -194,12 +201,15 @@ stages:
       pool:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
-          name: VSEngSS-MicroBuild2022-1ES
+          name: AzurePipelines-EO
+          image: 1ESPT-Windows2022
           demands: Cmd
+          os: windows
         # If it's not devdiv, it's dnceng
         ${{ else }}:
           name: $(DncEngInternalBuildPool)
-          demands: ImageOverride -equals windows.vs2019.amd64
+          image: 1es-windows-2022-pt
+          os: windows
       steps:
         - template: setup-maestro-vars.yml
           parameters:
@@ -221,21 +231,12 @@ stages:
           displayName: Validate
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/sourcelink-validation.ps1
-            arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/
-              -ExtractPath $(Agent.BuildDirectory)/Extract/
-              -GHRepoName $(Build.Repository.Name)
+            arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/ 
+              -ExtractPath $(Agent.BuildDirectory)/Extract/ 
+              -GHRepoName $(Build.Repository.Name) 
               -GHCommit $(Build.SourceVersion)
               -SourcelinkCliVersion $(SourceLinkCLIVersion)
           continueOnError: true
-
-    - template: /eng/common/templates/job/execute-sdl.yml
-      parameters:
-        enable: ${{ parameters.SDLValidationParameters.enable }}
-        publishGuardianDirectoryToPipeline: ${{ parameters.SDLValidationParameters.publishGdn }}
-        additionalParameters: ${{ parameters.SDLValidationParameters.params }}
-        continueOnError: ${{ parameters.SDLValidationParameters.continueOnError }}
-        artifactNames: ${{ parameters.SDLValidationParameters.artifactNames }}
-        downloadArtifacts: ${{ parameters.SDLValidationParameters.downloadArtifacts }}
 
 - ${{ if ne(parameters.publishAssetsImmediately, 'true') }}:
   - stage: publish_using_darc
@@ -246,7 +247,7 @@ stages:
     displayName: Publish using Darc
     variables:
       - template: common-variables.yml
-      - template: /eng/common/templates/variables/pool-providers.yml
+      - template: /eng/common/templates-official/variables/pool-providers.yml
     jobs:
     - job:
       displayName: Publish Using Darc
@@ -254,12 +255,15 @@ stages:
       pool:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
-          name: VSEngSS-MicroBuild2022-1ES
+          name: AzurePipelines-EO
+          image: 1ESPT-Windows2022
           demands: Cmd
+          os: windows
         # If it's not devdiv, it's dnceng
         ${{ else }}:
-          name: NetCore1ESPool-Publishing-Internal
-          demands: ImageOverride -equals windows.vs2019.amd64
+          name: $(DncEngInternalBuildPool)
+          image: 1es-windows-2022-pt
+          os: windows
       steps:
         - template: setup-maestro-vars.yml
           parameters:
@@ -272,7 +276,7 @@ stages:
           displayName: Publish Using Darc
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
-            arguments: -BuildId $(BARBuildId)
+            arguments: -BuildId $(BARBuildId) 
               -PublishingInfraVersion ${{ parameters.publishingInfraVersion }}
               -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
               -MaestroToken '$(MaestroApiAccessToken)'
