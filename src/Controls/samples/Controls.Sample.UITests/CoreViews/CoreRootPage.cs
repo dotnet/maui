@@ -55,7 +55,7 @@ namespace Maui.Controls.Sample
 						try
 						{
 							var testCaseScreen = new TestCases.TestCaseScreen(resetMainPage);
-							await Task.Delay(100); // Load all the issues before try to navigate.
+							await Task.Delay(50); // Load all the issues before try to navigate.
 
 							if (TestCases.TestCaseScreen.PageToAction.ContainsKey(searchBar.Text?.Trim()))
 							{
