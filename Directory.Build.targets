@@ -13,7 +13,7 @@
                                  $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" /> -->
   </ItemGroup>
 
-  <Import Condition="'$(SampleProject)' == 'true' or '$(CI)' != 'true' " Project="eng\Versions.dev.targets" />
+  <Import Project="eng\Versions.dev.targets" />
   <!-- <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true'" Project="eng\Git.Build.targets" /> -->
   <!-- <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Versions.targets" /> -->
   <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
