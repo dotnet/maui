@@ -10,7 +10,7 @@ public class BindingCodeWriterTests
     public void BuildsWholeDocument()
     {
         var codeWriter = new BindingCodeWriter();
-        codeWriter.AddBinding(new Binding(
+        codeWriter.AddBinding(new CodeWriterBinding(
             Id: 1,
             Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeName("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
@@ -104,7 +104,7 @@ public class BindingCodeWriterTests
     public void CorrectlyFormatsSimpleBinding()
     {
         var codeBuilder = new BindingCodeWriter.BidningInterceptorCodeBuilder();
-        codeBuilder.AppendSetBindingInterceptor(new Binding(
+        codeBuilder.AppendSetBindingInterceptor(new CodeWriterBinding(
             Id: 1,
             Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeName("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
@@ -164,7 +164,7 @@ public class BindingCodeWriterTests
     public void CorrectlyFormatsBindingWithoutAnyNullablesInPath()
     {
         var codeBuilder = new BindingCodeWriter.BidningInterceptorCodeBuilder();
-        codeBuilder.AppendSetBindingInterceptor(new Binding(
+        codeBuilder.AppendSetBindingInterceptor(new CodeWriterBinding(
             Id: 1,
             Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeName("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
@@ -220,7 +220,7 @@ public class BindingCodeWriterTests
     public void CorrectlyFormatsBindingWithoutSetter()
     {
         var codeBuilder = new BindingCodeWriter.BidningInterceptorCodeBuilder();
-        codeBuilder.AppendSetBindingInterceptor(new Binding(
+        codeBuilder.AppendSetBindingInterceptor(new CodeWriterBinding(
             Id: 1,
             Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeName("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
@@ -274,7 +274,7 @@ public class BindingCodeWriterTests
     public void CorrectlyFormatsBindingWithIndexers()
     {
         var codeBuilder = new BindingCodeWriter.BidningInterceptorCodeBuilder();
-        codeBuilder.AppendSetBindingInterceptor(new Binding(
+        codeBuilder.AppendSetBindingInterceptor(new CodeWriterBinding(
             Id: 1,
             Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeName("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),

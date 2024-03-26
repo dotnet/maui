@@ -48,9 +48,9 @@ public sealed class BindingCodeWriter
 		}
 		""";
 
-	private readonly List<Binding> _bindings = new();
+	private readonly List<CodeWriterBinding> _bindings = new();
 
-	public void AddBinding(Binding binding)
+	public void AddBinding(CodeWriterBinding binding)
 	{
 		_bindings.Add(binding);
 	}
@@ -84,7 +84,7 @@ public sealed class BindingCodeWriter
 			_indentedTextWriter = new IndentedTextWriter(_stringWriter, "\t") { Indent = indent };
 		}
 
-		public void AppendSetBindingInterceptor(Binding binding)
+		public void AppendSetBindingInterceptor(CodeWriterBinding binding)
 		{
 			AppendBlankLine();
 
