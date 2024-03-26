@@ -49,12 +49,12 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty PresentationModeProperty = BindableProperty.CreateAttached("PresentationMode", typeof(PresentationMode), typeof(Shell), PresentationMode.Animated);
 
-        /// <summary>
-        /// Manages the behavior used to open the flyout.
-        /// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen. 
-        /// This behavior can be changed by setting the FlyoutBehavior property.
-        /// </summary>
-        public static readonly BindableProperty FlyoutBehaviorProperty =
+		/// <summary>
+		/// Manages the behavior used to open the flyout.
+		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen. 
+		/// This behavior can be changed by setting the FlyoutBehavior property.
+		/// </summary>
+		public static readonly BindableProperty FlyoutBehaviorProperty =
 			BindableProperty.CreateAttached("FlyoutBehavior", typeof(FlyoutBehavior), typeof(Shell), FlyoutBehavior.Flyout,
 				propertyChanged: OnFlyoutBehaviorChanged);
 
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls
 		/// Flyout items are visible in the flyout by default. However, an item can be hidden in the flyout with the FlyoutItemIsVisible property.
 		/// </summary>
 		/// <param name="obj">The object that sets the visibility of flyout items.</param>
-		/// <param name="isVisible">true to set the flyout item as visible; otherwise, false.</param>
+		/// <param name="isVisible"><see langword="true"/> to set the flyout item as visible; otherwise, <see langword="false"/>.</param>
 		public static void SetFlyoutItemIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(FlyoutItemIsVisibleProperty, isVisible);
 
 		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
@@ -140,41 +140,41 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty MenuItemTemplateProperty =
 			BindableProperty.CreateAttached(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
-        /// <summary>
-        /// Gets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
-        /// </summary>
-        /// <param name="obj">The object that sets the DataTemplate to be applied to the MenuItem objects.</param>
-        /// <returns>The DataTemplate applied to MenuItem objects.</returns>
-        public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
+		/// <summary>
+		/// Gets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
+		/// </summary>
+		/// <param name="obj">The object that sets the DataTemplate to be applied to the MenuItem objects.</param>
+		/// <returns>The DataTemplate applied to MenuItem objects.</returns>
+		public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
 
-        /// <summary>
-        /// Sets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
-        /// Shell provides the Text and IconImageSource properties to the BindingContext of the <see cref = "MenuItemTemplate" />. 
-        /// You can also use Title in place of Text and Icon in place of IconImageSource which will let you reuse the same template for menu items and flyout items.
-        /// </summary>
-        /// <param name="obj">The object that sets the DataTemplate applied to MenuItem objects.</param>
-        /// <param name="menuItemTemplate">The DataTemplate applied to MenuItem objects.</param>
-        public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
+		/// <summary>
+		/// Sets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
+		/// Shell provides the Text and IconImageSource properties to the BindingContext of the <see cref = "MenuItemTemplate" />. 
+		/// You can also use Title in place of Text and Icon in place of IconImageSource which will let you reuse the same template for menu items and flyout items.
+		/// </summary>
+		/// <param name="obj">The object that sets the DataTemplate applied to MenuItem objects.</param>
+		/// <param name="menuItemTemplate">The DataTemplate applied to MenuItem objects.</param>
+		public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
 
-        /// <summary>
-        ///  The <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
-        /// </summary>
-        public static readonly BindableProperty ItemTemplateProperty =
+		/// <summary>
+		///  The <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
+		/// </summary>
+		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.CreateAttached(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
-        /// <summary>
-        /// Gets the <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
-        /// </summary>
-        /// <param name="obj">The object that sets the DataTemplate applied to Item objects.</param>
-        /// <returns>The DataTemplate applied to Item objects.</returns>
-        public static DataTemplate GetItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(ItemTemplateProperty);
+		/// <summary>
+		/// Gets the <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
+		/// </summary>
+		/// <param name="obj">The object that sets the DataTemplate applied to Item objects.</param>
+		/// <returns>The DataTemplate applied to Item objects.</returns>
+		public static DataTemplate GetItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(ItemTemplateProperty);
 
-        /// <summary>
-        /// Sets the <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
-        /// </summary>
-        /// <param name="obj">The object that sets the DataTemplate applied to Item objects.</param>
-        /// <param name="itemTemplate">The DataTemplate applied to Item objects.</param>
-        public static void SetItemTemplate(BindableObject obj, DataTemplate itemTemplate) => obj.SetValue(ItemTemplateProperty, itemTemplate);
+		/// <summary>
+		/// Sets the <see cref = "DataTemplate" /> applied to each <see cref = "FlyoutItem" /> object managed by Shell.
+		/// </summary>
+		/// <param name="obj">The object that sets the DataTemplate applied to Item objects.</param>
+		/// <param name="itemTemplate">The DataTemplate applied to Item objects.</param>
+		public static void SetItemTemplate(BindableObject obj, DataTemplate itemTemplate) => obj.SetValue(ItemTemplateProperty, itemTemplate);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetBackButtonBehavior']/Docs/*" />
 		public static BackButtonBehavior GetBackButtonBehavior(BindableObject obj) => (BackButtonBehavior)obj.GetValue(BackButtonBehaviorProperty);
@@ -209,9 +209,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Sets the behavior used to open the flyout.
+		/// </summary>
+		/// <remarks>
 		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen.
 		/// However, this behavior can be changed by setting the <see cref = "FlyoutBehavior" /> attached property.
-		/// </summary>
+		/// </remarks>
 		/// <param name="obj">The object that modifies the Shell behavior used to open the flyout.</param>
 		/// <param name="value">The behavior used to open the flyout.</param>
 		public static void SetFlyoutBehavior(BindableObject obj, FlyoutBehavior value) => obj.SetValue(FlyoutBehaviorProperty, value);
@@ -253,7 +255,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets if the navigation bar is visible when a page is presented. 
 		/// </summary>
 		/// <param name="obj">The object that that gets the navigation bar visibility.</param>
-		/// <returns>true if the navigation bar is visible; otherwise, false.</returns>
+		/// <returns><see langword="true"/> if the navigation bar is visible; otherwise, <see langword="false"/>.</returns>
 		public static bool GetNavBarIsVisible(BindableObject obj) => (bool)obj.GetValue(NavBarIsVisibleProperty);
 
 		/// <summary>
@@ -261,7 +263,7 @@ namespace Microsoft.Maui.Controls
 		/// By default the value of the property is <see langword="true"/>.
 		/// </summary>
 		/// <param name="obj">The object that modifies the navigation bar visibility.</param>
-		/// <param name="value">true to set the navigation bar as visible; otherwise, false.</param>
+		/// <param name="value"><see langword="true"/> to set the navigation bar as visible; otherwise, <see langword="false"/>.</param>
 		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, value);
 
 		/// <summary>
@@ -298,7 +300,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets the tabs visibility in Shell.
 		/// </summary>
 		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
-		/// <returns>true if the tab bar is visible; otherwise, false.</returns>
+		/// <returns><see langword="true"/> if the tab bar is visible; otherwise, <see langword="false"/>.</returns>
 		public static bool GetTabBarIsVisible(BindableObject obj) => (bool)obj.GetValue(TabBarIsVisibleProperty);
 
 		/// <summary>
@@ -307,7 +309,7 @@ namespace Microsoft.Maui.Controls
 		/// While this property can be set on a subclassed Shell object, it's typically set on any ShellContent or ContentPage objects that want to make the tab bar invisible.
 		/// </summary>
 		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
-		/// <param name="value">true to set the tab bar as visible; otherwise, false.</param>
+		/// <param name="value"><see langword="true"/> to set the tab bar as visible; otherwise, <see langword="false"/>.</param>
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
 
 		/// <summary>
@@ -562,10 +564,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetTitleColor(BindableObject obj, Color value) => obj.SetValue(TitleColorProperty, value);
 
 		/// <summary>
-		/// Gets the color used for the title of the current page.
+		/// Gets the color for unselected text and icons in the Shell chrome.
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The color used for the title of the current page.</returns>
+		/// <returns>The color for unselected text and icons in the Shell chrome.</returns>
 		public static Color GetUnselectedColor(BindableObject obj) => (Color)obj.GetValue(UnselectedColorProperty);
 
 		/// <summary>
@@ -1069,17 +1071,17 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlyoutFooter), typeof(object), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutFooterChanging);
 
-        /// <summary>
-        /// The flyout header appearance can be defined by setting a <see cref = "DataTemplate" />.
-        /// </summary>
-        public static readonly BindableProperty FlyoutHeaderTemplateProperty =
+		/// <summary>
+		/// The flyout header appearance can be defined by setting a <see cref = "DataTemplate" />.
+		/// </summary>
+		public static readonly BindableProperty FlyoutHeaderTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutHeaderTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutHeaderTemplateChanging);
 
-        /// <summary>
-        /// The flyout footer appearance can be defined by setting a <see cref = "DataTemplate" />.
-        /// </summary>
-        public static readonly BindableProperty FlyoutFooterTemplateProperty =
+		/// <summary>
+		/// The flyout footer appearance can be defined by setting a <see cref = "DataTemplate" />.
+		/// </summary>
+		public static readonly BindableProperty FlyoutFooterTemplateProperty =
 			BindableProperty.Create(nameof(FlyoutFooterTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanging: OnFlyoutFooterTemplateChanging);
 
@@ -1373,19 +1375,19 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FlyoutHeaderBehaviorProperty, value);
 		}
 
-        /// <summary>
-        /// Gets or sets the flyout header appearance using a <see cref = "DataTemplate" />.
-        /// </summary>
-        public DataTemplate FlyoutHeaderTemplate
+		/// <summary>
+		/// Gets or sets the flyout header appearance using a <see cref = "DataTemplate" />.
+		/// </summary>
+		public DataTemplate FlyoutHeaderTemplate
 		{
 			get => (DataTemplate)GetValue(FlyoutHeaderTemplateProperty);
 			set => SetValue(FlyoutHeaderTemplateProperty, value);
 		}
 
-        /// <summary>
-        /// Gets or sets the flyout footer appearance using a <see cref = "DataTemplate" />.
-        /// </summary>
-        public DataTemplate FlyoutFooterTemplate
+		/// <summary>
+		/// Gets or sets the flyout footer appearance using a <see cref = "DataTemplate" />.
+		/// </summary>
+		public DataTemplate FlyoutFooterTemplate
 		{
 			get => (DataTemplate)GetValue(FlyoutFooterTemplateProperty);
 			set => SetValue(FlyoutFooterTemplateProperty, value);
@@ -1404,19 +1406,19 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='Items']/Docs/*" />
 		public IList<ShellItem> Items => (IList<ShellItem>)GetValue(ItemsProperty);
 
-        /// <summary>
-        /// Gets or sets <see cref = "DataTemplate" /> applied to each of the Items.
-        /// </summary>
-        public DataTemplate ItemTemplate
+		/// <summary>
+		/// Gets or sets <see cref = "DataTemplate" /> applied to each of the Items.
+		/// </summary>
+		public DataTemplate ItemTemplate
 		{
 			get => GetItemTemplate(this);
 			set => SetItemTemplate(this, value);
 		}
 
-        /// <summary>
-        /// Gets or sets the <see cref = "DataTemplate" /> applied to MenuItem objects in the MenuItems collection.
-        /// </summary>
-        public DataTemplate MenuItemTemplate
+		/// <summary>
+		/// Gets or sets the <see cref = "DataTemplate" /> applied to MenuItem objects in the MenuItems collection.
+		/// </summary>
+		public DataTemplate MenuItemTemplate
 		{
 			get => GetMenuItemTemplate(this);
 			set => SetMenuItemTemplate(this, value);
@@ -1925,8 +1927,11 @@ namespace Microsoft.Maui.Controls
 
 
 		/// <summary>
-		/// Flyout items, which represent the flyout content, can optionally be replaced with custom content.
+		/// Flyout items, which represent the flyout content.
 		/// </summary>
+		/// <remarks>
+		/// Can optionally be replaced with custom content.
+		/// </remarks>
 		public static readonly BindableProperty FlyoutContentProperty =
 			BindableProperty.Create(nameof(FlyoutContent), typeof(object), typeof(Shell), null, BindingMode.OneTime, propertyChanging: OnFlyoutContentChanging);
 
