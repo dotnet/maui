@@ -123,8 +123,10 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Manages the bottom tab bar visibility.
-		/// The tab bar and tabs are visible in <see cref = "Shell" /> applications by default. 
 		/// </summary>
+		/// <remarks>
+		/// The tab bar and tabs are visible in <see cref = "Shell" /> applications by default. 
+		/// </remarks>
 		public static readonly BindableProperty TabBarIsVisibleProperty =
 			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), true);
 
@@ -191,21 +193,21 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the navigation animation that occurs when a page is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
 		/// </summary>
-		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
+		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <returns>The navigation animation that occurs when a page is navigated to.</returns>
 		public static PresentationMode GetPresentationMode(BindableObject obj) => (PresentationMode)obj.GetValue(PresentationModeProperty);
 
 		/// <summary>
 		/// Sets the navigation animation that plays when a <see cref="Page"/> is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
 		/// </summary>
-		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
+		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <param name="presentationMode">Defines the navigation animation that occurs when a page is navigated.</param>
 		public static void SetPresentationMode(BindableObject obj, PresentationMode presentationMode) => obj.SetValue(PresentationModeProperty, presentationMode);
 
 		/// <summary>
 		/// Gets the navigation animation that occurs when a page is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
 		/// </summary>
-		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
+		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <returns>The navigation animation that occurs when a page is navigated.</returns>
 		public static FlyoutBehavior GetFlyoutBehavior(BindableObject obj) => (FlyoutBehavior)obj.GetValue(FlyoutBehaviorProperty);
 
@@ -269,7 +271,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, value);
 
 		/// <summary>
-		/// Gets if the navigation bar has a shadow. 
+		/// Gets a value that represents if the navigation bar has a shadow.
 		/// </summary>
 		/// <param name="obj">The object that modifies if the navigation bar has a shadow.</param>
 		/// <returns>Returns if the navigation bar has a shadow.</returns>
@@ -301,16 +303,18 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the tabs visibility in Shell.
 		/// </summary>
-		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
+		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <returns><see langword="true"/> if the tab bar is visible; otherwise, <see langword="false"/>.</returns>
 		public static bool GetTabBarIsVisible(BindableObject obj) => (bool)obj.GetValue(TabBarIsVisibleProperty);
 
 		/// <summary>
 		/// Sets the tabs visibility in Shell.
+		/// </summary>
+		/// <remarks>
 		/// The tab bar and tabs are visible in Shell applications by default. However, the tab bar can be hidden by setting the Shell.TabBarIsVisible attached property to false.
 		/// While this property can be set on a subclassed Shell object, it's typically set on any ShellContent or ContentPage objects that want to make the tab bar invisible.
-		/// </summary>
-		/// <param name="obj">The object that modifies the Shell tabs visibility.</param>
+		/// </remarks>
+		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <param name="value"><see langword="true"/> to set the tab bar as visible; otherwise, <see langword="false"/>.</param>
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
 
@@ -470,7 +474,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Defines the foreground color for the tab bar. 
-		/// If the property is unset, the ForegroundColor property value is used.
+		/// If the property is unset, the <see cref = "ForegroundColorProperty" /> value is used.
 		/// </summary>
 		/// <param name="obj">The object to which the foreground color is set.</param>
 		/// <param name="value">The foreground color for the tab bar.</param>
@@ -500,7 +504,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Sets the disabled color for the tab bar. 
-		/// If the property is unset, the DisabledColor property value is used.
+		/// If the property is unset, the <see cref = "DisabledColorProperty" /> value is used.
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
 		/// <param name="value">The disabled color for the tab bar.</param>
