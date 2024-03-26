@@ -534,7 +534,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Sets the title color for the tab bar. 
-		/// If the property is unset, the TitleColor property value will be used.
+		/// If the property is unset, the <see cref="TitleColorProperty" /> value will be used.
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
 		/// <param name="value">The title color for the tab bar.</param>
@@ -556,7 +556,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarUnselectedColor(BindableObject obj, Color value) => obj.SetValue(TabBarUnselectedColorProperty, value);
 
 		/// <summary>
-		/// Gets the unselected color for the tab bar. 
+		/// Gets the color used for the title of the current page.
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
 		/// <returns>The unselected color for the tab bar.</returns>
