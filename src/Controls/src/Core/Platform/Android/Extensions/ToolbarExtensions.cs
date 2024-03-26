@@ -77,6 +77,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
+			//Setting it to null to avoid the icon's blink
+			nativeToolbar.NavigationIcon = null;
+
 			if (toolbar.BackButtonVisible)
 			{
 				var context =
