@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 			{
 				nSAttributedString = new NSAttributedString(text.Text);
 			}
-			else
+			else if (nSAttributedString is null)
 			{
 				return;
 			}
