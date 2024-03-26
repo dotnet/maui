@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Gets a value that indicates whether padding values are overridden with values that conform to the safe area on the device.
 		/// </summary>
 		/// <param name="element">The element to get the safe area behavior from.</param>
-		/// <returns>true if the padding values are overridden; otherwise, false.</returns>
+		/// <returns><see langword="true"/> if the padding values are overridden; otherwise, <see langword="false"/>.</returns>
 		public static bool GetUseSafeArea(BindableObject element)
 		{
 			return (bool)element.GetValue(UseSafeAreaProperty);
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Sets a value that controls whether padding values are overridden with the safe area insets.
 		/// </summary>
 		/// <param name="element">The element whose safe area use behavior to set.</param>
-		/// <param name="value">true to use the safe area inset behavior; otherwise, false.</param>
+		/// <param name="value"><see langword="true"/> to use the safe area inset behavior; otherwise, <see langword="false"/>.</param>
 		public static void SetUseSafeArea(BindableObject element, bool value)
 		{
 			element.SetValue(UseSafeAreaProperty, value);
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Sets a value that controls whether padding values are overridden with the safe area insets.
 		/// </summary>
 		/// <param name="config">The element whose safe area behavior to get.</param>
-		/// <param name="value">true to use the safe area inset behavior; otherwise, false.</param>
+		/// <param name="value"><see langword="true"/> to use the safe area inset behavior; otherwise, <see langword="false"/>.</param>
 		/// <returns></returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUseSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Gets a value that represents whether the padding is overridden with the safe area.
 		/// </summary>
 		/// <param name="config">The element whose safe area behavior to get.</param>
-		/// <returns>true if the padding is overridden with the safe area; otherwise, false.</returns>
+		/// <returns><see langword="true"/> if the padding is overridden with the safe area; otherwise, <see langword="false"/>.</returns>
 		public static bool UsingSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetUseSafeArea(config.Element);
@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Gets a value that indicates whether the visual indicator should hide upon returning to the home screen.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
-		/// <returns>true if the home visual indicator is hidden; otherwise, false.</returns>
+		/// <returns><see langword="true"/> if the home visual indicator is hidden; otherwise, <see langword="false"/>.</returns>
 		public static bool GetPrefersHomeIndicatorAutoHidden(BindableObject element)
 		{
 			return (bool)element.GetValue(PrefersHomeIndicatorAutoHiddenProperty);
@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Sets a value that indicates whether the visual indicator should hide upon returning to the home screen.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
-		/// <param name="value">true if hide the home indicator; otherwise, false.</param>
+		/// <param name="value"><see langword="true"/> if hide the home indicator; otherwise, <see langword="false"/>.</param>
 		public static void SetPrefersHomeIndicatorAutoHidden(BindableObject element, bool value)
 		{
 			element.SetValue(PrefersHomeIndicatorAutoHiddenProperty, value);
@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Gets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-		/// <returns>true if hide the home indicator; otherwise, false.</returns>
+		/// <returns><see langword="true"/> if hide the home indicator; otherwise, <see langword="false"/>.</returns>
 		public static bool PrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetPrefersHomeIndicatorAutoHidden(config.Element);
@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// Sets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-		/// <param name="value">true if hide the home indicator; otherwise, false.</param>
+		/// <param name="value"><see langword="true"/> if hide the home indicator; otherwise, <see langword="false"/>.</param>
 		/// <returns></returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
