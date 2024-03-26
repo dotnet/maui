@@ -2,7 +2,6 @@
 #load "../cake/dotnet.cake"
 #load "./devices-shared.cake"
 
-using Microsoft.Win32;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
