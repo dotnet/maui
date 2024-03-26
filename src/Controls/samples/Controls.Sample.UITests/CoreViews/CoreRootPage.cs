@@ -1,18 +1,38 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample
 {
 	[Preserve(AllMembers = true)]
-	internal class CoreRootPage : Microsoft.Maui.Controls.ContentPage
+	internal class CoreRootPage : ContentPage
 	{
-		public CoreRootPage(Microsoft.Maui.Controls.Page rootPage)
+		public CoreRootPage(Page rootPage)
 		{
 			Title = "Core Gallery";
 
 			var corePageView = new CorePageView(rootPage);
 
-			var searchBar = new Microsoft.Maui.Controls.Entry()
+			var resetCheckBox = new CheckBox
+			{
+				AutomationId = "ResetMainPage",
+				VerticalOptions = LayoutOptions.Center,
+			};
+			var resetLabel = new Label
+			{
+				Text = "Reset MainPage",
+				VerticalOptions = LayoutOptions.Center,
+			};
+			var resetLayout = new HorizontalStackLayout
+			{
+				resetCheckBox,
+				resetLabel
+			};
+			resetLayout.HorizontalOptions = LayoutOptions.End;
+			resetLayout.Margin = new Microsoft.Maui.Thickness(12);
+
+			var searchBar = new Entry()
 			{
 				AutomationId = "SearchBar"
 			};
@@ -22,31 +42,52 @@ namespace Maui.Controls.Sample
 				corePageView.FilterPages(e.NewTextValue);
 			};
 
-			var testCasesButton = new Microsoft.Maui.Controls.Button
+			var testCasesButton = new Button
 			{
 				Text = "Go to Test Cases",
 				AutomationId = "GoToTestButton",
-				Command = new Microsoft.Maui.Controls.Command(async () =>
+				Command = new Command(async () =>
 				{
+					bool resetMainPage = resetCheckBox.IsChecked;
+
 					if (!string.IsNullOrEmpty(searchBar.Text))
 					{
-						await corePageView.PushPage(searchBar.Text);
+						try
+						{
+							var testCaseScreen = new TestCases.TestCaseScreen(resetMainPage);
+							await Task.Delay(1000); // Load all the issues before try to navigate.
+
+							if (TestCases.TestCaseScreen.PageToAction.ContainsKey(searchBar.Text?.Trim()))
+							{
+								TestCases.TestCaseScreen.PageToAction[searchBar.Text?.Trim()]();
+							}
+							else if (!testCaseScreen.TryToNavigateTo(searchBar.Text?.Trim()))
+							{
+								throw new Exception($"Unable to Navigate to {searchBar.Text}");
+							}
+						}
+						catch (Exception e)
+						{
+							System.Diagnostics.Debug.WriteLine(e.Message);
+							Console.WriteLine(e.Message);
+						}
 					}
 					else
 					{
-						await Navigation.PushModalAsync(TestCases.GetTestCases());
+						await Navigation.PushModalAsync(TestCases.GetTestCases(resetMainPage));
 					}
 				})
 			};
 
-			var stackLayout = new Microsoft.Maui.Controls.StackLayout()
+			var stackLayout = new StackLayout()
 			{
 				Children = {
+					resetLayout,
 					testCasesButton,
 					searchBar,
-					new Microsoft.Maui.Controls.Button {
+					new Button {
 						Text = "Click to Force GC",
-						Command = new Microsoft.Maui.Controls.Command(() => {
+						Command = new Command(() => {
 							GC.Collect ();
 							GC.WaitForPendingFinalizers ();
 							GC.Collect ();

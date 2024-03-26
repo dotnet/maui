@@ -37,9 +37,18 @@ namespace Microsoft.Maui.AppiumTests
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
+
 			try
 			{
-				Reset();
+				if (ResetMainPage)
+				{
+					Reset();
+				}
+				else
+				{
+					this.Back();
+					App.Click("GoBackToGalleriesButton");
+				}
 			}
 			catch (Exception e)
 			{
@@ -53,17 +62,20 @@ namespace Microsoft.Maui.AppiumTests
 
 		void NavigateToIssue(string issue)
 		{
-			App.NavigateToIssues();
-
 			if (ResetMainPage)
 			{
 				App.Click("ResetMainPage");
+				App.EnterText("SearchBar", issue);
+				App.WaitForElement("GoToTestButton");
+				App.Click("GoToTestButton");
 			}
-
-			App.EnterText("SearchBarGo", issue);
-
-			App.WaitForElement("SearchButton");
-			App.Click("SearchButton");
+			else
+			{
+				App.NavigateToIssues();
+				App.EnterText("SearchBarGo", issue);
+				App.WaitForElement("SearchButton");
+				App.Click("SearchButton");
+			}
 		}
 	}
 }

@@ -71,11 +71,17 @@ namespace Maui.Controls.Sample
 						{
 							var page = ActivatePage(type);
 							TrackOnInsights(page);
-							if (page is ContentPage /*|| page is CarouselPage*/)
+
+							var navigation = Navigation;
+
+							if (page.NavigationProxy.Inner is null)
 							{
+								navigation = Application.Current.MainPage.Navigation;
+							}
 
-								await Navigation.PushAsync(page);
-
+							if (page is ContentPage)
+							{
+								await navigation.PushAsync(page);
 							}
 							else if (page is Shell)
 							{
@@ -83,8 +89,8 @@ namespace Maui.Controls.Sample
 							}
 							else
 							{
-								await Navigation.PushModalAsync(page);
-							}
+								await navigation.PushModalAsync(page);
+							}	
 						};
 					}
 
@@ -172,8 +178,10 @@ namespace Maui.Controls.Sample
 				});
 			}
 
-			public TestCaseScreen()
+			public TestCaseScreen(bool resetMainPage = false)
 			{
+				ResetMainPage = resetMainPage;
+
 				AutomationId = "TestCasesIssueList";
 
 				Intent = TableIntent.Settings;
@@ -181,7 +189,9 @@ namespace Maui.Controls.Sample
 				UpdateIssues();
 			}
 
-			public void UpdateIssues(bool reset = false)
+			internal bool ResetMainPage { get; set; }
+
+			public void UpdateIssues()
 			{
 				var assembly = typeof(TestCases).Assembly;
 
@@ -199,7 +209,7 @@ namespace Maui.Controls.Sample
 						 IssueTestNumber = attribute.IssueTestNumber,
 						 Name = attribute.DisplayName,
 						 Description = attribute.Description,
-						 Action = ActivatePageAndNavigate(attribute, type, reset)
+						 Action = ActivatePageAndNavigate(attribute, type, ResetMainPage)
 					 }).ToList();
 
 				VerifyNoDuplicates();
@@ -321,7 +331,7 @@ namespace Maui.Controls.Sample
 			bool IsExempt(string name) => _exemptNames.Contains(name);
 		}
 
-		public static NavigationPage GetTestCases()
+		public static NavigationPage GetTestCases(bool resetMainPage = false)
 		{
 			TestCaseScreen testCaseScreen = null;
 			var rootLayout = new StackLayout();
@@ -331,25 +341,6 @@ namespace Maui.Controls.Sample
 				Title = "Bug Repro's",
 				Content = rootLayout
 			};
-
-			var resetCheckBox = new CheckBox
-			{
-				AutomationId = "ResetMainPage",
-				VerticalOptions = LayoutOptions.Center,
-			};
-			resetCheckBox.CheckedChanged += (sender, args) => CheckBoxCheckedChanged(sender, args, testCaseScreen);
-			var resetLabel = new Label
-			{
-				Text = "Set MainPage",
-				VerticalOptions = LayoutOptions.Center,
-			};
-			var resetLayout = new HorizontalStackLayout
-			{
-				resetCheckBox,
-				resetLabel
-			};
-			resetLayout.HorizontalOptions = LayoutOptions.End;
-			resetLayout.Margin = new Microsoft.Maui.Thickness(12);
 
 			var searchBar = new SearchBar()
 			{
@@ -379,7 +370,6 @@ namespace Maui.Controls.Sample
 						System.Diagnostics.Debug.WriteLine(e.Message);
 						Console.WriteLine(e.Message);
 					}
-
 				})
 			};
 
@@ -390,12 +380,11 @@ namespace Maui.Controls.Sample
 				Command = new Command(() => testCasesRoot.Navigation.PopModalAsync())
 			};
 
-			rootLayout.Children.Add(resetLayout);
 			rootLayout.Children.Add(leaveTestCasesButton);
 			rootLayout.Children.Add(searchBar);
 			rootLayout.Children.Add(searchButton);
 
-			testCaseScreen = new TestCaseScreen();
+			testCaseScreen = new TestCaseScreen(resetMainPage);
 
 			rootLayout.Children.Add(CreateTrackerFilter(testCaseScreen));
 
@@ -460,12 +449,6 @@ namespace Maui.Controls.Sample
 			}
 
 			cases.FilterIssues(filter);
-		}
-
-		static void CheckBoxCheckedChanged(object sender, CheckedChangedEventArgs checkedChangedEventArgs, TestCaseScreen cases)
-		{
-			bool reset = checkedChangedEventArgs.Value;
-			cases.UpdateIssues(reset);
 		}
 	}
 }
