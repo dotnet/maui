@@ -50,14 +50,8 @@ namespace Microsoft.Maui.Controls
 			if (type != null)
 			{
 				_mergedInstance = s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type));
+				OnValuesChanged(_mergedInstance.ToArray());
 			}
-			else
-			{
-				// TODO remove the exception once https://github.com/dotnet/maui/pull/20776 is merged
-				throw new InvalidOperationException($"Resource {resourcePath} does not have a code behind class");
-			}
-
-			OnValuesChanged(_mergedInstance.ToArray());
 		}
 
 		internal static ResourceDictionary FromType(
