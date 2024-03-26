@@ -156,11 +156,18 @@ These are tests that will not run on a device. This is useful for testing device
 ```
 
 ### Reproducing an Issue/Debugging .NET MAUI Code
-
-In VSCode, select the device that you will be testing on. Using the command palette (ctrl-shift-P/command-shift-P) type `pick` and
+Open the .NET MAUI workspace in VSCode.
+In VSCode, select the device that you will be testing on. Using the command palette (ctrl-shift-P/command-shift-P) type `pick device` and
 you will be presented with a set of choices for your target device (Android, iOS, etc). Select one.
 There is a sample project in `src/Controls/samples/Controls.Sample.Sandbox`. This is an empty project
 into which you can add your code to reproduce an issue and also set breakpoints in .NET MAUI source code.
+Let VSCode know this is the project you want to select by going to the command palette (ctrl-shift-P/command-shift-P)
+and typing `pick startup` and select ".NET MAUI: Pick Startup Project" and select the Sandbox project.
+
+ Before using the command palette for the first time, you may have to wait a minute
+for intellisense and other tasks to complete before using the command palette. If the project hasn't
+'settled' yet, you will see an error "Pick Startup Project has resulted in an error."
+
 *Note:* When you are committing your PR, do not include your changes to the Sandbox project.
 
 ### Integration Tests
