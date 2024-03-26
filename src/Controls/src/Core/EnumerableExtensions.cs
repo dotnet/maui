@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.Internals
 				}
 		}
 
+		/// <remarks>The method makes a defensive copy of the gestures.</remarks>
 		public static IEnumerable<T> GetGesturesFor<T>(this IEnumerable<IGestureRecognizer>? gestures, Func<T, bool>? predicate = null) where T : GestureRecognizer
 		{
 			if (gestures is null)
@@ -57,6 +58,26 @@ namespace Microsoft.Maui.Controls.Internals
 					yield return gesture;
 				}
 			}
+		}
+
+		public static bool HasAnyGesturesFor<T>(this IEnumerable<IGestureRecognizer>? gestures, Func<T, bool>? predicate = null) where T : GestureRecognizer
+		{
+			if (gestures is null)
+			{
+				return false;
+			}
+
+			predicate ??= x => true;
+
+			foreach (IGestureRecognizer item in gestures)
+			{
+				if (item is T gesture && predicate(gesture))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }
