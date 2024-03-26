@@ -507,7 +507,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarDisabledColor(BindableObject obj, Color value) => obj.SetValue(TabBarDisabledColorProperty, value);
 
 		/// <summary>
-		/// Gets the disabled color for the tab bar. 
+		/// Gets the color of the tab bar when its disabled. 
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
 		/// <returns>The disabled color for the tab bar.</returns>
