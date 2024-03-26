@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		public static bool HasAnyGesturesFor<T>(this IEnumerable<IGestureRecognizer>? gestures, Func<T, bool>? predicate = null) where T : GestureRecognizer
+		internal static bool HasAnyGesturesFor<T>(this IEnumerable<IGestureRecognizer>? gestures, Func<T, bool>? predicate = null) where T : GestureRecognizer
 		{
 			if (gestures is null)
 			{
