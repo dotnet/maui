@@ -25,6 +25,9 @@ variables:
   - template: /eng/pipelines/common/variables.yml@self
 
 parameters:
+  - name: pushMauiPackagesToMaestro
+    default: true
+
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
@@ -42,6 +45,8 @@ parameters:
     default:
       name: Windows
       artifact: nuget
+      binariesArtifact: pack-binaries
+      docsArtifact: xml-docs
 
   - name: Skip1ESComplianceTasks
     default: false
@@ -65,8 +70,7 @@ extends:
       codeql:
         runSourceLanguagesInSourceAnalysis: true
       policheck:
-        enabled: false
-        justification: Built in task does not support multi-language scanning
+        enabled: true
       spotBugs:
         enabled: false
         justification: 'Failing with "Could not successfully find the java tool launcher"'
@@ -94,11 +98,56 @@ extends:
                   displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.artifact }}
                   targetPath: '(Build.ArtifactStagingDirectory)'
+                
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
+                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
+
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.docsArtifact }}
+                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
 
             steps:
               - template: /eng/pipelines/common/pack.yml@self
                 parameters:
+                  publishArtifacts: false
                   platform: ${{ parameters.PackPlatform.name }}
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                  artifact:  ${{ parameters.PackPlatform.artifact }}
+                  artifact: ${{ parameters.PackPlatform.artifact }}
+                  artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
                   artifactsPath: '(Build.ArtifactStagingDirectory)'
+                  # prepareSteps:
+                  #   - template: /eng/pipelines/common/provision.yml@self
+                  #     parameters:
+                  #       checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+                  #       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  #       gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                  #       skipAndroidImages: true
+
+      # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:                           # Sign only using the private server   
+      #   - template: /eng/pipelines/common/sign.yml@self                                 
+      #     parameters:
+      #       dependsOn: ['pack_net']
+      #       stageName: 'nuget_signing'
+      #       poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+      #       vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+      #       os: ${{ parameters.VM_IMAGE_HOST.os }}                                   
+        
+      #   - template: /eng/pipelines/common/insertion.yml@self                                # Insert on VS and SDK
+      #     parameters:
+      #       dependsOn: ['nuget_signing']
+      #       stageName: 'sdk_insertion'
+      #       poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+      #       vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+      #       os: ${{ parameters.VM_IMAGE_HOST.os }}
+      #       pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
+
+      #   - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
+      #     parameters:
+      #       dependsOn: ['pack_net']
+      #       poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+      #       vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+      #       os: ${{ parameters.VM_IMAGE_HOST.os }}     
+      #       scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
