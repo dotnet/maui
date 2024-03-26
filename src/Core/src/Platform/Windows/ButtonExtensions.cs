@@ -168,8 +168,9 @@ namespace Microsoft.Maui.Platform
 				// to the desired size of the font, otherwise it will be stretched to the available space
 				if (nativeImage.Source is CanvasImageSource canvas)
 				{
-					nativeImage.Width = canvas.Size.Width;
-					nativeImage.Height = canvas.Size.Height;
+					var size = canvas.GetImageSourceSize(platformButton);
+					nativeImage.Width = size.Width;
+					nativeImage.Height = size.Height;
 				}
 
 				// Ensure that we only scale images down and never up
@@ -183,7 +184,7 @@ namespace Microsoft.Maui.Platform
 						var actualImageSource = sender as BitmapImage;
 						if (actualImageSource is not null)
 						{
-							nativeImage.MaxHeight = actualImageSource.PixelHeight;
+							nativeImage.MaxHeight = nativeImageSource.GetImageSourceSize(platformButton).Height;
 						}
 					}
 				}
