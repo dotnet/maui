@@ -9,6 +9,8 @@
       <method signature="System.Boolean get_IsShellSearchResultsRendererDisplayMemberNameSupported()" body="stub" feature="Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported" value="true" featurevalue="true" />
       <method signature="System.Boolean get_IsQueryPropertyAttributeSupported()" body="stub" feature="Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported" value="false" featurevalue="false" />
       <method signature="System.Boolean get_IsQueryPropertyAttributeSupported()" body="stub" feature="Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported" value="true" featurevalue="true" />
+      <method signature="System.Boolean get_IsImplicitCastOperatorsUsageViaReflectionSupported()" body="stub" feature="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported" value="false" featurevalue="false" />
+      <method signature="System.Boolean get_IsImplicitCastOperatorsUsageViaReflectionSupported()" body="stub" feature="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported" value="true" featurevalue="true" />
     </type>
   </assembly>
 </linker>

@@ -212,6 +212,7 @@
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
       <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == '' and '$(PublishAot)' == 'true'">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
       <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiQueryPropertyAttributeSupport>
+      <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
     </PropertyGroup>
     <ItemGroup>
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported"
@@ -229,6 +230,10 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported"
                                       Condition="'$(MauiQueryPropertyAttributeSupport)' != ''"
                                       Value="$(MauiQueryPropertyAttributeSupport)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported"
+                                      Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
+                                      Value="$(MauiImplicitCastOperatorsUsageViaReflectionSupport)"
                                       Trim="true" />
     </ItemGroup>
   </Target>

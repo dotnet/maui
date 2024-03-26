@@ -85,3 +85,8 @@ virtual Microsoft.Maui.Animations.Ticker.SystemEnabled.set -> void
 static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
+Microsoft.Maui.Hosting.TypeConversionAppBuilderExtensions
+static Microsoft.Maui.Hosting.TypeConversionAppBuilderExtensions.ConfigureTypeConversions(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.ITypeConversionBuilder!>! configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+Microsoft.Maui.Hosting.ITypeConversionBuilder
+Microsoft.Maui.Hosting.ITypeConversionBuilder.AddTypeConverter<T, TConverter>() -> Microsoft.Maui.Hosting.ITypeConversionBuilder!
+Microsoft.Maui.Hosting.ITypeConversionBuilder.AddTypeConverter<T>(System.Func<System.ComponentModel.TypeConverter!>! createConverter) -> Microsoft.Maui.Hosting.ITypeConversionBuilder!
