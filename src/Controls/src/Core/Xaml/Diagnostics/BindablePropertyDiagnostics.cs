@@ -31,7 +31,7 @@ internal static class BindablePropertyDiagnostics
         if (specificity == SetterSpecificity.FromHandler)
             return new ValueSource(BaseValueSource.Unknown, isCurrent:true);
         
-        if (specificity.Vsm > 0)
+        if (specificity.IsVsm)
             return new ValueSource(BaseValueSource.Local);
 	(ushort sStyle, byte sId, byte sClass, byte sType) = specificity.StyleInfo;
 
