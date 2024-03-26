@@ -507,7 +507,7 @@ namespace Microsoft.Maui.Controls
 		/// If the property is unset, the <see cref = "DisabledColorProperty" /> value is used.
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
-		/// <param name="value">The disabled color for the tab bar.</param>
+		/// <param name="value">The color to set for the tab bar is disabled.</param>
 		public static void SetTabBarDisabledColor(BindableObject obj, Color value) => obj.SetValue(TabBarDisabledColorProperty, value);
 
 		/// <summary>
