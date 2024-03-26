@@ -23,7 +23,7 @@
     <MicrosoftExtensionsLoggingDebugVersion>9.0.0-preview.3.24172.9</MicrosoftExtensionsLoggingDebugVersion>
     <MicrosoftExtensionsPrimitivesVersion>9.0.0-preview.3.24172.9</MicrosoftExtensionsPrimitivesVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.99.0-preview.4.229</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.99.0-preview.4.230</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdknet90_172PackageVersion>17.2.9436-net9-p4</MicrosoftMacCatalystSdknet90_172PackageVersion>
     <MicrosoftmacOSSdknet90_142PackageVersion>14.2.9436-net9-p4</MicrosoftmacOSSdknet90_142PackageVersion>
