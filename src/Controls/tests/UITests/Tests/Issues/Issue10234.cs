@@ -40,7 +40,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		void ScrollNextItem()
 		{
-			App.ScrollLeft("carouselView");
+			App.ScrollRight("carouselView");
 		}
 	}
 }
