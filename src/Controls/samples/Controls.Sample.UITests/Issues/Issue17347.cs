@@ -9,10 +9,16 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 			var navPage = new NavigationPage(new MainPage());
+			var label = new Label() { Text = "NavigatedTo Has Not Fired" };
 			NavigatedTo += Issue16499_NavigatedTo;
+			Content = new VerticalStackLayout()
+			{
+				label
+			};
 
 			async void Issue16499_NavigatedTo(object sender, NavigatedToEventArgs e)
 			{
+				label.Text = "Navigated to Has Fired";
 				NavigatedTo -= Issue16499_NavigatedTo;
 
 				await Navigation.PushModalAsync(navPage);
