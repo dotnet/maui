@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Platform
 					$"This window is already associated with an active Activity ({oldActivity.GetType()}). " + 
 					$"Please override CreateWindow on {application.GetType()} "  + 
 					$"to add support for multiple activities https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/windows?view=net-maui-8.0#create-a-window "  + 
-					$"or set the LaunchMode to SingleTask on {activity.GetType()}.");
+					$"or set the LaunchMode to SingleTop on {activity.GetType()}.");
 			}
 
 			activity.SetWindowHandler(window, mauiContext);
