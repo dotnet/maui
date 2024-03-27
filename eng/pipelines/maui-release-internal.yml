@@ -104,7 +104,6 @@ extends:
       jobs:
       - template: /eng/common/templates-official/jobs/jobs.yml@self
         parameters:
-          enableTelemetry: true
           helixRepo: dotnet/maui
           pool: ${{ parameters.VM_IMAGE_HOST }}
           enablePublishUsingPipelines: true
