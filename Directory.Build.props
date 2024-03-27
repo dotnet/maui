@@ -9,10 +9,7 @@
     <DebugSymbols>true</DebugSymbols>
     <LangVersion>Latest</LangVersion>
 
-    <!--
-      Tools and packages produced by this repository support infrastructure and are not shipping on NuGet or via any other official channel.
-    -->
-    <IsShipping>false</IsShipping>
+    <IsShipping>true</IsShipping>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
