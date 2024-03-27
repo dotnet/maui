@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
@@ -65,26 +64,26 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			}
 		}
 
-		[TypeConverter(typeof(ItemTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ItemTypeConverter))]
 		class Item
 		{
 			public string Value { get; set; }
 
 			public static implicit operator Item(string value) => new Item { Value = value };
 
-			private sealed class ItemTypeConverter : TypeConverter
+			private sealed class ItemTypeConverter : System.ComponentModel.TypeConverter
 			{
-				public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, Type sourceType)
 					=> sourceType == typeof(string);
-				public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+				public override object ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
 					=> value switch
 					{
 						string str => (Item)str,
 						_ => throw new NotSupportedException(),
 					};
 
-				public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => false;
-				public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType) => throw new NotSupportedException();
+				public override bool CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, Type destinationType) => false;
+				public override object ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType) => throw new NotSupportedException();
 			}
 		}
 	}
