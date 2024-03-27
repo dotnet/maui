@@ -116,16 +116,11 @@ extends:
           enablePublishTestResults: true
           workspace:
             clean: all
-
           jobs:
           - job: pack_net_${{ parameters.PackPlatform.name }}
-            workspace:
-              clean: all
             displayName: ${{ parameters.PackPlatform.name }}
             timeoutInMinutes: 240
            
-            pool: ${{ parameters.VM_IMAGE_HOST }}
-              
             templateContext:
                outputs:
                 - output: pipelineArtifact
