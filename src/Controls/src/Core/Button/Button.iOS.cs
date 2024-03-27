@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
 			platformButton.SetTitle(text, UIControlState.Normal);
 
-			if (platformButton.Configuration is UIButtonConfiguration config)
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config)
 			{
 				config.Title = text;
 			}

@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Platform
 		{
 			platformButton.SetTitle(button.Text, UIControlState.Normal);
 
-			if (platformButton.Configuration is UIButtonConfiguration config)
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config)
 			{
 				config.Title = button.Text;
 				platformButton.Configuration = config;
@@ -55,10 +55,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)
 		{
-			var config = platformButton.Configuration;
+			object? config = OperatingSystem.IsIOSVersionAtLeast(15) ? platformButton.Configuration : null;
 
 			// This is probalby wrong and needs to be tested more
-			NSAttributedString? nSAttributedString = config?.AttributedTitle ?? platformButton.TitleLabel?.AttributedText;
+			NSAttributedString? nSAttributedString = (config as UIButtonConfiguration)?.AttributedTitle ?? platformButton.TitleLabel?.AttributedText;
 
 			if (nSAttributedString is null && textStyle is IText text && text.Text is not null)
 			{
@@ -73,10 +73,10 @@ namespace Microsoft.Maui.Platform
 			if (textStyle.TextColor != null)
 				attributedText = attributedText?.WithTextColor(textStyle.TextColor);
 
-			if (config is UIButtonConfiguration)
+			if (config is UIButtonConfiguration buttonConfig)
 			{
-				config.AttributedTitle = attributedText;
-				platformButton.Configuration = config;
+				buttonConfig.AttributedTitle = attributedText;
+				platformButton.Configuration = buttonConfig;
 			}
 			else
 			{
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Platform
 				platformButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
 
 			// If iOS 15+, update the configuration with the new font
-			if (platformButton.Configuration is UIButtonConfiguration config && textStyle is IText text)
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config && textStyle is IText text)
 			{
 				var attributedText = config.AttributedTitle ?? platformButton.TitleLabel?.AttributedText ??
 					new NSAttributedString (text.Text);
@@ -121,9 +121,8 @@ namespace Microsoft.Maui.Platform
 			if (bottom == 0.0)
 				bottom = AlmostZero;
 
-			if (platformButton.Configuration is not null)
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config)
 			{
-				var config = platformButton.Configuration;
 				config.ContentInsets = new NSDirectionalEdgeInsets (
 					(float)top,
 					(float)padding.Left,
