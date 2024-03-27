@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
@@ -75,8 +76,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			{
 				public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 					=> sourceType == typeof(string);
-				public override object ConvertFromInvariantString(string value)
-					=> new Item { Value = value };
 				public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
 					=> value switch
 					{
