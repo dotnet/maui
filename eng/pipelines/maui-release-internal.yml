@@ -128,7 +128,7 @@ extends:
 
       # Publish and validation steps. Only run in official builds
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        - template: \eng\common\templates\post-build\post-build.yml
+        - template: \eng\common\templates-official\post-build\post-build.yml
           parameters:
             publishingInfraVersion: 3
             validateDependsOn:
