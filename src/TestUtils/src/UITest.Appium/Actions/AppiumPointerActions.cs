@@ -200,8 +200,13 @@ namespace UITest.Appium
 					throw new TimeoutException($"Timed out scrolling to {toElementId}");
 				}
 
-				var scrollAction = new TouchAction(_appiumApp.Driver).Press(x, startY).MoveTo(x, endY).Release();
-				scrollAction.Perform();
+				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+				var scrollSequence = new ActionSequence(touchDevice, 0);
+				scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, (int)startY, TimeSpan.Zero));
+				scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, (int)endY, TimeSpan.FromMilliseconds(500)));
+				scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				_appiumApp.Driver.PerformActions([scrollSequence]);
 			}
 		}
 
@@ -265,11 +270,13 @@ namespace UITest.Appium
 
 		static void DragCoordinates(AppiumDriver driver, double fromX, double fromY, double toX, double toY)
 		{
-			new TouchAction(driver)
-				.Press(fromX, fromY)
-				.MoveTo(toX, toY)
-				.Release()
-				.Perform();
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+			var dragSequence = new ActionSequence(touchDevice, 0);
+			dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)fromX, (int)fromY, TimeSpan.Zero));
+			dragSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+			dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)toX, (int)toY, TimeSpan.FromMilliseconds(250)));
+			dragSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+			driver.PerformActions([dragSequence]);
 		}
 	}
 }

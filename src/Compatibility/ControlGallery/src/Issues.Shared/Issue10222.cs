@@ -83,6 +83,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue10222Test() 
 		{
 			RunningApp.WaitForElement(q => q.Marked("goTo"));

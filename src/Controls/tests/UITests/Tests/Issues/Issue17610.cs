@@ -1,7 +1,9 @@
 ﻿using System.Drawing.Imaging;
 using NUnit.Framework;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
 
@@ -32,17 +34,19 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			var rect1 = App.WaitForElement("Item4").GetRect();
 			var rect2 = App.WaitForElement("Item16").GetRect();
 
-			var fromX = (int)rect1.CenterX();
-			var fromY = (int)rect1.CenterY();
-			var toX = (int)rect2.CenterX();
-			var toY = (int)rect2.CenterY();
+			int fromX = rect1.CenterX();
+			int fromY = rect1.CenterY();
+			int toX = rect2.CenterX();
+			int toY = rect2.CenterY();
 
-			new TouchAction(androidApp.Driver)
-				.Press(fromX, fromY)
-				.MoveTo(toX, toY)
-				.MoveTo(fromX, fromY)
-				.Release()
-				.Perform();
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+			var refreshSequence = new ActionSequence(touchDevice, 0);
+			refreshSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, fromX, fromY, TimeSpan.Zero));
+			refreshSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+			refreshSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, toX, toY, TimeSpan.FromMilliseconds(250)));
+			refreshSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, fromX, fromY, TimeSpan.FromMilliseconds(250)));
+			refreshSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+			androidApp.Driver.PerformActions([refreshSequence]);
 
 			VerifyScreenshot();
 		}
