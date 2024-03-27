@@ -8,6 +8,12 @@
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
 
+  <ItemGroup>
+    <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
+    <FileExtensionSignInfo Update=".zip" CertificateName="None" />
+    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
+  </ItemGroup>
+
   <!-- <ItemGroup>
     <!--
       Replace the default items to sign with the specific set we want.
