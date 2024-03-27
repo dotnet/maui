@@ -23,8 +23,6 @@ public class Issue19214 : _IssuesUITest
         {
             return;
         }
-            
-        App.Click("MultipleScrollViewsButton");
 
         var topRectY = app.WaitForElement("TopEntry_1").GetRect().Y;
         var bottomRectY = app.WaitForElement("Entry2_3").GetRect().Y;
@@ -56,6 +54,7 @@ public class Issue19214 : _IssuesUITest
 
         app.Click(queryEntry);
         queryRect = app.WaitForElement(queryEntry).GetRect();
+        KeyboardScrolling.CheckIfViewAboveKeyboard(app, queryEntry, false);
 
         // Make sure we can scroll up to the top entry
         ScrollScrollView(app, queryRect, false);
@@ -92,5 +91,4 @@ public class Issue19214 : _IssuesUITest
         var newY = scrollsDown ? rect.Y - 1000 : rect.Y + 1000;
         actions.LongPress(null, rect.Left - 5, rect.Y).MoveTo(null, rect.Left - 5, newY).Release().Perform();
     }
-
 }

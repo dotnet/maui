@@ -12,14 +12,4 @@ public partial class Issue19214 : ContentPage
 	{
 		InitializeComponent();
 	}
-
-	async void PushMultipleScrollViews(object sender, EventArgs e)
-	{
-		await Navigation.PushAsync(new Issue19214_MultipleScrollViews());
-	}
-
-	async void PushFullScrollView(object sender, EventArgs e)
-	{
-		await Navigation.PushAsync(new Issue19214_FullScrollView());
-	}
 }

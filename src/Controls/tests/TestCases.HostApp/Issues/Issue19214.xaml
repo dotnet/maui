@@ -3,8 +3,124 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue19214"
              Title="Issue19214">
-    <VerticalStackLayout>
-        <Button Text="Push Multiple ScrollViews" Clicked="PushMultipleScrollViews" AutomationId="MultipleScrollViewsButton"/>
-        <Button Text="Push Full-screen ScrollView" Clicked="PushFullScrollView" AutomationId="FullScrollViewButton"/>
-    </VerticalStackLayout>
+    <Grid RowDefinitions="40,*,*,*" Margin="0,0,0,0">
+        <Label Text="ScrollView 1" Grid.Row="0" Background="Red" />
+        <ScrollView Background="LightBlue" Padding="10" Grid.Row="1" AutomationId="ScrollView_1">
+            <VerticalStackLayout>
+                <Entry Text="Top Scroll" Background="Lightgray" HeightRequest="40" AutomationId="TopEntry_1"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry1" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry2" Background="Lightgray" HeightRequest="40" AutomationId="Entry2_1"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry3" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry4" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry5" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry6" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry7" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry8" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry9" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry10" Background="Lightgray" HeightRequest="40" AutomationId="Entry10_1"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Bottom!!" Background="Green" HeightRequest="40" AutomationId="BottomEntry_1"/>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <ScrollView Background="Lightgreen" Padding="10" Grid.Row="2" AutomationId="ScrollView_2">
+            <VerticalStackLayout>
+                <Entry Text="Top Scroll" Background="Lightgray" HeightRequest="40" AutomationId="TopEntry_2"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry1" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry2" Background="Lightgray" HeightRequest="40" AutomationId="Entry2_2"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry3" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry4" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry5" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry6" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry7" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry8" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry9" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry10" Background="Lightgray" HeightRequest="40" AutomationId="Entry10_2"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Bottom!!" Background="Green" HeightRequest="40" AutomationId="BottomEntry_2"/>
+            </VerticalStackLayout>
+        </ScrollView>
+
+
+        <ScrollView Background="pink" Padding="10" Grid.Row="3" AutomationId="ScrollView_3">
+            <VerticalStackLayout>
+                <Entry Text="Top Scroll" Background="Lightgray" HeightRequest="40" AutomationId="TopEntry_3"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry1" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry2" Background="Lightgray" HeightRequest="40" AutomationId="Entry2_3"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry3" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry4" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry5" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry6" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry7" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry8" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry9" Background="Lightgray" HeightRequest="40"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Entry10" Background="Lightgray" HeightRequest="40" AutomationId="Entry10_3"/>
+                <BoxView HeightRequest="40" />
+
+                <Entry Text="Bottom!!" Background="Green" HeightRequest="40" AutomationId="BottomEntry_3"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>
