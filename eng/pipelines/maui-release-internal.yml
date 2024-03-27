@@ -98,58 +98,61 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
-      - stage: pack_net
-        displayName: Pack .NET MAUI
-        dependsOn: []
-        jobs:
-        - template: /eng/common/templates-official/jobs/jobs.yml@self
-          parameters:
-            enableTelemetry: true
-            helixRepo: dotnet/maui
-            pool: ${{ parameters.VM_IMAGE_HOST }}
-            enablePublishBuildArtifacts: true
-            enablePublishBuildAssets: true
-            enablePublishUsingPipelines: true
-            enableMicrobuild: true
-            graphFileGeneration:
-              enabled: false
-              includeToolset: false
+    - stage: pack_net
+      displayName: Pack .NET MAUI
+      dependsOn: []
+      jobs:
+      - template: /eng/common/templates-official/jobs/jobs.yml@self
+        parameters:
+          enableTelemetry: true
+          helixRepo: dotnet/maui
+          pool: ${{ parameters.VM_IMAGE_HOST }}
+          enablePublishUsingPipelines: true
+          enablePublishBuildAssets: true
+          enableTelemetry: true
+          enableSourceIndex: false
+          # Publish build logs
+          enablePublishBuildArtifacts: true
+          # Publish test logs
+          enablePublishTestResults: true
+          workspace:
+            clean: all
 
-            jobs:
-            - job: pack_net_${{ parameters.PackPlatform.name }}
-              workspace:
-                clean: all
-              displayName: ${{ parameters.PackPlatform.name }}
-              timeoutInMinutes: 240
+          jobs:
+          - job: pack_net_${{ parameters.PackPlatform.name }}
+            workspace:
+              clean: all
+            displayName: ${{ parameters.PackPlatform.name }}
+            timeoutInMinutes: 240
            
-              pool: ${{ parameters.VM_IMAGE_HOST }}
+            pool: ${{ parameters.VM_IMAGE_HOST }}
               
-              templateContext:
-                 outputs:
-                  - output: pipelineArtifact
-                    displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
-                    artifactName: ${{ parameters.PackPlatform.artifact }}
-                    targetPath: '(Build.ArtifactStagingDirectory)'
-              
-                  - output: pipelineArtifact
-                    displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
-                    artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
-                    targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
+            templateContext:
+               outputs:
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.artifact }}
+                  targetPath: '(Build.ArtifactStagingDirectory)'
+            
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
+                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
 
-                  - output: pipelineArtifact
-                    displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
-                    artifactName: ${{ parameters.PackPlatform.docsArtifact }}
-                    targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.docsArtifact }}
+                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
 
-              steps:
-                - template: /eng/pipelines/common/pack.yml@self
-                  parameters:
-                    publishArtifacts: false
-                    platform: ${{ parameters.PackPlatform.name }}
-                    provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                    artifact: ${{ parameters.PackPlatform.artifact }}
-                    artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
-                    artifactsPath: '(Build.ArtifactStagingDirectory)'
+            steps:
+              - template: /eng/pipelines/common/pack.yml@self
+                parameters:
+                  publishArtifacts: false
+                  platform: ${{ parameters.PackPlatform.name }}
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  artifact: ${{ parameters.PackPlatform.artifact }}
+                  artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
+                  artifactsPath: '(Build.ArtifactStagingDirectory)'
                   # prepareSteps:
                   #   - template: /eng/pipelines/common/provision.yml@self
                   #     parameters:
@@ -159,9 +162,9 @@ extends:
                   #       skipAndroidImages: true
 
       # Publish and validation steps. Only run in official builds
-      - template: /eng/common/templates-official/post-build/post-build.yml@self
-        parameters:
-          publishingInfraVersion: 3
-          validateDependsOn:
-            - publish_build_assets
-          enableSourceLinkValidation: true
+    - template: /eng/common/templates-official/post-build/post-build.yml@self
+      parameters:
+        publishingInfraVersion: 3
+        validateDependsOn:
+          - pack_net
+        enableSourceLinkValidation: true
