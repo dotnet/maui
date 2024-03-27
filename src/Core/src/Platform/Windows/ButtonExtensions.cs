@@ -162,20 +162,21 @@ namespace Microsoft.Maui.Platform
 			{
 				// Stretch to fill
 				nativeImage.Stretch = UI.Xaml.Media.Stretch.Uniform;
-				nativeImage.Source = nativeImageSource;
 
 				// If we're a CanvasImageSource (font image source), we need to explicitly set the image height
 				// to the desired size of the font, otherwise it will be stretched to the available space
-				if (nativeImage.Source is CanvasImageSource canvas)
+				if (nativeImageSource is CanvasImageSource canvas)
 				{
 					var size = canvas.GetImageSourceSize(platformButton);
 					nativeImage.Width = size.Width;
 					nativeImage.Height = size.Height;
+					nativeImage.MaxHeight = double.PositiveInfinity;
 				}
 
 				// Ensure that we only scale images down and never up
 				if (nativeImageSource is BitmapImage bitmapImage)
 				{
+					// This will fire after `nativeImageSource.Source` is set
 					bitmapImage.ImageOpened += OnImageOpened;
 					void OnImageOpened(object sender, RoutedEventArgs e)
 					{
@@ -189,6 +190,7 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 
+				nativeImage.Source = nativeImageSource;
 				nativeImage.Visibility = nativeImageSource == null
 					? UI.Xaml.Visibility.Collapsed
 					: UI.Xaml.Visibility.Visible;
