@@ -939,7 +939,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Ldnull);
 				yield return Create(Ldftn, partGetters[i]);
 				yield return Create(Newobj, module.ImportReference(funcCtor));
-				yield return Create(Ldstr, properties[i].Item1.Name);
+				if (properties[i].Item3 == null) //no indexer
+					yield return Create(Ldstr, properties[i].Item1.Name);
+				else
+					yield return Create(Ldstr, $"{properties[i].Item1.Name}[{properties[i].Item3}]");
+
 				yield return Create(Newobj, module.ImportReference(tupleCtor));
 				yield return Create(Stelem_Ref);
 			}
