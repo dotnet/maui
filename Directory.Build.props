@@ -3,7 +3,7 @@
 
   <PropertyGroup> 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DebugType>embedded</DebugType>
+    <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <LangVersion>Latest</LangVersion>
     <!--
