@@ -47,6 +47,10 @@ parameters:
   type: boolean
   default: true
 
+- name: buildConfiguration
+  type: string
+  default: Release
+
 steps:
 
   - ${{ each step in parameters.prepareSteps }}:
@@ -88,7 +92,7 @@ steps:
     displayName: 'Setup ANDROID_SDK_ROOT Paths'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
+  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.buildConfiguration }}" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
     workingDirectory: ${{ parameters.checkoutDirectory }}
@@ -96,7 +100,7 @@ steps:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
 
-  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
+  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="${{ parameters.buildConfiguration }}" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Pack .NET Maui'
     name: PackMaui
     workingDirectory: ${{ parameters.checkoutDirectory }}
@@ -105,7 +109,7 @@ steps:
       PRIVATE_BUILD: $(PrivateBuild)
 
   - ${{ if eq(parameters.platform, 'Windows') }}:
-    - pwsh: ./build.ps1 --target=dotnet-diff --configuration="Release" --verbosity=diagnostic
+    - pwsh: ./build.ps1 --target=dotnet-diff --configuration="${{ parameters.buildConfiguration }}" --verbosity=diagnostic
       displayName: 'Diff .NET Maui artifacts with NuGet'
       workingDirectory: ${{ parameters.checkoutDirectory }}
 
@@ -115,7 +119,7 @@ steps:
       condition: succeeded()
       inputs:
         Contents: |
-          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/Release/**/*.dll
+          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/${{ parameters.buildConfiguration }}/**/*.dll
         TargetFolder: ${{ parameters.checkoutDirectory }}/artifacts/binaries
         flattenFolders: false
 

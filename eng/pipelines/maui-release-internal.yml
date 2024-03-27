@@ -29,6 +29,14 @@ variables:
     value: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal
            /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
   # needed for darc (dependency flow) publishing
+  - name: _BuildConfig
+    value: Release
+  - name: Build.Arcade.ArtifactsPath
+    value: $(Build.SourcesDirectory)/artifacts/
+  - name: Build.Arcade.LogsPath
+    value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
+  - name: Build.Arcade.TestResultsPath
+    value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
   - name: _PublishArgs
     value: >-
           /p:DotNetPublishUsingPipelines=true
@@ -147,6 +155,7 @@ extends:
                   artifact: ${{ parameters.PackPlatform.artifact }}
                   artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
                   artifactsPath: '(Build.ArtifactStagingDirectory)'
+                  buildConfiguration: $(_BuildConfig)
                   # prepareSteps:
                   #   - template: /eng/pipelines/common/provision.yml@self
                   #     parameters:
