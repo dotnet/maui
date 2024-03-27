@@ -102,7 +102,7 @@ extends:
         displayName: Pack .NET MAUI
         dependsOn: []
         jobs:
-          - template: /eng/common/templates/jobs/jobs.yml
+          - template: /eng/common/templates/jobs/jobs.yml@self
             parameters:
               enableTelemetry: true
               helixRepo: dotnet/maui
