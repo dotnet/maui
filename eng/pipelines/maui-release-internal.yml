@@ -106,7 +106,7 @@ extends:
             parameters:
               enableTelemetry: true
               helixRepo: dotnet/maui
-              pool: ${{ parameters.pool }}
+              pool: ${{ parameters.VM_IMAGE_HOST }}
               enablePublishBuildArtifacts: true
               enablePublishBuildAssets: true
               enablePublishUsingPipelines: true
