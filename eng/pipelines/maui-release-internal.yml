@@ -102,40 +102,54 @@ extends:
         displayName: Pack .NET MAUI
         dependsOn: []
         jobs:
-          - job: pack_net_${{ parameters.PackPlatform.name }}
-            workspace:
-              clean: all
-            displayName: ${{ parameters.PackPlatform.name }}
-            timeoutInMinutes: 240
+          - template: /eng/common/templates/jobs/jobs.yml
+            parameters:
+              enableTelemetry: true
+              helixRepo: dotnet/maui
+              pool: ${{ parameters.pool }}
+              enablePublishBuildArtifacts: true
+              enablePublishBuildAssets: true
+              enablePublishUsingPipelines: true
+              enableMicrobuild: true
+              graphFileGeneration:
+                enabled: false
+                includeToolset: false
+
+              jobs:
+              - job: pack_net_${{ parameters.PackPlatform.name }}
+                workspace:
+                  clean: all
+                displayName: ${{ parameters.PackPlatform.name }}
+                timeoutInMinutes: 240
            
-            pool: ${{ parameters.VM_IMAGE_HOST }}
+                pool: ${{ parameters.VM_IMAGE_HOST }}
               
-            templateContext:
-              outputs:
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.artifact }}
-                  targetPath: '(Build.ArtifactStagingDirectory)'
+                templateContext:
+                  outputs:
+                    - output: pipelineArtifact
+                      displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
+                      artifactName: ${{ parameters.PackPlatform.artifact }}
+                      targetPath: '(Build.ArtifactStagingDirectory)'
                 
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
-                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
+                    - output: pipelineArtifact
+                      displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
+                      artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
+                      targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
 
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.docsArtifact }}
-                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
+                    - output: pipelineArtifact
+                      displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
+                      artifactName: ${{ parameters.PackPlatform.docsArtifact }}
+                      targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
 
-            steps:
-              - template: /eng/pipelines/common/pack.yml@self
-                parameters:
-                  publishArtifacts: false
-                  platform: ${{ parameters.PackPlatform.name }}
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                  artifact: ${{ parameters.PackPlatform.artifact }}
-                  artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
-                  artifactsPath: '(Build.ArtifactStagingDirectory)'
+                steps:
+                  - template: /eng/pipelines/common/pack.yml@self
+                    parameters:
+                      publishArtifacts: false
+                      platform: ${{ parameters.PackPlatform.name }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      artifact: ${{ parameters.PackPlatform.artifact }}
+                      artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
+                      artifactsPath: '(Build.ArtifactStagingDirectory)'
                   # prepareSteps:
                   #   - template: /eng/pipelines/common/provision.yml@self
                   #     parameters:
