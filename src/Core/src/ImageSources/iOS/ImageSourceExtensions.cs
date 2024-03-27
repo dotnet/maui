@@ -147,22 +147,22 @@ namespace Microsoft.Maui
 				if (cgimage is null)
 					throw new InvalidOperationException("Unable to create CGImage from CGImageSource.");
 
-				image = new UIImage(cgimage, scale, ToUIImageOrientation (cgImageSource));
+				image = new UIImage(cgimage, scale, ToUIImageOrientation(cgImageSource));
 			}
 
 			return image;
 		}
 
-		static UIImageOrientation ToUIImageOrientation (CGImageSource cgImageSource)
+		static UIImageOrientation ToUIImageOrientation(CGImageSource cgImageSource)
 		{
-			var props = cgImageSource.GetProperties (0);
+			var props = cgImageSource.GetProperties(0);
 			if (props is null || props.Orientation is null)
 				return UIImageOrientation.Up;
 			
-			return ToUIImageOrientation (props.Orientation.Value);
+			return ToUIImageOrientation(props.Orientation.Value);
 		}
 
-		static UIImageOrientation ToUIImageOrientation (CIImageOrientation cgOrient) => cgOrient switch {
+		static UIImageOrientation ToUIImageOrientation(CIImageOrientation cgOrient) => cgOrient switch {
 			CIImageOrientation.TopLeft => UIImageOrientation.Up,
 			CIImageOrientation.TopRight => UIImageOrientation.UpMirrored,
 			CIImageOrientation.BottomRight => UIImageOrientation.Down,
@@ -171,8 +171,7 @@ namespace Microsoft.Maui
 			CIImageOrientation.RightTop => UIImageOrientation.Right,
 			CIImageOrientation.RightBottom => UIImageOrientation.RightMirrored,
 			CIImageOrientation.LeftBottom => UIImageOrientation.Left,
-			_ => throw new ArgumentOutOfRangeException (nameof (cgOrient)),
+			_ => throw new ArgumentOutOfRangeException(nameof (cgOrient)),
 		};
-
 	}
 }
