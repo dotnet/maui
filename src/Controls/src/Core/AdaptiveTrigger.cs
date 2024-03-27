@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls
 		{
 			DetachEvents();
 
-			_visualElement = VisualState?.VisualStateGroup?.VisualElement;
+			VisualState?.VisualStateGroup?.VisualElement.TryGetTarget(out _visualElement);
 
 			_window = _visualElement?.Window;
 			if (_window is not null)

@@ -26,11 +26,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty VisualStateGroupsProperty =
 			BindableProperty.CreateAttached("VisualStateGroups", typeof(VisualStateGroupList), typeof(VisualElement),
 				defaultValue: null, propertyChanged: VisualStateGroupsPropertyChanged,
-				defaultValueCreator: bindable => new VisualStateGroupList(true) { VisualElement = (VisualElement)bindable });
+				defaultValueCreator: bindable => new VisualStateGroupList(true) { VisualElement = new WeakReference<VisualElement>((VisualElement)bindable) });
 
 		static void VisualStateGroupsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue is VisualStateGroupList oldVisualStateGroupList && oldVisualStateGroupList.VisualElement is VisualElement oldElement)
+			if (oldValue is VisualStateGroupList oldVisualStateGroupList && oldVisualStateGroupList.VisualElement is WeakReference<VisualElement> oldElement && oldElement.TryGetTarget(out var oldVe))
 			{
 				var vsgSpecificity = ((VisualStateGroupList)oldValue).Specificity;
 				var specificity = new SetterSpecificity(1, 0, 0, 0, vsgSpecificity.Style, vsgSpecificity.Id, vsgSpecificity.Class, vsgSpecificity.Type);
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (group.CurrentState is VisualState state)
 						foreach (var setter in state.Setters)
-							setter.UnApply(oldElement, specificity);
+							setter.UnApply(oldVe, specificity);
 				}
 				oldVisualStateGroupList.VisualElement = null;
 			}
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 			var visualElement = (VisualElement)bindable;
 
 			if (newValue != null)
-				((VisualStateGroupList)newValue).VisualElement = visualElement;
+				((VisualStateGroupList)newValue).VisualElement = new WeakReference<VisualElement>(visualElement);
 
 			visualElement.ChangeVisualState();
 
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls
 
 			foreach (VisualStateGroup group in groups)
 			{
-				group.VisualElement = visualElement;
+				group.VisualElement = new WeakReference<VisualElement>(visualElement);
 				group.UpdateStateTriggers();
 			}
 		}
@@ -319,12 +319,13 @@ namespace Microsoft.Maui.Controls
 			set => _internalList[index] = value;
 		}
 
-		internal VisualElement VisualElement { get; set; }
+		internal WeakReference<VisualElement> VisualElement { get; set; }
 		internal SetterSpecificity Specificity { get; set; }
 
 		void OnStatesChanged()
 		{
-			VisualElement?.ChangeVisualState();
+			if (VisualElement != null && VisualElement.TryGetTarget(out var ve))
+				ve.ChangeVisualState();
 		}
 
 		public override bool Equals(object obj) => Equals(obj as VisualStateGroupList);
@@ -378,7 +379,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='CurrentState']/Docs/*" />
 		public VisualState CurrentState { get; internal set; }
 
-		internal VisualElement VisualElement { get; set; }
+		internal WeakReference<VisualElement> VisualElement { get; set; }
 
 		internal VisualState GetState(string name)
 		{
@@ -493,7 +494,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void UpdateStateTriggers()
 		{
-			if (VisualElement == null)
+			if (VisualElement == null || !VisualElement.TryGetTarget(out var ve))
 				return;
 
 			bool hasStateTriggers = HasStateTriggers();
@@ -511,7 +512,7 @@ namespace Microsoft.Maui.Controls
 			if (newStateTrigger == oldStateTrigger)
 				return;
 
-			VisualStateManager.GoToState(VisualElement, newStateTrigger.Name);
+			VisualStateManager.GoToState(ve, newStateTrigger.Name);
 		}
 
 		internal event EventHandler StatesChanged;
@@ -662,7 +663,7 @@ namespace Microsoft.Maui.Controls
 
 			foreach (var group in groups)
 			{
-				group.VisualElement = clone.VisualElement;
+				group.VisualElement =  clone.VisualElement;
 				clone.Add(group.Clone());
 			}
 
