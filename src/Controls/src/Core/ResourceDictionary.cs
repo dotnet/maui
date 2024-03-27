@@ -39,9 +39,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		//Used by the XamlC compiled converter
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='SetAndLoadSource']/Docs/*" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='SetAndCreateSource']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetAndLoadSource(Uri value, string resourcePath, Assembly assembly, global::System.Xml.IXmlLineInfo lineInfo)
+		public void SetAndCreateSource<T>(Uri value)
+			where T : ResourceDictionary, new()
+		{
+			_source = value;
+			_mergedInstance = s_instances.GetValue(typeof(T), static _ => new T());
+			OnValuesChanged(_mergedInstance.ToArray());
+		}
+
+		internal void SetAndLoadSource(Uri value, string resourcePath, Assembly assembly, global::System.Xml.IXmlLineInfo lineInfo)
 		{
 			_source = value;
 
