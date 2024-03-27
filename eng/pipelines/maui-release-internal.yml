@@ -148,16 +148,16 @@ extends:
         displayName: Publish to Build Asset Registry
         dependsOn: pack_net
         variables:
-        - template: /eng/common/templates/variables/pool-providers.yml
+        - template: /eng/common/templates-official/variables/pool-providers.yml@self
         jobs:
         # Publish to Build Asset Registry in order to generate the ReleaseConfigs artifact.
-        - template: /eng/common/templates/job/publish-build-assets.yml
+        - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
             publishUsingPipelines: true
             pool: ${{ parameters.VM_IMAGE_HOST }}
 
       # Publish and validation steps. Only run in official builds
-      - template: \eng\common\templates-official\post-build\post-build.yml
+      - template: /eng/common/templates-official/post-build/post-build.yml@self
         parameters:
           publishingInfraVersion: 3
           validateDependsOn:
