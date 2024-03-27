@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_source == value)
 					return;
-				throw new InvalidOperationException("Source can only be set from XAML."); //through the RDSourceTypeConverter
+				throw new InvalidOperationException("Source can only be set from XAML."); // through SetSource
 			}
 		}
 
@@ -54,19 +54,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static ResourceDictionary FromType(
-			Uri value,
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+		internal static ResourceDictionary GetOrCreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{
-			return FromInstance(value, s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type)));
+			return s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type));
 		}
 
-		internal static ResourceDictionary FromInstance(Uri value, ResourceDictionary mergedInstance)
-		{	
-			var rd = new ResourceDictionary();
-			rd._source = value;
-			rd._mergedInstance = mergedInstance;
-			return rd;
+		internal void SetSource(Uri source, ResourceDictionary sourceInstance)
+		{
+			_source = source;
+			_mergedInstance = sourceInstance;
+			OnValuesChanged(_mergedInstance.ToArray());
 		}
 
 		ObservableCollection<ResourceDictionary> _mergedDictionaries;

@@ -1,29 +1,26 @@
 using System;
 using System.IO;
-using System.Net;
 using System.Reflection;
 using System.Xml;
-using Microsoft.Maui.Controls;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-	internal static class ResourceDictionaryFactory
+	internal static class ResourceDictionaryHelpers
 	{
-		internal static ResourceDictionary CreateFromSource(string value, Type rootType, IXmlLineInfo lineInfo)
+		internal static void LoadFromSource(ResourceDictionary rd, string value, Type rootType, IXmlLineInfo lineInfo)
 		{
 			(value, var assembly) = ResourceDictionary.RDSourceTypeConverter.SplitUriAndAssembly(value, rootType.Assembly);
 
 			var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootType);
 			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(new Uri(value, UriKind.Relative), rootTargetPath);
-			var uri = ResourceDictionary.RDSourceTypeConverter.CombineUriAndAssembly(value, assembly);
+			var sourceUri = ResourceDictionary.RDSourceTypeConverter.CombineUriAndAssembly(value, assembly);
 
 			var type = XamlResourceIdAttribute.GetTypeForPath(assembly, resourcePath);
-			if (type is not null)
-			{
-				return ResourceDictionary.FromType(uri, type);
-			}
+			var sourceInstance = type is not null
+				? ResourceDictionary.GetOrCreateInstance(type)
+				: CreateFromResource(resourcePath, assembly, lineInfo);
 
-			return ResourceDictionary.FromInstance(uri, CreateFromResource(resourcePath, assembly, lineInfo));
+			rd.SetSource(sourceUri, sourceInstance);
 
 			static ResourceDictionary CreateFromResource(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
 			{

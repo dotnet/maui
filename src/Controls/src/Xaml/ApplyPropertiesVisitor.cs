@@ -370,6 +370,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			var serviceProvider = new XamlServiceProvider(node, context);
 			var xKey = node is IElementNode eNode && eNode.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)eNode.Properties[XmlName.xKey]).Value as string : null;
 
+			// Special handling for ResourceDictionary.Source
+			if (xamlelement is ResourceDictionary rd && propertyName.LocalName == "Source" && propertyName.NamespaceURI == "")
+			{
+				ResourceDictionaryHelpers.LoadFromSource(rd, (string)value, rootElement.GetType(), lineInfo);
+				return;
+			}
+
 			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, out var xpe))
 				return;
 
