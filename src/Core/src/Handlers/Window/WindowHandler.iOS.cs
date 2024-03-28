@@ -6,12 +6,23 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
+		IDisposable? _frameObserver;
 		protected override void ConnectHandler(UIWindow platformView)
 		{
 			base.ConnectHandler(platformView);
+			
+			_frameObserver = platformView.AddObserver("frame", Foundation.NSKeyValueObservingOptions.New, FrameAction);
 
 			UpdateVirtualViewFrame(platformView);
 		}
+
+		protected override void DisconnectHandler(UIWindow platformView)
+		{
+			base.DisconnectHandler(platformView);
+
+			_frameObserver?.Dispose();
+		}
+
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
 			handler.PlatformView.UpdateTitle(window);
 
@@ -85,8 +96,19 @@ namespace Microsoft.Maui.Handlers
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
 		}
 
-		void UpdateVirtualViewFrame(UIWindow window)
+		void FrameAction(Foundation.NSObservedChange obj)
 		{
+			if (PlatformView is null)
+				return;
+
+			UpdateVirtualViewFrame(PlatformView);
+		}
+
+			void UpdateVirtualViewFrame(UIWindow? window)
+		{
+			if (window is null)
+				return;
+
 			VirtualView.FrameChanged(window.Bounds.ToRectangle());
 		}
 	}

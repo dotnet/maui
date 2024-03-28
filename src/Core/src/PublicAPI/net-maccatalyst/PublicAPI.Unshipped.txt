@@ -59,6 +59,7 @@ override Microsoft.Maui.Handlers.SwipeItemButton.Frame.set -> void
 override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.ConnectHandler(UIKit.UIButton! platformView) -> void
 override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.DisconnectHandler(UIKit.UIButton! platformView) -> void
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
+override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(UIKit.UIWindow! platformView) -> void
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.Platform.ContentView.WillRemoveSubview(UIKit.UIView! uiview) -> void
