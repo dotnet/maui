@@ -128,7 +128,6 @@ namespace Microsoft.Maui.Controls
 			if (original.Key == SetterSpecificity.FromHandler)
 				bpcontext.Values.Remove(SetterSpecificity.FromHandler);
 
-
 			var newValue = bpcontext.Values.GetClearedValue(specificity);
 			var changed = !Equals(original.Value, newValue);
 			if (changed)
