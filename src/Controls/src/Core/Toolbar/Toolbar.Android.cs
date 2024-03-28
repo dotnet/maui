@@ -98,6 +98,12 @@ namespace Microsoft.Maui.Controls
 			{
 				_platformTitleView.RemoveFromParent();
 				PlatformView.AddView(_platformTitleView);
+
+				// Removes the default left margin
+				if (_platformTitleView.Parent is AToolbar parent)
+				{
+					parent.SetContentInsetsAbsolute(0, 0);
+				}
 			}
 
 			_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;
