@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 				_label = new Label
 				{
+					AutomationId = string.Format(SwitchIsNowLabelTextFormat, switcher.IsToggled),
 					Text = string.Format(SwitchIsNowLabelTextFormat, switcher.IsToggled),
 					FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
 					HorizontalOptions = LayoutOptions.Center,
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			void switcher_Toggled(object sender, ToggledEventArgs e)
 			{
-				_label.Text = string.Format(SwitchIsNowLabelTextFormat, e.Value);
+				_label.AutomationId = _label.Text = string.Format(SwitchIsNowLabelTextFormat, e.Value);
 			}
 		}
 
@@ -76,6 +77,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		{
 			var button = new Button()
 			{
+				AutomationId = GoToPageTwoButtonText,
 				Text = GoToPageTwoButtonText
 			};
 			button.Clicked += async (sender, args) =>

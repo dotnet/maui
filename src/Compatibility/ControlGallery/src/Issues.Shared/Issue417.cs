@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 				var nextPageBtn = new Button
 				{
+					AutomationId = "NextPage",
 					Text = "Next Page"
 				};
 
@@ -59,6 +60,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 				var nextPage2Btn = new Button
 				{
+					AutomationId = "NextPage2",
 					Text = "Next Page 2"
 				};
 
@@ -77,6 +79,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 				var popToRootButton = new Button
 				{
+					AutomationId = "PopToRoot",
 					Text = "Pop to root"
 				};
 

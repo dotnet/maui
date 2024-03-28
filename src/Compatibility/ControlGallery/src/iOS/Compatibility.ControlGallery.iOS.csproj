@@ -24,7 +24,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <!--<PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />-->
-    <PackageReference Include="Xamarin.TestCloud.Agent" Version="0.23.2" />
+    <!-- <PackageReference Include="Xamarin.TestCloud.Agent" Version="0.23.2" /> -->
   </ItemGroup>
 
   <ItemGroup>

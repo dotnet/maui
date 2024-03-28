@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var checkButton = new Button
 			{
+				AutomationId = "CheckResultButton",
 				Text = "Check Result",
 				IsEnabled = false,
 				Command = new Command(() =>
@@ -75,6 +76,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 					result,
 					new Button
 					{
+						AutomationId = "PushPageButton",
 						Text = "Push page",
 						Command = new Command(async() => {
 							var page = new LeakPage();

@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			button.Clicked += (obj, args) =>
 			{
 				viewModel.Groups.Clear();
-				result.Text = Success;
+				result.AutomationId = result.Text = Success;
 			};
 
 			var cv = new CollectionView { };

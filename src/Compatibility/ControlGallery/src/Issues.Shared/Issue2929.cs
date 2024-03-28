@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				Children =
 				{
 					instructions,
-					new Label { Text = Success },
+					new Label { AutomationId = Success, Text = Success },
 					lv
 				}
 			};
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var result = new Label();
 
-			var button = new Button { Text = Go };
+			var button = new Button { AutomationId = Go, Text = Go };
 
 			button.Clicked += (sender, args) =>
 			{

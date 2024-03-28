@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var fastTimerStartButton = new Button
 			{
+				AutomationId = "FAST_TIMER",
 				Text = "FAST_TIMER"
 			};
 
@@ -51,13 +52,14 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 					if (stopwatch.ElapsedMilliseconds < 1000)
 						return true;
 					resultContainer.Text = timerTicks.ToString();
-					finishFlag.Text = "COMPLETE";
+					finishFlag.AutomationId = finishFlag.Text = "COMPLETE";
 					return false;
 				});
 			};
 
 			var slowTimerStartButton = new Button
 			{
+				AutomationId = "SLOW_TIMER",
 				Text = "SLOW_TIMER"
 			};
 
@@ -73,7 +75,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 					if (stopwatch.ElapsedMilliseconds < 1000)
 						return true;
 					resultContainer.Text = timerTicks.ToString();
-					finishFlag.Text = "COMPLETE";
+					finishFlag.AutomationId = finishFlag.Text = "COMPLETE";
 					return false;
 				});
 			};

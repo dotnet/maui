@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				BackgroundColor = new Color(1.0f, 1.0f, 0.0f),
 				Content = new Label
 				{
+					AutomationId = "TestLabel",
 					Text = "I should have red text",
 					TextColor = Colors.Red,
 					BackgroundColor = new Color(0.5f, 0.5f, 0.5f),

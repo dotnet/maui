@@ -86,9 +86,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.iOS
 			var versionPart = UIDevice.CurrentDevice.SystemVersion.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
 			App.IOSVersion = int.Parse(versionPart[0]);
 
-#if ENABLE_TEST_CLOUD
-			Xamarin.Calabash.Start();
-#endif
+// #if ENABLE_TEST_CLOUD
+// 			Xamarin.Calabash.Start();
+// #endif
 
 			//Forms.Init();
 			//FormsMaps.Init();

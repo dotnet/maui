@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		{
 			private Page3()
 			{
-				Content = new Label { Text = "Page 3" };
+				Content = new Label { AutomationId = "Page3", Text = "Page 3" };
 			}
 
 			public static async Task<Page3> CreateAsync()
