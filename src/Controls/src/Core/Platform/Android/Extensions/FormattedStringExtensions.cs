@@ -64,6 +64,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var builder = new StringBuilder();
 
+			var fontMetrics = PlatformInterop.GetFontMetrics(context, defaultFontSize);
+
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
@@ -101,8 +103,8 @@ namespace Microsoft.Maui.Controls.Platform
 					spannable.SetSpan(new BackgroundColorSpan(span.BackgroundColor.ToPlatform()), start, end, SpanTypes.InclusiveExclusive);
 
 				// LineHeight
-				if (span.LineHeight >= 0)
-					spannable.SetSpan(new LineHeightSpan(span.LineHeight), start, end, SpanTypes.InclusiveExclusive);
+				if (span.LineHeight >= 0 && fontMetrics is not null)
+					spannable.SetSpan(new LineHeightSpan(span.LineHeight, fontMetrics.Top), start, end, SpanTypes.InclusiveExclusive);
 
 				// CharacterSpacing
 				var characterSpacing = span.CharacterSpacing >= 0
@@ -289,10 +291,12 @@ namespace Microsoft.Maui.Controls.Platform
 		class LineHeightSpan : Java.Lang.Object, ILineHeightSpan
 		{
 			readonly double _relativeLineHeight;
+			readonly double _originalTop;
 
-			public LineHeightSpan(double relativeLineHeight)
+			public LineHeightSpan(double relativeLineHeight, double originalTop)
 			{
 				_relativeLineHeight = relativeLineHeight;
+				_originalTop = originalTop;
 			}
 
 			public void ChooseHeight(Java.Lang.ICharSequence? text, int start, int end, int spanstartv, int lineHeight, Paint.FontMetricsInt? fm)
@@ -300,7 +304,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (fm is null)
 					return;
 
-				fm.Ascent = (int)(fm.Top * _relativeLineHeight);
+				fm.Ascent = (int)(_originalTop * _relativeLineHeight);
 			}
 		}
 	}
