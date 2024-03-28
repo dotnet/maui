@@ -25,6 +25,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void CreateGeneric()
+		{
+			const BindingMode mode = BindingMode.OneWayToSource;
+			const string dvalue = "default";
+			BindableProperty.CoerceValueDelegate<string> coerce = (bindable, value) => value;
+			BindableProperty.ValidateValueDelegate<string> validate = (b, v) => true;
+			BindableProperty.BindingPropertyChangedDelegate<string> changed = (b, ov, nv) => { };
+			BindableProperty.BindingPropertyChangingDelegate<string> changing = (b, ov, nv) => { };
+
+			var prop = BindableProperty.Create<Button, string>(nameof(Button.Text), dvalue, mode, validate, changed, changing, coerce);
+			Assert.Equal("Text", prop.PropertyName);
+			Assert.Equal(typeof(Button), prop.DeclaringType);
+			Assert.Equal(typeof(string), prop.ReturnType);
+			Assert.Equal(dvalue, prop.DefaultValue);
+			Assert.Equal(mode, prop.DefaultBindingMode);
+		}
+
+		[Fact]
 		public void CreateWithDefaultMode()
 		{
 			const BindingMode mode = BindingMode.Default;
