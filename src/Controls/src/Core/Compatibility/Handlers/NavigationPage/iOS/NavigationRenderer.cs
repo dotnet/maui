@@ -1451,7 +1451,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					titleIcon.LoadImage(titleIcon.FindMauiContext(), result =>
+					titleIcon.LoadImage(titleIcon.FindMauiContext(true), result =>
 					{
 						var image = result?.Value;
 						try
