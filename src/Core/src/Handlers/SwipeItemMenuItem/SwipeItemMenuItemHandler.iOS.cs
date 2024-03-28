@@ -142,12 +142,32 @@ namespace Microsoft.Maui.Handlers
 
 				var width = maxResizeFactor * sourceSize.Width;
 				var height = maxResizeFactor * sourceSize.Height;
-				UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
-				sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
-				var resultImage = UIGraphics.GetImageFromCurrentImageContext();
-				UIGraphics.EndImageContext();
 
-				return resultImage;
+				if (!OperatingSystem.IsIOSVersionAtLeast(17))
+				{
+					UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
+					sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
+					var resultImage = UIGraphics.GetImageFromCurrentImageContext();
+					UIGraphics.EndImageContext();
+					return resultImage;
+				}
+
+				var format = new UIGraphicsImageRendererFormat
+				{
+					Opaque = false,
+					Scale = 0
+				};
+
+				using (var renderer = new UIGraphicsImageRenderer(new CGSize(width, height), format))
+				{
+					var resultImage = renderer.CreateImage((UIGraphicsImageRendererContext imageContext) =>
+					{
+						var cgcontext = imageContext.CGContext;
+						cgcontext.DrawImage(new CGRect(0, 0, (nfloat)width, (nfloat)height), sourceImage.CGImage);
+					});
+
+					return resultImage;
+				}
 			}
 		}
 
