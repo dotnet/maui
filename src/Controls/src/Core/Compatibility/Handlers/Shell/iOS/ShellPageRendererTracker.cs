@@ -443,25 +443,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var rect = new CGRect(0, 0, 23f, 23f);
 
-			UIGraphics.BeginImageContextWithOptions(rect.Size, false, 0);
-			var ctx = UIGraphics.GetCurrentContext();
-			ctx.SaveState();
-			ctx.SetStrokeColor(UIColor.Blue.CGColor);
-
-			float size = 3f;
-			float start = 4f;
-			ctx.SetLineWidth(size);
-
-			for (int i = 0; i < 3; i++)
+			var renderer = new UIGraphicsImageRenderer(rect.Size, new UIGraphicsImageRendererFormat()
 			{
-				ctx.MoveTo(1f, start + i * (size * 2));
-				ctx.AddLineToPoint(22f, start + i * (size * 2));
-				ctx.StrokePath();
-			}
+				Opaque = false,
+				Scale = 0,
+			});
 
-			ctx.RestoreState();
-			img = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+			img = renderer.CreateImage((context) =>
+			{
+				context.CGContext.SaveState();
+				UIColor.Blue.SetStroke();
+
+				float size = 3f;
+				float start = 4f;
+				context.CGContext.SetLineWidth(size);
+
+				for (int i = 0; i < 3; i++)
+				{
+					context.CGContext.MoveTo(1f, start + i * (size * 2));
+					context.CGContext.AddLineToPoint(22f, start + i * (size * 2));
+					context.CGContext.StrokePath();
+				}
+
+				context.CGContext.RestoreState();
+			});
 
 			_nSCache.SetObjectforKey(img, (NSString)hamburgerKey);
 			return img;
