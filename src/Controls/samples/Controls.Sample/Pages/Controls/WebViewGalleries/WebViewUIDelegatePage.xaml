@@ -1,0 +1,15 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.WebViewGalleries.WebViewUIDelegatePage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="WebView">
+    <views:BasePage.Content>
+        <AbsoluteLayout>
+            <WebView 
+                x:Name="DelegateWebView" 
+                AbsoluteLayout.LayoutBounds="0,0,1,1"
+                AbsoluteLayout.LayoutFlags="SizeProportional" />
+        </AbsoluteLayout>
+    </views:BasePage.Content>
+</views:BasePage>
