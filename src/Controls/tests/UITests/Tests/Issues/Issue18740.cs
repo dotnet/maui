@@ -12,6 +12,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		public override string Issue => "Virtual keyboard appears with focus on Entry";
 
+		public override bool ResetMainPage => false; // Requieres a NavigationPage to be able to navigate to every specific case (Entry, Editor, SearchBar).
+
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[TestCase("Entry")]

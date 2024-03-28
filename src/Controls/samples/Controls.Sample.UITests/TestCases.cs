@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -30,52 +30,11 @@ namespace Maui.Controls.Sample
 				return cell;
 			}
 
-			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
+			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type, bool reset = false)
 			{
 				Action navigationAction = null;
 
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
-				{
-					return async () =>
-					{
-						var page = ActivatePage(type);
-						TrackOnInsights(page);
-						await Navigation.PushAsync(page);
-					};
-				}
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushModalAsync)
-				{
-					return async () =>
-					{
-						var page = ActivatePage(type);
-						TrackOnInsights(page);
-						await Navigation.PushModalAsync(page);
-					};
-				}
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.Default)
-				{
-					return async () =>
-					{
-						var page = ActivatePage(type);
-						TrackOnInsights(page);
-						if (page is ContentPage /*|| page is CarouselPage*/)
-						{
-							await Navigation.PushAsync(page);
-						}
-						else if (page is Shell)
-						{
-							Application.Current.MainPage = page;
-						}
-						else
-						{
-							await Navigation.PushModalAsync(page);
-						}
-					};
-				}
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot)
+				if (reset)
 				{
 					return () =>
 					{
@@ -83,6 +42,67 @@ namespace Maui.Controls.Sample
 						TrackOnInsights(page);
 						Application.Current.MainPage = page;
 					};
+				}
+				else
+				{
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
+					{
+						return async () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+							await Navigation.PushAsync(page);
+						};
+					}
+
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.PushModalAsync)
+					{
+						return async () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+							await Navigation.PushModalAsync(page);
+						};
+					}
+
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.Default)
+					{
+						return async () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+
+							var navigation = Navigation;
+
+							if (page.NavigationProxy.Inner is null)
+							{
+								navigation = Application.Current.MainPage.Navigation;
+							}
+
+							if (page is ContentPage)
+							{
+								await navigation.PushAsync(page);
+							}
+							else if (page is Shell)
+							{
+								Application.Current.MainPage = page;
+							}
+							else
+							{
+								await navigation.PushModalAsync(page);
+							}	
+						};
+					}
+
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot)
+					{
+						return () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+							Application.Current.MainPage = page;
+						};
+					}
 				}
 
 				return navigationAction;
@@ -140,7 +160,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 
-			readonly List<IssueModel> _issues;
+			List<IssueModel> _issues;
 			TableSection _section;
 
 			void VerifyNoDuplicates()
@@ -158,13 +178,25 @@ namespace Maui.Controls.Sample
 				});
 			}
 
-			public TestCaseScreen()
+			public TestCaseScreen(bool resetMainPage = false)
 			{
+				ResetMainPage = resetMainPage;
+
 				AutomationId = "TestCasesIssueList";
 
 				Intent = TableIntent.Settings;
 
+				UpdateIssues();
+			}
+
+			internal bool ResetMainPage { get; set; }
+
+			public void UpdateIssues()
+			{
 				var assembly = typeof(TestCases).Assembly;
+
+				if (_issues is not null)
+					_issues.Clear();
 
 				_issues =
 					(from type in assembly.GetTypes()
@@ -177,7 +209,7 @@ namespace Maui.Controls.Sample
 						 IssueTestNumber = attribute.IssueTestNumber,
 						 Name = attribute.DisplayName,
 						 Description = attribute.Description,
-						 Action = ActivatePageAndNavigate(attribute, type)
+						 Action = ActivatePageAndNavigate(attribute, type, ResetMainPage)
 					 }).ToList();
 
 				VerifyNoDuplicates();
@@ -299,7 +331,7 @@ namespace Maui.Controls.Sample
 			bool IsExempt(string name) => _exemptNames.Contains(name);
 		}
 
-		public static NavigationPage GetTestCases()
+		public static NavigationPage GetTestCases(bool resetMainPage = false)
 		{
 			TestCaseScreen testCaseScreen = null;
 			var rootLayout = new StackLayout();
@@ -338,7 +370,6 @@ namespace Maui.Controls.Sample
 						System.Diagnostics.Debug.WriteLine(e.Message);
 						Console.WriteLine(e.Message);
 					}
-
 				})
 			};
 
@@ -353,7 +384,7 @@ namespace Maui.Controls.Sample
 			rootLayout.Children.Add(searchBar);
 			rootLayout.Children.Add(searchButton);
 
-			testCaseScreen = new TestCaseScreen();
+			testCaseScreen = new TestCaseScreen(resetMainPage);
 
 			rootLayout.Children.Add(CreateTrackerFilter(testCaseScreen));
 
@@ -420,5 +451,4 @@ namespace Maui.Controls.Sample
 			cases.FilterIssues(filter);
 		}
 	}
-
 }

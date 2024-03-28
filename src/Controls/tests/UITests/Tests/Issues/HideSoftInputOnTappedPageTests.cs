@@ -10,6 +10,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		public override string Issue => "Hide Soft Input On Tapped Page";
 
+		public override bool ResetMainPage => false; // Requieres a NavigationPage.
+
 		[TestCase("Entry", false)]
 		[TestCase("Editor", false)]
 		[TestCase("SearchBar", false)]
