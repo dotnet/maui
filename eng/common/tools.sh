@@ -68,9 +68,6 @@ fi
 runtime_source_feed=${runtime_source_feed:-''}
 runtime_source_feed_key=${runtime_source_feed_key:-''}
 
-# True if the build is a product build
-product_build=${product_build:-false}
-
 # Resolve any symlinks in the given path.
 function ResolvePath {
   local path=$1
@@ -115,7 +112,7 @@ function InitializeDotNetCli {
   export DOTNET_MULTILEVEL_LOOKUP=0
 
   # Disable first run since we want to control all package sources
-  export DOTNET_NOLOGO=1
+  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
   # Disable telemetry on CI
   if [[ $ci == true ]]; then
@@ -125,6 +122,11 @@ function InitializeDotNetCli {
   # LTTNG is the logging infrastructure used by Core CLR. Need this variable set
   # so it doesn't output warnings to the console.
   export LTTNG_HOME="$HOME"
+
+  # Source Build uses DotNetCoreSdkDir variable
+  if [[ -n "${DotNetCoreSdkDir:-}" ]]; then
+    export DOTNET_INSTALL_DIR="$DotNetCoreSdkDir"
+  fi
 
   # Find the first path on $PATH that contains the dotnet.exe
   if [[ "$use_installed_dotnet_cli" == true && $global_json_has_runtimes == false && -z "${DOTNET_INSTALL_DIR:-}" ]]; then
@@ -144,7 +146,7 @@ function InitializeDotNetCli {
   if [[ $global_json_has_runtimes == false && -n "${DOTNET_INSTALL_DIR:-}" && -d "$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version" ]]; then
     dotnet_root="$DOTNET_INSTALL_DIR"
   else
-    dotnet_root="${repo_root}.dotnet"
+    dotnet_root="$repo_root/.dotnet"
 
     export DOTNET_INSTALL_DIR="$dotnet_root"
 
@@ -163,7 +165,7 @@ function InitializeDotNetCli {
   Write-PipelinePrependPath -path "$dotnet_root"
 
   Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
-  Write-PipelineSetVariable -name "DOTNET_NOLOGO" -value "1"
+  Write-PipelineSetVariable -name "DOTNET_SKIP_FIRST_TIME_EXPERIENCE" -value "1"
 
   # return value
   _InitializeDotNetCli="$dotnet_root"
@@ -308,7 +310,7 @@ function GetDotNetInstallScript {
       curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
         if command -v openssl &> /dev/null; then
           echo "Curl failed; dumping some information about dotnet.microsoft.com for later investigation"
-          echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443 || true
+          echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443
         fi
         echo "Will now retry the same URL with verbose logging."
         with_retries curl "$install_script_url" -sSL --verbose --retry 10 --create-dirs -o "$install_script" || {
@@ -341,7 +343,7 @@ function InitializeBuildTool {
   _InitializeBuildToolCommand="msbuild"
   # use override if it exists - commonly set by source-build
   if [[ "${_OverrideArcadeInitializeBuildToolFramework:-x}" == "x" ]]; then
-    _InitializeBuildToolFramework="net9.0"
+    _InitializeBuildToolFramework="net8.0"
   else
     _InitializeBuildToolFramework="${_OverrideArcadeInitializeBuildToolFramework}"
   fi
@@ -456,10 +458,12 @@ function MSBuild {
     local possiblePaths=()
     possiblePaths+=( "$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.ArcadeLogging.dll" )
     possiblePaths+=( "$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll" )
+    possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.Arcade.Sdk.dll" )
+    possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.Arcade.Sdk.dll" )
     possiblePaths+=( "$toolset_dir/net7.0/Microsoft.DotNet.ArcadeLogging.dll" )
     possiblePaths+=( "$toolset_dir/net7.0/Microsoft.DotNet.Arcade.Sdk.dll" )
-    possiblePaths+=( "$toolset_dir/net8.0/Microsoft.DotNet.ArcadeLogging.dll" )
-    possiblePaths+=( "$toolset_dir/net8.0/Microsoft.DotNet.Arcade.Sdk.dll" )
     for path in "${possiblePaths[@]}"; do
       if [[ -f $path ]]; then
         selectedPath=$path
@@ -506,8 +510,7 @@ function MSBuild-Core {
       echo "Build failed with exit code $exit_code. Check errors above."
 
       # When running on Azure Pipelines, override the returned exit code to avoid double logging.
-      # Skip this when the build is a child of the VMR orchestrator build.
-      if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$product_build" != true && $properties != *"DotNetBuildRepo=true"* ]]; then
+      if [[ "$ci" == "true" && -n ${SYSTEM_TEAMPROJECT:-} ]]; then
         Write-PipelineSetResult -result "Failed" -message "msbuild execution failed."
         # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
         # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
