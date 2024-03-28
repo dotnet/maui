@@ -5,6 +5,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class CoreApplicationStub : IApplication
 	{
+		IWindow _singleWindow;
+
 		readonly List<IWindow> _windows = new List<IWindow>();
 
 		public IElementHandler Handler { get; set; }
@@ -17,9 +19,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IWindow CreateWindow(IActivationState state)
 		{
+			if (_singleWindow is not null)
+				return _singleWindow;
+				
 			_windows.Add(new WindowStub());
-
-			return _windows[0];
+			return _windows.Last();
 		}
 
 		public void OpenWindow(IWindow window)
@@ -33,5 +37,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public void ThemeChanged() { }
+
+		public void SetSingleWindow(IWindow window)
+		{
+			_singleWindow = window;
+		}
 	}
 }
