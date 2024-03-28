@@ -15,24 +15,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void CollectionItemsInDataTemplate()
 		{
-			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+			var xaml = """
+				<?xml version="1.0" encoding="UTF-8"?>
 				<ListView 
-					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
-					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
-					ItemsSource=""{Binding}"">
-			        <ListView.ItemTemplate>
-			          <DataTemplate>
-			            <ViewCell>
-			              <ViewCell.View>
-			                <StackLayout>
-			                  <Label Text=""{Binding}""></Label>
-			                  <Label Text=""{Binding}""></Label>
-			                </StackLayout>
-			              </ViewCell.View>
-			            </ViewCell>
-			          </DataTemplate>
-			        </ListView.ItemTemplate>
-			      </ListView>";
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+					ItemsSource="{Binding}">
+					<ListView.ItemTemplate>
+						<DataTemplate>
+						<ViewCell>
+							<ViewCell.View>
+							<StackLayout>
+								<Label Text="{Binding}"></Label>
+								<Label Text="{Binding}"></Label>
+							</StackLayout>
+							</ViewCell.View>
+						</ViewCell>
+						</DataTemplate>
+					</ListView.ItemTemplate>
+				</ListView>
+				""";
+
 			var listview = new ListView();
 			var items = new[] { "Foo", "Bar", "Baz" };
 			listview.BindingContext = items;

@@ -25,17 +25,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[Test]
 			public void NoGenericsOnXaml2006()
 			{
-				var xaml = @"
-				<ContentPage 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:scg=""clr-namespace:System.Collections.Generic;assembly=mscorlib"">
-					<ContentPage.Resources>
-						<ResourceDictionary>
-							<scg:List x:TypeArguments=""Button"" x:Key=""genericList""/>
-						</ResourceDictionary>
-					</ContentPage.Resources>
-				</ContentPage>";
+				var xaml = """
+					<ContentPage 
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib">
+						<ContentPage.Resources>
+							<ResourceDictionary>
+								<scg:List x:TypeArguments="Button" x:Key="genericList"/>
+							</ResourceDictionary>
+						</ContentPage.Resources>
+					</ContentPage>
+					""";
+
 				Assert.Throws(new XamlParseExceptionConstraint(8, 9), () => new ContentPage().LoadFromXaml(xaml));
 			}
 

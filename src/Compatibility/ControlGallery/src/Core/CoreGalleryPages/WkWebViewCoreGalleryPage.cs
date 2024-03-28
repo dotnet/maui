@@ -34,9 +34,16 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				}
 			);
 
-			const string html = "<!DOCTYPE html><html>" +
-				"<head><meta name='viewport' content='width=device-width,initial-scale=1.0'></head>" +
-				"<body><div class=\"test\"><h2>I am raw html</h2></div></body></html>";
+			const string html = """
+				<!DOCTYPE html><html>
+				<head>
+					<meta name='viewport' content='width=device-width,initial-scale=1.0'>
+				</head>
+				<body>
+					<div class="test"><h2>I am raw html</h2></div>
+				</body>
+				</html>
+				""";
 
 			var htmlWebViewSourceContainer = new ViewContainer<WkWebView>(Test.WebView.HtmlWebViewSource,
 				new WkWebView
@@ -51,18 +58,20 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				{
 					Source = new HtmlWebViewSource
 					{
-						Html = @"<!DOCTYPE html><html>
-<head>
-<meta name='viewport' content='width=device-width,initial-scale=1.0'>
-<link rel=""stylesheet"" href=""default.css"">
-</head>
-<body>
-<h1>Xamarin.Forms</h1>
-<p>The CSS and image are loaded from local files!</p>
-<img src='WebImages/XamarinLogo.png'/>
-<p><a href=""local.html"">next page</a></p>
-</body>
-</html>"
+						Html = """
+							<!DOCTYPE html><html>
+							<head>
+								<meta name='viewport' content='width=device-width,initial-scale=1.0'>
+								<link rel="stylesheet" href="default.css">
+							</head>
+							<body>
+								<h1>Xamarin.Forms</h1>
+								<p>The CSS and image are loaded from local files!</p>
+								<img src='WebImages/XamarinLogo.png'/>
+								<p><a href="local.html">next page</a></p>
+							</body>
+							</html>
+							"""
 					},
 					HeightRequest = 200
 				}
@@ -101,15 +110,17 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			{
 				Source = new HtmlWebViewSource
 				{
-					Html = @"<!DOCTYPE html><html>
-<head>
-<meta name='viewport' content='width=device-width,initial-scale=1.0'>
-<link rel=""stylesheet"" href=""default.css"">
-</head>
-<body>
-<button onclick=""window.alert('foo');"">Click</button>
-</body>
-</html>"
+					Html = 	"""
+							<!DOCTYPE html><html>
+							<head>
+								<meta name='viewport' content='width=device-width,initial-scale=1.0'>
+								<link rel="stylesheet" href="default.css">
+							</head>
+							<body>
+								<button onclick="window.alert('foo');">Click</button>
+							</body>
+							</html>
+							"""
 				},
 				HeightRequest = 200
 			};

@@ -12,10 +12,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestCase(TextTransform.Uppercase)]
 		public void LabelTextTransform(TextTransform result)
 		{
-			var xaml = @"
-			<Label 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" TextTransform=""" + result + @""" />";
+			var xaml = $"""
+				<Label 
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TextTransform="{result}" />
+				""";
 
 			var label = new Label().LoadFromXaml(xaml);
 

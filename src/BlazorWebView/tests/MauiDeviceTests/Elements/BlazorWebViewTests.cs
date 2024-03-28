@@ -246,31 +246,31 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 
 		public static class TestStaticFilesContents
 		{
-			public static readonly string DefaultMauiIndexHtmlContent = @"
-<!DOCTYPE html>
-<html>
-<head testhtmlloaded=""true"">
-    <meta charset=""utf-8"" />
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"" />
-    <title>Blazor app</title>
-    <base href=""/"" />
-</head>
+			public static readonly string DefaultMauiIndexHtmlContent = """
+				<!DOCTYPE html>
+				<html>
+				<head testhtmlloaded="true">
+				    <meta charset="utf-8" />
+				    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+				    <title>Blazor app</title>
+				    <base href="/" />
+				</head>
 
-<body>
-	This test HTML is coming from a custom provider!
-    <div id=""app""></div>
+				<body>
+					This test HTML is coming from a custom provider!
+				    <div id="app"></div>
 
-    <div id=""blazor-error-ui"">
-        An unhandled error has occurred.
-        <a href="""" class=""reload"">Reload</a>
-        <a class=""dismiss"">🗙</a>
-    </div>
-    <script src=""_framework/blazor.webview.js"" autostart=""false""></script>
+				    <div id="blazor-error-ui">
+				        An unhandled error has occurred.
+				        <a href="" class="reload">Reload</a>
+				        <a class="dismiss">🗙</a>
+				    </div>
+				    <script src="_framework/blazor.webview.js" autostart="false"></script>
 
-</body>
+				</body>
 
-</html>
-";
+				</html>
+				""";
 		}
 
 		private sealed class BlazorWebViewWithCustomFiles : BlazorWebView

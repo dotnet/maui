@@ -19,15 +19,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ConnectEventsInGestureRecognizers()
 		{
-			var xaml = @"
+			var xaml = """
 				<BoxView 
-					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.BoxView1501"" >
-				    <BoxView.GestureRecognizers>
-				      <TapGestureRecognizer Tapped=""OnBoxViewTapped"" />
-				    </BoxView.GestureRecognizers>
-				</BoxView>";
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+					x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.BoxView1501" >
+					<BoxView.GestureRecognizers>
+						<TapGestureRecognizer Tapped="OnBoxViewTapped" />
+					</BoxView.GestureRecognizers>
+				</BoxView>
+				""";
 
 			BoxView1501 layout = null;
 			Assert.DoesNotThrow(() => { layout = new BoxView1501().LoadFromXaml(xaml); });

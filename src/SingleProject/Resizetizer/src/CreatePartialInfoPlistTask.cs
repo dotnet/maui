@@ -16,14 +16,17 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string Storyboard { get; set; }
 
-		const string plistHeader =
-@"<?xml version=""1.0"" encoding=""UTF-8""?>
-<!DOCTYPE plist PUBLIC ""-//Apple//DTD PLIST 1.0//EN"" ""http://www.apple.com/DTDs/PropertyList-1.0.dtd"">
-<plist version=""1.0"">
-<dict>";
-		const string plistFooter = @"
-</dict>
-</plist>";
+		const string plistHeader = """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+			<plist version="1.0">
+			<dict>
+			""";
+
+		const string plistFooter = """
+			</dict>
+			</plist>
+			""";
 
 		public override bool Execute()
 		{

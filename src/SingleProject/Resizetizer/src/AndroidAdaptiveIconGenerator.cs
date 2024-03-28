@@ -23,13 +23,14 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string AppIconName { get; }
 
-		const string AdaptiveIconDrawableXml =
-@"<?xml version=""1.0"" encoding=""utf-8""?>
-<adaptive-icon xmlns:android=""http://schemas.android.com/apk/res/android"">
-	<background android:drawable=""@mipmap/{name}_background""/>
-	<foreground android:drawable=""@mipmap/{name}_foreground""/>
-	<monochrome android:drawable=""@mipmap/{name}_foreground"" />
-</adaptive-icon>";
+		const string AdaptiveIconDrawableXml = """
+			<?xml version="1.0" encoding="utf-8"?>
+			<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+				<background android:drawable="@mipmap/{name}_background"/>
+				<foreground android:drawable="@mipmap/{name}_foreground"/>
+				<monochrome android:drawable="@mipmap/{name}_foreground" />
+			</adaptive-icon>
+			""";
 
 		public IEnumerable<ResizedImageInfo> Generate()
 		{
