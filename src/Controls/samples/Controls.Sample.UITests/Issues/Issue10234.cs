@@ -1,26 +1,36 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 10234, "CarouselView disposed on iOS when navigating back in Shell ", PlatformAffected.iOS)]
-#if UITEST
-	[NUnit.Framework.Category(UITestCategories.Shell)]
-#endif
-	public class Issue10234 : TestShell
+	[Issue(IssueTracker.None, 10234, "CarouselView disposed on iOS when navigating back in Shell", PlatformAffected.iOS)]
+	public class Issue10234Test : ContentPage
 	{
-		protected override void Init()
+		public Issue10234Test()
+		{
+			Content = new VerticalStackLayout()
+			{
+				Children = 
+				{
+					new Button() 
+					{ 
+						Text = "Go To Test", 
+						AutomationId = "GoToTest", 
+						Command = new Command(() => Application.Current.MainPage = new Issue10234()) 
+					}
+				}
+			};			
+		}
+	}
+
+	public class Issue10234 : Shell
+	{
+		public Issue10234()
 		{
 			TabBar tabBar = new TabBar
 			{
@@ -50,7 +60,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 											}
 										}
 									}
-		}),
+								}),
 							}
 						}
 					}
@@ -86,7 +96,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			CarouselView Photos;
 			public PhotosPage()
 			{
-				//InitializeComponent();
 				Photos = new CarouselView
 				{
 					AutomationId = "carouselView",
@@ -122,10 +131,10 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			{
 				var images = new List<string>();
 
-				images.Add("FlowerBuds.jpg");
-				images.Add("Fruits.jpg");
-				images.Add("Legumes.jpg");
-				images.Add("Vegetables.jpg");
+				images.Add("oasis.jpg");
+				images.Add("dotnet_bot.jpg");
+				images.Add("shopping_cart.jpg");
+				images.Add("groceries.png");
 
 
 				Items = new ObservableCollection<string>(images);
@@ -144,35 +153,5 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				get; set;
 			}
 		}
-
-
-#if UITEST && __IOS__
-
-		[Test]
-		[MovedToAppium]
-		public void ScrollCarouselViewAfterDispose()
-		{
-			RunningApp.WaitForElement("goToShow");
-			RunningApp.Tap("goToShow");
-			RunningApp.WaitForElement("goToBack");
-			ScrollNextItem();
-			RunningApp.Tap("goToBack");
-			RunningApp.WaitForElement("goToShow");
-			RunningApp.Tap("goToShow");
-			ScrollNextItem();
-			RunningApp.WaitForElement("goToBack");
-			RunningApp.Tap("goToBack");
-			RunningApp.WaitForElement("goToShow");
-		}
-
-		void ScrollNextItem()
-		{
-			var rect = RunningApp.Query(c => c.Marked("carouselView")).First().Rect;
-			var centerX = rect.CenterX;
-			var rightX = rect.X - 5;
-			RunningApp.DragCoordinates(centerX + 40, rect.CenterY, rightX, rect.CenterY);
-		}
-
-#endif
 	}
 }
