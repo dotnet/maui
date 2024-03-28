@@ -80,7 +80,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 		{
 			AppShell!.FlyoutIsPresented = !AppShell!.FlyoutIsPresented;
 		}
-		
+
 		void OnToggleFlyoutBackgroundColor(object sender, EventArgs e)
 		{
 			AppShell!.RemoveBinding(Shell.FlyoutBackgroundProperty);

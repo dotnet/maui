@@ -4,9 +4,9 @@ using Microsoft.Maui.Controls;
 namespace Microsoft.Maui.Handlers.Benchmarks
 {
 	[MemoryDiagnoser]
-	public class PropertyMapperExtensionsBenchmarker 
+	public class PropertyMapperExtensionsBenchmarker
 	{
-		class TestButtonHandler : ButtonHandler 
+		class TestButtonHandler : ButtonHandler
 		{
 			protected override object CreatePlatformView()
 			{
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		}
 
 		[Benchmark]
-		public void BenchmarkBasicPropertyMapping() 
+		public void BenchmarkBasicPropertyMapping()
 		{
 			_handler.UpdateValue(Basic);
 		}
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			_handler.UpdateValue(Append);
 		}
 
-		static void MapTest(IViewHandler handler, IView view) 
+		static void MapTest(IViewHandler handler, IView view)
 		{
 		}
 

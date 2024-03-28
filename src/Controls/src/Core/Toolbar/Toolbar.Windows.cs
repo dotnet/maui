@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls
 			if (Handler.PlatformView is not MauiToolbar wh)
 				return;
 
-			var commandBar = wh.CommandBar;
+			var commandBar = MauiToolbar.CommandBar;
 			if (commandBar == null)
 			{
 				return;
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls
 			if (Handler.PlatformView is not MauiToolbar wh)
 				return;
 
-			var commandBar = wh.CommandBar;
+			var commandBar = MauiToolbar.CommandBar;
 			if (commandBar == null)
 			{
 				return;

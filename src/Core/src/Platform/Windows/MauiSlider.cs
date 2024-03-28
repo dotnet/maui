@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			WImageSource imageSource = ThumbImageSource;
+			WImageSource imageSource = MauiSlider.ThumbImageSource;
 			if (imageSource != null)
 			{
 				_thumb.Style = ImageThumbStyle;
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public WImageSource ThumbImageSource
+		public static WImageSource ThumbImageSource
 		{
 			get { return (WImageSource)GetValue(ThumbImageSourceProperty); }
 			set { SetValue(ThumbImageSourceProperty, value); }

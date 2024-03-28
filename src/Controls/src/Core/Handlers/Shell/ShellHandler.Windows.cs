@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (handler.PlatformView is RootNavigationView rnv)
 				rnv.FlyoutView = flyoutView.Flyout;
 
-			handler.PlatformView.FlyoutCustomContent = flyoutView.Flyout?.ToPlatform(handler.MauiContext);
+			MauiNavigationView.FlyoutCustomContent = flyoutView.Flyout?.ToPlatform(handler.MauiContext);
 
 		}
 

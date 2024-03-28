@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Platform
 					throw new ArgumentOutOfRangeException();
 			}
 		}
-	
+
 		internal static void SetTextReadingOrder(this TextBlock platformControl, bool detectReadingOrderFromContent) =>
 			platformControl.TextReadingOrder = detectReadingOrderFromContent
 				? TextReadingOrder.DetectFromContent

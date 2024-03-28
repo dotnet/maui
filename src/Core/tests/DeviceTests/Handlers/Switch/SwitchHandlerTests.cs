@@ -38,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 #if !WINDOWS
-// WINDOWS: https://github.com/dotnet/maui/issues/20535
+		// WINDOWS: https://github.com/dotnet/maui/issues/20535
 		[Theory(DisplayName = "Track Color Initializes Correctly")]
 		[InlineData(true)]
 		//[InlineData(false)] // Track color is not always visible when off

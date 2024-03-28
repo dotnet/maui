@@ -151,7 +151,7 @@ namespace Microsoft.Maui.AppiumTests
 			keyboard?.SendKeys("\n");
 		}
 
-		internal static void GridStarRowScrollingTest (IApp app)
+		internal static void GridStarRowScrollingTest(IApp app)
 		{
 			for (int i = 1; i <= 7; i++)
 			{

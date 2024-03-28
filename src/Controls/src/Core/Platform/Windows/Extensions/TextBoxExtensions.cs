@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (oldText != newText)
 			{
 				if (passwordBox is not null)
-					passwordBox.Password = newText;
+					MauiPasswordTextBox.Password = newText;
 				else
 					platformControl.Text = newText;
 

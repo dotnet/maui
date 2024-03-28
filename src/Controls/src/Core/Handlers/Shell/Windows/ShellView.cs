@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.UpdateFlyoutCustomContent();
 
-			if (FlyoutCustomContent == null)
+			if (MauiNavigationView.FlyoutCustomContent == null)
 				MenuItemsSource = FlyoutItems;
 			else
 				MenuItemsSource = null;

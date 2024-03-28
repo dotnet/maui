@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		Func<UICollectionViewCell> _getPrototype;
-		
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		Func<NSIndexPath, UICollectionViewCell> _getPrototypeForIndexPath;
 		CGSize _previousContentSize = CGSize.Empty;
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void LoadView()
 		{
-			base.LoadView(); 
+			base.LoadView();
 
 			CollectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
 		}

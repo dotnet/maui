@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Media
 					captureResult = await CapturePhotoAsync(captureIntent);
 				else
 					captureResult = await CaptureVideoAsync(captureIntent);
-				
+
 				// Return the file that we just captured
 				return new FileResult(captureResult);
 			}

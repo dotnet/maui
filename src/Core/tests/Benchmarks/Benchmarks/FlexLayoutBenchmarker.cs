@@ -11,8 +11,20 @@ namespace Microsoft.Maui.Benchmarks
 	{
 		readonly Border[] _views =
 		[
-			new Border(), new Border(), new Border(), new Border(), new Border(), new Border(), new Border(),
-			new Border(), new Border(), new Border(), new Border(), new Border(), new Border(), new Border()
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border()
 		];
 
 		const int Iterations = 100;
@@ -57,7 +69,7 @@ namespace Microsoft.Maui.Benchmarks
 
 					// Vary the size of the layout and the views
 					double layoutWidth = x * 10 * Random.Shared.NextDouble();
-            		double layoutHeight = x * 10 * Random.Shared.NextDouble();
+					double layoutHeight = x * 10 * Random.Shared.NextDouble();
 					layout.WidthRequest = layoutWidth;
 					layout.HeightRequest = layoutHeight;
 					view.WidthRequest = x * Random.Shared.NextDouble();
@@ -69,7 +81,7 @@ namespace Microsoft.Maui.Benchmarks
 					FlexLayout.SetGrow(view, x % 3);
 					FlexLayout.SetShrink(view, x % 4);
 
-            		layout.Layout(new Rect(0, 0, layoutWidth, layoutHeight));
+					layout.Layout(new Rect(0, 0, layoutWidth, layoutHeight));
 
 					// Remove every 10th view
 					if (x % 10 == 0)

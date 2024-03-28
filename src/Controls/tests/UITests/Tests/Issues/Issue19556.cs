@@ -12,7 +12,7 @@ public class Issue19556 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
+	[Test]
 	public void SystemFontsShouldRenderCorrectly()
 	{
 		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });

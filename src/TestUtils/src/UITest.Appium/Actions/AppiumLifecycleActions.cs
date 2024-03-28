@@ -55,7 +55,7 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			if (_app.GetTestDevice() == TestDevice.Mac)
-			{	
+			{
 				_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
 				{
 					{ "bundleId", _app.GetAppId() },
@@ -67,7 +67,7 @@ namespace UITest.Appium
 				_app.Driver.LaunchApp();
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
-			else 
+			else
 			{
 				_app.Driver.ActivateApp(_app.GetAppId());
 			}
