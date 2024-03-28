@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21513"
+             Title="Issue21513">
+    <VerticalStackLayout>
+        <Button Text="Test" WidthRequest="100" HeightRequest="100" ImageSource="dotnet_bot.png" ContentLayout="Left,4"
+                AutomationId="WaitForStubControl"/>
+        <Button Text="Test" WidthRequest="100" HeightRequest="100" ImageSource="dotnet_bot.png" ContentLayout="Right,4"/>
+        <Button Text="Test" WidthRequest="100" HeightRequest="100" ImageSource="dotnet_bot.png" ContentLayout="Top,4"/>
+        <Button Text="Test" WidthRequest="100" HeightRequest="100" ImageSource="dotnet_bot.png" ContentLayout="Bottom,4"/>
+    </VerticalStackLayout>
+</ContentPage>
