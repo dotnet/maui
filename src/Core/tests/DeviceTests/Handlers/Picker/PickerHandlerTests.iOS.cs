@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -64,11 +65,43 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
+		[Fact(DisplayName = "Title Display Correctly")]
+		public async Task TitleDisplayCorrectly()
+		{
+			var title = "Select an Item";
+			var items = new List<string>()
+			{
+				"1",
+				"2",
+				"3"
+			};
+
+			var picker = new PickerStub
+			{
+				Title = title,
+				TitleColor = Colors.Red,
+				TextColor = Colors.Blue,
+				ItemsSource = items
+			};
+
+			var values = await GetValueAsync(picker, (handler) =>
+			{
+				return new
+				{
+					Text = GetNativeText(handler),
+					Title = GetNativeTitle(handler)
+				};
+			});
+
+			Assert.True(string.IsNullOrEmpty(values.Text));
+			Assert.Equal(title, values.Title);
+		}
+
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
 			pickerHandler.PlatformView;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Text;
+			GetNativePicker(pickerHandler).Placeholder;
 
 		string GetNativeText(PickerHandler pickerHandler) =>
 			 GetNativePicker(pickerHandler).Text;
