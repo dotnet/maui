@@ -198,7 +198,9 @@ namespace Microsoft.Maui.Controls
 			return ValidatePositive(coord);
 		}
 
+#if MACCATALYST
 		bool _frameUpdateInProgress = false;
+#endif
 
 		int _batchFrameUpdate = 0;
 
@@ -224,7 +226,10 @@ namespace Microsoft.Maui.Controls
 			if (new Rect(x, y, width, height) == frame)
 				return;
 
+#if MACCATALYST
 			_frameUpdateInProgress = true;
+#endif
+
 			_batchFrameUpdate++;
 
 			SetPropertyChanging(XProperty, nameof(X), x, frame.X);
@@ -251,7 +256,9 @@ namespace Microsoft.Maui.Controls
 				SizeChanged?.Invoke(this, EventArgs.Empty);
 			}
 
+#if MACCATALYST
 			_frameUpdateInProgress = false;
+#endif
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			void SetPropertyChanging(BindableProperty property, string name, double oldValue, double newValue)
