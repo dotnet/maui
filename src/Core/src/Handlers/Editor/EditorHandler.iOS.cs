@@ -13,16 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiTextView CreatePlatformView()
 		{
-			var platformEditor = new MauiTextView();
-
-#if !MACCATALYST
-			var accessoryView = new MauiDoneAccessoryView();
-			accessoryView.SetDataContext(this);
-			accessoryView.SetDoneClicked(OnDoneClicked);
-			platformEditor.InputAccessoryView = accessoryView;
-#endif
-
-			return platformEditor;
+			return new MauiTextView();
 		}
 
 #if !MACCATALYST
@@ -138,8 +129,23 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCharacterSpacing(editor);
 		}
 
-		public static void MapIsEnabled(IEditorHandler handler, IEditor editor) =>
+		public static void MapIsEnabled(IEditorHandler handler, IEditor editor)
+		{
+#if !MACCATALYST
+			if (editor.IsEnabled)
+			{
+				var _accessoryView = new MauiDoneAccessoryView();
+				_accessoryView.SetDataContext(handler);
+				_accessoryView.SetDoneClicked(OnDoneClicked);
+				handler.PlatformView.InputAccessoryView = _accessoryView;
+			}
+			else
+			{
+				handler.PlatformView.InputAccessoryView = null;
+			}
+#endif
 			handler.PlatformView?.UpdateIsEnabled(editor);
+		}
 
 		class MauiTextViewEventProxy
 		{
