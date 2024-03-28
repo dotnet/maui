@@ -187,6 +187,66 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("1", label.Text);
 		}
 
+		[Fact]
+		public void SpansInheritFormat ()
+		{
+			var label = new Label() {
+				BackgroundColor = Colors.White,
+				CharacterSpacing = 1,
+				FontAttributes = FontAttributes.None,
+				FontAutoScalingEnabled = true,
+				FontFamily = "OpenSansRegular",
+				FontSize = 16.0,
+				LineHeight = 1,
+				TextColor = Colors.Black,
+				TextDecorations = TextDecorations.None,
+				TextTransform = TextTransform.None,
+			};
+			var span1 = new Span() {
+				Text = "one",
+			};
+			var span2 = new Span() {
+				BackgroundColor = Colors.Black,
+				CharacterSpacing = 2,
+				FontAttributes = FontAttributes.Bold,
+				FontAutoScalingEnabled = false,
+				FontFamily = "OpenSansSemibold",
+				FontSize = 24.0,
+				LineHeight = 2,
+				TextColor = Colors.White,
+				TextDecorations = TextDecorations.Underline,
+				TextTransform = TextTransform.Uppercase,
+				Text = "two",
+			};
+			var formattedText = new FormattedString();
+			formattedText.Spans.Add(span1);
+			formattedText.Spans.Add(span2);
+			label.FormattedText = formattedText;
+
+			Assert.Equal(Colors.White, span1.BackgroundColor);
+			Assert.Equal(1, span1.CharacterSpacing);
+			Assert.Equal(FontAttributes.None, span1.FontAttributes);
+			Assert.True(span1.FontAutoScalingEnabled);
+			Assert.Equal("OpenSansRegular", span1.FontFamily);
+			Assert.Equal(16.0, span1.FontSize);
+			Assert.Equal(1, span1.LineHeight);
+			Assert.Equal(Colors.Black, span1.TextColor);
+			Assert.Equal(TextDecorations.None, span1.TextDecorations);
+			Assert.Equal(TextTransform.None, span1.TextTransform);
+
+
+			Assert.Equal(Colors.Black, span2.BackgroundColor);
+			Assert.Equal(2, span2.CharacterSpacing);
+			Assert.Equal(FontAttributes.Bold, span2.FontAttributes);
+			Assert.False(span2.FontAutoScalingEnabled);
+			Assert.Equal("OpenSansSemibold", span2.FontFamily);
+			Assert.Equal(24.0, span2.FontSize);
+			Assert.Equal(2, span2.LineHeight);
+			Assert.Equal(Colors.White, span2.TextColor);
+			Assert.Equal(TextDecorations.Underline, span2.TextDecorations);
+			Assert.Equal(TextTransform.Uppercase, span2.TextTransform);
+		}
+
 		sealed class ViewModel : INotifyPropertyChanged
 		{
 			TextAlignment horizontalAlignment;
