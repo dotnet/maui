@@ -211,6 +211,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				SelectedViewController = controller;
 			}
+			else if (e.PropertyName == TabbedPage.UnselectedTabColorProperty.PropertyName)
+			{
+				UpdateBarTextColor();
+				UpdateSelectedTabColors();
+			}
 			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
 			else if (e.PropertyName == TabbedPage.BarBackgroundProperty.PropertyName)
@@ -221,7 +226,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdatePrefersStatusBarHiddenOnPages();
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
 				UpdateCurrentPagePreferredStatusBarUpdateAnimation();
-			else if (e.PropertyName == TabbedPage.SelectedTabColorProperty.PropertyName || e.PropertyName == TabbedPage.UnselectedTabColorProperty.PropertyName)
+			else if (e.PropertyName == TabbedPage.SelectedTabColorProperty.PropertyName)
 				UpdateSelectedTabColors();
 			else if (e.PropertyName == PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
 				UpdatePrefersHomeIndicatorAutoHiddenOnPages();
@@ -376,11 +381,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 				tabBarTextColor = barTextColor.ToPlatform();
 
+			UIColor unselectedTabBarTextColor = Tabbed.UnselectedTabColor?.ToPlatform() ?? tabBarTextColor;
+
 			foreach (UITabBarItem item in TabBar.Items)
 			{
-				item.SetTitleTextAttributes(new UIStringAttributes() { ForegroundColor = tabBarTextColor }, UIControlState.Normal);
+				item.SetTitleTextAttributes(new UIStringAttributes() { ForegroundColor = unselectedTabBarTextColor }, UIControlState.Normal);
 				item.SetTitleTextAttributes(new UIStringAttributes() { ForegroundColor = tabBarTextColor }, UIControlState.Selected);
-				item.SetTitleTextAttributes(new UIStringAttributes() { ForegroundColor = tabBarTextColor }, UIControlState.Disabled);
+				item.SetTitleTextAttributes(new UIStringAttributes() { ForegroundColor = unselectedTabBarTextColor }, UIControlState.Disabled);
 			}
 
 			// set TintColor for selected icon
@@ -509,7 +516,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? Tabbed.UnselectedTabColor : null,
 				Tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? Tabbed.BarBackgroundColor : null,
 				Tabbed.IsSet(TabbedPage.BarTextColorProperty) ? Tabbed.BarTextColor : null,
-				null);
+				Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? Tabbed.UnselectedTabColor : Tabbed.IsSet(TabbedPage.BarTextColorProperty) ? Tabbed.BarTextColor : null);
 		}
 
 		#region IPlatformViewHandler
