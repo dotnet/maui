@@ -184,5 +184,46 @@ namespace Microsoft.Maui
 				action?.Invoke(handler!, view, args);
 			});
 		}
+
+
+		internal static ICommandMapper<TVirtualView, TViewHandler> Replace<TVirtualView, TViewHandler>(this ICommandMapper<TVirtualView, TViewHandler> commandMapper,
+			string key, Action<TViewHandler, TVirtualView, object?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			var previousMethod = commandMapper.GetCommand(key);
+
+			if (previousMethod is null)
+			{
+				commandMapper.Add(key, method);
+				return commandMapper;
+			}
+
+			commandMapper.ModifyMapping(key, (h, v, a, p) => method.Invoke(h, v, a));
+			return commandMapper;
+		}
+
+		internal static ICommandMapper<TVirtualView, TViewHandler> Modify<TVirtualView, TViewHandler>(this ICommandMapper<TVirtualView, TViewHandler> commandMapper,
+			string key, Action<TViewHandler, TVirtualView, object?, Action<IElementHandler, IElement, object?>?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			commandMapper.ModifyMapping(key, method);
+			return commandMapper;
+		}
+
+		internal static ICommandMapper<TVirtualView, TViewHandler> Prepend<TVirtualView, TViewHandler>(this ICommandMapper<TVirtualView, TViewHandler> commandMapper,
+			string key, Action<TViewHandler, TVirtualView, object?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			commandMapper.PrependToMapping(key, method);
+			return commandMapper;
+		}
+
+		internal static ICommandMapper<TVirtualView, TViewHandler> Append<TVirtualView, TViewHandler>(this ICommandMapper<TVirtualView, TViewHandler> commandMapper,
+			string key, Action<TViewHandler, TVirtualView, object?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			commandMapper.AppendToMapping(key, method);
+			return commandMapper;
+		}
 	}
 }
