@@ -198,6 +198,10 @@ namespace Microsoft.Maui.Controls
 			return ValidatePositive(coord);
 		}
 
+#if MACCATALYST
+		bool _frameUpdateInProgress = false;
+#endif
+
 		int _batchFrameUpdate = 0;
 
 		void IWindow.FrameChanged(Rect frame)
@@ -206,8 +210,25 @@ namespace Microsoft.Maui.Controls
 			var y = Y;
 			var width = Width;
 			var height = Height;
+
+#if MACCATALYST
+			// MacCatalyst does not support setting window properties: X, Y, width, and height.
+			if (_frameUpdateInProgress) {
+				X = frame.X;
+				Y = frame.Y;
+				Width = frame.Width;
+				Height = frame.Height;
+
+				return;
+			}
+#endif
+
 			if (new Rect(x, y, width, height) == frame)
 				return;
+
+#if MACCATALYST
+			_frameUpdateInProgress = true;
+#endif
 
 			_batchFrameUpdate++;
 
@@ -234,6 +255,10 @@ namespace Microsoft.Maui.Controls
 
 				SizeChanged?.Invoke(this, EventArgs.Empty);
 			}
+
+#if MACCATALYST
+			_frameUpdateInProgress = false;
+#endif
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			void SetPropertyChanging(BindableProperty property, string name, double oldValue, double newValue)
