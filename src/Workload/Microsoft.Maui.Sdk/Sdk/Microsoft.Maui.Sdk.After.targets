@@ -6,11 +6,11 @@
 
   <!-- .NET MAUI features -->
   <ItemGroup>
-    <ProjectCapability Include="Maui"           Condition=" '$(UseMaui)' == 'true' " />
-    <ProjectCapability Include="MauiAssets"     Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' " />
-    <ProjectCapability Include="MauiBlazor"     Condition=" '$(UsingMicrosoftNETSdkRazor)' == 'true' " />
-    <ProjectCapability Include="MauiCore"       Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
-    <ProjectCapability Include="MauiEssentials" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' " />
+    <ProjectCapability Include="Maui"           Condition=" '$(EnableMauiSdkProjectCapabilities)' == 'true' or '$(UseMaui)' == 'true' " />
+    <ProjectCapability Include="MauiAssets"     Condition=" '$(EnableMauiSdkProjectCapabilities)' == 'true' or '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' " />
+    <ProjectCapability Include="MauiBlazor"     Condition=" ('$(EnableMauiSdkProjectCapabilities)' == 'true' or '$(UseMaui)' == 'true') and '$(UsingMicrosoftNETSdkRazor)' == 'true' " />
+    <ProjectCapability Include="MauiCore"       Condition=" '$(EnableMauiSdkProjectCapabilities)' == 'true' or '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
+    <ProjectCapability Include="MauiEssentials" Condition=" '$(EnableMauiSdkProjectCapabilities)' == 'true' or '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' " />
   </ItemGroup>
 
   <!-- SingleProject-specific features -->

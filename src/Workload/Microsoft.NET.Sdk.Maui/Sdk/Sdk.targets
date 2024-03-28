@@ -1,0 +1,8 @@
+<Project>
+
+  <Import Project="BundledVersions.targets" />
+  <Import Project="Microsoft.NET.Sdk.Maui.targets" />
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+</Project>

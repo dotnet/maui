@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets">
+
+  <Import Project="../Shared/Common.targets" />
+
+  <PropertyGroup>
+    <Description>.NET MAUI SDK</Description>
+    <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="**/*.in.*" />
+    <None Update="@(None)" PackagePath="" Pack="true" />
+    <None Include="..\Microsoft.Maui.Sdk\Sdk\Microsoft.Maui.Sdk.Before.targets" Link="Sdk\Microsoft.NET.Sdk.Maui.Before.targets" PackagePath="Sdk\Microsoft.NET.Sdk.Maui.Before.targets" Pack="true" />
+    <None Include="..\Microsoft.Maui.Sdk\Sdk\Microsoft.Maui.Sdk.After.targets" Link="Sdk\Microsoft.NET.Sdk.Maui.After.targets" PackagePath="Sdk\Microsoft.NET.Sdk.Maui.After.targets" Pack="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ValuesToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
+    <_ValuesToReplace Include="TFM" PropertyName="_MauiDotNetTfm" />
+    <_ValuesToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />
+  </ItemGroup>
+
+  <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
+
+  <Target Name="_GenerateBundledVersions"
+      BeforeTargets="Build;AssignTargetPaths"
+      DependsOnTargets="SetVersions"
+      Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;Sdk/BundledVersions.in.targets"
+      Outputs="$(IntermediateOutputPath)BundledVersions.targets">
+    <Copy
+        SourceFiles="Sdk/BundledVersions.in.targets"
+        DestinationFiles="$(IntermediateOutputPath)BundledVersions.targets"
+    />
+    <ReplaceText
+        Input="$(IntermediateOutputPath)BundledVersions.targets"
+        Output="$(IntermediateOutputPath)BundledVersions.targets"
+        OldValue="@%(_ValuesToReplace.Identity)@"
+        NewValue="$(%(_ValuesToReplace.PropertyName))"
+    />
+    <ItemGroup>
+      <None
+          Include="$(IntermediateOutputPath)BundledVersions.targets"
+          Link="Sdk/BundledVersions.targets"
+          CopyToOutputDirectory="PreserveNewest"
+          Pack="true"
+          PackagePath="Sdk"
+          Visible="false"
+      />
+      <FileWrites Include="$(IntermediateOutputPath)BundledVersions.targets" />
+    </ItemGroup>
+  </Target>
+
+</Project>

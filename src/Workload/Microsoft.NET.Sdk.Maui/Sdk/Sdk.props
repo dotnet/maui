@@ -1,0 +1,9 @@
+<Project>
+
+  <PropertyGroup>
+    <MicrosoftNETSdkMaui>true</MicrosoftNETSdkMaui>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/>
+
+</Project>
