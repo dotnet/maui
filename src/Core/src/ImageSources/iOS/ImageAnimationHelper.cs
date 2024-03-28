@@ -2,9 +2,9 @@
 // https://github.com/luberda-molinet/FFImageLoading/blob/bb675c6011b39ddccecbe6125d1853de81e6396a/source/FFImageLoading.Shared.IosMac/Decoders/GifDecoder.cs
 
 using System;
-using ImageIO;
-using Foundation;
 using CoreGraphics;
+using Foundation;
+using ImageIO;
 using UIKit;
 
 namespace Microsoft.Maui;

@@ -75,7 +75,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", "Project Space", "projectspace")]
 		[TestCase("maui-blazor", "Project Space", "projectspace")]
 		[TestCase("mauilib", "Project Space", "projectspace")]
-  		// with invalid characters
+		// with invalid characters
 		[TestCase("maui", "Project@Symbol", "projectsymbol")]
 		[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
 		[TestCase("mauilib", "Project@Symbol", "projectsymbol")]

@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
@@ -21,7 +22,6 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -699,7 +699,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					if(barBackgroundColor?.Alpha < 1f)
+					if (barBackgroundColor?.Alpha < 1f)
 						navigationBarAppearance.ConfigureWithTransparentBackground();
 					else
 						navigationBarAppearance.ConfigureWithOpaqueBackground();
@@ -720,7 +720,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				if(barBackgroundColor?.Alpha == 0f)
+				if (barBackgroundColor?.Alpha == 0f)
 				{
 					NavigationBar.SetTransparentNavigationBar();
 				}
@@ -1175,7 +1175,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					!n._disposed &&
 					!n._navigating
 					)
-				{	
+				{
 					var vc = ChildViewControllers[^1];
 
 					if (vc is null)

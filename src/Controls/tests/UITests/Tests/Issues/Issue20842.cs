@@ -27,7 +27,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.Click(scrollUpButton);
 			await Task.Delay(200);
 			App.Click(scrollDownButton);
-   			await Task.Delay(500);
+			await Task.Delay(500);
 
 			VerifyScreenshot();
 		}

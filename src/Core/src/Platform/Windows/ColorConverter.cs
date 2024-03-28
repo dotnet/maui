@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public sealed class ColorConverter : UI.Xaml.Data.IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, string language)
+		public static object Convert(object value, Type targetType, object parameter, string language)
 		{
 			var color = (Graphics.Color)value;
 			var defaultColorKey = (string)parameter;

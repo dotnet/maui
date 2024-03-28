@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Platform
 			return (int)Math.Ceiling(maxWidth);
 		}
 
-		int GetTextLayoutHeight()
+		static int GetTextLayoutHeight()
 		{
 			var layoutHeight = Layout!.Height;
 

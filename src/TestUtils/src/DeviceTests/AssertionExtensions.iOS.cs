@@ -128,7 +128,7 @@ namespace Microsoft.Maui.DeviceTests
 					currentView.Frame.Height - safeAreaInsets.Top)
 			};
 
-			attachedView.AddSubview(view);	
+			attachedView.AddSubview(view);
 			currentView.AddSubview(attachedView);
 
 			// Give the UI time to refresh

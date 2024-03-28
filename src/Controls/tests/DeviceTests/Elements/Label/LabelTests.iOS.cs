@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(LineBreakMode.TailTruncation.ToPlatform(), GetPlatformLineBreakMode(handler));
 			}));
 		}
-				
+
 		UILabel GetPlatformLabel(LabelHandler labelHandler) =>
 			(UILabel)labelHandler.PlatformView;
 

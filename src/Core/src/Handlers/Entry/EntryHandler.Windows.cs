@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 		protected override TextBox CreatePlatformView() =>
 			new MauiPasswordTextBox()
 			{
-				IsObfuscationDelayed = s_shouldBeDelayed
+				MauiPasswordTextBox.IsObfuscationDelayed = s_shouldBeDelayed
 			};
 
 		public override void SetVirtualView(IView view)
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Handlers
 		void OnPlatformTextChanged(object sender, TextChangedEventArgs args)
 		{
 			if (PlatformView is MauiPasswordTextBox passwordBox)
-				VirtualView?.UpdateText(passwordBox.Password);
+				VirtualView?.UpdateText(MauiPasswordTextBox.Password);
 			else
 				VirtualView?.UpdateText(PlatformView.Text);
 		}

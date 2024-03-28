@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				GC.Collect();
 				vm.Text = "Text2";
 				Assert.AreEqual("Text2", layout.label0.Text);
-				
+
 				//https://github.com/dotnet/maui/issues/21181
 				vm.Model[3] = "TextIndex2";
 				Assert.AreEqual("TextIndex2", layout.label3.Text);

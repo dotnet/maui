@@ -22,21 +22,20 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (result != null)
 				{
-					platformToolbar.TitleIconImageSource = result.Value;
+					MauiToolbar.TitleIconImageSource = result.Value;
 					toolbar.Handler.UpdateValue(nameof(Toolbar.IconColor));
 				}
 				else
-					platformToolbar.TitleIconImageSource = null;
+					MauiToolbar.TitleIconImageSource = null;
 			});
 		}
 
 		public static void UpdateBackButton(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			platformToolbar.IsBackEnabled =
+			MauiToolbar.IsBackEnabled =
 				toolbar.BackButtonEnabled && toolbar.BackButtonVisible;
 
-			platformToolbar
-				.IsBackButtonVisible = (toolbar.BackButtonVisible) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
+			MauiToolbar.IsBackButtonVisible = (toolbar.BackButtonVisible) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
 
 			toolbar.Handler?.UpdateValue(nameof(Toolbar.BarBackground));
 		}
@@ -50,15 +49,15 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_ = toolbar.Handler?.MauiContext ?? throw new ArgumentNullException(nameof(toolbar.Handler.MauiContext));
 
-			platformToolbar.TitleView = toolbar.TitleView?.ToPlatform(toolbar.Handler.MauiContext);
+			MauiToolbar.TitleView = toolbar.TitleView?.ToPlatform(toolbar.Handler.MauiContext);
 
 			if (toolbar.TitleView is IView view)
 			{
-				platformToolbar.TitleViewMargin = view.Margin.ToPlatform();
+				MauiToolbar.TitleViewMargin = view.Margin.ToPlatform();
 			}
 			else
 			{
-				platformToolbar.TitleViewMargin = new UI.Xaml.Thickness(0);
+				MauiToolbar.TitleViewMargin = new UI.Xaml.Thickness(0);
 			}
 		}
 
@@ -69,7 +68,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateTitle(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			platformToolbar.Title = toolbar.Title;
+			MauiToolbar.Title = toolbar.Title;
 		}
 
 		public static void UpdateBarTextColor(this MauiToolbar platformToolbar, Toolbar toolbar)
@@ -79,10 +78,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateToolbarDynamicOverflowEnabled(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			if (platformToolbar.CommandBar == null)
+			if (MauiToolbar.CommandBar == null)
 				return;
 
-			platformToolbar.CommandBar.IsDynamicOverflowEnabled = toolbar.DynamicOverflowEnabled;
+			MauiToolbar.CommandBar.IsDynamicOverflowEnabled = toolbar.DynamicOverflowEnabled;
 		}
 	}
 }

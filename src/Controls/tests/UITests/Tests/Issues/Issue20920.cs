@@ -14,8 +14,8 @@ public class Issue20920 : _IssuesUITest
 	[Test]
 	public void ScrollingBothDirectionsWithNestedScrollViews()
 	{
- 		// TODO: Correct this test for other platforms
- 		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows, TestDevice.iOS });
+		// TODO: Correct this test for other platforms
+		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows, TestDevice.iOS });
 		var initialPosition = App.WaitForElement("dotnet_bot").GetRect();
 
 		App.ScrollDown("dotnet_bot");
