@@ -110,6 +110,12 @@ namespace Microsoft.Maui.Controls
 			TemplatedItems.IsGroupingEnabledProperty = IsGroupingEnabledProperty;
 			TemplatedItems.GroupHeaderTemplateProperty = GroupHeaderTemplateProperty;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ListView>>(() => new PlatformConfigurationRegistry<ListView>(this));
+
+			// Always recycle on WinUI
+			if (DeviceInfo.Platform == DevicePlatform.WinUI)
+			{
+				CachingStrategy = ListViewCachingStrategy.RecycleElement;
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />

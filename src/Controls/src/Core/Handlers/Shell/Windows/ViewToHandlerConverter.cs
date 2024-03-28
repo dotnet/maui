@@ -24,7 +24,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return null;
 
-			return new WrapperControl(view);
+			if (view is IPlatformViewHandler)
+				return new WrapperControl(view);
+			
+			return view.ToPlatform(view.FindMauiContext()!);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -54,6 +57,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_view.MeasureInvalidated += OnMeasureInvalidated;
 
 				FrameworkElement = view.ToPlatform(view.FindMauiContext()!);
+
 				Children.Add(FrameworkElement);
 
 				// make sure we re-measure once the template is applied

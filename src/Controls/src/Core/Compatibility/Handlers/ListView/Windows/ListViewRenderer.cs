@@ -6,9 +6,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
@@ -19,7 +17,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Windows.Foundation;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListView;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WApp = Microsoft.UI.Xaml.Application;
@@ -113,6 +110,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
+					List.ContainerContentChanging += (sender, args) =>
+					{
+						if (args.InRecycleQueue)
+						{
+							// If the item is in the recycle queue, it's not in the visual tree
+							// and we don't need to update anything
+							return;
+						}
+
+						var cell = args.ItemContainer.ContentTemplateRoot as CellControl;
+						if (cell == null)
+						{
+							return;
+						}
+						cell.Recycle();
+					};
 					List.SelectionChanged += OnControlSelectionChanged;
 					SetNativeControl(List);
 				}
@@ -340,6 +353,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 
 					List.SelectionChanged -= OnControlSelectionChanged;
+
 					if (_collectionViewSource != null)
 						_collectionViewSource.Source = null;
 
@@ -785,9 +799,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			List.SelectedIndex = index;
 		}
 
-		void OnListItemClicked(int index)
+		void OnListItemClicked(int index, Cell cell = null)
 		{
-			Element.NotifyRowTapped(index);
+			Element.NotifyRowTapped(index, cell);
 			_itemWasClicked = true;
 		}
 
@@ -798,7 +812,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				var selectedItemIndex = templatedItems.GetGlobalIndexOfItem(e.ClickedItem);
 
-				OnListItemClicked(selectedItemIndex);
+				var container = List.ContainerFromItem(e.ClickedItem) as ListViewItem;
+				if (container != null && container.ContentTemplateRoot is CellControl cell)
+				{
+					// Pass the cell ref to avoid a possible lookup + creation of a new cell control if 
+					// ListViewCachingStrategy == RecycleElement
+					OnListItemClicked(selectedItemIndex, cell.Cell);
+				}
+				else
+				{
+					OnListItemClicked(selectedItemIndex);
+				}
 			}
 		}
 

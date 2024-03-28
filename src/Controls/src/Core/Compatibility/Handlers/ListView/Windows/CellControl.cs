@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -18,7 +19,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WFlyoutBase = Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase;
 using WMenuFlyout = Microsoft.UI.Xaml.Controls.MenuFlyout;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
-
+using WSize = Windows.Foundation.Size;
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class CellControl : ContentControl
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		Microsoft.UI.Xaml.DataTemplate _currentTemplate;
 		bool _isListViewRealized;
 		object _newValue;
+		DataTemplate _currentCellTemplate;
 
 		public CellControl()
 		{
@@ -66,13 +68,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (Cell == null)
 				return;
 
+			if (_listView.IsValueCreated)
+			{
+				_listView.Value.TemplatedItems.UnhookContent(Cell);
+			}
+
 			Cell.SendDisappearing();
 			// 🚀 unsubscribe from propertychanged
 			Cell.PropertyChanged -= _propertyChangedHandler;
 			// Allows the Cell to unsubscribe from Parent.PropertyChanged
 			Cell.Parent = null;
 		}
-
 
 		public Cell Cell
 		{
@@ -327,6 +333,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					});
 		}
 
+		internal void Recycle()
+		{
+			if (Cell != null && _listView.IsValueCreated)
+			{
+				_listView.Value.TemplatedItems.UnhookContent(Cell);
+			}
+		}
+
 		void SetCell(object newContext)
 		{
 			var cell = newContext as Cell;
@@ -348,34 +362,55 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				Cell oldCell = Cell;
 				bool isGroupHeader = IsGroupHeader;
-				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
 				object bindingContext = newContext;
+				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
+				var templatedItems = lv.TemplatedItems;
 
-				bool sameTemplate = false;
+				if (oldCell != null)
+				{
+					templatedItems.UnhookContent(oldCell);
+				}
+
 				if (template is DataTemplateSelector dataTemplateSelector)
 				{
 					template = dataTemplateSelector.SelectTemplate(bindingContext, lv);
+				}
 
-					// 🚀 If there exists an old cell, get its data template and check
-					// whether the new- and old template matches. In that case, we can recycle it
-					if (oldCell?.BindingContext != null)
+				if (template != null)
+				{
+					// Reuse the templated items from the parent ListView
+					if (isGroupHeader)
 					{
-						DataTemplate oldTemplate = dataTemplateSelector.SelectTemplate(oldCell?.BindingContext, lv);
-						sameTemplate = oldTemplate == template;
+						var idx = templatedItems.GetGlobalIndexOfGroup(bindingContext);
+						cell = templatedItems[idx];
 					}
-				}
+					else
+					{
+						var groupAndIndex = templatedItems.GetGroupAndIndexOfItem(bindingContext);
 
-				// Reuse cell
-				var canReuseCell = Cell != null && sameTemplate;
+						if (lv.IsGroupingEnabled)
+						{
+							// Group was removed, bail
+							if (groupAndIndex.Item1 == -1)
+								return;
 
-				// 🚀 If we can reuse the cell, just reuse it...
-				if (canReuseCell)
-				{
-					cell = Cell;
-				}
-				else if (template != null)
-				{
-					cell = template.CreateContent() as Cell;
+							templatedItems = templatedItems.GetGroup(groupAndIndex.Item1);
+						}
+
+						// Item was removed, bail
+						if (groupAndIndex.Item2 == -1)
+							return;
+
+						if (_currentCellTemplate != template)
+						{
+							cell = template.CreateContent() as Cell;
+						}
+						else
+						{
+							cell = oldCell;
+							cell.BindingContext = bindingContext;
+						}
+					}
 				}
 				else
 				{
@@ -395,14 +430,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// This provides the Group Header styling (e.g., larger font, etc.) when the
 				// template is loaded later.
 				cell.SetIsGroupHeader<ItemsView<Cell>, Cell>(isGroupHeader);
+
+				templatedItems.UnhookContent(cell);
+				_currentCellTemplate = template;
 			}
 
 			// 🚀 Only set the cell if it DID change
 			// Note: The cleanup (SendDisappearing(), etc.) is done by the Cell propertychanged callback so we do not need to do any cleanup ourselves.
-
 			if (Cell != cell)
+			{
 				Cell = cell;
-
+			}
 			// 🚀 Even if the cell did not change, we **must** call SendDisappearing() and SendAppearing()
 			// because frameworks such as Reactive UI rely on this! (this.WhenActivated())
 			else if (Cell != null)
@@ -418,6 +456,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				oldCell.PropertyChanged -= _propertyChangedHandler;
 				oldCell.SendDisappearing();
+				oldCell.Cleanup();
 			}
 
 			if (newCell != null)
