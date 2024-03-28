@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Graphics
 {
 	internal static class CompareExtensions
 	{
-		public static T Clamp<T>(this T value, T min, T max) where T : IComparable<T>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static DateTime Clamp(this DateTime value, DateTime min, DateTime max)
 		{
 			if (max.CompareTo(min) < 0)
 				return max;
