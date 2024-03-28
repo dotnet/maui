@@ -665,6 +665,16 @@ namespace Microsoft.Maui.Controls
 					changedResources = changedResources ?? new List<(BindableProperty, SetterSpecificity)>();
 					changedResources.Add((dynR.Key, dynR.Value.Item2));
 				}
+
+				// Solution I
+				// Since shadow has no parent, it is not notified about the resources change
+				// through the OnParentResourcesChanged method. Therefore, we manually notify
+				// the shadow to update its resources when the visual element has shadows
+				if (this is VisualElement visualElement && visualElement.Shadow is Element shadow)
+				{
+					shadow.OnResourcesChanged(values);
+				}
+
 				if (changedResources == null)
 					continue;
 				foreach ((BindableProperty, SetterSpecificity) changedResource in changedResources)

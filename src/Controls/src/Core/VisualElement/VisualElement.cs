@@ -1778,7 +1778,13 @@ namespace Microsoft.Maui.Controls
 				propertyChanged: (bindable, oldvalue, newvalue) =>
 				{
 					if (newvalue != null)
+					{
 						(bindable as VisualElement)?.NotifyShadowChanges();
+						// Solution II
+						// We can set a visual element as a parent of shadow, so that
+						// it observes for the changes of resources in its parent
+						((Shadow)newvalue).Parent = bindable as VisualElement;
+					}
 				});
 
 		/// <summary>
