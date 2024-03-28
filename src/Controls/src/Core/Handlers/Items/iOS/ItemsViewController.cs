@@ -82,6 +82,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (disposing)
 			{
+				_measurementCells = null;
+
 				ItemsSource?.Dispose();
 
 				CollectionView.Delegate = null;
@@ -354,6 +356,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_measurementCells.Remove(bindingContext);
 				measurementCell.ContentSizeChanged -= CellContentSizeChanged;
 				measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
+				
 				cell.UseContent(measurementCell);
 			}
 			else
