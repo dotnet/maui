@@ -45,8 +45,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Gets or sets the style classes for the element.</summary>
-		/// <remarks>Equiavlent to <see cref="@class"/>.
-		/// Style classes enable multiple styles to be applied to a control, without resorting to style inheritance.
+		/// <remarks>
+		///		<para>Equiavalent to <see cref="@class"/>.</para>
+		///		<para>Style classes enable multiple styles to be applied to a control, without resorting to style inheritance.</para>
 		/// </remarks>
 		/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/styles/xaml?view=net-maui-8.0#style-classes">Conceptual documentation on style classes</seealso>
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
@@ -58,8 +59,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Gets or sets the style classes for the element.</summary>
 		/// <remarks>
-		/// Equiavlent to <see cref="StyleClass"/>.
-		/// Style classes enable multiple styles to be applied to a control, without resorting to style inheritance.
+		///		<para>Equiavalent to <see cref="StyleClass"/>.</para>
+		///		<para>Style classes enable multiple styles to be applied to a control, without resorting to style inheritance.</para>
 		/// </remarks>
 		/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/styles/xaml?view=net-maui-8.0#style-classes">Conceptual documentation on style classes</seealso>
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
