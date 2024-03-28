@@ -157,6 +157,7 @@ namespace Microsoft.Maui.Controls
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		public event EventHandler<DateChangedEventArgs> DateSelected;
+		public event EventHandler<DateChangedEventArgs> DateChanged;
 
 		static object CoerceDate(BindableObject bindable, object value)
 		{
@@ -169,7 +170,17 @@ namespace Microsoft.Maui.Controls
 			if (dateValue < picker.MinimumDate)
 				dateValue = picker.MinimumDate;
 
+			OnDateSelected(picker, picker.Date, dateValue);
+
 			return dateValue;
+		}
+
+		static void OnDateSelected(DatePicker datePicker, DateTime oldValue, DateTime newValue)
+		{
+			EventHandler<DateChangedEventArgs> selected = datePicker.DateSelected;
+
+			if (selected != null)
+				selected(datePicker, new DateChangedEventArgs((DateTime)oldValue, (DateTime)newValue));
 		}
 
 		static object CoerceMaximumDate(BindableObject bindable, object value)
@@ -195,10 +206,10 @@ namespace Microsoft.Maui.Controls
 		static void DatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var datePicker = (DatePicker)bindable;
-			EventHandler<DateChangedEventArgs> selected = datePicker.DateSelected;
+			EventHandler<DateChangedEventArgs> changed = datePicker.DateChanged;
 
-			if (selected != null)
-				selected(datePicker, new DateChangedEventArgs((DateTime)oldValue, (DateTime)newValue));
+			if (changed != null)
+				changed(datePicker, new DateChangedEventArgs((DateTime)oldValue, (DateTime)newValue));
 		}
 
 		static bool ValidateMaximumDate(BindableObject bindable, object value)
