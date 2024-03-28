@@ -57,9 +57,9 @@
                 Style="{StaticResource Headline}" />
             <Line
                 X1="0"
-                Y1="20"
-                X2="300"
-                Y2="20"
+                Y1="8"
+                X2="250"
+                Y2="8"
                 StrokeLineCap="Round"
                 Stroke="Red"
                 StrokeThickness="12"
