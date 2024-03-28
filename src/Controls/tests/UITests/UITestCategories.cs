@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.AppiumTests
+namespace Microsoft.Maui.AppiumTests
 {
 	internal static class UITestCategories
 	{

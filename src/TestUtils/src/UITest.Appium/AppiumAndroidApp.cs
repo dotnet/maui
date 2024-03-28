@@ -44,26 +44,33 @@ namespace UITest.Appium
 		{
 			get
 			{
-				var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
-				var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
-						{
-							{ "appId", appId },
-						});
+				try
+				{
+					var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
+					var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
+					{
+						{ "appId", appId },
+					});
 
-				// https://github.com/appium/appium-uiautomator2-driver#mobile-queryappstate
-				if (state == null)
+					// https://github.com/appium/appium-uiautomator2-driver#mobile-queryappstate
+					if (state == null)
+					{
+						return ApplicationState.Unknown;
+					}
+
+					return Convert.ToInt32(state) switch
+					{
+						0 => ApplicationState.NotInstalled,
+						1 => ApplicationState.NotRunning,
+						3 or
+						4 => ApplicationState.Running,
+						_ => ApplicationState.Unknown,
+					};
+				}
+				catch
 				{
 					return ApplicationState.Unknown;
 				}
-
-				return Convert.ToInt32(state) switch
-				{
-					0 => ApplicationState.NotInstalled,
-					1 => ApplicationState.NotRunning,
-					3 or
-					4 => ApplicationState.Running,
-					_ => ApplicationState.Unknown,
-				};
 			}
 		}
 

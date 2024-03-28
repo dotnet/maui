@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -56,24 +56,29 @@ namespace UITest.Appium.NUnit
 		[TearDown]
 		public void UITestBaseTearDown()
 		{
-			if (App.AppState == ApplicationState.NotRunning)
+			try
 			{
-				SaveDeviceDiagnosticInfo();
+				if (App.AppState == ApplicationState.NotRunning)
+				{
+					SaveDeviceDiagnosticInfo();
 
-				Reset();
-				FixtureSetup();
+					Reset();
+					FixtureSetup();
 
-				// Assert.Fail will immediately exit the test which is desirable as the app is not
-				// running anymore so we can't capture any UI structures or any screenshots
-				Assert.Fail("The app was expected to be running still, investigate as possible crash");
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we can't capture any UI structures or any screenshots
+					Assert.Fail("The app was expected to be running still, investigate as possible crash");
+				}
 			}
-
-			var testOutcome = TestContext.CurrentContext.Result.Outcome;
-			if (testOutcome == ResultState.Error ||
-				testOutcome == ResultState.Failure)
+			finally
 			{
-				SaveDeviceDiagnosticInfo();
-				SaveUIDiagnosticInfo();
+				var testOutcome = TestContext.CurrentContext.Result.Outcome;
+				if (testOutcome == ResultState.Error ||
+					testOutcome == ResultState.Failure)
+				{
+					SaveDeviceDiagnosticInfo();
+					SaveUIDiagnosticInfo();
+				}
 			}
 		}
 
