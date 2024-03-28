@@ -85,3 +85,8 @@ virtual Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft
 virtual Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
+Microsoft.Maui.Hosting.TypeConversionAppBuilderExtensions
+static Microsoft.Maui.Hosting.TypeConversionAppBuilderExtensions.ConfigureTypeConversions(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.ITypeConversionBuilder!>! configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+Microsoft.Maui.Hosting.ITypeConversionBuilder
+Microsoft.Maui.Hosting.ITypeConversionBuilder.AddTypeConverter<T, TConverter>() -> Microsoft.Maui.Hosting.ITypeConversionBuilder!
+Microsoft.Maui.Hosting.ITypeConversionBuilder.AddTypeConverter<T>(System.Func<System.ComponentModel.TypeConverter!>! createConverter) -> Microsoft.Maui.Hosting.ITypeConversionBuilder!
