@@ -71,33 +71,52 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for attached property <c>UseSafeArea</c>.</summary>
+		/// <summary>
+		/// This iOS platform-specific controls whether padding values are overridden with the safe area insets.
+		/// </summary>
 #if MACCATALYST
 		public static readonly BindableProperty UseSafeAreaProperty = BindableProperty.Create("UseSafeArea", typeof(bool), typeof(Page), true);
 #else
 		public static readonly BindableProperty UseSafeAreaProperty = BindableProperty.Create("UseSafeArea", typeof(bool), typeof(Page), false);
 #endif
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetUseSafeArea']/Docs/*" />
+		/// <summary>
+		/// Gets a value that indicates whether padding values are overridden with values that conform to the safe area on the device.
+		/// </summary>
+		/// <param name="element">The element to get the safe area behavior from.</param>
+		/// <returns><see langword="true"/> if the padding values are overridden; otherwise, <see langword="false"/>.</returns>
 		public static bool GetUseSafeArea(BindableObject element)
 		{
 			return (bool)element.GetValue(UseSafeAreaProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetUseSafeArea'][1]/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls whether padding values are overridden with the safe area insets.
+		/// </summary>
+		/// <param name="element">The element whose safe area use behavior to set.</param>
+		/// <param name="value"><see langword="true"/> to use the safe area inset behavior; otherwise, <see langword="false"/>.</param>
 		public static void SetUseSafeArea(BindableObject element, bool value)
 		{
 			element.SetValue(UseSafeAreaProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetUseSafeArea'][2]/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls whether padding values are overridden with the safe area insets.
+		/// </summary>
+		/// <param name="config">The element whose safe area behavior to get.</param>
+		/// <param name="value"><see langword="true"/> to use the safe area inset behavior; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUseSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetUseSafeArea(config.Element, value);
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='UsingSafeArea']/Docs/*" />
+		/// <summary>
+		/// Gets a value that represents whether the padding is overridden with the safe area.
+		/// </summary>
+		/// <param name="config">The element whose safe area behavior to get.</param>
+		/// <returns><see langword="true"/> if the padding is overridden with the safe area; otherwise, <see langword="false"/>.</returns>
 		public static bool UsingSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetUseSafeArea(config.Element);
@@ -161,29 +180,49 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="ModalPresentationStyle"/>.</summary>
+		/// <summary>
+		/// Defines the modal presentation style of the <see cref="Page"/>.
+		/// </summary>
 		public static readonly BindableProperty ModalPresentationStyleProperty =
 			BindableProperty.Create(nameof(ModalPresentationStyle), typeof(UIModalPresentationStyle), typeof(Page), UIModalPresentationStyle.FullScreen);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='ModalPresentationStyle']/Docs/*" />
+		/// <summary>
+		/// Gets the modal presentation style of the <see cref="Page"/>.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The modal presentation style.</returns>
 		public static UIModalPresentationStyle ModalPresentationStyle(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetModalPresentationStyle(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetModalPresentationStyle']/Docs/*" />
+		/// <summary>
+		/// Sets the modal presentation style of the <see cref="Page"/>.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The modal presentation style.</param>
+		/// <returns>The platform specific configuration that contains the element on which to perform the operation.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetModalPresentationStyle(this IPlatformElementConfiguration<iOS, FormsElement> config, UIModalPresentationStyle value)
 		{
 			SetModalPresentationStyle(config.Element, value);
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetModalPresentationStyle']/Docs/*" />
+		/// <summary>
+		/// Gets the current value of the <see cref="UIModalPresentationStyle"/> enumeration that's applied to the <see cref="Page"/>.
+		/// </summary>
+		/// <param name="element">The <see cref="BindableObject" /> whose modal presentation style is being retrieved.</param>
+		/// <returns>The current value of the <see cref="UIModalPresentationStyle" /> enumeration that's applied to the <paramref name="element" />.</returns>
 		public static UIModalPresentationStyle GetModalPresentationStyle(BindableObject element)
 		{
 			return (UIModalPresentationStyle)element.GetValue(ModalPresentationStyleProperty);
 		}
 
+		/// <summary>
+		/// Sets the modal presentation style on a <see cref="Page"/>.
+		/// </summary>
+		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <param name="value">The modal presentation style.</param>
 		static void SetModalPresentationStyle(BindableObject element, UIModalPresentationStyle value)
 		{
 			element.SetValue(ModalPresentationStyleProperty, value);
@@ -193,25 +232,42 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static readonly BindableProperty PrefersHomeIndicatorAutoHiddenProperty =
 			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetPrefersHomeIndicatorAutoHidden']/Docs/*" />
+		/// <summary>
+		/// Gets a value that indicates whether the visual indicator should hide upon returning to the home screen.
+		/// </summary>
+		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <returns><see langword="true"/> if the home visual indicator is hidden; otherwise, <see langword="false"/>.</returns>
 		public static bool GetPrefersHomeIndicatorAutoHidden(BindableObject element)
 		{
 			return (bool)element.GetValue(PrefersHomeIndicatorAutoHiddenProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersHomeIndicatorAutoHidden'][1]/Docs/*" />
+		/// <summary>
+		/// Sets a value that indicates whether the visual indicator should hide upon returning to the home screen.
+		/// </summary>
+		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <param name="value"><see langword="true"/> if hide the home indicator; otherwise, <see langword="false"/>.</param>
 		public static void SetPrefersHomeIndicatorAutoHidden(BindableObject element, bool value)
 		{
 			element.SetValue(PrefersHomeIndicatorAutoHiddenProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='PrefersHomeIndicatorAutoHidden']/Docs/*" />
+		/// <summary>
+		/// Gets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns><see langword="true"/> if hide the home indicator; otherwise, <see langword="false"/>.</returns>
 		public static bool PrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetPrefersHomeIndicatorAutoHidden(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersHomeIndicatorAutoHidden'][2]/Docs/*" />
+		/// <summary>
+		/// Sets a Boolean that indicates whether is allowed to hide the visual indicator for returning to the Home Screen.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value"><see langword="true"/> if hide the home indicator; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersHomeIndicatorAutoHidden(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetPrefersHomeIndicatorAutoHidden(config.Element, value);
