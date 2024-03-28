@@ -87,9 +87,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		/// <summary>
-		/// Raises the (internal) <c>ParentSet</c> event.
-		/// </summary>
+		/// <summary>Raises the (internal) <c>ParentSet</c> event.</summary>
 		/// <remarks>
 		/// Will set the <see cref="NavigationProxy">NavigationProxy's</see> inner navigation object to closest topmost element capable of handling navigation calls.
 		/// </remarks>
