@@ -15,7 +15,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue18242Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.iOS }, "Only Windows for now");
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.iOS }, "iOS will be fixed in https://github.com/dotnet/maui/pull/20953");
 
 			App.WaitForElement("WaitForStubControl");
 
