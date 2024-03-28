@@ -3,4 +3,44 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <FlexLayout Grid.Row="0" JustifyContent="SpaceEvenly">
+            <Label x:Name="label1" Text="SingleTap" FontSize="32" TextColor="Red">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTap"/>
+                </Label.GestureRecognizers>
+            </Label>
+            <Label x:Name="label2" Text="DoubleTap" FontSize="32" TextColor="Green">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
+                </Label.GestureRecognizers>
+            </Label>
+            <Label x:Name="label3" Text="SingleAndDoubleTap" FontSize="32" TextColor="Blue">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTap"/>
+                    <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
+                </Label.GestureRecognizers>
+            </Label>
+            <Label x:Name="label4" Text="DoubleAndSingleTap" FontSize="32" TextColor="Purple">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
+                    <TapGestureRecognizer Tapped="OnTap"/>
+                </Label.GestureRecognizers>
+            </Label>
+        </FlexLayout>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout x:Name="results" Margin="20"/>
+        </ScrollView>
+    </Grid>
 </ContentPage>
