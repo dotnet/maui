@@ -63,6 +63,9 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(label, fontManager);
+
+			if (handler.PlatformView?.AttributedText != null)
+				handler.PlatformView?.UpdateTextHtml(label);
 		}
 
 		public static void MapLineHeight(ILabelHandler handler, ILabel label)

@@ -83,10 +83,31 @@ namespace Microsoft.Maui.Platform
 				StringEncoding = NSStringEncoding.UTF8
 			};
 
+			var uiFontAttribute = label?.Handler?.GetRequiredService<IFontManager>()?.GetFont(label.Font, UIFont.LabelFontSize);
+
 			NSError nsError = new();
-#pragma warning disable CS8601
-			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
-#pragma warning restore CS8601
+			var attributedString = new NSMutableAttributedString(new NSAttributedString(text, attr, ref nsError));
+
+			// Enumerate through the attributes in the string and update font size
+			attributedString.EnumerateAttributes(new NSRange(0, attributedString.Length), NSAttributedStringEnumeration.None,
+				(NSDictionary attrs, NSRange range, ref bool stop) =>
+				{
+					if (label!.Font.Family == null)
+					{
+						var font = attrs[UIStringAttributeKey.Font] as UIFont;
+						if (font != null)
+						{
+							font = font.WithSize((nfloat)(label?.Font.Size ?? UIFont.LabelFontSize));
+							attributedString.AddAttribute(UIStringAttributeKey.Font, font, range);
+						}
+					}
+					else if (uiFontAttribute != null)
+					{
+						attributedString.AddAttribute(UIStringAttributeKey.Font, uiFontAttribute, range);
+					}
+				});
+
+			platformLabel.AttributedText = attributedString;
 		}
 
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)
