@@ -34,11 +34,17 @@ namespace Microsoft.Maui.DeviceTests
 
 				var appStub = new MauiAppNewWindowStub(window);
 				UI.Xaml.Application.Current.SetApplicationHandler(appStub, applicationContext);
+
+				IdleSynchronizer idleSynchronizer = null;
 				WWindow newWindow = null;
 				try
 				{
 					ApplicationExtensions.CreatePlatformWindow(UI.Xaml.Application.Current, appStub, new Handlers.OpenWindowRequest());
 					newWindow = window.Handler.PlatformView as WWindow;
+
+					idleSynchronizer = IdleSynchronizer.GetForCurrentProcess(newWindow.DispatcherQueue);
+					await idleSynchronizer.WaitAsync();
+
 					await runTests.Invoke();
 				}
 				finally
@@ -47,6 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 					await Task.Delay(10);
 					newWindow?.Close();
 					appStub.Handler?.DisconnectHandler();
+					idleSynchronizer.Dispose();
 				}
 			});
 		}

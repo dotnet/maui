@@ -16,10 +16,16 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsOn(SwitchHandler switchHandler) =>
 			GetNativeSwitch(switchHandler).IsOn;
 
-		Task ValidateTrackColor(ISwitch switchStub, Color color, Action action = null, string updatePropertyValue = null) =>
-			ValidateHasColor(switchStub, color, action, updatePropertyValue: updatePropertyValue);
+		async Task ValidateTrackColor(ISwitch switchStub, Color color, Action action = null, string updatePropertyValue = null)
+		{
+			await IdleSynchronizer.GetForCurrentProcess().WaitAsync();
+			await ValidateHasColor(switchStub, color, action, updatePropertyValue: updatePropertyValue);
+		}
 
-		Task ValidateThumbColor(ISwitch switchStub, Color color, Action action = null, string updatePropertyValue = null) =>
-			ValidateHasColor(switchStub, color, action, updatePropertyValue: updatePropertyValue);
+		async Task ValidateThumbColor(ISwitch switchStub, Color color, Action action = null, string updatePropertyValue = null)
+		{
+			await IdleSynchronizer.GetForCurrentProcess().WaitAsync();
+			await ValidateHasColor(switchStub, color, action, updatePropertyValue: updatePropertyValue);
+		}
 	}
 }
