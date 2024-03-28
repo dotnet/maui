@@ -200,25 +200,11 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				InsertBasedOnSort(collection, contact, c => GetSortString(c)[0]);
 		}
 
-		int IndexOf<T>(IEnumerable<T> elements, T element)
-		{
-			int i = 0;
-			foreach (T e in elements)
-			{
-				if (Equals(e, element))
-					return i;
-
-				i++;
-			}
-
-			return -1;
-		}
-
 		void InsertBasedOnSort<T, TSort>(IList<T> items, T item, Func<T, TSort> sortBy)
 		{
 			List<T> newItems = new List<T>(items);
 			newItems.Add(item);
-			int index = IndexOf(newItems.OrderBy(sortBy), item);
+			int index = newItems.OrderBy(sortBy).IndexOf(item);
 			items.Insert(index, item);
 		}
 
