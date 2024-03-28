@@ -43,11 +43,24 @@
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
+    <MauiImage Update="Resources\Images\dotnet_bot_resized.svg" Color="#FFFFFF" BaseSize="20,20" />
     <MauiImage Include="Resources\Images\dotnet_bot.svg" Link="Resources\Images\small_dotnet_bot.svg" Color="#FFFFFF" BaseSize="64,64" />
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="168,208" />
+    <MauiFont Include="Resources\Fonts\OpenSans-Regular.ttf" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Issues\Issue21394.xaml.cs">
+      <DependentUpon>Issue21394.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
-
+  
+  <ItemGroup>
+    <MauiXaml Update="Issues\Issue21394.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
 </Project>
