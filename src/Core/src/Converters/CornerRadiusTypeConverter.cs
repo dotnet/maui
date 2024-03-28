@@ -20,10 +20,29 @@ namespace Microsoft.Maui.Converters
 
 			if (strValue != null)
 			{
-				strValue = strValue.Trim();
+
+#if NET8_0_OR_GREATER
+				char separator;
+				string[] cornerRadius;
+
 				if (strValue.ContainsChar(','))
+				{
+					separator = ',';
+					cornerRadius = strValue.Split(separator, StringSplitOptions.TrimEntries);
+				}
+				else
+				{
+					separator = ' ';
+					cornerRadius = strValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+				}
+#else
+				strValue = strValue.Trim();
+				var separator = strValue.ContainsChar(',') ? ',' : ' ';
+				var cornerRadius = strValue.Split(separator);
+#endif
+
+				if (separator == ',')
 				{ //Xaml
-					var cornerRadius = strValue.Split(',');
 					if (cornerRadius.Length == 4
 						&& double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double tl)
 						&& double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double tr)
@@ -35,9 +54,8 @@ namespace Microsoft.Maui.Converters
 						&& double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
 						return new CornerRadius(l);
 				}
-				else if (strValue.ContainsChar(' '))
+				else if (separator == ' ')
 				{ //CSS
-					var cornerRadius = strValue.Split(' ');
 					if (cornerRadius.Length == 2
 						&& double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double t)
 						&& double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double b))
@@ -56,7 +74,7 @@ namespace Microsoft.Maui.Converters
 				}
 				else
 				{ //single uniform CornerRadius
-					if (double.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
+					if (double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
 						return new CornerRadius(l);
 				}
 			}
@@ -69,9 +87,7 @@ namespace Microsoft.Maui.Converters
 			if (value is not CornerRadius cr)
 				throw new NotSupportedException();
 
-			return $"{cr.TopLeft.ToString(CultureInfo.InvariantCulture)}, {cr.TopRight.ToString(CultureInfo.InvariantCulture)}, " +
-				$"{cr.BottomLeft.ToString(CultureInfo.InvariantCulture)}, {cr.BottomRight.ToString(CultureInfo.InvariantCulture)}";
-
+			return $"{cr.TopLeft.ToString(CultureInfo.InvariantCulture)}, {cr.TopRight.ToString(CultureInfo.InvariantCulture)}, {cr.BottomLeft.ToString(CultureInfo.InvariantCulture)}, {cr.BottomRight.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}
 }
