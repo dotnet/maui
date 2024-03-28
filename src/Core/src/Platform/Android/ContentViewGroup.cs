@@ -9,10 +9,12 @@ using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
+	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IInputTransparentManagingView
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
+
+		bool IInputTransparentManagingView.InputTransparent { get; set; }
 
 		public ContentViewGroup(Context context) : base(context)
 		{
@@ -97,6 +99,16 @@ namespace Microsoft.Maui.Platform
 			var destination = _context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
 
 			CrossPlatformArrange(destination);
+		}
+
+		public override bool OnTouchEvent(MotionEvent? e)
+		{
+			if (((IInputTransparentManagingView)this).InputTransparent)
+			{
+				return false;
+			}
+
+			return base.OnTouchEvent(e);
 		}
 
 		internal IBorderStroke? Clip
