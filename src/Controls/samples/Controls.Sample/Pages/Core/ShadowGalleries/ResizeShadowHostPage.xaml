@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ResizeShadowHostPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="Resize Shadow Host">
+    <Grid
+        RowDefinitions="*, Auto">
+        <Image
+            x:Name="ShadowHost"
+            Source="oasis.jpg" 
+            HeightRequest="300"
+            WidthRequest="300"
+            VerticalOptions="Center"
+            HorizontalOptions="Center">
+            <Image.Shadow>
+                <Shadow
+                    Brush="Red"
+                    Offset="10,10" 
+                    Radius="10"  />
+            </Image.Shadow>
+        </Image>
+        <Button 
+            Grid.Row="1"
+            Text="Resize Shadow Host"
+            Clicked="OnResizeShadowHostClicked"/>
+    </Grid>
+</views:BasePage>

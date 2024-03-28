@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Views;
 using Microsoft.Maui.Graphics;
@@ -13,6 +14,8 @@ namespace Microsoft.Maui.Platform
 	public partial class WrapperView : PlatformWrapperView
 	{
 		const int MaximumRadius = 100;
+
+		Orientation _orientation;
 
 		APath _currentPath;
 		SizeF _lastPathSize;
@@ -30,6 +33,7 @@ namespace Microsoft.Maui.Platform
 		public WrapperView(Context context)
 			: base(context)
 		{
+			_orientation = Resources.Configuration.Orientation;
 		}
 
 		protected override void OnDetachedFromWindow()
@@ -112,6 +116,23 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_borderView.UpdateBorderStroke(Border);
+		}
+
+		protected override void OnConfigurationChanged(Configuration newConfig)
+		{
+			Orientation newOrientation = newConfig.Orientation;
+
+			// When drawing Shadows we use bitmaps that require a position and size.
+			// If the orientation changes, we have to invalidate Shadows.
+			if (newOrientation != _orientation)
+			{
+				_invalidateClip = true;
+				_invalidateShadow = true;
+			}
+
+			_orientation = newOrientation;
+
+			base.OnConfigurationChanged(newConfig);
 		}
 
 		protected override APath GetClipPath(int width, int height)
