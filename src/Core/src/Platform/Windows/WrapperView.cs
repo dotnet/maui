@@ -17,11 +17,13 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : Grid, IDisposable
 	{
+		long _visibilityDependencyPropertyCallbackToken;
 		readonly Canvas _shadowCanvas;
 		SpriteVisual? _shadowVisual;
 		DropShadow? _dropShadow;
 		UI.Xaml.Shapes.Rectangle? _shadowHost;
 		WSize _shadowHostSize;
+		WSize _shadowMaskSize;
 		Path? _borderPath;
 
 		FrameworkElement? _child;
@@ -35,7 +37,6 @@ namespace Microsoft.Maui.Platform
 			Children.Add(_borderPath);
 		}
 
-		long _visibilityDependencyPropertyCallbackToken;
 		public FrameworkElement? Child
 		{
 			get { return _child; }
@@ -43,6 +44,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_child != null)
 				{
+					_child.Loaded -= OnChildLoaded;
 					_child.SizeChanged -= OnChildSizeChanged;
 					_child.UnregisterPropertyChangedCallback(VisibilityProperty, _visibilityDependencyPropertyCallbackToken);
 					Children.Remove(_child);
@@ -52,6 +54,7 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				_child = value;
+				_child.Loaded += OnChildLoaded;
 				_child.SizeChanged += OnChildSizeChanged;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				Children.Add(_child);
@@ -138,6 +141,11 @@ namespace Microsoft.Maui.Platform
 				CreateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
 		}
 
+		void OnChildLoaded(object sender, RoutedEventArgs e)
+		{
+			UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+		}
+
 		void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			_shadowHostSize = e.NewSize;
@@ -183,7 +191,7 @@ namespace Microsoft.Maui.Platform
 
 		async Task CreateShadowAsync()
 		{
-			if (Child == null || Shadow == null || Shadow.Paint == null)
+			if (Child is null || !Child.IsLoaded || Shadow is null || Shadow.Paint is null)
 				return;
 
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
@@ -193,6 +201,12 @@ namespace Microsoft.Maui.Platform
 
 			double width = _shadowHostSize.Width;
 			double height = _shadowHostSize.Height;
+
+			if (height <= 0 && width <= 0)
+				return;
+
+			if (Clip is not null)
+				await Task.Delay(500);
 
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
@@ -225,10 +239,13 @@ namespace Microsoft.Maui.Platform
 
 		async Task UpdateShadowAsync()
 		{
-			if (_dropShadow != null)
+			if (_dropShadow is null)
+				await CreateShadowAsync();
+			else
+			{
 				await SetShadowPropertiesAsync(_dropShadow, Shadow);
-
-			UpdateShadowSize();
+				UpdateShadowSize();
+			}
 		}
 
 		void UpdateShadowSize()
@@ -268,7 +285,7 @@ namespace Microsoft.Maui.Platform
 			Graphics.Color? shadowColor = Colors.Black;
 			Graphics.Point offset = Graphics.Point.Zero;
 
-			if (mauiShadow != null)
+			if (mauiShadow is not null)
 			{
 				blurRadius = mauiShadow.Radius * 2;
 				opacity = mauiShadow.Opacity;
@@ -279,11 +296,16 @@ namespace Microsoft.Maui.Platform
 			dropShadow.BlurRadius = blurRadius;
 			dropShadow.Opacity = opacity;
 
-			if (shadowColor != null)
+			if (shadowColor is not null)
 				dropShadow.Color = shadowColor.ToWindowsColor();
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
-			dropShadow.Mask = await Child.GetAlphaMaskAsync();
+
+			if (_shadowHostSize != _shadowMaskSize) // Only update the Mask if the Host size changes
+			{
+				dropShadow.Mask = await Child.GetAlphaMaskAsync();
+				_shadowMaskSize = _shadowHostSize;
+			}
 		}
 	}
 }
