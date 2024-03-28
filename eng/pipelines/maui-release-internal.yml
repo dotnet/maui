@@ -178,6 +178,24 @@ extends:
                   #       gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   #       skipAndroidImages: true
 
+              - task: DotNetCoreCLI@2
+                displayName: Generate and publish BAR manifest
+                inputs:
+                  projects: $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
+                  arguments: >-
+                    -t:PushManifestToBuildAssetRegistry
+                    -p:BuildAssetRegistryToken=$(MaestroAccessToken)
+                    -p:OutputPath=$(Build.StagingDirectory)\nuget\
+                    -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
+                condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))
+              
+              - powershell: |
+                  $versionEndpoint = 'https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc-version?api-version=2019-01-16'
+                  $darcVersion = $(Invoke-WebRequest -Uri $versionEndpoint -UseBasicParsing).Content
+                  $arcadeServicesSource = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+                  & dotnet tool update microsoft.dotnet.darc --version "$darcVersion" --add-source "$arcadeServicesSource" --tool-path $(Agent.ToolsDirectory)\darc -v n
+                  & $(Agent.ToolsDirectory)\darc\darc add-build-to-channel --default-channels --id $(BARBuildId) --publishing-infra-version 3 --skip-assets-publishing --password $(MaestroAccessToken) --azdev-pat $(publishing-dnceng-devdiv-code-r-build-re)
+
       # Publish and validation steps. Only run in official builds
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
