@@ -11,6 +11,7 @@ namespace UITest.Appium
 			: base(new MacDriver(remoteAddress, GetOptions(config)), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumCatalystPointerActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAppleAlertActions(this));
 		}
 
 		public override ApplicationState AppState

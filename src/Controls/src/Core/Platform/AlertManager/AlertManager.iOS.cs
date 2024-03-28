@@ -177,11 +177,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 			static void PresentPopUp(Page sender, Window virtualView, UIWindow platformView, UIAlertController alert, ActionSheetArguments arguments = null)
 			{
-				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && arguments != null)
+				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad &&
+				    arguments is not null &&
+				    alert.PopoverPresentationController is not null &&
+				    platformView.RootViewController?.View is not null)
 				{
 					UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
 					var observer = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification,
-						n => { alert.PopoverPresentationController.SourceRect = platformView.RootViewController.View.Bounds; });
+						n => alert.PopoverPresentationController.SourceRect = platformView.RootViewController.View.Bounds);
 
 					arguments.Result.Task.ContinueWith(t =>
 					{
@@ -214,7 +217,7 @@ namespace Microsoft.Maui.Controls.Platform
 			static UIViewController GetTopUIViewController(UIWindow platformWindow)
 			{
 				var topUIViewController = platformWindow.RootViewController;
-				while (topUIViewController.PresentedViewController is not null)
+				while (topUIViewController?.PresentedViewController is not null)
 				{
 					topUIViewController = topUIViewController.PresentedViewController;
 				}

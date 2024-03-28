@@ -13,6 +13,7 @@ namespace UITest.Appium
 		{
 			_commandExecutor.AddCommandGroup(new AppiumIOSPointerActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAppleAlertActions(this));
 		}
 
 		public override ApplicationState AppState
