@@ -187,6 +187,13 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static void JumpToIndexAsync(ListViewBase list, int index, ScrollToPosition scrollToPosition)
 		{
 			var scrollViewer = list.GetFirstDescendant<ScrollViewer>();
+
+			if (scrollViewer is null)
+			{
+				// If ScrollViewer is not found, do nothing.
+				return;
+			}
+
 			var con = list.ContainerFromIndex(index);
 			if (con is UIElement uIElement)
 			{
@@ -201,7 +208,24 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static async Task JumpToItemAsync(ListViewBase list, object targetItem, ScrollToPosition scrollToPosition)
 		{
+			if(!list.IsLoaded)
+			{
+				list.OnLoaded(async () =>
+				{
+					// If the ListView is not loaded, wait for it to load and reinvoke the JumpToItem.
+					await JumpToItemAsync(list, targetItem, scrollToPosition);
+				});
+
+				return;
+			}
+
 			var scrollViewer = list.GetFirstDescendant<ScrollViewer>();
+
+			if (scrollViewer is null)
+			{
+				// If ScrollViewer is not found, do nothing.
+				return;
+			}
 
 			var tcs = new TaskCompletionSource<object>();
 			Func<Task> adjust = null;
@@ -269,6 +293,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static async Task AnimateToItemAsync(ListViewBase list, object targetItem, ScrollToPosition scrollToPosition)
 		{
+			if (!list.IsLoaded)
+			{
+				list.OnLoaded(async () =>
+				{
+					// If the ListView is not loaded, wait for it to load and reinvoke the AnimateToItem.
+					await AnimateToItemAsync(list, targetItem, scrollToPosition);
+				});
+
+				return;
+			}
+
 			var scrollViewer = list.GetFirstDescendant<ScrollViewer>();
 
 			if (scrollViewer == null)
