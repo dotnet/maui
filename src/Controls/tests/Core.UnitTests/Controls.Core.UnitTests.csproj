@@ -4,7 +4,7 @@
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <AssemblyName>Microsoft.Maui.Controls.Core.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
-    <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998;4014</NoWarn>
+    <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998</NoWarn>
     <!--
       NOTE: Keep this project on C# 9 to avoid changes in overload resolution:
       src/Controls/tests/Core.UnitTests/TemplatedItemsListTests.cs(543,11): error CS0121: The call is ambiguous between the following methods or properties: 'Assert.That(TestDelegate, IResolveConstraint)' and 'Assert.That<TActual>(TActual, IResolveConstraint)'
