@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Platform
 					menuItem.SetChecked(true);
 			}
 
-			bottomView.SetShiftMode(false, false);
+			bottomView.SetShiftMode(false);
 
 			if (loadTasks.Count > 0)
 				await Task.WhenAll(loadTasks);
@@ -239,12 +239,24 @@ namespace Microsoft.Maui.Controls.Platform
 			return bottomSheetDialog;
 		}
 
+		internal static void SetShiftMode(this BottomNavigationView bottomNavigationView, bool enableShiftMode)
+		{
+			if (enableShiftMode)
+				bottomNavigationView.LabelVisibilityMode = ALabelVisibilityMode.LabelVisibilityAuto;
+			else
+				bottomNavigationView.LabelVisibilityMode = ALabelVisibilityMode.LabelVisibilityLabeled;
+		}
 
-		public static void SetShiftMode(this BottomNavigationView bottomNavigationView, bool enableShiftMode, bool enableItemShiftMode)
+
+		[Obsolete("Just set the LabelVisibilityMode property on the BottomNavigationView. This method might break with future releases of Android.")]		public static void SetShiftMode(this BottomNavigationView bottomNavigationView, bool enableShiftMode, bool enableItemShiftMode)
 		{
 			try
 			{
+#pragma warning disable IDE0019 // Use pattern matching
+#pragma warning disable XAOBS001 // Type or member is obsolete
 				var menuView = bottomNavigationView.GetChildAt(0) as BottomNavigationMenuView;
+#pragma warning restore XAOBS001 // Type or member is obsolete
+#pragma warning restore IDE0019 // Use pattern matching
 				if (menuView is null)
 				{
 					System.Diagnostics.Debug.WriteLine("Unable to find BottomNavigationMenuView");
@@ -266,7 +278,11 @@ namespace Microsoft.Maui.Controls.Platform
 				for (int i = 0; i < menuView.ChildCount; i++)
 				{
 					var child = menuView.GetChildAt(i);
+#pragma warning disable IDE0019 // Use pattern matching
+#pragma warning disable XAOBS001 // Type or member is obsolete
 					var item = child as BottomNavigationItemView;
+#pragma warning restore XAOBS001 // Type or member is obsolete
+#pragma warning restore IDE0019 // Use pattern matching
 					if (item != null)
 					{
 #if __ANDROID_28__

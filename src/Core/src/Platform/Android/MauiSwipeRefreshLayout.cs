@@ -105,8 +105,8 @@ namespace Microsoft.Maui.Platform
 				return recyclerView.ComputeVerticalScrollOffset() > 0;
 
 			if (view is NestedScrollView nestedScrollView)
-				return nestedScrollView.ComputeVerticalScrollOffset() > 0;
-
+				return nestedScrollView.ScrollY > 0;
+				
 			if (view is AWebView webView)
 				return webView.ScrollY > 0;
 

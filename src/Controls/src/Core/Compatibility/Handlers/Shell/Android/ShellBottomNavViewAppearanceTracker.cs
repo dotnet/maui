@@ -13,6 +13,7 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using R = Android.Resource;
+using AViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
@@ -72,7 +73,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
 		{
-			var menuView = bottomView.GetChildAt(0) as BottomNavigationMenuView;
+			var menuView = bottomView.GetChildAt(0) as AViewGroup;
 			var oldBackground = bottomView.Background;
 			var colorDrawable = oldBackground as ColorDrawable;
 			var colorChangeRevealDrawable = oldBackground as ColorChangeRevealDrawable;
