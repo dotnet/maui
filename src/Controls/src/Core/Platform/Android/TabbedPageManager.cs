@@ -123,6 +123,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				Element.Disappearing -= OnTabbedPageDisappearing;
 				RemoveTabs();
 				_viewPager.LayoutChange -= OnLayoutChanged;
+				_viewPager.Adapter = null;
 			}
 
 			Element = tabbedPage;
@@ -898,8 +899,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				base.OnPageSelected(position);
 
-				var _previousPage = _tabbedPageManager._previousPage;
 				var Element = _tabbedPageManager.Element;
+
+				if (Element == null)
+					return;
+
+				var _previousPage = _tabbedPageManager._previousPage;
 				var IsBottomTabPlacement = _tabbedPageManager.IsBottomTabPlacement;
 				var _bottomNavigationView = _tabbedPageManager._bottomNavigationView;
 
