@@ -121,7 +121,14 @@
                             x:Name="indicatorView"
                             IndicatorColor="LightGray"
                             SelectedIndicatorColor="DarkGray"
-                HorizontalOptions="Center" />
+                            HorizontalOptions="Center">
+                     <IndicatorView.IndicatorTemplate>
+                          <DataTemplate>
+                              <Label 
+                                  Text="{Binding }"/>
+                          </DataTemplate>
+                      </IndicatorView.IndicatorTemplate>
+                  </IndicatorView>
             </StackLayout>
         </Grid>
     </views:BasePage.Content>
