@@ -66,12 +66,12 @@ namespace Microsoft.Maui.Platform
 					transform.M34 = 1.0f / -400f;
 
 				if (Math.Abs(rotationX % 360) > epsilon)
-					transform = transform.Rotate(rotationX * (float)Math.PI / 180.0f, 1.0f, 0.0f, 0.0f);
+					transform = transform.Rotate(rotationX * MathF.PI / 180.0f, 1.0f, 0.0f, 0.0f);
 
 				if (Math.Abs(rotationY % 360) > epsilon)
-					transform = transform.Rotate(rotationY * (float)Math.PI / 180.0f, 0.0f, 1.0f, 0.0f);
+					transform = transform.Rotate(rotationY * MathF.PI / 180.0f, 0.0f, 1.0f, 0.0f);
 
-				transform = transform.Rotate(rotation * (float)Math.PI / 180.0f, 0.0f, 0.0f, 1.0f);
+				transform = transform.Rotate(rotation * MathF.PI / 180.0f, 0.0f, 0.0f, 1.0f);
 
 				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
 					transform = transform.Scale(scaleX, scaleY, scale);

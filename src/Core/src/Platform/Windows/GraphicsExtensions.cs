@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Platform
 					}
 
 					var sweep = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
-					var absSweep = Math.Abs(sweep);
+					var absSweep = MathF.Abs(sweep);
 
 					var rectX = topLeft.X * scale;
 					var rectY = topLeft.Y * scale;

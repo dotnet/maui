@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		nfloat _bottomLeft;
 		nfloat _bottomRight;
 
-		const float PI = (float)Math.PI;
+		const float PI = MathF.PI;
 		const float PIAndAHalf = PI * 1.5f;
 		const float HalfPI = PI * .5f;
 		const float TwoPI = PI * 2;

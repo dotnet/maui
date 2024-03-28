@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Graphics.Platform
 						}
 
 						var rotation = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
-						var absRotation = Math.Abs(rotation);
+						var absRotation = MathF.Abs(rotation);
 
 						var rectX = ox + topLeft.X * fx;
 						var rectY = oy + topLeft.Y * fy;
@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				}
 
 				var rotation = GeometryUtil.GetSweep(startAngle, endAngle, clockwise);
-				var absRotation = Math.Abs(rotation);
+				var absRotation = MathF.Abs(rotation);
 
 				var rectX = topLeft.X * scale;
 				var rectY = topLeft.Y * scale;
