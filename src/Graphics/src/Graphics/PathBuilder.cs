@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.Maui.Graphics
 {
@@ -117,7 +116,7 @@ namespace Microsoft.Maui.Graphics
 #else
 				pathAsString = pathAsString.Replace("Infinity", "0", StringComparison.Ordinal);
 #endif
-				pathAsString = Regex.Replace(pathAsString, "([a-zA-Z])", " $1 ");
+				pathAsString = SeparateLetterCharsWithSpaces(pathAsString);
 #if NETSTANDARD2_0
 				pathAsString = pathAsString.Replace("-", " -");
 				pathAsString = pathAsString.Replace(" E  -", "E-");
@@ -212,6 +211,25 @@ namespace Microsoft.Maui.Graphics
 #if DEBUG
 				throw;
 #endif
+			}
+
+			static string SeparateLetterCharsWithSpaces(string input)
+			{
+				var sb = new StringBuilder(input.Length, maxCapacity: 3 * input.Length);
+				foreach (var character in input)
+				{
+					if (char.IsLetter(character))
+					{
+						sb.Append(' ');
+						sb.Append(character);
+						sb.Append(' ');
+					}
+					else
+					{
+						sb.Append(character);
+					}
+				}
+				return sb.ToString();
 			}
 
 			return _path;
