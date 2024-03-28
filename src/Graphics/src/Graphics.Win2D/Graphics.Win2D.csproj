@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>true</IsPackable>
     <PackageId>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</PackageId>

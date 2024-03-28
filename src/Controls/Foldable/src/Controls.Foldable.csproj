@@ -9,6 +9,11 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <UseMaui Condition=" '$(UseWorkload)' == 'true' ">true</UseMaui>
   </PropertyGroup>
+  <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+  </PropertyGroup>
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>True</IsPackable>

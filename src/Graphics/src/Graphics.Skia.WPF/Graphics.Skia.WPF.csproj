@@ -11,6 +11,12 @@
     <NoWarn>$(NoWarn);RS0041</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="SkiaSharp.Views.WPF" />
   </ItemGroup>
