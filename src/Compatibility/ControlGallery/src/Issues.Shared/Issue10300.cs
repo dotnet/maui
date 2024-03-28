@@ -147,6 +147,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+		[PortTest]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]

@@ -99,6 +99,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+		[PortTest]
 		[Test, Category(UITestCategories.CollectionView)]
 		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ClearingGroupedCollectionViewShouldNotCrash()

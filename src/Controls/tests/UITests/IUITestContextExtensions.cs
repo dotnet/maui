@@ -8,15 +8,25 @@ namespace Microsoft.Maui.AppiumTests
 	{
 		public static void IgnoreIfPlatforms(this UITestBase? context, IEnumerable<TestDevice> devices, string? message = null)
 		{
-			foreach (var device in devices)
+			if (context is null)
 			{
-				context?.IgnoreIfPlatform(device, message);
+				Assert.Ignore();
+				return;
 			}
+
+			foreach (var device in devices)
+				context.IgnoreIfPlatform(device, message);
 		}
 
 		public static void IgnoreIfPlatform(this UITestBase? context, TestDevice device, string? message = null)
 		{
-			if (context != null && context.Device == device)
+			if (context is null)
+			{
+				Assert.Ignore();
+				return;
+			}
+
+			if (context.Device == device)
 			{
 				if (string.IsNullOrEmpty(message))
 					Assert.Ignore();

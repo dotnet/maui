@@ -7,20 +7,23 @@ namespace Microsoft.Maui.AppiumTests
 {
 	public static class UtilExtensions
 	{
-		const string goToTestButtonId = "GoToTestButton";
+		const string GoToTestButtonId = "GoToTestButton";
 
 		public static void Back(this UITestContextBase testBase)
 		{
+			if (testBase is null)
+				return;
+
 			if (testBase.Device == TestDevice.Android)
 			{
-				var query = testBase.App.Query.ByAccessibilityId("Navigate up").First();
-				query.Click();
+				var query = testBase.App.Query.ByAccessibilityId("Navigate up").FirstOrDefault();
+				query?.Click();
 			}
 			else if (testBase.Device == TestDevice.iOS || testBase.Device == TestDevice.Mac)
 			{
 				// Get the first NavigationBar we can find and the first button in it (the back button), index starts at 1
-				var queryBy = testBase.App.Query.ByClass("XCUIElementTypeNavigationBar").First().ByClass("XCUIElementTypeButton").First();
-				queryBy.Click();
+				var queryBy = testBase.App.Query.ByClass("XCUIElementTypeNavigationBar").First().ByClass("XCUIElementTypeButton").FirstOrDefault();
+				queryBy?.Click();
 			}
 			else
 			{
@@ -30,7 +33,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		public static void NavigateToGallery(this IApp app, string page)
 		{
-			app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
+			app.WaitForElement(GoToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
 			NavigateTo(app, page);
 		}
 
@@ -42,19 +45,19 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				app.EnterText("SearchBar", text);
 			}
-			app.Click(goToTestButtonId);
+			app.Click(GoToTestButtonId);
 
-			app.WaitForNoElement(goToTestButtonId, "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(1));
+			app.WaitForNoElement(GoToTestButtonId, "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(1));
 		}
 
 		public static void NavigateToIssues(this IApp app)
 		{
-			app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
+			app.WaitForElement(GoToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
 
 			app.WaitForElement("SearchBar");
 			app.ClearText("SearchBar");
 
-			app.Click(goToTestButtonId);
+			app.Click(GoToTestButtonId);
 			app.WaitForElement("TestCasesIssueList");
 		}
 
