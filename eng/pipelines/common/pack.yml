@@ -49,7 +49,26 @@ parameters:
 
 - name: buildConfiguration
   type: string
-  default: Release
+  default: 
+  
+- name: runAsPublic
+  type: boolean
+  default: false
+
+- name: buildScript
+  type: string
+
+- name: dotnetScript
+  type: string
+
+- name: repoArtifactsPath
+  type: string
+
+- name: repoLogPath
+  type: string
+
+- name: repoTestResultsPath
+  type: string
 
 steps:
 
