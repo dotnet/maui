@@ -49,18 +49,6 @@
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="168,208" />
     <MauiFont Include="Resources\Fonts\OpenSans-Regular.ttf" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Issues\Issue21394.xaml.cs">
-      <DependentUpon>Issue21394.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
   
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
-  
-  <ItemGroup>
-    <MauiXaml Update="Issues\Issue21394.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-  </ItemGroup>
 </Project>
