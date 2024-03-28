@@ -10,7 +10,7 @@
 			<DataTemplate x:Key="SimpleMessageTemplate">
 				<ViewCell>
 					<cmp:StackLayout >
-						<Label Text="{Binding Converter={StaticResource reverseConverter}}" />
+						<Label Text="{Binding Converter={StaticResource reverseConverter}}" x:DataType="x:String" />
 					</cmp:StackLayout>
 				</ViewCell>
 			</DataTemplate>

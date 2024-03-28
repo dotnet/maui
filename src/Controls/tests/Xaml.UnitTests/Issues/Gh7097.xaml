@@ -3,6 +3,7 @@
         xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
         xmlns:local="using:Microsoft.Maui.Controls.Xaml.UnitTests"
+        xmlns:swi="clr-namespace:System.Windows.Input;assembly=System.ObjectModel"
         x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh7097"
         Title="Foo"
         x:Name="self">
@@ -21,12 +22,12 @@
                             Text="BTN 1" 
                             HorizontalOptions="FillAndExpand" 
                             CommandParameter="{Binding}" 
-                            Command="{Binding BindingContext.Button1Command, Source={x:Reference self}}"/>
+                            Command="{Binding BindingContext.Button1Command, Source={x:Reference self}}" x:DataType="swi:ICommand"/>
                         <Button 
                             Text="BTN 2" 
                             HorizontalOptions="FillAndExpand" 
                             CommandParameter="{Binding}" 
-                            Command="{Binding BindingContext.Button2Command, Source={x:Reference self}}"/>
+                            Command="{Binding BindingContext.Button2Command, Source={x:Reference self}}" x:DataType="swi:ICommand"/>
                     </StackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

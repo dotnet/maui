@@ -28,13 +28,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
+	public class BindablePropertiesAccessModifiersVM
+	{
+		public string Foo => "Foo";
+		public string Bar => "Bar";
+	}
+
 	public partial class BindablePropertiesAccessModifiers : ContentPage
 	{
-		class Data
-		{
-			public string Foo => "Foo";
-			public string Bar => "Bar";
-		}
+
 
 		public BindablePropertiesAccessModifiers()
 		{
@@ -54,7 +56,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void BindProperties(bool useCompiledXaml)
 			{
 				var page = new BindablePropertiesAccessModifiers(useCompiledXaml);
-				page.BindingContext = new Data();
+				page.BindingContext = new BindablePropertiesAccessModifiersVM();
 				Assert.AreEqual("Bar", page.AMC.GetValue(AccessModifiersControl.InternalBarProperty));
 				Assert.AreEqual("Foo", page.AMC.GetValue(AccessModifiersControl.PublicFooProperty));
 			}
