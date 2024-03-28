@@ -32,7 +32,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Click("Start");
+				App.Tap("Start");
 				App.WaitForElement("the scrollto button");
 				App.Screenshot("Element is  on the top");
 			}
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Click("Center");
+				App.Tap("Center");
 				App.WaitForElement("the scrollto button");
 				App.WaitForElement("the before");
 				App.WaitForElement("the after");
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Click("End");
+				App.Tap("End");
 				App.WaitForElement("the scrollto button");
 				App.Screenshot("Element is in the end");
 			}

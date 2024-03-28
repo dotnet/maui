@@ -17,7 +17,8 @@ namespace UITest.Appium
 			_config = config ?? throw new ArgumentNullException(nameof(config));
 
 			_commandExecutor = new AppiumCommandExecutor();
-			_commandExecutor.AddCommandGroup(new AppiumPointerActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumMouseActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumTextActions());
 			_commandExecutor.AddCommandGroup(new AppiumGeneralActions());
 			_commandExecutor.AddCommandGroup(new AppiumVirtualKeyboardActions(this));

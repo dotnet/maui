@@ -10,7 +10,8 @@ namespace UITest.Appium
 		public AppiumCatalystApp(Uri remoteAddress, IConfig config)
 			: base(new MacDriver(remoteAddress, GetOptions(config)), config)
 		{
-			_commandExecutor.AddCommandGroup(new AppiumCatalystPointerActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystMouseActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystTouchActions(this));
 		}
 
 		public override ApplicationState AppState

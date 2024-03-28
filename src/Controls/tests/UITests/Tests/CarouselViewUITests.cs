@@ -59,11 +59,11 @@ namespace Microsoft.Maui.AppiumTests
 				CheckLabelValue("lblPosition", index);
 				CheckLabelValue("lblCurrentItem", index);
 
-				App.Click("btnNext");
+				App.Tap("btnNext");
 				CheckLabelValue("lblPosition", nextIndex);
 				CheckLabelValue("lblCurrentItem", nextIndex);
 				CheckLabelValue("lblSelected", nextIndex);
-				App.Click("btnPrev");
+				App.Tap("btnPrev");
 			}
 		}
 
