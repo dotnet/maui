@@ -90,7 +90,9 @@ namespace Microsoft.Maui.DeviceTests
 				var primaryCommand = menu.GetItem(i);
 				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
 
+#pragma warning disable XAOBS001 // Type or member is obsolete
 				if (primaryCommand is MenuItemImpl menuItemImpl)
+#pragma warning restore XAOBS001 // Type or member is obsolete
 				{
 					if (toolbarItem.Order != ToolbarItemOrder.Secondary)
 					{
@@ -246,7 +248,9 @@ namespace Microsoft.Maui.DeviceTests
 				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
 				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
+#pragma warning disable XAOBS001 // Type or member is obsolete
 				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
+#pragma warning restore XAOBS001 // Type or member is obsolete
 
 				if (_window is Window window)
 				{
@@ -284,6 +288,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+#pragma warning disable XAOBS001 // Type or member is obsolete
 		public class FakeActivityRootView : FitWindowsFrameLayout
 		{
 			public FakeActivityRootView(Context context) : base(context)
@@ -291,5 +296,6 @@ namespace Microsoft.Maui.DeviceTests
 				Id = AView.GenerateViewId();
 			}
 		}
+#pragma warning restore XAOBS001 // Type or member is obsolete
 	}
 }
