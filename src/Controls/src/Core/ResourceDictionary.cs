@@ -44,22 +44,8 @@ namespace Microsoft.Maui.Controls
 		public void SetAndCreateSource<T>(Uri value)
 			where T : ResourceDictionary, new()
 		{
-			_source = value;
-			_mergedInstance = s_instances.GetValue(typeof(T), static _ => new T());
-			OnValuesChanged(_mergedInstance.ToArray());
-		}
-
-		internal void SetAndLoadSource(Uri value, string resourcePath, Assembly assembly, global::System.Xml.IXmlLineInfo lineInfo)
-		{
-			_source = value;
-
-			//this will return a type if the RD as an x:Class element, and codebehind
-			var type = XamlResourceIdAttribute.GetTypeForPath(assembly, resourcePath);
-			if (type != null)
-			{
-				_mergedInstance = s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type));
-				OnValuesChanged(_mergedInstance.ToArray());
-			}
+			var instance = s_instances.GetValue(typeof(T), static _ => new T());
+			SetSource(value, instance);
 		}
 
 		internal static ResourceDictionary GetOrCreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
