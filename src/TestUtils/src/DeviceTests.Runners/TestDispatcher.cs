@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 {
 	public static class TestDispatcher
 	{
-		static IDispatcher? s_dispatcher;
+		static IDispatcher? s_dispatcher = null;
 		static IDispatcherProvider? s_provider;
 
 		public static IDispatcherProvider Provider
@@ -29,7 +29,10 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			get
 			{
 				if (s_dispatcher is null)
-					s_dispatcher = TestServices.Services.GetService<ApplicationDispatcher>()?.Dispatcher;
+				{
+					throw new NotImplementedException("Fail because ApplicationDispatcher is internal...");
+					// s_dispatcher = TestServices.Services.GetService<ApplicationDispatcher>()?.Dispatcher;
+				}
 
 				if (s_dispatcher is null)
 					throw new InvalidOperationException($"Test app did not provide a dispatcher.");

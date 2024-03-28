@@ -21,11 +21,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      We want to use an offical MAUI nuget packets...
+      However the Core has the ApplicationDispatcher and it is internal, so we cut some code out...
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    -->
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <UseMaui>true</UseMaui>
+  </PropertyGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('net8'))">
+    <PackageReference Include="Microsoft.Maui.Controls" Condition=" $(CustomMauiVersion) == '' " Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Condition=" $(CustomMauiVersion) == '' " Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls" Condition=" $(CustomMauiVersion) != '' " Version="$(CustomMauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Condition=" $(CustomMauiVersion) != '' " Version="$(CustomMauiVersion)" />
   </ItemGroup>
 
   <ItemGroup>
