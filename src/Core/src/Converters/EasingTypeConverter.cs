@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using static Microsoft.Maui.Easing;
 
@@ -12,6 +11,7 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class EasingTypeConverter : TypeConverter
 	{
+
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
@@ -25,45 +25,57 @@ namespace Microsoft.Maui.Converters
 			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
 
-			strValue = strValue?.Trim() ?? "";
-			var parts = strValue.Split('.');
+			var parts = (strValue = strValue.Trim()).Split('.');
 
 			if (parts.Length == 2 && parts[0] == nameof(Easing))
 				strValue = parts[parts.Length - 1];
 
-			if (strValue.Equals(nameof(Linear), StringComparison.OrdinalIgnoreCase))
-				return Linear;
-			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
-				return SinIn;
-			if (strValue.Equals(nameof(SinOut), StringComparison.OrdinalIgnoreCase))
-				return SinOut;
-			if (strValue.Equals(nameof(SinInOut), StringComparison.OrdinalIgnoreCase))
-				return SinInOut;
-			if (strValue.Equals(nameof(CubicIn), StringComparison.OrdinalIgnoreCase))
-				return CubicIn;
-			if (strValue.Equals(nameof(CubicOut), StringComparison.OrdinalIgnoreCase))
-				return CubicOut;
-			if (strValue.Equals(nameof(CubicInOut), StringComparison.OrdinalIgnoreCase))
-				return CubicInOut;
-			if (strValue.Equals(nameof(BounceIn), StringComparison.OrdinalIgnoreCase))
-				return BounceIn;
-			if (strValue.Equals(nameof(BounceOut), StringComparison.OrdinalIgnoreCase))
-				return BounceOut;
-			if (strValue.Equals(nameof(SpringIn), StringComparison.OrdinalIgnoreCase))
-				return SpringIn;
-			if (strValue.Equals(nameof(SpringOut), StringComparison.OrdinalIgnoreCase))
-				return SpringOut;
+			switch (easing)
+			{
+				case _ when Compare(strValue, Linear):
+					return Linear;
+				case _ when Compare(strValue, SinIn):
+					return SinIn;
+				case _ when Compare(strValue, SinOut):
+					return SinOut;
+				case _ when Compare(strValue, SinInOut):
+					return SinInOut;
+				case _ when Compare(strValue, CubicIn):
+					return CubicIn;
+				case _ when Compare(strValue, CubicOut):
+					return CubicOut;
+				case _ when Compare(strValue, CubicInOut):
+					return CubicInOut;
+				case _ when Compare(strValue, BounceIn):
+					return BounceIn;
+				case _ when Compare(strValue, BounceOut):
+					return BounceOut;
+				case _ when Compare(strValue, SpringIn):
+					return SpringIn;
+				case _ when Compare(strValue, SpringOut):
+					return SpringOut;
+			}
+			bool Compare(string left, string right) => left.Equals(right, StringComparison.InvariantCultureIgnoreCase);
 
-			var fallbackValue = typeof(Easing)
-				.GetTypeInfo()
-				.DeclaredFields
-				.FirstOrDefault(f => f.Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
-				?.GetValue(null);
+			var delcaredFields = typeof(Easing)
+								.GetTypeInfo()
+								.DeclaredFields;
+
+			var fallbackValue = null;
+			for (int i = 0; i < delcaredFields.Length; i++)
+			{
+				if (delcaredFields[i].Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
+				{
+					fallbackValue = delcaredFields[i].GetValue(null);
+					break;
+				}
+			}
 
 			if (fallbackValue is Easing fallbackEasing)
 				return fallbackEasing;
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}");
+
 		}
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
@@ -71,30 +83,21 @@ namespace Microsoft.Maui.Converters
 			if (value is not Easing easing)
 				throw new NotSupportedException();
 
-			if (easing == Linear)
-				return nameof(Linear);
-			if (easing == SinIn)
-				return nameof(SinIn);
-			if (easing == SinOut)
-				return nameof(SinOut);
-			if (easing == SinInOut)
-				return nameof(SinInOut);
-			if (easing == CubicIn)
-				return nameof(CubicIn);
-			if (easing == CubicOut)
-				return nameof(CubicOut);
-			if (easing == CubicInOut)
-				return nameof(CubicInOut);
-			if (easing == BounceIn)
-				return nameof(BounceIn);
-			if (easing == BounceOut)
-				return nameof(BounceOut);
-			if (easing == SpringIn)
-				return nameof(SpringIn);
-			if (easing == SpringOut)
-				return nameof(SpringOut);
-
-			throw new NotSupportedException();
+			return easing switch
+			{
+				_ when easing.Equals(Linear) => nameof(Linear),
+				_ when easing.Equals(SinIn) => nameof(SinIn),
+				_ when easing.Equals(SinOut) => nameof(SinOut),
+				_ when easing.Equals(SinInOut) => nameof(SinInOut),
+				_ when easing.Equals(CubicIn) => nameof(CubicIn),
+				_ when easing.Equals(CubicOut) => nameof(CubicOut),
+				_ when easing.Equals(CubicInOut) => nameof(CubicInOut),
+				_ when easing.Equals(BounceIn) => nameof(BounceIn),
+				_ when easing.Equals(BounceOut) => nameof(BounceOut),
+				_ when easing.Equals(SpringIn) => nameof(SpringIn),
+				_ when easing.Equals(SpringOut) => nameof(SpringOut),
+				_ => throw new NotSupportedException(),
+			};
 		}
 
 		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
