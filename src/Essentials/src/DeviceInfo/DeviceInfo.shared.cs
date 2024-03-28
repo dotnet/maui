@@ -24,6 +24,11 @@ namespace Microsoft.Maui.Devices
 	public interface IDeviceInfo
 	{
 		/// <summary>
+		/// Gets the unique ID of the device.
+		/// </summary>
+		string DeviceId { get; }
+
+		/// <summary>
 		/// Gets the model of the device.
 		/// </summary>
 		string Model { get; }
@@ -70,6 +75,11 @@ namespace Microsoft.Maui.Devices
 	/// </summary>
 	public static class DeviceInfo
 	{
+		/// <summary>
+		/// Gets the unique ID of the device.
+		/// </summary>
+		public static string DeviceId => Current.DeviceId;
+
 		/// <summary>
 		/// Gets the model of the device.
 		/// </summary>

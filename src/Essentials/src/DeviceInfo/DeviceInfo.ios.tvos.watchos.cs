@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Devices
 {
 	class DeviceInfoImplementation : IDeviceInfo
 	{
+		public string DeviceId => UIDevice.CurrentDevice.IdentifierForVendor.AsString();
+
 		public string Model
 		{
 			get

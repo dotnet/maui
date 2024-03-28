@@ -5,6 +5,8 @@ namespace Microsoft.Maui.Devices
 {
 	class DeviceInfoImplementation : IDeviceInfo
 	{
+		public string DeviceId => throw ExceptionUtils.NotSupportedOrImplementedException;
+
 		public string Model => throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		public string Manufacturer => throw ExceptionUtils.NotSupportedOrImplementedException;

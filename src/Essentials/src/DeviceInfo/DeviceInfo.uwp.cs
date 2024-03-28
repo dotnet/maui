@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Maui.ApplicationModel;
+using Windows.Security.Cryptography;
 using Windows.Security.ExchangeActiveSyncProvisioning;
 using Windows.System.Profile;
 using Windows.UI.ViewManagement;
@@ -29,6 +30,19 @@ namespace Microsoft.Maui.Devices
 			catch (Exception ex)
 			{
 				Debug.WriteLine($"Unable to get system product name. {ex.Message}");
+			}
+		}
+
+		public string DeviceId
+		{
+			get
+			{
+				var systemIdentificationInfo = SystemIdentification.GetSystemIdForPublisher();
+
+				if (systemIdentificationInfo == null)
+					return string.Empty;
+
+				return CryptographicBuffer.EncodeToHexString(systemIdentificationInfo.Id);
 			}
 		}
 
