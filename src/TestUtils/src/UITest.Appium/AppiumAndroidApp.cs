@@ -10,6 +10,7 @@ namespace UITest.Appium
 		private AppiumAndroidApp(Uri remoteAddress, IConfig config)
 			: base(new AndroidDriver(remoteAddress, GetOptions(config)), config)
 		{
+			_commandExecutor.AddCommandGroup(new AppiumAndroidSpecificActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidVirtualKeyboardActions(this));
 		}
 
