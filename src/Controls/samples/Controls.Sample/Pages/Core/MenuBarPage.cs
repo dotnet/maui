@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Maui.Controls.Sample.ViewModels;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -25,6 +26,8 @@ namespace Maui.Controls.Sample.Pages
 					Key = "F"
 				}
 			);
+
+			BindingContext = new MenuBarViewModel();		
 		}
 
 		void ItemClicked(object sender, EventArgs e)
@@ -65,6 +68,14 @@ namespace Maui.Controls.Sample.Pages
 			else
 			{
 				MenuBarItems.Remove(barItem);
+			}
+		}
+
+		void SwapIcons(object sender, EventArgs e)
+		{
+			if (BindingContext is MenuBarViewModel menuBarViewModel)
+			{
+				menuBarViewModel.SwapIcon();
 			}
 		}
 	}
