@@ -40,6 +40,9 @@ namespace Microsoft.Maui.Platform
 				.SetBottomLeftCorner(CornerFamily.Rounded, radius)
 				.SetBottomRightCorner(CornerFamily.Rounded, radius)
 				.Build();
+
+			int contentPadding = (int)(radius / 2);
+			platformButton.SetContentPadding(contentPadding, contentPadding, contentPadding, contentPadding);
 		}
 
 		public static async void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
