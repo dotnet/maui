@@ -68,4 +68,21 @@ public class DiagnosticsTests
         Assert.Single(result.Diagnostics);
         Assert.Equal("BSG0001", result.Diagnostics[0].Id);
     }
+
+    [Fact]
+    public void ReportsUnableToResolvePathWhenUsingMultidimensionalArray()
+    {
+        var source = """
+            using Microsoft.Maui.Controls;
+            var label = new Label();
+
+            var array = new int[1, 1];
+            label.SetBinding(Label.RotationProperty, (Button b) => array[0, 0]);
+            """;
+
+        var result = SourceGenHelpers.Run(source);
+
+        Assert.Single(result.Diagnostics);
+        Assert.Equal("BSG0001", result.Diagnostics[0].Id);
+    }
 }

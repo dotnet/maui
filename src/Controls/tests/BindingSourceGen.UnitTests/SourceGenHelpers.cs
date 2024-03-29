@@ -5,9 +5,20 @@ using Microsoft.CodeAnalysis.CSharp;
 
 using Microsoft.Maui.Controls.BindingSourceGen;
 using System.Runtime.Loader;
+using Xunit;
 
 internal static class SourceGenHelpers
 {
+    internal static CodeWriterBinding GetBinding(string source)
+    {
+        var results = Run(source).Results.Single();
+        var steps = results.TrackedSteps;
+
+        Assert.Empty(results.Diagnostics);
+
+        return (CodeWriterBinding)steps["Bindings"][0].Outputs[0].Value;
+    }
+
     internal static GeneratorDriverRunResult Run(string source)
     {
         var inputCompilation = CreateCompilation(source);
@@ -33,5 +44,6 @@ internal static class SourceGenHelpers
                 MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName("System.Runtime")).Location),
             ],
-            new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+            new CSharpCompilationOptions(OutputKind.ConsoleApplication)
+            .WithNullableContextOptions(NullableContextOptions.Enable));
 }

@@ -58,7 +58,7 @@ public sealed class BindingCodeWriter
 	private string GenerateBindingMethods(int indent)
 	{
 		using var builder = new BidningInterceptorCodeBuilder(indent);
-		
+
 		foreach (var binding in _bindings)
 		{
 			builder.AppendSetBindingInterceptor(binding);
@@ -141,7 +141,7 @@ public sealed class BindingCodeWriter
 
 			Unindent();
 			Unindent();
-		
+
 			AppendLines($$"""
 					{
 						Mode = mode,
