@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Controls
 			Platform.TextExtensions.UpdateText(handler.PlatformView, entry);
 
 			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, entry);
+			handler.UpdateValue(nameof(IEntry.MaxLength));
+			handler.UpdateValue(nameof(IEntry.CharacterSpacing));
+			handler.UpdateValue(nameof(IEntry.HorizontalTextAlignment));
 		}
 
 		public static void MapCursorColor(EntryHandler handler, Entry entry) =>
@@ -29,17 +31,5 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapText(EntryHandler handler, Entry entry) =>
 			MapText((IEntryHandler)handler, entry);
-
-		private static void MapFormatting(IEntryHandler handler, IEntry entry)
-		{
-			handler.PlatformView?.UpdateMaxLength(entry);
-
-			// Update all of the attributed text formatting properties
-			handler.PlatformView?.UpdateCharacterSpacing(entry);
-
-			// Setting any of those may have removed text alignment settings,
-			// so we need to make sure those are applied, too
-			handler.PlatformView?.UpdateHorizontalTextAlignment(entry);
-		}
 	}
 }
