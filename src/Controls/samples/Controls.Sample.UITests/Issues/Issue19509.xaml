@@ -10,7 +10,6 @@
             <Label
                 AutomationId="WaitForStubControl"
                 Text="Hardcoded text"
-                Style="{StaticResource Headline}"
                 SemanticProperties.HeadingLevel="Level1" />
             <Entry 
                 TextColor="Green"
@@ -20,7 +19,6 @@
                 Text="Hardcoded text"/>
             <Label
                 Text="Binding text"
-                Style="{StaticResource Headline}"
                 SemanticProperties.HeadingLevel="Level1" />
             <Entry 
                 x:Name="BindingEntry"
