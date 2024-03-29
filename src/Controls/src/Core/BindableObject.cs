@@ -574,7 +574,7 @@ namespace Microsoft.Maui.Controls
 					while (delayQueue.Count > 0)
 					{
 						SetValueArgs s = delayQueue.Dequeue();
-	  					if (s!=null)
+						if (s != null)
 							SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity, silent);
 					}
 
