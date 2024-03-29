@@ -76,6 +76,7 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 			var scale = UIScreen.MainScreen.Scale;
 			int width = (int)(rect.Width * scale);
 			int height = (int)(rect.Height * scale);
+#pragma warning disable CA1416 // Validate platform compatibility
 			UIGraphics.BeginImageContextWithOptions(rect.Size, false, UIScreen.MainScreen.Scale);
 			using var context = UIGraphics.GetCurrentContext();
 			using var colorSpace = CGColorSpace.CreateDeviceRGB();
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 			var bytesPerPixel = cgimage.BitsPerPixel / 8;
 			if (cgimage.ByteOrderInfo != CGImageByteOrderInfo.ByteOrder32Little)
 				throw new NotImplementedException($"ByteOrderInfo CGImageByteOrderInfo.{cgimage.ByteOrderInfo} not implemented");
-
+#pragma warning restore CA1416 // Validate platform compatibility
 			byte[] rawData = new byte[(int)(cgimage.Width * cgimage.Height * 4)];
 			int index = 0;
 			for (int i = 0; i < cgimage.Height; i++)

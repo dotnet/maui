@@ -48,7 +48,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return _windowManager ??= new NavigationRootManager(this);
 #elif IOS || MACCATALYST
 			if (serviceType == typeof(UIKit.UIWindow))
-				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
+#pragma warning disable CA1422 // Validate platform compatibility
+				return UIKit.UIApplication.SharedApplication.KeyWindow;
+#pragma warning restore CA1422 // Validate platform compatibility
+							  // return UIKit.UIApplication.SharedApplication.GetKeyWindow();
 #elif WINDOWS
 			if (serviceType == typeof(NavigationRootManager))
 				return _windowManager ??= new NavigationRootManager((UI.Xaml.Window)this.GetService(typeof(UI.Xaml.Window)));

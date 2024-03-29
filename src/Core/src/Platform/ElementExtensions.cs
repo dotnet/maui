@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Platform
 
 		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
 		{
-			var handler = view.ToHandler(context);
+			var handler = ToHandler((IElement)view, (IMauiContext) context);
 
 			if (handler.PlatformView is not PlatformView result)
 			{
@@ -165,11 +165,11 @@ namespace Microsoft.Maui.Platform
 		public static void SetWindowHandler(this PlatformWindow platformWindow, IWindow window, IMauiContext context) =>
 			SetHandler(platformWindow, window, context);
 
-#if WINDOWS || IOS || ANDROID || TIZEN
-		internal static IWindow GetWindow(this IElement element) =>
-			element.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow() ??
-			throw new InvalidOperationException("IWindow not found");
-#endif
+// #if WINDOWS || IOS || ANDROID || TIZEN
+// 		internal static IWindow GetWindow(this IElement element) =>
+// 			element.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow() ??
+// 			throw new InvalidOperationException("IWindow not found");
+// #endif
 
 		internal static T? FindParentOfType<T>(this IElement element, bool includeThis = false)
 	where T : IElement
