@@ -37,17 +37,24 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		void HideSoftInputOnTappedPageTestForMac(string control, bool hideOnTapped)
 		{
-			if (hideOnTapped)
-				App.Click("HideSoftInputOnTappedTrue");
-			else
-				App.Click("HideSoftInputOnTappedFalse");
+			try
+			{
+				if (hideOnTapped)
+					App.Click("HideSoftInputOnTappedTrue");
+				else
+					App.Click("HideSoftInputOnTappedFalse");
 
-			App.Click(control);
+				App.Click(control);
 
-			Assert.IsTrue(App.IsFocused(control));
+				Assert.IsTrue(App.IsFocused(control));
 
-			App.Click("EmptySpace");
-			Assert.AreEqual(!hideOnTapped, App.IsFocused(control));
+				App.Click("EmptySpace");
+				Assert.AreEqual(!hideOnTapped, App.IsFocused(control));
+			}
+			finally
+			{
+				App.Back();
+			}
 		}
 
 		void HideSoftInputOnTappedPageTestForAndroidiOS(string control, bool hideOnTapped)
