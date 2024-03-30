@@ -53,7 +53,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}
 			finally
 			{
-				App.Back();
+				Reset();
 			}
 		}
 
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}
 			finally
 			{
-				this.Back();
+				Reset();
 			}
 		}
 
