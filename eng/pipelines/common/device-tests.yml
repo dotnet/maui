@@ -86,7 +86,7 @@ stages:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
                       POOLNAME: ${{ parameters.iosDevicePool.name }}
-                      'POOLDEMANDS': "ios-${{ replace(version, 'device-', '') }}"
+                      POOLDEMANDS': "ios-15"
                      
                     ${{ else }}:
                       DEVICE: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
@@ -97,7 +97,8 @@ stages:
                       
       pool:
         name: $(POOLNAME)
-        demands: [$(POOLDEMANDS)]
+        demands: 
+          - HasiOS -equals ios-15
 
       steps:
         - template: device-tests-steps.yml
