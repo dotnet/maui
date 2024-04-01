@@ -4,6 +4,9 @@ using UITest.Appium;
 using UITest.Core;
 using Microsoft.Maui.AppiumTests;
 using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Appium.Interactions;
+using System.Reflection;
 
 namespace Microsoft.Maui.AppiumTests.Issues;
 public class Issue19956: _IssuesUITest
@@ -26,9 +29,15 @@ public class Issue19956: _IssuesUITest
         var stickyHeader = App.WaitForElement("StickyHeader");
         var stickyHeaderRect = stickyHeader.GetRect();
 
-        // Scroll to the bottom of the page
-        var actions = new TouchAction(app.Driver);
-        actions.LongPress(null, 5, 650).MoveTo(null, 5, 100).Release().Perform();
+		// Scroll to the bottom of the page
+		OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+		var scrollSequence = new ActionSequence(touchDevice, 0);
+		scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 650, TimeSpan.Zero));
+		scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+		scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500)));
+		scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 100, TimeSpan.FromMilliseconds(250)));
+		scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+		app.Driver.PerformActions([scrollSequence]);
 
         app.Click("Entry12");
         ValidateEntryPosition("Entry12", app, stickyHeaderRect);
@@ -74,14 +83,40 @@ public class Issue19956: _IssuesUITest
     }
 
     static void ScrollToBottom(AppiumApp app)
-    {
-        var actions = new TouchAction(app.Driver);
-        // scroll up once to trigger resetting content insets
-        actions.LongPress(null, 5, 300).MoveTo(null, 5, 450).Release().Perform();
-        actions.LongPress(null, 5, 400).MoveTo(null, 5, 100).Release().Perform();
+	{
+		OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+		
+		var scrollSequence1 = new ActionSequence(touchDevice, 0);
+		scrollSequence1.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 300, TimeSpan.Zero));
+		scrollSequence1.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+		scrollSequence1.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500)));
+		scrollSequence1.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 450, TimeSpan.FromMilliseconds(250)));
+		scrollSequence1.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+		app.Driver.PerformActions([scrollSequence1]);
 
-        actions.LongPress(null, 5, 400).MoveTo(null, 5, 100).Release().Perform();
-        actions.LongPress(null, 5, 400).MoveTo(null, 5, 100).Release().Perform();
+		var scrollSequence2 = new ActionSequence(touchDevice, 0);
+		scrollSequence2.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 400, TimeSpan.Zero));
+		scrollSequence2.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+		scrollSequence2.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500)));
+		scrollSequence2.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 100, TimeSpan.FromMilliseconds(250)));
+		scrollSequence2.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+		app.Driver.PerformActions([scrollSequence2]);
+
+		var scrollSequence3 = new ActionSequence(touchDevice, 0);
+		scrollSequence3.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 400, TimeSpan.Zero));
+		scrollSequence3.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+		scrollSequence3.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500)));
+		scrollSequence3.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 100, TimeSpan.FromMilliseconds(250)));
+		scrollSequence3.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+		app.Driver.PerformActions([scrollSequence3]);
+
+		var scrollSequence4 = new ActionSequence(touchDevice, 0);
+		scrollSequence4.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 400, TimeSpan.Zero));
+		scrollSequence4.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+		scrollSequence4.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500)));
+		scrollSequence4.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 100, TimeSpan.FromMilliseconds(250)));
+		scrollSequence4.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+		app.Driver.PerformActions([scrollSequence4]);
     }
 
     void CheckForBottomEntry (AppiumApp app)
