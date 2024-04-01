@@ -95,10 +95,7 @@ stages:
                       POOLIMAGE:  ${{ parameters.iosPool.vmImage }}
                       POOLDEMANDS: ${{ parameters.iosPool.demands }}
                       
-      pool:
-        name: $(POOLNAME)
-        demands: 
-          - HasiOS -equals 15
+      pool: ${{ parameters.iosDevicePool }}
 
       steps:
         - template: device-tests-steps.yml

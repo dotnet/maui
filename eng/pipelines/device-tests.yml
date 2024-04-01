@@ -81,6 +81,7 @@ parameters:
       name: MAUI-Testing
       demands:
         - macOS.Name -equals Ventura
+        - HasiOS -equals 15
 
   - name: catalystPool
     type: object
