@@ -80,7 +80,7 @@ Use the toggle button to check both values of 'IsEnabled'."
 		}
 
 #if UITEST
-		[PortTest]
+		[MovedToAppium]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
@@ -94,7 +94,7 @@ Use the toggle button to check both values of 'IsEnabled'."
 			RunningApp.WaitForElement(Success); // If the ScrollView scrolled, the success label should be displayed
 		}
 
-		[PortTest]
+		[MovedToAppium]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
@@ -113,7 +113,7 @@ Use the toggle button to check both values of 'IsEnabled'."
 			RunningApp.WaitForNoElement(Success); // Shouldn't have scrolled, so no success label should be displayed
 		}
 
-		[PortTest]
+		[MovedToAppium]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
@@ -127,7 +127,7 @@ Use the toggle button to check both values of 'IsEnabled'."
 			RunningApp.WaitForNoElement(Success); // Shouldn't have scrolled, so no success label should be displayed
 		}
 
-		[PortTest]
+		[MovedToAppium]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]

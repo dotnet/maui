@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
-		[PortTest]
+		[MovedToAppium]
 		[Test]
 		[Issue (IssueTracker.Github, 773, "Horizontal ScrollView locks after rotation - relayout correctly after rotation", PlatformAffected.iOS)]
 		[UiTest (typeof(ScrollView))]

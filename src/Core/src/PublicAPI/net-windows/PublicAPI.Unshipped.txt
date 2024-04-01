@@ -114,8 +114,3 @@ virtual Microsoft.Maui.Handlers.ButtonHandler.ImageSourceLoader.get -> Microsoft
 virtual Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
-Microsoft.Maui.PortTestAttribute
-Microsoft.Maui.PortTestAttribute.Description.get -> string?
-Microsoft.Maui.PortTestAttribute.Description.set -> void
-Microsoft.Maui.PortTestAttribute.PortTestAttribute() -> void
-Microsoft.Maui.PortTestAttribute.PortTestAttribute(string! description) -> void

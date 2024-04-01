@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
-		[PortTest]
+		[MovedToAppium]
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[Compatibility.UITests.FailsOnMauiIOS]
