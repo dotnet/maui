@@ -9,5 +9,6 @@
         <Button Text="Test" WidthRequest="100" HeightRequest="100" ImageSource="dotnet_bot.png" ContentLayout="Right,4"/>
         <Button Text="Test" WidthRequest="100" HeightRequest="100" ImageSource="dotnet_bot.png" ContentLayout="Top,4"/>
         <Button Text="Test" WidthRequest="100" HeightRequest="100" ImageSource="dotnet_bot.png" ContentLayout="Bottom,4"/>
+        <Button Text="The quick brown fox jumped over the lazy dog" WidthRequest="100" ImageSource="dotnet_bot.png" LineBreakMode="WordWrap"/>
     </VerticalStackLayout>
 </ContentPage>
