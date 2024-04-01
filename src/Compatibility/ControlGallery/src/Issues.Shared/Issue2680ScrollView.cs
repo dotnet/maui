@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		const string ButtonEnabledCaption = "Enable scroll";
 
 #if UITEST
-		[MovedToAppium]
+		[Compatibility.UITests.MovedToAppium]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			RunningApp.WaitForElement(FirstItemMark, timeout: TimeSpan.FromSeconds(5));
 		}
 
-		[MovedToAppium]
+		[Compatibility.UITests.MovedToAppium]
 		[Test]
 		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 		[Compatibility.UITests.FailsOnMauiIOS]
