@@ -11,8 +11,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		Window _window;
 
-		public ApplicationStub() : base(false)
+		public ApplicationStub() : this(Application.Current)
 		{
+		}
+
+		private ApplicationStub(Application current) : base() //: base(false)
+		{
+			// Base only sets ApplicationCurrent is "true" is passed (the default)
+			// It sees easier to revert this here instead of authoring Reflection to call the internal base constructor.
+			Application.Current = current;
 		}
 
 		public void SetWindow(Window window) => _window = window;

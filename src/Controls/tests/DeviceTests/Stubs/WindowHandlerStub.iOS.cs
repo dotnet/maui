@@ -52,10 +52,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			}
 
 			_currentView = VirtualView.Content;
-			var view = _currentView.ToPlatform(MauiContext);
+			var view = _currentView.ToPlatform2(MauiContext);
 			if (needsToPush)
-			{
-				bool fireEvents = !(VirtualView as Window)?.IsActivated ?? true;
+			{				
+				bool fireEvents = VirtualView is Window ? !(bool)typeof(Window).GetProperty("IsActivated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue((Window)VirtualView) : true;
 				var vc =
 					((IPlatformViewHandler)_currentView.Handler).ViewController;
 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 						_workSpace.AddChildViewController(vc);
 						_workSpace.View.AddSubview(vc.View);
 						if (fireEvents && this is IElementHandler elementHandler && elementHandler.VirtualView is IWindow virtualView)
-							FireWindowEvent(virtualView, (window) => !window.IsActivated, () =>
+							FireWindowEvent(virtualView, (window) => !(bool)typeof(Window).GetProperty("IsActivated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(window), () =>
 							{
 								if (!IsDisconnected)
 									VirtualView.Activated();
@@ -113,10 +113,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return;
 			}
 
-			FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated());
+			FireWindowEvent(virtualView, (window) => (bool)typeof(Window).GetProperty("IsActivated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(window), () => virtualView.Deactivated());
 
-			// Cleanup any modal pages left over from the test
-			while (pvc.PresentedViewController is ModalWrapper mw)
+			while (pvc.PresentedViewController is UIViewController mw && typeof(Microsoft.Maui.Platform.ContentView).Assembly.GetType("Microsoft.Maui.Platform.ModalWrapper").IsInstanceOfType(mw))
 			{
 				await mw.DismissViewControllerAsync(false);
 				await Task.Yield();
@@ -125,7 +124,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			await pvc.PresentingViewController.DismissViewControllerAsync(false);
 			await Task.Yield();
 			finishedClosing.Invoke();
-			FireWindowEvent(virtualView, (window) => !window.IsDestroyed, () => virtualView.Destroying());
+			FireWindowEvent(virtualView, (window) => !(bool)typeof(Window).GetProperty("IsDestroyed", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(window), () => virtualView.Destroying());
 		}
 
 		bool FireWindowEvent(IWindow platformView, Func<Window, bool> condition, Action action)

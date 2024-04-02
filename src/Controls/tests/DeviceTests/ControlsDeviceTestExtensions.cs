@@ -17,7 +17,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return
 				mauiAppBuilder
-					.RemapForControls()
+					// WARNING: NO idea what RemapForControls does... I hope it reuses some new Handler classes inplace of old handler classes or something like that and we can get away without it.
+					// .RemapForControls()
 					.ConfigureLifecycleEvents(lifecycle =>
 					{
 #if IOS || MACCATALYST

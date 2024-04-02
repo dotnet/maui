@@ -31,7 +31,9 @@ namespace Microsoft.Maui.DeviceTests
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
 			mauiAppBuilder.Services.AddSingleton<IApplication>((_) => new ApplicationStub());
-			mauiAppBuilder.Services.AddScoped(_ => new HideSoftInputOnTappedChangedManager());
+
+			var hideSoftInputOnTappedChangedManagerType = typeof(Microsoft.Maui.Controls.Application).Assembly.GetType("Microsoft.Maui.Controls.HideSoftInputOnTappedChangedManager");
+			mauiAppBuilder.Services.AddScoped(hideSoftInputOnTappedChangedManagerType, _ => Activator.CreateInstance(hideSoftInputOnTappedChangedManagerType));
 			return mauiAppBuilder.ConfigureTestBuilder();
 		}
 
@@ -50,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected IElementHandler CreateHandler(IElement view)
 		{
-			var handler = view.ToHandler(MauiContext);
+			var handler = view.ToHandler2(MauiContext);
 			InitializeViewHandler(view, handler, MauiContext);
 			return handler;
 		}
@@ -72,7 +74,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var handler = (IPlatformViewHandler)view.ToHandler(MauiContext);
+				var handler = (IPlatformViewHandler)view.ToHandler2(MauiContext);
 				return func(handler);
 			});
 		}
@@ -80,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = (IPlatformViewHandler)view.ToHandler(MauiContext);
+				var handler = (IPlatformViewHandler)view.ToHandler2(MauiContext);
 				return await func(handler);
 			});
 		}
@@ -222,7 +224,7 @@ namespace Microsoft.Maui.DeviceTests
 #if !WINDOWS
 						if (window is Window controlsWindow)
 						{
-							if (!controlsWindow.IsActivated)
+							if (!(bool)typeof(Window).GetProperty("IsActivated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(controlsWindow))
 								window.Activated();
 						}
 						else
@@ -253,8 +255,8 @@ namespace Microsoft.Maui.DeviceTests
 
 
 #if !WINDOWS
-						bool isActivated = controlsWindow?.IsActivated ?? false;
-						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
+						bool isActivated = controlsWindow == null ? false : (bool)typeof(Window).GetProperty("IsActivated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(controlsWindow);
+						bool isDestroyed = controlsWindow == null ? false : (bool)typeof(Window).GetProperty("IsDestroyed", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(controlsWindow);
 
 						if (isActivated)
 							window.Deactivated();
@@ -513,7 +515,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			await OnLoadedAsync(page, timeOut);
 
-			if (page.HasNavigatedTo)
+			if ((bool)typeof(Page).GetProperty("HasNavigatedTo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(page))
 			{
 				// TabbedPage fires OnNavigated earlier than it should
 				if (page.Parent is TabbedPage)
@@ -565,7 +567,8 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertEventually(
 				() =>
 				{
-					var size = frameworkElement.GetBoundingBox().Size;
+					// var size = frameworkElement.GetBoundingBox().Size;
+					var size = frameworkElement.Bounds.Size;
 					return size.Height > 0 && size.Width > 0;
 				});
 
@@ -583,40 +586,40 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		protected IToolbar GetToolbar(IElementHandler handler)
-		{
-			return (handler.VirtualView as IWindowController)
-						.Window
-						.GetVisualTreeDescendants()
-						.OfType<IToolbarElement>()
-						.SingleOrDefault(x => x.Toolbar is not null)
-						?.Toolbar;
-		}
+		// protected IToolbar GetToolbar(IElementHandler handler)
+		// {
+		// 	return (handler.VirtualView as IWindowController)
+		// 				.Window
+		// 				.GetVisualTreeDescendants()
+		// 				.OfType<IToolbarElement>()
+		// 				.SingleOrDefault(x => x.Toolbar is not null)
+		// 				?.Toolbar;
+		// }
 
 		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
 			ValidateHasColor(view, color, typeof(THandler), action);
 
-		protected static void MockAccessibilityExpectations(View view)
-		{
-#if IOS || MACCATALYST
-			if (UIKit.UIAccessibility.IsVoiceOverRunning)
-				return;
+// 		protected static void MockAccessibilityExpectations(View view)
+// 		{
+// #if IOS || MACCATALYST
+// 			if (UIKit.UIAccessibility.IsVoiceOverRunning)
+// 				return;
 
-			var mapperOverride = view.GetRendererOverrides<IView>();
+// 			var mapperOverride = view.GetRendererOverrides<IView>();
 
-			mapperOverride.ModifyMapping(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, (handler, virtualView, action) =>
-			{
-				if (virtualView is ILabel)
-				{
-					// accessibility for UILabel depends on if the text is set or not
-					// so we want to make sure text has propagated to the platform view
-					// before mocking accessibility expectations
-					handler.UpdateValue(nameof(ILabel.Text));
-				}
-				(handler.PlatformView as UIKit.UIView)?.SetupAccessibilityExpectationIfVoiceOverIsOff();
-				(mapperOverride as PropertyMapper).Chained[0]!.UpdateProperty(handler, view, nameof(AutomationProperties.IsInAccessibleTreeProperty));
-			});
-#endif
-		}
+// 			mapperOverride.ModifyMapping(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, (handler, virtualView, action) =>
+// 			{
+// 				if (virtualView is ILabel)
+// 				{
+// 					// accessibility for UILabel depends on if the text is set or not
+// 					// so we want to make sure text has propagated to the platform view
+// 					// before mocking accessibility expectations
+// 					handler.UpdateValue(nameof(ILabel.Text));
+// 				}
+// 				(handler.PlatformView as UIKit.UIView)?.SetupAccessibilityExpectationIfVoiceOverIsOff();
+// 				(mapperOverride as PropertyMapper).Chained[0]!.UpdateProperty(handler, view, nameof(AutomationProperties.IsInAccessibleTreeProperty));
+// 			});
+// #endif
+// 		}
 	}
 }

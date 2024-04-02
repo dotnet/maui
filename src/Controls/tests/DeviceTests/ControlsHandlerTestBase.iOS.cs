@@ -25,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 				IElementHandler windowHandler = null;
 				try
 				{
-					windowHandler = window.ToHandler(mauiContext);
+					windowHandler = window.ToHandler2(mauiContext);
 					await runTests.Invoke();
 				}
 				finally
@@ -44,7 +44,8 @@ namespace Microsoft.Maui.DeviceTests
 							{
 								var page = controlsWindow.Navigation.ModalStack[i];
 								if (page.Handler is IPlatformViewHandler pvh &&
-									pvh.ViewController?.ParentViewController is ModalWrapper modal &&
+									pvh.ViewController?.ParentViewController is UIViewController modal &&
+									typeof(Microsoft.Maui.Platform.ContentView).Assembly.GetType("Microsoft.Maui.Platform.ModalWrapper").IsInstanceOfType(modal) &&
 									modal.PresentingViewController is not null)
 								{
 									await modal.PresentingViewController.DismissViewControllerAsync(false);
@@ -70,9 +71,12 @@ namespace Microsoft.Maui.DeviceTests
 					vc?.RemoveFromParentViewController();
 					vc?.View?.RemoveFromSuperview();
 
+#pragma warning disable CA1422 // Validate platform compatibility
 					var rootView = UIApplication.SharedApplication
-									.GetKeyWindow()
+									// .GetKeyWindow()
+									.KeyWindow
 									.RootViewController;
+#pragma warning restore CA1422 // Validate platform compatibility
 
 					bool dangling = false;
 
@@ -87,11 +91,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		internal ControlsModalWrapper GetModalWrapper(Page modalPage)
-		{
-			var pageVC = (modalPage.Handler as IPlatformViewHandler).ViewController;
-			return (ControlsModalWrapper)pageVC.ParentViewController;
-		}
+		// internal ControlsModalWrapper GetModalWrapper(Page modalPage)
+		// {
+		// 	var pageVC = (modalPage.Handler as IPlatformViewHandler).ViewController;
+		// 	return (ControlsModalWrapper)pageVC.ParentViewController;
+		// }
 
 		protected bool IsBackButtonVisible(IElementHandler handler)
 		{
@@ -172,17 +176,21 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected Size GetTitleViewExpectedSize(IElementHandler handler)
 		{
-			var titleContainer = GetPlatformToolbar(handler).FindDescendantView<UIView>(result =>
-			{
-				return result.Class.Name?.Contains("UINavigationBarTitleControl", StringComparison.OrdinalIgnoreCase) == true;
-			});
+			var titleContainer = ViewExtensions2.FindDescendantView<UIView>(
+				GetPlatformToolbar(handler),
+				result =>
+				{
+					return result.Class.Name?.Contains("UINavigationBarTitleControl", StringComparison.OrdinalIgnoreCase) == true;
+				});
 
 			if (!OperatingSystem.IsIOSVersionAtLeast(16))
 			{
-				titleContainer = titleContainer ?? GetPlatformToolbar(handler).FindDescendantView<UIView>(result =>
-				{
-					return result.Class.Name?.Contains("TitleViewContainer", StringComparison.OrdinalIgnoreCase) == true;
-				});
+				titleContainer = titleContainer ?? ViewExtensions2.FindDescendantView<UIView>(
+					GetPlatformToolbar(handler),
+					result =>
+					{
+						return result.Class.Name?.Contains("TitleViewContainer", StringComparison.OrdinalIgnoreCase) == true;
+					});
 			}
 
 			_ = titleContainer ?? throw new Exception("Unable to Locate TitleView Container");

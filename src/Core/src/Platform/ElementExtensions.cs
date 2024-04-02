@@ -53,6 +53,11 @@ namespace Microsoft.Maui.Platform
 				ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType);
 		}
 
+		// After adding MAUI from public nugets, these methods now exist in two different assemblies,
+		// adding a renamed version here seemed the easiest way to avoid the collision.
+		public static IElementHandler ToHandler2(this IElement view, IMauiContext context) => 
+			ToHandler(view, context);
+
 		public static IElementHandler ToHandler(this IElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
@@ -101,6 +106,11 @@ namespace Microsoft.Maui.Platform
 			return handler;
 		}
 
+		// After adding MAUI from public nugets, these methods now exist in two different assemblies,
+		// adding a renamed version here seemed the easiest way to avoid the collision.
+		internal static PlatformView ToPlatform2(this IElement view) =>
+			ToPlatform(view);
+
 		internal static PlatformView ToPlatform(this IElement view)
 		{
 			if (view is IReplaceableView replaceableView && replaceableView.ReplacedView != view)
@@ -121,6 +131,11 @@ namespace Microsoft.Maui.Platform
 			return (view.Handler?.PlatformView as PlatformView) ?? throw new InvalidOperationException($"Unable to convert {view} to {typeof(PlatformView)}");
 
 		}
+
+		// After adding MAUI from public nugets, these methods now exist in two different assemblies,
+		// adding a renamed version here seemed the easiest way to avoid the collision.
+		public static PlatformView ToPlatform2(this IElement view, IMauiContext context) =>
+			ToPlatform(view, context);
 
 		public static PlatformView ToPlatform(this IElement view, IMauiContext context)
 		{
