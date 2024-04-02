@@ -256,7 +256,7 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Foo", false, false),
                 new TypeName("int", false, false),
                 [
-                    new PathPart("Items", false, 0),
+                    new PathPart("Items", false, Index: 0),
                     new PathPart("Length", false),
                 ],
                 true
@@ -288,7 +288,7 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Foo", false, false),
                 new TypeName("int", false, false),
                 [
-                    new PathPart("Items", false, "key"),
+                    new PathPart("Items", false, Index: "key"),
                     new PathPart("Length", false),
                 ],
                 true

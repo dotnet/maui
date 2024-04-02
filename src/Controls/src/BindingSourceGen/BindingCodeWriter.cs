@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Text;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
@@ -177,9 +178,9 @@ public sealed class BindingCodeWriter
 
 			if (anyPartIsNullable)
 			{
-				Append("if (source");
-				AppendPathAccess(path, path.Length - 1);
-				AppendLine(" is null)");
+				Append("if (");
+				Append(GenerateConditionalPathAccess("source", path, depth: path.Length - 1));
+				AppendLine($" is null)");
 				AppendLines(
 					"""
 					{
@@ -189,12 +190,7 @@ public sealed class BindingCodeWriter
 					""");
 			}
 
-			Append("source");
-			foreach (var part in path)
-			{
-				Append(part.PartGetter);
-			}
-
+			Append(GenerateUnconditionalPathAccess("source", path, depth: path.Length));
 			AppendLine(" = value;");
 
 			Unindent();
@@ -209,8 +205,8 @@ public sealed class BindingCodeWriter
 			Indent();
 			for (int i = 0; i < path.Length; i++)
 			{
-				Append("new(static source => source");
-				AppendPathAccess(path, depth: i);
+				Append("new(static source => ");
+				Append(GenerateConditionalPathAccess("source", path, depth: i));
 				AppendLine($", \"{path[i].MemberName}\"),");
 			}
 			Unindent();
@@ -218,26 +214,116 @@ public sealed class BindingCodeWriter
 			Append('}');
 		}
 
-		private void AppendPathAccess(PathPart[] path, int depth)
+		public static string GenerateUnconditionalPathAccess(string variableName, PathPart[] path, int depth)
 		{
 			Debug.Assert(depth >= 0, "Depth must be greater than 0");
 			Debug.Assert(depth <= path.Length, "Depth must be less than path length");
 
-			if (depth == 0)
+			var sb = new StringBuilder();
+			sb.Append(variableName);
+
+			var previousPartIsNullable = false;
+			var previousPartCasts = false;
+			var anyPreviousMemberWasNullable = false;
+
+			for (int i = 0; i < depth; i++)
 			{
-				return;
+				var isLast = i == depth;
+
+				if (previousPartCasts)
+				{
+					sb.Insert(0, '(');
+					sb.Append(')');
+				}
+
+				// TODO should we append "!"?
+				// if (previousPartIsNullable && !isLast)
+				// {
+				// 	sb.Append('!');
+				// }
+
+				var part = path[i];
+				previousPartCasts = false;
+
+				if (part.CastTo is TypeName castTo)
+				{
+					// TODO: casting to value types will break the left-hand side of assignments
+					// should we report a diagnostic if the customer attempts to do this?
+					if (castTo.IsValueType)
+					{
+						sb.Insert(0, $"({castTo.GlobalName}?)");
+					}
+					else
+					{
+						sb.Insert(0, $"({castTo.GlobalName})");
+					}
+
+					sb.Append(part.PartGetter);
+
+					previousPartCasts = true;
+				}
+				else
+				{
+					sb.Append(part.PartGetter);
+				}
+
+				previousPartIsNullable = part.IsNullable;
+				anyPreviousMemberWasNullable |= previousPartIsNullable;
 			}
 
-			for (int i = 0; i < depth - 1; i++)
+			return sb.ToString();
+		}
+
+		public static string GenerateConditionalPathAccess(string variableName, PathPart[] path, int depth)
+		{
+			Debug.Assert(depth >= 0, "Depth must be greater than 0");
+			Debug.Assert(depth <= path.Length, "Depth must be less than path length");
+
+			var sb = new StringBuilder();
+			sb.Append(variableName);
+
+			var previousPartIsNullable = false;
+			var previousPartCasts = false;
+
+			for (int i = 0; i < depth; i++)
 			{
-				Append(path[i].PartGetter);
-				if (path[i].IsNullable)
+				var isLast = i == depth;
+
+				if (previousPartCasts)
 				{
-					Append('?');
+					sb.Insert(0, '(');
+					sb.Append(')');
+				}
+
+				if (previousPartIsNullable && !isLast)
+				{
+					sb.Append('?');
+				}
+
+				var part = path[i];
+				previousPartCasts = false;
+
+				if (part.CastTo is TypeName castTo)
+				{
+					sb.Append(part.PartGetter);
+					sb.Append(" as ");
+					sb.Append(castTo.GlobalName);
+					if (castTo.IsValueType)
+					{
+						sb.Append('?');
+					}
+
+					previousPartCasts = true;
+					previousPartIsNullable = true; // `as` can return null
+				}
+				else
+				{
+					sb.Append(part.PartGetter);
+					previousPartIsNullable = part.IsNullable;
 				}
 			}
 
-			Append(path[depth - 1].PartGetter);
+			return sb.ToString();
 		}
 
 		public void Dispose()
