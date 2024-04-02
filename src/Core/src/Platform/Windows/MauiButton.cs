@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Platform
 		readonly Image _image;
 		readonly TextBlock _textBlock;
 		int _imgColumn = -1;
+		int _imgRow = -1;
 
 		public DefaultMauiButtonContent()
 		{
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Platform
 
 		private void DefaultMauiButtonContent_SizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			// Ensure that images in buttons do not take up more than half the width of the
+			// Ensure that images in buttons do not take up more than half the width/height of the
 			// button when we also have text to display. This ensures that we have enough
 			// space to show a reasonable amount of text.
 			if (_imgColumn != -1 &&
@@ -77,6 +78,16 @@ namespace Microsoft.Maui.Platform
 				if (_image.ActualWidth > e.NewSize.Width / 2.0)
 				{
 					ColumnDefinitions[_imgColumn].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
+				}
+			}
+
+			if (_imgRow != -1 &&
+				_textBlock.Visibility == UI.Xaml.Visibility.Visible &&
+				RowDefinitions[_imgRow].Height.IsAuto)
+			{
+				if (_image.ActualHeight > e.NewSize.Height / 2.0)
+				{
+					RowDefinitions[_imgRow].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
 				}
 			}
 		}
@@ -109,24 +120,28 @@ namespace Microsoft.Maui.Platform
 
 		public void LayoutImageTop(double spacing)
 		{
+			_imgRow = 0;
+
 			SetupVerticalLayout(spacing);
 
 			Grid.SetRow(_image, 0);
 			Grid.SetRow(_textBlock, 1);
 
-			RowDefinitions[0].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
+			RowDefinitions[0].Height = new UI.Xaml.GridLength(0, UI.Xaml.GridUnitType.Auto);
 			RowDefinitions[1].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
 		}
 
 		public void LayoutImageBottom(double spacing)
 		{
+			_imgRow = 1;
+
 			SetupVerticalLayout(spacing);
 
 			Grid.SetRow(_image, 1);
 			Grid.SetRow(_textBlock, 0);
 
 			RowDefinitions[0].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
-			RowDefinitions[1].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
+			RowDefinitions[1].Height = new UI.Xaml.GridLength(0, UI.Xaml.GridUnitType.Auto);
 		}
 
 		double AdjustSpacing(double spacing)
@@ -142,6 +157,8 @@ namespace Microsoft.Maui.Platform
 
 		void SetupHorizontalLayout(double spacing)
 		{
+			_imgRow = -1;
+
 			RowSpacing = 0;
 			ColumnSpacing = AdjustSpacing(spacing);
 
