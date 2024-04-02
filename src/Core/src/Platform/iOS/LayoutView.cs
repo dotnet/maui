@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CoreGraphics;
 using UIKit;
 
@@ -7,10 +8,25 @@ namespace Microsoft.Maui.Platform
 	{
 		bool _userInteractionEnabled;
 
+		public LayoutView()
+		{
+			Descendants = new List<UIView>();
+		}
+		
+		internal List<UIView>? Descendants { get; set; }
+
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+
+			Descendants = null;
+		}
+
 		public override void SubviewAdded(UIView uiview)
 		{
 			InvalidateConstraintsCache();
 			base.SubviewAdded(uiview);
+			Descendants?.Add(uiview);
 			Superview?.SetNeedsLayout();
 		}
 
@@ -18,6 +34,7 @@ namespace Microsoft.Maui.Platform
 		{
 			InvalidateConstraintsCache();
 			base.WillRemoveSubview(uiview);
+			Descendants?.Remove(uiview);
 			Superview?.SetNeedsLayout();
 		}
 
@@ -26,9 +43,11 @@ namespace Microsoft.Maui.Platform
 			var result = base.HitTest(point, uievent);
 
 			if (result is null)
+			{
 				return null;
+			}
 
-			if (!_userInteractionEnabled && this.Equals(result))
+			if (!_userInteractionEnabled && Equals(result))
 			{
 				// If user interaction is disabled (IOW, if the corresponding Layout is InputTransparent),
 				// then we exclude the LayoutView itself from hit testing. But it's children are valid
@@ -37,11 +56,10 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 
-			if (!result.UserInteractionEnabled)
+			if (Descendants is not null && Descendants.Contains(result) && !result.UserInteractionEnabled)
 			{
 				// If the child also has user interaction disabled (IOW the child is InputTransparent),
-				// then we also want to exclude it from the hit testing.
-
+				// then we also want to exclude it from the hit testing.					}
 				return null;
 			}
 
