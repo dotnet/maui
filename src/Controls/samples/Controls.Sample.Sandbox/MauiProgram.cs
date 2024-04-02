@@ -11,13 +11,13 @@ namespace Maui.Controls.Sample
 			MauiApp
 				.CreateBuilder()
 				.UseMauiMaps()
-				.UseMauiApp<App>()
+				.UseMauiApp<MauiApp3.App>()
 				.Build();
 	}
 
 	class App : Application
 	{
-		protected override Window CreateWindow(IActivationState? activationState)
+		protected override Window CreateWindow(IActivationState activationState)
 		{
 			// To test shell scenarios, change this to true
 			bool useShell = false;

@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MauiApp3.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:sfPopup="clr-namespace:Syncfusion.Maui.Popup;assembly=Syncfusion.Maui.Popup"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:viewModels="clr-namespace:MauiApp3"
+    x:Name="MyPageName">
+
+    <ContentPage.BindingContext>
+        <viewModels:MainPageViewModel />
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                Grid.Row="0"
+                Command="{Binding PopulatePersonCommand}"
+                Text="Populate person" />
+            <Border 
+                Grid.RowSpan="2"
+                Grid.Column="0"
+                Padding="16"
+                HorizontalOptions="Start"
+                StrokeThickness="0"
+                WidthRequest="0.5">
+
+                <Grid IsVisible="{Binding IsPersonVisible}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" /> <!-- changing to auto doesn't cause an error-->
+                        <RowDefinition Height="Auto" />
+
+                    </Grid.RowDefinitions>
+
+                    <CollectionView 
+                    Grid.Row="0" x:Name="PeopleCollectionView"
+                    ItemsSource="{Binding People}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+
+                                <StackLayout
+                                    Padding="8"
+                                    Orientation="Horizontal"
+                                    Spacing="16">
+                                    <Label Text="{Binding Name}" />
+
+
+                                </StackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <Label Grid.Row="1" Text="Foo" />
+
+                </Grid>
+            </Border>
+            <Label Grid.Row="0" Grid.Column="1" Text="Foo" />
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

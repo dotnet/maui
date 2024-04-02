@@ -185,7 +185,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : IndexOf(args.NewItems[0]);
 
 			// Queue up the updates to the UICollectionView
-			Update(c => c.InsertItems(CreateIndexesFrom(startIndex, count)), args);
+			Update(c => 
+			{
+				var indexes = CreateIndexesFrom(startIndex, count);
+
+				try{
+					c.InsertItems(indexes);
+				}
+				catch{
+					throw;
+				}
+
+			}, args);
 		}
 
 		void Remove(NotifyCollectionChangedEventArgs args)

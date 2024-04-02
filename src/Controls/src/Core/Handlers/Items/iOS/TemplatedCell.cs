@@ -175,7 +175,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					oldElement.BindingContext = bindingContext;
 					oldElement.MeasureInvalidated += MeasureInvalidated;
 
-					UpdateCellSize();
+					//UpdateCellSize();
+					//OnContentSizeChanged();
 				}
 			}
 
