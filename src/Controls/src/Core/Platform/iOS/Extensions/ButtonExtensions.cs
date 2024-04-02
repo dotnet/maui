@@ -43,17 +43,18 @@ namespace Microsoft.Maui.Controls.Platform
 					availableHeight = lineHeight;
 				}
 
-				var availableSize = new CGSize(availableWidth, availableHeight);
+				var availableSize = new CGSize(platformButton.Bounds.Size.Width, availableHeight);
+				// var availableSize = new CGSize(availableWidth, availableHeight);
+
+				// return title.GetBoundingRect(
+				// 	availableSize,
+				// 	NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
+				// 	null);
 
 				return title.GetBoundingRect(
 					availableSize,
 					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
 					null);
-
-				// return title.GetBoundingRect(
-				// 	platformButton.Bounds.Size,
-				// 	NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
-				// 	null);
 			}
 
 			return CGRect.Empty;
@@ -83,6 +84,22 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
+			// var originalEdgeInsets = platformButton.ContentEdgeInsets;
+
+#pragma warning disable CA1422 // Validate platform compatibility
+			var contentInsets = platformButton.ContentEdgeInsets;
+#pragma warning restore CA1422 // Validate platform compatibility
+
+			// if (contentInsets != UIEdgeInsets.Zero 
+			// 	&& contentInsets != new UIEdgeInsets(
+			// 		(nfloat)ButtonHandler.DefaultPadding.Top,
+			// 		(nfloat)ButtonHandler.DefaultPadding.Left,
+			// 		(nfloat)ButtonHandler.DefaultPadding.Bottom,
+			// 		(nfloat)ButtonHandler.DefaultPadding.Right))
+			// {
+			// 	return;
+			// }
+
 			var padding = button.Padding;
 			if (padding.IsNaN)
 				// padding = new Thickness(30,30);
@@ -91,6 +108,13 @@ namespace Microsoft.Maui.Controls.Platform
 			// padding += new Thickness(spacingHorizontal / 2, spacingVertical / 2);
 
 			platformButton.UpdatePadding(padding);
+
+// #pragma warning disable CA1422 // Validate platform compatibility
+// 			if (contentInsets != platformButton.ContentEdgeInsets)
+// 				platformButton?.Superview.SetNeedsLayout();
+// #pragma warning restore CA1422 // Validate platform compatibility
+							  
+			// platformButton.SetNeedsLayout();
 		}
 
 		public static void UpdateContentLayout(this UIButton platformButton, Button button)
@@ -117,6 +141,10 @@ namespace Microsoft.Maui.Controls.Platform
 			// This makes the behavior consistent with android
 			var contentMode = UIViewContentMode.Center;
 
+			var padding = button.Padding;
+			if (padding.IsNaN)
+				padding = ButtonHandler.DefaultPadding;
+
 			if (image != null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
 				// TODO: Do not use the title label as it is not yet updated and
@@ -125,6 +153,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// platformButton.ContentMode = UIViewContentMode.ScaleAspectFit;
 
+				// TODO see if this is being resized more than once per button and figure out why?
+				bool resized = ResizeImageIfNecessary(platformButton, button, image, spacing, padding);
+				if (resized)
+				{
+					if (platformButton.TitleLabel.Text.Contains("2", StringComparison.OrdinalIgnoreCase))
+					Console.WriteLine($"Resized: {platformButton.TitleLabel.Text}");
+					image = platformButton.CurrentImage;
+				}
+				
+
 				var titleRect = platformButton.GetTitleBoundingRect();
 				var titleWidth = titleRect.Width;
 				var titleHeight = titleRect.Height;
@@ -132,34 +170,75 @@ namespace Microsoft.Maui.Controls.Platform
 				var imageHeight = image.Size.Height;
 				var buttonWidth = platformButton.Bounds.Width;
 				var buttonHeight = platformButton.Bounds.Height;
+				// var buttonWidth = button.Width;
+				// var buttonHeight = button.Height;
 				var sharedSpacing = spacing / 2;
 
-				if (image.Size.Width > buttonWidth || image.Size.Height > buttonHeight)
-				{
-					ResizeImageIfNecessary(platformButton, button, image, spacing);
-					image = platformButton.CurrentImage;
-					imageWidth = image.Size.Width;
-					imageHeight = image.Size.Height;
-					titleRect = platformButton.GetTitleBoundingRect();
-					titleWidth = titleRect.Width;
-					titleHeight = titleRect.Height;
-				}
+				var buttonFrame = platformButton.Frame;
+				var imageFrame = platformButton.ImageView?.Frame;
+				var titleFrame = platformButton.TitleLabel?.Frame;
+
+#pragma warning disable CA1422 // Validate platform compatibility
+				if (platformButton.TitleLabel.Text.Contains("2", StringComparison.OrdinalIgnoreCase))
+				Console.WriteLine($"Entered: {platformButton.TitleLabel.Text}\nButtonWidth:{buttonWidth}\nTitleWidth:{titleWidth}\nImageWidth:{imageWidth}\nplatformButton.ImageEdgeInsets.Left:{platformButton.ImageEdgeInsets.Left}\nplatformButton.TitleEdgeInsets.Left:{platformButton.TitleEdgeInsets.Left}\nimageFrame.Value.Left:{imageFrame.Value.Left}\ntitleFrame.Value.Left:{titleFrame.Value.Left}");//\nButtonHeight{buttonHeight}\nTitleHeight{titleHeight}\nImageHeight{imageHeight}\nButtonFrame{buttonFrame}\nImageFrame{imageFrame}\nTitleFrame{titleFrame}\nContentEdgeInsets{platformButton.ContentEdgeInsets}\nImageEdgeInsets{platformButton.ImageEdgeInsets}\nTitleEdgeInsets{platformButton.TitleEdgeInsets}\nBounds{platformButton.Bounds}\nFrame{platformButton.Frame}\n");
+#pragma warning restore CA1422 // Validate platform compatibility
+
+
+				// if (image.Size.Width > buttonWidth || image.Size.Height > buttonHeight)
+				// {
+				// 	ResizeImageIfNecessary(platformButton, button, image, spacing);
+				// 	image = platformButton.CurrentImage;
+				// 	imageWidth = image.Size.Width;
+				// 	imageHeight = image.Size.Height;
+				// 	titleRect = platformButton.GetTitleBoundingRect();
+				// 	titleWidth = titleRect.Width;
+				// 	titleHeight = titleRect.Height;
+				// }
 
 				// These are just used to shift the image and title to center
 				// Which makes the later math easier to follow
-				imageInsets.Left += titleWidth / 2;
-				imageInsets.Right -= titleWidth / 2;
-				titleInsets.Left -= imageWidth / 2;
-				titleInsets.Right += imageWidth / 2;
+				// imageInsets.Left += titleWidth / 2;
+				// imageInsets.Right -= titleWidth / 2;
+				// titleInsets.Left -= imageWidth / 2;
+				// titleInsets.Right += imageWidth / 2;
 
-				// var titleFrame = platformButton.TitleLabel.Frame;
-				// platformButton.TitleLabel.Frame = new CGRect(titleFrame.X, titleFrame.Y, 20, titleFrame.Height);
-				// platformButton.TitleLabel.BackgroundColor = UIColor.Red;
 
-				// var title = new NSString(platformButton.CurrentTitle);
-				// var titleAttributes = new UIStringAttributes { Font = platformButton.TitleLabel.Font };
-				// var titleSize = title.GetSizeUsingAttributes(titleAttributes);
-				// var titleWidth1 = titleSize.Width;
+				double centerX = buttonWidth / 2.0; // 50
+
+				// Calculate the horizontal offset for the image and title
+#pragma warning disable CA1422 // Validate platform compatibility
+
+// 				var imageXLeftmostPosition = imageFrame.HasValue ? Math.Round(imageFrame.Value.Left,0) : platformButton.ContentEdgeInsets.Left;
+// 				var titleXLeftmostPosition = titleFrame.HasValue ? Math.Round(titleFrame.Value.Left,0) : platformButton.ContentEdgeInsets.Left;
+// 				double imageOffsetX = centerX + (platformButton.ImageEdgeInsets.Left - platformButton.ImageEdgeInsets.Right) - (imageWidth / 2.0) - imageXLeftmostPosition;
+// 				double titleOffsetX = centerX + (platformButton.TitleEdgeInsets.Left - platformButton.TitleEdgeInsets.Right) - (titleWidth / 2.0) - titleXLeftmostPosition;
+				
+// #pragma warning restore CA1422 // Validate platform compatibility
+
+// 				// Adjust the image and title insets
+// 				imageInsets.Left += (nfloat)imageOffsetX / 2;
+// 				imageInsets.Right -= (nfloat)imageOffsetX / 2;
+// 				titleInsets.Left += (nfloat)titleOffsetX / 2;
+// 				titleInsets.Right -= (nfloat)titleOffsetX / 2;
+
+
+
+				// ROUNDING
+				// var imageXLeftmostPosition = imageFrame.HasValue ? Math.Round(imageFrame.Value.Left,0) : platformButton.ContentEdgeInsets.Left;
+				// var titleXLeftmostPosition = titleFrame.HasValue ? Math.Round(titleFrame.Value.Left,0) : platformButton.ContentEdgeInsets.Left;
+				var imageXLeftmostPosition = imageFrame.HasValue ? imageFrame.Value.Left : platformButton.ContentEdgeInsets.Left;
+				var titleXLeftmostPosition = titleFrame.HasValue ? titleFrame.Value.Left : platformButton.ContentEdgeInsets.Left;
+				double imageOffsetX = centerX - (imageXLeftmostPosition + (imageWidth / 2.0) - platformButton.ImageEdgeInsets.Left);
+				double titleOffsetX = centerX - (titleXLeftmostPosition + (titleWidth / 2.0) - platformButton.TitleEdgeInsets.Left);
+#pragma warning restore CA1422 // Validate platform compatibility
+
+				// TODO in the case for when the width request is set, we probably want to adjust both sides of the titleOffsetX and not just the left one
+
+				// Adjust the image and title insets
+				imageInsets.Left += (nfloat)imageOffsetX;
+				imageInsets.Right -= (nfloat)imageOffsetX;
+				titleInsets.Left += (nfloat)titleOffsetX;
+				// titleInsets.Right -= (nfloat)titleOffsetX;
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
@@ -169,10 +248,14 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 					else
 					{
-						imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
-						imageInsets.Bottom += titleHeight / 2;
+						// var verticalSpace = titleHeight + imageHeight + spacing;
+						// imageInsets.Top -= verticalSpace / 2;
+						// titleInsets.Bottom -= verticalSpace / 2;
 
-						titleInsets.Top += imageHeight / 2;
+						imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
+						imageInsets.Bottom += titleHeight / 2 + sharedSpacing;
+
+						titleInsets.Top += imageHeight / 2 + sharedSpacing;
 						titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
 					}
 				}
@@ -237,51 +320,124 @@ namespace Microsoft.Maui.Controls.Platform
 				platformButton.TitleLabel.Layer.Hidden = true;
 
 
-			platformButton.UpdatePadding(button);
-
-			ResizeImageIfNecessary(platformButton, button, image, spacing);
+			// platformButton.UpdatePadding(button);
 
 #pragma warning disable CA1422 // Validate platform compatibility
-			if (platformButton.ImageEdgeInsets != imageInsets ||
-				platformButton.TitleEdgeInsets != titleInsets)
+			// ROUNDING
+			// if ((IsSignificantlyDifferent(platformButton.ImageEdgeInsets, imageInsets) ||
+			// 	IsSignificantlyDifferent(platformButton.TitleEdgeInsets, titleInsets)) && counter < 1000)
+			if (platformButton.ImageEdgeInsets != imageInsets || platformButton.TitleEdgeInsets!= titleInsets)
 			{
+				if (platformButton.TitleLabel.Text.Contains("2", StringComparison.OrdinalIgnoreCase))
+				Console.WriteLine($"image and title insets: {platformButton.TitleLabel.Text}\nplatformButton.ImageEdgeInsets{platformButton.ImageEdgeInsets}\nimageInsets{imageInsets}\nplatformButton.TitleEdgeInsets{platformButton.TitleEdgeInsets}\ntitleInsets{titleInsets}");
 				platformButton.ImageEdgeInsets = imageInsets;
 				platformButton.TitleEdgeInsets = titleInsets;
-				platformButton.Superview?.SetNeedsLayout();
+				// counter++;
+				// platformButton.SetNeedsLayout();
+				// platformButton.Superview?.SetNeedsLayout();
+				// return;
 			}
 
 			var titleHeight1 = platformButton.GetTitleBoundingRect().Height;
-			var buttonContentHeight = platformButton.CurrentImage.Size.Height + platformButton.ContentEdgeInsets.Top
-				+ platformButton.ContentEdgeInsets.Top + platformButton.GetTitleBoundingRect().Height;
+			var buttonContentHeight = 
+				+ (nfloat)Math.Max(platformButton.GetTitleBoundingRect().Height, platformButton.CurrentImage.Size.Height)
+				+ (nfloat)padding.Top
+				+ (nfloat)padding.Bottom;
+				
+				// var buttonContentHeight = platformButton.CurrentImage.Size.Height
+				// + platformButton.ContentEdgeInsets.Top 
+				// + platformButton.ContentEdgeInsets.Bottom 
+				// + platformButton.GetTitleBoundingRect().Height
+				// + (nfloat)padding.Top
+				// + (nfloat)padding.Bottom;
 			if (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 			{
 				buttonContentHeight += spacing;
+				buttonContentHeight += (nfloat)Math.Min(platformButton.GetTitleBoundingRect().Height, platformButton.CurrentImage.Size.Height);
 			}
 
-			// seems to be really close some times but not exact
-			buttonContentHeight = (nfloat)Math.Round(buttonContentHeight, 0);
-
-			if (buttonContentHeight > button.Height)
+			// ROUNDING
+			// if (buttonContentHeight - button.Height > 1 && counter < 10)
+			if (buttonContentHeight > button.Height && button.HeightRequest == -1 && counter < 1)
 			{
+				// if (counter == 0){
+
+				// }
+
+				// platformButton.SetContentHuggingPriority(1, UILayoutConstraintAxis.Vertical);
+
+				// counter++;
+				// if (platformButton.TitleLabel.Text.Contains("6", StringComparison.OrdinalIgnoreCase)){
+				// Console.WriteLine($"Make longer: {platformButton.TitleLabel.Text}");
+
+				// } 
 				var contentInsets = platformButton.ContentEdgeInsets;
+				// ROUNDING
+				var additionalVerticalSpace = (buttonContentHeight - button.Height) / 2 + 1;
+				// nfloat verticalPadding =(nfloat)(buttonContentHeight - button.Height) / 2;
+
+				// if we change these here, we need a way to not change back to default in UpdatePadding
+				// platformButton.ContentEdgeInsets = new UIEdgeInsets(
+				// 	(nfloat)(additionalVerticalSpace + (nfloat)padding.Top), 
+				// 	contentInsets.Left, 
+				// 	(nfloat)(additionalVerticalSpace + (nfloat)padding.Bottom), 
+				// 	contentInsets.Right);
+
 				platformButton.ContentEdgeInsets = new UIEdgeInsets(
-					(nfloat)(contentInsets.Top + (buttonContentHeight - button.Height) / 2), 
+					(nfloat)(additionalVerticalSpace + (nfloat)padding.Top), 
 					contentInsets.Left, 
-					(nfloat)(contentInsets.Bottom + (buttonContentHeight - button.Height) / 2), 
+					(nfloat)(additionalVerticalSpace + (nfloat)padding.Bottom), 
 					contentInsets.Right);
+				var newButtonHeight = button.Height + additionalVerticalSpace + additionalVerticalSpace + (nfloat)padding.Top + (nfloat)padding.Bottom;
+				
+				// platformButton.Superview?.LayoutIfNeeded();
+				// platformButton.Superview?.SetNeedsLayout(); // top and bottom are 39.22 // 8.06 // 39.22
+				
+				// platformButton.InvalidateIntrinsicContentSize();
 				platformButton.Superview?.SetNeedsLayout();
-
+				return;
 			}
+
+			// if (counter < 5)
+			// {
+			// 	platformButton.Superview?.SetNeedsLayout();
+			// 	counter++;
+			// }
+			// if (counter == 0)
+			// {
+			// 	var contentInsets = platformButton.ContentEdgeInsets;
+			// 	var verticalPadding = 50;
+
+			// 	platformButton.ContentEdgeInsets = new UIEdgeInsets(
+			// 		(nfloat)(contentInsets.Top + verticalPadding), 
+			// 		contentInsets.Left, 
+			// 		(nfloat)(contentInsets.Bottom + verticalPadding), 
+			// 		contentInsets.Right);
+			// 	var newButtonHeight = button.Height;
+			// 	counter++;
+			// 	platformButton.Superview?.SetNeedsLayout();
+			// 	return;
+			// }
 #pragma warning restore CA1422 // Validate platform compatibility
-
-
 		}
 
-		static void ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing)
+		static int counter = 0;
+
+		static bool IsSignificantlyDifferent (UIEdgeInsets edgeInsets1, UIEdgeInsets edgeInsets2)
+		{
+			var diff =  Math.Abs(edgeInsets1.Top - edgeInsets2.Top) > 1 ||
+				Math.Abs(edgeInsets1.Left - edgeInsets2.Left) > 1 ||
+				Math.Abs(edgeInsets1.Bottom - edgeInsets2.Bottom) > 1 ||
+				Math.Abs(edgeInsets1.Right - edgeInsets2.Right) > 1;
+
+			return diff;
+		}
+
+		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding)
 		{
 			if (button.HeightRequest == -1 && button.WidthRequest == -1)
 			{
-				return;
+				return false;
 			}
 
 			nfloat availableHeight = 0;
@@ -299,30 +455,16 @@ namespace Microsoft.Maui.Controls.Platform
 				// Case where the image is on top or bottom of the Title text.
 				if (button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Top || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
-					availableHeight = platformButton.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom + titleRect.Height + spacing);
-					availableWidth = platformButton.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right);
+					availableHeight = platformButton.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom + titleRect.Height + spacing + (nfloat)padding.Top + (nfloat)padding.Bottom); //49 // 49.29296875
+					availableWidth = platformButton.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right + (nfloat)padding.Left + (nfloat)padding.Right);
 				}
 
 				// Case where the image is on the left or right of the Title text.
 				else
 				{
-					availableHeight = platformButton.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom);
-					availableWidth = platformButton.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right + titleRect.Width + spacing);
+					availableHeight = platformButton.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom + (nfloat)padding.Top + (nfloat)padding.Bottom);
+					availableWidth = platformButton.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right + titleRect.Width + spacing + (nfloat)padding.Left + (nfloat)padding.Right);
 				}
-
-				// // Case where the image is on top or bottom of the Title text.
-				// if (button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Top || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Bottom)
-				// {
-				// 	availableHeight = platformButton.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom + titleEdgeInsets.Top + titleEdgeInsets.Bottom + imageEdgeInsets.Top + imageEdgeInsets.Bottom);
-				// 	availableWidth = platformButton.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right + imageEdgeInsets.Left + imageEdgeInsets.Right);
-				// }
-
-				// // Case where the image is on the left or right of the Title text.
-				// else
-				// {
-				// 	availableHeight = platformButton.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom + imageEdgeInsets.Top + imageEdgeInsets.Bottom);
-				// 	availableWidth = platformButton.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right + titleEdgeInsets.Left + titleEdgeInsets.Right + imageEdgeInsets.Left + imageEdgeInsets.Right);
-				// }
 			}
 #pragma warning restore CA1422 // Validate platform compatibility
 
@@ -332,13 +474,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 			try
 			{
+				// ROUNDING
+				// if (image.Size.Height - availableHeight > 0.5 || image.Size.Width - availableWidth > 0.5)
 				if (image.Size.Height > availableHeight || image.Size.Width > availableWidth)
 				{
 					image = ResizeImageSource(image, availableWidth, availableHeight);
 				}
 				else
 				{
-					return;
+					return false;
 				}
 
 				image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
@@ -346,11 +490,15 @@ namespace Microsoft.Maui.Controls.Platform
 				platformButton.SetImage(image, UIControlState.Normal);
 
 				platformButton.SetNeedsLayout();
+
+				return true;
 			}
 			catch (Exception)
 			{
 				button.Handler.MauiContext?.CreateLogger<ButtonHandler>()?.LogWarning("Can not load Button ImageSource");
 			}
+
+			return false;
 		}
 
 		static UIImage ResizeImageSource(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
