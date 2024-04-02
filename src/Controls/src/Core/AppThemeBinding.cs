@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 				_parent = parent;
 				Binding = binding;
 				this.SetDynamicResource(AppThemeProperty, AppThemeResource);
-				((IElementDefinition)parent).AddResourcesChangedListener(OnParentResourcesChanged);
+				((IElementDefinition)parent)?.AddResourcesChangedListener(OnParentResourcesChanged);
 			}
 
 			public static BindableProperty AppThemeProperty = BindableProperty.Create("AppTheme", typeof(AppTheme), typeof(AppThemeBinding), AppTheme.Unspecified,
@@ -27,12 +27,12 @@ namespace Microsoft.Maui.Controls
 			{
 				Binding.Apply(false);
 			}
-
+			
 			public AppThemeBinding Binding { get; }
 
 			public void Unsubscribe()
 			{
-				((IElementDefinition)_parent).RemoveResourcesChangedListener(OnParentResourcesChanged);
+				((IElementDefinition)_parent)?.RemoveResourcesChangedListener(OnParentResourcesChanged);
 			}
 		}
 
