@@ -16,9 +16,8 @@ public class BindingRepresentationGenTests
         label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
         """;
 
-        var actualBinding = SourceGenHelpers.GetBinding(source) with { Id = 0 }; // TODO: Improve indexing of bindings
+        var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
-                0,
                 new SourceCodeLocation("", 3, 7),
                 new TypeName("string", false, false),
                 new TypeName("int", false, false),
@@ -42,9 +41,8 @@ public class BindingRepresentationGenTests
         label.SetBinding(Label.RotationProperty, static (Button b) => b.Text.Length);
         """;
 
-        var actualBinding = SourceGenHelpers.GetBinding(source) with { Id = 0 }; // TODO: Improve indexing of bindings
+        var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
-                0,
                 new SourceCodeLocation("", 3, 7),
                 new TypeName("global::Microsoft.Maui.Controls.Button", false, false),
                 new TypeName("int", false, false),
@@ -74,9 +72,8 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var actualBinding = SourceGenHelpers.GetBinding(source) with { Id = 0 }; // TODO: Improve indexing of bindings
+        var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
-                0,
                 new SourceCodeLocation("", 3, 7),
                 new TypeName("global::Foo", false, false),
                 new TypeName("int", true, false),
@@ -103,9 +100,8 @@ public class BindingRepresentationGenTests
         label.SetBinding(Label.RotationProperty, static (Button? b) => b?.Text.Length);
         """;
 
-        var actualBinding = SourceGenHelpers.GetBinding(source) with { Id = 0 }; // TODO: Improve indexing of bindings
+        var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
-                0,
                 new SourceCodeLocation("", 3, 7),
                 new TypeName("global::Microsoft.Maui.Controls.Button", true, false),
                 new TypeName("int", true, false),
@@ -135,9 +131,8 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var actualBinding = SourceGenHelpers.GetBinding(source) with { Id = 0 }; // TODO: Improve indexing of bindings
+        var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
-                0,
                 new SourceCodeLocation("", 3, 7),
                 new TypeName("global::Foo", false, false),
                 new TypeName("int", true, false),
@@ -161,9 +156,8 @@ public class BindingRepresentationGenTests
         label.SetBinding(Label.RotationProperty, static (Button? b) => b?.Text?.Length);
         """;
 
-        var actualBinding = SourceGenHelpers.GetBinding(source) with { Id = 0 }; // TODO: Improve indexing of bindings
+        var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
-                0,
                 new SourceCodeLocation("", 3, 7),
                 new TypeName("global::Microsoft.Maui.Controls.Button", true, false),
                 new TypeName("int", true, false),
@@ -194,9 +188,8 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var actualBinding = SourceGenHelpers.GetBinding(source) with { Id = 0 };
+        var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
-                0,
                 new SourceCodeLocation("", 4, 7),
                 new TypeName("global::Foo", true, false),
                 new TypeName("int", false, false),
@@ -227,9 +220,8 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var actualBinding = SourceGenHelpers.GetBinding(source) with { Id = 0 };
+        var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
-                0,
                 new SourceCodeLocation("", 4, 7),
                 new TypeName("global::Foo", true, false),
                 new TypeName("int", true, false),
@@ -258,9 +250,8 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var actualBinding = SourceGenHelpers.GetBinding(source) with { Id = 0 }; // TODO: Improve indexing of bindings
+        var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
-                0,
                 new SourceCodeLocation("", 3, 7),
                 new TypeName("global::Foo", false, false),
                 new TypeName("int", false, false),
@@ -291,9 +282,8 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var actualBinding = SourceGenHelpers.GetBinding(source) with { Id = 0 }; // TODO: Improve indexing of bindings
+        var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
-                0,
                 new SourceCodeLocation("", 4, 7),
                 new TypeName("global::Foo", false, false),
                 new TypeName("int", false, false),

@@ -59,9 +59,9 @@ public sealed class BindingCodeWriter
 	{
 		using var builder = new BidningInterceptorCodeBuilder(indent);
 
-		foreach (var binding in _bindings)
+		for (int i = 0; i < _bindings.Count; i++)
 		{
-			builder.AppendSetBindingInterceptor(binding);
+			builder.AppendSetBindingInterceptor(id: i + 1, _bindings[i]);
 		}
 
 		return builder.ToString();
@@ -84,13 +84,13 @@ public sealed class BindingCodeWriter
 			_indentedTextWriter = new IndentedTextWriter(_stringWriter, "\t") { Indent = indent };
 		}
 
-		public void AppendSetBindingInterceptor(CodeWriterBinding binding)
+		public void AppendSetBindingInterceptor(int id, CodeWriterBinding binding)
 		{
 			AppendBlankLine();
 
 			AppendLine(GeneratedCodeAttribute);
 			AppendInterceptorAttribute(binding.Location);
-			Append($"public static void SetBinding{binding.Id}");
+			Append($"public static void SetBinding{id}");
 			if (binding.SourceType.IsGenericParameter && binding.PropertyType.IsGenericParameter)
 			{
 				Append($"<{binding.SourceType}, {binding.PropertyType}>");

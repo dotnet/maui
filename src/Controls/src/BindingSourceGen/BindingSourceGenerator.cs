@@ -11,7 +11,6 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	// Edge cases
 	// Optimizations
 
-	static int _idCounter = 0;
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		var bindingsWithDiagnostics = context.SyntaxProvider.CreateSyntaxProvider(
@@ -119,7 +118,6 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		}
 
 		var codeWriterBinding = new CodeWriterBinding(
-			Id: ++_idCounter,
 			Location: sourceCodeLocation,
 			SourceType: CreateTypeNameFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
 			PropertyType: CreateTypeNameFromITypeSymbol(lambdaSymbol.ReturnType, enabledNullable),
@@ -235,7 +233,6 @@ public sealed record BindingDiagnosticsWrapper(
 	Diagnostic[] Diagnostics);
 
 public sealed record CodeWriterBinding(
-	int Id,
 	SourceCodeLocation Location,
 	TypeName SourceType,
 	TypeName PropertyType,
