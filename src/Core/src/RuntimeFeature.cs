@@ -8,6 +8,10 @@ namespace Microsoft.Maui
 	/// See <see href="https://github.com/dotnet/runtime/blob/main/docs/workflow/trimming/feature-switches.md" />
 	/// for examples of how to add new feature switches.
 	/// </summary>
+	/// <remarks>
+	/// Mapping of MSBuild properties to feature switches and the default values of feature switches
+	/// is defined in Microsoft.Maui.Sdk.Before.targets.
+	/// </remarks>
 	internal static class RuntimeFeature
 	{
 		private const bool IsXamlRuntimeParsingSupportedByDefault = true;
