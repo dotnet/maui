@@ -164,7 +164,7 @@ public sealed class BindingCodeWriter
 			AppendLine($"[InterceptsLocationAttribute(@\"{location.FilePath}\", {location.Line}, {location.Column})]");
 		}
 
-		private void AppendSetterAction(PathPart[] path)
+		private void AppendSetterAction(IPathPart[] path)
 		{
 			AppendLine("static (source, value) => ");
 			AppendLine('{');
@@ -190,14 +190,19 @@ public sealed class BindingCodeWriter
 					""");
 			}
 
-			Append(GenerateUnconditionalPathAccess("source", path, depth: path.Length));
+			Append("source");
+			foreach (var part in path)
+			{
+				Append(part.PartGetter(withNullableAnnotation: false));
+			}
+
 			AppendLine(" = value;");
 
 			Unindent();
 			Append('}');
 		}
 
-		private void AppendHandlersArray(TypeName sourceType, PathPart[] path)
+		private void AppendHandlersArray(TypeName sourceType, IPathPart[] path)
 		{
 			AppendLine($"new Tuple<Func<{sourceType}, object?>, string>[]");
 			AppendLine('{');
@@ -205,16 +210,16 @@ public sealed class BindingCodeWriter
 			Indent();
 			for (int i = 0; i < path.Length; i++)
 			{
-				Append("new(static source => ");
-				Append(GenerateConditionalPathAccess("source", path, depth: i));
-				AppendLine($", \"{path[i].MemberName}\"),");
+				Append("new(static source => source");
+				AppendPathAccess(path, depth: i);
+				AppendLine($", \"{path[i].PropertyName}\"),");
 			}
 			Unindent();
 
 			Append('}');
 		}
 
-		public static string GenerateUnconditionalPathAccess(string variableName, PathPart[] path, int depth)
+		private void AppendPathAccess(IPathPart[] path, int depth)
 		{
 			Debug.Assert(depth >= 0, "Depth must be greater than 0");
 			Debug.Assert(depth <= path.Length, "Depth must be less than path length");
@@ -287,43 +292,10 @@ public sealed class BindingCodeWriter
 
 			for (int i = 0; i < depth; i++)
 			{
-				var isLast = i == depth;
-
-				if (previousPartCasts)
-				{
-					sb.Insert(0, '(');
-					sb.Append(')');
-				}
-
-				if (previousPartIsNullable && !isLast)
-				{
-					sb.Append('?');
-				}
-
-				var part = path[i];
-				previousPartCasts = false;
-
-				if (part.CastTo is TypeName castTo)
-				{
-					sb.Append(part.PartGetter);
-					sb.Append(" as ");
-					sb.Append(castTo.GlobalName);
-					if (castTo.IsValueType)
-					{
-						sb.Append('?');
-					}
-
-					previousPartCasts = true;
-					previousPartIsNullable = true; // `as` can return null
-				}
-				else
-				{
-					sb.Append(part.PartGetter);
-					previousPartIsNullable = part.IsNullable;
-				}
+				Append(path[i].PartGetter(withNullableAnnotation: true));
 			}
 
-			return sb.ToString();
+			Append(path[depth - 1].PartGetter(withNullableAnnotation: false));
 		}
 
 		public void Dispose()

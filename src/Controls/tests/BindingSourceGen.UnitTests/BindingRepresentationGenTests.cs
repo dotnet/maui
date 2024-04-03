@@ -22,7 +22,7 @@ public class BindingRepresentationGenTests
                 new TypeName("string", false, false),
                 new TypeName("int", false, false),
                 [
-                    new PathPart("Length", false),
+                    new MemberAccess("Length", IsNullable: false),
                 ],
                 true
             );
@@ -47,8 +47,8 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Microsoft.Maui.Controls.Button", false, false),
                 new TypeName("int", false, false),
                 [
-                    new PathPart("Text", false),
-                    new PathPart("Length", false),
+                    new MemberAccess("Text", IsNullable: false),
+                    new MemberAccess("Length", IsNullable: false),
                 ],
                 true
             );
@@ -78,9 +78,9 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Foo", false, false),
                 new TypeName("int", true, false),
                 [
-                    new PathPart("Button", true),
-                    new PathPart("Text", false),
-                    new PathPart("Length", false),
+                    new MemberAccess("Button", IsNullable: true),
+                    new MemberAccess("Text", IsNullable: false),
+                    new MemberAccess("Length", IsNullable: false),
                 ],
                 true
             );
@@ -106,8 +106,8 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Microsoft.Maui.Controls.Button", true, false),
                 new TypeName("int", true, false),
                 [
-                    new PathPart("Text", false),
-                    new PathPart("Length", false),
+                    new MemberAccess("Text", IsNullable: false),
+                    new MemberAccess("Length", IsNullable: false),
                 ],
                 true
             );
@@ -137,7 +137,7 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Foo", false, false),
                 new TypeName("int", true, false),
                 [
-                    new PathPart("Value", true),
+                    new MemberAccess("Value", IsNullable: true),
                 ],
                 true
             );
@@ -162,8 +162,8 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Microsoft.Maui.Controls.Button", true, false),
                 new TypeName("int", true, false),
                 [
-                    new PathPart("Text", true),
-                    new PathPart("Length", false),
+                    new MemberAccess("Text", IsNullable: true),
+                    new MemberAccess("Length", IsNullable: false),
                 ],
                 true
             );
@@ -194,8 +194,8 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Foo", true, false),
                 new TypeName("int", false, false),
                 [
-                    new PathPart("Bar", true),
-                    new PathPart("Length", false),
+                    new MemberAccess("Bar", IsNullable: true),
+                    new MemberAccess("Length", IsNullable: false),
                 ],
                 true
             );
@@ -226,7 +226,7 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Foo", true, false),
                 new TypeName("int", true, false),
                 [
-                    new PathPart("Value", true),
+                    new MemberAccess("Value", IsNullable: true),
                 ],
                 true
             );
@@ -256,8 +256,9 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Foo", false, false),
                 new TypeName("int", false, false),
                 [
-                    new PathPart("Items", false, Index: 0),
-                    new PathPart("Length", false),
+                    new MemberAccess("Items", IsNullable: false),
+                    new IndexAccess("Item", 0, IsNullable: false),
+                    new MemberAccess("Length", IsNullable: false),
                 ],
                 true
             );
@@ -288,8 +289,9 @@ public class BindingRepresentationGenTests
                 new TypeName("global::Foo", false, false),
                 new TypeName("int", false, false),
                 [
-                    new PathPart("Items", false, Index: "key"),
-                    new PathPart("Length", false),
+                    new MemberAccess("Items", IsNullable: false),
+                    new IndexAccess("Item", "key", IsNullable: false),
+                    new MemberAccess("Length", IsNullable: false),
                 ],
                 true
             );

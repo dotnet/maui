@@ -108,7 +108,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		NullableContext nullableContext = context.SemanticModel.GetNullableContext(context.Node.Span.Start);
 		var enabledNullable = (nullableContext & NullableContext.Enabled) == NullableContext.Enabled;
 
-		var parts = new List<PathPart>();
+		var parts = new List<IPathPart>();
 		var correctlyParsed = ParsePath(lambda.Body, enabledNullable, context, parts);
 
 		if (!correctlyParsed)
@@ -126,7 +126,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		);
 		return new BindingDiagnosticsWrapper(codeWriterBinding, diagnostics.ToArray());
 	}
-	static bool ParsePath(CSharpSyntaxNode? expressionSyntax, bool enabledNullable, GeneratorSyntaxContext context, List<PathPart> parts, bool isNodeNullable = false, object? index = null)
+	static bool ParsePath(CSharpSyntaxNode? expressionSyntax, bool enabledNullable, GeneratorSyntaxContext context, List<IPathPart> parts, bool isNodeNullable = false, object? index = null)
 	{
 		if (expressionSyntax is IdentifierNameSyntax identifier)
 		{
@@ -144,7 +144,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			{
 				return false;
 			}
-			parts.Add(new PathPart(member, isNodeNullable || IsTypeNullable(typeInfo, enabledNullable), Index: index));
+			parts.Add(new MemberAccess(member, isNodeNullable || IsTypeNullable(typeInfo, enabledNullable)));
 			return true;
 		}
 		else if (expressionSyntax is ElementAccessExpressionSyntax elementAccess)
@@ -161,8 +161,19 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			}
 			var indexExpression = argumentList[0].Expression;
 			var indexValue = context.SemanticModel.GetConstantValue(indexExpression).Value;
+			if (indexValue is null)
+			{
+				return false;
+			}
 
-			return ParsePath(elementAccess.Expression, enabledNullable, context, parts, index: indexValue);
+			if (!ParsePath(elementAccess.Expression, enabledNullable, context, parts))
+			{
+				return false;
+			}
+
+			var defaultMemberName = "Item"; // TODO we need to check the value of the `[DefaultMemberName]` attribute on the member type
+			parts.Add(new IndexAccess(defaultMemberName, indexValue, isNodeNullable || IsTypeNullable(typeInfo, enabledNullable)));
+			return true;
 		}
 		else if (expressionSyntax is ConditionalAccessExpressionSyntax conditionalAccess)
 		{
@@ -172,7 +183,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		else if (expressionSyntax is MemberBindingExpressionSyntax memberBinding)
 		{
 			var member = memberBinding.Name.Identifier.Text;
-			parts.Add(new PathPart(member, isNodeNullable, Index: index));
+			parts.Add(new MemberAccess(member, isNodeNullable));
 			return true;
 		}
 		else if (expressionSyntax is ParenthesizedExpressionSyntax parenthesized)
@@ -236,7 +247,7 @@ public sealed record CodeWriterBinding(
 	SourceCodeLocation Location,
 	TypeName SourceType,
 	TypeName PropertyType,
-	PathPart[] Path,
+	IPathPart[] Path,
 	bool GenerateSetter);
 
 public sealed record SourceCodeLocation(string FilePath, int Line, int Column);
@@ -253,23 +264,33 @@ public sealed record TypeName(
 			: GlobalName;
 }
 
-public sealed record PathPart(
-	string Member,
-	bool IsNullable,
-	TypeName? CastTo = null,
-	object? Index = null)
+public sealed record MemberAccess(string MemberName, bool IsNullable) : IPathPart
 {
-	public string MemberName
-		=> Index is not null
-			? $"{Member}[{Index}]"
-			: Member;
+	public string PropertyName => MemberName;
+	public string PartGetter(bool withNullableAnnotation)
+		=> withNullableAnnotation && IsNullable
+			? $".{MemberName}?"
+			: $".{MemberName}";
+}
 
-	public string PartGetter
-		=> Index switch
-		{
-			string str => $"[\"{str}\"]",
-			int num => $"[{num}]",
-			null => $".{MemberName}",
-			_ => throw new NotSupportedException(),
-		};
+public sealed record IndexAccess(string DefaultMemberName, object Index, bool IsNullable) : IPathPart
+{
+	public string PropertyName => $"{DefaultMemberName}[{Index}]";
+	public string PartGetter(bool withNullableAnnotation)
+		=> withNullableAnnotation && IsNullable
+			? $"[{IndexString}]?"
+			: $"[{IndexString}]";
+
+	private string IndexString => Index switch
+	{
+		string s => $"\"{s}\"",
+		_ => Index.ToString(),
+	};
+}
+
+public interface IPathPart
+{
+	public string PropertyName { get; }
+	public bool IsNullable { get; }
+	public string PartGetter(bool withNullableAnnotation);
 }
