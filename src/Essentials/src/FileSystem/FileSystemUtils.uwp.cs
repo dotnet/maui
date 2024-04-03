@@ -3,7 +3,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.Maui.ApplicationModel;
-using Package = Windows.ApplicationModel.Package;
 
 namespace Microsoft.Maui.Storage
 {
@@ -21,14 +20,7 @@ namespace Microsoft.Maui.Storage
 				throw new ArgumentNullException(nameof(filename));
 
 			filename = NormalizePath(filename);
-
-			string root;
-			if (AppInfoUtils.IsPackagedApp)
-				root = Package.Current.InstalledLocation.Path;
-			else
-				root = AppContext.BaseDirectory;
-
-			return Path.Combine(root, filename);
+			return Path.Combine(AppInfoUtils.PlatformGetFullAppPackageFilePath, filename);
 		}
 
 		public static bool TryGetAppPackageFileUri(string filename, [NotNullWhen(true)] out string? uri)
