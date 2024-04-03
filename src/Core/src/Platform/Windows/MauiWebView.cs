@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel;
@@ -47,7 +49,23 @@ namespace Microsoft.Maui.Platform
 			? Package.Current.InstalledLocation.Path
 			: AppContext.BaseDirectory;
 
+
+		ILogger? Logger => _handler?.GetTargetOrDefault()?.MauiContext?.CreateLogger<MauiWebView>() ??
+			IPlatformApplication.Current?.Services?.CreateLogger(nameof(MauiWebView));
+
 		public async void LoadHtml(string? html, string? baseUrl)
+		{
+			try
+			{
+				await LoadHtmlAsync(html, baseUrl);
+			}
+			catch (ObjectDisposedException oe)
+			{
+				Logger?.LogError(oe, $"Unexpected Error from {nameof(MauiWebView)}.LoadHtml");
+			}
+		}
+
+		async Task LoadHtmlAsync(string? html, string? baseUrl)
 		{
 			var mapBaseDirectory = false;
 
@@ -73,35 +91,42 @@ namespace Microsoft.Maui.Platform
 			// When the 'navigation' to the original HTML string is done, we can modify it to include our <base> tag
 			_internalWebView.NavigationCompleted += async (sender, args) =>
 			{
-				// Generate a version of the <base> script with the correct <base> tag
-				var script = BaseInsertionScript.Replace("baseTag", baseTag, StringComparison.Ordinal);
-
-				// Run it and retrieve the updated HTML from our WebView
-				await sender.ExecuteScriptAsync(script);
-				htmlWithBaseTag = await sender.ExecuteScriptAsync("document.documentElement.outerHTML;");
-
-				htmlWithBaseTag = Regex.Unescape(htmlWithBaseTag);
-				htmlWithBaseTag = htmlWithBaseTag.Remove(0, 1);
-				htmlWithBaseTag = htmlWithBaseTag.Remove(htmlWithBaseTag.Length - 1, 1);
-
-				await EnsureCoreWebView2Async();
-
-				if (mapBaseDirectory)
+				try
 				{
-					CoreWebView2.SetVirtualHostNameToFolderMapping(
-						LocalHostName,
-						ApplicationPath,
-						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+					// Generate a version of the <base> script with the correct <base> tag
+					var script = BaseInsertionScript.Replace("baseTag", baseTag, StringComparison.Ordinal);
+
+					// Run it and retrieve the updated HTML from our WebView
+					await sender.ExecuteScriptAsync(script);
+					htmlWithBaseTag = await sender.ExecuteScriptAsync("document.documentElement.outerHTML;");
+
+					htmlWithBaseTag = Regex.Unescape(htmlWithBaseTag);
+					htmlWithBaseTag = htmlWithBaseTag.Remove(0, 1);
+					htmlWithBaseTag = htmlWithBaseTag.Remove(htmlWithBaseTag.Length - 1, 1);
+
+					await EnsureCoreWebView2Async();
+
+					if (mapBaseDirectory)
+					{
+						CoreWebView2.SetVirtualHostNameToFolderMapping(
+							LocalHostName,
+							ApplicationPath,
+							Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+					}
+
+					// Set the HTML for the 'real' WebView to the updated HTML
+					NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
+
+					// Free up memory after we're done with _internalWebView
+					if (_internalWebView.IsValid())
+					{
+						_internalWebView.Close();
+						_internalWebView = null;
+					}
 				}
-
-				// Set the HTML for the 'real' WebView to the updated HTML
-				NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
-
-				// Free up memory after we're done with _internalWebView
-				if (_internalWebView.IsValid())
+				catch (ObjectDisposedException oe)
 				{
-					_internalWebView.Close();
-					_internalWebView = null;
+					Logger?.LogError(oe, $"Unexpected Error from {nameof(MauiWebView)}.NavigationCompleted");
 				}
 			};
 
