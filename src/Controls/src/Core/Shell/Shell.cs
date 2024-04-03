@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 		public static bool GetFlyoutItemIsVisible(BindableObject obj) => (bool)obj.GetValue(FlyoutItemIsVisibleProperty);
 
 		/// <summary>
-		/// Sets the visibility of <see cref = "FlyoutItems" />.
+		/// Sets if this obj should have a visible <see cref = "FlyoutItem" /> in the flyout menu.
 		/// Flyout items are visible in the flyout by default. However, an item can be hidden in the flyout with the FlyoutItemIsVisible property.
 		/// </summary>
 		/// <param name="obj">The object that sets the visibility of flyout items.</param>
