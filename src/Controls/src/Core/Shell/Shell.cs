@@ -286,29 +286,29 @@ namespace Microsoft.Maui.Controls
 		public static void SetNavBarHasShadow(BindableObject obj, bool value) => obj.SetValue(NavBarHasShadowProperty, value);
 
 		/// <summary>
-		/// Gets the integrated search functionality in Shell.
+		/// Gets the integrated search functionality.
 		/// </summary>
 		/// <param name="obj">The object that modifies the Shell search functionality.</param>
-		/// <returns>The integrated search functionality in Shell.</returns>
+		/// <returns>The integrated search functionality.</returns>
 		public static SearchHandler GetSearchHandler(BindableObject obj) => (SearchHandler)obj.GetValue(SearchHandlerProperty);
 
 		/// <summary>
-		/// Sets the handler responsible for implementing the integrated search functionality in Shell.
+		/// Sets the handler responsible for implementing the integrated search functionality.
 		/// Enabling it results in a search box being added at the top of the page.
 		/// </summary>
 		/// <param name="obj">The object that modifies the Shell search functionality.</param>
-		/// <param name="handler">Defines the integrated search functionality in Shell.</param>
+		/// <param name="handler">Defines the integrated search functionality.</param>
 		public static void SetSearchHandler(BindableObject obj, SearchHandler handler) => obj.SetValue(SearchHandlerProperty, handler);
 
 		/// <summary>
-		/// Gets the tabs visibility in Shell.
+		/// Gets the tabs visibility.
 		/// </summary>
 		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <returns><see langword="true"/> if the tab bar is visible; otherwise, <see langword="false"/>.</returns>
 		public static bool GetTabBarIsVisible(BindableObject obj) => (bool)obj.GetValue(TabBarIsVisibleProperty);
 
 		/// <summary>
-		/// Sets the tabs visibility in Shell.
+		/// Sets the tabs visibility.
 		/// </summary>
 		/// <remarks>
 		/// The tab bar and tabs are visible in Shell applications by default. However, the tab bar can be hidden by setting the Shell.TabBarIsVisible attached property to false.
