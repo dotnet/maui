@@ -366,7 +366,7 @@ public class BindingCodeWriterTests
         var generatedCode = BindingCodeWriter.BidningInterceptorCodeBuilder.GenerateConditionalPathAccess(
             variableName: "source",
             path: [
-                new Cast(new MemberAccess("A", IsNullable: true), TargetType: new TypeName("X", IsNullable: false, IsGenericParameter: false, IsValueType: true)),
+                new Cast(new MemberAccess("A", IsNullable: true), TargetType: new TypeName("X", IsNullable: true, IsGenericParameter: false, IsValueType: true)),
                 new MemberAccess("B", IsNullable: false),
             ],
             depth: 2);
