@@ -25,7 +25,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			App.WaitForElement("WaitForStubControl");
 			App.Click("WaitForStubControl");
-			App.WaitForNoElement("Success");
+			var result = App.WaitForElement("Success").GetText();
+			Assert.AreEqual("Success", result);
 		}
 	}
 }

@@ -41,6 +41,7 @@
       </CollectionView>
       <Label 
         Grid.Row="1"
+        AutomationId="Success"
         Text="{Binding Success}"/>
     </Grid>
   </Grid>
