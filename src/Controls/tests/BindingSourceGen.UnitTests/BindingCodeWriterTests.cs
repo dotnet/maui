@@ -347,7 +347,35 @@ public class BindingCodeWriterTests
     }
 
     [Fact]
-    public void CorrectlyFormatsBindingWithMemberAccessAndIndexAccess()
+    public void CorrectlyFormatsSimpleCast()
+    {
+        var generatedCode = BindingCodeWriter.BidningInterceptorCodeBuilder.GenerateConditionalPathAccess(
+            variableName: "source",
+            path: [
+                new Cast(new MemberAccess("A", IsNullable: true), TargetType: new TypeName("X", IsNullable: false, IsGenericParameter: false, IsValueType: false)),
+                new MemberAccess("B", IsNullable: false),
+            ],
+            depth: 2);
+
+        Assert.Equal("(source.A as X)?.B", generatedCode);
+    }
+
+    [Fact]
+    public void CorrectlyFormatsSimpleCastOfValueTypes()
+    {
+        var generatedCode = BindingCodeWriter.BidningInterceptorCodeBuilder.GenerateConditionalPathAccess(
+            variableName: "source",
+            path: [
+                new Cast(new MemberAccess("A", IsNullable: true), TargetType: new TypeName("X", IsNullable: false, IsGenericParameter: false, IsValueType: true)),
+                new MemberAccess("B", IsNullable: false),
+            ],
+            depth: 2);
+
+        Assert.Equal("(source.A as X?)?.B", generatedCode);
+    }
+
+    [Fact]
+    public void CorrectlyFormatsBindingWithCasts()
     {
         var codeBuilder = new BindingCodeWriter.BidningInterceptorCodeBuilder();
         codeBuilder.AppendSetBindingInterceptor(id: 1, new CodeWriterBinding(
@@ -355,10 +383,10 @@ public class BindingCodeWriterTests
             SourceType: new TypeName("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeName("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
             Path: [
-                new MemberAccess("Model", IsNullable: false),
-                new IndexAccess("Item", IsNullable: true, Index: "Name"),
-                new MemberAccess("Letters", IsNullable: false),
-                new IndexAccess("Item", IsNullable: false, Index: 0)
+                new Cast(new MemberAccess("A", IsNullable: true), TargetType: new TypeName("X", IsNullable: false, IsGenericParameter: false, IsValueType: false)),
+                new Cast(new MemberAccess("B", IsNullable: true), TargetType: new TypeName("Y", IsNullable: false, IsGenericParameter: false, IsValueType: false)),
+                new Cast(new MemberAccess("C", IsNullable: false), TargetType: new TypeName("Z", IsNullable: false, IsGenericParameter: false, IsValueType: true)),
+                new MemberAccess("D", IsNullable: false),
             ],
             GenerateSetter: true));
 
@@ -414,8 +442,6 @@ public class BindingCodeWriterTests
 
     private static void AssertCodeIsEqual(string expectedCode, string actualCode)
     {
-        Console.WriteLine(actualCode);
-        
         var expectedLines = SplitCode(expectedCode);
         var actualLines = SplitCode(actualCode);
 

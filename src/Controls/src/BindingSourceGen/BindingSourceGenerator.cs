@@ -288,9 +288,16 @@ public sealed record IndexAccess(string DefaultMemberName, object Index, bool Is
 	};
 }
 
+public sealed record Cast(IPathPart Part, TypeName TargetType) : IPathPart
+{
+	public string PropertyName => Part.PropertyName;
+	public bool IsNullable => Part.IsNullable;
+	public string PartGetter => Part.PartGetter;
+}
+
 public interface IPathPart
 {
 	public string PropertyName { get; }
 	public bool IsNullable { get; }
-	public string PartGetter(bool withNullableAnnotation);
+	public string PartGetter { get; }
 }

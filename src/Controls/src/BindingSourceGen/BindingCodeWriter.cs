@@ -250,7 +250,7 @@ public sealed class BindingCodeWriter
 				var part = path[i];
 				previousPartCasts = false;
 
-				if (part.CastTo is TypeName castTo)
+				if (part is Cast { TargetType: var castTo })
 				{
 					// TODO: casting to value types will break the left-hand side of assignments
 					// should we report a diagnostic if the customer attempts to do this?
@@ -292,7 +292,40 @@ public sealed class BindingCodeWriter
 
 			for (int i = 0; i < depth; i++)
 			{
-				Append(path[i].PartGetter(withNullableAnnotation: true));
+				var isLast = i == depth;
+
+				if (previousPartCasts)
+				{
+					sb.Insert(0, '(');
+					sb.Append(')');
+				}
+
+				if (previousPartIsNullable && !isLast)
+				{
+					sb.Append('?');
+				}
+
+				var part = path[i];
+				previousPartCasts = false;
+
+				if (part is Cast { TargetType: var castTo })
+				{
+					sb.Append(part.PartGetter);
+					sb.Append(" as ");
+					sb.Append(castTo.GlobalName);
+					if (castTo.IsValueType)
+					{
+						sb.Append('?');
+					}
+
+					previousPartCasts = true;
+					previousPartIsNullable = true; // `as` can return null
+				}
+				else
+				{
+					sb.Append(part.PartGetter);
+					previousPartIsNullable = part.IsNullable;
+				}
 			}
 
 			Append(path[depth - 1].PartGetter(withNullableAnnotation: false));
