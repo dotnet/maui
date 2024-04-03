@@ -392,23 +392,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Header
 				&& preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Footer)
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(12) || OperatingSystem.IsTvOSVersionAtLeast(12))
-				{
-					return base.GetInvalidationContext(preferredAttributes, originalAttributes);
-				}
-
 				try
 				{
 					// We only have to do this on older iOS versions; sometimes when removing a cell that's right at the edge
 					// of the viewport we'll run into a race condition where the invalidation context will have the removed
 					// indexpath. And then things crash. So 
-
 					var defaultContext = base.GetInvalidationContext(preferredAttributes, originalAttributes);
 					return defaultContext;
 				}
 				catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSRangeException")
 				{
 					Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
+				}
+				catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSInvalidArgumentException")
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSInvalidArgumentException");
 				}
 
 				UICollectionViewFlowLayoutInvalidationContext context = new UICollectionViewFlowLayoutInvalidationContext();
