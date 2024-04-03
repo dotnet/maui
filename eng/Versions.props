@@ -3,9 +3,9 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>8.0.7</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>9.0.100-preview.3.24165.20</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>9.0.100-preview.4.24175.5</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.3.24162.31</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.4.24173.6</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
     <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
@@ -23,7 +23,7 @@
     <MicrosoftExtensionsLoggingDebugVersion>9.0.0-preview.4.24206.3</MicrosoftExtensionsLoggingDebugVersion>
     <MicrosoftExtensionsPrimitivesVersion>9.0.0-preview.4.24206.3</MicrosoftExtensionsPrimitivesVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.99.0-preview.4.233</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.99.0-preview.4.239</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdknet90_172PackageVersion>17.2.9436-net9-p4</MicrosoftMacCatalystSdknet90_172PackageVersion>
     <MicrosoftmacOSSdknet90_142PackageVersion>14.2.9436-net9-p4</MicrosoftmacOSSdknet90_142PackageVersion>
@@ -32,7 +32,7 @@
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>9.0.0-preview.3.24156.3</MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>
+    <MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>9.0.0-preview.3.24160.1</MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
     <MicrosoftWindowsAppSDKPackageVersion>1.5.240311000</MicrosoftWindowsAppSDKPackageVersion>
