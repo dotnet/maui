@@ -144,7 +144,14 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			{
 				return false;
 			}
-			parts.Add(new MemberAccess(member, isNodeNullable || IsTypeNullable(typeInfo, enabledNullable)));
+
+			IPathPart part = new MemberAccess(member);
+			if (isNodeNullable || IsTypeNullable(typeInfo, enabledNullable))
+			{
+				part = new ConditionalAccess(part);
+			}
+
+			parts.Add(part);
 			return true;
 		}
 		else if (expressionSyntax is ElementAccessExpressionSyntax elementAccess)
@@ -160,7 +167,13 @@ public class BindingSourceGenerator : IIncrementalGenerator
 				return false;
 			}
 			var indexExpression = argumentList[0].Expression;
-			var indexValue = context.SemanticModel.GetConstantValue(indexExpression).Value;
+			IIndex? indexValue = context.SemanticModel.GetConstantValue(indexExpression).Value switch
+			{
+				int i => new NumericIndex(i),
+				string s => new StringIndex(s),
+				_ => null
+			};
+
 			if (indexValue is null)
 			{
 				return false;
@@ -172,7 +185,12 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			}
 
 			var defaultMemberName = "Item"; // TODO we need to check the value of the `[DefaultMemberName]` attribute on the member type
-			parts.Add(new IndexAccess(defaultMemberName, indexValue, isNodeNullable || IsTypeNullable(typeInfo, enabledNullable)));
+			IPathPart part = new IndexAccess(defaultMemberName, indexValue);
+			if (isNodeNullable || IsTypeNullable(typeInfo, enabledNullable))
+			{
+				part = new ConditionalAccess(part);
+			}
+			parts.Add(part);
 			return true;
 		}
 		else if (expressionSyntax is ConditionalAccessExpressionSyntax conditionalAccess)
@@ -183,7 +201,12 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		else if (expressionSyntax is MemberBindingExpressionSyntax memberBinding)
 		{
 			var member = memberBinding.Name.Identifier.Text;
-			parts.Add(new MemberAccess(member, isNodeNullable));
+			IPathPart part = new MemberAccess(member);
+			if (isNodeNullable)
+			{
+				part = new ConditionalAccess(part);
+			}
+			parts.Add(part);
 			return true;
 		}
 		else if (expressionSyntax is ParenthesizedExpressionSyntax parenthesized)
@@ -212,14 +235,14 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			&& namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T;
 	}
 
-	internal static TypeName CreateTypeNameFromITypeSymbol(ITypeSymbol typeSymbol, bool enabledNullable)
+	internal static TypeDescription CreateTypeNameFromITypeSymbol(ITypeSymbol typeSymbol, bool enabledNullable)
 	{
 		var (isNullable, name) = GetNullabilityAndName(typeSymbol, enabledNullable);
-		return new TypeName(
+		return new TypeDescription(
 			GlobalName: name,
 			IsNullable: isNullable,
-			IsGenericParameter: typeSymbol.Kind == SymbolKind.TypeParameter
-		);
+			IsGenericParameter: typeSymbol.Kind == SymbolKind.TypeParameter,
+			IsValueType: typeSymbol.IsValueType);
 	}
 
 	static (bool, string) GetNullabilityAndName(ITypeSymbol typeSymbol, bool enabledNullable)
@@ -245,18 +268,18 @@ public sealed record BindingDiagnosticsWrapper(
 
 public sealed record CodeWriterBinding(
 	SourceCodeLocation Location,
-	TypeName SourceType,
-	TypeName PropertyType,
+	TypeDescription SourceType,
+	TypeDescription PropertyType,
 	IPathPart[] Path,
 	bool GenerateSetter);
 
 public sealed record SourceCodeLocation(string FilePath, int Line, int Column);
 
-public sealed record TypeName(
+public sealed record TypeDescription(
 	string GlobalName,
+	bool IsValueType = false,
 	bool IsNullable = false,
-	bool IsGenericParameter = false,
-	bool IsValueType = false) // TODO: require setting this explicitly
+	bool IsGenericParameter = false)
 {
 	public override string ToString()
 		=> IsNullable
@@ -264,40 +287,45 @@ public sealed record TypeName(
 			: GlobalName;
 }
 
-public sealed record MemberAccess(string MemberName, bool IsNullable) : IPathPart
+public sealed record MemberAccess(string MemberName) : IPathPart
 {
 	public string PropertyName => MemberName;
-	public string PartGetter(bool withNullableAnnotation)
-		=> withNullableAnnotation && IsNullable
-			? $".{MemberName}?"
-			: $".{MemberName}";
 }
 
-public sealed record IndexAccess(string DefaultMemberName, object Index, bool IsNullable) : IPathPart
+public sealed record IndexAccess(string DefaultMemberName, IIndex Index) : IPathPart
 {
-	public string PropertyName => $"{DefaultMemberName}[{Index}]";
-	public string PartGetter(bool withNullableAnnotation)
-		=> withNullableAnnotation && IsNullable
-			? $"[{IndexString}]?"
-			: $"[{IndexString}]";
-
-	private string IndexString => Index switch
-	{
-		string s => $"\"{s}\"",
-		_ => Index.ToString(),
-	};
+	public string PropertyName => $"{DefaultMemberName}[{Index.RawIndex}]";
 }
 
-public sealed record Cast(IPathPart Part, TypeName TargetType) : IPathPart
+public sealed record NumericIndex(int Constant) : IIndex
+{
+	public string RawIndex => Constant.ToString();
+	public string FormattedIndex => Constant.ToString();
+}
+
+public sealed record StringIndex(string StringLiteral) : IIndex
+{
+	public string RawIndex => StringLiteral;
+	public string FormattedIndex => $"\"{StringLiteral}\"";
+}
+
+public interface IIndex
+{
+	public string RawIndex { get; }
+	public string FormattedIndex { get; }
+}
+
+public sealed record ConditionalAccess(IPathPart Part) : IPathPart
 {
 	public string PropertyName => Part.PropertyName;
-	public bool IsNullable => Part.IsNullable;
-	public string PartGetter => Part.PartGetter;
+}
+
+public sealed record Cast(IPathPart Part, TypeDescription TargetType) : IPathPart
+{
+	public string PropertyName => Part.PropertyName;
 }
 
 public interface IPathPart
 {
 	public string PropertyName { get; }
-	public bool IsNullable { get; }
-	public string PartGetter { get; }
 }

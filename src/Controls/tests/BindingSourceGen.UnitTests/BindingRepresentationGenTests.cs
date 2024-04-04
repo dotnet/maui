@@ -19,13 +19,12 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeName("string", false, false),
-                new TypeName("int", false, false),
+                new TypeDescription("string"),
+                new TypeDescription("int", IsValueType: true),
                 [
-                    new MemberAccess("Length", IsNullable: false),
+                    new MemberAccess("Length"),
                 ],
-                true
-            );
+                GenerateSetter: true);
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
@@ -44,14 +43,13 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeName("global::Microsoft.Maui.Controls.Button", false, false),
-                new TypeName("int", false, false),
+                new TypeDescription("global::Microsoft.Maui.Controls.Button"),
+                new TypeDescription("int", IsValueType: true),
                 [
-                    new MemberAccess("Text", IsNullable: false),
-                    new MemberAccess("Length", IsNullable: false),
+                    new MemberAccess("Text"),
+                    new MemberAccess("Length"),
                 ],
-                true
-            );
+                GenerateSetter: true);
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
@@ -75,15 +73,14 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeName("global::Foo", false, false),
-                new TypeName("int", true, false),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
-                    new MemberAccess("Button", IsNullable: true),
-                    new MemberAccess("Text", IsNullable: false),
-                    new MemberAccess("Length", IsNullable: false),
+                    new ConditionalAccess(new MemberAccess("Button")),
+                    new MemberAccess("Text"),
+                    new MemberAccess("Length"),
                 ],
-                true
-            );
+                GenerateSetter: true);
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
@@ -103,14 +100,13 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeName("global::Microsoft.Maui.Controls.Button", true, false),
-                new TypeName("int", true, false),
+                new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
+                new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
-                    new MemberAccess("Text", IsNullable: false),
-                    new MemberAccess("Length", IsNullable: false),
+                    new MemberAccess("Text"),
+                    new MemberAccess("Length"),
                 ],
-                true
-            );
+                GenerateSetter: true);
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
@@ -134,13 +130,12 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeName("global::Foo", false, false),
-                new TypeName("int", true, false),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
-                    new MemberAccess("Value", IsNullable: true),
+                    new ConditionalAccess(new MemberAccess("Value")),
                 ],
-                true
-            );
+                GenerateSetter: true);
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
@@ -159,14 +154,13 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeName("global::Microsoft.Maui.Controls.Button", true, false),
-                new TypeName("int", true, false),
+                new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
+                new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
-                    new MemberAccess("Text", IsNullable: true),
-                    new MemberAccess("Length", IsNullable: false),
+                    new ConditionalAccess(new MemberAccess("Text")),
+                    new MemberAccess("Length"),
                 ],
-                true
-            );
+                GenerateSetter: true);
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
@@ -191,14 +185,13 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 4, 7),
-                new TypeName("global::Foo", true, false),
-                new TypeName("int", false, false),
+                new TypeDescription("global::Foo", IsNullable: true),
+                new TypeDescription("int", IsValueType: true),
                 [
-                    new MemberAccess("Bar", IsNullable: true),
-                    new MemberAccess("Length", IsNullable: false),
+                    new ConditionalAccess(new MemberAccess("Bar")),
+                    new MemberAccess("Length"),
                 ],
-                true
-            );
+                GenerateSetter: true);
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
@@ -223,13 +216,12 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 4, 7),
-                new TypeName("global::Foo", true, false),
-                new TypeName("int", true, false),
+                new TypeDescription("global::Foo", IsNullable: true),
+                new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
-                    new MemberAccess("Value", IsNullable: true),
+                    new ConditionalAccess(new MemberAccess("Value")),
                 ],
-                true
-            );
+                GenerateSetter: true);
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
@@ -253,15 +245,14 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeName("global::Foo", false, false),
-                new TypeName("int", false, false),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("int", IsValueType: true),
                 [
-                    new MemberAccess("Items", IsNullable: false),
-                    new IndexAccess("Item", 0, IsNullable: false),
-                    new MemberAccess("Length", IsNullable: false),
+                    new MemberAccess("Items"),
+                    new IndexAccess("Item", new NumericIndex(0)),
+                    new MemberAccess("Length"),
                 ],
-                true
-            );
+                GenerateSetter: true);
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
@@ -286,15 +277,14 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 4, 7),
-                new TypeName("global::Foo", false, false),
-                new TypeName("int", false, false),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("int", IsValueType: true),
                 [
-                    new MemberAccess("Items", IsNullable: false),
-                    new IndexAccess("Item", "key", IsNullable: false),
-                    new MemberAccess("Length", IsNullable: false),
+                    new MemberAccess("Items"),
+                    new IndexAccess("Item", new StringIndex("key")),
+                    new MemberAccess("Length"),
                 ],
-                true
-            );
+                GenerateSetter: true);
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
