@@ -62,51 +62,34 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		var method = (MemberAccessExpressionSyntax)invocation.Expression;
 
-		var methodSymbolInfo = context.SemanticModel.GetSymbolInfo(method, cancellationToken: t);
-
-		if (methodSymbolInfo.Symbol is not IMethodSymbol methodSymbol) //TODO: Do we need this check?
-		{
-			return ReportDiagnostics([DiagnosticsFactory.UnableToResolvePath(method.GetLocation())]);
-		}
-
-		// Check whether we are using correct overload
-		if (methodSymbol.Parameters.Length < 2 || methodSymbol.Parameters[1].Type.Name != "Func")
-		{
-			return ReportDiagnostics([DiagnosticsFactory.SuboptimalSetBindingOverload(method.GetLocation())]);
-		}
-
-		var argumentList = invocation.ArgumentList.Arguments;
-		var getter = argumentList[1].Expression;
-
-		//Check if getter is a lambda
-		if (getter is not LambdaExpressionSyntax lambda)
-		{
-			return ReportDiagnostics([DiagnosticsFactory.GetterIsNotLambda(getter.GetLocation())]);
-		}
-
-		//Check if lambda body is an expression
-		if (lambda.Body is not ExpressionSyntax)
-		{
-			return ReportDiagnostics([DiagnosticsFactory.GetterLambdaBodyIsNotExpression(lambda.Body.GetLocation())]);
-		}
-
-		var lambdaSymbol = context.SemanticModel.GetSymbolInfo(lambda, cancellationToken: t).Symbol as IMethodSymbol ?? throw new Exception("Unable to resolve lambda symbol");
-
 		var sourceCodeLocation = new SourceCodeLocation(
 			context.Node.SyntaxTree.FilePath,
 			method.Name.GetLocation().GetLineSpan().StartLinePosition.Line + 1,
 			method.Name.GetLocation().GetLineSpan().StartLinePosition.Character + 1
 		);
 
+		var overloadDiagnostics = VerifyCorrectOverload(method, context, t);
+
+		if (overloadDiagnostics.Length > 0)
+		{
+			return ReportDiagnostics(overloadDiagnostics);
+		}
+
+		var (lambdaBody, lambdaSymbol, lambdaDiagnostics) = GetLambda(invocation, context.SemanticModel);
+		
+		if (lambdaBody == null || lambdaSymbol == null || lambdaDiagnostics.Length > 0)
+		{
+			return ReportDiagnostics(lambdaDiagnostics);
+		}
+
 		NullableContext nullableContext = context.SemanticModel.GetNullableContext(context.Node.Span.Start);
 		var enabledNullable = (nullableContext & NullableContext.Enabled) == NullableContext.Enabled;
-
 		var parts = new List<IPathPart>();
-		var correctlyParsed = PathParser.ParsePath(lambda.Body, enabledNullable, context, parts);
+		var correctlyParsed = PathParser.ParsePath(lambdaBody, enabledNullable, context, parts);
 
 		if (!correctlyParsed)
 		{
-			return ReportDiagnostics([DiagnosticsFactory.UnableToResolvePath(lambda.Body.GetLocation())]);
+			return ReportDiagnostics([DiagnosticsFactory.UnableToResolvePath(lambdaBody.GetLocation())]);
 		}
 
 		// Sometimes analysing just the return type of the lambda is not enough. TODO: Refactor
@@ -122,6 +105,46 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			GenerateSetter: true //TODO: Implement
 		);
 		return new BindingDiagnosticsWrapper(codeWriterBinding, diagnostics.ToArray());
+	}
+
+	private static Diagnostic[] VerifyCorrectOverload(SyntaxNode method, GeneratorSyntaxContext context, CancellationToken t)
+	{
+		var methodSymbolInfo = context.SemanticModel.GetSymbolInfo(method, cancellationToken: t);
+
+		if (methodSymbolInfo.Symbol is not IMethodSymbol methodSymbol) //TODO: Do we need this check?
+		{
+			return [DiagnosticsFactory.UnableToResolvePath(method.GetLocation())];
+		}
+
+		if (methodSymbol.Parameters.Length < 2 || methodSymbol.Parameters[1].Type.Name != "Func")
+		{
+			return [DiagnosticsFactory.SuboptimalSetBindingOverload(method.GetLocation())];
+		}
+
+		return Array.Empty<Diagnostic>();
+	}
+
+	private static (ExpressionSyntax? lambdaBodyExpression, IMethodSymbol? lambdaSymbol, Diagnostic[] diagnostics) GetLambda(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+	{
+		var argumentList = invocation.ArgumentList.Arguments;
+		var getter = argumentList[1].Expression;
+
+		if (getter is not LambdaExpressionSyntax lambda)
+		{
+			return (null, null, [DiagnosticsFactory.GetterIsNotLambda(getter.GetLocation())]);
+		}
+
+		if (lambda.Body is not ExpressionSyntax lambdaBody)
+		{
+			return (null, null, [DiagnosticsFactory.GetterLambdaBodyIsNotExpression(lambda.Body.GetLocation())]);
+		}
+
+		if (semanticModel.GetSymbolInfo(lambda).Symbol is not IMethodSymbol lambdaSymbol)
+		{
+			return (null, null, [DiagnosticsFactory.GetterIsNotLambda(lambda.GetLocation())]);
+		}
+
+		return (lambdaBody, lambdaSymbol, Array.Empty<Diagnostic>());
 	}
 
 	private static BindingDiagnosticsWrapper ReportDiagnostics(Diagnostic[] diagnostics) => new(null, diagnostics);
