@@ -164,6 +164,37 @@
                 <Button
                     Text="Use Online Source"
                     Clicked="UseOnlineSource_Clicked"/>
+                <Label
+                    Text="Background (Null)"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton 
+                    HorizontalOptions="Center" 
+                    Clicked="OnImageButtonClicked"
+                    Aspect="AspectFit" 
+                    BorderColor="Red"
+                    BorderWidth="10"
+                    Source="cog.png"
+                    Padding="0" />
+                <Label
+                    Text="Background (Gradient)"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton 
+                    HorizontalOptions="Center" 
+                    Clicked="OnImageButtonClicked"
+                    Aspect="AspectFit" 
+                    BorderColor="Red"
+                    BorderWidth="10"
+                    Source="cog.png"
+                    Padding="0">
+                    <ImageButton.Background>
+                        <LinearGradientBrush EndPoint="1,0">
+                            <GradientStop Color="Yellow"
+                                Offset="0.1" />
+                            <GradientStop Color="Green"
+                                Offset="1.0" />
+                        </LinearGradientBrush>
+                    </ImageButton.Background>
+                </ImageButton>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
