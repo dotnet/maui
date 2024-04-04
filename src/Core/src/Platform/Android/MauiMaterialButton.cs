@@ -30,8 +30,9 @@ namespace Microsoft.Maui.Platform
 			get => base.IconGravity;
 			set
 			{
-				// Store Icon locally for later checks
-				// so we reduce calls back to android
+				// For IconGravityTextEnd and IconGravityTextStart, setting the Icon twice
+				// is needed to work around the Android behavior that caused
+				// https://github.com/dotnet/maui/issues/11755
 				Drawable? savedIcon = null;
 				if (base.IconGravity != value && (savedIcon = Icon) is not null)
 				{
