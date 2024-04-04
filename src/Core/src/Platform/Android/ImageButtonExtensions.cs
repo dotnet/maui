@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 
 				var rippleDrawable = new RippleDrawable(rippleColor, gradientDrawable, maskDrawable);
 	
-				platformButton.Background = gradientDrawable;
+				platformButton.Background = rippleDrawable;
 			}
 			else
 			{
