@@ -179,22 +179,25 @@
                     Text="Background (Gradient)"
                     Style="{StaticResource Headline}"/>
                 <ImageButton 
+                    x:Name="BackgroundImageButton"
                     HorizontalOptions="Center" 
                     Clicked="OnImageButtonClicked"
                     Aspect="AspectFit" 
                     BorderColor="Red"
                     BorderWidth="10"
                     Source="cog.png"
-                    Padding="0">
-                    <ImageButton.Background>
-                        <LinearGradientBrush EndPoint="1,0">
-                            <GradientStop Color="Yellow"
-                                Offset="0.1" />
-                            <GradientStop Color="Green"
-                                Offset="1.0" />
-                        </LinearGradientBrush>
-                    </ImageButton.Background>
-                </ImageButton>
+                    Padding="0" />
+                <HorizontalStackLayout
+                    HorizontalOptions="Center">
+                    <Button
+                        x:Name="UpdateBackgroundButton"
+                        Text="Update Background"
+                        Clicked="OnUpdateBackgroundButtonClicked"/>
+                    <Button
+                        x:Name="RemoveBackgroundButton"
+                        Text="Remove Background"
+                        Clicked="OnRemoveBackgroundButtonClicked"/>
+                </HorizontalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
