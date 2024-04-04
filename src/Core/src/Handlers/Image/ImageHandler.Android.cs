@@ -54,7 +54,6 @@ namespace Microsoft.Maui.Handlers
 				.SourceLoader
 				.UpdateImageSourceAsync();
 
-			handler.DisconnectHandler();
 			// Because this resolves from a task we should validate that the
 			// handler hasn't been disconnected
 			if (handler.IsConnected())
