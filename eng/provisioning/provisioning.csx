@@ -5,9 +5,9 @@ if (IsMac)
 	//this is needed for tools on macos like nunit console or nuget.exe 
 	Item("https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.199.macos10.xamarin.universal.pkg");
 	AppleCodesignIdentity("Apple Development: Rui Marinho (G6DXESA369)", "https://dl.internalx.com/internal-files/test/certs/components-mac-ios-certificate.p12");
-	AppleCodesignProfile("https://dl.internalx.com/internal-files/test/certs/maui-ios-provisioning-2.mobileprovision");
-	AppleCodesignProfile("https://dl.internalx.com/internal-files/test/certs/maui-macos-provisioning-2.provisionprofile");
-	AppleCodesignProfile("https://dl.internalx.com/internal-files/test/certs/maui-tvos-provisioning-2.mobileprovision");
+	AppleCodesignProfile("https://dl.internalx.com/internal-files/test/certs/maui-ios-provisioning.mobileprovision");
+	AppleCodesignProfile("https://dl.internalx.com/internal-files/test/certs/maui-macos-provisioning.provisionprofile");
+	AppleCodesignProfile("https://dl.internalx.com/internal-files/test/certs/maui-tvos-provisioning.mobileprovision");
 }
 
 string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
