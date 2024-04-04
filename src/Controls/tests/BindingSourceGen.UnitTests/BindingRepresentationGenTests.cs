@@ -184,8 +184,8 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
-                new TypeDescription("string", IsNullable: true, IsGenericParameter: false, IsValueType: false),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("string", IsNullable: true),
                 [
                     new ConditionalAccess(new MemberAccess("Value")),
                 ],
@@ -338,12 +338,12 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
-                new TypeDescription("string", IsNullable: false, IsGenericParameter: false, IsValueType: false),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("string"),
                 [
                     new Cast(
                         new MemberAccess("Value"),
-                        new TypeDescription("string", IsNullable: false, IsGenericParameter: false, IsValueType: false)
+                        new TypeDescription("string")
                         ),
                 ],
                 GenerateSetter: true
@@ -376,12 +376,12 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
-                new TypeDescription("int", IsNullable: false, IsGenericParameter: false, IsValueType: true),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("int", IsValueType: true),
                 [
                     new Cast(
                         new MemberAccess("C"),
-                        new TypeDescription("global::C", IsNullable: false, IsGenericParameter: false, IsValueType: false)
+                        new TypeDescription("global::C")
                         ),
                     new MemberAccess("X"),
                 ],
@@ -415,12 +415,12 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
-                new TypeDescription("int", IsNullable: true, IsGenericParameter: false, IsValueType: true),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
                     new Cast(
                         new ConditionalAccess(new MemberAccess("C")),
-                        new TypeDescription("global::C", IsNullable: false, IsGenericParameter: false, IsValueType: false)
+                        new TypeDescription("global::C")
                         ),
                     new MemberAccess("X"),
                 ],
@@ -449,12 +449,12 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
-                new TypeDescription("int", IsNullable: true, IsGenericParameter: false, IsValueType: true),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
                     new Cast(
                         new MemberAccess("Value"),
-                        new TypeDescription("int", IsNullable: true, IsGenericParameter: false, IsValueType: true)
+                        new TypeDescription("int", IsNullable: true, IsValueType: true)
                         ),
                 ],
                 GenerateSetter: true
@@ -488,12 +488,12 @@ public class BindingRepresentationGenTests
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
-                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
-                new TypeDescription("int", IsNullable: true, IsGenericParameter: false, IsValueType: true),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
                     new Cast(
                         new ConditionalAccess(new MemberAccess("C")),
-                        new TypeDescription("global::C", IsNullable: true, IsGenericParameter: false, IsValueType: true)
+                        new TypeDescription("global::C", IsNullable: true, IsValueType: true)
                         ),
                     new MemberAccess("X"),
                 ],
