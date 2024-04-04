@@ -30,19 +30,24 @@ namespace Microsoft.Maui.Platform
 			get => base.IconGravity;
 			set
 			{
-				var icon = Icon;
+				// Store Icon locally for later checks
+				// so we reduce calls back to android
+				Drawable? platformIcon = null;
+				Drawable? savedIcon = null;
 				if (base.IconGravity != value)
 				{
-					Icon = null;
+					platformIcon = Icon;
+					savedIcon = platformIcon;
+					Icon = platformIcon = null;
 				}
 
 				// Intercept the gravity value and set the flag if it's bottom.
 				ForceBottomIconGravity = value == IconGravityBottom;
 				base.IconGravity = ForceBottomIconGravity ? IconGravityTop : value;
 
-				if (Icon != icon)
+				if (savedIcon != platformIcon)
 				{
-					Icon = icon;
+					Icon = savedIcon;
 				}
 			}
 		}
