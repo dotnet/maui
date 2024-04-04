@@ -6,36 +6,35 @@
 
     <ScrollView>
         <Grid RowDefinitions="*,*">
-                <VerticalStackLayout Grid.RowSpan="2">
+                        <BoxView Grid.Row="1" BackgroundColor="Black" HeightRequest="5000" WidthRequest="1"/>
 
-                <!--
-                        
-                        <Button Background="Lightgray" ContentLayout="Top, 100" ImageSource="dotnet_bot.png" Text="1 ~ Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" LineBreakMode="TailTruncation"/>
-                        <BoxView HeightRequest="10" />
-
-
-                        <Button Background="Lightgray" ContentLayout="Top, 100" ImageSource="dotnet_bot.png" Text="1 ~ Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" LineBreakMode="TailTruncation"/>
-                        <BoxView HeightRequest="10" />
-
-                        <Button Background="Lightgray" ContentLayout="Top, 10" ImageSource="dotnet_bot.png" Text="1 ~ Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" LineBreakMode="TailTruncation"/>
-                        <BoxView HeightRequest="10" />
-          -->    
-                        <Button Background="Lightgray" ContentLayout="Top, 10" ImageSource="dotnet_bot.png" Text="6 ~ Superduperlongtexttoseeifwecapthelength of the title rectangle!!!!bhjkghljkhnjklghujlkhjklghjklnkhjlkhjlhjlk" WidthRequest="200" />
-                        <BoxView HeightRequest="10" />
+                <VerticalStackLayout Margin="0,10,0,0" Grid.RowSpan="2">
 <!--
+                        <Button Background="Lightgray" ContentLayout="Top, 100" ImageSource="dotnet_bot.png" Text="1 ~ Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
+
+                
+
+                       
+                        <Button Background="Lightgray" ContentLayout="Top, 10" ImageSource="dotnet_bot.png" Text="2 ~ short" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
+            
+
+                        <Button Background="Lightgray" ContentLayout="Top, 10" ImageSource="dotnet_bot.png" Text="6 ~ Superduperlongtexttoseeifwecapthelength of the title rectangle!!!!bhjkghljkhnjklghujlkhjklghjklnkhjlkhjlhjlk" WidthRequest="200" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
+
                         <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="2 ~ HR-200 Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" HeightRequest="200" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
-                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="3 ~ HR/WR-100 " HeightRequest="100" LineBreakMode="TailTruncation"/>
+                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="3 ~ HR/WR-100 Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" HeightRequest="100" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
 
-                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="4 ~ HR-100" HeightRequest="100" LineBreakMode="TailTruncation"/>
+                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="4 ~ HR-100 Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" HeightRequest="100" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
 
 
-             
 
 
-                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="5 ~ HR-50" HeightRequest="50" LineBreakMode="TailTruncation"/>
+                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="5 ~ HR-50 Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" HeightRequest="50" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
 
                         
@@ -44,16 +43,21 @@
                         <BoxView HeightRequest="10" />
 
 
-                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="WR-50" WidthRequest="50" LineBreakMode="TailTruncation"/>
+                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="WR-50 Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" WidthRequest="50" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
 
-
-                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="HR/WR-200" HeightRequest="200" WidthRequest="200" LineBreakMode="TailTruncation"/>
+                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="HR/WR-200 Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" HeightRequest="200" WidthRequest="200" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
+
+  
 
                 
-                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="HR/WR-50" HeightRequest="50" WidthRequest="50" LineBreakMode="TailTruncation"/>
+                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="HR/WR-50 Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" HeightRequest="50" WidthRequest="50" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="150" />
+
+
+                   
+
 
 
                         <Button Background="Lightgray" ContentLayout="Bottom, 20" ImageSource="dotnet_bot.png" Text="No constriants" LineBreakMode="TailTruncation"/>
@@ -67,12 +71,19 @@
 
                         <Button Background="Lightgray" ContentLayout="Bottom, 20" ImageSource="dotnet_bot.png" Text="HR-50" HeightRequest="50" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
-
+     
                         <Button Background="Lightgray" ContentLayout="Bottom, 20" ImageSource="dotnet_bot.png" Text="WR-200" WidthRequest="200" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
 
                         <Button Background="Lightgray" ContentLayout="Bottom, 20" ImageSource="dotnet_bot.png" Text="WR-100" WidthRequest="100" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
+                        
+                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="WR-100" WidthRequest="100" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
+
+                        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot.png" Text="7 ~ Super duper long text to see if we cap the length of the title rectangle!!!!" WidthRequest="100" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
+
 
                         <Button Background="Lightgray" ContentLayout="Bottom, 20" ImageSource="dotnet_bot.png" Text="WR-50" WidthRequest="50" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
@@ -86,14 +97,31 @@
                         <Button Background="Lightgray" ContentLayout="Bottom, 20" ImageSource="dotnet_bot.png" Text="HR/WR-50" HeightRequest="50" WidthRequest="50" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="150" />
 
-
 -->
 
+
+<!--
+                <Button Background="Lightgray" ContentLayout="Left, 0" ImageSource="long_image.jpeg" Text="3 ~ No constriants 2 ~ Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
+
+                <Button Background="Lightgray" ContentLayout="Left, 0" ImageSource="long_image.jpeg" Text="3 ~ No constriants 2 ~ Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
+
+                <Button Background="Lightgray" ContentLayout="Left, 100" WidthRequest="200" ImageSource="long_image.jpeg" Text="3 ~ No constriants 2 ~ Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" LineBreakMode="TailTruncation"/>
+                <BoxView HeightRequest="10" />
+-->
                 <!--
 
+                <Button Background="Lightgray" ContentLayout="Left, 0" ImageSource="dotnet_bot.png" Text="3 ~ No constriants 2 ~ Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" LineBreakMode="TailTruncation"/>
+                <BoxView HeightRequest="10" />
 
+                <Button Background="Lightgray" ContentLayout="Left, 20" ImageSource="dotnet_bot.png" Text="3 ~ No constriants 2 ~ Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
 
-                <Button Background="Lightgray" ContentLayout="Left, 20" ImageSource="dotnet_bot.png" Text="No constriants" LineBreakMode="TailTruncation"/>
+                <Button Background="Lightgray" ContentLayout="Left, 20" ImageSource="dotnet_bot.png" HeightRequest="100" Text="3 ~ No constriants 2 ~ Super duper long text to see if we cap the length of the title rectangle!!! Super duper long text to see if we cap the length of the title rectangle!!!!!" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
+
+                <Button Background="Lightgray" ContentLayout="Left, 20" ImageSource="dotnet_bot.png" HeightRequest="100" Text="4 ~ Short" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
 
                         <Button Background="Lightgray" ContentLayout="Left, 20" ImageSource="dotnet_bot.png" Text="HR-200" HeightRequest="200" LineBreakMode="TailTruncation"/>
@@ -130,7 +158,8 @@
 
 
 
-
+-->
+<!--
                         <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="No constriants" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
 
@@ -151,16 +180,18 @@
 
                         <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="WR-50" WidthRequest="50" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
+-->
+
 
                         <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="HR/WR-200" HeightRequest="200" WidthRequest="200" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
+<!--
 
                         <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="HR/WR-100" HeightRequest="100" WidthRequest="100" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
 
-                        <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="HR/WR-50" HeightRequest="50" WidthRequest="50" LineBreakMode="TailTruncation"/>
+                        <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="TT~HR/WR-50" HeightRequest="50" WidthRequest="50" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="150" />
-
 
 
 
@@ -199,7 +230,6 @@
 -->
                 </VerticalStackLayout>
 
-                <BoxView Grid.Row="1" BackgroundColor="Black" HeightRequest="500" WidthRequest="1"/>
                 
         </Grid>
     </ScrollView>

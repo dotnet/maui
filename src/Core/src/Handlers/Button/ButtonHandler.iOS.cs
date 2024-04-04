@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIButton CreatePlatformView()
 		{
-			var button = new UIButton(UIButtonType.System);
+			var button = new UIButton(UIButtonType.System){
+				ClipsToBounds = true
+			};
 			SetControlPropertiesFromProxy(button);
 			return button;
 		}
