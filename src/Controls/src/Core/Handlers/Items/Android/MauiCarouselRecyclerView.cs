@@ -104,6 +104,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnConfigurationChanged(newConfig);
 
+			// If the orientation device changes, adjust and center the current item.
 			if (ItemsView is not null)
 			{
 				var position = ItemsView.Position;
@@ -428,7 +429,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
-			if(_orientationChanged)
+			// Avoid to calculate CarouselView position changes when the device orientation changed.
+			if (_orientationChanged)
 			{
 				_orientationChanged = false;
 				return;
