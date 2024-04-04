@@ -213,6 +213,25 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		{
 			return ParsePath(parenthesized.Expression, enabledNullable, context, parts);
 		}
+		else if (expressionSyntax is BinaryExpressionSyntax asExpression && asExpression.Kind() == SyntaxKind.AsExpression)
+		{
+			var castTo = asExpression.Right;
+			var typeInfo = context.SemanticModel.GetTypeInfo(castTo).Type;
+			if (typeInfo == null)
+			{
+				return false;
+			};
+
+			if (!ParsePath(asExpression.Left, enabledNullable, context, parts))
+			{
+				return false;
+			}
+
+			var lastPart = parts.Last();
+			parts.RemoveAt(parts.Count - 1);
+			parts.Add(new Cast(lastPart, CreateTypeNameFromITypeSymbol(typeInfo, enabledNullable)));
+			return true;
+		}
 		else if (expressionSyntax is InvocationExpressionSyntax)
 		{
 			return false;
@@ -226,6 +245,11 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	internal static bool IsTypeNullable(ITypeSymbol typeInfo, bool enabledNullable)
 	{
 		if (!enabledNullable && typeInfo.IsReferenceType)
+		{
+			return true;
+		}
+
+		if (typeInfo.NullableAnnotation == NullableAnnotation.Annotated)
 		{
 			return true;
 		}

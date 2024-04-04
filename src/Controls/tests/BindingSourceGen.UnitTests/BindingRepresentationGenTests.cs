@@ -290,4 +290,188 @@ public class BindingRepresentationGenTests
         Assert.Equal(expectedBinding.Path, actualBinding.Path);
         Assert.Equivalent(expectedBinding, actualBinding, strict: true);
     }
+
+    [Fact]
+    public void GenerateBindingWhenGetterContainsSimpleReferenceTypeCast()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (Foo f) => f.Value as string);
+
+        class Foo
+        {
+            public object Value { get; set; }
+        }
+        """;
+
+        var actualBinding = SourceGenHelpers.GetBinding(source);
+        var expectedBinding = new CodeWriterBinding(
+                new SourceCodeLocation("", 3, 7),
+                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
+                new TypeDescription("string", IsNullable: false, IsGenericParameter: false, IsValueType: false),
+                [
+                    new Cast(
+                        new MemberAccess("Value"),
+                        new TypeDescription("string", IsNullable: false, IsGenericParameter: false, IsValueType: false)
+                        ),
+                ],
+                GenerateSetter: true
+            );
+
+        //TODO: Change arrays to custom collections implementing IEquatable
+        Assert.Equal(expectedBinding.Path, actualBinding.Path);
+        Assert.Equivalent(expectedBinding, actualBinding, strict: true);
+    }
+
+    [Fact]
+    public void GenerateBindingWhenGetterContainsMemberAccessOfCastReferenceType()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (Foo f) => (f.C as C).X);
+
+        public class Foo
+        {
+            public object C { get; set; }
+        }
+
+        class C
+        {
+            public int X { get; set; }
+        }
+        """;
+
+        var actualBinding = SourceGenHelpers.GetBinding(source);
+        var expectedBinding = new CodeWriterBinding(
+                new SourceCodeLocation("", 3, 7),
+                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
+                new TypeDescription("int", IsNullable: false, IsGenericParameter: false, IsValueType: true),
+                [
+                    new Cast(
+                        new MemberAccess("C"),
+                        new TypeDescription("global::C", IsNullable: false, IsGenericParameter: false, IsValueType: false)
+                        ),
+                    new MemberAccess("X"),
+                ],
+                true
+            );
+
+        //TODO: Change arrays to custom collections implementing IEquatable
+        Assert.Equal(expectedBinding.Path, actualBinding.Path);
+        Assert.Equivalent(expectedBinding, actualBinding, strict: true);
+    }
+
+    [Fact]
+    public void GenerateBindingWhenGetterContainsMemberAccessOfCastNullableReferenceType()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (Foo f) => (f.C as C)?.X);
+
+        public class Foo
+        {
+            public object? C { get; set; }
+        }
+
+        class C
+        {
+            public int X { get; set; }
+        }
+        """;
+
+        var actualBinding = SourceGenHelpers.GetBinding(source);
+        var expectedBinding = new CodeWriterBinding(
+                new SourceCodeLocation("", 3, 7),
+                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
+                new TypeDescription("int", IsNullable: true, IsGenericParameter: false, IsValueType: true),
+                [
+                    new Cast(
+                        new ConditionalAccess(new MemberAccess("C")),
+                        new TypeDescription("global::C", IsNullable: false, IsGenericParameter: false, IsValueType: false)
+                        ),
+                    new MemberAccess("X"),
+                ],
+                true
+            );
+
+        //TODO: Change arrays to custom collections implementing IEquatable
+        Assert.Equal(expectedBinding.Path, actualBinding.Path);
+        Assert.Equivalent(expectedBinding, actualBinding, strict: true);
+    }
+
+    [Fact]
+    public void GenerateBindingWhenGetterContainsSimpleValueTypeCast()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (Foo f) => f.Value as int?);
+
+        class Foo
+        {
+            public double Value { get; set; }
+        }
+        """;
+
+        var actualBinding = SourceGenHelpers.GetBinding(source);
+        var expectedBinding = new CodeWriterBinding(
+                new SourceCodeLocation("", 3, 7),
+                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
+                new TypeDescription("int", IsNullable: true, IsGenericParameter: false, IsValueType: true),
+                [
+                    new Cast(
+                        new MemberAccess("Value"),
+                        new TypeDescription("int", IsNullable: true, IsGenericParameter: false, IsValueType: true)
+                        ),
+                ],
+                true
+            );
+
+
+        //TODO: Change arrays to custom collections implementing IEquatable
+        Assert.Equal(expectedBinding.Path, actualBinding.Path);
+        Assert.Equivalent(expectedBinding, actualBinding, strict: true);
+    }
+
+    [Fact]
+    public void GenerateBindingWhenGetterContainsMemberAccessOfCastNullableValueType()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (Foo f) => (f.C as C?)?.X);
+
+        public class Foo
+        {
+            public object? C { get; set; }
+        }
+
+        struct C
+        {
+            public int X { get; set; }
+        }
+        """;
+
+        var actualBinding = SourceGenHelpers.GetBinding(source);
+        var expectedBinding = new CodeWriterBinding(
+                new SourceCodeLocation("", 3, 7),
+                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
+                new TypeDescription("int", IsNullable: true, IsGenericParameter: false, IsValueType: true),
+                [
+                    new Cast(
+                        new ConditionalAccess(new MemberAccess("C")),
+                        new TypeDescription("global::C", IsNullable: true, IsGenericParameter: false, IsValueType: true)
+                        ),
+                    new MemberAccess("X"),
+                ],
+                true
+            );
+
+        //TODO: Change arrays to custom collections implementing IEquatable
+        Assert.Equal(expectedBinding.Path, actualBinding.Path);
+        Assert.Equivalent(expectedBinding, actualBinding, strict: true);
+    }
 }
