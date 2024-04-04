@@ -65,17 +65,13 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		if (methodSymbolInfo.Symbol is not IMethodSymbol methodSymbol) //TODO: Do we need this check?
 		{
-			diagnostics.Add(Diagnostic.Create(
-				DiagnosticsDescriptors.UnableToResolvePath, method.GetLocation()));
-			return new BindingDiagnosticsWrapper(null, diagnostics.ToArray());
+			return new BindingDiagnosticsWrapper(null, [DiagnosticsFactory.UnableToResolvePath(method.GetLocation())]);
 		}
 
 		// Check whether we are using correct overload
 		if (methodSymbol.Parameters.Length < 2 || methodSymbol.Parameters[1].Type.Name != "Func")
 		{
-			diagnostics.Add(Diagnostic.Create(
-				DiagnosticsDescriptors.SuboptimalSetBindingOverload, method.GetLocation()));
-			return new BindingDiagnosticsWrapper(null, diagnostics.ToArray());
+			return new BindingDiagnosticsWrapper(null, [DiagnosticsFactory.SuboptimalSetBindingOverload(method.GetLocation())]);
 		}
 
 		var argumentList = invocation.ArgumentList.Arguments;
@@ -84,17 +80,13 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		//Check if getter is a lambda
 		if (getter is not LambdaExpressionSyntax lambda)
 		{
-			diagnostics.Add(Diagnostic.Create(
-				DiagnosticsDescriptors.GetterIsNotLambda, getter.GetLocation()));
-			return new BindingDiagnosticsWrapper(null, diagnostics.ToArray());
+			return new BindingDiagnosticsWrapper(null, [DiagnosticsFactory.GetterIsNotLambda(getter.GetLocation())]);
 		}
 
 		//Check if lambda body is an expression
 		if (lambda.Body is not ExpressionSyntax)
 		{
-			diagnostics.Add(Diagnostic.Create(
-				DiagnosticsDescriptors.GetterLambdaBodyIsNotExpression, lambda.Body.GetLocation()));
-			return new BindingDiagnosticsWrapper(null, diagnostics.ToArray());
+			return new BindingDiagnosticsWrapper(null, [DiagnosticsFactory.GetterLambdaBodyIsNotExpression(lambda.Body.GetLocation())]);
 		}
 
 		var lambdaSymbol = context.SemanticModel.GetSymbolInfo(lambda, cancellationToken: t).Symbol as IMethodSymbol ?? throw new Exception("Unable to resolve lambda symbol");
@@ -113,9 +105,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		if (!correctlyParsed)
 		{
-			diagnostics.Add(Diagnostic.Create(
-				DiagnosticsDescriptors.UnableToResolvePath, lambda.Body.GetLocation(), lambda.Body.ToString()));
-			return new BindingDiagnosticsWrapper(null, diagnostics.ToArray());
+			return new BindingDiagnosticsWrapper(null, [DiagnosticsFactory.UnableToResolvePath(lambda.Body.GetLocation())]);
 		}
 
 		// Sometimes analysing just the return type of the lambda is not enough. TODO: Refactor
@@ -132,7 +122,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		);
 		return new BindingDiagnosticsWrapper(codeWriterBinding, diagnostics.ToArray());
 	}
-	static bool ParsePath(CSharpSyntaxNode? expressionSyntax, bool enabledNullable, GeneratorSyntaxContext context, List<IPathPart> parts, bool isNodeNullable = false, object? index = null)
+	static bool ParsePath(CSharpSyntaxNode? expressionSyntax, bool enabledNullable, GeneratorSyntaxContext context, List<IPathPart> parts, bool isNodeNullable = false)
 	{
 		if (expressionSyntax is IdentifierNameSyntax identifier)
 		{
@@ -290,6 +280,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		return (false, typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
 	}
+
+	private static BindingDiagnosticsWrapper ReportDiagnostics(Diagnostic[] diagnostics) => new(null, diagnostics);
 }
 
 public sealed record BindingDiagnosticsWrapper(
