@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Internals
 					{
 					}
 				}
-				if (!BindingExpression.TryConvert(ref value, property, property.ReturnType, true))
+				if (!BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
 				{
 					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, property.ReturnType);
 					return;
@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Controls.Internals
 			if (needsSetter && _setter != null && isTSource)
 			{
 				var value = GetTargetValue(target.GetValue(property), typeof(TProperty));
-				if (!BindingExpression.TryConvert(ref value, property, typeof(TProperty), false))
+				if (!BindingExpressionHelper.TryConvert(ref value, property, typeof(TProperty), false))
 				{
 					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, typeof(TProperty));
 					return;

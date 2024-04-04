@@ -763,7 +763,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 			{
 				groupHeaderCell = new TextCell();
-				groupHeaderCell.SetBinding(TextCell.TextProperty, nameof(group.Name));
+				groupHeaderCell.SetBinding(
+					TextCell.TextProperty,
+					TypedBinding.ForSingleNestingLevel(nameof(group.Name), static (ITemplatedItemsList<Cell> g) => g.Name));
 				groupHeaderCell.BindingContext = group;
 			}
 

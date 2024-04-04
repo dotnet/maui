@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	public static class NativeBindingExtensions
 	{
+		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 		public static void SetBinding(this global::Android.Views.View view, string propertyName, BindingBase binding, string updateSourceEventName = null)
 		{
 			PlatformBindingHelpers.SetBinding(view, propertyName, binding, updateSourceEventName);

@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		[RequiresUnreferencedCode("TODO")]
 		static void Register(Assembly assembly, Dictionary<string, IVisual> mappings)
 		{
 			if (assembly.IsDynamic)
