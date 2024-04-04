@@ -168,6 +168,36 @@ public class BindingRepresentationGenTests
     }
 
     [Fact]
+    public void GenerateBindingWithNullablePropertyReferenceWhenNullableEnabled()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (Foo f) => f.Value);
+
+        class Foo
+        {
+            public string? Value { get; set; }
+        }
+        """;
+
+        var actualBinding = SourceGenHelpers.GetBinding(source);
+        var expectedBinding = new CodeWriterBinding(
+                new SourceCodeLocation("", 3, 7),
+                new TypeDescription("global::Foo", IsNullable: false, IsGenericParameter: false, IsValueType: false),
+                new TypeDescription("string", IsNullable: true, IsGenericParameter: false, IsValueType: false),
+                [
+                    new ConditionalAccess(new MemberAccess("Value")),
+                ],
+                GenerateSetter: true
+            );
+
+        //TODO: Change arrays to custom collections implementing IEquatable
+        Assert.Equal(expectedBinding.Path, actualBinding.Path);
+        Assert.Equivalent(expectedBinding, actualBinding, strict: true);
+    }
+
+    [Fact]
     public void GenerateBindingWithNullableReferenceTypesWhenNullableDisabled()
     {
         var source = """
@@ -355,7 +385,7 @@ public class BindingRepresentationGenTests
                         ),
                     new MemberAccess("X"),
                 ],
-                true
+                GenerateSetter: true
             );
 
         //TODO: Change arrays to custom collections implementing IEquatable
@@ -394,7 +424,7 @@ public class BindingRepresentationGenTests
                         ),
                     new MemberAccess("X"),
                 ],
-                true
+                GenerateSetter: true
             );
 
         //TODO: Change arrays to custom collections implementing IEquatable
@@ -427,7 +457,7 @@ public class BindingRepresentationGenTests
                         new TypeDescription("int", IsNullable: true, IsGenericParameter: false, IsValueType: true)
                         ),
                 ],
-                true
+                GenerateSetter: true
             );
 
 
@@ -467,7 +497,7 @@ public class BindingRepresentationGenTests
                         ),
                     new MemberAccess("X"),
                 ],
-                true
+                GenerateSetter: true
             );
 
         //TODO: Change arrays to custom collections implementing IEquatable

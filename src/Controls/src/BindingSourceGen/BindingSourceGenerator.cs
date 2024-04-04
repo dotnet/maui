@@ -115,12 +115,18 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		{
 			diagnostics.Add(Diagnostic.Create(
 				DiagnosticsDescriptors.UnableToResolvePath, lambda.Body.GetLocation(), lambda.Body.ToString()));
+			return new BindingDiagnosticsWrapper(null, diagnostics.ToArray());
 		}
+
+		// Sometimes analysing just the return type of the lambda is not enough. TODO: Refactor
+		var propertyType = CreateTypeNameFromITypeSymbol(lambdaSymbol.ReturnType, enabledNullable);
+		var lastMember = parts.Last() is Cast cast ? cast.Part : parts.Last();
+		propertyType = propertyType with { IsNullable = lastMember is ConditionalAccess || propertyType.IsNullable };
 
 		var codeWriterBinding = new CodeWriterBinding(
 			Location: sourceCodeLocation,
 			SourceType: CreateTypeNameFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
-			PropertyType: CreateTypeNameFromITypeSymbol(lambdaSymbol.ReturnType, enabledNullable),
+			PropertyType: propertyType,
 			Path: parts.ToArray(),
 			GenerateSetter: true //TODO: Implement
 		);
