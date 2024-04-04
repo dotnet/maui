@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Android.Views;
+using AndroidX.Annotations;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -24,6 +25,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override RecyclerView CreatePlatformView()
 		{
 			return new MauiCarouselRecyclerView(Context, GetItemsLayout, CreateAdapter);
+		}
+
+		static void MapWidth(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			handler.PlatformView.GetAdapter()?.NotifyDataSetChanged();
+			ViewHandler.MapWidth(handler, carouselView);
+		}
+
+		static void MapHeight(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			handler.PlatformView.GetAdapter()?.NotifyDataSetChanged();
+			ViewHandler.MapHeight(handler, carouselView);
 		}
 
 		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)
