@@ -160,6 +160,7 @@
 
 -->
 <!--
+
                         <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="No constriants" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
 
@@ -171,24 +172,26 @@
 
                         <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="HR-50" HeightRequest="50" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
-
-                        <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="WR-200" WidthRequest="200" LineBreakMode="TailTruncation"/>
-                        <BoxView HeightRequest="10" />
-
-                        <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="WR-100" WidthRequest="100" LineBreakMode="TailTruncation"/>
-                        <BoxView HeightRequest="10" />
-
-                        <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="WR-50" WidthRequest="50" LineBreakMode="TailTruncation"/>
-                        <BoxView HeightRequest="10" />
 -->
+
+                        <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="22 ~ WR-200" WidthRequest="200" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
+<!--
+
+                        <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="33 ~ WR-100" WidthRequest="100" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
+
+                        <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="9 ~ WR-50" WidthRequest="50" LineBreakMode="TailTruncation"/>
+                        <BoxView HeightRequest="10" />
 
 
                         <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="HR/WR-200" HeightRequest="200" WidthRequest="200" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
-<!--
+
 
                         <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="HR/WR-100" HeightRequest="100" WidthRequest="100" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="10" />
+
 
                         <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot.png" Text="TT~HR/WR-50" HeightRequest="50" WidthRequest="50" LineBreakMode="TailTruncation"/>
                         <BoxView HeightRequest="150" />

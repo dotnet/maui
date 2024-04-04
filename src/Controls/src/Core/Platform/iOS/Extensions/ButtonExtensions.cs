@@ -393,10 +393,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 					var calculatedImageInsets = MoveImageInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position, true);
 					imageInsets.Left += calculatedImageInsets.left;
-					imageInsets.Right -= calculatedImageInsets.right;
+					// imageInsets.Right -= calculatedImageInsets.right;
+					imageInsets.Right += calculatedImageInsets.right;
 
 					var calulatedTitleInsets = MoveTitleInsetsHorizontally(platformButton, button, padding, spacing, layout.Position);
-					titleInsets.Left -= calulatedTitleInsets.left;
+					// titleInsets.Left -= calulatedTitleInsets.left;
+					titleInsets.Left += calulatedTitleInsets.left;
 					titleInsets.Right += calulatedTitleInsets.right;
 
 					// if the title is not hidden, we can center the image and title together
@@ -404,7 +406,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						var calculatedImageInsets2 = MoveImageInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position);
 						imageInsets.Left += calculatedImageInsets2.left;
-						imageInsets.Right -= calculatedImageInsets2.right;
+						imageInsets.Right += calculatedImageInsets2.right;
 					}
 
 
@@ -450,21 +452,21 @@ namespace Microsoft.Maui.Controls.Platform
 			var RightAddition = testImageFrame.Right + imageInsets.Right;
 			var RightSubtraction = testImageFrame.Right - imageInsets.Right;
 
-			Console.WriteLine ($@"
+			// Console.WriteLine ($@"
 
-			~~~\n
-			ImageFrameLeft: {testImageFrame.Left}
-			ImageFrameRight: {testImageFrame.Right}
-			imageInsets.Left: {imageInsets.Left}
-			imageInsets.Right: {imageInsets.Right}
-			LeftSubtraction: {LeftSubtraction}
-			LeftAddition: {LeftAddition}
-			RightAddition: {RightAddition}
-			RightSubtraction: {RightSubtraction}
-			titleInsets.Left: {titleInsets.Left}
-			imageInsets.Right: {titleInsets.Right}
+			// ~~~\n
+			// ImageFrameLeft: {testImageFrame.Left}
+			// ImageFrameRight: {testImageFrame.Right}
+			// imageInsets.Left: {imageInsets.Left}
+			// imageInsets.Right: {imageInsets.Right}
+			// LeftSubtraction: {LeftSubtraction}
+			// LeftAddition: {LeftAddition}
+			// RightAddition: {RightAddition}
+			// RightSubtraction: {RightSubtraction}
+			// titleInsets.Left: {titleInsets.Left}
+			// imageInsets.Right: {titleInsets.Right}
 			
-								");
+			// 					");
 
 			// Maybe if there is a significant difference between the insets, we can calculate how far the center of the title or image is currently from the center of the button?
 #pragma warning disable CA1422 // Validate platform compatibility
@@ -474,8 +476,9 @@ namespace Microsoft.Maui.Controls.Platform
 			// if (platformButton.ImageEdgeInsets != imageInsets || platformButton.TitleEdgeInsets!= titleInsets)
 			{
 
-				// DebugInsets("imageInsets" + platformButton.TitleLabel.Text.Substring(0,5), platformButton.ImageEdgeInsets, imageInsets);
-				// DebugInsets("titleInsets" + platformButton.TitleLabel.Text.Substring(0,5), platformButton.TitleEdgeInsets, titleInsets);
+				Console.WriteLine("\n");
+				DebugInsets("imageInsets" + platformButton.TitleLabel.Text.Substring(0,5), platformButton.ImageEdgeInsets, imageInsets);
+				DebugInsets("titleInsets" + platformButton.TitleLabel.Text.Substring(0,5), platformButton.TitleEdgeInsets, titleInsets);
 				
 				// if (platformButton.TitleLabel.Text.Contains("2", StringComparison.OrdinalIgnoreCase))
 				// Console.WriteLine($"image and title insets: {platformButton.TitleLabel.Text}\nplatformButton.ImageEdgeInsets{platformButton.ImageEdgeInsets}\nimageInsets{imageInsets}\nplatformButton.TitleEdgeInsets{platformButton.TitleEdgeInsets}\ntitleInsets{titleInsets}");
@@ -691,12 +694,17 @@ namespace Microsoft.Maui.Controls.Platform
 				endingX = -5;
 			}
 
-			var startingMove = titleFrame.Left - startingX;
-			var endingMove = buttonWidth - titleFrame.Right - (buttonWidth - endingX);
+			// var startingMove = titleFrame.Left - startingX;
+			// var endingMove = buttonWidth - titleFrame.Right - (buttonWidth - endingX);
+
+			var startingMove = startingX - titleFrame.Left;
+			var endingMove = endingX - titleFrame.Right;
 
 				
-			double startingOffset = startingMove - platformButton.TitleEdgeInsets.Left;
-			double endingOffset = endingMove - platformButton.TitleEdgeInsets.Right;
+			// double startingOffset = startingMove - platformButton.TitleEdgeInsets.Left;
+			// double endingOffset = endingMove - platformButton.TitleEdgeInsets.Right;
+			double startingOffset = startingMove + platformButton.TitleEdgeInsets.Left;
+			double endingOffset = -endingMove + platformButton.TitleEdgeInsets.Right;
 
 			return ((nfloat)startingOffset, (nfloat)endingOffset, hideTitle);
 #pragma warning restore CA1422 // Validate platform compatibility
@@ -793,33 +801,40 @@ namespace Microsoft.Maui.Controls.Platform
 
 
 			// TODO if one of these change, we'll have to keep the image size the same and move the other
-			var startingMove = imageFrame.Left - startingX;
-			var endingMove = buttonWidth - imageFrame.Right - (buttonWidth - endingX);
+			var startingMove = startingX - imageFrame.Left;
+			var endingMove = endingX - imageFrame.Right;
+
+			// var startingMove = imageFrame.Left - startingX;
+			// var endingMove = buttonWidth - imageFrame.Right - (buttonWidth - endingX);
 
 				
-			double startingOffset = startingMove - platformButton.ImageEdgeInsets.Left;
-			double endingOffset = endingMove - platformButton.ImageEdgeInsets.Right;
+			// double startingOffset = startingMove - platformButton.ImageEdgeInsets.Left;
+			// double endingOffset = endingMove + platformButton.ImageEdgeInsets.Right;
+			double startingOffset = startingMove + platformButton.ImageEdgeInsets.Left;
+			double endingOffset = -endingMove + platformButton.ImageEdgeInsets.Right;
+
 
 			return ((nfloat)startingOffset, (nfloat)endingOffset);
 #pragma warning restore CA1422 // Validate platform compatibility
 		}
 
-		static void DebugInsets(string title, UIEdgeInsets platformInset, UIEdgeInsets insets)
+		static void DebugInsets(string title, UIEdgeInsets platformInset, UIEdgeInsets insets, double threshold = 0.5)
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine($"** {title}");
 			var sbSize = sb.Length;
 
-			if (platformInset.Top != insets.Top)
+				
+			if (Math.Abs(platformInset.Top - insets.Top) > threshold)
 				sb.AppendLine($"Top Difference {platformInset.Top - insets.Top}: {platformInset.Top} -> {insets.Top}");
 
-			if (platformInset.Left != insets.Left)
+			if (Math.Abs(platformInset.Left - insets.Left) > threshold)
 				sb.AppendLine($"Left Difference {platformInset.Left - insets.Left}: {platformInset.Left} -> {insets.Left}");
 
-			if (platformInset.Bottom != insets.Bottom)
+			if (Math.Abs(platformInset.Bottom - insets.Bottom) > threshold)
 				sb.AppendLine($"Bottom Difference {platformInset.Bottom - insets.Bottom}: {platformInset.Bottom} -> {insets.Bottom}");
 
-			if (platformInset.Right != insets.Right)
+			if (Math.Abs(platformInset.Right - insets.Right) > threshold)
 				sb.AppendLine($"Right Difference {platformInset.Right - insets.Right}: {platformInset.Right} -> {insets.Right}");
 
 			if (sb.Length > sbSize)
