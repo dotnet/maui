@@ -12,19 +12,20 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ImageButtonExtensions
 	{
-		const int MauiBackgroundDrawableId = 1002;
-
 		// TODO: NET8 should this be public?
 		internal static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
 			Paint? paint = imageButton.Background;
 
-			// Ripple Background
-			var gradientDrawable = paint?.ToDrawable(platformButton.Context);
-
-			if (gradientDrawable is not null)
+			if (paint is not null)
 			{
-				// Ripple Mask
+				// TODO: Assign Ids to detect if we already created the RippleDrawable to just
+				// update the background drawable and invalidate.
+
+				// Ripple Background Drawable
+				var gradientDrawable = paint?.ToDrawable(platformButton.Context);
+
+				// Ripple Mask Drawable
 				float[] outerRadii = new float[8];
 				float cornerRadius = platformButton.Context.ToPixels(imageButton.CornerRadius);
 				Arrays.Fill(outerRadii, cornerRadius);
@@ -35,9 +36,8 @@ namespace Microsoft.Maui.Platform
 				var rippleColor = ColorStateList.ValueOf(Colors.White.WithAlpha(0.5f).ToPlatform());
 
 				var rippleDrawable = new RippleDrawable(rippleColor, gradientDrawable, maskDrawable);
-				rippleDrawable.SetId(0, MauiBackgroundDrawableId);
-
-				platformButton.Background = rippleDrawable;
+	
+				platformButton.Background = gradientDrawable;
 			}
 			else
 			{
