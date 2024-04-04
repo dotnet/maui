@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls
 
 		public void Remove()
 		{
-			_indicatorView.PropertyChanged -= _indicatorViewPropertyChanged;
+			_indicatorView.PropertyChanged -= IndicatorViewPropertyChanged;
 		}
 	}
 }
