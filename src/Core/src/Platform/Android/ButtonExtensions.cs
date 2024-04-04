@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Google.Android.Material.Button;
 using Microsoft.Maui.Graphics;
-using static Android.Icu.Text.ListFormatter;
-using static Android.Provider.MediaStore.Audio;
 using AColor = Android.Graphics.Color;
 using R = Android.Resource;
 

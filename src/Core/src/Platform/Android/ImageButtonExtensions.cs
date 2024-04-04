@@ -1,20 +1,48 @@
 ﻿using System.Threading.Tasks;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Android.Graphics.Drawables.Shapes;
 using Android.Widget;
 using Google.Android.Material.ImageView;
 using Google.Android.Material.Shape;
+using Java.Util;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class ImageButtonExtensions
 	{
+		const int MauiBackgroundDrawableId = 1002;
+
 		// TODO: NET8 should this be public?
 		internal static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
 			Paint? paint = imageButton.Background;
 
-			platformButton.Background = paint?.ToDrawable(platformButton.Context);
+			// Ripple Background
+			var gradientDrawable = paint?.ToDrawable(platformButton.Context);
+
+			if (gradientDrawable is not null)
+			{
+				// Ripple Mask
+				float[] outerRadii = new float[8];
+				float cornerRadius = platformButton.Context.ToPixels(imageButton.CornerRadius);
+				Arrays.Fill(outerRadii, cornerRadius);
+				RoundRectShape shape = new RoundRectShape(outerRadii, null, null);
+				Android.Graphics.Drawables.ShapeDrawable maskDrawable = new Android.Graphics.Drawables.ShapeDrawable(shape);
+
+				// Ripple SelectionColor
+				var rippleColor = ColorStateList.ValueOf(Colors.White.WithAlpha(0.5f).ToPlatform());
+
+				var rippleDrawable = new RippleDrawable(rippleColor, gradientDrawable, maskDrawable);
+				rippleDrawable.SetId(0, MauiBackgroundDrawableId);
+
+				platformButton.Background = rippleDrawable;
+			}
+			else
+			{
+				platformButton.Background = null;
+			}
 		}
 
 		public static void UpdateStrokeColor(this ShapeableImageView platformButton, IButtonStroke buttonStroke)
@@ -32,6 +60,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateCornerRadius(this ShapeableImageView platformButton, IButtonStroke buttonStroke)
 		{
 			var radius = platformButton.Context.ToPixels(buttonStroke.CornerRadius);
+
 			platformButton.ShapeAppearanceModel =
 				platformButton.ShapeAppearanceModel
 				.ToBuilder()
