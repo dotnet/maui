@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Android.Content;
+using Android.Content.Res;
 using Android.Views;
 using AndroidX.RecyclerView.Widget;
 
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _noNeedForScroll;
 		bool _initialized;
 		bool _isVisible;
+		bool _orientationChanged;
 		bool _disposed;
 
 		List<View> _oldViews;
@@ -97,7 +99,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override RecyclerViewScrollListener<CarouselView, IItemsViewSource> CreateScrollListener()
 				=> new CarouselViewOnScrollListener(ItemsView, ItemsViewAdapter, _carouselViewLoopManager);
+				
+		protected override void OnConfigurationChanged(Configuration newConfig)
+		{
+			base.OnConfigurationChanged(newConfig);
 
+			if (ItemsView is not null)
+			{
+				var position = ItemsView.Position;
+				ScrollHelper.JumpScrollToPosition(position, Controls.ScrollToPosition.Center);
+			}
+
+			_orientationChanged = true;
+		}
 
 		public override void TearDownOldElement(CarouselView oldElement)
 		{
@@ -414,6 +428,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
+			if(_orientationChanged)
+			{
+				_orientationChanged = false;
+				return;
+			}
+
 			if (!_initialized || !_isVisible)
 				return;
 

@@ -132,6 +132,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.DisconnectHandler(Android.Views.View platformView) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.DisconnectHandler(AndroidX.RecyclerView.Widget.RecyclerView platformView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.OnConfigurationChanged(Android.Content.Res.Configuration newConfig) -> void
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
