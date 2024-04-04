@@ -17,15 +17,6 @@ namespace Maui.Controls.Sample.Issues
 			BindingContext = this;
 		}
 
-		protected override async void OnAppearing()
-		{
-			base.OnAppearing();
-
-			await Task.Delay(1500);
-
-			Text = "Updated text in OnAppearing";
-		}
-
 		public string Text
 		{
 			get => _text;
@@ -34,6 +25,11 @@ namespace Maui.Controls.Sample.Issues
 				_text = value;
 				OnPropertyChanged();
 			}
+		}
+
+		void Button_Clicked(System.Object sender, System.EventArgs e)
+		{
+			Text = "Updated text on button click";
 		}
 	}
 }

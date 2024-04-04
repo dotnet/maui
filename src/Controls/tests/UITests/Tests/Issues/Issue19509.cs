@@ -13,14 +13,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Entry TextColor property not working when the Text value is bound after some time";
 
 		[Test]
-		public async Task Issue19509Test()
+		public void Issue19509Test()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
 
 			App.WaitForElement("WaitForStubControl");
 
-			// 1. Wait until bind the Text to the Entry.
-			await Task.Delay(2000);
+			// 1. Click a button to update the text
+			App.Click("button");
 
 			// 2. Verify that the Entry bounded TextColor is correct (Green).
 			var color = App.FindElement("").GetText();

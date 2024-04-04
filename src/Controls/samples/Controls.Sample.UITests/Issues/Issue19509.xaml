@@ -31,6 +31,10 @@
             <Label
                 AutomationId="TestResult"
                 Text="{Binding Source={x:Reference BindingEntry}, Path=TextColor}"/>
+            <Button
+                AutomationId="button"
+                Text="Update text"
+                Clicked="Button_Clicked"/>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
