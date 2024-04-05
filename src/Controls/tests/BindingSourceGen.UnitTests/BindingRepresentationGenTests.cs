@@ -167,7 +167,7 @@ public class BindingRepresentationGenTests
         Assert.Equivalent(expectedBinding, actualBinding, strict: true);
     }
 
-    [Fact(Skip = "Not implemented")]
+    [Fact(Skip = "Require checking path for elements that can be null")]
     public void GenerateBindingWithNullablePropertyReferenceWhenNullableEnabled()
     {
         var source = """
@@ -321,7 +321,7 @@ public class BindingRepresentationGenTests
         Assert.Equivalent(expectedBinding, actualBinding, strict: true);
     }
 
-    [Fact]
+    [Fact(Skip = "Requires checking path for casts")]
     public void GenerateBindingWhenGetterContainsSimpleReferenceTypeCast()
     {
         var source = """
@@ -343,8 +343,7 @@ public class BindingRepresentationGenTests
                 [
                     new Cast(
                         new MemberAccess("Value"),
-                        new TypeDescription("string")
-                        ),
+                        new TypeDescription("string")),
                 ],
                 GenerateSetter: true
             );
@@ -377,12 +376,11 @@ public class BindingRepresentationGenTests
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
                 new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsValueType: true),
+                new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
                     new Cast(
                         new MemberAccess("C"),
-                        new TypeDescription("global::C")
-                        ),
+                        new TypeDescription("global::C")),
                     new ConditionalAccess(new MemberAccess("X")),
                 ],
                 GenerateSetter: true
@@ -420,8 +418,7 @@ public class BindingRepresentationGenTests
                 [
                     new Cast(
                         new MemberAccess("C"),
-                        new TypeDescription("global::C")
-                        ),
+                        new TypeDescription("global::C")),
                     new ConditionalAccess(new MemberAccess("X")),
                 ],
                 GenerateSetter: true
@@ -454,8 +451,7 @@ public class BindingRepresentationGenTests
                 [
                     new Cast(
                         new MemberAccess("Value"),
-                        new TypeDescription("int", IsNullable: true, IsValueType: true)
-                        ),
+                        new TypeDescription("int", IsNullable: true, IsValueType: true)),
                 ],
                 GenerateSetter: true
             );

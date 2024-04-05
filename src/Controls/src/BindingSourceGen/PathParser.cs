@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 internal class PathParser
 {
-    internal static bool ParsePath(CSharpSyntaxNode? expressionSyntax, bool enabledNullable, GeneratorSyntaxContext context, List<IPathPart> parts, bool isNodeNullable = false)
+    internal static bool ParsePath(CSharpSyntaxNode? expressionSyntax, bool enabledNullable, GeneratorSyntaxContext context, List<IPathPart> parts)
     {
         if (expressionSyntax is IdentifierNameSyntax identifier)
         {
@@ -28,10 +28,6 @@ internal class PathParser
             }
 
             IPathPart part = new MemberAccess(member);
-            if (isNodeNullable || BindingGenerationUtilities.IsTypeNullable(typeInfo, enabledNullable))
-            {
-                part = new ConditionalAccess(part);
-            }
 
             parts.Add(part);
             return true;
@@ -68,26 +64,19 @@ internal class PathParser
 
             var defaultMemberName = "Item"; // TODO we need to check the value of the `[DefaultMemberName]` attribute on the member type
             IPathPart part = new IndexAccess(defaultMemberName, indexValue);
-            if (isNodeNullable || BindingGenerationUtilities.IsTypeNullable(typeInfo, enabledNullable))
-            {
-                part = new ConditionalAccess(part);
-            }
             parts.Add(part);
             return true;
         }
         else if (expressionSyntax is ConditionalAccessExpressionSyntax conditionalAccess)
         {
-            return ParsePath(conditionalAccess.Expression, enabledNullable, context, parts, isNodeNullable: true) &&
+            return ParsePath(conditionalAccess.Expression, enabledNullable, context, parts) &&
             ParsePath(conditionalAccess.WhenNotNull, enabledNullable, context, parts);
         }
         else if (expressionSyntax is MemberBindingExpressionSyntax memberBinding)
         {
             var member = memberBinding.Name.Identifier.Text;
             IPathPart part = new MemberAccess(member);
-            if (isNodeNullable)
-            {
-                part = new ConditionalAccess(part);
-            }
+            part = new ConditionalAccess(part);
             parts.Add(part);
             return true;
         }
@@ -109,9 +98,8 @@ internal class PathParser
                 return false;
             }
 
-            var lastPart = parts.Last();
-            parts.RemoveAt(parts.Count - 1);
-            parts.Add(new Cast(lastPart, BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(typeInfo, enabledNullable)));
+            int last = parts.Count - 1;
+            parts[last] = new Cast(parts[last], BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(typeInfo, enabledNullable));
             return true;
         }
         else if (expressionSyntax is InvocationExpressionSyntax)

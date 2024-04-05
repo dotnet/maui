@@ -93,14 +93,14 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		}
 
 		// Sometimes analysing just the return type of the lambda is not enough. TODO: Refactor
-		var propertyType = BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.ReturnType, enabledNullable);
-		var lastMember = parts.Last() is Cast cast ? cast.Part : parts.Last();
-		propertyType = propertyType with { IsNullable = lastMember is ConditionalAccess || propertyType.IsNullable };
+		// var propertyType = BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.ReturnType, enabledNullable);
+		// var lastMember = parts.Last() is Cast cast ? cast.Part : parts.Last();
+		// propertyType = propertyType with { IsNullable = lastMember is ConditionalAccess || propertyType.IsNullable };
 
 		var codeWriterBinding = new CodeWriterBinding(
 			Location: sourceCodeLocation,
 			SourceType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
-			PropertyType: propertyType,
+			PropertyType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.ReturnType, enabledNullable),
 			Path: parts.ToArray(),
 			GenerateSetter: true //TODO: Implement
 		);
