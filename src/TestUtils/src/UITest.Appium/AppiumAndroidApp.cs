@@ -1,4 +1,4 @@
-﻿using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Enums;
 using UITest.Core;
@@ -48,9 +48,9 @@ namespace UITest.Appium
 				{
 					var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
 					var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
-						{
-							{ "appId", appId },
-						});
+					{
+						{ "appId", appId },
+					});
 
 					// https://github.com/appium/appium-uiautomator2-driver#mobile-queryappstate
 					if (state == null)
