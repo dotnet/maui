@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using UIKit;
 
 namespace Microsoft.Maui.Controls
 {
@@ -34,5 +35,10 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.PlatformView?.UpdateText(button);
 		}
+
+		internal Rect RequestedTitleRect { get; set; }
+		internal Rect RequestedImageRect { get; set; }
+		internal double LastUpdatedHeight { get; set; }
+		internal double LastUpdatedWidth { get; set; }
 	}
 }

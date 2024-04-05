@@ -5,6 +5,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Layouts.Flex;
 using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Controls.Button;
@@ -146,6 +147,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (padding.IsNaN)
 				padding = ButtonHandler.DefaultPadding;
 
+			var requestedImageRect = new Graphics.Rect();
+			var requestedTitleRect = new Graphics.Rect();
+				// = new Graphics.Rect(
+				// (float)titleXLeftmostPosition,
+				// (float)titleFrame.Value.Top,
+				// (float)titleWidth,
+				// (float)titleHeight);
+
+
 			if (image != null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
 				// TODO: Do not use the title label as it is not yet updated and
@@ -267,6 +277,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// 	titleInsets.Right += (nfloat)maxTitleOffsetEndX;
 				// }
 
+				
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
@@ -287,13 +298,16 @@ namespace Microsoft.Maui.Controls.Platform
 						titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
 
 						var calculatedImageInsets = MoveImageInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position);
-						imageInsets.Left += calculatedImageInsets.left;
-						imageInsets.Right -= calculatedImageInsets.right;
+						imageInsets.Left = calculatedImageInsets.left;
+						imageInsets.Right = calculatedImageInsets.right;
 
-						var calulatedTitleInsets = MoveTitleInsetsHorizontally(platformButton, button, padding, spacing, layout.Position);
+						var calulatedTitleInsets = MoveTitleInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position);
 
-						titleInsets.Left -= calulatedTitleInsets.left;
-						titleInsets.Right += calulatedTitleInsets.right;
+						titleInsets.Left = calulatedTitleInsets.left;
+						titleInsets.Right = calulatedTitleInsets.right;
+
+						requestedImageRect = calculatedImageInsets.requestedImageRect;
+						requestedTitleRect = calulatedTitleInsets.requestedTitleRect;
 						
 						// titleInsets.Left -= (nfloat)maxTitleOffsetStartX;
 						// titleInsets.Right += (nfloat)maxTitleOffsetEndX;
@@ -312,16 +326,19 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					var calculatedImageInsets = MoveImageInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position);
-					imageInsets.Left += calculatedImageInsets.left;
-					imageInsets.Right -= calculatedImageInsets.right;
+					imageInsets.Left = calculatedImageInsets.left;
+					imageInsets.Right = calculatedImageInsets.right;
 
 					titleInsets.Top -= (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom += imageHeight / 2 + sharedSpacing;
 
-					var calulatedTitleInsets = MoveTitleInsetsHorizontally(platformButton, button, padding, spacing, layout.Position);
+					var calulatedTitleInsets = MoveTitleInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position);
 
-					titleInsets.Left -= calulatedTitleInsets.left;
-					titleInsets.Right += calulatedTitleInsets.right;
+					titleInsets.Left = calulatedTitleInsets.left;
+					titleInsets.Right = calulatedTitleInsets.right;
+
+					requestedImageRect = calculatedImageInsets.requestedImageRect;
+					requestedTitleRect = calulatedTitleInsets.requestedTitleRect;
 
 					// titleInsets.Left -= (nfloat)maxTitleOffsetStartX;
 					// titleInsets.Right += (nfloat)maxTitleOffsetEndX;
@@ -340,26 +357,37 @@ namespace Microsoft.Maui.Controls.Platform
 						// imageInsets.Right += titleWidth / 2 + sharedSpacing;
 					}
 
+					// TODO: Since we are not actually adding the center and placement passes for the image 
+					// and title, this can probably be simplified!
+
 					// Center the image first
 					var calculatedImageInsets = MoveImageInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position, true);
-					imageInsets.Left += calculatedImageInsets.left;
-					imageInsets.Right -= calculatedImageInsets.right;
+					imageInsets.Left = calculatedImageInsets.left;
+					imageInsets.Right = calculatedImageInsets.right;
 
 					
 					
 					
-					var calulatedTitleInsets = MoveTitleInsetsHorizontally(platformButton, button, padding, spacing, layout.Position);
+					var calulatedTitleInsets = MoveTitleInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position);
 
-					titleInsets.Left -= calulatedTitleInsets.left;
-					titleInsets.Right += calulatedTitleInsets.right;
+					titleInsets.Left = calulatedTitleInsets.left;
+					titleInsets.Right = calulatedTitleInsets.right;
 
 					// if the title is not hidden, we can center the image and title together
 					if (!calulatedTitleInsets.isHiden)
 					{
 						var calculatedImageInsets2 = MoveImageInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position);
-						imageInsets.Left += calculatedImageInsets2.left;
-						imageInsets.Right -= calculatedImageInsets2.right;
+						imageInsets.Left = calculatedImageInsets2.left;
+						imageInsets.Right = calculatedImageInsets2.right;
+
+						var calulatedTitleInsets2 = MoveTitleInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position);
+						// titleInsets.Left -= calulatedTitleInsets.left;
+						titleInsets.Left = calulatedTitleInsets2.left;
+						titleInsets.Right = calulatedTitleInsets2.right;
 					}
+
+					requestedImageRect = calculatedImageInsets.requestedImageRect;
+					requestedTitleRect = calulatedTitleInsets.requestedTitleRect;
 
 
 					// var isWidthTooWide = titleWidth + padding.Left + padding.Right + imageWidth + spacing > buttonWidth;
@@ -391,23 +419,34 @@ namespace Microsoft.Maui.Controls.Platform
 						// imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
 					}
 
-					var calculatedImageInsets = MoveImageInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position, true);
-					imageInsets.Left += calculatedImageInsets.left;
-					// imageInsets.Right -= calculatedImageInsets.right;
-					imageInsets.Right += calculatedImageInsets.right;
+					// TODO: Since we are not actually adding the center and placement passes for the image 
+					// and title, this can probably be simplified!
 
-					var calulatedTitleInsets = MoveTitleInsetsHorizontally(platformButton, button, padding, spacing, layout.Position);
+					var calculatedImageInsets = MoveImageInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position, true);
+					imageInsets.Left = calculatedImageInsets.left;
+					// imageInsets.Right -= calculatedImageInsets.right;
+					imageInsets.Right = calculatedImageInsets.right;
+
+					var calulatedTitleInsets = MoveTitleInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position, calculatedImageInsets.left, calculatedImageInsets.right);
 					// titleInsets.Left -= calulatedTitleInsets.left;
-					titleInsets.Left += calulatedTitleInsets.left;
-					titleInsets.Right += calulatedTitleInsets.right;
+					titleInsets.Left = calulatedTitleInsets.left;
+					titleInsets.Right = calulatedTitleInsets.right;
 
 					// if the title is not hidden, we can center the image and title together
 					if (!calulatedTitleInsets.isHiden)
 					{
 						var calculatedImageInsets2 = MoveImageInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position);
-						imageInsets.Left += calculatedImageInsets2.left;
-						imageInsets.Right += calculatedImageInsets2.right;
+						imageInsets.Left = calculatedImageInsets2.left;
+						imageInsets.Right = calculatedImageInsets2.right;
+
+						var calulatedTitleInsets2 = MoveTitleInsetsHorizontally(platformButton, button, image, padding, spacing, layout.Position);
+						// titleInsets.Left -= calulatedTitleInsets.left;
+						titleInsets.Left = calulatedTitleInsets2.left;
+						titleInsets.Right = calulatedTitleInsets2.right;
 					}
+
+					requestedImageRect = calculatedImageInsets.requestedImageRect;
+					requestedTitleRect = calulatedTitleInsets.requestedTitleRect;
 
 
 
@@ -425,6 +464,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
+			contentMode = UIViewContentMode.Left;
 			platformButton.ImageView.ContentMode = contentMode;
 
 			// This is used to match the behavior between platforms.
@@ -468,23 +508,102 @@ namespace Microsoft.Maui.Controls.Platform
 			
 			// 					");
 
+			if (counter == 0){
+				titleLeftDiff = testTitleFrame.Left;
+				titleRightDiff = testTitleFrame.Right;
+				imageLeftDiff = testImageFrame.Left;
+				imageRightDiff = testImageFrame.Right;
+
+				oldImageFrame = CGRect.Empty;
+				oldTitleFrame = CGRect.Empty;
+			}
+
+			titleLeftDiff = oldTitleFrame.Left - (double)testTitleFrame.Left;
+			titleRightDiff = oldTitleFrame.Right - (double)testTitleFrame.Right;
+			imageLeftDiff = oldImageFrame.Left - (double)testImageFrame.Left;
+			imageRightDiff = oldImageFrame.Right - (double)testImageFrame.Right;
+
+			oldImageFrame = testImageFrame;
+			oldTitleFrame = testTitleFrame;
+
+			
+
 			// Maybe if there is a significant difference between the insets, we can calculate how far the center of the title or image is currently from the center of the button?
 #pragma warning disable CA1422 // Validate platform compatibility
 			// ROUNDING
-			if (IsSignificantlyDifferent(platformButton.ImageEdgeInsets, imageInsets, 0.5) ||
-				IsSignificantlyDifferent(platformButton.TitleEdgeInsets, titleInsets, 0.5))// && counter < 10)
-			// if (platformButton.ImageEdgeInsets != imageInsets || platformButton.TitleEdgeInsets!= titleInsets)
+
+			// this new way works in most cases, but if the button has changed dimensions, it needs to still update
+			// if (requestedImageRect != button.RequestedImageRect || requestedTitleRect != button.RequestedTitleRect
+			// 	|| button.LastUpdatedHeight != platformButton.Bounds.Height || button.LastUpdatedWidth != platformButton.Bounds.Width)
+			
+			// if (IsSignificantlyDifferent(platformButton.ImageEdgeInsets, imageInsets, 0.5) ||
+			// 	IsSignificantlyDifferent(platformButton.TitleEdgeInsets, titleInsets, 0.5) && counter < 5)
+
+			var horizon = platformButton.HorizontalAlignment;
+			var vertical = platformButton.VerticalAlignment;
+			var align = platformButton.AlignmentRectInsets;
+			var contentRect = platformButton.ContentRectForBounds(platformButton.Bounds);
+			CGRect titleLabelFrameInButton = platformButton.ConvertRectFromView(platformButton.TitleLabel.Frame, platformButton.TitleLabel);
+
+			// var buttonContentView = platformButton.ContentView.Frame;
+
+			// Create constraints to center the title label horizontally within the button
+			// var centerXConstraint = new NSLayoutConstraint(item: platformButton.titleLabel!, attribute: .centerX, relatedBy: .equal, toItem: platformButton, attribute: .centerX, multiplier: 1.0, constant: 0.0)
+
+			// // Create constraints to specify a vertical offset from the top edge of the button
+			// let topOffsetConstraint = NSLayoutConstraint(item: platformButton.titleLabel!, attribute: .top, relatedBy: .equal, toItem: platformButton, attribute: .top, multiplier: 1.0, constant: 20.0)
+
+			// // Add constraints to the button
+			// platformButton.addConstraints([centerXConstraint, topOffsetConstraint])
+
+
+			// platformButton.TranslatesAutoresizingMaskIntoConstraints = true;
+			// platformButton.TitleLabel.Frame = new CGRect(platformButton.TitleLabel.Frame.X + 30, platformButton.TitleLabel.Frame.Y, 5, 16);
+			
+			// if (counter == 0){
+			// 	platformButton.Superview?.SetNeedsLayout();
+			// 	platformButton.Superview?.LayoutIfNeeded();
+			// 	counter++;
+			// }
+
+			// if (counter < 5)
+
+			if (platformButton.ImageEdgeInsets != imageInsets || platformButton.TitleEdgeInsets!= titleInsets)
 			{
 
-				Console.WriteLine("\n");
+				button.RequestedImageRect = requestedImageRect;
+				button.RequestedTitleRect = requestedTitleRect;
+				button.LastUpdatedHeight = platformButton.Bounds.Height;
+				button.LastUpdatedWidth = platformButton.Bounds.Width;
+
+				Console.WriteLine("\n\n");
 				DebugInsets("imageInsets" + platformButton.TitleLabel.Text.Substring(0,5), platformButton.ImageEdgeInsets, imageInsets);
 				DebugInsets("titleInsets" + platformButton.TitleLabel.Text.Substring(0,5), platformButton.TitleEdgeInsets, titleInsets);
+				// Console.WriteLine($"TitleFrame.Left: {testTitleFrame.Left}");
+				// Console.WriteLine($"TitleFrame.Right: {testTitleFrame.Right}");
+				// Console.WriteLine($"ImageFrame.Left: {testImageFrame.Left}");
+				// Console.WriteLine($"ImageFrame.Right: {testImageFrame.Right}");
 				
+				platformButton.TitleLabel.TranslatesAutoresizingMaskIntoConstraints = true;
+				platformButton.ImageView.TranslatesAutoresizingMaskIntoConstraints = true;
+
+				// platformButton.TitleLabel.RemoveConstraints(platformButton.TitleLabel.Constraints);
+				// platformButton.ImageView.RemoveConstraints(platformButton.ImageView.Constraints);
+
+				platformButton.TitleLabel.SetContentCompressionResistancePriority(float.MaxValue, UILayoutConstraintAxis.Horizontal);
+				platformButton.TitleLabel.SetContentHuggingPriority(float.MaxValue, UILayoutConstraintAxis.Horizontal);
+
+				var titleConstraints = platformButton.TitleLabel.Constraints;
+				var imageConstraints = platformButton.ImageView.Constraints;
+
 				// if (platformButton.TitleLabel.Text.Contains("2", StringComparison.OrdinalIgnoreCase))
 				// Console.WriteLine($"image and title insets: {platformButton.TitleLabel.Text}\nplatformButton.ImageEdgeInsets{platformButton.ImageEdgeInsets}\nimageInsets{imageInsets}\nplatformButton.TitleEdgeInsets{platformButton.TitleEdgeInsets}\ntitleInsets{titleInsets}");
+				
+				
 				platformButton.ImageEdgeInsets = imageInsets;
 				platformButton.TitleEdgeInsets = titleInsets;
-				// counter++;
+
+				counter++;
 				// platformButton.SetNeedsLayout();
 
 				// platformButton.TitleLabel.Layer.Hidden = true;
@@ -492,6 +611,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// Wanted to remove this, but parent needs to be called or we can have extra padding in cases. Could be made into a separate case, but will probably need to run most times :/
 				platformButton.Superview?.SetNeedsLayout();
+				platformButton.Superview?.LayoutIfNeeded();
 				// return;
 			}
 
@@ -582,10 +702,18 @@ namespace Microsoft.Maui.Controls.Platform
 			// 	platformButton.Superview?.SetNeedsLayout();
 			// 	return;
 			// }
+
+			var imageViewTest =  platformButton.ImageView;
 #pragma warning restore CA1422 // Validate platform compatibility
 		}
 
 		static int counter = 0;
+		static double titleLeftDiff = 0;
+		static double titleRightDiff = 0;
+		static double imageLeftDiff = 0;
+		static double imageRightDiff = 0;
+		static CGRect oldImageFrame = CGRect.Empty;
+		static CGRect oldTitleFrame = CGRect.Empty;
 
 		static bool IsSignificantlyDifferent (UIEdgeInsets edgeInsets1, UIEdgeInsets edgeInsets2, double threshold = 0.5)
 		{
@@ -608,19 +736,12 @@ namespace Microsoft.Maui.Controls.Platform
 		//     - then we only want to move image all the way to the left and then use padding and spacing to stop the title at the right side
 		
 		// if shouldCenterText == true, we will center the text here and then move the image and text insets together later
-		static (nfloat left, nfloat right, bool isHiden) MoveTitleInsetsHorizontally (UIButton platformButton, Button button, Thickness padding, double spacing, ButtonContentLayout.ImagePosition imagePosition, bool shouldCenterText = false)
+		static (nfloat left, nfloat right, bool isHiden, Graphics.Rect requestedTitleRect) MoveTitleInsetsHorizontally (UIButton platformButton, Button button, UIImage image, Thickness padding, double spacing, ButtonContentLayout.ImagePosition imagePosition, nfloat? imageInsetsLeft = null, nfloat? imageInsetsRight = null)
 		{
-			if (platformButton.TitleLabel.Text == "2 ~ short"){
-				
-			}
-
 			var imageFrame = platformButton.ImageView!.Frame;
 			var titleFrame = platformButton.TitleLabel!.Frame;
 
 #pragma warning disable CA1422 // Validate platform compatibility
-
-			// var requestedStart = -1.0;
-			// var requestedEnd = -1.0;
 
 			var buttonWidth = platformButton.Bounds.Width;
 
@@ -641,26 +762,27 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var hideTitle = false;
 
-			// find the positions that will center the title 
-			if (imagePosition == ButtonContentLayout.ImagePosition.Top || imagePosition == ButtonContentLayout.ImagePosition.Bottom)
-			{
-				prospectiveStartingX = centerX - centerTitle;
-				prospectiveEndingX = centerX + centerTitle;
-			}
+			var imageWidth = image.Size.Width;
+			var sharedSpacing = spacing / 2;
 
-			if (imagePosition == ButtonContentLayout.ImagePosition.Left || imagePosition == ButtonContentLayout.ImagePosition.Right)
+			// // find the positions that will center the title 
+			// if (imagePosition == ButtonContentLayout.ImagePosition.Top || imagePosition == ButtonContentLayout.ImagePosition.Bottom)
+			// {
+			// 	prospectiveStartingX = centerX - centerTitle;
+			// 	prospectiveEndingX = centerX + centerTitle;
+			// }
+
+			// Check if we should hide the title
+			if ((imagePosition == ButtonContentLayout.ImagePosition.Left || imagePosition == ButtonContentLayout.ImagePosition.Right)
+				&& imageInsetsLeft.HasValue && imageInsetsRight.HasValue && imageInsetsLeft is nfloat imageInsetL && imageInsetsRight is nfloat imageInsetR)
 			{
-				// // if shouldCenterText == true, we will center the text here and then move the image and text insets together outside this method
-				// if (shouldCenterText)
-				// {
-				// 	prospectiveStartingX = centerX - centerTitle;
-				// 	prospectiveEndingX = centerX + centerTitle;
-				// }
+				var potentialImageFrameLeft = imageFrame.Left + imageInsetL;
+				var potentialImageFrameRight = imageFrame.Right - imageInsetR;
 
 				// else we will have the title go all the way to the left after the image and spacing and stretch to the rightmost bound
 				if (imagePosition == ButtonContentLayout.ImagePosition.Left)
 				{
-					prospectiveStartingX = imageFrame.Right + spacing;
+					prospectiveStartingX = potentialImageFrameRight + spacing;
 					prospectiveEndingX = prospectiveStartingX + titleWidth;
 
 					if ((prospectiveStartingX < leftmostPosition && prospectiveEndingX < rightmostPosition)
@@ -672,14 +794,47 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 				{
 					// if both of these values are negative or past the width of the button, we will not want to see the title
-					prospectiveEndingX = imageFrame.Left - spacing;
+					prospectiveEndingX = potentialImageFrameLeft - spacing;
 					prospectiveStartingX = prospectiveEndingX - titleWidth;
 
-					if ((prospectiveStartingX < leftmostPosition && prospectiveEndingX < rightmostPosition)
+					if ((prospectiveStartingX < leftmostPosition && prospectiveEndingX < leftmostPosition)
 						|| (prospectiveStartingX > buttonWidth && prospectiveEndingX > buttonWidth))
 					{
 						hideTitle = true;
 					}
+				}
+			}
+
+
+			// find the positions that will center the title 
+			prospectiveStartingX = centerX - centerTitle;
+			prospectiveEndingX = centerX + centerTitle;
+
+			if ((imagePosition == ButtonContentLayout.ImagePosition.Left || imagePosition == ButtonContentLayout.ImagePosition.Right)
+				&& !hideTitle)
+			{
+				// else we will have the title go all the way to the left after the image and spacing and stretch to the rightmost bound
+				if (imagePosition == ButtonContentLayout.ImagePosition.Left)
+				{
+					prospectiveStartingX += imageWidth / 2 + sharedSpacing;
+					prospectiveEndingX += imageWidth / 2 + sharedSpacing;
+
+					// if ((prospectiveStartingX < leftmostPosition && prospectiveEndingX < rightmostPosition)
+					// 	|| (prospectiveStartingX > buttonWidth && prospectiveEndingX > buttonWidth))
+					// {
+					// 	hideTitle = true;
+					// }
+				}
+				else
+				{
+					prospectiveStartingX -= imageWidth / 2 + sharedSpacing;
+					prospectiveEndingX -= imageWidth / 2 + sharedSpacing;
+
+					// if ((prospectiveStartingX < leftmostPosition && prospectiveEndingX < leftmostPosition)
+					// 	|| (prospectiveStartingX > buttonWidth && prospectiveEndingX > buttonWidth))
+					// {
+					// 	hideTitle = true;
+					// }
 				}
 			}
 
@@ -692,10 +847,18 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				startingX = -5 - titleWidth;
 				endingX = -5;
+
+				if (titleFrame.Left < 0 && titleFrame.Right < 0)
+				{
+					var requestedTitleRectHideTitle = new Graphics.Rect(startingX, button.RequestedTitleRect.Y, endingX - startingX, button.RequestedTitleRect.Height);
+					return (platformButton.TitleEdgeInsets.Left, platformButton.TitleEdgeInsets.Right, hideTitle, requestedTitleRectHideTitle);
+				}
 			}
 
 			// var startingMove = titleFrame.Left - startingX;
 			// var endingMove = buttonWidth - titleFrame.Right - (buttonWidth - endingX);
+
+			var requestedTitleRect = new Graphics.Rect(startingX, button.RequestedTitleRect.Y, endingX - startingX, button.RequestedTitleRect.Height);
 
 			var startingMove = startingX - titleFrame.Left;
 			var endingMove = endingX - titleFrame.Right;
@@ -703,29 +866,23 @@ namespace Microsoft.Maui.Controls.Platform
 				
 			// double startingOffset = startingMove - platformButton.TitleEdgeInsets.Left;
 			// double endingOffset = endingMove - platformButton.TitleEdgeInsets.Right;
-			double startingOffset = startingMove + platformButton.TitleEdgeInsets.Left;
-			double endingOffset = -endingMove + platformButton.TitleEdgeInsets.Right;
+			var startingOffset = startingMove + platformButton.TitleEdgeInsets.Left;
+			var endingOffset = -endingMove + platformButton.TitleEdgeInsets.Right;
 
-			return ((nfloat)startingOffset, (nfloat)endingOffset, hideTitle);
+			if (platformButton.TitleLabel.Text.Contains("33", StringComparison.OrdinalIgnoreCase)){
+			}
+
+			// return ((nfloat)Math.Round(startingOffset, 0), (nfloat)Math.Round(endingOffset, 0), hideTitle);
+
+			
+			return ((nfloat)startingOffset, (nfloat)endingOffset, hideTitle, requestedTitleRect);
+			
+			// TODO testing
+			// return (platformButton.TitleEdgeInsets.Left, platformButton.TitleEdgeInsets.Right +(nfloat)5, hideTitle, requestedTitleRect);
 #pragma warning restore CA1422 // Validate platform compatibility
 		}
 
-		static void CheckToHideTitle(UIButton platformButton, double startingX, double endingX, double buttonWidth)
-		{
-			if ((startingX < 0 && endingX < 0)
-				|| (startingX > buttonWidth && endingX > buttonWidth))
-			{
-				platformButton.TitleLabel.Layer.Hidden = true;
-			}
-			else
-			{
-				platformButton.TitleLabel.Layer.Hidden = false;
-			}
-		}
-
-
-
-		static (nfloat left, nfloat right) MoveImageInsetsHorizontally (UIButton platformButton, Button button, UIImage image, Thickness padding, double spacing, ButtonContentLayout.ImagePosition imagePosition, bool shouldCenterText = false)
+		static (nfloat left, nfloat right, Graphics.Rect requestedImageRect) MoveImageInsetsHorizontally (UIButton platformButton, Button button, UIImage image, Thickness padding, double spacing, ButtonContentLayout.ImagePosition imagePosition, bool shouldCenterText = false)
 		{
 			var imageFrame = platformButton.ImageView!.Frame;
 			var titleFrame = platformButton.TitleLabel!.Frame;
@@ -780,7 +937,10 @@ namespace Microsoft.Maui.Controls.Platform
 					prospectiveStartingX += titleWidth / 2 + sharedSpacing;
 					prospectiveEndingX += titleWidth / 2 + sharedSpacing;
 				}
-				
+			}
+			else 
+			{
+
 			}
 
 			double startingX = prospectiveStartingX;
@@ -799,6 +959,8 @@ namespace Microsoft.Maui.Controls.Platform
 			// var startingX = Math.Max(leftmostPosition, prospectiveStartingX);
 			// var endingX = Math.Min(rightmostPosition, prospectiveEndingX);
 
+			var requestedImageRect = new Graphics.Rect(startingX, button.RequestedTitleRect.Y, endingX - startingX, button.RequestedTitleRect.Height);
+
 
 			// TODO if one of these change, we'll have to keep the image size the same and move the other
 			var startingMove = startingX - imageFrame.Left;
@@ -814,7 +976,10 @@ namespace Microsoft.Maui.Controls.Platform
 			double endingOffset = -endingMove + platformButton.ImageEdgeInsets.Right;
 
 
-			return ((nfloat)startingOffset, (nfloat)endingOffset);
+			return ((nfloat)startingOffset, (nfloat)endingOffset, requestedImageRect);
+
+			// TODO Testing!
+			// return (platformButton.ImageEdgeInsets.Left, platformButton.ImageEdgeInsets.Right +(nfloat)5, requestedImageRect);
 #pragma warning restore CA1422 // Validate platform compatibility
 		}
 
@@ -826,16 +991,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 				
 			if (Math.Abs(platformInset.Top - insets.Top) > threshold)
-				sb.AppendLine($"Top Difference {platformInset.Top - insets.Top}: {platformInset.Top} -> {insets.Top}");
+				sb.AppendLine($"~        Top Difference {platformInset.Top - insets.Top}: {platformInset.Top} -> {insets.Top}");
 
 			if (Math.Abs(platformInset.Left - insets.Left) > threshold)
-				sb.AppendLine($"Left Difference {platformInset.Left - insets.Left}: {platformInset.Left} -> {insets.Left}");
+				sb.AppendLine($"~        Left Difference {platformInset.Left - insets.Left}: {platformInset.Left} -> {insets.Left}");
 
 			if (Math.Abs(platformInset.Bottom - insets.Bottom) > threshold)
-				sb.AppendLine($"Bottom Difference {platformInset.Bottom - insets.Bottom}: {platformInset.Bottom} -> {insets.Bottom}");
+				sb.AppendLine($"~        Bottom Difference {platformInset.Bottom - insets.Bottom}: {platformInset.Bottom} -> {insets.Bottom}");
 
 			if (Math.Abs(platformInset.Right - insets.Right) > threshold)
-				sb.AppendLine($"Right Difference {platformInset.Right - insets.Right}: {platformInset.Right} -> {insets.Right}");
+				sb.AppendLine($"~        Right Difference {platformInset.Right - insets.Right}: {platformInset.Right} -> {insets.Right}");
 
 			if (sb.Length > sbSize)
 				Console.WriteLine(sb.ToString());
@@ -861,6 +1026,8 @@ namespace Microsoft.Maui.Controls.Platform
 				var imageEdgeInsets = platformButton.ImageEdgeInsets;
 				var titleRect = platformButton.GetTitleBoundingRect();
 
+				var buffer = 0.1;
+
 				// If the image is larger than the button, we will ignore the text
 				// what about the spacing?
 				// Maybe if the image is larger than the button - spacing, then it can ignore the spacing a text because the text wouldn't show anyways?
@@ -874,12 +1041,12 @@ namespace Microsoft.Maui.Controls.Platform
 					var contentHeightWithoutTextSpacing = platformButton.Bounds.Height - padding.Top - padding.Bottom;
 					var contentHeightWithTextSpacing = platformButton.Bounds.Height - (titleRect.Height + spacing + (nfloat)padding.Top + (nfloat)padding.Bottom);
 					// Case where the image is big enough to fill the whole button
-					if (image.Size.Height > contentHeightWithoutTextSpacing)
+					if (image.Size.Height - contentHeightWithoutTextSpacing > buffer)
 					{
 						availableHeight = (nfloat)contentHeightWithoutTextSpacing;
 					}
 
-					else if (image.Size.Height - spacing > contentHeightWithTextSpacing)
+					else if (image.Size.Height - spacing - contentHeightWithTextSpacing > buffer)
 					{
 						availableHeight = (nfloat)contentHeightWithTextSpacing;
 					}
@@ -898,18 +1065,18 @@ namespace Microsoft.Maui.Controls.Platform
 					var contentWidthWithoutTextSpacing = platformButton.Bounds.Width - (nfloat)padding.Left - (nfloat)padding.Right;
 					var contentWidthWithTextSpacing = platformButton.Bounds.Width - (spacing + (nfloat)padding.Left + (nfloat)padding.Right);
 					// Case where the image is big enough to fill the whole button
-					if (image.Size.Width > contentWidthWithoutTextSpacing)
+					if (image.Size.Width - contentWidthWithoutTextSpacing > buffer)
 					{
 						availableWidth = contentWidthWithoutTextSpacing;
 					}
 
-					else if (image.Size.Width - spacing > contentWidthWithTextSpacing)
+					else if (image.Size.Width - spacing - contentWidthWithTextSpacing > buffer)
 					{
 						availableWidth = contentWidthWithTextSpacing;
 					}
 
 					var contentHeight = platformButton.Bounds.Height - ((nfloat)padding.Top + (nfloat)padding.Bottom);
-					if (image.Size.Height - contentHeight > 0.1)
+					if (image.Size.Height - contentHeight > buffer)
 					{
 						availableHeight = contentHeight;
 					}
