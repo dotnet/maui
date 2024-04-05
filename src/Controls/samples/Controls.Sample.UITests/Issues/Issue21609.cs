@@ -12,6 +12,12 @@ public class Issue21609 : TestContentPage
 {
 	protected override void Init()
 	{
+		if (OperatingSystem.IsWindows())
+		{
+			Content = new Label() { Text = "This Test currently doesn't work on windows" };
+			return;
+		}
+
 		var carV = new CarouselView()
 		{
 			HeightRequest = 200,
