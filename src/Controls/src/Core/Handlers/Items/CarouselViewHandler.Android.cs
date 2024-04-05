@@ -1,11 +1,8 @@
 #nullable disable
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Android.Views;
 using AndroidX.RecyclerView.Widget;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -13,6 +10,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		double _widthConstraint;
 		double _heightConstraint;
+		double? _itemWidth;
+		double? _itemHeight;
 
 		protected override IItemsLayout GetItemsLayout() => VirtualView.ItemsLayout;
 
@@ -71,6 +70,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_heightConstraint = Context.ToPixels(frame.Height);
 
 			base.PlatformArrange(frame);
+
+			var itemWidth = GetItemWidth();
+			var itemHeight = GetItemHeight();
+			_itemWidth = _itemWidth ?? itemWidth;
+			_itemHeight = _itemHeight ?? itemHeight;
+
+			// If the item width and height change we have to trigger a data set changed
+			// so that all the items can remeasure for the new layout dimensions
+			if (!itemWidth.IsCloseTo(_itemWidth.Value) ||
+				!itemHeight.IsCloseTo(_itemHeight.Value))
+			{
+				PlatformView.GetAdapter()?.NotifyDataSetChanged();
+			}
+
+			_itemWidth = itemWidth;
+			_itemHeight = itemHeight;
 		}
 
 		double GetItemWidth()
