@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,6 +22,7 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Platform;
+using Accelerate;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -361,7 +362,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			// must pack into container so padding can work
 			// otherwise the view controller is forced to 0,0
-			var pack = new ParentingViewController(this, MauiContext) { Child = page };
+			var pack = new ParentingViewController(this) { Child = page };
 
 			pack.UpdateTitleArea(page);
 
@@ -1092,16 +1093,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Page _child;
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
-			IMauiContext _mauiContext;
 
-			public ParentingViewController(NavigationRenderer navigation, IMauiContext mauiContext)
+			public ParentingViewController(NavigationRenderer navigation)
 			{
 #pragma warning disable CA1416, CA1422 // TODO: 'UIViewController.AutomaticallyAdjustsScrollViewInsets' is unsupported on: 'ios' 11.0 and later
 				AutomaticallyAdjustsScrollViewInsets = false;
 #pragma warning restore CA1416, CA1422
 
 				_navigation = new WeakReference<NavigationRenderer>(navigation);
-				_mauiContext = mauiContext;
 			}
 
 			public Page Child
@@ -1453,7 +1452,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					titleIcon.LoadImage(_mauiContext, result =>
+					if (!_navigation.TryGetTarget(out NavigationRenderer n) && n.MauiContext is not null)
+						return;
+
+					titleIcon.LoadImage(n.MauiContext, result =>
 					{
 						var image = result?.Value;
 						try
