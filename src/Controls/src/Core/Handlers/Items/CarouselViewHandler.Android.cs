@@ -27,16 +27,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return new MauiCarouselRecyclerView(Context, GetItemsLayout, CreateAdapter);
 		}
 
-		static void MapWidth(CarouselViewHandler handler, CarouselView carouselView)
+		static void MapFrame(CarouselViewHandler handler, CarouselView carouselView, object args)
 		{
+			ViewHandler.MapFrame(handler, carouselView, args);
 			handler.PlatformView.GetAdapter()?.NotifyDataSetChanged();
-			ViewHandler.MapWidth(handler, carouselView);
-		}
-
-		static void MapHeight(CarouselViewHandler handler, CarouselView carouselView)
-		{
-			handler.PlatformView.GetAdapter()?.NotifyDataSetChanged();
-			ViewHandler.MapHeight(handler, carouselView);
 		}
 
 		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)

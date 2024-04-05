@@ -8,15 +8,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract partial class ItemsViewHandler<TItemsView> where TItemsView : ItemsView
 	{
-		public ItemsViewHandler() : base(ItemsViewMapper)
+		public ItemsViewHandler() : this(ItemsViewMapper, ItemsViewCommandMapper)
 		{
 
 		}
 
-		public ItemsViewHandler(PropertyMapper mapper = null) : base(mapper ?? ItemsViewMapper)
+		public ItemsViewHandler(PropertyMapper mapper = null) : this(mapper ?? ItemsViewMapper, ItemsViewCommandMapper)
 		{
 
 		}
+
+		// Make public for NET9
+#if !ANDROID
+		private
+#endif
+		protected ItemsViewHandler(PropertyMapper mapper, CommandMapper commandMapper = null) : base(mapper, commandMapper ?? ItemsViewCommandMapper)
+		{
+		}
+
+		// Make public for NET9
+		internal static CommandMapper<TItemsView, ItemsViewHandler<TItemsView>> ItemsViewCommandMapper = new(ViewHandler.ViewCommandMapper)
+		{
+		};
 
 		public static PropertyMapper<TItemsView, ItemsViewHandler<TItemsView>> ItemsViewMapper = new(ViewMapper)
 		{
