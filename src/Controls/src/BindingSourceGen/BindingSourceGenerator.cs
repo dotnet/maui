@@ -76,7 +76,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		}
 
 		var (lambdaBody, lambdaSymbol, lambdaDiagnostics) = GetLambda(invocation, context.SemanticModel);
-		
+
 		if (lambdaBody == null || lambdaSymbol == null || lambdaDiagnostics.Length > 0)
 		{
 			return ReportDiagnostics(lambdaDiagnostics);

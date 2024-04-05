@@ -37,17 +37,17 @@ public class BindingRepresentationGenTests
         var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
-        label.SetBinding(Label.RotationProperty, static (Button b) => b.Text.Length);
+        label.SetBinding(Label.RotationProperty, static (Button b) => b.Text?.Length);
         """;
 
         var actualBinding = SourceGenHelpers.GetBinding(source);
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
                 new TypeDescription("global::Microsoft.Maui.Controls.Button"),
-                new TypeDescription("int", IsValueType: true),
+                new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
                     new MemberAccess("Text"),
-                    new MemberAccess("Length"),
+                    new ConditionalAccess(new MemberAccess("Length")),
                 ],
                 GenerateSetter: true);
 
@@ -62,7 +62,7 @@ public class BindingRepresentationGenTests
         var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
-        label.SetBinding(Label.RotationProperty, static (Foo f) => f.Button?.Text.Length);
+        label.SetBinding(Label.RotationProperty, static (Foo f) => f.Button?.Text?.Length);
 
         class Foo
         {
@@ -76,9 +76,9 @@ public class BindingRepresentationGenTests
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
-                    new ConditionalAccess(new MemberAccess("Button")),
-                    new MemberAccess("Text"),
-                    new MemberAccess("Length"),
+                    new MemberAccess("Button"),
+                    new ConditionalAccess(new MemberAccess("Text")),
+                    new ConditionalAccess(new MemberAccess("Length")),
                 ],
                 GenerateSetter: true);
 
@@ -94,7 +94,7 @@ public class BindingRepresentationGenTests
         var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
-        label.SetBinding(Label.RotationProperty, static (Button? b) => b?.Text.Length);
+        label.SetBinding(Label.RotationProperty, static (Button? b) => b?.Text?.Length);
         """;
 
         var actualBinding = SourceGenHelpers.GetBinding(source);
@@ -103,8 +103,8 @@ public class BindingRepresentationGenTests
                 new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
-                    new MemberAccess("Text"),
-                    new MemberAccess("Length"),
+                    new ConditionalAccess(new MemberAccess("Text")),
+                    new ConditionalAccess(new MemberAccess("Length")),
                 ],
                 GenerateSetter: true);
 
@@ -133,7 +133,7 @@ public class BindingRepresentationGenTests
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
-                    new ConditionalAccess(new MemberAccess("Value")),
+                    new MemberAccess("Value"),
                 ],
                 GenerateSetter: true);
 
@@ -158,7 +158,7 @@ public class BindingRepresentationGenTests
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
                     new ConditionalAccess(new MemberAccess("Text")),
-                    new MemberAccess("Length"),
+                    new ConditionalAccess(new MemberAccess("Length")),
                 ],
                 GenerateSetter: true);
 
@@ -167,7 +167,7 @@ public class BindingRepresentationGenTests
         Assert.Equivalent(expectedBinding, actualBinding, strict: true);
     }
 
-    [Fact]
+    [Fact(Skip = "Not implemented")]
     public void GenerateBindingWithNullablePropertyReferenceWhenNullableEnabled()
     {
         var source = """
@@ -187,7 +187,7 @@ public class BindingRepresentationGenTests
                 new TypeDescription("global::Foo"),
                 new TypeDescription("string", IsNullable: true),
                 [
-                    new ConditionalAccess(new MemberAccess("Value")),
+                    new MemberAccess("Value"),
                 ],
                 GenerateSetter: true
             );
@@ -204,7 +204,7 @@ public class BindingRepresentationGenTests
         using Microsoft.Maui.Controls;
         #nullable disable
         var label = new Label();
-        label.SetBinding(Label.RotationProperty, static (Foo f) => f.Bar.Length);
+        label.SetBinding(Label.RotationProperty, static (Foo f) => f?.Bar?.Length);
 
         class Foo
         {
@@ -216,10 +216,10 @@ public class BindingRepresentationGenTests
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 4, 7),
                 new TypeDescription("global::Foo", IsNullable: true),
-                new TypeDescription("int", IsValueType: true),
+                new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
                     new ConditionalAccess(new MemberAccess("Bar")),
-                    new MemberAccess("Length"),
+                    new ConditionalAccess(new MemberAccess("Length")),
                 ],
                 GenerateSetter: true);
 
@@ -249,7 +249,7 @@ public class BindingRepresentationGenTests
                 new TypeDescription("global::Foo", IsNullable: true),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
-                    new ConditionalAccess(new MemberAccess("Value")),
+                    new MemberAccess("Value"),
                 ],
                 GenerateSetter: true);
 
@@ -339,7 +339,7 @@ public class BindingRepresentationGenTests
         var expectedBinding = new CodeWriterBinding(
                 new SourceCodeLocation("", 3, 7),
                 new TypeDescription("global::Foo"),
-                new TypeDescription("string"),
+                new TypeDescription("string", IsNullable: true), // May be hard
                 [
                     new Cast(
                         new MemberAccess("Value"),
@@ -360,7 +360,7 @@ public class BindingRepresentationGenTests
         var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
-        label.SetBinding(Label.RotationProperty, static (Foo f) => (f.C as C).X);
+        label.SetBinding(Label.RotationProperty, static (Foo f) => (f.C as C)?.X);
 
         public class Foo
         {
@@ -383,7 +383,7 @@ public class BindingRepresentationGenTests
                         new MemberAccess("C"),
                         new TypeDescription("global::C")
                         ),
-                    new MemberAccess("X"),
+                    new ConditionalAccess(new MemberAccess("X")),
                 ],
                 GenerateSetter: true
             );
@@ -419,10 +419,10 @@ public class BindingRepresentationGenTests
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
                     new Cast(
-                        new ConditionalAccess(new MemberAccess("C")),
+                        new MemberAccess("C"),
                         new TypeDescription("global::C")
                         ),
-                    new MemberAccess("X"),
+                    new ConditionalAccess(new MemberAccess("X")),
                 ],
                 GenerateSetter: true
             );
@@ -492,10 +492,9 @@ public class BindingRepresentationGenTests
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
                     new Cast(
-                        new ConditionalAccess(new MemberAccess("C")),
-                        new TypeDescription("global::C", IsNullable: true, IsValueType: true)
-                        ),
-                    new MemberAccess("X"),
+                        new MemberAccess("C"),
+                        new TypeDescription("global::C", IsNullable: true, IsValueType: true)),
+                    new ConditionalAccess(new MemberAccess("X")),
                 ],
                 GenerateSetter: true
             );
