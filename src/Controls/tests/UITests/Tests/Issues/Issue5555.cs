@@ -11,6 +11,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 		}
 
+		public override bool ResetMainPage => false;
+		
 		[Test]
 		[Category(UITestCategories.TableView)]
 		public void TableViewMemoryLeakWhenUsingSwitchCellOrEntryCell()

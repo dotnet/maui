@@ -47,7 +47,6 @@ namespace Microsoft.Maui.AppiumTests
 				else
 				{
 					this.Back();
-					App.Click("GoBackToGalleriesButton");
 				}
 			}
 			catch (Exception e)
@@ -65,17 +64,11 @@ namespace Microsoft.Maui.AppiumTests
 			if (ResetMainPage)
 			{
 				App.Click("ResetMainPage");
-				App.EnterText("SearchBar", issue);
-				App.WaitForElement("GoToTestButton");
-				App.Click("GoToTestButton");
 			}
-			else
-			{
-				App.NavigateToIssues();
-				App.EnterText("SearchBarGo", issue);
-				App.WaitForElement("SearchButton");
-				App.Click("SearchButton");
-			}
+
+			App.EnterText("SearchBar", issue);
+			App.WaitForElement("GoToTestButton");
+			App.Click("GoToTestButton");
 		}
 	}
 }
