@@ -22,7 +22,6 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Platform;
-using Accelerate;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
