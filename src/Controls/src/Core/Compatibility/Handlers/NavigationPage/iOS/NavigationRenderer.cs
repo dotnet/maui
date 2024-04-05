@@ -22,7 +22,6 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Platform;
-using Accelerate;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -1452,21 +1451,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					if (!_navigation.TryGetTarget(out NavigationRenderer n) || n.MauiContext is null)
-						return;
-
-					titleIcon.LoadImage(n.MauiContext, result =>
+					if (_navigation.TryGetTarget(out NavigationRenderer n) && n.MauiContext is IMauiContext mc)
 					{
-						var image = result?.Value;
-						try
+						titleIcon.LoadImage(mc, result =>
 						{
-							titleViewContainer.Icon = new UIImageView(image);
-						}
-						catch
-						{
-							//UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
-						}
-					});
+							var image = result?.Value;
+							try
+							{
+								titleViewContainer.Icon = new UIImageView(image);
+							}
+							catch
+							{
+								//UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
+							}
+						});
+					}
 				}
 			}
 
