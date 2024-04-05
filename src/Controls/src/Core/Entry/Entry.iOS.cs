@@ -16,11 +16,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IEntryHandler handler, Entry entry)
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView, entry);
-
-			// Any text update requires that we update any attributed string formatting
-			handler.UpdateValue(nameof(IEntry.MaxLength));
-			handler.UpdateValue(nameof(IEntry.CharacterSpacing));
-			handler.UpdateValue(nameof(IEntry.HorizontalTextAlignment));
+			EntryHandler.MapFormatting(handler, entry);
 		}
 
 		public static void MapCursorColor(EntryHandler handler, Entry entry) =>
