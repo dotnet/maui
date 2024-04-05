@@ -15,17 +15,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue19509Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
-
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Click a button to update the text
 			App.Click("button");
 
-			// 2. Verify that the Entry bounded TextColor is correct (Green).
-			var color = App.FindElement("").GetText();
-			Assert.AreEqual("[Color: Red=0, Green=0.5019608, Blue=0, Alpha=1]", color);
-			App.Screenshot("Green Entry TextColor");
+			// 2. Verify that the Entry TextColor is correct (Green).
+			VerifyScreenshot();
 		}
 	}
 }
