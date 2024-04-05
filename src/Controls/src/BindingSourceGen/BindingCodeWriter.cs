@@ -171,7 +171,7 @@ public sealed class BindingCodeWriter
 			AppendLine('{');
 			Indent();
 
-			if (path.Any(part => part is ConditionalAccess))
+			if (path.Any(part => part.IsConditional))
 			{
 				Append("if (");
 				Append(_accessExpressionBuilder.BuildExpression("source", path, depth: path.Length - 1));

@@ -15,8 +15,8 @@ public class BindingCodeWriterTests
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             Path: [
-                new ConditionalAccess(new MemberAccess("A")),
-                new MemberAccess("B"),
+                new MemberAccess("A"),
+                new ConditionalAccess(new MemberAccess("B")),
                 new ConditionalAccess(new MemberAccess("C")),
             ],
             GenerateSetter: true));
@@ -112,8 +112,8 @@ public class BindingCodeWriterTests
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             Path: [
-                new ConditionalAccess(new MemberAccess("A")),
-                new MemberAccess("B"),
+                new MemberAccess("A"),
+                new ConditionalAccess(new MemberAccess("B")),
                 new ConditionalAccess(new MemberAccess("C")),
             ],
             GenerateSetter: true));
@@ -291,8 +291,8 @@ public class BindingCodeWriterTests
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
             Path: [
-                new ConditionalAccess(new IndexAccess("Item", new NumericIndex(12))),
-                new IndexAccess("Indexer", new StringIndex("Abc")),
+                new IndexAccess("Item", new NumericIndex(12)),
+                new ConditionalAccess(new IndexAccess("Indexer", new StringIndex("Abc"))),
                 new IndexAccess("Item", new NumericIndex(0)),
             ],
             GenerateSetter: true));
@@ -353,8 +353,8 @@ public class BindingCodeWriterTests
         var generatedCode = accessExpressionBuilder.BuildExpression(
             variableName: "source",
             path: [
-                new ConditionalAccess(new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsNullable: false, IsGenericParameter: false, IsValueType: false))),
-                new MemberAccess("B"),
+                new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsNullable: false, IsGenericParameter: false, IsValueType: false)),
+                new ConditionalAccess(new MemberAccess("B")),
             ]);
 
         Assert.Equal("(source.A as X)?.B", generatedCode);
@@ -367,8 +367,8 @@ public class BindingCodeWriterTests
         var generatedCode = accessExpressionBuilder.BuildExpression(
             variableName: "source",
             path: [
-                new ConditionalAccess(new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsNullable: false, IsGenericParameter: false, IsValueType: true))),
-                new MemberAccess("B"),
+                new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsNullable: false, IsGenericParameter: false, IsValueType: true)),
+                new ConditionalAccess(new MemberAccess("B")),
             ]);
 
         Assert.Equal("(source.A as X?)?.B", generatedCode);
@@ -381,8 +381,8 @@ public class BindingCodeWriterTests
         var generatedCode = accessExpressionBuilder.BuildExpression(
             variableName: "source",
             path: [
-                new ConditionalAccess(new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsNullable: true, IsGenericParameter: false, IsValueType: true))),
-                new MemberAccess("B"),
+                new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsNullable: true, IsGenericParameter: false, IsValueType: true)),
+                new ConditionalAccess(new MemberAccess("B")),
             ]);
 
         Assert.Equal("(source.A as X?)?.B", generatedCode);
@@ -400,9 +400,9 @@ public class BindingCodeWriterTests
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
             Path: [
-                new ConditionalAccess(new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsValueType: false, IsNullable: false, IsGenericParameter: false))),
+                new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsValueType: false, IsNullable: false, IsGenericParameter: false)),
                 new ConditionalAccess(new Cast(new MemberAccess("B"), TargetType: new TypeDescription("Y", IsValueType: false, IsNullable: false, IsGenericParameter: false))),
-                new Cast(new MemberAccess("C"), TargetType: new TypeDescription("Z", IsValueType: true, IsNullable: false, IsGenericParameter: false)),
+                new ConditionalAccess(new Cast(new MemberAccess("C"), TargetType: new TypeDescription("Z", IsValueType: true, IsNullable: false, IsGenericParameter: false))),
                 new MemberAccess("D"),
             ],
             GenerateSetter: true));

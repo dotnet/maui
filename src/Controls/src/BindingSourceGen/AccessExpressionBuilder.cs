@@ -76,11 +76,12 @@ namespace Microsoft.Maui.Controls.BindingSourceGen
         {
             _encounteredConditionalAccess = true;
 
-            AddPathPart(conditionalAccess.Part, isLast);
-            if (!_unsafeAccess && !isLast)
+            if (!_unsafeAccess)
             {
                 _sb.Append('?');
             }
+
+            AddPathPart(conditionalAccess.Part, isLast);
         }
 
         private void AddCast(Cast cast, bool isLast)
