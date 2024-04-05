@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
 Microsoft.Maui.Controls.PlatformDragEventArgs
