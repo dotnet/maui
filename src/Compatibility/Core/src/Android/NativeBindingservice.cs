@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	class NativeBindingService : INativeBindingService
 	{
 		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmerConstants.NativeBindingService)]
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
 			var view = target as AView;
