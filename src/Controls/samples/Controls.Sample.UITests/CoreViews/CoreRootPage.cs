@@ -54,16 +54,21 @@ namespace Maui.Controls.Sample
 					{
 						try
 						{
-							var testCaseScreen = new TestCases.TestCaseScreen(resetMainPage);
-							await Task.Delay(50); // Load all the issues before try to navigate.
+							bool navigated = await corePageView.PushPage(searchBar.Text);
 
-							if (TestCases.TestCaseScreen.PageToAction.ContainsKey(searchBar.Text?.Trim()))
+							if (!navigated)
 							{
-								TestCases.TestCaseScreen.PageToAction[searchBar.Text?.Trim()]();
-							}
-							else if (!testCaseScreen.TryToNavigateTo(searchBar.Text?.Trim()))
-							{
-								throw new Exception($"Unable to Navigate to {searchBar.Text}");
+								var testCaseScreen = new TestCases.TestCaseScreen(resetMainPage);
+								await Task.Delay(50); // Load all the issues before try to navigate.
+
+								if (TestCases.TestCaseScreen.PageToAction.ContainsKey(searchBar.Text?.Trim()))
+								{
+									TestCases.TestCaseScreen.PageToAction[searchBar.Text?.Trim()]();
+								}
+								else if (!testCaseScreen.TryToNavigateTo(searchBar.Text?.Trim()))
+								{
+									throw new Exception($"Unable to Navigate to {searchBar.Text}");
+								}
 							}
 						}
 						catch (Exception e)
