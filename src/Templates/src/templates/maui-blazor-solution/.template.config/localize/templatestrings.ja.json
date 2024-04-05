@@ -1,0 +1,9 @@
+{
+  "author": "Microsoft",
+  "name": ".NET MAUI Blazor Hybrid and Web App",
+  "description": "A multi-project app for creating a .NET MAUI Blazor Hybrid application with a Blazor Web project with a shared user interface.",
+  "postActions/openInEditor/description": "Opens Shared Components/Pages/Home.razor in the editor.",
+  "symbols/applicationId/description": "Overrides the $(ApplicationId) in the project",
+  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
+}
