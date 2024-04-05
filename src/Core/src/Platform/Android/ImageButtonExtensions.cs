@@ -12,32 +12,48 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ImageButtonExtensions
 	{
-		// TODO: NET8 should this be public?
+		const int MauiBackgroundDrawableId = 1001;
+
+		// TODO: NET9 should this be public?
 		internal static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
 			Paint? paint = imageButton.Background;
 
 			if (paint is not null)
-			{
-				// TODO: Assign Ids to detect if we already created the RippleDrawable to just
-				// update the background drawable and invalidate.
+			{   
+				// Ripple Background Drawable.
+				var backgroundDrawable = paint?.ToDrawable(platformButton.Context);
 
-				// Ripple Background Drawable
-				var gradientDrawable = paint?.ToDrawable(platformButton.Context);
-
-				// Ripple Mask Drawable
+				// Ripple Mask Shape.
 				float[] outerRadii = new float[8];
 				float cornerRadius = platformButton.Context.ToPixels(imageButton.CornerRadius);
 				Arrays.Fill(outerRadii, cornerRadius);
-				RoundRectShape shape = new RoundRectShape(outerRadii, null, null);
-				Android.Graphics.Drawables.ShapeDrawable maskDrawable = new Android.Graphics.Drawables.ShapeDrawable(shape);
+				RoundRectShape maskShape = new RoundRectShape(outerRadii, null, null);
 
-				// Ripple SelectionColor
-				var rippleColor = ColorStateList.ValueOf(Colors.White.WithAlpha(0.5f).ToPlatform());
+				// The current background is already a "MAUI" background.
+				if (platformButton.Background is RippleDrawable createdRippleDrawable)
+				{
+					// The current background is already a "MAUI" background, so we just need
+					// to replace the background drawable in the ripple drawable.
+					createdRippleDrawable.SetDrawableByLayerId(MauiBackgroundDrawableId, backgroundDrawable);
 
-				var rippleDrawable = new RippleDrawable(rippleColor, gradientDrawable, maskDrawable);
-	
-				platformButton.Background = rippleDrawable;
+					createdRippleDrawable.InvalidateSelf();
+				}
+				else
+				{
+					// Ripple Mask Drawable.
+					Android.Graphics.Drawables.ShapeDrawable maskDrawable = new Android.Graphics.Drawables.ShapeDrawable(maskShape);
+					
+					// Ripple SelectionColor.
+					var rippleColor = ColorStateList.ValueOf(Colors.White.WithAlpha(0.5f).ToPlatform());
+
+					var rippleDrawable = new RippleDrawable(rippleColor, backgroundDrawable, maskDrawable);
+
+					// Assign ID so we can find them later
+					rippleDrawable.SetId(0, MauiBackgroundDrawableId);
+
+					platformButton.Background = rippleDrawable;
+				}
 			}
 			else
 			{
