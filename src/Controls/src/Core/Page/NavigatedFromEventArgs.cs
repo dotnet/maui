@@ -10,6 +10,6 @@ namespace Microsoft.Maui.Controls
 			DestinationPage = destinationPage;
 		}
 
-		internal Page DestinationPage { get; }
+		public Page DestinationPage { get; }
 	}
 }
