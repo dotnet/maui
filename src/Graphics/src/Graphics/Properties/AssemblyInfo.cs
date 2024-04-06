@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Windows")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Tizen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.DeviceTests.Shared")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Devices.Sensors")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Essentials")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Graphics.Skia")]
 
