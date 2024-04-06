@@ -13,13 +13,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			if (item?.Parent is TableView && item.Handler?.PlatformView is TextCellView textCellView)
-			{
-				// TableView doesn't use convertView
-				View = textCellView;
-				return View;
-			}
-
 			if ((View = convertView as TextCellView) == null)
 				View = new TextCellView(context, item);
 

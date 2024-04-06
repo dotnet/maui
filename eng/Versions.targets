@@ -57,12 +57,12 @@
       <GitSemVerDashLabel Condition="'$(GitSemVerLabel)' != ''" >-$(GitSemVerLabel)</GitSemVerDashLabel>
     </PropertyGroup>
     <ItemGroup>
-      <VersionMetadata Include="$(GitCommits)" Condition="'$(GitSemVerDashLabel)' == ''" />
+      <VersionMetadata Condition="'$(GitSemVerDashLabel)' == '' and '$(GitCommits)' != ''" Include="$(GitCommits)" />
 
       <VersionMetadata Condition="$(CI) and '$(BUILD_REASON)' == 'PullRequest'"
                        Include="pr.$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)"/>
 
-      <VersionMetadata Include="sha.$(GitCommit)"/>
+      <VersionMetadata Condition="'$(GitCommit)' != ''"  Include="sha.$(GitCommit)"/>
 
       <VersionMetadata Condition="$(CI)"
                        Include="azdo.$(BUILD_BUILDID)"/>
@@ -99,7 +99,7 @@
     </ItemGroup>
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
-    <Message Condition="$(CI)" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
+    <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
   </Target>
 
   <Target Name="VersionInfoReport" DependsOnTargets="SetVersions">

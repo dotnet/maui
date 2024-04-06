@@ -55,7 +55,6 @@
     <None Include="@(Compile)" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <Compile Remove="Handlers\Image\*.cs" />
     <Compile Remove="Handlers\ImageButton\*.cs" />
     <Compile Remove="Handlers\ShapeView\*.cs" />
     <Content Include="Platforms\Windows\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

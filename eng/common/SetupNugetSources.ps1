@@ -25,7 +25,7 @@
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)][string]$ConfigFile,
-    [Parameter(Mandatory = $true)][string]$Password
+    [Parameter(Mandatory = $true)][SecureString]$Password
 )
 
 $ErrorActionPreference = "Stop"
@@ -35,7 +35,7 @@ Set-StrictMode -Version 2.0
 . $PSScriptRoot\tools.ps1
 
 # Add source entry to PackageSources
-function AddPackageSource($sources, $SourceName, $SourceEndPoint, $creds, $Username, $Password) {
+function AddPackageSource($sources, $SourceName, $SourceEndPoint, [SecureString] $creds, $Username, [SecureString] $Password) {
     $packageSource = $sources.SelectSingleNode("add[@key='$SourceName']")
     
     if ($packageSource -eq $null)
@@ -53,7 +53,7 @@ function AddPackageSource($sources, $SourceName, $SourceEndPoint, $creds, $Usern
 }
 
 # Add a credential node for the specified source
-function AddCredential($creds, $source, $username, $password) {
+function AddCredential([SecureString] $creds, $source, $username, [SecureString] $password) {
     # Looks for credential configuration for the given SourceName. Create it if none is found.
     $sourceElement = $creds.SelectSingleNode($Source)
     if ($sourceElement -eq $null)
@@ -85,7 +85,7 @@ function AddCredential($creds, $source, $username, $password) {
     $passwordElement.SetAttribute("value", $Password)
 }
 
-function InsertMaestroPrivateFeedCredentials($Sources, $Creds, $Username, $Password) {
+function InsertMaestroPrivateFeedCredentials($Sources, [SecureString] $Creds, $Username, [SecureString] $Password) {
     $maestroPrivateSources = $Sources.SelectNodes("add[contains(@key,'darc-int')]")
 
     Write-Host "Inserting credentials for $($maestroPrivateSources.Count) Maestro's private feeds."
