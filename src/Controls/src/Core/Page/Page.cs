@@ -212,13 +212,40 @@ namespace Microsoft.Maui.Controls
 
 #if IOS
 		/// <inheritdoc/>
-		bool IiOSPageSpecifics.IsHomeIndicatorAutoHidden => On<PlatformConfiguration.iOS>().PrefersHomeIndicatorAutoHidden();
+		bool IiOSPageSpecifics.IsHomeIndicatorAutoHidden
+		{
+			get
+			{
+				if (Parent is Page page && page.IsSet(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty))
+					return page.On<PlatformConfiguration.iOS>().PrefersHomeIndicatorAutoHidden();
+
+				return On<PlatformConfiguration.iOS>().PrefersHomeIndicatorAutoHidden();
+			}
+		}
 
 		/// <inheritdoc/>
-		int IiOSPageSpecifics.PrefersStatusBarHiddenMode => (int)On<PlatformConfiguration.iOS>().PrefersStatusBarHidden();
+		int IiOSPageSpecifics.PrefersStatusBarHiddenMode
+		{
+			get
+			{
+				if (Parent is Page page && page.IsSet(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty))
+					return (int)page.On<PlatformConfiguration.iOS>().PrefersStatusBarHidden();
+
+				return (int)On<PlatformConfiguration.iOS>().PrefersStatusBarHidden();
+			}
+		}
 
 		/// <inheritdoc/>
-		int IiOSPageSpecifics.PreferredStatusBarUpdateAnimationMode => (int)On<PlatformConfiguration.iOS>().PreferredStatusBarUpdateAnimation();
+		int IiOSPageSpecifics.PreferredStatusBarUpdateAnimationMode
+		{
+			get
+			{
+				if (Parent is Page page && page.IsSet(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty))
+					return (int)page.On<PlatformConfiguration.iOS>().PreferredStatusBarUpdateAnimation();
+
+				return (int)On<PlatformConfiguration.iOS>().PreferredStatusBarUpdateAnimation();
+			}
+		}
 #endif
 
 		/// <inheritdoc/>

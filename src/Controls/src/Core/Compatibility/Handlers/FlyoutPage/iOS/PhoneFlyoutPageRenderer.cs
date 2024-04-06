@@ -580,14 +580,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdatePageSpecifics()
 		{
-			var isHomeIndicatorHidden = ((FlyoutPage)Element).OnThisPlatform().PrefersHomeIndicatorAutoHidden();
-			var statusBarUpdateAnimation = ((FlyoutPage)Element).OnThisPlatform().PreferredStatusBarUpdateAnimation();
-			var prefersStatusBarHidden = ((FlyoutPage)Element).OnThisPlatform().PrefersStatusBarHidden();
-
-			((FlyoutPage)Element).Detail.OnThisPlatform().SetPrefersHomeIndicatorAutoHidden(isHomeIndicatorHidden);
-			((FlyoutPage)Element).Detail.OnThisPlatform().SetPreferredStatusBarUpdateAnimation(statusBarUpdateAnimation);
-			((FlyoutPage)Element).Detail.OnThisPlatform().SetPrefersStatusBarHidden(prefersStatusBarHidden);
-
 			ChildViewControllerForHomeIndicatorAutoHidden.SetNeedsUpdateOfHomeIndicatorAutoHidden();
 			ChildViewControllerForStatusBarHidden().SetNeedsStatusBarAppearanceUpdate();
 		}

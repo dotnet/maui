@@ -270,20 +270,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdatePageSpecifics()
 		{
-			var isHomeIndicatorHidden = Tabbed.OnThisPlatform().PrefersHomeIndicatorAutoHidden();
-			var statusBarUpdateAnimation = Tabbed.OnThisPlatform().PreferredStatusBarUpdateAnimation();
-			var prefersStatusBarHidden = Tabbed.OnThisPlatform().PrefersStatusBarHidden();
-			for (var i = 0; i < ViewControllers.Length; i++)
-			{
-				var page = Tabbed.GetPageByIndex(i).OnThisPlatform();
-				var viewController = ViewControllers[i];
-
-				page.SetPrefersHomeIndicatorAutoHidden(isHomeIndicatorHidden);
-				page.SetPreferredStatusBarUpdateAnimation(statusBarUpdateAnimation);
-				page.SetPrefersStatusBarHidden(prefersStatusBarHidden);
-				viewController.SetNeedsUpdateOfHomeIndicatorAutoHidden();
-				viewController.SetNeedsStatusBarAppearanceUpdate();
-			}
+			ChildViewControllerForHomeIndicatorAutoHidden.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			ChildViewControllerForStatusBarHidden().SetNeedsStatusBarAppearanceUpdate();
 		}
 
 		void Reset()
