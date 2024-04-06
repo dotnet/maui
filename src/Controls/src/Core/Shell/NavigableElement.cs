@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Gets the cast of <see cref="Navigation"/> to a <see cref="Maui.Controls.Internals.NavigationProxy"/>.</summary>
 		/// <remarks>
-		///		<para>Determines whether the element will proxy navigation calls</para>
+		///		<para>Determines whether the element will proxy navigation calls.</para>
 		///		<para>For internal use by .NET MAUI.</para>
 		/// </remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
