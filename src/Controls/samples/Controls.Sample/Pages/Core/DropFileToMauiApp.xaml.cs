@@ -28,26 +28,6 @@ namespace Maui.Controls.Sample.Pages
 		public DropFileToMauiApp()
 		{
 			InitializeComponent();
-
-			var dragGesture = new DragGestureRecognizer();
-			dragGesture.DragStarting += DragGestureDragStarting;
-			myLayout.GestureRecognizers.Add(dragGesture);
-		}
-
-		void DragGestureDragStarting(object? sender, DragStartingEventArgs e)
-		{
-#if IOS || MACCATALYST
-			Func<UIKit.UIDragPreview> action = () =>
-			{
-				var image = UIKit.UIImage.FromFile("dotnet_bot.png");
-				UIKit.UIImageView imageView = new UIKit.UIImageView(image);
-				imageView.ContentMode = UIKit.UIViewContentMode.Center;
-				imageView.Frame = new CoreGraphics.CGRect(0, 0, 250, 250);
-				return new UIKit.UIDragPreview(imageView);
-			};
-
-			e.PlatformArgs?.SetPreviewProvider(action);
-#endif
 		}
 
 		void DropGestureDragLeave(object? sender, DragEventArgs e)
@@ -58,7 +38,6 @@ namespace Maui.Controls.Sample.Pages
 		async void DropGestureDrop(object? sender, DropEventArgs e)
 		{
 			var filePaths = new List<string>();
-			await Task.Delay(1);
 
 #if WINDOWS
 			if (e.PlatformArgs is not null && e.PlatformArgs.DragEventArgs.DataView.Contains(StandardDataFormats.StorageItems))
@@ -125,16 +104,6 @@ namespace Maui.Controls.Sample.Pages
 
 		void DropGestureDragOver(object? sender, DragEventArgs e)
 		{
-#if IOS || MACCATALYST
-			Func<UIKit.UIDragPreview> action = () =>
-			{
-				var image = UIKit.UIImage.FromFile("dotnet_bot.png");
-				UIKit.UIImageView imageView = new UIKit.UIImageView(image);
-				imageView.ContentMode = UIKit.UIViewContentMode.Center;
-				imageView.Frame = new CoreGraphics.CGRect(0, 0, 250, 250);
-				return new UIKit.UIDragPreview(imageView);
-			};
-#endif
 			Debug.WriteLine($"Dragging {e.Data?.Text}, {e.Data?.Image}");
 		}
 
