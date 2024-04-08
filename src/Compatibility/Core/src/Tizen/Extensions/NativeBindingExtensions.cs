@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	public static class NativeBindingExtensions
 	{
+		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 		public static void SetBinding(this NView view, string propertyName, BindingBase binding, string updateSourceEventName = null)
 		{
 			PlatformBindingHelpers.SetBinding(view, propertyName, binding, updateSourceEventName);
