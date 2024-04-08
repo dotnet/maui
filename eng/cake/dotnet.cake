@@ -11,7 +11,7 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
-var arcadeBin = new DirectoryPath("./artifacts/bin/");
+var arcadeBin = MakeAbsolute(new DirectoryPath("./artifacts/bin/"));
 
 string TestTFM = Argument("testtfm", "");
 var useNuget = Argument("usenuget", true);

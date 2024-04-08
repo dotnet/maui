@@ -204,7 +204,6 @@ Task("Build")
 			ArgumentCustomization = args => args
 				.Append("/p:EmbedAssembliesIntoApk=true")
 				.Append("/bl:" + binlog)
-				//.Append("/tl")
 		});
 	}
 	else
@@ -234,13 +233,36 @@ Task("Test")
 	if (string.IsNullOrEmpty(TEST_APP)) {
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).FullPath;
+		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK);
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*-Signed.apk");
 		if (apps.Any()) {
 			TEST_APP = apps.FirstOrDefault().FullPath;
 		} else {
 			apps = GetFiles(binDir + "/*.apk");
+			if (apps.Count() == 0)
+			{
+				var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+
+				if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+				{
+					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK +  "/"));
+				}
+				if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+				{
+					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/"));
+				}
+				if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+				{
+					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK  + "/"));
+				}
+				Information("Looking for .apk in arcade binDir {0}", binDir);
+				apps = GetFiles(binDir + "/*-Signed.apk");
+				if(apps.Count == 0)
+				{
+					throw new Exception("No app was found in the arcade bin directory.");
+				}
+			}
 			TEST_APP = apps.First().FullPath;
 		}
 	}
