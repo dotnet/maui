@@ -202,6 +202,8 @@ stages:
           variables:
             - name: _buildScript
               value: $(Build.SourcesDirectory)/build.cmd -ci
+            - name: _BuildConfig
+              value: Release
           steps:
             - template: common/pack.yml
               parameters:
