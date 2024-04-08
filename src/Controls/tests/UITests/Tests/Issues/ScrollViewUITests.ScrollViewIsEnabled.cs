@@ -21,6 +21,8 @@ namespace Microsoft.Maui.AppiumTests
 
 		public override string Issue => "ScrollView set to disabled will still allow scrolling";
 
+		public override bool ResetMainPage => false;
+
 		// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		public void ScrollViewInitiallyEnabled()

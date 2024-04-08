@@ -12,6 +12,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		public override string Issue => "DisplayActionSheet still not working on Windows";
 
+		public override bool ResetMainPage => false;
+
 		[Test]
 		[Category(UITestCategories.ActionSheet)]
 		public void Issue14829Test()
