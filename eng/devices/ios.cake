@@ -34,7 +34,7 @@ string DEVICE_OS = "";
 
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
-string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? 
+string RUNTIME_IDENTIFIER = TEST_DEVICE.ToLower().Contains("simulator") ? 
 	$"iossimulator-{System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString().ToLower()}"
   : $"ios-arm64";
 string CONFIGURATION = Argument("configuration", "Debug");
@@ -162,7 +162,7 @@ Task("uitest-build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(DEFAULT_APP_PROJECT);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
 
-	Information("app" +DEFAULT_APP_PROJECT);
+	Information("app" + DEFAULT_APP_PROJECT);
 	DotNetBuild(DEFAULT_APP_PROJECT, new DotNetBuildSettings {
 		Configuration = CONFIGURATION,
 		Framework = TARGET_FRAMEWORK,
@@ -192,16 +192,33 @@ Task("Test")
 	if (string.IsNullOrEmpty(TEST_APP)) {
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath;
+		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER);
 		var apps = GetDirectories(binDir + "/*.app");
-		if (apps.Any()) {
-			TEST_APP = apps.First().FullPath;
+		if (apps.Count() == 0)
+		{
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			Information("Looking for .app in arcade binDir {0}", binDir);
+			apps = GetDirectories(binDir + "/*.app");
+			if(apps.Count == 0)
+			{
+				throw new Exception("No app was found in the arcade bin directory.");
+			}
 		}
-		else {
-			Error($"Error: Couldn't find *.app file in {binDir}");
-			throw new Exception($"Error: Couldn't find *.app file in {binDir}");
-		}
+		TEST_APP = apps.First().FullPath;
 	}
+	
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
 		TEST_RESULTS = TEST_APP + "-results";
 	}
@@ -389,11 +406,27 @@ void SetupAppPackageNameAndResult()
    if (string.IsNullOrEmpty(TEST_APP) ) {
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir =  MakeAbsolute(TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION).Combine(TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM));
+		var binDir =  MakeAbsolute(TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION).Combine(TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER));
 		Information("BinDir: {0}", binDir);
 		var apps = GetDirectories(binDir + "/*.app");
 		if(apps.Count == 0)
-			throw new Exception("No app was found in the bin directory.");
+		{
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+			if(TEST_APP_PROJECT.FullPath.Contains("Controls.Sample.UITests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.Sample.UITests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			if(TEST_APP_PROJECT.FullPath.Contains("Compatibility"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Compatibility/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			Information("Looking for .app in arcade binDir {0}", binDir);
+			apps = GetDirectories(binDir + "/*.app");
+			if(apps.Count == 0)
+			{
+				throw new Exception("No app was found in the arcade bin directory.");
+			}
+		}
 		
 		TEST_APP = apps.First().FullPath;
 	}

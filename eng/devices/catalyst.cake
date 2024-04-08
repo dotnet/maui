@@ -19,7 +19,7 @@ FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("MAC_TEST
 var TEST_RESULTS = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
 
 // other
-string RUNTIME_IDENTIFIER = Argument("rid", EnvironmentVariable("MAC_RUNTIME_IDENTIFIER") ?? "maccatalyst-x64");
+string RUNTIME_IDENTIFIER = Argument("rid", EnvironmentVariable("MAC_RUNTIME_IDENTIFIER") ?? ((System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64) ? "maccatalyst-arm64" : "maccatalyst-x64"));
 string CONFIGURATION = Argument("configuration", "Release");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 
@@ -164,19 +164,10 @@ Task("Test")
 });
 
 Task("uitest")
+	.IsDependentOn("uitest-build")
 	.Does(() =>
 {
-	if (string.IsNullOrEmpty(TEST_APP) ) {
-		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
-			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER).FullPath;
-		Information("BinDir: {0}", binDir);
-		var apps = GetDirectories(binDir + "/*.app");
-		TEST_APP = apps.First().FullPath;
-	}
-	if (string.IsNullOrEmpty(TEST_RESULTS)) {
-		TEST_RESULTS = TEST_APP + "-results";
-	}
+	SetupAppPackageNameAndResult();
 
 	Information("Test Device: {0}", TEST_DEVICE);
 	Information("Test App Project: {0}", TEST_APP_PROJECT);
@@ -213,4 +204,54 @@ Task("uitest")
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, pathDotnet: DOTNET_TOOL_PATH, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-catalyst");
 });
 
+Task("uitest-build")
+	.Does(() =>
+{
+	var name = System.IO.Path.GetFileNameWithoutExtension(DEFAULT_APP_PROJECT);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-catalyst.binlog";
+
+	Information("app" + DEFAULT_APP_PROJECT);
+	DotNetBuild(DEFAULT_APP_PROJECT, new DotNetBuildSettings {
+		Configuration = CONFIGURATION,
+		Framework = TARGET_FRAMEWORK,
+		ToolPath = DOTNET_PATH,
+		ArgumentCustomization = args =>
+		{ 	
+			args
+			.Append("-t:restore,build")	
+			.Append("/bl:" + binlog)
+			.Append("/bl:" + binlog)
+			.Append("/tl");
+
+			return args;
+		}
+	});
+});
+
+
+void SetupAppPackageNameAndResult()
+{
+	if (string.IsNullOrEmpty(TEST_APP)) 
+	{
+		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
+			throw new Exception("If no app was specified, an app must be provided.");
+		var binDir = MakeAbsolute(TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER));
+		Information("BinDir: {0}", binDir);
+		var apps = GetDirectories(binDir + "/*.app");
+		if(apps.Count == 0)
+		{
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+			if(TEST_APP_PROJECT.FullPath.Contains("Controls.Sample.UITests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.Sample.UITests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			Information("Looking for .app in arcade binDir {0}", binDir);
+			apps = GetDirectories(binDir + "/*.app");
+		}
+		TEST_APP = apps.First().FullPath;
+	}
+	if (string.IsNullOrEmpty(TEST_RESULTS)) {
+		TEST_RESULTS = TEST_APP + "-results";
+	}
+}
 RunTarget(TARGET);
