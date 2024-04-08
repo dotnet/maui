@@ -58,8 +58,10 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	static BindingDiagnosticsWrapper GetBindingForGeneration(GeneratorSyntaxContext context, CancellationToken t)
 	{
 		var diagnostics = new List<Diagnostic>();
-		var invocation = (InvocationExpressionSyntax)context.Node;
+		NullableContext nullableContext = context.SemanticModel.GetNullableContext(context.Node.Span.Start);
+		var enabledNullable = (nullableContext & NullableContext.Enabled) == NullableContext.Enabled;
 
+		var invocation = (InvocationExpressionSyntax)context.Node;
 		var method = (MemberAccessExpressionSyntax)invocation.Expression;
 
 		var sourceCodeLocation = new SourceCodeLocation(
@@ -82,27 +84,25 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return ReportDiagnostics(lambdaDiagnostics);
 		}
 
-		NullableContext nullableContext = context.SemanticModel.GetNullableContext(context.Node.Span.Start);
-		var enabledNullable = (nullableContext & NullableContext.Enabled) == NullableContext.Enabled;
-		var parts = new List<IPathPart>();
-		var correctlyParsed = PathParser.ParsePath(lambdaBody, enabledNullable, context, parts);
-
-		if (!correctlyParsed)
+		var lambdaTypeInfo = context.SemanticModel.GetTypeInfo(lambdaBody, t);
+		if (lambdaTypeInfo.Type == null)
 		{
-			return ReportDiagnostics([DiagnosticsFactory.UnableToResolvePath(lambdaBody.GetLocation())]);
+			return ReportDiagnostics([DiagnosticsFactory.UnableToResolvePath(lambdaBody.GetLocation())]); // TODO: New diagnostic
 		}
 
-		// Sometimes analysing just the return type of the lambda is not enough. TODO: Refactor
-		// var propertyType = BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.ReturnType, enabledNullable);
-		// var lastMember = parts.Last() is Cast cast ? cast.Part : parts.Last();
-		// propertyType = propertyType with { IsNullable = lastMember is ConditionalAccess || propertyType.IsNullable };
+		var pathParser = new PathParser(context);
+		var (pathDiagnostics, parts) = pathParser.ParsePath(lambdaBody);
+		if (pathDiagnostics.Length > 0)
+		{
+			return ReportDiagnostics(pathDiagnostics);
+		}
 
 		var codeWriterBinding = new CodeWriterBinding(
 			Location: sourceCodeLocation,
 			SourceType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
-			PropertyType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.ReturnType, enabledNullable),
+			PropertyType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaTypeInfo.Type, enabledNullable),
 			Path: parts.ToArray(),
-			GenerateSetter: true //TODO: Implement
+			GenerateSetter: false //TODO: Implement
 		);
 		return new BindingDiagnosticsWrapper(codeWriterBinding, diagnostics.ToArray());
 	}
@@ -148,52 +148,6 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	}
 
 	private static BindingDiagnosticsWrapper ReportDiagnostics(Diagnostic[] diagnostics) => new(null, diagnostics);
-}
-
-internal static class BindingGenerationUtilities
-{
-	internal static bool IsTypeNullable(ITypeSymbol typeInfo, bool enabledNullable)
-	{
-		if (!enabledNullable && typeInfo.IsReferenceType)
-		{
-			return true;
-		}
-
-		if (typeInfo.NullableAnnotation == NullableAnnotation.Annotated)
-		{
-			return true;
-		}
-
-		return typeInfo is INamedTypeSymbol namedTypeSymbol
-			&& namedTypeSymbol.IsGenericType
-			&& namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T;
-	}
-
-	internal static TypeDescription CreateTypeNameFromITypeSymbol(ITypeSymbol typeSymbol, bool enabledNullable)
-	{
-		var (isNullable, name) = GetNullabilityAndName(typeSymbol, enabledNullable);
-		return new TypeDescription(
-			GlobalName: name,
-			IsNullable: isNullable,
-			IsGenericParameter: typeSymbol.Kind == SymbolKind.TypeParameter,
-			IsValueType: typeSymbol.IsValueType);
-	}
-
-	internal static (bool, string) GetNullabilityAndName(ITypeSymbol typeSymbol, bool enabledNullable)
-	{
-		if (typeSymbol.IsReferenceType && (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated || !enabledNullable))
-		{
-			return (true, typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-		}
-
-		if (IsTypeNullable(typeSymbol, enabledNullable))
-		{
-			var type = ((INamedTypeSymbol)typeSymbol).TypeArguments[0];
-			return (true, type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-		}
-
-		return (false, typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-	}
 }
 
 public sealed record BindingDiagnosticsWrapper(

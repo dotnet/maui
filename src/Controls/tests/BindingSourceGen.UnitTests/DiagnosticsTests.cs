@@ -16,8 +16,8 @@ public class DiagnosticsTests
             """;
 
         var result = SourceGenHelpers.Run(source);
-        Assert.Single(result.Diagnostics);
-        Assert.Equal("BSG0002", result.Diagnostics[0].Id);
+        Assert.Single(result.SourceGeneratorDiagnostics);
+        Assert.Equal("BSG0002", result.SourceGeneratorDiagnostics[0].Id);
     }
 
     [Fact]
@@ -31,8 +31,8 @@ public class DiagnosticsTests
 
         var result = SourceGenHelpers.Run(source);
 
-        Assert.Single(result.Diagnostics);
-        Assert.Equal("BSG0003", result.Diagnostics[0].Id);
+        Assert.Single(result.SourceGeneratorDiagnostics);
+        Assert.Equal("BSG0003", result.SourceGeneratorDiagnostics[0].Id);
     }
 
     [Fact]
@@ -47,8 +47,8 @@ public class DiagnosticsTests
 
         var result = SourceGenHelpers.Run(source);
 
-        Assert.Single(result.Diagnostics);
-        Assert.Equal("BSG0004", result.Diagnostics[0].Id);
+        Assert.Single(result.SourceGeneratorDiagnostics);
+        Assert.Equal("BSG0004", result.SourceGeneratorDiagnostics[0].Id);
     }
 
     [Fact]
@@ -65,8 +65,8 @@ public class DiagnosticsTests
 
         var result = SourceGenHelpers.Run(source);
 
-        Assert.Single(result.Diagnostics);
-        Assert.Equal("BSG0001", result.Diagnostics[0].Id);
+        Assert.Single(result.SourceGeneratorDiagnostics);
+        Assert.Equal("BSG0001", result.SourceGeneratorDiagnostics[0].Id);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class DiagnosticsTests
 
         var result = SourceGenHelpers.Run(source);
 
-        Assert.Single(result.Diagnostics);
-        Assert.Equal("BSG0001", result.Diagnostics[0].Id);
+        Assert.Single(result.SourceGeneratorDiagnostics);
+        Assert.Equal("BSG0001", result.SourceGeneratorDiagnostics[0].Id);
     }
 }

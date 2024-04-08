@@ -8,107 +8,125 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 internal class PathParser
 {
-    internal static bool ParsePath(CSharpSyntaxNode? expressionSyntax, bool enabledNullable, GeneratorSyntaxContext context, List<IPathPart> parts)
+    internal PathParser(GeneratorSyntaxContext context)
     {
-        if (expressionSyntax is IdentifierNameSyntax identifier)
-        {
-            return true;
-        }
-        else if (expressionSyntax is MemberAccessExpressionSyntax memberAccess)
-        {
-            var member = memberAccess.Name.Identifier.Text;
-            var typeInfo = context.SemanticModel.GetTypeInfo(memberAccess.Name).Type;
-            if (typeInfo == null)
-            {
-                return false;
-            };
-            if (!ParsePath(memberAccess.Expression, enabledNullable, context, parts))
-            {
-                return false;
-            }
+        Context = context;
+    }
 
-            IPathPart part = new MemberAccess(member);
+    private GeneratorSyntaxContext Context { get; }
 
-            parts.Add(part);
-            return true;
-        }
-        else if (expressionSyntax is ElementAccessExpressionSyntax elementAccess)
+    internal (Diagnostic[] diagnostics, List<IPathPart> parts) ParsePath(CSharpSyntaxNode? expressionSyntax)
+    {
+        return expressionSyntax switch
         {
-            var typeInfo = context.SemanticModel.GetTypeInfo(elementAccess.Expression).Type;
-            if (typeInfo == null)
-            {
-                return false;
-            }; // TODO
-            var argumentList = elementAccess.ArgumentList.Arguments;
-            if (argumentList.Count != 1)
-            {
-                return false;
-            }
-            var indexExpression = argumentList[0].Expression;
-            IIndex? indexValue = context.SemanticModel.GetConstantValue(indexExpression).Value switch
-            {
-                int i => new NumericIndex(i),
-                string s => new StringIndex(s),
-                _ => null
-            };
+            IdentifierNameSyntax _ => ([], new List<IPathPart>()),
+            MemberAccessExpressionSyntax memberAccess => HandleMemberAccessExpression(memberAccess),
+            ElementAccessExpressionSyntax elementAccess => HandleElementAccessExpression(elementAccess),
+            ConditionalAccessExpressionSyntax conditionalAccess => HandleConditionalAccessExpression(conditionalAccess),
+            MemberBindingExpressionSyntax memberBinding => HandleMemberBindingExpression(memberBinding),
+            ParenthesizedExpressionSyntax parenthesized => ParsePath(parenthesized.Expression),
+            BinaryExpressionSyntax asExpression when asExpression.Kind() == SyntaxKind.AsExpression => HandleBinaryExpression(asExpression),
+            _ => HandleDefaultCase(),
+        };
+    }
 
-            if (indexValue is null)
-            {
-                return false;
-            }
+    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleMemberAccessExpression(MemberAccessExpressionSyntax memberAccess)
+    {
+        var (diagnostics, parts) = ParsePath(memberAccess.Expression);
+        if (diagnostics.Length > 0)
+        {
+            return (diagnostics, parts);
+        }
 
-            if (!ParsePath(elementAccess.Expression, enabledNullable, context, parts))
-            {
-                return false;
-            }
+        var member = memberAccess.Name.Identifier.Text;
+        IPathPart part = new MemberAccess(member);
+        parts.Add(part);
+        return (diagnostics, parts);
+    }
 
-            var defaultMemberName = "Item"; // TODO we need to check the value of the `[DefaultMemberName]` attribute on the member type
-            IPathPart part = new IndexAccess(defaultMemberName, indexValue);
-            parts.Add(part);
-            return true;
-        }
-        else if (expressionSyntax is ConditionalAccessExpressionSyntax conditionalAccess)
+    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleElementAccessExpression(ElementAccessExpressionSyntax elementAccess)
+    {
+        var (diagnostics, parts) = ParsePath(elementAccess.Expression);
+        if (diagnostics.Length > 0)
         {
-            return ParsePath(conditionalAccess.Expression, enabledNullable, context, parts) &&
-            ParsePath(conditionalAccess.WhenNotNull, enabledNullable, context, parts);
+            return (diagnostics, parts);
         }
-        else if (expressionSyntax is MemberBindingExpressionSyntax memberBinding)
-        {
-            var member = memberBinding.Name.Identifier.Text;
-            IPathPart part = new MemberAccess(member);
-            part = new ConditionalAccess(part);
-            parts.Add(part);
-            return true;
-        }
-        else if (expressionSyntax is ParenthesizedExpressionSyntax parenthesized)
-        {
-            return ParsePath(parenthesized.Expression, enabledNullable, context, parts);
-        }
-        else if (expressionSyntax is BinaryExpressionSyntax asExpression && asExpression.Kind() == SyntaxKind.AsExpression)
-        {
-            var castTo = asExpression.Right;
-            var typeInfo = context.SemanticModel.GetTypeInfo(castTo).Type;
-            if (typeInfo == null)
-            {
-                return false;
-            };
 
-            if (!ParsePath(asExpression.Left, enabledNullable, context, parts))
-            {
-                return false;
-            }
+        var argumentList = elementAccess.ArgumentList.Arguments;
+        if (argumentList.Count != 1)
+        {
+            return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(elementAccess.GetLocation()) }, parts);
+        }
 
-            int last = parts.Count - 1;
-            parts[last] = new Cast(parts[last], BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(typeInfo, enabledNullable));
-            return true;
-        }
-        else if (expressionSyntax is InvocationExpressionSyntax)
+        var indexExpression = argumentList[0].Expression;
+        IIndex? indexValue = Context.SemanticModel.GetConstantValue(indexExpression).Value switch
         {
-            return false;
-        }
-        else
+            int i => new NumericIndex(i),
+            string s => new StringIndex(s),
+            _ => null
+        };
+
+        if (indexValue is null)
         {
-            return false;
+            return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(elementAccess.GetLocation()) }, parts);
         }
+
+        var defaultMemberName = "Item"; // TODO we need to check the value of the `[DefaultMemberName]` attribute on the member type
+        IPathPart part = new IndexAccess(defaultMemberName, indexValue);
+        parts.Add(part);
+
+        return (diagnostics, parts);
+    }
+
+    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleConditionalAccessExpression(ConditionalAccessExpressionSyntax conditionalAccess)
+    {
+        var (diagnostics, parts) = ParsePath(conditionalAccess.Expression);
+        if (diagnostics.Length > 0)
+        {
+            return (diagnostics, parts);
+        }
+
+        var (diagnosticNotNull, partsNotNull) = ParsePath(conditionalAccess.WhenNotNull);
+        if (diagnosticNotNull.Length > 0)
+        {
+            return (diagnosticNotNull, partsNotNull);
+        }
+
+        parts.AddRange(partsNotNull);
+        return (diagnostics, parts);
+    }
+
+    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleMemberBindingExpression(MemberBindingExpressionSyntax memberBinding)
+    {
+        var member = memberBinding.Name.Identifier.Text;
+        IPathPart part = new MemberAccess(member);
+        part = new ConditionalAccess(part);
+
+        return ([], new List<IPathPart>([part]));
+    }
+
+    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleBinaryExpression(BinaryExpressionSyntax asExpression)
+    {
+        var (diagnostics, parts) = ParsePath(asExpression.Left);
+        if (diagnostics.Length > 0)
+        {
+            return (diagnostics, parts);
+        }
+
+        var castTo = asExpression.Right;
+        var typeInfo = Context.SemanticModel.GetTypeInfo(castTo).Type;
+        if (typeInfo == null)
+        {
+            return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(asExpression.GetLocation()) }, new List<IPathPart>());
+        };
+
+        var lastIndex = parts.Count - 1;
+        parts[lastIndex] = new Cast(parts[lastIndex], BindingGenerationUtilities.CreateTypeDescriptionForCast(typeInfo));
+        return (diagnostics, parts);
+    }
+
+    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleDefaultCase()
+    {
+        return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation()) }, new List<IPathPart>());
     }
 }
