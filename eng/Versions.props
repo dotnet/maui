@@ -116,6 +116,8 @@
     <MicrosoftNETTestSdkPackageVersion>17.6.0</MicrosoftNETTestSdkPackageVersion>
     <XunitPackageVersion>2.5.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.5.1</XunitRunnerVisualStudioPackageVersion>
+    <XunitAssertPackageVersion>2.5.1</XunitAssertPackageVersion>
+    <XUnitAnalyzersPackageVersion>1.3.0</XUnitAnalyzersPackageVersion>
     <NSubstitutePackageVersion>4.3.0</NSubstitutePackageVersion>
     <CoverletCollectorPackageVersion>3.2.0</CoverletCollectorPackageVersion>
   </PropertyGroup>
@@ -145,7 +147,12 @@
     <MicrosoftBuildVersion>17.3.2</MicrosoftBuildVersion>
     <!-- netstandard -->
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
-    <!-- nuget -->
+    <!-- xunit -->
+    <XUnitVersion>$(XunitPackageVersion)</XUnitVersion>
+    <XUnitAnalyzersVersion>$(XUnitAnalyzersPackageVersion)</XUnitAnalyzersVersion>
+    <XUnitRunnerConsoleVersion>$(XunitPackageVersion)</XUnitRunnerConsoleVersion>
+    <XUnitRunnerVisualStudioVersion>$(XunitRunnerVisualStudioPackageVersion)</XUnitRunnerVisualStudioVersion>
+
   </PropertyGroup>  
   <PropertyGroup>
     <VersionBand Condition=" '$(VersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</VersionBand>
