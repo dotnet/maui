@@ -10,6 +10,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		public override string Issue => "Alerts Open on top of current presented view";
 
+		public override bool ResetMainPage => false;
+
 		[Test]
 		[Category(UITestCategories.DisplayAlert)]
 		public void OpenAlertWithModals()

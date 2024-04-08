@@ -12,6 +12,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		public override string Issue => "Making Fragment Changes While App is Backgrounded Fails";
 
+		public override bool ResetMainPage => false;
+
 		[TestCase("SwapMainPage")]
 		[TestCase("SwapFlyoutPage")]
 		[TestCase("SwapTabbedPage")]

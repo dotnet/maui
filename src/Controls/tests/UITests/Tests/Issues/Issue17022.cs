@@ -12,6 +12,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		public override string Issue => "UINavigationBar is Translucent";
 
+		public override bool ResetMainPage => false;
+
 		// TODO: Add shell navigation bar tests when we can call shell in UITest
 		[Test]
 		[Category(UITestCategories.Navigation)]
