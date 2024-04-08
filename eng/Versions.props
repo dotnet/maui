@@ -115,7 +115,7 @@
   <PropertyGroup>
     <MicrosoftNETTestSdkPackageVersion>17.6.0</MicrosoftNETTestSdkPackageVersion>
     <XunitPackageVersion>2.5.1</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.4.5</XunitRunnerVisualStudioPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.5.1</XunitRunnerVisualStudioPackageVersion>
     <NSubstitutePackageVersion>4.3.0</NSubstitutePackageVersion>
     <CoverletCollectorPackageVersion>3.2.0</CoverletCollectorPackageVersion>
   </PropertyGroup>

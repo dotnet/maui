@@ -15,9 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.utility" />
-    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" />
+    <PackageReference Include="xunit"  Version="$(XunitPackageVersion)"/>
+    <PackageReference Include="xunit.runner.utility"  Version="$(XunitPackageVersion)"/>
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21558.2"/>
   </ItemGroup>
 
   <ItemGroup>
