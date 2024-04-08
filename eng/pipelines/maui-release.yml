@@ -119,7 +119,11 @@ extends:
                   displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.docsArtifact }}
                   targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
-
+            
+            variables:
+              - name: _buildScript
+                value: $(Build.SourcesDirectory)/build.cmd -ci
+            
             steps:
               - template: /eng/pipelines/common/pack.yml@self
                 parameters:
@@ -129,6 +133,12 @@ extends:
                   artifact: ${{ parameters.PackPlatform.artifact }}
                   artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
                   artifactsPath: '(Build.ArtifactStagingDirectory)'
+                  buildConfiguration: $(_BuildConfig)
+                  dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
+                  buildScript: $(_buildScript)
+                  repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
+                  repoLogPath: $(Build.Arcade.LogsPath)
+                  repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                   prepareSteps:
                     - template: /eng/pipelines/common/provision.yml@self
                       parameters:
