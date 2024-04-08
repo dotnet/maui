@@ -55,10 +55,7 @@ namespace Maui.Controls.Sample.Pages
 
 				}
 			}
-#endif
-
-
-#if MACCATALYST
+#elif MACCATALYST
 
 			var session = e.PlatformArgs?.DropSession;
 			if (session == null)
@@ -96,7 +93,8 @@ namespace Maui.Controls.Sample.Pages
 
 				return await LoadItemAsync(itemProvider, typeIdentifiers);
 			}
-
+#else
+			await Task.CompletedTask;
 #endif
 
 			lblPath.Text = filePaths.FirstOrDefault();
