@@ -13,8 +13,8 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.7.0" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.Extended" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)"/>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="Svg.Skia" />
   </ItemGroup>
