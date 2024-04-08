@@ -16,14 +16,14 @@
   "primaryOutputs": [
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "MauiApp.1.Shared/Components/Pages/Home.razor"
+      "path": "MauiApp.1.Shared/Pages/Home.razor"
     }
   ],
   "postActions": [
     {
       "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\")",
-      "description": "Opens Shared Components/Pages/Home.razor in the editor.",
+      "description": "Opens Shared Pages/Home.razor in the editor.",
       "manualInstructions": [],
       "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
       "args": {
@@ -38,7 +38,152 @@
       "target": "./",
       "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ],
       "modifiers": [
-      ]
+        {
+            "condition": "(!UseWebAssembly)",
+            "exclude": [
+              "MauiApp.1.Web.Client/**"
+            ]
+          },
+          {
+            "condition": "(UseWebAssembly && InteractiveAtRoot)",
+            "rename": {
+              "MauiApp.1.Web/Components/Layout/": "./MauiApp.1.Web.Client/Layout/",
+              "MauiApp.1.Web/Components/Pages/Home.razor": "./MauiApp.1.Web.Client/Pages/Home.razor",
+              "MauiApp.1.Web/Components/Pages/Weather.razor": "./MauiApp.1.Web.Client/Pages/Weather.razor",
+              "MauiApp.1.Web/Components/Routes.razor": "./MauiApp.1.Web.Client/Routes.razor"
+            }
+          },
+          {
+            "condition": "(!UseProgramMain)",
+            "exclude": [
+              "MauiApp.1.Web/Program.Main.cs",
+              "MauiApp.1.Web.Client/Program.Main.cs"
+            ]
+          },
+          {
+            "condition": "(UseProgramMain)",
+            "exclude": [
+              "MauiApp.1.Web/Program.cs",
+              "MauiApp.1.Web.Client/Program.cs"
+            ],
+            "rename": {
+              "Program.Main.cs": "Program.cs"
+            }
+          },
+          {
+            "condition": "(!(UseServer && !UseWebAssembly))",
+            "exclude": [
+              "MauiApp.1.Web/Components/Pages/Counter.razor"
+            ]
+          },
+          {
+            "condition": "(ExcludeLaunchSettings)",
+            "exclude": [
+              "MauiApp.1.Web/Properties/launchSettings.json"
+            ]
+          },
+          {
+            "condition": "(!SampleContent)",
+            "exclude": [
+              "MauiApp.1.Web/Components/Pages/Auth.*",
+              "MauiApp.1.Web/Components/Pages/Counter.*",
+              "MauiApp.1.Web/Components/Pages/Weather.*",
+              "MauiApp.1.Web/Components/Layout/NavMenu.*",
+              "MauiApp.1.Web/wwwroot/bootstrap/**",
+              "MauiApp.1.Web/wwwroot/favicon.*",
+              "MauiApp.1.Web.Client/Pages/**",
+              "MauiApp.1.Web.Client/wwwroot/**"
+            ]
+          },
+          {
+            "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+            "exclude": [
+              "*.sln"
+            ]
+          },
+          {
+            "condition": "(!IndividualLocalAuth)",
+            "exclude": [
+              "MauiApp.1.Web/Components/Account/**",
+              "MauiApp.1.Web/Data/**",
+              "MauiApp.1.Web.Client/PersistentAuthenticationStateProvider.cs",
+              "MauiApp.1.Web.Client/UserInfo.cs",
+              "MauiApp.1.Web.Client/Pages/Auth.razor"
+            ]
+          },
+          {
+            "condition": "(!(IndividualLocalAuth && !UseLocalDB))",
+            "exclude": [
+              "MauiApp.1.Web/Data/app.db"
+            ]
+          },
+          {
+            "condition": "(!(IndividualLocalAuth && !UseWebAssembly))",
+            "exclude": [
+              "MauiApp.1.Web/Components/Pages/Auth.razor"
+            ]
+          },
+          {
+            "condition": "(!(IndividualLocalAuth && UseServer && UseWebAssembly))",
+            "exclude": [
+              "MauiApp.1.Web/Components/Account/PersistingRevalidatingAuthenticationStateProvider.cs"
+            ]
+          },
+          {
+            "condition": "(!(IndividualLocalAuth && UseServer && !UseWebAssembly))",
+            "exclude": [
+              "MauiApp.1.Web/Components/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
+            ]
+          },
+          {
+            "condition": "(!(IndividualLocalAuth && !UseServer && UseWebAssembly))",
+            "exclude": [
+              "MauiApp.1.Web/Components/Account/PersistingServerAuthenticationStateProvider.cs"
+            ]
+          },
+          {
+            "condition": "(IndividualLocalAuth && UseLocalDB && UseWebAssembly)",
+            "rename": {
+              "MauiApp.1.Web/Data/SqlServer/": "MauiApp.1.Web/Data/Migrations/"
+            },
+            "exclude": [
+              "MauiApp.1.Web/Data/SqlLite/**"
+            ]
+          },
+          {
+            "condition": "(IndividualLocalAuth && UseLocalDB && !UseWebAssembly)",
+            "rename": {
+              "MauiApp.1.Web/Data/SqlServer/": "Data/Migrations/"
+            },
+            "exclude": [
+              "MauiApp.1.Web/Data/SqlLite/**"
+            ]
+          },
+          {
+            "condition": "(IndividualLocalAuth && !UseLocalDB && UseWebAssembly)",
+            "rename": {
+              "MauiApp.1.Web/Data/SqlLite/": "MauiApp.1.Web/Data/Migrations/"
+            },
+            "exclude": [
+              "MauiApp.1.Web/Data/SqlServer/**"
+            ]
+          },
+          {
+            "condition": "(IndividualLocalAuth && !UseLocalDB && !UseWebAssembly)",
+            "rename": {
+              "MauiApp.1.Web/Data/SqlLite/": "Data/Migrations/"
+            },
+            "exclude": [
+              "MauiApp.1.Web/Data/SqlServer/**"
+            ]
+          },
+          {
+            "condition": "(IndividualLocalAuth && UseWebAssembly)",
+            "rename": {
+              "MauiApp.1.Web/Components/Account/Shared/RedirectToLogin.razor": "MauiApp.1.Web.Client/RedirectToLogin.razor"
+            }
+          }
+        ]
     }
   ],
   "preferNameDirectory": true,
@@ -125,7 +270,249 @@
         "fallbackVariableName": "defaultAppId"
       },
       "replaces": "com.companyname.mauiapp"
-    }
-  },
+    },
+    "UserSecretsId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "aspnet-BlazorWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "defaultValue": "aspnet-BlazorWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "description": "The ID to use for secrets (use with Individual auth)."
+    },
+    "ExcludeLaunchSettings": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Whether to exclude launchSettings.json from the generated template."
+      },
+      "kestrelHttpPort": {
+        "type": "parameter",
+        "datatype": "integer",
+        "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+      },
+      "kestrelHttpPortGenerated": {
+        "type": "generated",
+        "generator": "port",
+        "parameters": {
+          "low": 5000,
+          "high": 5300
+        }
+      },
+      "kestrelHttpPortReplacer": {
+        "type": "generated",
+        "generator": "coalesce",
+        "parameters": {
+          "sourceVariableName": "kestrelHttpPort",
+          "fallbackVariableName": "kestrelHttpPortGenerated"
+        },
+        "replaces": "5500"
+      },
+      "kestrelHttpsPort": {
+        "type": "parameter",
+        "datatype": "integer",
+        "description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if Individual auth is used)."
+      },
+      "kestrelHttpsPortGenerated": {
+        "type": "generated",
+        "generator": "port",
+        "parameters": {
+          "low": 7000,
+          "high": 7300
+        }
+      },
+      "kestrelHttpsPortReplacer": {
+        "type": "generated",
+        "generator": "coalesce",
+        "parameters": {
+          "sourceVariableName": "kestrelHttpsPort",
+          "fallbackVariableName": "kestrelHttpsPortGenerated"
+        },
+        "replaces": "5501"
+      },
+      "iisHttpPort": {
+        "type": "parameter",
+        "datatype": "integer",
+        "description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json."
+      },
+      "iisHttpPortGenerated": {
+        "type": "generated",
+        "generator": "port"
+      },
+      "iisHttpPortReplacer": {
+        "type": "generated",
+        "generator": "coalesce",
+        "parameters": {
+          "sourceVariableName": "iisHttpPort",
+          "fallbackVariableName": "iisHttpPortGenerated"
+        },
+        "replaces": "8080"
+      },
+      "iisHttpsPort": {
+        "type": "parameter",
+        "datatype": "integer",
+        "description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if Individual auth is used)."
+      },
+      "iisHttpsPortGenerated": {
+        "type": "generated",
+        "generator": "port",
+        "parameters": {
+          "low": 44300,
+          "high": 44399
+        }
+      },
+      "iisHttpsPortReplacer": {
+        "type": "generated",
+        "generator": "coalesce",
+        "parameters": {
+          "sourceVariableName": "iisHttpsPort",
+          "fallbackVariableName": "iisHttpsPortGenerated"
+        },
+        "replaces": "44300"
+      },
+      "InteractivityPlatform": {
+        "type": "parameter",
+        "datatype": "choice",
+        "defaultValue": "Server",
+        "displayName": "_Interactive render mode",
+        "description": "Chooses which interactive render mode to use for interactive components",
+        "choices": [
+          {
+            "choice": "None",
+            "displayName": "None",
+            "description": "No interactivity (static server rendering only)"
+          },
+          {
+            "choice": "Server",
+            "displayName": "Server",
+            "description": "Runs on the server"
+          },
+          {
+            "choice": "WebAssembly",
+            "displayName": "WebAssembly",
+            "description": "Runs in the browser using WebAssembly"
+          },
+          {
+            "choice": "Auto",
+            "displayName": "Auto (Server and WebAssembly)",
+            "description": "Uses Server while downloading WebAssembly assets, then uses WebAssembly"
+          }
+        ]
+      },
+      "InteractivityLocation": {
+        "type": "parameter",
+        "datatype": "choice",
+        "defaultValue": "InteractivePerPage",
+        "displayName": "_Interactivity location",
+        "description": "Chooses which components will have interactive rendering enabled",
+        "isEnabled": "(InteractivityPlatform != \"None\")",
+        "choices": [
+          {
+            "choice": "InteractivePerPage",
+            "displayName": "Per page/component",
+            "description": "Interactivity is applied on a per-page or per-component basis"
+          },
+          {
+            "choice": "InteractiveGlobal",
+            "displayName": "Global",
+            "description": "Interactivity is applied at the root level"
+          }
+        ]
+      },
+      "UseWebAssembly": {
+        "type": "computed",
+        "value": "(InteractivityPlatform == \"WebAssembly\" || InteractivityPlatform == \"Auto\")"
+      },
+      "UseServer": {
+        "type": "computed",
+        "value": "(InteractivityPlatform == \"Server\" || InteractivityPlatform == \"Auto\")"
+      },
+      "IncludeSampleContent": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "true",
+        "displayName": "_Include sample pages",
+        "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
+      },
+      "Empty": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
+      },
+      "auth": {
+        "type": "parameter",
+        "datatype": "choice",
+        "choices": [
+          {
+            "choice": "None",
+            "description": "No authentication"
+          },
+          {
+            "choice": "Individual",
+            "description": "Individual authentication"
+          }
+        ],
+        "defaultValue": "None",
+        "description": "The type of authentication to use"
+      },
+      "UseLocalDB": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual is specified."
+      },
+      "SampleContent": {
+        "type": "computed",
+        "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
+      },
+      "AllInteractive": {
+        "type": "parameter",
+        "datatype": "bool",
+        "isEnabled": "(InteractivityPlatform != \"None\")",
+        "defaultValue": "false",
+        "displayName": "_Enable interactive rendering globally throughout the site",
+        "description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis."
+      },
+      "InteractiveAtRoot": {
+        "type": "computed",
+        "value": "(InteractivityLocation == \"InteractiveGlobal\" || AllInteractive)"
+      },
+      "IndividualLocalAuth": {
+        "type": "computed",
+        "value": "(auth == \"Individual\")"
+      },
+      "RequiresHttps": {
+        "type": "computed",
+        "value": "(OrganizationalAuth || IndividualLocalAuth)"
+      },
+      "HasHttpProfile": {
+        "type": "computed",
+        "value": "(!RequiresHttps)"
+      },
+      "HasHttpsProfile": {
+        "type": "computed",
+        "value": "(RequiresHttps || !NoHttps)"
+      },
+      "NoHttps": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Whether to turn off HTTPS. This option only applies if Individual isn't used for --auth."
+      },
+      "copyrightYear": {
+        "type": "generated",
+        "generator": "now",
+        "replaces": "copyrightYear",
+        "parameters": {
+          "format": "yyyy"
+        }
+      },
+      "UseProgramMain": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "displayName": "Do not use _top-level statements",
+        "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+      }
+    },
   "defaultName": "MauiApp1"
 }
