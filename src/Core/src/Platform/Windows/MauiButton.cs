@@ -2,19 +2,36 @@
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Windows.Security.Credentials.UI;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Platform
 {
 	public class MauiButton : Button
 	{
+		DefaultMauiButtonContent _defaultButtonContent;
+
 		public MauiButton()
 		{
-			Content = new DefaultMauiButtonContent();
+			Content = _defaultButtonContent = new DefaultMauiButtonContent();
 
 			VerticalAlignment = VerticalAlignment.Stretch;
 			HorizontalAlignment = HorizontalAlignment.Stretch;
+
+			SizeChanged += MauiButton_SizeChanged;
+		}
+
+		private void MauiButton_SizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			if (!double.IsInfinity(Width))
+			{
+				_defaultButtonContent.LimitImageWidth(
+					ActualWidth - (Padding.Left + Padding.Right));
+			}
+			else if (!double.IsInfinity(Height))
+			{
+				_defaultButtonContent.LimitImageHeight(
+					ActualHeight - (Padding.Top + Padding.Bottom));
+			}
 		}
 
 		protected override AutomationPeer OnCreateAutomationPeer()
@@ -61,6 +78,16 @@ namespace Microsoft.Maui.Platform
 			Children.Add(_textBlock);
 
 			LayoutImageLeft(0);
+		}
+
+		internal void LimitImageWidth(double width)
+		{
+			_image.MaxWidth = width - ColumnSpacing;
+		}
+
+		internal void LimitImageHeight(double height)
+		{
+			_image.MaxHeight = height - RowSpacing;
 		}
 
 		public void LayoutImageLeft(double spacing)
@@ -133,7 +160,6 @@ namespace Microsoft.Maui.Platform
 			Grid.SetRow(_textBlock, 0);
 			Grid.SetRowSpan(_textBlock, 2);
 			Grid.SetColumnSpan(_textBlock, 1);
-
 		}
 
 		void SetupVerticalLayout(double spacing)
