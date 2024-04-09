@@ -69,16 +69,44 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 	public class Bz45299UILengthTypeConverter : TypeConverter
 	{
-		static readonly Type StringType = typeof(string);
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string)
+				|| sourceType == typeof(long)
+				|| sourceType == typeof(ulong)
+				|| sourceType == typeof(int)
+				|| sourceType == typeof(uint)
+				|| sourceType == typeof(double)
+				|| sourceType == typeof(float);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+			=> value switch
+			{
+				string str => (Bz45299UILength)str,
+				long l => (Bz45299UILength)l,
+				ulong ul => (Bz45299UILength)ul,
+				int i => (Bz45299UILength)i,
+				uint ui => (Bz45299UILength)ui,
+				double d => (Bz45299UILength)d,
+				float f => (Bz45299UILength)f,
+				_ => throw new NotSupportedException(),
+			};
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string)
+				|| destinationType == typeof(double);
+
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (sourceType != StringType)
-				return false;
+			if (value is Bz45299UILength uiLength)
+			{
+				if (destinationType == typeof(string))
+					return (string)uiLength;
+				if (destinationType == typeof(double))
+					return (double)uiLength;
+			}
 
-			return true;
+			throw new NotSupportedException();
 		}
-
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) => Bz45299UILength.Zero;
 	}
 
 	[System.ComponentModel.TypeConverter(typeof(Bz45299UISizeTypeConverter))]
@@ -96,17 +124,31 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 	public class Bz45299UISizeTypeConverter : TypeConverter
 	{
-		private static readonly Type StringType = typeof(string);
-
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string)
+				|| sourceType == typeof(Size);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+			=> value switch
+			{
+				string str => (Bz45299UISize)str,
+				Size size => (Bz45299UISize)size,
+				_ => throw new NotSupportedException(),
+			};
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(Size);
+
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (sourceType != StringType)
-				return false;
+			if (value is Bz45299UISize uiSize)
+			{
+				if (destinationType == typeof(Size))
+					return (Size)uiSize;
+			}
 
-			return true;
+			throw new NotSupportedException();
 		}
-
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) => Bz45299UISize.Zero;
 	}
 
 	public partial class Bz45299 : ContentPage

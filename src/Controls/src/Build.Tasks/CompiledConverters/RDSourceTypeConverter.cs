@@ -45,14 +45,21 @@ namespace Microsoft.Maui.Controls.XamlC
 			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 
 			//fail early
-			var resourceId = XamlCTask.GetResourceIdForPath(context.Cache, module, resourcePath);
-			if (resourceId == null)
+			var resourceTypeRef = GetTypeForPath(context.Cache, module, resourcePath);
+			if (resourceTypeRef == null)
 				throw new BuildException(BuildExceptionCode.ResourceMissing, node, null, value);
+
+			var resourceType = module.ImportReference(resourceTypeRef).Resolve();
+
+			// validate that the resourceType has a default ctor
+			var hasDefaultCtor = resourceType.Methods.Any(md => md.IsConstructor && !md.HasParameters);
+			if (!hasDefaultCtor)
+				throw new BuildException(BuildExceptionCode.ConstructorDefaultMissing, node, null, resourceType);
 
 			var resourceDictionaryType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary");
 
 			//abuse the converter, produce some side effect, but leave the stack untouched
-			//public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
+			//public void SetAndCreateSource<TResourceType>(Uri value)
 			foreach (var instruction in context.Variables[rdNode].LoadAs(context.Cache, currentModule.GetTypeDefinition(context.Cache, resourceDictionaryType), currentModule))
 				yield return instruction;
 			//reappend assembly= in all cases, see other RD converter
@@ -68,25 +75,17 @@ namespace Microsoft.Maui.Controls.XamlC
 			var uriVarDef = new VariableDefinition(currentModule.ImportReference(context.Cache, ("System", "System", "Uri")));
 			body.Variables.Add(uriVarDef);
 			yield return Create(Stloc, uriVarDef);
-			yield return Create(Ldstr, resourcePath); //resourcePath
 
-			if (!string.IsNullOrEmpty(asmName))
-			{
-				yield return Create(Ldstr, asmName);
-				yield return Create(Call, currentModule.ImportMethodReference(context.Cache, ("mscorlib", "System.Reflection", "Assembly"), methodName: "Load", parameterTypes: new[] { ("mscorlib", "System", "String") }, isStatic: true));
-			}
-			else //we could use assembly.Load in the 'else' part too, but I don't want to change working code right now
-			{
-				yield return Create(Ldtoken, currentModule.ImportReference(((ILRootNode)rootNode).TypeReference));
-				yield return Create(Call, currentModule.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-				yield return Create(Callvirt, currentModule.ImportPropertyGetterReference(context.Cache, ("mscorlib", "System", "Type"), propertyName: "Assembly", flatten: true));
-			}
-			foreach (var instruction in node.PushXmlLineInfo(context))
-				yield return instruction; //lineinfo
-			yield return Create(Callvirt, currentModule.ImportMethodReference(context.Cache,
-																	   resourceDictionaryType,
-																	   methodName: "SetAndLoadSource",
-																	   parameterTypes: new[] { ("System", "System", "Uri"), ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") }));
+			var method = module.ImportMethodReference(
+				context.Cache,
+				resourceDictionaryType,
+				methodName: "SetAndCreateSource",
+				parameterTypes: new[] { ("System", "System", "Uri") });
+
+			var genericInstanceMethod = new GenericInstanceMethod(method);
+			genericInstanceMethod.GenericArguments.Add(resourceType);
+
+			yield return Create(Callvirt, currentModule.ImportReference(genericInstanceMethod));
 			//ldloc the stored uri as return value
 			yield return Create(Ldloc, uriVarDef);
 		}
@@ -100,6 +99,19 @@ namespace Microsoft.Maui.Controls.XamlC
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;
 				return ca.ConstructorArguments[1].Value as string;
+			}
+			return null;
+		}
+
+		private static TypeReference GetTypeForPath(XamlCache cache, ModuleDefinition module, string path)
+		{
+			foreach (var ca in module.GetCustomAttributes())
+			{
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
+					continue;
+				if (ca.ConstructorArguments[1].Value as string != path)
+					continue;
+				return ca.ConstructorArguments[2].Value as TypeReference;
 			}
 			return null;
 		}

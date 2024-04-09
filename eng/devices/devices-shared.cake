@@ -26,9 +26,27 @@ void FailRunOnOnlyInconclusiveTests(string testResultsFile)
     // When all tests are inconclusive the run does not fail, check if this is the case and fail the pipeline so we get notified
 	var totalTestCount = XmlPeek(testResultsFile, "/test-run/@total");
 	var inconclusiveTestCount = XmlPeek(testResultsFile, "/test-run/@inconclusive");
-	
+	var errorMessage = string.Empty;
+
+	// Try to get out error message from test results file, there is usually an error in there when tests are inconclusive
+	try
+	{
+		errorMessage = XmlPeek(testResultsFile, "(//test-suite[@result='Inconclusive']/reason/message)[1]");
+	}
+	catch
+	{
+		// Intentionally left blank
+	}
+
 	if (totalTestCount.Equals(inconclusiveTestCount))
-    {
-		throw new Exception("All tests are marked inconclusive, no tests ran. There is probably something wrong with running the tests.");
+	{
+		var exceptionMessage = "All tests are marked inconclusive, no tests ran. There is probably something wrong with running the tests.";
+
+		if (!string.IsNullOrWhiteSpace(errorMessage))
+		{
+			exceptionMessage = $"{exceptionMessage} Error message extracted from {testResultsFile}, check this file for more details: {errorMessage}";
+		}
+
+		throw new Exception(exceptionMessage);
 	}
 }

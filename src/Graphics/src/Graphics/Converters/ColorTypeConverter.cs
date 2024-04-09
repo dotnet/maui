@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics.Converters
 {
@@ -9,6 +10,11 @@ namespace Microsoft.Maui.Graphics.Converters
 	{
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object fromValue)
 		{
+			if (fromValue is Vector4 vec)
+			{
+				return (Color)vec;
+			}
+
 			return Color.Parse(fromValue?.ToString());
 		}
 
@@ -180,7 +186,7 @@ namespace Microsoft.Maui.Graphics.Converters
 			=> true;
 
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-			=> sourceType == typeof(string);
+			=> sourceType == typeof(string) || sourceType == typeof(Vector4);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> destinationType == typeof(string);

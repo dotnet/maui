@@ -11,6 +11,14 @@
     <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)' != 'netstandard2.0' and '$(TargetFramework)' != 'netstandard2.1'">
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+    <!-- TODO: Remove once XamlTypeInfo.g.cs generates trimming-friendly code -->
+    <NoWarn Condition="$(TargetFramework.Contains('-windows'))">$(NoWarn);IL2059</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>true</IsPackable>

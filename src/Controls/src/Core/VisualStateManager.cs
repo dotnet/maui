@@ -323,7 +323,19 @@ namespace Microsoft.Maui.Controls
 			set => _internalList[index] = value;
 		}
 
-		internal VisualElement VisualElement { get; set; }
+		WeakReference<VisualElement> _visualElement;
+		internal VisualElement VisualElement {
+			get {
+				if (_visualElement == null)
+					return null;
+				_visualElement.TryGetTarget(out var ve);
+				return ve;
+			} 
+			set {
+				_visualElement = new WeakReference<VisualElement>(value);
+			}
+		}
+
 		internal SetterSpecificity Specificity { get; set; }
 
 		void OnStatesChanged()
@@ -382,7 +394,18 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='CurrentState']/Docs/*" />
 		public VisualState CurrentState { get; internal set; }
 
-		internal VisualElement VisualElement { get; set; }
+		WeakReference<VisualElement> _visualElement;
+		internal VisualElement VisualElement {
+			get {
+				if (_visualElement == null)
+					return null;
+				_visualElement.TryGetTarget(out var ve);
+				return ve;
+			} 
+			set {
+				_visualElement = new WeakReference<VisualElement>(value);
+			}
+		}
 
 		internal VisualState GetState(string name)
 		{
