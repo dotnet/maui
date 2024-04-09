@@ -1,0 +1,21 @@
+﻿@*#if (IndividualLocalAuth && !UseWebAssembly)
+@using MauiApp.1.Components.Account.Shared
+##endif*@
+@*#if (UseWebAssembly && !InteractiveAtRoot)
+<Router AppAssembly="typeof(MauiApp.1.Shared.Layout.MainLayout).Assembly" AdditionalAssemblies="new[] { typeof(Web.Client._Imports).Assembly }">
+##else
+<Router AppAssembly="typeof(MauiApp.1.Shared.Layout.MainLayout).Assembly">
+##endif*@
+    <Found Context="routeData">
+        @*#if (IndividualLocalAuth)
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MauiApp.1.Shared.Layout.MainLayout)">
+            <NotAuthorized>
+                <RedirectToLogin />
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        ##else
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MauiApp.1.Shared.Layout.MainLayout)" />
+        ##endif*@
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

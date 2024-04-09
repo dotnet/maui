@@ -47,9 +47,6 @@
           {
             "condition": "(UseWebAssembly && InteractiveAtRoot)",
             "rename": {
-              "MauiApp.1.Web/Components/Layout/": "./MauiApp.1.Web.Client/Layout/",
-              "MauiApp.1.Web/Components/Pages/Home.razor": "./MauiApp.1.Web.Client/Pages/Home.razor",
-              "MauiApp.1.Web/Components/Pages/Weather.razor": "./MauiApp.1.Web.Client/Pages/Weather.razor",
               "MauiApp.1.Web/Components/Routes.razor": "./MauiApp.1.Web.Client/Routes.razor"
             }
           },
@@ -215,7 +212,13 @@
       "replaces": "DOTNET_TFM",
       "defaultValue": "DOTNET_TFM_VALUE"
     },
-    "HostIdentifier": {
+    "FrameworkAspNet": {
+        "type": "parameter",
+        "datatype": "string",
+        "replaces": "${DefaultNetCoreTargetFramework}",
+        "defaultValue": "DOTNET_TFM_VALUE"
+      },
+      "HostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
     },
@@ -274,8 +277,8 @@
     "UserSecretsId": {
       "type": "parameter",
       "datatype": "string",
-      "replaces": "aspnet-BlazorWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
-      "defaultValue": "aspnet-BlazorWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "replaces": "aspnet-MauiApp.1-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "defaultValue": "aspnet-MauiApp.1-53bc9b9d-9d6a-45d4-8429-2a2761773502",
       "description": "The ID to use for secrets (use with Individual auth)."
     },
     "ExcludeLaunchSettings": {
@@ -440,19 +443,7 @@
       },
       "auth": {
         "type": "parameter",
-        "datatype": "choice",
-        "choices": [
-          {
-            "choice": "None",
-            "description": "No authentication"
-          },
-          {
-            "choice": "Individual",
-            "description": "Individual authentication"
-          }
-        ],
-        "defaultValue": "None",
-        "description": "The type of authentication to use"
+        "defaultValue": "None"
       },
       "UseLocalDB": {
         "type": "parameter",

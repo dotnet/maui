@@ -9,8 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiApp.1.Shared", "MauiApp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiApp.1.Web", "MauiApp.1.Web\MauiApp.1.Web.csproj", "{C2800ABA-8C19-4553-A552-BFF679BEB039}"
 EndProject
+#if (UseWebAssembly)
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiApp.1.Web.Client", "MauiApp.1.Web.Client\MauiApp.1.Web.Client.csproj", "{7C064C71-30BE-4D8D-9B68-E7249ED18FA1}"
 EndProject
+#endif
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,7 @@ Global
 		{C2800ABA-8C19-4553-A552-BFF679BEB039}.Release|x86.ActiveCfg = Release|Any CPU
 		{C2800ABA-8C19-4553-A552-BFF679BEB039}.Release|x86.Build.0 = Release|Any CPU
 		{C2800ABA-8C19-4553-A552-BFF679BEB039}.Release|x86.Deploy.0 = Release|Any CPU
+#if (UseWebAssembly)
 		{7C064C71-30BE-4D8D-9B68-E7249ED18FA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7C064C71-30BE-4D8D-9B68-E7249ED18FA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C064C71-30BE-4D8D-9B68-E7249ED18FA1}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -87,6 +90,7 @@ Global
 		{7C064C71-30BE-4D8D-9B68-E7249ED18FA1}.Release|x86.ActiveCfg = Release|Any CPU
 		{7C064C71-30BE-4D8D-9B68-E7249ED18FA1}.Release|x86.Build.0 = Release|Any CPU
 		{7C064C71-30BE-4D8D-9B68-E7249ED18FA1}.Release|x86.Deploy.0 = Release|Any CPU
+#endif
 		{E3338D37-FF50-4A34-96BD-2716ED93F1E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E3338D37-FF50-4A34-96BD-2716ED93F1E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3338D37-FF50-4A34-96BD-2716ED93F1E2}.Debug|Any CPU.Deploy.0 = Debug|Any CPU

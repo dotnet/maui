@@ -7,15 +7,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 #endif
 #if (UseWebAssembly && SampleContent)
-using BlazorWeb_CSharp.Client.Pages;
+using MauiApp._1.Web.Client.Pages;
 #endif
-using BlazorWeb_CSharp.Components;
+using MauiApp._1.Web.Components;
 #if (IndividualLocalAuth)
-using BlazorWeb_CSharp.Components.Account;
-using BlazorWeb_CSharp.Data;
+using MauiApp._1.Components.Account;
+using MauiApp._1.Data;
 #endif
 
-namespace BlazorWeb_CSharp;
+namespace MauiApp._1;
 
 public class Program
 {
