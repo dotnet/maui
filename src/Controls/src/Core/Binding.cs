@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='DoNothing']/Docs/*" />
-		public static readonly object DoNothing = MultiBinding.DoNothing;
+		public static readonly object DoNothing = MultiBinding.DoNothing; // the instance was moved to MultiBinding because the Binding class is annotated with [RequiresUnreferencedCode]
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='UpdateSourceEventName']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
