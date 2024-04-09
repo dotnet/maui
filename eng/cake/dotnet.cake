@@ -213,7 +213,6 @@ Task("dotnet-legacy-controlgallery-android")
     .Does(() =>
     {
         var properties = new Dictionary<string, string>();
-        properties.Add("EmbedAssembliesIntoApk", "true");
         RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj", properties, binlogPrefix: "controlgallery-android-");
     });
 
