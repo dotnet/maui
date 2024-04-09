@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19509"
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="30,0"
+            Spacing="25">
+            <Label
+                AutomationId="WaitForStubControl"
+                Text="Hardcoded text"
+                SemanticProperties.HeadingLevel="Level1" />
+            <Entry 
+                TextColor="Green"
+                FontSize="16"
+                PlaceholderColor="LightGray"
+                Placeholder="Enter Text"
+                Text="Hardcoded text"/>
+            <Label
+                Text="Binding text"
+                SemanticProperties.HeadingLevel="Level1" />
+            <Entry 
+                x:Name="BindingEntry"
+                AutomationId="TestEntry"
+                TextColor="Green"
+                FontSize="16"
+                PlaceholderColor="LightGray"
+                Placeholder="Enter Text"
+                Text="{Binding Text}"/>
+            <Label
+                AutomationId="TestResult"
+                Text="{Binding Source={x:Reference BindingEntry}, Path=TextColor}"/>
+            <Button
+                AutomationId="button"
+                Text="Update text"
+                Clicked="Button_Clicked"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
