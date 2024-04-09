@@ -631,9 +631,9 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnUpdate(int index, IView view, IView oldView)
 		{
-			base.OnUpdate(index, view, oldView);
 			RemoveFlexItem(oldView);
 			AddFlexItem(index, view);
+			base.OnUpdate(index, view, oldView);
 		}
 
 		protected override void OnRemove(int index, IView view)
