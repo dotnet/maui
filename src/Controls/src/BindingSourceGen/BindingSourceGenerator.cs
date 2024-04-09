@@ -188,13 +188,13 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 public sealed record BindingDiagnosticsWrapper(
 	CodeWriterBinding? Binding,
-	Diagnostic[] Diagnostics);
+	Diagnostic[] Diagnostics); // TODO: use an "equatable array" type
 
 public sealed record CodeWriterBinding(
 	SourceCodeLocation Location,
 	TypeDescription SourceType,
 	TypeDescription PropertyType,
-	IPathPart[] Path,
+	IPathPart[] Path, // TODO: use an "equatable array" type
 	SetterOptions SetterOptions);
 
 public sealed record SourceCodeLocation(string FilePath, int Line, int Column);
