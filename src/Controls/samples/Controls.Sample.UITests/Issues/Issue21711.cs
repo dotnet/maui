@@ -22,6 +22,7 @@ namespace Maui.Controls.Sample.Issues
 						flex.Clear();
 						flex.Add(NewLabel(0));
 						flex.Add(NewLabel(1));
+
 						flex.Clear();
 						flex.Add(NewLabel(2));
 						flex.Add(NewLabel(3));
@@ -35,6 +36,7 @@ namespace Maui.Controls.Sample.Issues
 						flex.Clear();
 						flex.Insert(0, NewLabel(1));
 						flex.Insert(0, NewLabel(0));
+
 						flex.Clear();
 						flex.Insert(0, NewLabel(3));
 						flex.Insert(0, NewLabel(2));
@@ -48,9 +50,28 @@ namespace Maui.Controls.Sample.Issues
 						flex.Clear();
 						flex.Add(NewLabel(0));
 						flex[0] = NewLabel(1);
+
 						flex.Clear();
 						flex.Add(NewLabel(2));
 						flex[0] = NewLabel(3);
+					})
+				},
+				new Button
+				{
+					Text = "Remove",
+					Command = new Command(() =>
+					{
+						flex.Clear();
+						var label = NewLabel(0);
+						flex.Add(label);
+						flex.Remove(label);
+
+						flex.Clear();
+						label = NewLabel(1);
+						flex.Add(label);
+						flex.Remove(label);
+
+						flex.Add(NewLabel(2));
 					})
 				},
 				(flex = new FlexLayout { }),
