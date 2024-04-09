@@ -44,6 +44,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				else
 					App.Click("HideSoftInputOnTappedFalse");
 
+				App.WaitForElement(control);
 				App.Click(control);
 
 				Assert.IsTrue(App.IsFocused(control));
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}
 			finally
 			{
-				Reset();
+				this.Back();
 			}
 		}
 
@@ -125,7 +126,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}
 			finally
 			{
-				Reset();
+				this.Back();
 			}
 		}
 
