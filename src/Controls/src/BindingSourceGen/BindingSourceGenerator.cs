@@ -70,7 +70,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			method.Name.GetLocation().GetLineSpan().StartLinePosition.Character + 1
 		);
 
-		var overloadDiagnostics = VerifyCorrectOverload(method, context, t);
+		var overloadDiagnostics = VerifyCorrectOverload(invocation, context, t);
 
 		if (overloadDiagnostics.Length > 0)
 		{
@@ -107,18 +107,18 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		return new BindingDiagnosticsWrapper(codeWriterBinding, diagnostics.ToArray());
 	}
 
-	private static Diagnostic[] VerifyCorrectOverload(SyntaxNode method, GeneratorSyntaxContext context, CancellationToken t)
+	private static Diagnostic[] VerifyCorrectOverload(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
 	{
-		var methodSymbolInfo = context.SemanticModel.GetSymbolInfo(method, cancellationToken: t);
-
-		if (methodSymbolInfo.Symbol is not IMethodSymbol methodSymbol) //TODO: Do we need this check?
+		var argumentList = invocation.ArgumentList.Arguments;
+		if (argumentList.Count < 2)
 		{
-			return [DiagnosticsFactory.UnableToResolvePath(method.GetLocation())];
+			return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
 		}
 
-		if (methodSymbol.Parameters.Length < 2 || methodSymbol.Parameters[1].Type.Name != "Func")
+		var getter = argumentList[1].Expression;
+		if (getter is not LambdaExpressionSyntax)
 		{
-			return [DiagnosticsFactory.SuboptimalSetBindingOverload(method.GetLocation())];
+			return [DiagnosticsFactory.SuboptimalSetBindingOverload(getter.GetLocation())];
 		}
 
 		return Array.Empty<Diagnostic>();
@@ -127,12 +127,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	private static (ExpressionSyntax? lambdaBodyExpression, IMethodSymbol? lambdaSymbol, Diagnostic[] diagnostics) GetLambda(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
 	{
 		var argumentList = invocation.ArgumentList.Arguments;
-		var getter = argumentList[1].Expression;
-
-		if (getter is not LambdaExpressionSyntax lambda)
-		{
-			return (null, null, [DiagnosticsFactory.GetterIsNotLambda(getter.GetLocation())]);
-		}
+		var lambda = (LambdaExpressionSyntax)argumentList[1].Expression;
 
 		if (lambda.Body is not ExpressionSyntax lambdaBody)
 		{
