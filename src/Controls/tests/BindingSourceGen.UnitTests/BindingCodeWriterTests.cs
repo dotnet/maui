@@ -19,7 +19,7 @@ public class BindingCodeWriterTests
                 new ConditionalAccess(new MemberAccess("B")),
                 new ConditionalAccess(new MemberAccess("C")),
             ],
-            GenerateSetter: true));
+            SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
 
         var code = codeWriter.GenerateCode();
         AssertExtensions.CodeIsEqual(
@@ -140,7 +140,7 @@ public class BindingCodeWriterTests
                 new ConditionalAccess(new MemberAccess("B")),
                 new ConditionalAccess(new MemberAccess("C")),
             ],
-            GenerateSetter: true));
+            SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -210,7 +210,7 @@ public class BindingCodeWriterTests
                 new MemberAccess("B"),
                 new MemberAccess("C"),
             ],
-            GenerateSetter: true));
+            SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -276,7 +276,7 @@ public class BindingCodeWriterTests
                 new MemberAccess("B"),
                 new MemberAccess("C"),
             ],
-            GenerateSetter: false));
+            SetterOptions: new(IsWritable: false)));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -339,7 +339,7 @@ public class BindingCodeWriterTests
                 new ConditionalAccess(new IndexAccess("Indexer", "Abc")),
                 new IndexAccess("Item", 0),
             ],
-            GenerateSetter: true));
+            SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -412,7 +412,7 @@ public class BindingCodeWriterTests
                 new Cast(new TypeDescription("Z", IsValueType: true, IsNullable: true, IsGenericParameter: false)),
                 new ConditionalAccess(new MemberAccess("D")),
             ],
-            GenerateSetter: true));
+            SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
 
         var code = codeBuilder.ToString();
 

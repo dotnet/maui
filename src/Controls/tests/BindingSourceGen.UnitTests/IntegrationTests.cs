@@ -213,7 +213,19 @@ public class IntegrationTests
                         Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
-                            throw new InvalidOperationException("Cannot set value on the source object.");
+                            setter = static (source, value) =>
+                            {
+                                if (value is null)
+                                {
+                                    return;
+                                }
+                                if (source.A is global::MyNamespace.X p0
+                                    && p0.B is global::MyNamespace.Y p1
+                                    && p1.C is global::MyNamespace.Z p2)
+                                {
+                                    p2.D = value;
+                                }
+                            };
                         }
 
                         var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(

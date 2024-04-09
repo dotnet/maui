@@ -102,8 +102,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			SourceType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
 			PropertyType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaTypeInfo.Type, enabledNullable),
 			Path: parts.ToArray(),
-			GenerateSetter: false //TODO: Implement
-		);
+			SetterOptions: DeriveSetterOptions(lambdaBody, context.SemanticModel, enabledNullable));
 		return new BindingDiagnosticsWrapper(codeWriterBinding, diagnostics.ToArray());
 	}
 
@@ -142,6 +141,48 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		return (lambdaBody, lambdaSymbol, Array.Empty<Diagnostic>());
 	}
 
+	private static SetterOptions DeriveSetterOptions(ExpressionSyntax? lambdaBodyExpression, SemanticModel semanticModel, bool enabledNullable)
+	{
+		if (lambdaBodyExpression is null)
+		{
+			return new SetterOptions(IsWritable: false, AcceptsNullValue: false);
+		}
+		else if (lambdaBodyExpression is IdentifierNameSyntax identifier)
+		{
+			var symbol = semanticModel.GetSymbolInfo(identifier).Symbol;
+			return new SetterOptions(IsWritable(symbol), AcceptsNullValue(symbol, enabledNullable));
+		}
+
+		var nestedExpression = lambdaBodyExpression switch
+		{
+			MemberAccessExpressionSyntax memberAccess => memberAccess.Name,
+			ConditionalAccessExpressionSyntax conditionalAccess => conditionalAccess.WhenNotNull,
+			MemberBindingExpressionSyntax memberBinding => memberBinding.Name,
+			BinaryExpressionSyntax binary when binary.Kind() == SyntaxKind.AsExpression => binary.Left,
+			ElementAccessExpressionSyntax elementAccess => elementAccess.Expression, // TODO indexers don't work correctlly yet
+			ParenthesizedExpressionSyntax parenthesized => parenthesized.Expression,
+			_ => null,
+		};
+
+		return DeriveSetterOptions(nestedExpression, semanticModel, enabledNullable);
+
+		static bool IsWritable(ISymbol? symbol)
+			=> symbol switch
+			{
+				IPropertySymbol propertySymbol => propertySymbol.SetMethod != null,
+				IFieldSymbol fieldSymbol => !fieldSymbol.IsReadOnly,
+				_ => false,
+			};
+
+		static bool AcceptsNullValue(ISymbol? symbol, bool enabledNullable)
+			=> symbol switch
+			{
+				IPropertySymbol propertySymbol => BindingGenerationUtilities.IsTypeNullable(propertySymbol.Type, enabledNullable),
+				IFieldSymbol fieldSymbol => BindingGenerationUtilities.IsTypeNullable(fieldSymbol.Type, enabledNullable),
+				_ => false,
+			};
+	}
+
 	private static BindingDiagnosticsWrapper ReportDiagnostics(Diagnostic[] diagnostics) => new(null, diagnostics);
 }
 
@@ -154,7 +195,7 @@ public sealed record CodeWriterBinding(
 	TypeDescription SourceType,
 	TypeDescription PropertyType,
 	IPathPart[] Path,
-	bool GenerateSetter);
+	SetterOptions SetterOptions);
 
 public sealed record SourceCodeLocation(string FilePath, int Line, int Column);
 
@@ -169,6 +210,8 @@ public sealed record TypeDescription(
 			? $"{GlobalName}?"
 			: GlobalName;
 }
+
+public sealed record SetterOptions(bool IsWritable, bool AcceptsNullValue = false);
 
 public sealed record MemberAccess(string MemberName) : IPathPart
 {

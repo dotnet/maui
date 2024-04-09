@@ -24,7 +24,7 @@ public class BindingRepresentationGenTests
                 [
                     new MemberAccess("Length"),
                 ],
-                GenerateSetter: false);
+                SetterOptions: new(IsWritable: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -47,7 +47,7 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Text"),
                     new ConditionalAccess(new MemberAccess("Length")),
                 ],
-                GenerateSetter: false);
+                SetterOptions: new(IsWritable: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -76,7 +76,7 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("Text")),
                     new ConditionalAccess(new MemberAccess("Length")),
                 ],
-                GenerateSetter: false);
+                SetterOptions: new(IsWritable: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
 
@@ -100,7 +100,7 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("Text")),
                     new ConditionalAccess(new MemberAccess("Length")),
                 ],
-                GenerateSetter: false);
+                SetterOptions: new(IsWritable: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -127,7 +127,7 @@ public class BindingRepresentationGenTests
                 [
                     new MemberAccess("Value"),
                 ],
-                GenerateSetter: false);
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: true));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -150,7 +150,7 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("Text")),
                     new ConditionalAccess(new MemberAccess("Length")),
                 ],
-                GenerateSetter: false);
+                SetterOptions: new(IsWritable: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -177,8 +177,7 @@ public class BindingRepresentationGenTests
                 [
                     new MemberAccess("Value"),
                 ],
-                GenerateSetter: false
-            );
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: true));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -207,7 +206,7 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("Bar")),
                     new ConditionalAccess(new MemberAccess("Length")),
                 ],
-                GenerateSetter: false);
+                SetterOptions: new(IsWritable: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -235,7 +234,7 @@ public class BindingRepresentationGenTests
                 [
                     new MemberAccess("Value"),
                 ],
-                GenerateSetter: false);
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: true));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -264,7 +263,7 @@ public class BindingRepresentationGenTests
                     new IndexAccess("Item", 0),
                     new MemberAccess("Length"),
                 ],
-                GenerateSetter: false);
+                SetterOptions: new(IsWritable: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -294,7 +293,7 @@ public class BindingRepresentationGenTests
                     new IndexAccess("Item", "key"),
                     new MemberAccess("Length"),
                 ],
-                GenerateSetter: false);
+                SetterOptions: new(IsWritable: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -322,8 +321,7 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Value"),
                     new Cast(new TypeDescription("string")),
                 ],
-                GenerateSetter: false
-            );
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -357,8 +355,7 @@ public class BindingRepresentationGenTests
                     new Cast(new TypeDescription("global::C")),
                     new ConditionalAccess(new MemberAccess("X")),
                 ],
-                GenerateSetter: false
-            );
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -392,8 +389,7 @@ public class BindingRepresentationGenTests
                     new Cast(new TypeDescription("global::C")),
                     new ConditionalAccess(new MemberAccess("X")),
                 ],
-                GenerateSetter: false
-            );
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -421,8 +417,7 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Value"),
                     new Cast(new TypeDescription("int", IsNullable: true, IsValueType: true)),
                 ],
-                GenerateSetter: false
-            );
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: false));
 
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
@@ -457,8 +452,7 @@ public class BindingRepresentationGenTests
                     new Cast(new TypeDescription("global::C", IsNullable: true, IsValueType: true)),
                     new ConditionalAccess(new MemberAccess("X")),
                 ],
-                GenerateSetter: false
-            );
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: false));
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }

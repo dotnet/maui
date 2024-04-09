@@ -154,7 +154,7 @@ public sealed class BindingCodeWriter
 			Indent();
 			Indent();
 
-			if (binding.GenerateSetter)
+			if (binding.SetterOptions.IsWritable)
 			{
 				AppendLines("""
 					setter = static (source, value) =>
@@ -162,13 +162,14 @@ public sealed class BindingCodeWriter
 					""");
 				Indent();
 
-				AppendSetterAction(binding.SourceType, binding.Path);
+				AppendSetterAction(binding);
 
 				Unindent();
 				AppendLine("};");
 			}
 			else
 			{
+				// TODO is this too strict? I believe today when the Binding can't write to the property, it just silently ignores the value
 				AppendLine("throw new InvalidOperationException(\"Cannot set value on the source object.\");"); // TODO improve exception wording
 			}
 
@@ -215,9 +216,30 @@ public sealed class BindingCodeWriter
 			AppendLine($"[InterceptsLocationAttribute(@\"{location.FilePath}\", {location.Line}, {location.Column})]");
 		}
 
-		private void AppendSetterAction(TypeDescription sourceType, IPathPart[] path)
+		private void AppendSetterAction(CodeWriterBinding binding, string sourceVariableName = "source", string valueVariableName = "value")
 		{
-			var setter = Setter.From(sourceType, path);
+			var assignedValueExpression = valueVariableName;
+
+			// early return for nullable values if the setter doesn't accept them
+			if (binding.PropertyType.IsNullable && !binding.SetterOptions.AcceptsNullValue)
+			{
+				if (binding.PropertyType.IsValueType)
+				{
+					AppendLine($"if (!{valueVariableName}.HasValue)");
+					assignedValueExpression = $"{valueVariableName}.Value";
+				}
+				else
+				{
+					AppendLine($"if ({valueVariableName} is null)");
+				}
+				AppendLine('{');
+				Indent();
+				AppendLine("return;");
+				Unindent();
+				AppendLine('}');
+			}
+
+			var setter = Setter.From(binding.SourceType, binding.Path, sourceVariableName, assignedValueExpression);
 			if (setter.PatternMatchingExpressions.Length > 0)
 			{
 				Append("if (");

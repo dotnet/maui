@@ -9,9 +9,9 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
         TypeDescription sourceTypeDescription,
         IPathPart[] path,
         string sourceVariableName = "source",
-        string valueVariableName = "value")
+        string assignedValueExpression = "value")
     {
-        var builder = new SetterBuilder(sourceVariableName, valueVariableName);
+        var builder = new SetterBuilder(sourceVariableName, assignedValueExpression);
 
         if (path.Length > 0)
         {
@@ -32,17 +32,17 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
     private sealed class SetterBuilder
     {
         private readonly string _sourceVariableName;
-        private readonly string _valueVariableName;
+        private readonly string _assignedValueExpression;
 
         private string _expression;
         private int _variableCounter = 0;
         private List<string>? _patternMatching;
         private IPathPart? _previousPart;
 
-        public SetterBuilder(string sourceVariableName, string valueVariableName)
+        public SetterBuilder(string sourceVariableName, string assignedValueExpression)
         {
             _sourceVariableName = sourceVariableName;
-            _valueVariableName = valueVariableName;
+            _assignedValueExpression = assignedValueExpression;
 
             _expression = sourceVariableName;
         }
@@ -98,7 +98,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
         private string CreateAssignmentStatement()
         {
             HandlePreviousPart(nextPart: null);
-            return $"{_expression} = {_valueVariableName};";
+            return $"{_expression} = {_assignedValueExpression};";
         }
 
         public Setter Build()
