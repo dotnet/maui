@@ -63,6 +63,7 @@
 
     <PropertyGroup>
       <InformationalVersion>$(PackageVersion)</InformationalVersion>
+      <FileVersion>$(Version).0</FileVersion>
     </PropertyGroup>
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
