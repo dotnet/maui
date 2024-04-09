@@ -388,6 +388,10 @@ Task("cg-uitest")
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("APP_APK", $"{TEST_APP}");
 
+	// Copy the actual tested app to the artifacts for manual inspection if needed
+	CreateDirectory($"{TEST_RESULTS}/android/tested_bin");
+	CopyFile(TEST_APP, $"{TEST_RESULTS}/android/tested_bin/{TEST_APP_PACKAGE_NAME}.apk");
+
 	// build the test library
 	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK).FullPath;
 	Information("BinDir: {0}", binDir);
