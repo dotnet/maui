@@ -319,9 +319,8 @@ public class BindingRepresentationGenTests
                 new TypeDescription("global::Foo"),
                 new TypeDescription("string", IsNullable: true),
                 [
-                    new Cast(
-                        new MemberAccess("Value"),
-                        new TypeDescription("string")),
+                    new MemberAccess("Value"),
+                    new Cast(new TypeDescription("string")),
                 ],
                 GenerateSetter: false
             );
@@ -354,9 +353,8 @@ public class BindingRepresentationGenTests
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
-                    new Cast(
-                        new MemberAccess("C"),
-                        new TypeDescription("global::C")),
+                    new MemberAccess("C"),
+                    new Cast(new TypeDescription("global::C")),
                     new ConditionalAccess(new MemberAccess("X")),
                 ],
                 GenerateSetter: false
@@ -390,9 +388,8 @@ public class BindingRepresentationGenTests
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
-                    new Cast(
-                        new MemberAccess("C"),
-                        new TypeDescription("global::C")),
+                    new MemberAccess("C"),
+                    new Cast(new TypeDescription("global::C")),
                     new ConditionalAccess(new MemberAccess("X")),
                 ],
                 GenerateSetter: false
@@ -421,9 +418,8 @@ public class BindingRepresentationGenTests
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
-                    new Cast(
-                        new MemberAccess("Value"),
-                        new TypeDescription("int", IsNullable: true, IsValueType: true)),
+                    new MemberAccess("Value"),
+                    new Cast(new TypeDescription("int", IsNullable: true, IsValueType: true)),
                 ],
                 GenerateSetter: false
             );
@@ -457,9 +453,8 @@ public class BindingRepresentationGenTests
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
-                    new Cast(
-                        new MemberAccess("C"),
-                        new TypeDescription("global::C", IsNullable: true, IsValueType: true)),
+                    new MemberAccess("C"),
+                    new Cast(new TypeDescription("global::C", IsNullable: true, IsValueType: true)),
                     new ConditionalAccess(new MemberAccess("X")),
                 ],
                 GenerateSetter: false

@@ -120,8 +120,7 @@ internal class PathParser
             return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(asExpression.GetLocation()) }, new List<IPathPart>());
         };
 
-        var lastIndex = parts.Count - 1;
-        parts[lastIndex] = new Cast(parts[lastIndex], BindingGenerationUtilities.CreateTypeDescriptionForCast(typeInfo));
+        parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionForCast(typeInfo)));
         return (diagnostics, parts);
     }
 

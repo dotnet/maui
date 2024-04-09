@@ -6,7 +6,7 @@ namespace BindingSourceGen.UnitTests;
 
 public class BindingCodeWriterTests
 {
-    [Fact(Skip = "Setters are broken atm.")]
+    [Fact]
     public void BuildsWholeDocument()
     {
         var codeWriter = new BindingCodeWriter();
@@ -71,7 +71,7 @@ public class BindingCodeWriterTests
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
                     public static void SetBinding1(
                         this BindableObject bindableObject,
-                        BindableProperty bidnableProperty,
+                        BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
                         BindingMode mode = BindingMode.Default,
                         IValueConverter? converter = null,
@@ -81,16 +81,22 @@ public class BindingCodeWriterTests
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
+                        Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                        if (ShouldUseSetter(mode, bindableProperty))
+                        {
+                            setter = static (source, value) => 
+                            {
+                                if (source.A is {} p0
+                                    && p0.B is {} p1)
+                                {
+                                    p1.C = value;
+                                }
+                            };
+                        }
+                        
                         var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                             getter: source => (getter(source), true),
-                            setter: static (source, value) => 
-                            {
-                                if (source.A?.B is null)
-                                {
-                                    return;
-                                }
-                                source.A.B.C = value;
-                            },
+                            setter,
                             handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "A"),
@@ -106,15 +112,22 @@ public class BindingCodeWriterTests
                             FallbackValue = fallbackValue,
                             TargetNullValue = targetNullValue
                         };
-                        bindableObject.SetBinding(bidnableProperty, binding);
+                        bindableObject.SetBinding(bindableProperty, binding);
                     }
+
+                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
+                        => mode == BindingMode.OneWayToSource
+                            || mode == BindingMode.TwoWay
+                            || (mode == BindingMode.Default
+                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
+                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
             code);
     }
 
-    [Fact(Skip = "Setters are broken atm.")]
+    [Fact]
     public void CorrectlyFormatsSimpleBinding()
     {
         var codeBuilder = new BindingCodeWriter.BidningInterceptorCodeBuilder();
@@ -136,7 +149,7 @@ public class BindingCodeWriterTests
             [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
             public static void SetBinding1(
                 this BindableObject bindableObject,
-                BindableProperty bidnableProperty,
+                BindableProperty bindableProperty,
                 Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
                 BindingMode mode = BindingMode.Default,
                 IValueConverter? converter = null,
@@ -146,16 +159,22 @@ public class BindingCodeWriterTests
                 object? fallbackValue = null,
                 object? targetNullValue = null)
             {
+                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                if (ShouldUseSetter(mode, bindableProperty))
+                {
+                    setter = static (source, value) => 
+                    {
+                        if (source.A is {} p0
+                            && p0.B is {} p1)
+                        {
+                            p1.C = value;
+                        }
+                    };
+                }
+
                 var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                     getter: source => (getter(source), true),
-                    setter: static (source, value) => 
-                    {
-                        if (source.A?.B is null)
-                        {
-                            return;
-                        }
-                        source.A.B.C = value;
-                    },
+                    setter,
                     handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
                         new(static source => source, "A"),
@@ -171,13 +190,14 @@ public class BindingCodeWriterTests
                     FallbackValue = fallbackValue,
                     TargetNullValue = targetNullValue
                 };
-                bindableObject.SetBinding(bidnableProperty, binding);
+
+                bindableObject.SetBinding(bindableProperty, binding);
             }
             """,
             code);
     }
 
-    [Fact(Skip = "Setters are broken atm.")]
+    [Fact]
     public void CorrectlyFormatsBindingWithoutAnyNullablesInPath()
     {
         var codeBuilder = new BindingCodeWriter.BidningInterceptorCodeBuilder();
@@ -199,7 +219,7 @@ public class BindingCodeWriterTests
             [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
             public static void SetBinding1(
                 this BindableObject bindableObject,
-                BindableProperty bidnableProperty,
+                BindableProperty bindableProperty,
                 Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
                 BindingMode mode = BindingMode.Default,
                 IValueConverter? converter = null,
@@ -209,12 +229,18 @@ public class BindingCodeWriterTests
                 object? fallbackValue = null,
                 object? targetNullValue = null)
             {
-                var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
-                    getter: source => (getter(source), true),
-                    setter: static (source, value) => 
+                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                if (ShouldUseSetter(mode, bindableProperty))
+                {
+                    setter = static (source, value) => 
                     {
                         source.A.B.C = value;
-                    },
+                    };
+                }
+
+                var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
+                    getter: source => (getter(source), true),
+                    setter,
                     handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
                         new(static source => source, "A"),
@@ -230,7 +256,8 @@ public class BindingCodeWriterTests
                     FallbackValue = fallbackValue,
                     TargetNullValue = targetNullValue
                 };
-                bindableObject.SetBinding(bidnableProperty, binding);
+
+                bindableObject.SetBinding(bindableProperty, binding);
             }
             """,
             code);
@@ -258,7 +285,7 @@ public class BindingCodeWriterTests
             [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
             public static void SetBinding1(
                 this BindableObject bindableObject,
-                BindableProperty bidnableProperty,
+                BindableProperty bindableProperty,
                 Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
                 BindingMode mode = BindingMode.Default,
                 IValueConverter? converter = null,
@@ -268,9 +295,15 @@ public class BindingCodeWriterTests
                 object? fallbackValue = null,
                 object? targetNullValue = null)
             {
+                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                if (ShouldUseSetter(mode, bindableProperty))
+                {
+                    throw new InvalidOperationException("Cannot set value on the source object.");
+                }
+
                 var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                     getter: source => (getter(source), true),
-                    setter: null,
+                    setter,
                     handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
                         new(static source => source, "A"),
@@ -287,13 +320,13 @@ public class BindingCodeWriterTests
                     TargetNullValue = targetNullValue
                 };
 
-                bindableObject.SetBinding(bidnableProperty, binding);
+                bindableObject.SetBinding(bindableProperty, binding);
             }
             """,
             code);
     }
 
-    [Fact(Skip = "Setters are broken atm.")]
+    [Fact]
     public void CorrectlyFormatsBindingWithIndexers()
     {
         var codeBuilder = new BindingCodeWriter.BidningInterceptorCodeBuilder();
@@ -315,7 +348,7 @@ public class BindingCodeWriterTests
             [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
             public static void SetBinding1(
                 this BindableObject bindableObject,
-                BindableProperty bidnableProperty,
+                BindableProperty bindableProperty,
                 Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
                 BindingMode mode = BindingMode.Default,
                 IValueConverter? converter = null,
@@ -325,16 +358,21 @@ public class BindingCodeWriterTests
                 object? fallbackValue = null,
                 object? targetNullValue = null)
             {
+                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                if (ShouldUseSetter(mode, bindableProperty))
+                {
+                    setter = static (source, value) => 
+                    {
+                        if (source[12] is {} p0)
+                        {
+                            p0["Abc"][0] = value;
+                        }
+                    };
+                }
+
                 var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                     getter: source => (getter(source), true),
-                    setter: static (source, value) => 
-                    {
-                        if (source[12]?["Abc"] is null)
-                        {
-                            return;
-                        }
-                        source[12]["Abc"][0] = value;
-                    },
+                    setter,
                     handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
                         new(static source => source, "Item[12]"),
@@ -351,55 +389,13 @@ public class BindingCodeWriterTests
                     TargetNullValue = targetNullValue
                 };
 
-                bindableObject.SetBinding(bidnableProperty, binding);
+                bindableObject.SetBinding(bindableProperty, binding);
             }
             """,
             code);
     }
 
     [Fact]
-    public void CorrectlyFormatsSimpleCast()
-    {
-        var accessExpressionBuilder = new AccessExpressionBuilder();
-        var generatedCode = accessExpressionBuilder.BuildExpression(
-            variableName: "source",
-            path: [
-                new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsNullable: false, IsGenericParameter: false, IsValueType: false)),
-                new ConditionalAccess(new MemberAccess("B")),
-            ]);
-
-        Assert.Equal("(source.A as X)?.B", generatedCode);
-    }
-
-    [Fact]
-    public void CorrectlyFormatsSimpleCastOfNonNullableValueTypes()
-    {
-        var accessExpressionBuilder = new AccessExpressionBuilder();
-        var generatedCode = accessExpressionBuilder.BuildExpression(
-            variableName: "source",
-            path: [
-                new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsNullable: false, IsGenericParameter: false, IsValueType: true)),
-                new ConditionalAccess(new MemberAccess("B")),
-            ]);
-
-        Assert.Equal("(source.A as X?)?.B", generatedCode);
-    }
-
-    [Fact]
-    public void CorrectlyFormatsSimpleCastOfNullableValueTypes()
-    {
-        var accessExpressionBuilder = new AccessExpressionBuilder();
-        var generatedCode = accessExpressionBuilder.BuildExpression(
-            variableName: "source",
-            path: [
-                new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsNullable: true, IsGenericParameter: false, IsValueType: true)),
-                new ConditionalAccess(new MemberAccess("B")),
-            ]);
-
-        Assert.Equal("(source.A as X?)?.B", generatedCode);
-    }
-
-    [Fact(Skip = "Setters are broken atm.")]
     public void CorrectlyFormatsBindingWithCasts()
     {
         var codeBuilder = new BindingCodeWriter.BidningInterceptorCodeBuilder();
@@ -408,21 +404,25 @@ public class BindingCodeWriterTests
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
             Path: [
-                new Cast(new MemberAccess("A"), TargetType: new TypeDescription("X", IsValueType: false, IsNullable: false, IsGenericParameter: false)),
-                new ConditionalAccess(new Cast(new MemberAccess("B"), TargetType: new TypeDescription("Y", IsValueType: false, IsNullable: false, IsGenericParameter: false))),
-                new ConditionalAccess(new Cast(new MemberAccess("C"), TargetType: new TypeDescription("Z", IsValueType: true, IsNullable: true, IsGenericParameter: false))),
-                new MemberAccess("D"),
+                new MemberAccess("A"),
+                new Cast(new TypeDescription("X", IsValueType: false, IsNullable: false, IsGenericParameter: false)),
+                new ConditionalAccess(new MemberAccess("B")),
+                new Cast(new TypeDescription("Y", IsValueType: false, IsNullable: false, IsGenericParameter: false)),
+                new ConditionalAccess(new MemberAccess("C")),
+                new Cast(new TypeDescription("Z", IsValueType: true, IsNullable: true, IsGenericParameter: false)),
+                new ConditionalAccess(new MemberAccess("D")),
             ],
             GenerateSetter: true));
 
         var code = codeBuilder.ToString();
+
         AssertExtensions.CodeIsEqual(
             $$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
             [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
             public static void SetBinding1(
                 this BindableObject bindableObject,
-                BindableProperty bidnableProperty,
+                BindableProperty bindableProperty,
                 Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
                 BindingMode mode = BindingMode.Default,
                 IValueConverter? converter = null,
@@ -432,22 +432,29 @@ public class BindingCodeWriterTests
                 object? fallbackValue = null,
                 object? targetNullValue = null)
             {
+                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                if (ShouldUseSetter(mode, bindableProperty))
+                {
+                    setter = static (source, value) => 
+                    {
+                        if (source.A is X p0
+                            && p0.B is Y p1
+                            && p1.C is Z p2)
+                        {
+                            p2.D = value;
+                        }
+                    };
+                }
+
                 var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                     getter: source => (getter(source), true),
-                    setter: static (source, value) => 
-                    {
-                        if (source.Model["Name"]?.Letters is null)
-                        {
-                            return;
-                        }
-                        source.Model["Name"].Letters[0] = value;
-                    },
+                    setter,
                     handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
-                        new(static source => source, "Model"),
-                        new(static source => source.Model, "Item[Name]"),
-                        new(static source => source.Model["Name"], "Letters"),
-                        new(static source => source.Model["Name"]?.Letters, "Item[0]"),
+                        new(static source => source, "A"),
+                        new(static source => (source.A as X), "B"),
+                        new(static source => ((source.A as X)?.B as Y), "C"),
+                        new(static source => (((source.A as X)?.B as Y)?.C as Z?), "D"),
                     })
                 {
                     Mode = mode,
@@ -459,7 +466,7 @@ public class BindingCodeWriterTests
                     TargetNullValue = targetNullValue
                 };
 
-                bindableObject.SetBinding(bidnableProperty, binding);
+                bindableObject.SetBinding(bindableProperty, binding);
             }
             """,
             code);

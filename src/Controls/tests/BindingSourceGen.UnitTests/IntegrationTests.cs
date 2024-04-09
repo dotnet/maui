@@ -64,7 +64,7 @@ public class IntegrationTests
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 7)]
                     public static void SetBinding1(
                         this BindableObject bindableObject,
-                        BindableProperty bidnableProperty,
+                        BindableProperty bindableProperty,
                         Func<string, int> getter,
                         BindingMode mode = BindingMode.Default,
                         IValueConverter? converter = null,
@@ -74,9 +74,15 @@ public class IntegrationTests
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
+                        Action<string, int>? setter = null;
+                        if (ShouldUseSetter(mode, bindableProperty))
+                        {
+                            throw new InvalidOperationException("Cannot set value on the source object.");
+                        }
+
                         var binding = new TypedBinding<string, int>(
                             getter: source => (getter(source), true),
-                            setter: null,
+                            setter,
                             handlers: new Tuple<Func<string, object?>, string>[]
                             {
                                 new(static source => source, "Length"),
@@ -90,8 +96,15 @@ public class IntegrationTests
                             FallbackValue = fallbackValue,
                             TargetNullValue = targetNullValue
                         };
-                        bindableObject.SetBinding(bidnableProperty, binding);
+                        bindableObject.SetBinding(bindableProperty, binding);
                     }
+
+                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
+                        => mode == BindingMode.OneWayToSource
+                            || mode == BindingMode.TwoWay
+                            || (mode == BindingMode.Default
+                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
+                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
@@ -136,6 +149,7 @@ public class IntegrationTests
             """;
 
         var result = SourceGenHelpers.Run(source);
+        
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -186,7 +200,7 @@ public class IntegrationTests
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 4, 7)]
                     public static void SetBinding1(
                         this BindableObject bindableObject,
-                        BindableProperty bidnableProperty,
+                        BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
                         BindingMode mode = BindingMode.Default,
                         IValueConverter? converter = null,
@@ -196,15 +210,21 @@ public class IntegrationTests
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
+                        Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>? setter = null;
+                        if (ShouldUseSetter(mode, bindableProperty))
+                        {
+                            throw new InvalidOperationException("Cannot set value on the source object.");
+                        }
+
                         var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
                             getter: source => (getter(source), true),
-                            setter: null,
+                            setter,
                             handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "A"),
-                                new(static source => source.A as global::MyNamespace.X, "B"),
-                                new(static source => (source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y, "C"),
-                                new(static source => ((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y)?.C as global::MyNamespace.Z, "D"),
+                                new(static source => (source.A as global::MyNamespace.X), "B"),
+                                new(static source => ((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y), "C"),
+                                new(static source => (((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y)?.C as global::MyNamespace.Z), "D"),
                             })
                         {
                             Mode = mode,
@@ -216,8 +236,15 @@ public class IntegrationTests
                             TargetNullValue = targetNullValue
                         };
 
-                        bindableObject.SetBinding(bidnableProperty, binding);
+                        bindableObject.SetBinding(bindableProperty, binding);
                     }
+
+                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
+                        => mode == BindingMode.OneWayToSource
+                            || mode == BindingMode.TwoWay
+                            || (mode == BindingMode.Default
+                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
+                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,

@@ -66,6 +66,13 @@ public sealed class BindingCodeWriter
 			file static class GeneratedBindableObjectExtensions
 			{
 				{{GenerateBindingMethods(indent: 2)}}
+		
+				private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
+					=> mode == BindingMode.OneWayToSource
+						|| mode == BindingMode.TwoWay
+						|| (mode == BindingMode.Default
+							&& (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
+								|| bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
 			}
 		}
 		""";
@@ -93,7 +100,6 @@ public sealed class BindingCodeWriter
 	{
 		private StringWriter _stringWriter;
 		private IndentedTextWriter _indentedTextWriter;
-		private AccessExpressionBuilder _accessExpressionBuilder = new();
 
 		public override string ToString()
 		{
@@ -130,7 +136,7 @@ public sealed class BindingCodeWriter
 
 			AppendLines($$"""
 					this BindableObject bindableObject,
-					BindableProperty bidnableProperty,
+					BindableProperty bindableProperty,
 					Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter,
 					BindingMode mode = BindingMode.Default,
 					IValueConverter? converter = null,
@@ -140,23 +146,46 @@ public sealed class BindingCodeWriter
 					object? fallbackValue = null,
 					object? targetNullValue = null)
 				{
-					var binding = new TypedBinding<{{binding.SourceType}}, {{binding.PropertyType}}>(
-						getter: source => (getter(source), true),
+					Action<{{binding.SourceType}}, {{binding.PropertyType}}>? setter = null;
+					if (ShouldUseSetter(mode, bindableProperty))
+					{
 				""");
 
 			Indent();
 			Indent();
 
-			Append("setter: ");
 			if (binding.GenerateSetter)
 			{
-				AppendSetterAction(binding.Path);
+				AppendLines("""
+					setter = static (source, value) =>
+					{
+					""");
+				Indent();
+
+				AppendSetterAction(binding.SourceType, binding.Path);
+
+				Unindent();
+				AppendLine("};");
 			}
 			else
 			{
-				Append("null");
+				AppendLine("throw new InvalidOperationException(\"Cannot set value on the source object.\");"); // TODO improve exception wording
 			}
-			AppendLine(',');
+
+			Unindent();
+			Unindent();
+
+			AppendLines($$"""
+					}
+
+					var binding = new TypedBinding<{{binding.SourceType}}, {{binding.PropertyType}}>(
+						getter: source => (getter(source), true),
+						setter,
+				""");
+
+
+			Indent();
+			Indent();
 
 			Append("handlers: ");
 			AppendHandlersArray(binding.SourceType, binding.Path);
@@ -176,7 +205,7 @@ public sealed class BindingCodeWriter
 						TargetNullValue = targetNullValue
 					};
 				
-					bindableObject.SetBinding(bidnableProperty, binding);
+					bindableObject.SetBinding(bindableProperty, binding);
 				}
 				""");
 		}
@@ -186,34 +215,46 @@ public sealed class BindingCodeWriter
 			AppendLine($"[InterceptsLocationAttribute(@\"{location.FilePath}\", {location.Line}, {location.Column})]");
 		}
 
-		// TODO: The setter action is broken at the moment, it needs to be changed completely:
-		// 	- see https://sharplab.io/#v2:CYLg1APg9FC08MU5LVvRzBYAUDABADwCGArgC4D2sA5gKYB2dATseXcAHy4H5/4AVABYBLAM74AxpWB18Ad2IT6TVu2D4ARgE98xfADoAcgFEB+ALIBBAKoBJfGMqlmkuSpZtKzAzyh/+PgBhIWIGegkqfHJRCQAzEQAbOQBbYl1JMjE5EQZpZmY6SXItOlCANxFvPQYNeSTE0vxEyjESkTiAwJi5aVl8cXxCjzUOXzwoIigyKlpGT3VuCcwV1bX11FwAYgZSRMTiTWT8RkPk3FwAAQAmAEYLnAZiFLoxAAdiN0ttI2fXj7cuAA3rhApcAMz4G7fADKzlcdCCBzEYlB/BBOECYMhlE0ACsiuQAPz4Kz4IH4ejkADcjjoNPwAF80XxmTgWVDIdCAOocjFY/gQ/AADXwAHlyZT6bTsgzGfgALz4Xb7ACE1I5bI5Quhwr5HOx+AAmiSAEKSqky6VMzUPQ1tZikYrG/WYgWc/C4gnOoIW62y2nypUqxLqg2CyFGgAUAEpyWzAlq3Xwddd8AAtV3uj0WbQABWYlDeLHI2iRSgkABE/QyA0zFcq9qGNcmbezW6nvgWiyWy8jUa3+fw2UnoQJtMXgKbcsBcjRCAIYQAaQR5pZDlOQ8eT6e1OdRy4AVgXy9XnCl5HYzBXl1u1xPK4Ea7pl5YMazw9wSaeL3enzkFgiJIhZOHE5AGBYZAiAYQSUAw5CFokYgGAA4vMozAMCuAAJA3PcOC4QADFCtwwTIdCVpQKRkSkbxJCwLY4QA2mhqhsBwsGyFYl7MCImgUHQUYAESAcBrSUGBEFQWR8GIchu6zuEcIuG4rErgAaiwYhVAwCqkYRBgGYRK5BHs5AuHQCpMBQrCJCueakEcQEANJ0NoAiUAA1owVlNkJK5CfphmGUJMYALo4Qkxy3gAbFCaasQsHAKWcdBivihImAAHuwDDaXBA7YRiOHYSx6HscAnF0NxCF8QJwmiSBEngZBpDQbBsmUEhBgKXOykImp+Cacw+W6UFRkmWZFlWXQNnEHZ+AOU5kiue5Xk+SG/n4IFwVGaFEUEbhXK3HFlwACz4DC9K9eEtxRiV2ExIMXqEloM6pel3rkEuD0vc6mgiMATxHHQ3bFswpY/YduHHjQLSaPNIAgLmvy/gCdAQdo/VuOWKJEiucO4ojyM/H8f5uJjYO9rjYjnlSV7vodGLYSz5TEMwb17uEDZMPIggTslM5zoQhMI4kSMo2T6OY9jiL9vjlLw8Tkto/+lOFuDpY05w93Q9h9MsFDLMs7KV4gCRcVRk4Kl0CubOJKQdBxgq54PUVbvYR0+BW/CXyDCG4bZkH+AQBAji+xjZL+5QJSi8rpOqxT3IKIHwfuqH+CqvIBhij1BgABJKOp82O6nadYhn2e56aBjFw7GO+tHsdK+LJOo/8avpvgABejPGyzzP97hADsLZDwm5cCh73cGNWSr247Y/G4yMZL0m2EjkAA===
-		private void AppendSetterAction(IPathPart[] path)
+		private void AppendSetterAction(TypeDescription sourceType, IPathPart[] path)
 		{
-			throw new NotImplementedException();
-			// AppendLine("static (source, value) => ");
-			// AppendLine('{');
-			// Indent();
+			var setter = Setter.From(sourceType, path);
+			if (setter.PatternMatchingExpressions.Length > 0)
+			{
+				Append("if (");
 
-			// if (path.Any(part => part.IsConditional))
-			// {
-			// 	Append("if (");
-			// 	Append(_accessExpressionBuilder.BuildExpression("source", path, depth: path.Length - 1));
-			// 	AppendLine($" is null)");
-			// 	AppendLines(
-			// 		"""
-			// 		{
-			// 		    return;
-			// 		}
+				for (int i = 0; i < setter.PatternMatchingExpressions.Length; i++)
+				{
+					if (i == 1)
+					{
+						Indent();
+					}
 
-			// 		""");
-			// }
+					if (i > 0)
+					{
+						AppendBlankLine();
+						Append("&& ");
+					}
 
-			// Append(_accessExpressionBuilder.BuildExpression("source", path, unsafeAccess: true));
-			// AppendLine(" = value;");
+					Append(setter.PatternMatchingExpressions[i]);
+				}
 
-			// Unindent();
-			// Append('}');
+				AppendLine(')');
+				if (setter.PatternMatchingExpressions.Length > 1)
+				{
+					Unindent();
+				}
+
+				AppendLine('{');
+				Indent();
+			}
+
+			AppendLine(setter.AssignmentStatement);
+
+			if (setter.PatternMatchingExpressions.Length > 0)
+			{
+				Unindent();
+				AppendLine('}');
+			}
 		}
 
 		private void AppendHandlersArray(TypeDescription sourceType, IPathPart[] path)
@@ -222,11 +263,23 @@ public sealed class BindingCodeWriter
 			AppendLine('{');
 
 			Indent();
-			for (int i = 0; i < path.Length; i++)
+
+			string nextExpression = "source";
+			foreach (var part in path)
 			{
+				var expression = nextExpression;
+				nextExpression = AccessExpressionBuilder.Build(nextExpression, part);
+
+				// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
+				var propertyName = part.PropertyName;
+				if (propertyName is null)
+				{
+					continue;
+				}
+
 				Append("new(static source => ");
-				Append(_accessExpressionBuilder.BuildExpression("source", path, depth: i));
-				AppendLine($", \"{path[i].PropertyName}\"),");
+				Append(expression);
+				AppendLine($", \"{part.PropertyName}\"),");
 			}
 			Unindent();
 

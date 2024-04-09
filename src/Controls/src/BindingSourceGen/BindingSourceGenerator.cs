@@ -177,14 +177,12 @@ public sealed record TypeDescription(
 
 public sealed record MemberAccess(string MemberName) : IPathPart
 {
-	public string PropertyName => MemberName;
-	public bool IsConditional => false;
+	public string? PropertyName => MemberName;
 }
 
 public sealed record IndexAccess(string DefaultMemberName, IIndex Index) : IPathPart
 {
-	public string PropertyName => $"{DefaultMemberName}[{Index.RawIndex}]";
-	public bool IsConditional => false;
+	public string? PropertyName => $"{DefaultMemberName}[{Index.RawIndex}]";
 }
 
 public sealed record NumericIndex(int Constant) : IIndex
@@ -207,18 +205,15 @@ public interface IIndex
 
 public sealed record ConditionalAccess(IPathPart Part) : IPathPart
 {
-	public string PropertyName => Part.PropertyName;
-	public bool IsConditional => true;
+	public string? PropertyName => Part.PropertyName;
 }
 
-public sealed record Cast(IPathPart Part, TypeDescription TargetType) : IPathPart
+public sealed record Cast(TypeDescription TargetType) : IPathPart
 {
-	public string PropertyName => Part.PropertyName;
-	public bool IsConditional => Part.IsConditional;
+	public string? PropertyName => null;
 }
 
 public interface IPathPart
 {
-	public string PropertyName { get; }
-	public bool IsConditional { get; }
+	public string? PropertyName { get; }
 }
