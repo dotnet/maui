@@ -62,7 +62,12 @@ namespace Microsoft.Maui.Controls.Platform
 				var cursorOffset = newTextLength - oldText.Length;
 				var cursorPosition = isEditing ? textInput.GetCursorPosition(cursorOffset) : newTextLength;
 
-				textInput.ReplaceText(textRange, newText);
+				if (textInput is UITextField tf)
+					tf.Text = newText;
+				else if (textInput is UITextView tv)
+					tv.Text = newText;
+				else 
+					textInput.ReplaceText(textRange, newText);
 
 				textInput.SetTextRange(cursorPosition, 0);
 			}
