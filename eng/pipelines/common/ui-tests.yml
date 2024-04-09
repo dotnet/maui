@@ -175,7 +175,6 @@ stages:
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
-
     - stage: ios_compatibility_ui_tests
       displayName: iOS Compatibility UITests
       dependsOn: []
@@ -241,7 +240,6 @@ stages:
                           device: android-emulator-64_${{ api }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-
 
     - stage: ios_legacy_ui_tests
       displayName: iOS Legacy UITests
