@@ -16,7 +16,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.Editor)]
 		public void Issue16094Test()
 		{
-			App.WaitForElement("EditorControl");
+			App.WaitForElement("EditorControl", timeout: TimeSpan.FromSeconds(2));
 			VerifyScreenshot();
 		}
 	}

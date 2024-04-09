@@ -35,6 +35,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				else
 					App.Click("HideSoftInputOnTappedFalse");
 
+				App.WaitForElement(control);
 				App.Click(control);
 
 				Assert.True(App.IsKeyboardShown());
