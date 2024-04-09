@@ -66,6 +66,7 @@ namespace Microsoft.Maui.AppiumTests
 				App.Click("ResetMainPage");
 			}
 
+			App.ClearText("SearchBar");
 			App.EnterText("SearchBar", issue);
 			App.WaitForElement("GoToTestButton");
 			App.Click("GoToTestButton");
