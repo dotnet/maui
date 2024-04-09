@@ -240,29 +240,35 @@ Task("Test")
 			TEST_APP = apps.FirstOrDefault().FullPath;
 		} else {
 			apps = GetFiles(binDir + "/*.apk");
-			if (apps.Count() == 0)
-			{
-				var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
 
-				if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
-				{
-					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK +  "/"));
-				}
-				if(PROJECT.FullPath.Contains("Core.DeviceTests"))
-				{
-					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/"));
-				}
-				if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
-				{
-					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK  + "/"));
-				}
-				Information("Looking for .apk in arcade binDir {0}", binDir);
-				apps = GetFiles(binDir + "/*-Signed.apk");
-				if(apps.Count == 0)
-				{
-					throw new Exception("No app was found in the arcade bin directory.");
-				}
+			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK +  "/"));
 			}
+			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+			{
+					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK  + "/"));
+			}
+			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			Information("Looking for .apk in arcade binDir {0}", binDir);
+			apps = GetFiles(binDir + "/*-Signed.apk");
+			if(apps.Count == 0)
+			{
+				throw new Exception("No app was found in the arcade bin directory.");
+			}
+			
 			TEST_APP = apps.First().FullPath;
 		}
 	}

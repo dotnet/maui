@@ -92,16 +92,41 @@ Task("Test")
 	if (string.IsNullOrEmpty(TEST_APP)) {
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER).FullPath;
+		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER);
 		var apps = GetDirectories(binDir + "/*.app");
-		if (apps.Any()) {
-			TEST_APP = apps.First().FullPath;
+		if (apps.Count() == 0)
+		{
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+			}
+			Information("Looking for .app in arcade binDir {0}", binDir);
+			apps = GetDirectories(binDir + "/*.app");
+			if(apps.Count == 0)
+			{
+				throw new Exception("No app was found in the arcade bin directory.");
+			}
 		}
-		else {
-			Error("Error: Couldn't find .app file");
-			throw new Exception("Error: Couldn't find .app file");
-		}
+		TEST_APP = apps.First().FullPath;
 	}
+	
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
 		TEST_RESULTS = TEST_APP + "-results";
 	}
