@@ -71,9 +71,6 @@ Task("dotnet-local-workloads")
         if (!localDotnet) 
             return;
         
-        //Workaround: https://github.com/dotnet/linker/issues/3012
-        SetEnvironmentVariable("DOTNET_gcServer", "0");
-
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
@@ -501,15 +498,6 @@ Task("VS")
         StartVisualStudioForDotNet();
     }); 
 
-// Keeping this for users that are already using this.
-Task("VS-NET6")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
-    .IsDependentOn("Clean")
-    .IsDependentOn("VS")
-    .Does(() =>
-    {
-       Warning("!!!!Please switch to using the `VS` target.!!!!");
-    });
 
 bool RunPackTarget()
 {
