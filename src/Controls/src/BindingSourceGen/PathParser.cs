@@ -59,13 +59,7 @@ internal class PathParser
         }
 
         var indexExpression = argumentList[0].Expression;
-        IIndex? indexValue = Context.SemanticModel.GetConstantValue(indexExpression).Value switch
-        {
-            int i => new NumericIndex(i),
-            string s => new StringIndex(s),
-            _ => null
-        };
-
+        object? indexValue = Context.SemanticModel.GetConstantValue(indexExpression).Value;
         if (indexValue is null)
         {
             return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(elementAccess.GetLocation()) }, parts);

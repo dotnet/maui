@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Controls.BindingSourceGen
             {
                 Cast { TargetType: var targetType } => $"({previousExpression} as {CastTargetName(targetType)})",
                 ConditionalAccess conditionalAccess => Build(previousExpression: $"{previousExpression}?", conditionalAccess.Part),
-                IndexAccess indexer => $"{previousExpression}[{indexer.Index.FormattedIndex}]",
+                IndexAccess { Index: int numericIndex } => $"{previousExpression}[{numericIndex}]",
+                IndexAccess { Index: string stringIndex } => $"{previousExpression}[\"{stringIndex}\"]",
                 MemberAccess memberAccess => $"{previousExpression}.{memberAccess.MemberName}",
                 _ => throw new NotSupportedException($"Unsupported path part type: {nextPart.GetType()}"),
             };

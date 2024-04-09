@@ -180,27 +180,9 @@ public sealed record MemberAccess(string MemberName) : IPathPart
 	public string? PropertyName => MemberName;
 }
 
-public sealed record IndexAccess(string DefaultMemberName, IIndex Index) : IPathPart
+public sealed record IndexAccess(string DefaultMemberName, object Index) : IPathPart
 {
-	public string? PropertyName => $"{DefaultMemberName}[{Index.RawIndex}]";
-}
-
-public sealed record NumericIndex(int Constant) : IIndex
-{
-	public string RawIndex => Constant.ToString();
-	public string FormattedIndex => Constant.ToString();
-}
-
-public sealed record StringIndex(string StringLiteral) : IIndex
-{
-	public string RawIndex => StringLiteral;
-	public string FormattedIndex => $"\"{StringLiteral}\"";
-}
-
-public interface IIndex
-{
-	public string RawIndex { get; }
-	public string FormattedIndex { get; }
+	public string? PropertyName => $"{DefaultMemberName}[{Index}]";
 }
 
 public sealed record ConditionalAccess(IPathPart Part) : IPathPart

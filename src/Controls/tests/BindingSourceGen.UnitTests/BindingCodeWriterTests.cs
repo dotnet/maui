@@ -335,9 +335,9 @@ public class BindingCodeWriterTests
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
             Path: [
-                new IndexAccess("Item", new NumericIndex(12)),
-                new ConditionalAccess(new IndexAccess("Indexer", new StringIndex("Abc"))),
-                new IndexAccess("Item", new NumericIndex(0)),
+                new IndexAccess("Item", 12),
+                new ConditionalAccess(new IndexAccess("Indexer", "Abc")),
+                new IndexAccess("Item", 0),
             ],
             GenerateSetter: true));
 

@@ -261,7 +261,7 @@ public class BindingRepresentationGenTests
                 new TypeDescription("int", IsValueType: true),
                 [
                     new MemberAccess("Items"),
-                    new IndexAccess("Item", new NumericIndex(0)),
+                    new IndexAccess("Item", 0),
                     new MemberAccess("Length"),
                 ],
                 GenerateSetter: false);
@@ -291,7 +291,7 @@ public class BindingRepresentationGenTests
                 new TypeDescription("int", IsValueType: true),
                 [
                     new MemberAccess("Items"),
-                    new IndexAccess("Item", new StringIndex("key")),
+                    new IndexAccess("Item", "key"),
                     new MemberAccess("Length"),
                 ],
                 GenerateSetter: false);
