@@ -16,7 +16,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)"/>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-    <PackageReference Include="NSubstitute" Version="5.1.0" />
+    <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
   </ItemGroup>
 
