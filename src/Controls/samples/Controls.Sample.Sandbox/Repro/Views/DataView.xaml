@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:CollectionViewPerformanceMaui.Models"
+    xmlns:controls="clr-namespace:CollectionViewPerformanceMaui.Controls"
+    xmlns:viewModels="clr-namespace:CollectionViewPerformanceMaui.ViewModels"
+    x:Class="CollectionViewPerformanceMaui.Views.DataView"
+    x:DataType="viewModels:DataViewModel"
+    Title="DataView"
+    Padding="15,0"
+    BackgroundColor="#F5F5F5"
+    Shell.NavBarHasShadow="True">
+
+    <Shell.TitleView>
+
+        <Grid>
+
+            <Button
+                Text="Change template"
+                Command="{Binding OpenTemplateSwitcherCommand}"
+                HorizontalOptions="Center"
+                Margin="5" />
+
+        </Grid>
+
+    </Shell.TitleView>
+
+    <ContentPage.Resources>
+
+        <DataTemplate
+            x:Key="Card"
+            x:DataType="models:Data">
+
+            <controls:Card
+                Margin="0,0,0,15">
+
+                <VerticalStackLayout>
+
+                    <Label
+                        Text="{Binding RestaurantName}"
+                        FontSize="Title"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding RestaurantDescription}"
+                        FontSize="Subtitle"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding Review}"
+                        FontSize="Body"
+                        Margin="10,5" />
+
+                </VerticalStackLayout>
+
+            </controls:Card>
+
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="CardWithShadow"
+            x:DataType="models:Data">
+
+            <controls:Card
+                HasShadow="True"
+                Margin="0,0,0,15">
+
+                <VerticalStackLayout>
+
+                    <Label
+                        Text="{Binding RestaurantName}"
+                        FontSize="Title"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding RestaurantDescription}"
+                        FontSize="Subtitle"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding Review}"
+                        FontSize="Body"
+                        Margin="10,5" />
+
+                </VerticalStackLayout>
+
+            </controls:Card>
+
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="CardWithElevation"
+            x:DataType="models:Data">
+
+            <controls:Card
+                HasElevation="True"
+                Margin="0,0,0,15">
+
+                <VerticalStackLayout>
+
+                    <Label
+                        Text="{Binding RestaurantName}"
+                        FontSize="Title"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding RestaurantDescription}"
+                        FontSize="Subtitle"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding Review}"
+                        FontSize="Body"
+                        Margin="10,5" />
+
+                </VerticalStackLayout>
+
+            </controls:Card>
+
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="CardWithCornerRadius"
+            x:DataType="models:Data">
+
+            <controls:Card
+                HasCornerRadius="True"
+                Margin="0,0,0,15">
+
+                <VerticalStackLayout>
+
+                    <Label
+                        Text="{Binding RestaurantName}"
+                        FontSize="Title"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding RestaurantDescription}"
+                        FontSize="Subtitle"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding Review}"
+                        FontSize="Body"
+                        Margin="10,5" />
+
+                </VerticalStackLayout>
+
+            </controls:Card>
+
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="CardWithBindableLayout"
+            x:DataType="models:Data">
+
+            <controls:Card
+                Margin="0,0,0,15">
+
+                <VerticalStackLayout>
+
+                    <Label
+                        Text="{Binding RestaurantName}"
+                        FontSize="Title"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding RestaurantDescription}"
+                        FontSize="Subtitle"
+                        Margin="10,5" />
+
+                    <VerticalStackLayout
+                        BindableLayout.ItemsSource="{Binding Reviews}">
+
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate
+                                x:DataType="x:String">
+
+                                <Label
+                                    Text="{Binding}"
+                                    FontSize="Body"
+                                    Margin="10,5" />
+
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+
+            </controls:Card>
+
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="CardWithTapGesture"
+            x:DataType="models:Data">
+
+            <controls:Card
+                Margin="0,0,0,15">
+
+                <VerticalStackLayout>
+
+                    <Label
+                        Text="{Binding RestaurantName}"
+                        FontSize="Title"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding RestaurantDescription}"
+                        FontSize="Subtitle"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="{Binding Review}"
+                        FontSize="Body"
+                        Margin="10,5" />
+
+                    <Label
+                        Text="Tap me anywhere"
+                        FontSize="Caption"
+                        Margin="10,5" />
+
+                </VerticalStackLayout>
+
+                <controls:Card.GestureRecognizers>
+                    <TapGestureRecognizer
+                        Command="{Binding OpenTapAlertCommand, Source={RelativeSource AncestorType={x:Type viewModels:DataViewModel}}}" />
+                </controls:Card.GestureRecognizers>
+
+            </controls:Card>
+
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="CardWithGrid"
+            x:DataType="models:Data">
+
+            <controls:Card
+                Margin="0,0,0,15">
+
+                <Grid
+                    ColumnSpacing="10"
+                    ColumnDefinitions="auto,*">
+
+                    <Label
+                        Grid.Column="0"
+                        Text="{Binding Rating}"
+                        VerticalOptions="Center" />
+
+                    <VerticalStackLayout
+                        Grid.Column="1">
+
+                        <Label
+                            Text="{Binding RestaurantName}"
+                            FontSize="Title"
+                            Margin="10,5" />
+
+                        <Label
+                            Text="{Binding RestaurantDescription}"
+                            FontSize="Subtitle"
+                            Margin="10,5" />
+
+                        <Label
+                            Text="{Binding Review}"
+                            FontSize="Body"
+                            Margin="10,5" />
+
+                    </VerticalStackLayout>
+
+                </Grid>
+
+            </controls:Card>
+
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="CardWithTheLot"
+            x:DataType="models:Data">
+
+            <controls:Card
+                HasShadow="True"
+                HasCornerRadius="True"
+                Margin="0,0,0,15">
+
+                <Grid
+                    ColumnSpacing="10"
+                    ColumnDefinitions="auto,*">
+
+                    <Label
+                        Grid.Column="0"
+                        Text="{Binding Rating}"
+                        VerticalOptions="Center" />
+
+                    <VerticalStackLayout
+                        Grid.Column="1">
+
+                        <Label
+                            Text="{Binding RestaurantName}"
+                            FontSize="Title"
+                            Margin="10,5" />
+
+                        <Label
+                            Text="{Binding RestaurantDescription}"
+                            FontSize="Subtitle"
+                            Margin="10,5" />
+
+                        <VerticalStackLayout
+                            BindableLayout.ItemsSource="{Binding Reviews}">
+
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate
+                                    x:DataType="x:String">
+
+                                    <Label
+                                        Text="{Binding}"
+                                        FontSize="Body"
+                                        Margin="10,5" />
+
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+
+                        </VerticalStackLayout>
+
+                        <Label
+                            Text="Tap me anywhere"
+                            FontSize="Caption"
+                            Margin="10,5" />
+
+                    </VerticalStackLayout>
+
+                </Grid>
+
+                <controls:Card.GestureRecognizers>
+                    <TapGestureRecognizer
+                        Command="{Binding OpenTapAlertCommand, Source={RelativeSource AncestorType={x:Type viewModels:DataViewModel}}}" />
+                </controls:Card.GestureRecognizers>
+
+            </controls:Card>
+
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="CardWithComplexContent"
+            x:DataType="models:Data">
+
+            <controls:ComplexCard
+                Source="{Binding}" />
+
+        </DataTemplate>
+
+        <viewModels:MyDataTemplateSelector
+            x:Key="MyDataTemplateSelector"
+            Card="{StaticResource Card}"
+            CardWithShadow="{StaticResource CardWithShadow}"
+            CardWithElevation="{StaticResource CardWithElevation}"
+            CardWithCornerRadius="{StaticResource CardWithCornerRadius}"
+            CardWithBindableLayout="{StaticResource CardWithBindableLayout}"
+            CardWithTapGesture="{StaticResource CardWithTapGesture}"
+            CardWithGrid="{StaticResource CardWithGrid}"
+            CardWithTheLot="{StaticResource CardWithTheLot}"
+            CardWithComplexContent="{StaticResource CardWithComplexContent}" />
+
+    </ContentPage.Resources>
+
+    <CollectionView
+        ItemsSource="{Binding Data}"
+        ItemTemplate="{StaticResource MyDataTemplateSelector}">
+
+        <CollectionView.Header>
+
+            <VerticalStackLayout
+                Spacing="10"
+                Margin="0,10">
+
+                <Label
+                    Text="{Binding CurrentTemplate}"
+                    FontSize="Title" />
+
+                <ActivityIndicator
+                    IsVisible="{Binding IsBusy}"
+                    IsRunning="True" />
+
+            </VerticalStackLayout>
+
+        </CollectionView.Header>
+
+    </CollectionView>
+
+</ContentPage>

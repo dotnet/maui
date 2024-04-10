@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Grid
+    x:Name="this"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:CollectionViewPerformanceMaui.Controls"
+    x:Class="CollectionViewPerformanceMaui.Controls.ComplexCard"
+    ColumnDefinitions="auto,*"
+    ColumnSpacing="10">
+
+    <Border
+        Grid.Column="0"
+        StrokeThickness="0"
+        StrokeShape="RoundRectangle 12"
+        BackgroundColor="#FDB358"
+        VerticalOptions="Start"
+        HeightRequest="24"
+        WidthRequest="24"
+        TranslationY="21" />
+
+    <BoxView
+        BackgroundColor="#FDB358"
+        WidthRequest="1" />
+
+    <controls:Card
+        Grid.Column="1"
+        HasCornerRadius="True"
+        HasShadow="True"
+        Padding="0"
+        Margin="0,0,0,15">
+        
+        <VerticalStackLayout>
+
+            <BoxView
+                HeightRequest="5"
+                BackgroundColor="#FDB358"
+                VerticalOptions="Start" />
+
+            <VerticalStackLayout
+                Margin="10"
+                Spacing="10">
+
+                <Label
+                    Text="{Binding Source.RestaurantName, Source={x:Reference this}}"
+                    FontSize="Title" />
+
+                <Label
+                    Text="{Binding Source.RestaurantDescription, Source={x:Reference this}}"
+                    FontSize="Body" />
+
+                <Label
+                    Text="{Binding Source.RestaurantAddress, Source={x:Reference this}}"
+                    TextColor="DodgerBlue"
+                    FontAttributes="Bold"
+                    FontSize="Body" />
+
+                <Grid>
+
+                    <HorizontalStackLayout
+                        BindableLayout.ItemsSource="{Binding Source.SocialMedia, Source={x:Reference this}}"
+                        Spacing="5">
+
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate
+                                x:DataType="x:String">
+
+                                <Border
+                                    BackgroundColor="#F9F9F9"
+                                    StrokeShape="RoundRectangle 20"
+                                    HeightRequest="40"
+                                    WidthRequest="40">
+
+                                    <Label
+                                        Text="{Binding}"
+                                        FontFamily="FA-B"
+                                        FontSize="20"
+                                        VerticalOptions="Center"
+                                        HorizontalOptions="Center" />
+
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding OpenLinkCommand, Source={RelativeSource AncestorType={x:Type controls:ComplexCard}}}" />
+                                    </Border.GestureRecognizers>
+
+                                </Border>
+
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+
+                    </HorizontalStackLayout>
+
+                    <Label
+                        Text="{Binding Source.Rating, Source={x:Reference this}}"
+                        TextColor="Goldenrod"
+                        FontSize="20"
+                        VerticalOptions="Center"
+                        HorizontalOptions="End" />
+
+                </Grid>
+
+                <VerticalStackLayout
+                    BindableLayout.ItemsSource="{Binding Source.Reviews, Source={x:Reference this}}"
+                    Spacing="10">
+
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate
+                            x:DataType="x:String">
+
+                            <Border
+                                BackgroundColor="#FEE6C8"
+                                StrokeShape="RoundRectangle 15"
+                                StrokeThickness="0"
+                                Padding="10">
+
+                                <Grid
+                                    ColumnSpacing="10"
+                                    ColumnDefinitions="auto,*">
+
+                                    <Border
+                                        Grid.Column="0"
+                                        BackgroundColor="#FDB358"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 15"
+                                        HeightRequest="30"
+                                        WidthRequest="30">
+
+                                        <Label
+                                            Text="★"
+                                            FontSize="20"
+                                            TextColor="#BB4500"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center"
+                                            TranslationY="-2" />
+
+                                    </Border>
+
+                                    <Label
+                                        Grid.Column="1"
+                                        Text="{Binding}" />
+
+                                </Grid>
+
+                            </Border>
+
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+
+                </VerticalStackLayout>
+
+                <Grid
+                    ColumnSpacing="10"
+                    ColumnDefinitions="*,*"
+                    Margin="0,10">
+
+                    <Border
+                        Grid.Column="0"
+                        StrokeShape="RoundRectangle 5">
+
+                        <Label
+                            Text="Phone"
+                            TextColor="DodgerBlue"
+                            FontAttributes="Bold"
+                            HorizontalOptions="Center"
+                            Margin="0,5" />
+
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding OpenLinkCommand, Source={x:Reference this}}" />
+                        </Border.GestureRecognizers>
+
+                    </Border>
+
+                    <Border
+                        Grid.Column="1"
+                        StrokeShape="RoundRectangle 5">
+
+                        <Label
+                            Text="Email"
+                            TextColor="DodgerBlue"
+                            FontAttributes="Bold"
+                            HorizontalOptions="Center"
+                            Margin="0,5" />
+
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding OpenLinkCommand, Source={x:Reference this}}" />
+                        </Border.GestureRecognizers>
+
+                    </Border>
+
+                </Grid>
+
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+
+    </controls:Card>
+
+</Grid>
