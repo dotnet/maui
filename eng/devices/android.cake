@@ -514,7 +514,7 @@ void SetupAppPackageNameAndResult()
 					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.Sample.UITests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK));
 				}
 				Information("Looking for .app in arcade binDir {0}", binDir);
-				apps = GetDirectories(binDir + "/*-Signed.apk");
+				apps = GetFiles(binDir + "/*-Signed.apk");
 				if(apps.Count() == 0 )
 				{
 					apps = GetFiles(binDir + "/*.apk");

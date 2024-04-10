@@ -389,16 +389,26 @@ Task("SetupTestPaths")
 			throw new Exception("If no app was specified, an app must be provided.");
 		}
 
-		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"{dotnetVersion}-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
+		var winVersion = $"{dotnetVersion}-windows{windowsVersion}";
+		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM);
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
-		if (apps.Any()) {
-			TEST_APP = apps.First().FullPath;
+		if (apps.Count() == 0) 
+		{
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+			if(TEST_APP_PROJECT.FullPath.Contains("Controls.Sample.UITests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.Sample.UITests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			Information("Looking for .app in arcade binDir {0}", binDir);
+			apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
+			if(apps.Count() == 0 )
+			{
+				Error("Error: Couldn't find .exe file");
+				throw new Exception("Error: Couldn't find .exe file");
+			}
 		}
-		else {
-			Error("Error: Couldn't find .exe file");
-			throw new Exception("Error: Couldn't find .exe file");
-		}
+		TEST_APP = apps.First().FullPath;
 	}
 
 	if (string.IsNullOrEmpty(TEST_RESULTS))
