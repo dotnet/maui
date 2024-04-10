@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
@@ -189,7 +190,7 @@ namespace Microsoft.Maui.Handlers
 
 				button.Icon = platformImage is null
 					? null
-					: new MauiMaterialButton.MauiResizableDrawable(platformImage);
+					: (OperatingSystem.IsAndroidVersionAtLeast(23)) ? new MauiMaterialButton.MauiResizableDrawable(platformImage) : platformImage;
 			}
 		}
 	}
