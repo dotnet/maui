@@ -5,6 +5,8 @@ parameters:
   macosPool: { }
   androidCompatibilityPool: { }
   iosCompatibilityPool: { }
+  androidLegacyPool: { }
+  iosLegacyPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
