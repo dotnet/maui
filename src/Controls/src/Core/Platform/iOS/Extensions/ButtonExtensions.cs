@@ -81,9 +81,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (padding.IsNaN)
 				padding = ButtonHandler.DefaultPadding;
 
+<<<<<<< HEAD
 			// If the button's image takes up too much space, we will want to hide the title
 			var hidesTitle = false;
 
+=======
+>>>>>>> b17665e4b8 (Fix the iOS button to resize the image, respect padding, and respect spacing)
 			if (image != null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
 				// TODO: Do not use the title label as it is not yet updated and
@@ -251,6 +254,83 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 #pragma warning restore CA1416, CA1422
 			}
+		}
+
+		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding)
+		{
+			// If the image is on the left or right, we still have an implicit width constraint
+			if (button.HeightRequest == -1 && button.WidthRequest == -1 && (button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Top || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Bottom))
+			{
+				return false;
+			}
+
+			nfloat availableHeight = nfloat.MaxValue;
+			nfloat availableWidth = nfloat.MaxValue;
+
+			// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel.
+			var buffer = 0.1;
+
+			if (platformButton.Bounds != CGRect.Empty
+				&& (button.Height != double.NaN || button.Width != double.NaN))
+			{
+				var contentWidth = platformButton.Bounds.Width - (nfloat)padding.Left - (nfloat)padding.Right;
+					
+				if (image.Size.Width - contentWidth > buffer)
+				{
+					availableWidth = contentWidth;
+				}
+
+				var contentHeight = platformButton.Bounds.Height - ((nfloat)padding.Top + (nfloat)padding.Bottom);
+				if (image.Size.Height - contentHeight > buffer)
+				{
+					availableHeight = contentHeight;
+				}
+			}
+
+			availableHeight = button.HeightRequest == -1 ? nfloat.PositiveInfinity : (nfloat)Math.Max(availableHeight, 0);
+			// availableWidth = button.WidthRequest == -1 ? platformButton.Bounds.Width : (nfloat)Math.Max(availableWidth, 0);
+
+			availableWidth = (nfloat)Math.Max(availableWidth, 0);
+
+			try
+			{
+				if (image.Size.Height - availableHeight > buffer || image.Size.Width - availableWidth > buffer)
+				{
+					image = ResizeImageSource(image, availableWidth, availableHeight);
+				}
+				else
+				{
+					return false;
+				}
+
+				image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+
+				platformButton.SetImage(image, UIControlState.Normal);
+
+				platformButton.Superview?.SetNeedsLayout();
+
+				return true;
+			}
+			catch (Exception)
+			{
+				button.Handler.MauiContext?.CreateLogger<ButtonHandler>()?.LogWarning("Can not load Button ImageSource");
+			}
+
+			return false;
+		}
+
+		static UIImage ResizeImageSource(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
+		{
+			if (sourceImage is null || sourceImage.CGImage is null)
+				return null;
+
+			var sourceSize = sourceImage.Size;
+			float maxResizeFactor = (float)Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+
+			if (maxResizeFactor > 1)
+				return sourceImage;
+
+			return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
 		}
 
 		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding)
