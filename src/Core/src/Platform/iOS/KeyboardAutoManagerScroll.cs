@@ -1,4 +1,4 @@
-﻿/*
+/*
  * This class is adapted from IQKeyboardManager which is an open-source
  * library implemented for iOS to handle Keyboard interactions with
  * UITextFields/UITextViews. Link to their MIT License can be found here:
@@ -310,6 +310,11 @@ public static class KeyboardAutoManagerScroll
 
 		var rootViewOrigin = new CGPoint(ContainerView.Frame.GetMinX(), ContainerView.Frame.GetMinY());
 		var window = ContainerView.Window;
+
+		if (window is null)
+		{
+			return;
+		}
 
 		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
 		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
