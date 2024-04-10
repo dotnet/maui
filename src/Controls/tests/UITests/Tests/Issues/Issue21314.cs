@@ -18,7 +18,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
             this.IgnoreIfPlatforms (new TestDevice[] { TestDevice.Mac, TestDevice.Android, TestDevice.Windows });
 
             _ = App.WaitForElement ("photo");
-            Assert.Fail ("checking to see if this actually runs");
             VerifyScreenshot();
         }
     }
