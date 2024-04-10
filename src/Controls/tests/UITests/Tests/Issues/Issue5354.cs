@@ -16,9 +16,6 @@ namespace Maui.Controls.Sample.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsLayoutUpdate()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows },
-				"Copied from Xamarin.Forms. Test was not running or working on Windows.");
-
 			App.WaitForElement("CollectionView5354");
 			App.WaitForElement("Button5354");
 			
