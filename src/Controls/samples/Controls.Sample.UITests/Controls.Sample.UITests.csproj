@@ -18,11 +18,7 @@
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="Mopups" Version="1.3.1" />
-  </ItemGroup>
-  
+    
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
