@@ -17,6 +17,7 @@ namespace Maui.Controls.Sample.Issues
 				new Button
 				{
 					Text = "Add",
+					AutomationId = "Add",
 					Command = new Command(() =>
 					{
 						flex.Clear();
@@ -31,6 +32,7 @@ namespace Maui.Controls.Sample.Issues
 				new Button
 				{
 					Text = "Insert",
+					AutomationId = "Insert",
 					Command = new Command(() =>
 					{
 						flex.Clear();
@@ -45,6 +47,7 @@ namespace Maui.Controls.Sample.Issues
 				new Button
 				{
 					Text = "Update",
+					AutomationId = "Update",
 					Command = new Command(() =>
 					{
 						flex.Clear();
@@ -59,6 +62,7 @@ namespace Maui.Controls.Sample.Issues
 				new Button
 				{
 					Text = "Remove",
+					AutomationId = "Remove",
 					Command = new Command(() =>
 					{
 						flex.Clear();
@@ -81,7 +85,8 @@ namespace Maui.Controls.Sample.Issues
 		Label NewLabel(int count) =>
 			new Label
 			{
-				Text = $"Item {count}",
+				Text = $"Item{count}",
+				AutomationId = $"Item{count}",
 				Background = Brush.Yellow,
 				TextType = TextType.Html
 			};
