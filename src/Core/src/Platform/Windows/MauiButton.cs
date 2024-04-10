@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -8,11 +9,9 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiButton : Button
 	{
-		DefaultMauiButtonContent _defaultButtonContent;
-
 		public MauiButton()
 		{
-			Content = _defaultButtonContent = new DefaultMauiButtonContent();
+			Content = new DefaultMauiButtonContent();
 
 			VerticalAlignment = VerticalAlignment.Stretch;
 			HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -22,15 +21,27 @@ namespace Microsoft.Maui.Platform
 
 		private void MauiButton_SizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (!double.IsInfinity(Width))
+			if (Content is DefaultMauiButtonContent defaultButtonContent)
 			{
-				_defaultButtonContent.LimitImageWidth(
-					ActualWidth - (Padding.Left + Padding.Right));
-			}
-			else if (!double.IsInfinity(Height))
-			{
-				_defaultButtonContent.LimitImageHeight(
-					ActualHeight - (Padding.Top + Padding.Bottom));
+				if (!double.IsNaN(Width))
+				{
+					var maxWidth = Math.Max(0, ActualWidth - (Padding.Left + Padding.Right) - defaultButtonContent.ColumnSpacing);
+					defaultButtonContent.LimitImageWidth(maxWidth);
+				}
+				else
+				{
+					defaultButtonContent.LimitImageWidth(double.PositiveInfinity);
+				}
+
+				if (!double.IsNaN(Height))
+				{
+					var maxHeight = Math.Max(0, ActualHeight - (Padding.Top + Padding.Bottom) - defaultButtonContent.RowSpacing);
+					defaultButtonContent.LimitImageHeight(maxHeight);
+				}
+				else
+				{
+					defaultButtonContent.LimitImageHeight(double.PositiveInfinity);
+				}
 			}
 		}
 
@@ -82,12 +93,12 @@ namespace Microsoft.Maui.Platform
 
 		internal void LimitImageWidth(double width)
 		{
-			_image.MaxWidth = width - ColumnSpacing;
+			_image.MaxWidth = width;
 		}
 
 		internal void LimitImageHeight(double height)
 		{
-			_image.MaxHeight = height - RowSpacing;
+			_image.MaxHeight = height;
 		}
 
 		public void LayoutImageLeft(double spacing)
