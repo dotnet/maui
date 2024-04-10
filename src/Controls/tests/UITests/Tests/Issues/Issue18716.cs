@@ -14,9 +14,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		[Test]
 		[Category(UITestCategories.WebView)]
-		public void CanScrollWebView()
+		public async Task CanScrollWebView()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
+
+			await Task.Delay(1000); // Wait WebView to load.
 
 			App.WaitForElement("WaitForStubControl");
 			App.ScrollDown("WaitForStubControl", ScrollStrategy.Gesture);
