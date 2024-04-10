@@ -145,6 +145,8 @@ stages:
       macosPool: ${{ parameters.macosPool }}
       androidCompatibilityPool: ${{ parameters.androidCompatibilityPool }}
       iosCompatibilityPool: ${{ parameters.iosCompatibilityPool }}
+      iosLegacyPool: ${{ parameters.iosLegacyPool }}
+      androidLegacyPool: ${{ parameters.androidLegacyPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
