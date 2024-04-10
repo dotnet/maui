@@ -7,6 +7,7 @@ parameters:
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
+  targetSample: "dotnet-legacy-controlgallery"
   configuration : "Release"
 
 steps:
@@ -103,8 +104,8 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
     displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
-    displayName: 'Build the samples'
+  - pwsh: ./build.ps1 --target=${{ parameters.targetSample }} --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
+    displayName: 'Build the Legacy ControlGallery'
 
   - bash: |
       if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
