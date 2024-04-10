@@ -256,11 +256,11 @@ Task("Test")
 			}
 			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
 			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/"));
 			}
 			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
 			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/"));
 			}
 			Information("Looking for .apk in arcade binDir {0}", binDir);
 			apps = GetFiles(binDir + "/*-Signed.apk");
