@@ -3,7 +3,6 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
-using Mopups.Hosting;
 
 namespace Maui.Controls.Sample
 {
@@ -16,7 +15,6 @@ namespace Maui.Controls.Sample
 				.UseMauiMaps()
 	#endif
 				.UseMauiApp<App>()
-				.ConfigureMopups()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
