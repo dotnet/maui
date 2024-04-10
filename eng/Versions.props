@@ -119,8 +119,8 @@
     <XunitRunnerVisualStudioPackageVersion>2.5.1</XunitRunnerVisualStudioPackageVersion>
     <XunitAssertPackageVersion>2.5.1</XunitAssertPackageVersion>
     <XUnitAnalyzersPackageVersion>1.3.0</XUnitAnalyzersPackageVersion>
-    <NSubstitutePackageVersion>4.3.0</NSubstitutePackageVersion>
-    <CoverletCollectorPackageVersion>3.2.0</CoverletCollectorPackageVersion>
+    <NSubstitutePackageVersion>5.1.0</NSubstitutePackageVersion>
+    <CoverletCollectorPackageVersion>6.0.0</CoverletCollectorPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
        <!-- arcade -->
