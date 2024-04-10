@@ -36,11 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.Tap($"Test{view}");
 
 				// 3. Verify that the virtual keyboard appears.
-				ClassicAssert.IsTrue(App.IsKeyboardShown());
-
-				// 4. Extra step, get the performance data.
-				var batteryInfo = App.GetPerformanceData("batteryinfo");
-				Console.WriteLine(batteryInfo.ToString());
+				Assert.IsTrue(App.IsKeyboardShown());
 			}
 			finally
 			{
