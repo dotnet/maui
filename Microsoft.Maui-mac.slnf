@@ -42,6 +42,7 @@
       "src\\Graphics\\src\\Graphics\\Graphics.csproj",
       "src\\Graphics\\src\\Text.Markdig\\Graphics.Text.Markdig.csproj",
       "src\\Graphics\\tests\\DeviceTests\\Graphics.DeviceTests.csproj",
+      "src\\Graphics\\tests\\Graphics.Tests\\Graphics.Tests.csproj",
       "src\\SingleProject\\Resizetizer\\src\\Resizetizer.csproj",
       "src\\SingleProject\\Resizetizer\\test\\UnitTests\\Resizetizer.UnitTests.csproj",
       "src\\Templates\\src\\Microsoft.Maui.Templates.csproj",

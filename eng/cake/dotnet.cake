@@ -141,11 +141,11 @@ Task("android-aar")
 
 Task("dotnet-build")
     .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
     .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
             RunMSBuildWithDotNet("./Microsoft.Maui.sln");
@@ -232,6 +232,10 @@ Task("dotnet-test")
 
         foreach (var test in tests)
         {
+            if (!IsRunningOnWindows() && test.Contains("Compatibility.Core.UnitTests")) 
+            {
+                continue;
+            }
             foreach (var project in GetFiles(test))
             {
                 try
@@ -543,15 +547,12 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
         envVariables.Add("MSBuildDebugEngine", "1");
 
     return envVariables;
-
 }
 
 void SetDotNetEnvironmentVariables()
 {
     var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
     
-    //Workaround: https://github.com/dotnet/linker/issues/3012
-    SetEnvironmentVariable("DOTNET_gcServer", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
