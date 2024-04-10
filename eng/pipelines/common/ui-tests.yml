@@ -230,7 +230,7 @@ stages:
                   variables:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   steps:
-                    - template: ui-tests-steps.yml
+                    - template: ui-tests-legacy-steps.yml
                       parameters:
                         platform: android
                         version: ${{ api }}
@@ -260,7 +260,7 @@ stages:
                   variables:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   steps:
-                    - template: ui-tests-steps.yml
+                    - template: ui-tests-legacy-steps.yml
                       parameters:
                         platform: ios
                         ${{ if eq(version, 'latest') }}:
