@@ -500,19 +500,32 @@ void SetupAppPackageNameAndResult()
 		
 		var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
 		Information("Test app bin folder {0}", binFolder);
-		var binDir = binFolder.Combine($"{CONFIGURATION}/{TARGET_FRAMEWORK}").FullPath;
+		var binDir = binFolder.Combine($"{CONFIGURATION}/{TARGET_FRAMEWORK}");
 		var apps = GetFiles(binDir + "/*-Signed.apk");
 		if (apps.Any()) {
 			TEST_APP = apps.FirstOrDefault().FullPath;
 		} else {
 			apps = GetFiles(binDir + "/*.apk");
-			if (apps.Any()) {
-				TEST_APP = apps.First().FullPath;
+			if (apps.Count() == 0) 
+			{
+				var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+				if(TEST_APP_PROJECT.FullPath.Contains("Controls.Sample.UITests"))
+				{
+					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.Sample.UITests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK));
+				}
+				Information("Looking for .app in arcade binDir {0}", binDir);
+				apps = GetDirectories(binDir + "/*-Signed.apk");
+				if(apps.Count() == 0 )
+				{
+					apps = GetFiles(binDir + "/*.apk");
+				}
+				if(apps.Count() == 0 )
+				{
+					Error("Error: Couldn't find .apk file");
+					throw new Exception("Error: Couldn't find .apk file");
+				}
 			}
-			else {
-				Error("Error: Couldn't find .apk file");
-				throw new Exception("Error: Couldn't find .apk file");
-			}
+			TEST_APP = apps.First().FullPath;
 		}
 	}
 	if (string.IsNullOrEmpty(TEST_APP_PACKAGE_NAME)) {
