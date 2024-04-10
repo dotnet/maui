@@ -20,11 +20,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			try
 			{
 				_ = App.WaitForElement("GoToTest");
-				App.Click("GoToTest");
+				App.Tap("GoToTest");
 				
 				_ = App.WaitForElement("entry");
-				App.Click("entry");
-				App.Click("button");
+				App.Tap("entry");
+				App.Tap("button");
 
 				// The test passes if no crash is observed
 				App.FindElement("editor");

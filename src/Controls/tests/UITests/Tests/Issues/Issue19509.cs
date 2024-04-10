@@ -18,7 +18,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Click a button to update the text
-			App.Click("button");
+			App.Tap("button");
 
 			// 2. Verify that the Entry TextColor is correct (Green).
 			VerifyScreenshot();
