@@ -251,6 +251,7 @@ Task("dotnet-test")
         //    "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
             "**/SourceGen.UnitTests.csproj",
+            "**/Controls.BindingSourceGen.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
