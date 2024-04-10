@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <SingleProject>true</SingleProject>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
    <PropertyGroup>
