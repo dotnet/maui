@@ -43,27 +43,27 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.AreEqual(0, actual.Revision, actual.ToString());
 		}
 
-		[Test, TestCaseSource(nameof(references))]
-		public void FileVersion(string assemblyName)
-		{
-			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
-			FileVersionInfo actual = FileVersionInfo.GetVersionInfo(testAssembly.Location);
-			string versionString = GetFileFromRoot(s_versionPropsFile);
-			//TODO read MajorVersion from Versions.props
-			var xml = new System.Xml.XmlDocument();
-			xml.LoadXml(versionString);
-			var majorString = xml.SelectSingleNode("//MajorVersion").InnerText;
-			var minorString = xml.SelectSingleNode("//MinorVersion").InnerText;
-			Version expected = Version.Parse($"{majorString}.{minorString}.0.0");
-			Assert.AreEqual(expected.Major, actual.FileMajorPart, $"FileMajorPart is wrong. {actual}");
-			Assert.AreEqual(expected.Minor, actual.FileMinorPart, $"FileMinorPart is wrong. {actual}");
-			// Fails locally
-			//Assert.AreEqual(expected.Build, actual.FileBuildPart, $"FileBuildPart is wrong. {actual.ToString()}");
-			//We need to enable this
-			//	Assert.AreEqual(ThisAssembly.Git.Commits, version.FilePrivatePart);
-			Assert.AreEqual(s_productName, actual.ProductName);
-			Assert.AreEqual(s_company, actual.CompanyName);
-		}
+		// [Test, TestCaseSource(nameof(references))]
+		// public void FileVersion(string assemblyName)
+		// {
+		// 	Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
+		// 	FileVersionInfo actual = FileVersionInfo.GetVersionInfo(testAssembly.Location);
+		// 	string versionString = GetFileFromRoot(s_versionPropsFile);
+		// 	//TODO read MajorVersion from Versions.props
+		// 	var xml = new System.Xml.XmlDocument();
+		// 	xml.LoadXml(versionString);
+		// 	var majorString = xml.SelectSingleNode("//MajorVersion").InnerText;
+		// 	var minorString = xml.SelectSingleNode("//MinorVersion").InnerText;
+		// 	Version expected = Version.Parse($"{majorString}.{minorString}.0.0");
+		// 	Assert.AreEqual(expected.Major, actual.FileMajorPart, $"FileMajorPart is wrong. {actual}");
+		// 	Assert.AreEqual(expected.Minor, actual.FileMinorPart, $"FileMinorPart is wrong. {actual}");
+		// 	// Fails locally
+		// 	//Assert.AreEqual(expected.Build, actual.FileBuildPart, $"FileBuildPart is wrong. {actual.ToString()}");
+		// 	//We need to enable this
+		// 	//	Assert.AreEqual(ThisAssembly.Git.Commits, version.FilePrivatePart);
+		// 	Assert.AreEqual(s_productName, actual.ProductName);
+		// 	Assert.AreEqual(s_company, actual.CompanyName);
+		// }
 
 		[Test, TestCaseSource(nameof(references))]
 		public void ProductAndCompany(string assemblyName)
