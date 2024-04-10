@@ -236,6 +236,7 @@ stages:
                         version: ${{ api }}
                         path: ${{ project.legacyAndroidTestProject }}
                         app: ${{ project.legacyAndroidApp }}
+                        targetSample: "dotnet-legacy-controlgallery-android"
                         ${{ if eq(api, 27) }}:
                           device: android-emulator-32_${{ api }}
                         ${{ if not(eq(api, 27)) }}:
@@ -269,6 +270,7 @@ stages:
                           version: ${{ version }}
                         path: ${{ project.legacyiOSTestProject }}
                         app: ${{ project.legacyiOSApp }}
+                        targetSample: "dotnet-legacy-controlgallery-ios"
                         ${{ if eq(version, 'latest') }}:
                           device: ios-simulator-64
                         ${{ if ne(version, 'latest') }}:
