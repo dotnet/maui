@@ -18,7 +18,7 @@
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
-    
+
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
