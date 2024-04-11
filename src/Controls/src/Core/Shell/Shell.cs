@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Controls
 		public static bool GetNavBarHasShadow(BindableObject obj) => (bool)obj.GetValue(NavBarHasShadowProperty);
 
 		/// <summary>
-		/// Controls whether the navigation bar has a shadow. 
+		/// Controls whether the navigation bar has a shadow when the given <paramref name="obj"/> is active. 
 		/// By default the value of the property is <see langword="true"/> on Android, and <see langword="false"/> on other platforms.
 		/// </summary>
 		/// <param name="obj">The object that modifies if the navigation bar has a shadow.</param>
