@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
 
 		/// <summary>
-		/// Gets any <see cref = "View" /> to be displayed in the navigation bar.
+		/// Gets any <see cref = "View" /> to be displayed in the navigation bar when the given <paramref name="obj"/> is active.
 		/// </summary>
 		/// <param name="obj">The object to which the TitleView is set.</param>
 		/// <returns>The View to be displayed in the navigation bar.</returns>
