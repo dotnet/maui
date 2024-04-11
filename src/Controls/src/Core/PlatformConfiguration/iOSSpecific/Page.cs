@@ -5,49 +5,80 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.Page;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page']/Docs/*" />
+	/// <summary>
+	/// The page instance that Microsoft.Maui.Controls created on the iOS platform.
+	/// </summary>
 	public static class Page
 	{
-		/// <summary>Bindable property for <see cref="PrefersStatusBarHidden"/>.</summary>
+		/// <summary>
+		/// Sets a value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.
+		/// </summary>
 		public static readonly BindableProperty PrefersStatusBarHiddenProperty =
 			BindableProperty.Create("PrefersStatusBarHidden", typeof(StatusBarHiddenMode), typeof(Page), StatusBarHiddenMode.Default);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetPrefersStatusBarHidden']/Docs/*" />
+		/// <summary>
+		/// Returns a value that tells whether it is preferred that the status bar is shown, hidden, or relies on the system default.
+		/// </summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <returns>A value that tells whether it is preferred that the status bar is shown, hidden, or relies on the system default.</returns>
 		public static StatusBarHiddenMode GetPrefersStatusBarHidden(BindableObject element)
 		{
 			return (StatusBarHiddenMode)element.GetValue(PrefersStatusBarHiddenProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersStatusBarHidden'][1]/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.
+		/// </summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
 		public static void SetPrefersStatusBarHidden(BindableObject element, StatusBarHiddenMode value)
 		{
 			element.SetValue(PrefersStatusBarHiddenProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='PrefersStatusBarHidden']/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>A value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.</returns>
 		public static StatusBarHiddenMode PrefersStatusBarHidden(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetPrefersStatusBarHidden(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPrefersStatusBarHidden'][2]/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersStatusBarHidden(this IPlatformElementConfiguration<iOS, FormsElement> config, StatusBarHiddenMode value)
 		{
 			SetPrefersStatusBarHidden(config.Element, value);
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="PreferredStatusBarUpdateAnimation"/>.</summary>
+		/// <summary>
+		/// Backing store for the attached property that controls whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.
+		/// </summary>
 		public static readonly BindableProperty PreferredStatusBarUpdateAnimationProperty =
 			BindableProperty.Create("PreferredStatusBarUpdateAnimation", typeof(UIStatusBarAnimation), typeof(Page), UIStatusBarAnimation.None);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetPreferredStatusBarUpdateAnimation']/Docs/*" />
+		/// <summary>
+		/// Returns a value that tells whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.
+		/// </summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <returns>A value that tells whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.</returns>
 		public static UIStatusBarAnimation GetPreferredStatusBarUpdateAnimation(BindableObject element)
 		{
 			return (UIStatusBarAnimation)element.GetValue(PreferredStatusBarUpdateAnimationProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPreferredStatusBarUpdateAnimation'][1]/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.
+		/// </summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
 		public static void SetPreferredStatusBarUpdateAnimation(BindableObject element, UIStatusBarAnimation value)
 		{
 			if (value == UIStatusBarAnimation.Fade)
@@ -58,13 +89,22 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 				element.SetValue(PreferredStatusBarUpdateAnimationProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='PreferredStatusBarUpdateAnimation']/Docs/*" />
+		/// <summary>
+		/// Returns a value that tells whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>A value that tells whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.</returns>
 		public static UIStatusBarAnimation PreferredStatusBarUpdateAnimation(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetPreferredStatusBarUpdateAnimation(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetPreferredStatusBarUpdateAnimation'][2]/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPreferredStatusBarUpdateAnimation(this IPlatformElementConfiguration<iOS, FormsElement> config, UIStatusBarAnimation value)
 		{
 			SetPreferredStatusBarUpdateAnimation(config.Element, value);
@@ -125,25 +165,42 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for <see cref="LargeTitleDisplay"/>.</summary>
 		public static readonly BindableProperty LargeTitleDisplayProperty = BindableProperty.Create(nameof(LargeTitleDisplay), typeof(LargeTitleDisplayMode), typeof(Page), LargeTitleDisplayMode.Automatic);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetLargeTitleDisplay']/Docs/*" />
+		/// <summary>
+		/// Returns the large title display preferences for <paramref name="element" />.
+		/// </summary>
+		/// <param name="element">The element whose large title display preferences to get.</param>
+		/// <returns>The large title display preferences for <paramref name="element" />.</returns>
 		public static LargeTitleDisplayMode GetLargeTitleDisplay(BindableObject element)
 		{
 			return (LargeTitleDisplayMode)element.GetValue(LargeTitleDisplayProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetLargeTitleDisplay'][1]/Docs/*" />
+		/// <summary>
+		/// Sets the large title display preferences of <paramref name="element" /> to <paramref name="value" />.
+		/// </summary>
+		/// <param name="element">The element whose large title display preference to set.</param>
+		/// <param name="value">The new large title display preferences.</param>
 		public static void SetLargeTitleDisplay(BindableObject element, LargeTitleDisplayMode value)
 		{
 			element.SetValue(LargeTitleDisplayProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='LargeTitleDisplay']/Docs/*" />
+		/// <summary>
+		/// Returns a value that describes the large title behavior preference of <paramref name="config" />.
+		/// </summary>
+		/// <param name="config">The element whose large title preferences to return.</param>
+		/// <returns>A value that describes the large title behavior preference of <paramref name="config" />.</returns>
 		public static LargeTitleDisplayMode LargeTitleDisplay(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetLargeTitleDisplay(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetLargeTitleDisplay'][2]/Docs/*" />
+		/// <summary>
+		/// Sets the large title display preferences of <paramref name="config" /> to <paramref name="value" />.
+		/// </summary>
+		/// <param name="config">The element whose large title display preference to set.</param>
+		/// <param name="value">The new large title display preferences.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetLargeTitleDisplay(this IPlatformElementConfiguration<iOS, FormsElement> config, LargeTitleDisplayMode value)
 		{
 			SetLargeTitleDisplay(config.Element, value);
@@ -152,10 +209,16 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		static readonly BindablePropertyKey SafeAreaInsetsPropertyKey = BindableProperty.CreateReadOnly(nameof(SafeAreaInsets), typeof(Thickness), typeof(Page), default(Thickness));
 
-		/// <summary>Bindable property for <see cref="SafeAreaInsets"/>.</summary>
+		/// <summary>
+		/// Backing store for the attached property that represents the safe area insets.
+		/// </summary>
 		public static readonly BindableProperty SafeAreaInsetsProperty = SafeAreaInsetsPropertyKey.BindableProperty;
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetSafeAreaInsets']/Docs/*" />
+		/// <summary>
+		/// Returns the safe area insets for <paramref name="element" />.
+		/// </summary>
+		/// <param name="element">The element whose safe area insets to get.</param>
+		/// <returns>The safe area insets for <paramref name="element" />.</returns>
 		public static Thickness GetSafeAreaInsets(BindableObject element)
 		{
 			return (Thickness)element.GetValue(SafeAreaInsetsProperty);
@@ -166,13 +229,22 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(SafeAreaInsetsPropertyKey, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SafeAreaInsets']/Docs/*" />
+		/// <summary>
+		/// Returns a <see cref="T:Microsoft.Maui.Thickness" /> object that represents the safe area insets.
+		/// </summary>
+		/// <param name="config">The element whose safe area insets to return.</param>
+		/// <returns>A <see cref="T:Microsoft.Maui.Thickness" /> object that represents the safe area insets.</returns>
 		public static Thickness SafeAreaInsets(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetSafeAreaInsets(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SetSafeAreaInsets']/Docs/*" />
+		/// <summary>
+		/// Sets the safe area insets of <paramref name="config" /> to <paramref name="value" />.
+		/// </summary>
+		/// <param name="config">The element whose safe area insets to set.</param>
+		/// <param name="value">The new safe area insets.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetSafeAreaInsets(this IPlatformElementConfiguration<iOS, FormsElement> config, Thickness value)
 		{
