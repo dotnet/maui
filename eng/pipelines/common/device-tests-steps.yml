@@ -87,6 +87,15 @@ steps:
       condition: always()
       continueOnError: true
 
+  - ${{ if eq(parameters.platform, 'windows')}}:
+    - pwsh: |
+        $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+        New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value "$(Build.ArtifactStagingDirectory)/crash-dumps"
+        New-ItemProperty -Path $errorPath -Name DumpType -PropertyType DWORD -Value 2
+      displayName: 'Set dump file location'
+      continueOnError: true
+      timeoutInMinutes: 5
+
   - pwsh: |
       ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
