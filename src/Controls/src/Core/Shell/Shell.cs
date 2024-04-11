@@ -301,7 +301,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetSearchHandler(BindableObject obj, SearchHandler handler) => obj.SetValue(SearchHandlerProperty, handler);
 
 		/// <summary>
-		/// Gets the tabs visibility.
+		/// Gets the tabs visibility when the given <paramref name="obj"/> is active.
 		/// </summary>
 		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <returns><see langword="true"/> if the tab bar is visible; otherwise, <see langword="false"/>.</returns>
