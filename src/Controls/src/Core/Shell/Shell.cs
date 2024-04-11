@@ -1303,7 +1303,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the background color of the Shell Flyout.
+		/// Gets or sets the background color of the flyout.
 		/// </summary>
 		public Color FlyoutBackgroundColor
 		{
