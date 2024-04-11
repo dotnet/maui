@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetFlyoutWidth(BindableObject obj, double value) => obj.SetValue(FlyoutWidthProperty, value);
 
 		/// <summary>
-		/// Gets the height of the flyout.
+		/// Gets the height of the flyout when the given <paramref name="obj"/> is active.
 		/// </summary>
 		/// <param name="obj">The object that modifies the height of the flyout.</param>
 		/// <returns>The height of the flyout.</returns>
