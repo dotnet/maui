@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Manages the behavior used to open the flyout.
-		/// <summary>
+		/// </summary>
 		/// <remarks>
 		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen. 
 		/// This behavior can be changed by setting the <see cref = "FlyoutBehavior" /> property.
@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Sets the back button behavior when the given <paramref name="obj"/> is presented.
-		/// <summary>
+		/// </summary>
 		/// <remarks>
 		/// If the <paramref name="obj"/> is not a page, this property won't do anything.
 		/// </remarks>
