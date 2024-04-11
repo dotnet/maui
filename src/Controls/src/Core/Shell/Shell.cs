@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetFlyoutHeight(BindableObject obj, double value) => obj.SetValue(FlyoutHeightProperty, value);
 
 		/// <summary>
-		/// Gets if the navigation bar is visible when a page is presented. 
+		/// Gets a value indicating if the navigation bar is visible when when the given <paramref name="obj"/> is active. 
 		/// </summary>
 		/// <param name="obj">The object that that gets the navigation bar visibility.</param>
 		/// <returns><see langword="true"/> if the navigation bar is visible; otherwise, <see langword="false"/>.</returns>
