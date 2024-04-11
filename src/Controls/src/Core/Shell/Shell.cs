@@ -263,7 +263,7 @@ namespace Microsoft.Maui.Controls
 		public static bool GetNavBarIsVisible(BindableObject obj) => (bool)obj.GetValue(NavBarIsVisibleProperty);
 
 		/// <summary>
-		/// Controls if the navigation bar is visible when a page is presented. 
+		/// Controls if the navigation bar is visible when the given <paramref name="obj"/> is presented. 
 		/// By default the value of the property is <see langword="true"/>.
 		/// </summary>
 		/// <param name="obj">The object that modifies the navigation bar visibility.</param>
