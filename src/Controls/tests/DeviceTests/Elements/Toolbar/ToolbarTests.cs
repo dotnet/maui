@@ -19,6 +19,7 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 #if IOS || MACCATALYST
 using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
 using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
+using TabbedRenderer = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
@@ -38,7 +39,11 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					#if IOS || MACCATALYST
+                    handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#else
+                    handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+#endif
 
 					SetupShellHandlers(handlers);
 				});
@@ -128,11 +133,12 @@ namespace Microsoft.Maui.DeviceTests
 					Children = { new ContentPage { Title = "Child Page Title" } },
 				});
 
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
 				string title = GetToolbarTitle(handler);
+				await Task.Delay(TimeSpan.FromMinutes(1));
 				Assert.Equal("Child Page Title", title);
-				return Task.CompletedTask;
+				//return Task.CompletedTask;
 			});
 		}
 
