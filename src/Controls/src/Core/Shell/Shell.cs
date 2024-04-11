@@ -1110,7 +1110,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null);
 
 		/// <summary>
-		/// Modify the behavior of the flyout scroll.
+		/// Modifies the behavior of the flyout scroll.
 		/// By default, a flyout can be scrolled vertically when the flyout items don't fit in the flyout. 
 		/// </summary>
 		public static readonly BindableProperty FlyoutVerticalScrollModeProperty =
