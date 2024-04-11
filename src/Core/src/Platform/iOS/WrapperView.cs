@@ -255,10 +255,11 @@ namespace Microsoft.Maui.Platform
 
 		CALayer? GetLayer()
 		{
-			if (Layer is null || Layer.Sublayers is null)
+			var sublayers = Layer?.Sublayers;
+			if (sublayers is null)
 				return null;
 
-			foreach (var subLayer in Layer.Sublayers)
+			foreach (var subLayer in sublayers)
 				if (subLayer.Delegate is not null)
 					return subLayer;
 
@@ -267,10 +268,11 @@ namespace Microsoft.Maui.Platform
 
 		CALayer? GetBackgroundLayer()
 		{
-			if (Layer is null || Layer.Sublayers is null)
+			var sublayers = Layer?.Sublayers;
+			if (sublayers is null)
 				return null;
 
-			foreach (var subLayer in Layer.Sublayers)
+			foreach (var subLayer in sublayers)
 				if (subLayer.Name == ViewExtensions.BackgroundLayerName)
 					return subLayer;
 

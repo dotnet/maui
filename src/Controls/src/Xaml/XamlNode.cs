@@ -65,7 +65,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			return
 				NamespaceUri == other.NamespaceUri &&
 				Name == other.Name &&
-				(TypeArguments == null && other.TypeArguments == null || TypeArguments.SequenceEqual(other.TypeArguments));
+				(TypeArguments == null && other.TypeArguments == null ||
+				 TypeArguments != null && other.TypeArguments != null && TypeArguments.SequenceEqual(other.TypeArguments));
 		}
 
 		public override int GetHashCode()
