@@ -1405,7 +1405,7 @@ namespace Microsoft.Maui.Controls
 
 
 		/// <summary>
-		/// Gets or sets the visible status of the Shell Flyout.
+		/// Gets or sets the visible status of the flyout.
 		/// </summary>
 		public bool FlyoutIsPresented
 		{
