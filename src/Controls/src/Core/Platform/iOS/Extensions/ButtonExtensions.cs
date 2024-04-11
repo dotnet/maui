@@ -109,6 +109,12 @@ namespace Microsoft.Maui.Controls.Platform
 				titleInsets.Left -= imageWidth / 2;
 				titleInsets.Right += imageWidth / 2;
 
+				// If the image is resized to take up too much of the button's space, we may want to leave the image centered and hide the title
+				var availableWidth = buttonWidth - imageWidth - spacing - (nfloat)padding.Left - (nfloat)padding.Right;
+				var availableHeight = buttonHeight - imageHeight - spacing - (nfloat)padding.Top - (nfloat)padding.Bottom;
+
+				var hideTitleDistance = nfloat.MaxValue / 2;
+
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
 					if (imageHeight > buttonHeight)
@@ -195,6 +201,42 @@ namespace Microsoft.Maui.Controls.Platform
 				platformButton.Superview?.SetNeedsLayout();
 			}
 #pragma warning restore CA1416, CA1422
+
+			var titleRectHeight = platformButton.GetTitleBoundingRect(padding).Height;
+
+			var buttonContentHeight = 
+				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
+				+ (nfloat)padding.Top
+				+ (nfloat)padding.Bottom;
+
+			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
+			{
+				if (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
+				{
+					buttonContentHeight += spacing;
+					buttonContentHeight += (nfloat)Math.Min(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0);
+				}
+
+#pragma warning disable CA1416, CA1422
+				// If the button's content is larger than the button, we need to adjust the ContentEdgeInsets.
+				// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel
+				if (buttonContentHeight - button.Height > 1 && button.HeightRequest == -1)
+				{
+					var contentInsets = platformButton.ContentEdgeInsets;
+
+					var additionalVerticalSpace = (buttonContentHeight - button.Height) / 2;
+
+					platformButton.ContentEdgeInsets = new UIEdgeInsets(
+						(nfloat)(additionalVerticalSpace + (nfloat)padding.Top),
+						contentInsets.Left,
+						(nfloat)(additionalVerticalSpace + (nfloat)padding.Bottom),
+						contentInsets.Right);
+
+					platformButton.Superview?.SetNeedsLayout();
+					platformButton.Superview?.LayoutIfNeeded();
+				}
+#pragma warning restore CA1416, CA1422
+			}
 		}
 
 		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding)
