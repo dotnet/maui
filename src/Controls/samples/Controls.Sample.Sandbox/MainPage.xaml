@@ -1,6 +1,16 @@
 ﻿<ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.MainPage"
-    xmlns:local="clr-namespace:Maui.Controls.Sample">
+    x:DataType="local:MainPage">
+    <VerticalStackLayout x:Name="myLayout">
+        <Label x:Name="info" Text="Click a button" VerticalOptions="Center"/>
+        <Button Text="Clear Grid" Clicked="ClearGrid_Clicked"/>
+        <Button Text="Generate Grid" Clicked="Button_Clicked"/>
+
+        <HorizontalStackLayout x:Name="myGridWrapper">
+            <Grid x:Name="contentGrid"/>
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
 </ContentPage>
