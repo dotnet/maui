@@ -9,35 +9,56 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
 	using FormsElement = Maui.Controls.Page;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Page']/Docs/*" />
+	/// <summary>
+	/// The page instance that Microsoft.Maui.Controls created on the Windows platform.
+	/// </summary>
 	public static class Page
 	{
 		#region ToolbarPlacement
 
-		/// <summary>Bindable property for <see cref="ToolbarPlacement"/>.</summary>
+		/// <summary>
+		/// Backing store for the attached property that controls the placement of the toolbar.
+		/// </summary>
 		public static readonly BindableProperty ToolbarPlacementProperty =
 			BindableProperty.CreateAttached("ToolbarPlacement", typeof(ToolbarPlacement),
 				typeof(FormsElement), ToolbarPlacement.Default);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='GetToolbarPlacement'][1]/Docs/*" />
+		/// <summary>
+		/// Returns a value that controls the placement of the toolbar.
+		/// </summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <returns>A value that controls the placement of the toolbar.</returns>
 		public static ToolbarPlacement GetToolbarPlacement(BindableObject element)
 		{
 			return (ToolbarPlacement)element.GetValue(ToolbarPlacementProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='SetToolbarPlacement'][1]/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls the placement of the toolbar.
+		/// </summary>
+		/// <param name="element">The platform specific element on which to perform the operation.</param>
+		/// <param name="toolbarPlacement">The new toolbar placement.</param>
 		public static void SetToolbarPlacement(BindableObject element, ToolbarPlacement toolbarPlacement)
 		{
 			element.SetValue(ToolbarPlacementProperty, toolbarPlacement);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='GetToolbarPlacement'][2]/Docs/*" />
+		/// <summary>
+		/// Returns a value that controls the placement of the toolbar.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>A value that controls the placement of the toolbar.</returns>
 		public static ToolbarPlacement GetToolbarPlacement(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (ToolbarPlacement)config.Element.GetValue(ToolbarPlacementProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='SetToolbarPlacement'][2]/Docs/*" />
+		/// <summary>
+		/// Sets a value that controls the placement of the toolbar.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The new property value to assign.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetToolbarPlacement(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, ToolbarPlacement value)
 		{
