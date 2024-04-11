@@ -5,6 +5,7 @@
     xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
 
     <VerticalStackLayout>
-            <Image x:Name="theImage" AutomationId="photo" Source="photo21314.jpg"/>
+        <Image x:Name="theImage" Source="photo21314.jpg"/>
+        <Label AutomationId="WaitForStubControl" />
     </VerticalStackLayout>
 </ContentPage>
