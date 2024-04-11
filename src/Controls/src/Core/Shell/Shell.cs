@@ -279,7 +279,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets a value that represents if the navigation bar has a shadow when the given <paramref name="obj"/> is active.
 		/// </summary>
 		/// <param name="obj">The object that modifies if the navigation bar has a shadow.</param>
-		/// <returns>Returns if the navigation bar has a shadow.</returns>
+		/// <returns><see langword="true"/> if the navigation bar has a shadow when <paramref name="obj"/> is presented, otherwise, <see langword="false"/>.</returns>
 		public static bool GetNavBarHasShadow(BindableObject obj) => (bool)obj.GetValue(NavBarHasShadowProperty);
 
 		/// <summary>
