@@ -308,7 +308,7 @@ namespace Microsoft.Maui.Controls
 		public static bool GetTabBarIsVisible(BindableObject obj) => (bool)obj.GetValue(TabBarIsVisibleProperty);
 
 		/// <summary>
-		/// Sets the tabs visibility.
+		/// Sets the tabs visibility when the given <paramref name="obj"/> is active.
 		/// </summary>
 		/// <remarks>
 		/// The tab bar and tabs are visible in Shell applications by default. However, the tab bar can be hidden by setting the Shell.TabBarIsVisible attached property to false.
