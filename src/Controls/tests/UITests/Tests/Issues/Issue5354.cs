@@ -16,6 +16,9 @@ namespace Maui.Controls.Sample.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsLayoutUpdate()
 		{
+  			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
+				"This is a product bug.");
+	
 			App.WaitForElement("CollectionView5354");
 			App.WaitForElement("Button5354");
 			
