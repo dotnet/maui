@@ -1260,7 +1260,7 @@ namespace Microsoft.Maui.Controls
 
 
 		/// <summary>
-		/// Gets or sets the icon that, when pressed, opens the Shell Flyout.
+		/// Gets or sets the icon that, when pressed, opens the flyout.
 		/// </summary>
 		public ImageSource FlyoutIcon
 		{
