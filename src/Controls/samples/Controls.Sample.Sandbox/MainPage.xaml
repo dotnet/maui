@@ -3,4 +3,44 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+    <ScrollView>
+        <VerticalStackLayout Margin="0,10,0,0" Grid.RowSpan="2">
+                <Button ImageSource="dotnet_bot.png" 
+                        Text="Button 1" 
+                        ContentLayout="Left, 20" 
+                        Background="LightGray"/>
+                <BoxView HeightRequest="20"/>
+                <Button ImageSource="dotnet_bot.png" 
+                        Text="Button 2 with a super duper extremely very long super duper extremely very long super duper extremely very long text box" 
+                        ContentLayout="Top, 20" 
+                        Padding="10"
+                        LineBreakMode="TailTruncation"
+                        HeightRequest="100"
+                        Background="LightGray"/>
+                <BoxView HeightRequest="20"/>
+                <Button ImageSource="dotnet_bot.png" 
+                        Text="Button 3 with a super duper extremely very long super duper extremely very long super duper extremely very long text box" 
+                        ContentLayout="Top, 20" 
+                        LineBreakMode="TailTruncation"
+                        WidthRequest="200"
+                        Background="LightGray"/>
+                <BoxView HeightRequest="20"/>
+                <Button ImageSource="dotnet_bot.png" 
+                        Text="Button 4" 
+                        Padding="20"
+                        ContentLayout="Right, 20" 
+                        Background="LightGray"/>
+                <BoxView HeightRequest="20"/>
+                <Button ImageSource="dotnet_bot.png" 
+                        Text="Button 5" 
+                        Padding="0"
+                        ContentLayout="Left, 0" 
+                        Background="LightGray"/>
+
+
+
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
