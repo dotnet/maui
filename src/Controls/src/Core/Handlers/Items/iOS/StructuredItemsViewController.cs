@@ -133,16 +133,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			if (formsElement != null)
+			{
 				ItemsView.AddLogicalChild(formsElement);
+			}
 
 			if (formsElement != null)
 			{
 				RemeasureLayout(formsElement);
 				formsElement.MeasureInvalidated += OnFormsElementMeasureInvalidated;
 			}
-			else if (uiView != null)
+			else
 			{
-				uiView.SizeToFit();
+				uiView?.SizeToFit();
 			}
 		}
 
@@ -159,7 +161,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				nfloat emptyWidth = emptyView?.Frame.Width ?? 0f;
 
 				if (_headerUIView != null && _headerUIView.Frame.X != headerWidth)
+				{
 					_headerUIView.Frame = new CoreGraphics.CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
+				}
 
 				if (_footerUIView != null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || emptyWidth > 0))
 					_footerUIView.Frame = new CoreGraphics.CGRect(ItemsViewLayout.CollectionViewContentSize.Width + emptyWidth, 0, footerWidth, CollectionView.Frame.Height);

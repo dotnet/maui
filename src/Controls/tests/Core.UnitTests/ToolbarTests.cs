@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			IToolbarElement toolbarElement = window;
 			var startingPage = new TestNavigationPage(true, new ContentPage());
 			window.Page = startingPage;
-			startingPage.Navigation.PushAsync(new ContentPage());
+			await startingPage.Navigation.PushAsync(new ContentPage());
 			startingPage.Navigation.RemovePage(startingPage.RootPage);
 			await Task.Delay(50);
 			Assert.False(toolbarElement.Toolbar.BackButtonVisible);
