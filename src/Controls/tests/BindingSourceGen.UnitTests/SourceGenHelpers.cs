@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.CSharp;
 
 using Microsoft.Maui.Controls.BindingSourceGen;
 using System.Runtime.Loader;
-using Xunit;
 using System.Collections.Immutable;
 
 internal record CodeGeneratorResult(

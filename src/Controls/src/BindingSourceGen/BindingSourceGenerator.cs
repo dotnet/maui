@@ -152,6 +152,16 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			var symbol = semanticModel.GetSymbolInfo(identifier).Symbol;
 			return new SetterOptions(IsWritable(symbol), AcceptsNullValue(symbol, enabledNullable));
 		}
+		else if (lambdaBodyExpression is ElementAccessExpressionSyntax elementAccess)
+		{
+			var symbol = semanticModel.GetSymbolInfo(elementAccess).Symbol;
+			return new SetterOptions(IsWritable(symbol), AcceptsNullValue(symbol, enabledNullable));
+		}
+		else if (lambdaBodyExpression is ElementBindingExpressionSyntax elementBinding)
+		{
+			var symbol = semanticModel.GetSymbolInfo(elementBinding).Symbol;
+			return new SetterOptions(IsWritable(symbol), AcceptsNullValue(symbol, enabledNullable));
+		}
 
 		var nestedExpression = lambdaBodyExpression switch
 		{
@@ -159,7 +169,6 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			ConditionalAccessExpressionSyntax conditionalAccess => conditionalAccess.WhenNotNull,
 			MemberBindingExpressionSyntax memberBinding => memberBinding.Name,
 			BinaryExpressionSyntax binary when binary.Kind() == SyntaxKind.AsExpression => binary.Left,
-			ElementAccessExpressionSyntax elementAccess => elementAccess.Expression, // TODO indexers don't work correctlly yet
 			ParenthesizedExpressionSyntax parenthesized => parenthesized.Expression,
 			_ => null,
 		};
@@ -171,7 +180,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			{
 				IPropertySymbol propertySymbol => propertySymbol.SetMethod != null,
 				IFieldSymbol fieldSymbol => !fieldSymbol.IsReadOnly,
-				_ => false,
+				_ => true,
 			};
 
 		static bool AcceptsNullValue(ISymbol? symbol, bool enabledNullable)

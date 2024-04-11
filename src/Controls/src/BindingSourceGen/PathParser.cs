@@ -22,6 +22,7 @@ internal class PathParser
             IdentifierNameSyntax _ => ([], new List<IPathPart>()),
             MemberAccessExpressionSyntax memberAccess => HandleMemberAccessExpression(memberAccess),
             ElementAccessExpressionSyntax elementAccess => HandleElementAccessExpression(elementAccess),
+            ElementBindingExpressionSyntax elementBinding => HandleElementBindingExpression(elementBinding),
             ConditionalAccessExpressionSyntax conditionalAccess => HandleConditionalAccessExpression(conditionalAccess),
             MemberBindingExpressionSyntax memberBinding => HandleMemberBindingExpression(memberBinding),
             ParenthesizedExpressionSyntax parenthesized => ParsePath(parenthesized.Expression),
@@ -52,23 +53,14 @@ internal class PathParser
             return (diagnostics, parts);
         }
 
-        var argumentList = elementAccess.ArgumentList.Arguments;
-        if (argumentList.Count != 1)
+        var elementAccessSymbol = Context.SemanticModel.GetSymbolInfo(elementAccess).Symbol;
+        var (elementAccessDiagnostics, elementAccessParts) = HandleElementAccessSymbol(elementAccessSymbol, elementAccess.ArgumentList.Arguments, elementAccess.GetLocation());
+        if (elementAccessDiagnostics.Length > 0)
         {
-            return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(elementAccess.GetLocation()) }, parts);
+            return (elementAccessDiagnostics, elementAccessParts);
         }
 
-        var indexExpression = argumentList[0].Expression;
-        object? indexValue = Context.SemanticModel.GetConstantValue(indexExpression).Value;
-        if (indexValue is null)
-        {
-            return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(elementAccess.GetLocation()) }, parts);
-        }
-
-        var defaultMemberName = "Item"; // TODO we need to check the value of the `[DefaultMemberName]` attribute on the member type
-        IPathPart part = new IndexAccess(defaultMemberName, indexValue);
-        parts.Add(part);
-
+        parts.AddRange(elementAccessParts);
         return (diagnostics, parts);
     }
 
@@ -99,6 +91,19 @@ internal class PathParser
         return ([], new List<IPathPart>([part]));
     }
 
+    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleElementBindingExpression(ElementBindingExpressionSyntax elementBinding)
+    {
+        var elementAccessSymbol = Context.SemanticModel.GetSymbolInfo(elementBinding).Symbol;
+        var (elementAccessDiagnostics, elementAccessParts) = HandleElementAccessSymbol(elementAccessSymbol, elementBinding.ArgumentList.Arguments, elementBinding.GetLocation());
+        if (elementAccessDiagnostics.Length > 0)
+        {
+            return (elementAccessDiagnostics, elementAccessParts);
+        }
+
+        elementAccessParts[0] = new ConditionalAccess(elementAccessParts[0]);
+        return (elementAccessDiagnostics, elementAccessParts);
+    }
+
     private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleBinaryExpression(BinaryExpressionSyntax asExpression)
     {
         var (diagnostics, parts) = ParsePath(asExpression.Left);
@@ -121,5 +126,65 @@ internal class PathParser
     private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleDefaultCase()
     {
         return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation()) }, new List<IPathPart>());
+    }
+
+    private (Diagnostic[], List<IPathPart>) HandleElementAccessSymbol(ISymbol? elementAccessSymbol, SeparatedSyntaxList<ArgumentSyntax> argumentList, Location location)
+    {
+        if (argumentList.Count != 1)
+        {
+            return ([DiagnosticsFactory.UnableToResolvePath(location)], []);
+        }
+
+        var indexExpression = argumentList[0].Expression;
+        object? indexValue = Context.SemanticModel.GetConstantValue(indexExpression).Value;
+        if (indexValue is null)
+        {
+            return ([DiagnosticsFactory.UnableToResolvePath(location)], []);
+        }
+
+        var name = GetIndexerName(elementAccessSymbol);
+        IPathPart part = new IndexAccess(name, indexValue);
+
+        return ([], [part]);
+    }
+
+    private string GetIndexerName(ISymbol? elementAccessSymbol)
+    {
+        const string defaultName = "Item";
+
+        if (elementAccessSymbol is not IPropertySymbol propertySymbol)
+        {
+            return defaultName;
+        }
+
+        var containgType = propertySymbol.ContainingType;
+        if (containgType == null)
+        {
+            return defaultName;
+        }
+
+        var defaultMemberAttribute = GetAttribute(containgType, "DefaultMemberAttribute");
+        if (defaultMemberAttribute != null)
+        {
+            return GetAttributeValue(defaultMemberAttribute);
+        }
+
+        var indexerNameAttr = GetAttribute(propertySymbol, "IndexerNameAttribute");
+        if (indexerNameAttr != null)
+        {
+            return GetAttributeValue(indexerNameAttr);
+        }
+
+        return defaultName;
+
+        AttributeData? GetAttribute(ISymbol symbol, string attributeName)
+        {
+            return symbol.GetAttributes().FirstOrDefault(attr => attr.AttributeClass?.Name == attributeName);
+        }
+
+        string GetAttributeValue(AttributeData attribute)
+        {
+            return (attribute.ConstructorArguments.Length > 0 ? attribute.ConstructorArguments[0].Value as string : null) ?? defaultName;
+        }
     }
 }

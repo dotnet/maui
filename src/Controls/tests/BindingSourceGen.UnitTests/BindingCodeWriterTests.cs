@@ -333,7 +333,7 @@ public class BindingCodeWriterTests
         codeBuilder.AppendSetBindingInterceptor(id: 1, new CodeWriterBinding(
             Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
-            PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
+            PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true, IsGenericParameter: false),
             Path: [
                 new IndexAccess("Item", 12),
                 new ConditionalAccess(new IndexAccess("Indexer", "Abc")),
@@ -349,7 +349,7 @@ public class BindingCodeWriterTests
             public static void SetBinding1(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,
-                Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
+                Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
                 BindingMode mode = BindingMode.Default,
                 IValueConverter? converter = null,
                 object? converterParameter = null,
@@ -358,11 +358,16 @@ public class BindingCodeWriterTests
                 object? fallbackValue = null,
                 object? targetNullValue = null)
             {
-                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>? setter = null;
                 if (ShouldUseSetter(mode, bindableProperty))
                 {
                     setter = static (source, value) => 
                     {
+                        if (value is null)
+                        {
+                            return;
+                        }
+                        
                         if (source[12] is {} p0)
                         {
                             p0["Abc"][0] = value;
@@ -370,7 +375,7 @@ public class BindingCodeWriterTests
                     };
                 }
 
-                var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
+                var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
                     getter: source => (getter(source), true),
                     setter,
                     handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
