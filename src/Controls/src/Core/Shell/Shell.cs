@@ -51,9 +51,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Manages the behavior used to open the flyout.
+		/// <summary>
+		/// <remarks>
 		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen. 
-		/// This behavior can be changed by setting the FlyoutBehavior property.
-		/// </summary>
+		/// This behavior can be changed by setting the <see cref = "FlyoutBehavior" /> property.
+		/// </remarks>
 		public static readonly BindableProperty FlyoutBehaviorProperty =
 			BindableProperty.CreateAttached("FlyoutBehavior", typeof(FlyoutBehavior), typeof(Shell), FlyoutBehavior.Flyout,
 				propertyChanged: OnFlyoutBehaviorChanged);
@@ -107,7 +109,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Sets a value that determines if an object has a visible <see cref = "FlyoutItem" /> in the flyout menu.
-		/// Flyout items are visible in the flyout by default. However, an item can be hidden in the flyout with the FlyoutItemIsVisible property.
+		/// Flyout items are visible in the flyout by default. However, an item can be hidden in the flyout with the <see cref = "FlyoutItemIsVisibleProperty" />.
 		/// </summary>
 		/// <param name="obj">The object that sets the visibility of flyout items.</param>
 		/// <param name="isVisible"><see langword="true"/> to set the flyout item as visible; otherwise, <see langword="false"/>.</param>
@@ -145,7 +147,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the <see cref = "DataTemplate" /> applied to <see cref = "MenuItem" /> objects in the MenuItems collection.
 		/// </summary>
-		/// <param name="obj">The object that sets the <see cref = "DataTemplate" /> to be applied to the MenuItem objects.</param>
+		/// <param name="obj">The object that sets the <see cref = "DataTemplate" /> to be applied to the <see cref = "MenuItem" /> objects.</param>
 		/// <returns>The <see cref = "DataTemplate" /> applied to <paramref name="obj"/>.</returns>
 		public static DataTemplate GetMenuItemTemplate(BindableObject obj) => (DataTemplate)obj.GetValue(MenuItemTemplateProperty);
 
@@ -184,8 +186,11 @@ namespace Microsoft.Maui.Controls
 		public static BackButtonBehavior GetBackButtonBehavior(BindableObject obj) => (BackButtonBehavior)obj.GetValue(BackButtonBehaviorProperty);
 
 		/// <summary>
-		/// Sets the behavior of the back button.
-		/// </summary>
+		/// Sets the back button behavior when the given <paramref name="obj"/> is presented.
+		/// <summary>
+		/// <remarks>
+		/// If the <paramref name="obj"/> is not a page, this property won't do anything.
+		/// </remarks>
 		/// <param name="obj">The page that dictates the Shell's back button behavior when active.</param>
 		/// <param name="behavior">The back button behavior.</param>
 		public static void SetBackButtonBehavior(BindableObject obj, BackButtonBehavior behavior) => obj.SetValue(BackButtonBehaviorProperty, behavior);
