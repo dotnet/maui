@@ -3,7 +3,7 @@ using UITest.Appium;
 
 namespace UITests
 {
-    public class Issue10744 : IssuesUITest
+	public class Issue10744 : IssuesUITest
 	{
 		public Issue10744(TestDevice testDevice) : base(testDevice)
 		{
@@ -15,10 +15,9 @@ namespace UITests
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.RequiresInternetConnection)]
 		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void WebViewEvalCrashesOnAndroidWithLongString()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS]);
-
 			RunningApp.WaitForElement("navigatedLabel");
 		}
 	}
