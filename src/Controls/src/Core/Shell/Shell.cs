@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls
 		public static FlyoutBehavior GetFlyoutBehavior(BindableObject obj) => (FlyoutBehavior)obj.GetValue(FlyoutBehaviorProperty);
 
 		/// <summary>
-		/// Sets the behavior used to open the flyout.
+		/// Sets the behavior used to open the flyout when the given <paramref name="obj"/> is presented.
 		/// </summary>
 		/// <remarks>
 		/// The flyout can be accessed through the hamburger icon or by swiping from the side of the screen.
