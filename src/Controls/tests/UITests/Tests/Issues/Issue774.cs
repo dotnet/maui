@@ -15,6 +15,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		protected override void FixtureTeardown()
 		{
 			App.SetOrientationPortrait();
+			App.Back();
 
 			base.FixtureTeardown();
 		}
