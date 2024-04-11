@@ -232,7 +232,7 @@ Task("dotnet-test")
 
         foreach (var test in tests)
         {
-            if (!IsRunningOnWindows() && (test.Contains("Compatibility.Core.UnitTests") || test.Contains("Controls.Core.Design.UnitTests")) 
+            if (!IsRunningOnWindows() && (test.Contains("Compatibility.Core.UnitTests") || test.Contains("Controls.Core.Design.UnitTests"))) 
             {
                 continue;
             }
