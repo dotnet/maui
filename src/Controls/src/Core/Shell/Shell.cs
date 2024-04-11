@@ -1247,7 +1247,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Modify the behavior of the flyout scroll.
+		/// Modifies the behavior of the flyout scroll.
 		/// </summary>
 		public ScrollMode FlyoutVerticalScrollMode
 		{
