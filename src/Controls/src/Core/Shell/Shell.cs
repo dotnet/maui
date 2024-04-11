@@ -326,7 +326,7 @@ namespace Microsoft.Maui.Controls
 		public static View GetTitleView(BindableObject obj) => (View)obj.GetValue(TitleViewProperty);
 
 		/// <summary>
-		/// Sets any <see cref = "View" /> to be displayed in the navigation bar.
+		/// Sets any <see cref = "View" /> to be displayed in the navigation bar when the given <paramref name="obj"/> is active.
 		/// </summary>
 		/// <param name="obj">The object to which the TitleView is set.</param>
 		/// <param name="value">The View to be displayed in the navigation bar.</param>
