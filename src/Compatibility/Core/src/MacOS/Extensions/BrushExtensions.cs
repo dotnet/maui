@@ -156,10 +156,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (layer.Name == BackgroundLayer)
 					layer?.RemoveFromSuperLayer();
 
-				if (layer.Sublayers == null || layer.Sublayers.Count() == 0)
+				var sublayers = layer.Sublayers;
+				if (sublayers is null || sublayers.Length == 0)
 					return;
 
-				foreach (var subLayer in layer.Sublayers)
+				foreach (var subLayer in sublayers)
 				{
 					if (subLayer.Name == BackgroundLayer)
 						subLayer?.RemoveFromSuperLayer();

@@ -10,7 +10,7 @@
   "shortName": "maui-multiproject",
   "tags": {
     "language": "C#",
-    "type": "project"
+    "type": "solution"
   },
   "sourceName": "MauiApp.1",
   "primaryOutputs": [

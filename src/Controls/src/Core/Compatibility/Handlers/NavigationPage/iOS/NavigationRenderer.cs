@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -1451,18 +1451,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					titleIcon.LoadImage(titleIcon.FindMauiContext(), result =>
+					if (_navigation.TryGetTarget(out NavigationRenderer n) && n.MauiContext is IMauiContext mc)
 					{
-						var image = result?.Value;
-						try
+						titleIcon.LoadImage(mc, result =>
 						{
-							titleViewContainer.Icon = new UIImageView(image);
-						}
-						catch
-						{
-							//UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
-						}
-					});
+							var image = result?.Value;
+							try
+							{
+								titleViewContainer.Icon = new UIImageView(image);
+							}
+							catch
+							{
+								//UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
+							}
+						});
+					}
 				}
 			}
 

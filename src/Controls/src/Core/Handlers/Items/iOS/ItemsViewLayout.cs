@@ -104,11 +104,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		internal virtual void UpdateConstraints(CGSize size)
+		internal virtual bool UpdateConstraints(CGSize size)
 		{
 			if (size.IsCloseTo(_currentSize))
 			{
-				return;
+				return false;
 			}
 
 			ClearCellSizeCache();
@@ -119,6 +119,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ConstrainTo(newSize);
 
 			UpdateCellConstraints();
+			return true;
 		}
 
 		internal void SetInitialConstraints(CGSize size)
@@ -573,14 +574,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
 		{
-			if (newBounds.Size == _currentSize)
+			if (newBounds.Size.IsCloseTo(_currentSize))
 			{
 				return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
 			}
 
-			UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
-
-			return true;
+			return UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
 		}
 
 		internal bool TryGetCachedCellSize(object item, out CGSize size)
