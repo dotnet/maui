@@ -99,7 +99,19 @@ namespace Microsoft.Maui.Controls
 
 				OnPropertyChanging();
 
+				if (MainPage is not null)
+				{
+					((IElementDefinition)this).RemoveResourcesChangedListener(MainPage.OnParentResourcesChanged);
+				}
+
 				_singleWindowMainPage = value;
+
+				if (value is not null)
+				{
+					OnParentResourcesChanged(this.GetMergedResources());
+					OnParentResourcesChanged([new KeyValuePair<string, object>(AppThemeBinding.AppThemeResource, _lastAppTheme)]);
+					((IElementDefinition)this).AddResourcesChangedListener(value.OnParentResourcesChanged);
+				}
 
 				if (Windows.Count == 1)
 				{
@@ -243,6 +255,7 @@ namespace Microsoft.Maui.Controls
 				_themeChangedFiring = true;
 				_lastAppTheme = newTheme;
 
+				OnParentResourcesChanged([new KeyValuePair<string, object>(AppThemeBinding.AppThemeResource, newTheme)]);
 				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
 			}
 			finally
