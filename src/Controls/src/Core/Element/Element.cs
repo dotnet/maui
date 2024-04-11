@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -645,7 +646,7 @@ namespace Microsoft.Maui.Controls
 			if (values == null)
 				return;
 			if (_changeHandlers != null)
-				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers)
+				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
 					handler(this, new ResourcesChangedEventArgs(values));
 			if (_dynamicResources == null)
 				return;
@@ -928,6 +929,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Registers the specified <paramref name="effect"/> to this element.
+		/// </summary>
+		/// <param name="effect">The effect to be registered.</param>
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			if (effect is RoutingEffect re && re.Inner != null)

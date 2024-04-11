@@ -46,5 +46,32 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public static Task WaitUntilLoaded(this IImageStub image, int timeout = 1000) =>
 			AssertEventually(() => !image.IsLoading, timeout: timeout, message: $"Image {image} did not load before timeout");
+
+		public static async Task WaitUntilDecoded(this IImageStub image, int timeout = 1000)
+		{
+			await WaitUntilLoaded(image, timeout);
+
+#if WINDOWS
+			if (image.Handler.PlatformView is Microsoft.UI.Xaml.Controls.Image wimage)
+			{
+				var imageOpened = false;
+
+				wimage.ImageOpened += OnOpened;
+				wimage.ImageFailed += OnFailed;
+
+				await AssertEventually(() => imageOpened, timeout: timeout, message: $"Image {image} did not decode before timeout");
+
+				void OnOpened(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+				{
+					imageOpened = true;
+				}
+
+				void OnFailed(object sender, Microsoft.UI.Xaml.ExceptionRoutedEventArgs e)
+				{
+					imageOpened = true;
+				}
+			}
+#endif
+		}
 	}
 }

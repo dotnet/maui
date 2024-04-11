@@ -4,6 +4,9 @@ using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {
+	/// <summary>
+	/// Represents a circle drawn on the map control.
+	/// </summary>
 	public partial class Circle : MapElement
 	{
 		/// <summary>Bindable property for <see cref="Center"/>.</summary>
@@ -27,18 +30,27 @@ namespace Microsoft.Maui.Controls.Maps
 			typeof(Circle),
 			null);
 
+		/// <summary>
+		/// Gets or sets the center location. This is a bindable property.
+		/// </summary>
 		public Location Center
 		{
 			get => (Location)GetValue(CenterProperty);
 			set => SetValue(CenterProperty, value);
 		}
 
+		/// <summary>
+		/// Gets or sets the radius. This is a bindable property.
+		/// </summary>
 		public Distance Radius
 		{
 			get => (Distance)GetValue(RadiusProperty);
 			set => SetValue(RadiusProperty, value);
 		}
 
+		/// <summary>
+		/// Gets or sets the fill color. This is a bindable property.
+		/// </summary>
 		public Color FillColor
 		{
 			get => (Color)GetValue(FillColorProperty);

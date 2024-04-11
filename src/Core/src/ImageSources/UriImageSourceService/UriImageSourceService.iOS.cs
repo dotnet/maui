@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		internal string CacheDirectory = Path.Combine(FileSystem.CacheDirectory, "com.microsoft.maui", "MauiUriImages");
+		internal static readonly string CacheDirectory = Path.Combine(FileSystem.CacheDirectory, "com.microsoft.maui", "MauiUriImages");
 
 		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
 			GetImageAsync((IUriImageSource)imageSource, scale, cancellationToken);
@@ -24,40 +24,13 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var hash = Crc64.ComputeHashString(imageSource.Uri.OriginalString);
-				var pathToImageCache = CacheDirectory + hash + ".png";
+				var imageData = await DownloadAndCacheImageAsync(imageSource, cancellationToken);
 
-				NSData? imageData;
-
-				if (imageSource.CachingEnabled && IsImageCached(pathToImageCache))
-				{
-					imageData = GetCachedImage(pathToImageCache);
-				}
-				else
-				{
-					// TODO: use a real caching library with the URI
-					if (imageSource is not IStreamImageSource streamImageSource)
-						return null;
-
-					using var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
-
-					if (stream == null)
-						throw new InvalidOperationException($"Unable to load image stream from URI '{imageSource.Uri}'.");
-
-					imageData = NSData.FromStream(stream);
-
-					if (imageData == null)
-						throw new InvalidOperationException("Unable to load image stream data.");
-
-					if (imageSource.CachingEnabled)
-						CacheImage(imageData, pathToImageCache);
-				}
-
-				// We do not need to pass the scale in here as the image file is not scaled to the screen scale.
-				var image = UIImage.LoadFromData(imageData);
-
-				if (image == null)
-					throw new InvalidOperationException($"Unable to decode image from URI '{imageSource.Uri}'.");
+				using var cgImageSource = imageData.GetPlatformImageSource();
+				if (cgImageSource is null)
+					throw new InvalidOperationException("Unable to load image file.");
+				
+				var image = cgImageSource.GetPlatformImage();
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 
@@ -68,6 +41,48 @@ namespace Microsoft.Maui
 				Logger?.LogWarning(ex, "Unable to load image URI '{Uri}'.", imageSource.Uri);
 				throw;
 			}
+		}
+
+		internal async Task<NSData> DownloadAndCacheImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
+		{
+			// TODO: use a real caching library with the URI
+
+			var hash = Crc64.ComputeHashString(imageSource.Uri.OriginalString);
+			var ext = Path.GetExtension(imageSource.Uri.OriginalString);
+			var filename = $"{hash}{ext}";
+			var pathToImageCache = Path.Combine(CacheDirectory, filename);
+
+			NSData? imageData;
+			
+			if (imageSource.CachingEnabled && IsImageCached(pathToImageCache))
+			{
+				imageData = GetCachedImage(pathToImageCache);
+			}
+			else
+			{
+				imageData = await DownloadImageAsync(imageSource, cancellationToken);
+				if (imageSource.CachingEnabled)
+					CacheImage(imageData, pathToImageCache);
+			}
+
+			return imageData;
+		}
+
+		internal static async Task<NSData> DownloadImageAsync(IUriImageSource imageSource, CancellationToken cancellationToken)
+		{
+			if (imageSource is not IStreamImageSource streamImageSource)
+				throw new InvalidOperationException($"Unable to load image stream from image source type '{imageSource.GetType()}'.");
+
+			using var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+			if (stream is null)
+				throw new InvalidOperationException($"Unable to load image stream from URI '{imageSource.Uri}'.");
+
+			var imageData = NSData.FromStream(stream);
+
+			if (imageData is null)
+				throw new InvalidOperationException("Unable to load image stream data.");
+
+			return imageData;
 		}
 
 #pragma warning disable CA1822 // Mark members as static; Disabling because these methods are public and changing them to static is potentially a breaking change

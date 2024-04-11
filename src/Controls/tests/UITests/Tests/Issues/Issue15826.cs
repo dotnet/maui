@@ -15,13 +15,16 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "ListView visibility doesn't work well";
 
 		[Test]
-		public void WhenTapButtonThenListViewsChangesVisibility()
+		[Category(UITestCategories.ListView)]
+		public async Task WhenTapButtonThenListViewsChangesVisibility()
 		{
 			App.WaitForElement(buttonId);
 
 			var initialStatus = GetStatus();
 			var secondStatus = TapButtonAndGetStatus();
+			await Task.Delay(500);
 			var thirdStatus = TapButtonAndGetStatus();
+			await Task.Delay(500);
 
 			Assert.AreEqual(GetExpectedListsStatus("List 1"), initialStatus);
 			Assert.AreEqual(GetExpectedListsStatus("List 2"), secondStatus);

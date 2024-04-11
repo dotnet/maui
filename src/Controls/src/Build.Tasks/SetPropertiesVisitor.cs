@@ -386,7 +386,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if (n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 					break;
-				n = n.Parent as IElementNode;
+				if (n.Parent is ListNode listNode)
+					n = listNode.Parent as IElementNode;
+				else
+					n = n.Parent as IElementNode;
 			}
 
 			if (dataTypeNode is null)
@@ -404,27 +407,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield break;
 			}
 
-			string dataType = null;
-
-			if (dataTypeNode is ElementNode elementNode
-				&& elementNode.XmlType.NamespaceUri == XamlParser.X2009Uri
-				&& elementNode.XmlType.Name == nameof(Microsoft.Maui.Controls.Xaml.TypeExtension)
-				&& elementNode.Properties.ContainsKey(new XmlName("", nameof(Microsoft.Maui.Controls.Xaml.TypeExtension.TypeName)))
-				&& (elementNode.Properties[new XmlName("", nameof(Microsoft.Maui.Controls.Xaml.TypeExtension.TypeName))] as ValueNode)?.Value is string stringtype)
-				dataType = stringtype;
-
-			if ((dataTypeNode as ValueNode)?.Value is string sType)
-				dataType = sType;
-
+			string dataType = (dataTypeNode as ValueNode)?.Value as string;
 			if (dataType is null)
 				throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
 
-			var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
-			var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix) ?? "";
-			if (!string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(namespaceuri))
+			XmlType dtXType = null;
+			try
+			{
+				dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
+					?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+			}
+			catch (XamlParseException)
+			{
+				var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
 				throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
-
-			var dtXType = new XmlType(namespaceuri, dataType, null);
+			}
 
 			var tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
 			if (tSourceRef == null)
@@ -942,7 +939,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Ldnull);
 				yield return Create(Ldftn, partGetters[i]);
 				yield return Create(Newobj, module.ImportReference(funcCtor));
-				yield return Create(Ldstr, properties[i].Item1.Name);
+				if (properties[i].Item3 == null) //no indexer
+					yield return Create(Ldstr, properties[i].Item1.Name);
+				else
+					yield return Create(Ldstr, $"{properties[i].Item1.Name}[{properties[i].Item3}]");
+
 				yield return Create(Newobj, module.ImportReference(tupleCtor));
 				yield return Create(Stelem_Ref);
 			}
@@ -1464,7 +1465,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		static bool CanAddToResourceDictionary(VariableDefinition parent, TypeReference collectionType, IElementNode node, IXmlLineInfo lineInfo, ILContext context)
 		{
 			if (collectionType.FullName != "Microsoft.Maui.Controls.ResourceDictionary"
-				&& collectionType.ResolveCached(context.Cache).BaseType?.FullName != "Microsoft.Maui.Controls.ResourceDictionary")
+				&& !collectionType.InheritsFromOrImplements(context.Cache, context.Module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary"))))
 				return false;
 
 			if (node.Properties.ContainsKey(XmlName.xKey))

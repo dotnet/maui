@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Crash when using NavigationPage.TitleView and Restarting App";
 
 		[Test]
+		[Category(UITestCategories.Navigation)]
 		public void AppDoesntCrashWhenReusingSameTitleView()
 		{
 			App.WaitForElement("SuccessLabel");

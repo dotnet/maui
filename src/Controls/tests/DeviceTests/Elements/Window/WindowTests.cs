@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -199,5 +201,29 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+		[Fact(DisplayName = "Initial Dispatch from Background Thread Succeeds")]
+		public async Task InitialDispatchFromBackgroundThreadSucceeds()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.Services.RemoveAll<IDispatcher>();
+				builder.ConfigureDispatching();
+			});
+
+			var firstPage = new ContentPage();
+			var window = new Window(firstPage);
+			bool passed = true;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				await Task.Run(async () =>
+				{
+					await firstPage.Handler.MauiContext.Services.GetRequiredService<IDispatcher>()
+						.DispatchAsync(() => passed = true);
+				});
+			});
+
+			Assert.True(passed);
+		}
 	}
 }

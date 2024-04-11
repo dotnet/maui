@@ -62,9 +62,7 @@ namespace Maui.Controls.Sample
 						TrackOnInsights(page);
 						if (page is ContentPage /*|| page is CarouselPage*/)
 						{
-
 							await Navigation.PushAsync(page);
-
 						}
 						else if (page is Shell)
 						{
@@ -150,7 +148,8 @@ namespace Maui.Controls.Sample
 				var duplicates = new HashSet<string>();
 				_issues.ForEach(im =>
 				{
-					if (duplicates.Contains(im.Name, StringComparer.OrdinalIgnoreCase) && !IsExempt(im.Name))
+					if (im.IssueTracker != IssueTracker.None &&
+					duplicates.Contains(im.Name, StringComparer.OrdinalIgnoreCase) && !IsExempt(im.Name))
 					{
 						throw new NotSupportedException("Please provide unique tracker + issue number combo: "
 							+ im.IssueTracker.ToString() + im.IssueNumber.ToString() + im.IssueTestNumber.ToString());

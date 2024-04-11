@@ -70,13 +70,13 @@
 
   <!-- Until we get a new enough dotnet -->
   <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.27" TargetingPackVersion="10.0.19041.27" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.31" TargetingPackVersion="10.0.19041.31" />
   </ItemGroup>
 
   <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
   -->
-  <Import Project="src\Core\src\nuget\buildTransitive\WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
+  <Import Project="src\Core\src\nuget\buildTransitive\WinUI.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
 
   <!-- NuGet package information -->
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
