@@ -77,13 +77,14 @@ namespace Microsoft.Maui.Platform
 		{
 			base.LayoutSubviews();
 
-			if (Subviews.Length == 0)
+			var subviews = Subviews;
+			if (subviews.Length == 0)
 				return;
 
 			if (_borderView is not null)
 				BringSubviewToFront(_borderView);
 
-			var child = Subviews[0];
+			var child = subviews[0];
 
 			child.Frame = Bounds;
 
@@ -115,10 +116,11 @@ namespace Microsoft.Maui.Platform
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
-			if (Subviews.Length == 0)
+			var subviews = Subviews;
+			if (subviews.Length == 0)
 				return base.SizeThatFits(size);
 
-			var child = Subviews[0];
+			var child = subviews[0];
 
 			// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
 			// This also affects ImageButtons
@@ -136,10 +138,11 @@ namespace Microsoft.Maui.Platform
 
 		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight)
 		{
-			if (Subviews.Length == 0)
+			var subviews = Subviews;
+			if (subviews.Length == 0)
 				return base.SizeThatFits(originalSpec);
 
-			var child = Subviews[0];
+			var child = subviews[0];
 
 			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
 			{
