@@ -17,7 +17,7 @@ namespace UITests
 		[Category(UITestCategories.CollectionView)]
 		public void JustWhalingAwayOnTheCollectionViewWithAddsAndClearsShouldNotCrash()
 		{
-			this.IgnoreIfPlatforms([[TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
 			RunningApp.WaitForElement(Run);
 			RunningApp.Tap(Run);
