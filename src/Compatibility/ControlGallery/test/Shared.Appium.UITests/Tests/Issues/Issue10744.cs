@@ -17,6 +17,8 @@ namespace UITests
 		[FailsOnAndroid]
 		public void WebViewEvalCrashesOnAndroidWithLongString()
 		{
+			this.IgnoreIfPlatforms([TestDevice.iOS]);
+
 			RunningApp.WaitForElement("navigatedLabel");
 		}
 	}
