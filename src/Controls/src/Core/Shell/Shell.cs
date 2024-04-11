@@ -1104,7 +1104,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// By default, Shell applications have a hamburger icon which, when pressed, opens the flyout.
-		///  This icon can be changed by setting the FlyoutIcon property.
+		/// This icon can be changed by setting the FlyoutIcon property.
 		/// </summary>
 		public static readonly BindableProperty FlyoutIconProperty =
 			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null);
