@@ -23,9 +23,7 @@ namespace Maui.Controls.Sample.Issues
 			App.WaitForElement("Button5354");
 			
 			for(int i = 0; i < 3; i++)
-			{
-				App.WaitForNoElement("NoElement", timeout: TimeSpan.FromSeconds(3));
-			
+			{			
 				var linearRect0 = App.WaitForElement("Image0").GetRect();
 				var linearRect1 = App.WaitForElement("Image1").GetRect();
 
@@ -34,7 +32,6 @@ namespace Maui.Controls.Sample.Issues
 
 				App.Click("Button5354");
 
-				App.WaitForNoElement("NoElement", timeout: TimeSpan.FromSeconds(3));
 				var gridRect0 = App.WaitForElement("Image0").GetRect();
 				var gridRect1 = App.WaitForElement("Image1").GetRect();
 
