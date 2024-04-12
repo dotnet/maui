@@ -108,12 +108,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var localName = propertyName.LocalName;
 			TypeReference declaringTypeReference = null;
 			FieldReference bpRef = null;
-			var _ = false;
 			PropertyDefinition propertyRef = null;
 			if (parentNode is IElementNode && propertyName != XmlName.Empty)
 			{
-				bpRef = GetBindablePropertyReference(Context.Variables[(IElementNode)parentNode], propertyName.NamespaceURI, ref localName, out _, Context, node);
-				propertyRef = Context.Variables[(IElementNode)parentNode].VariableType.GetProperty(Context.Cache, pd => pd.Name == localName, out declaringTypeReference);
+				var parentTypeRef = (parentNode as ILRootNode)?.TypeReference ?? ((IElementNode)parentNode).XmlType.GetTypeReference(Context.Cache, Module, node as IXmlLineInfo);
+				bpRef = GetBindablePropertyReference(parentTypeRef, propertyName.NamespaceURI, ref localName, out _, Context, node);
+				propertyRef = parentTypeRef.GetProperty(Context.Cache, pd => pd.Name == localName, out declaringTypeReference);
 			}
 			Context.IL.Append(ProvideValue(vardefref, Context, Module, node, bpRef: bpRef, propertyRef: propertyRef, propertyDeclaringTypeRef: declaringTypeReference));
 			if (vardef != vardefref.VariableDefinition)
@@ -1031,12 +1031,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		static FieldReference GetBindablePropertyReference(VariableDefinition parent, string namespaceURI, ref string localName, out bool attached, ILContext context, IXmlLineInfo iXmlLineInfo)
+			=> GetBindablePropertyReference(parent.VariableType, namespaceURI, ref localName, out attached, context, iXmlLineInfo);
+		
+		public static FieldReference GetBindablePropertyReference(TypeReference bpOwnerType, string namespaceURI, ref string localName, out bool attached, ILContext context, IXmlLineInfo iXmlLineInfo)
 		{
 			var module = context.Body.Method.Module;
 			TypeReference declaringTypeReference;
 
 			//If it's an attached BP, update elementType and propertyName
-			var bpOwnerType = parent.VariableType;
 			attached = GetNameAndTypeRef(ref bpOwnerType, namespaceURI, ref localName, context, iXmlLineInfo);
 			var name = $"{localName}Property";
 			FieldDefinition bpDef = bpOwnerType.GetField(context.Cache,

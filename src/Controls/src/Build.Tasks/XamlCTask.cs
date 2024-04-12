@@ -356,7 +356,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					LoggingHelper = loggingHelper,
 				};
 
-
 				rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
 				rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
 				rootnode.Accept(new PruneIgnoredNodesVisitor(), null);
