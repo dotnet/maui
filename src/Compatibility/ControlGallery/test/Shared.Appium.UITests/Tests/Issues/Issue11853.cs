@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -17,8 +18,6 @@ namespace UITests
 		[Category(UITestCategories.CollectionView)]
 		public void JustWhalingAwayOnTheCollectionViewWithAddsAndClearsShouldNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement(Run);
 			RunningApp.Tap(Run);
 			Task.Delay(5000).Wait();
@@ -30,3 +29,4 @@ namespace UITests
 		}
 	}
 }
+#endif
