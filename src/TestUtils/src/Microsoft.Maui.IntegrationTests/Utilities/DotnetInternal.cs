@@ -46,9 +46,9 @@ namespace Microsoft.Maui.IntegrationTests
 			return buildArgs;
 		}
 
-		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false)
+		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false, string runtimeIdentifier = "")
 		{
-			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath);
+			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, false);
 
 			if (msbuildWarningsAsErrors)
 			{
