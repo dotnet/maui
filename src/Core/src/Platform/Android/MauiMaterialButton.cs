@@ -104,15 +104,6 @@ namespace Microsoft.Maui.Platform
 			var remainingWidth = availableWidth - PaddingLeft - PaddingRight;
 			var remainingHeight = availableHeight - PaddingTop - PaddingBottom;
 
-			if (IsIconGravityHorizontal)
-			{
-				remainingWidth -= IconPadding;
-			}
-			else
-			{
-				remainingHeight -= IconPadding;
-			}
-
 			var iconWidth = Math.Min(remainingWidth, actual.IntrinsicWidth);
 			var iconHeight = Math.Min(remainingHeight, actual.IntrinsicHeight);
 
@@ -124,9 +115,22 @@ namespace Microsoft.Maui.Platform
 					(double)iconWidth / actual.IntrinsicWidth,
 					(double)iconHeight / actual.IntrinsicHeight);
 
-				if (resizable.SetPreferredSize(
-					Math.Max(0, (int)(actual.IntrinsicWidth * ratio)),
-					Math.Max(0, (int)(actual.IntrinsicHeight * ratio))))
+				var imageWidth = Math.Max(0, (int)(actual.IntrinsicWidth * ratio));
+				var imageHeight = Math.Max(0, (int)(actual.IntrinsicHeight * ratio));
+
+				// If there is not enough room for the spacing, center the icon
+				if (IsIconGravityHorizontal && availableWidth < imageWidth + PaddingLeft + PaddingRight + IconPadding)
+				{
+					IconPadding = 0;
+					Text = string.Empty;
+				}
+				else if (!IsIconGravityHorizontal && availableHeight < imageHeight + PaddingTop + PaddingBottom + IconPadding)
+				{
+					IconPadding = 0;
+					Text = string.Empty;
+				}
+
+				if (resizable.SetPreferredSize(imageWidth, imageHeight))
 				{
 					// trigger a layout re-calculation
 					Icon = null;
