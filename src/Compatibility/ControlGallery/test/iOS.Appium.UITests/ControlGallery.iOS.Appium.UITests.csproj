@@ -6,9 +6,6 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
 	  <RootNamespace>UITests</RootNamespace>
-  </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>$(DefineConstants);IOS;IOSUITEST</DefineConstants>
   </PropertyGroup>
   
