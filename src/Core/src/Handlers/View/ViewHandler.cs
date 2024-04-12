@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID
 			// Use a custom mapper for Android which knows how to batch the initial property sets
 			new AndroidBatchPropertyMapper<IView, IViewHandler>(ElementMapper)
+#elif WINDOWS
+			// Use a custom mapper for Windows which knows how to batch the initial property sets
+			new WindowsBatchPropertyMapper<IView, IViewHandler>(ElementMapper)
 #else
 			new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
 #endif
