@@ -40,7 +40,7 @@ public partial class MainPage : ContentPage
 		}
 
 		sw.Stop();
-		info.Text = $"Clearing grid took: {sw.ElapsedMilliseconds} ms";
+		info.Text = $"Grid was created in: {sw.ElapsedMilliseconds} ms";
 	}
 
 	private async void BatchGenerate_ClickedAsync(object sender, EventArgs e)
