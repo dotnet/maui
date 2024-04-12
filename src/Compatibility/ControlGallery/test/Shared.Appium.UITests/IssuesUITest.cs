@@ -54,6 +54,7 @@ namespace UITests
 		{
 			RunningApp.NavigateToIssues();
 
+			RunningApp.ClearText("SearchBarGo");
 			RunningApp.EnterText("SearchBarGo", issue);
 
 			RunningApp.WaitForElement("SearchButton");

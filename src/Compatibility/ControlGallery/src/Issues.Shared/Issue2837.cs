@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		{
 			var nav = (NavigationPage)this;
 
-			nav.Navigation.InsertPageBefore(new ContentPage() { Title = "SecondPage ", Content = new Label { Text = _labelText } }, nav.CurrentPage);
+			nav.Navigation.InsertPageBefore(new ContentPage() { Title = "SecondPage ", Content = new Label { AutomationId = _labelText, Text = _labelText } }, nav.CurrentPage);
 			await nav.Navigation.PopAsync(false);
 			base.OnAppearing();
 		}

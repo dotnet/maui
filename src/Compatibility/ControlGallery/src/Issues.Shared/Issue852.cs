@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		{
 			var welcomeLabel = new Label()
 			{
+				AutomationId = "WelcomeLabel",
 				Text = "Logging into the System",
 				HorizontalOptions = LayoutOptions.Center
 			};
@@ -100,6 +101,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			_loginButton = new Button
 			{
+				AutomationId = "Login",
 				ClassId = "loginButton",
 				Text = "Login",
 			};

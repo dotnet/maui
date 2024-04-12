@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			Button modal = new Button
 			{
+				AutomationId = "ModalPushPopTest",
 				Text = "Modal Push Pop Test",
 				FontAttributes = FontAttributes.Bold,
 				FontSize = 25,

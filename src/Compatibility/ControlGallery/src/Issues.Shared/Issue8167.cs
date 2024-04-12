@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var model = new _8167ViewModel();
 
-			var button = new Button() { Text = Run };
+			var button = new Button() { AutomationId = Run, Text = Run };
 
 			button.Clicked += (obj, args) =>
 			{

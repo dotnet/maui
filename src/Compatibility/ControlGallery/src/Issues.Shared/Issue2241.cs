@@ -64,6 +64,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var scrollView = new ScrollView
 			{
+				AutomationId = "TestScrollView",
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				Padding = new Thickness(20),

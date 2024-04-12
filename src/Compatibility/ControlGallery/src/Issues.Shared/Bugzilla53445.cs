@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		{
 			var layout = new StackLayout { VerticalOptions = LayoutOptions.Fill, Spacing = 20 };
 
-			var status = new Label { Text = "Success" };
+			var status = new Label { AutomationId = "Success", Text = "Success" };
 
 			var instructions = new Label { Text = "Disable all of the layouts by clicking the Toggle button. Then click the buttons inside each layout. If the status changes from Success to Fail, this test has failed." };
 

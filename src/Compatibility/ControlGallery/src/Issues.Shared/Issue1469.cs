@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			{
 				Children = {
 					new Label { Text = "If you click an item in the list it should not become selected" },
-					new Button { Text = Go, Command = new Command(() => list.SelectedItem = _items[2]) },
-					new Button { Text = Back, Command = new Command(() => list.SelectedItem = list.SelectedItem = null) },
+					new Button { AutomationId =Go, Text = Go, Command = new Command(() => list.SelectedItem = _items[2]) },
+					new Button { AutomationId = Back, Text = Back, Command = new Command(() => list.SelectedItem = list.SelectedItem = null) },
 					statusLabel,
 					list
 				}

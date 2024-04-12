@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var button0 = new Button
 			{
+				AutomationId = "Button0",
 				Text = "Button 0",
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var button1 = new Button
 			{
+				AutomationId = "Button1",
 				Text = "Button 1",
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill

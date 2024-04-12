@@ -23,9 +23,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			public TestPage(int index)
 			{
-				nextBtn = new Button { Text = "Next Page" };
-				rmBtn = new Button { Text = "Remove previous pages" };
-				popBtn = new Button { Text = "Back" };
+				nextBtn = new Button { AutomationId = "Next Page", Text = "Next Page" };
+				rmBtn = new Button { AutomationId = "Remove previous pages", Text = "Remove previous pages" };
+				popBtn = new Button { AutomationId = "Back", Text = "Back" };
 
 				nextBtn.Clicked += async (sender, e) => await Navigation.PushAsync(new TestPage(index + 1));
 				rmBtn.Clicked += (sender, e) =>

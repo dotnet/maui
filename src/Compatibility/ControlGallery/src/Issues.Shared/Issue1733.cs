@@ -101,17 +101,20 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			Button buttonChangeFont = new Button()
 			{
+				AutomationId = btnChangeFontToLarger,
 				Text = btnChangeFontToLarger
 			};
 
 
 			Button buttonChangeText = new Button()
 			{
+				AutomationId = btnChangeToHasText,
 				Text = btnChangeToHasText
 			};
 
 			Button buttonChangeSizeOption = new Button()
 			{
+				AutomationId = btnChangeSizeOption,
 				Text = btnChangeSizeOption
 			};
 
@@ -123,12 +126,12 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 					if (e.FontSize == fontSizeInitial)
 					{
 						e.FontSize = 40;
-						Device.BeginInvokeOnMainThread(() => buttonChangeFont.Text = btnChangeFontToDefault);
+						Device.BeginInvokeOnMainThread(() => buttonChangeFont.AutomationId = buttonChangeFont.Text = btnChangeFontToDefault);
 					}
 					else
 					{
 						e.FontSize = fontSizeInitial;
-						Device.BeginInvokeOnMainThread(() => buttonChangeFont.Text = btnChangeFontToLarger);
+						Device.BeginInvokeOnMainThread(() => buttonChangeFont.AutomationId = buttonChangeFont.Text = btnChangeFontToLarger);
 					}
 				});
 			};

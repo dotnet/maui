@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		ContentPage CreateRootPage()
 		{
-			var button = new Button { Text = Go };
+			var button = new Button { AutomationId = Go, Text = Go };
 
 			button.Clicked += (sender, args) => Application.Current.MainPage = ModifyDataPage();
 
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		ContentPage ModifyDataPage()
 		{
-			var contentPage = new ContentPage { Content = new Label { Text = Success, Margin = 100 } };
+			var contentPage = new ContentPage { Content = new Label { AutomationId = Success, Text = Success, Margin = 100 } };
 
 			contentPage.Appearing += (sender, args) =>
 				DataSample.Instance.Items.Add(new Item("C") { new SubItem("Cherry"), new SubItem("Cranberry") });

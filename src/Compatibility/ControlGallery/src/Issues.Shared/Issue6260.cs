@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var label = new Label()
 			{
+				AutomationId = success,
 				Text = success
 			};
 
