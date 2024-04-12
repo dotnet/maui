@@ -26,11 +26,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
-    <DefineConstants>$(DefineConstants);IOS</DefineConstants>
+    <DefineConstants>$(DefineConstants);IOS;IOSUITEST</DefineConstants>
   </PropertyGroup>
   
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+    <DefineConstants>$(DefineConstants);WINDOWS;WINTEST</DefineConstants>
   </PropertyGroup>
   
 </Project>
