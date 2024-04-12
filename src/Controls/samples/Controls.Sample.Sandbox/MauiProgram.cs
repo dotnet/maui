@@ -2,27 +2,25 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 public static class MauiProgram
 {
-	public static MauiApp CreateMauiApp() =>
-		MauiApp
-			.CreateBuilder()
-#if __ANDROID__ || __IOS__
-			.UseMauiMaps()
-#endif
+	public static class MauiProgram
+	{
+		public static MauiApp CreateMauiApp() =>
+			MauiApp
+				.CreateBuilder()
+				.UseMauiMaps()
 				.UseMauiApp<App>()
 				.Build();
 	}
 
-	class App : Microsoft.Maui.Controls.Application
+	class App : Application
 	{
 		protected override Window CreateWindow(IActivationState? activationState)
 		{
 			// To test shell scenarios, change this to true
 			bool useShell = false;
-			On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().UseWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize);
 
 			if (!useShell)
 			{

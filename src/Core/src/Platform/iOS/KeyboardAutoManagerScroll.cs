@@ -286,17 +286,17 @@ public static class KeyboardAutoManagerScroll
 
 		if (entranceCount == DebounceCount)
 		{
-			await AdjustPosition();
+			AdjustPosition();
 
 			// See if the layout requests to scroll again after our initial scroll
 			await Task.Delay(5);
 			if (ShouldScrollAgain)
-				await AdjustPosition();
+				AdjustPosition();
 		}
 	}
 
 	// main method to calculate and animate the scrolling
-	internal static async Task AdjustPosition()
+	internal static void AdjustPosition()
 	{
 		if (ContainerView is null
 			|| (View is not UITextField && View is not UITextView)
@@ -595,11 +595,11 @@ public static class KeyboardAutoManagerScroll
 			// ContentInset logic
 			if (forceSetContentInsets && superScrollView is not null)
 			{
-				await ApplyContentInset (superScrollView, LastScrollView);
+				ApplyContentInset (superScrollView, LastScrollView);
 			}
 			else
 			{
-				await ApplyContentInset (ScrolledView, LastScrollView);
+				ApplyContentInset (ScrolledView, LastScrollView);
 			}
 		}
 
@@ -619,7 +619,7 @@ public static class KeyboardAutoManagerScroll
 				// this is the scenario where there is a scrollview, but the whole scrollview is below
 				// where the keyboard will be. We need to scroll the ContainerView and add ContentInsets to the scrollview.
 				if (LastScrollView is not null)
-					await ApplyContentInset(LastScrollView, LastScrollView);
+					ApplyContentInset(LastScrollView, LastScrollView);
 			}
 		}
 
@@ -670,7 +670,7 @@ public static class KeyboardAutoManagerScroll
 			ContainerView.Frame = rect;
 	}
 
-	static async Task ApplyContentInset(UIScrollView? scrolledView, UIScrollView? lastScrollView)
+	static void ApplyContentInset(UIScrollView? scrolledView, UIScrollView? lastScrollView)
 	{
 		if (scrolledView is null || lastScrollView is null || ContainerView is null)
 			return;
@@ -684,7 +684,6 @@ public static class KeyboardAutoManagerScroll
 			movedContainerDistance = TopViewBeginOrigin.Y - ContainerView.Frame.Y;
 		}
 
-		await Task.Delay(0);
 		var frameInWindow = ContainerView!.ConvertRectToView(scrolledView.Frame, null);
 		keyboardIntersect = CGRect.Intersect(KeyboardFrame, frameInWindow);
 
