@@ -400,6 +400,28 @@ Task("SetupTestPaths")
 			{
 				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.Sample.UITests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
 			}
+
+			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+
 			Information("Looking for .app in arcade binDir {0}", binDir);
 			apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
 			if(apps.Count() == 0 )
