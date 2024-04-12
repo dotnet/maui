@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.AppContext;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -177,7 +178,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			}
 			else
 			{
-				appRootDir = Environment.CurrentDirectory;
+			}
 			}
 			var hostPageFullPath = Path.GetFullPath(Path.Combine(appRootDir, HostPage!)); // HostPage is nonnull because RequiredStartupPropertiesSet is checked above
 			var contentRootDirFullPath = Path.GetDirectoryName(hostPageFullPath)!;
