@@ -8,6 +8,8 @@
         <Label x:Name="info" Text="Click a button" VerticalOptions="Center"/>
         <Button Text="Clear Grid" Clicked="ClearGrid_Clicked"/>
         <Button Text="Generate Grid" Clicked="Button_Clicked"/>
+        <Entry x:Name="BatchSize" Text="15"/>
+        <Button Text="Batch Generate Grid" Clicked="BatchGenerate_Clicked"/>
 
         <HorizontalStackLayout x:Name="myGridWrapper">
             <Grid x:Name="contentGrid"/>
