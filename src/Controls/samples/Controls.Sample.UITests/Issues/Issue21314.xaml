@@ -6,7 +6,7 @@
     Title="Issue 21314">
 
     <VerticalStackLayout>
-        <Image x:Name="theImage" Source="photo21314.jpg"/>
-        <Label AutomationId="WaitForStubControl" />
+        <Label AutomationId="WaitForStubControl" Text="The image below should be portrait and correctly oriented." />
+        <Image x:Name="theImage" Source="photo21314.jpg" WidthRequest="100" HeightRequest="100"/>
     </VerticalStackLayout>
 </ContentPage>
