@@ -137,6 +137,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			CrossPlatformArrange(bounds);
+			LayoutChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public override void SetNeedsLayout()
@@ -198,5 +199,8 @@ namespace Microsoft.Maui.Platform
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
 			TryToInvalidateSuperView(true);
 		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		internal event EventHandler? LayoutChanged;
 	}
 }
