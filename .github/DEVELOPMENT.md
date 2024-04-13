@@ -134,7 +134,6 @@ These are tests that will run on an actual device
 
 [Writing UI Tests](https://github.com/dotnet/maui/wiki/UITests)
 
-
 These are tests used for exercising the UI through accessibility layers to simulate user interactions
 
 ```
