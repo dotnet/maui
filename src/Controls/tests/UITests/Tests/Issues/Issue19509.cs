@@ -13,7 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Entry TextColor property not working when the Text value is bound after some time";
 
 		[Test]
-		public async Task Issue19509Test()
+		public async Task EntryTextColorStopsWorkingAfterPropertyIsUpdatedFromBinding()
 		{
 			App.WaitForElement("WaitForStubControl");
 
