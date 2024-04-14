@@ -84,5 +84,19 @@ namespace Microsoft.Maui.Platform
 		public event EventHandler? TextPropertySet;
 		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal event EventHandler? SelectionChanged;
+#pragma warning disable RS0016
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		public event EventHandler? ThemeChanged;
+
+		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
+		{
+#pragma warning disable CA1422 // Validate platform compatibility
+			base.TraitCollectionDidChange(previousTraitCollection);
+#pragma warning restore CA1422 // Validate platform compatibility
+			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			{
+				ThemeChanged?.Invoke(this, EventArgs.Empty);
+			}
+		}
 	}
 }

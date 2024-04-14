@@ -126,6 +126,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidEnd += OnEditingEnded;
 				platformView.TextPropertySet += OnTextPropertySet;
 				platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
+				platformView.ThemeChanged += PlatformView_ThemeChanged;
 			}
 
 			public void Disconnect(MauiTextField platformView)
@@ -138,6 +139,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidEnd -= OnEditingEnded;
 				platformView.TextPropertySet -= OnTextPropertySet;
 				platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
+				platformView.ThemeChanged -= PlatformView_ThemeChanged;
 
 				if (_set)
 					platformView.SelectionChanged -= OnSelectionChanged;
@@ -192,6 +194,14 @@ namespace Microsoft.Maui.Handlers
 				if (sender is MauiTextField platformView)
 				{
 					VirtualView?.UpdateText(platformView.Text);
+				}
+			}
+
+			private void PlatformView_ThemeChanged(object? sender, EventArgs e)
+			{
+				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
+				{
+					platformView?.UpdateClearButtonColor(virtualView);
 				}
 			}
 
