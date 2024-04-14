@@ -15,10 +15,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
         [Test]
         public void ImageShouldBePortrait()
         {
-            this.IgnoreIfPlatforms (new TestDevice[] { TestDevice.Mac, TestDevice.Android, TestDevice.Windows });
+            this.IgnoreIfPlatforms (new TestDevice[] { TestDevice.Android, TestDevice.Windows });
 
-            _ = App.WaitForElement ("WaitForStubControl");
-            VerifyScreenshot();
+            var image = App.WaitForElement ("theImage").GetRect();
+            Assert.Greater(image.Height, image.Width);
         }
     }
 }
