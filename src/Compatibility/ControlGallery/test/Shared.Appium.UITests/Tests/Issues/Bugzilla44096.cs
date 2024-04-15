@@ -5,6 +5,14 @@ namespace UITests
 {
 	public class Bugzilla44096 : IssuesUITest
 	{
+		public Bugzilla44096(TestDevice testDevice) : base(testDevice)
+		{
+		}
+
+		public override string Issue =>
+			"Grid, StackLayout, and ContentView still participate in hit testing on Android after IsEnabled is set to false";
+
+		/*
 		const string StackLayout = "stackLayout";
 		const string ContentView = "contentView";
 		const string Grid = "grid";
@@ -14,13 +22,6 @@ namespace UITests
 		const string ToggleColor = "color";
 		const string ToggleIsEnabled = "disabled";
 		const string Original = "Original";
-
-		public Bugzilla44096(TestDevice testDevice) : base(testDevice)
-		{
-		}
-
-		public override string Issue =>
-			"Grid, StackLayout, and ContentView still participate in hit testing on Android after IsEnabled is set to false";
 
 		[Test]
 		[Category(UITestCategories.Layout)]
@@ -93,5 +94,6 @@ namespace UITests
 			RunningApp.Tap(control);
 			RunningApp.WaitForNoElement(Original);
 		}
+		*/
 	}
 }

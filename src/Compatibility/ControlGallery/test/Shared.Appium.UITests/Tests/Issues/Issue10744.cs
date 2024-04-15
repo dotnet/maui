@@ -9,7 +9,7 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "[Android] WebView.Eval crashes on Android with long string\"";
+		public override string Issue => "[Android] WebView.Eval crashes on Android with long string";
 
 		[Test]
 		[Category(UITestCategories.WebView)]

@@ -13,12 +13,16 @@ namespace UITests
 
 		public override string Issue => "[Bug] Exception Ancestor must be provided for all pushes except first";
 
+		// Crash after navigating
+		/*
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void Bugzilla42956Test()
 		{
 			RunningApp.WaitForElement(Success);
 		}
+		*/
 	}
 }

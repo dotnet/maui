@@ -11,6 +11,12 @@ namespace UITests
 
 		public override string Issue => "Disabling back press on modal page causes app to crash";
 
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			RunningApp.ResetApp();
+		}
+
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void Issue45702Test()

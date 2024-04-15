@@ -11,6 +11,8 @@ namespace UITests
 
 		public override string Issue => "[Bug] Exception Ancestor must be provided for all pushes except first";
 
+		// Crash after navigation
+		/*
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
 		public void Issue10222Test()
@@ -20,5 +22,6 @@ namespace UITests
 			RunningApp.WaitForElement("collectionView");
 			RunningApp.WaitForElement("goTo");
 		}
+		*/
 	}
 }

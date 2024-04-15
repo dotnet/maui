@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				{
 					Content = new Label
 					{
+						AutomationId = TestOk,
 						Text = TestOk
 					}
 				});

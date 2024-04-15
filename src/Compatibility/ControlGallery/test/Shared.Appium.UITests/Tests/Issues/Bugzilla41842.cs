@@ -11,6 +11,8 @@ namespace UITests
 
 		public override string Issue => "Set FlyoutPage.Detail = New Page() twice will crash the application when set FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split";
 
+		// Crash after navigation
+		/*
 		[Test]
 		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.FlyoutPage)]
@@ -19,5 +21,6 @@ namespace UITests
 		{
 			RunningApp.WaitForElement("Success");
 		}
+		*/
 	}
 }

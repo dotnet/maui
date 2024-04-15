@@ -6,21 +6,21 @@ namespace UITests
 {
 	public class Bugzilla58645 : IssuesUITest
 	{
+		const string ButtonId = "button";
+
 		public Bugzilla58645(TestDevice testDevice) : base(testDevice)
 		{
 		}
 
-		public override string Issue => "ListView not honoring INotifyCollectionChanged ";
+		public override string Issue => "[iOS] NRE Thrown When ListView Items Are Replaced By Items With a Different Template";
 
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[FailsOnIOS]
-		public void Bugzilla57674Test()
+		public void Bugzilla58645Test()
 		{
-			RunningApp.Screenshot("Initial Status");
-			RunningApp.WaitForElement("IssueListView");
-			RunningApp.Tap("IssueButton");
-			RunningApp.Screenshot("Element Added to List");
+			RunningApp.WaitForElement(ButtonId);
+			RunningApp.Tap(ButtonId);
 		}
 	}
 }
