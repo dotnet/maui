@@ -11,6 +11,7 @@ namespace UITests
 		}
 
 		public override string Issue => "SetHasNavigationBar screen height wrong";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]

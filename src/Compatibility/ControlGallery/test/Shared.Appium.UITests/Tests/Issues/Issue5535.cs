@@ -10,7 +10,8 @@ namespace UITests
 		}
 
 		public override string Issue => "CollectionView: Swapping EmptyViews has no effect";
-	
+		public override bool ResetMainPage => false;
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void SwappingEmptyViews()

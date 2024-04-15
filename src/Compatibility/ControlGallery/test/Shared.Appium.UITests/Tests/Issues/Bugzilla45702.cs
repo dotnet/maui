@@ -10,6 +10,7 @@ namespace UITests
 		}
 
 		public override string Issue => "Disabling back press on modal page causes app to crash";
+		public override bool ResetMainPage => false;
 
 		protected override void FixtureTeardown()
 		{

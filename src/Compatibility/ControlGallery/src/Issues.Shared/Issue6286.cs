@@ -65,11 +65,11 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			}
 		}
 
-		void Webview_Navigated(object sender, WebNavigatedEventArgs e)
+		async void Webview_Navigated(object sender, WebNavigatedEventArgs e)
 		{
-			webview.EvaluateJavaScriptAsync("document.write('i executed this javascript woohoo');");
+			await webview.EvaluateJavaScriptAsync("document.write('i executed this javascript woohoo');");
 
-			webview2.EvaluateJavaScriptAsync("document.write('i executed this javascript woohoo');");
+			await webview2.EvaluateJavaScriptAsync("document.write('i executed this javascript woohoo');");
 		}
 
 #if UITEST

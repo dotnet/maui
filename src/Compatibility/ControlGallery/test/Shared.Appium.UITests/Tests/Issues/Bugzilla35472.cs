@@ -11,6 +11,7 @@ namespace UITests
 		}
 
 		public override string Issue => "PopAsync during ScrollToAsync throws NullReferenceException";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

@@ -11,6 +11,7 @@ namespace UITests
 		}
 
 		public override string Issue => "Navigation.PopAsync(false) in Entry.Completed handler => System.ArgumentException";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

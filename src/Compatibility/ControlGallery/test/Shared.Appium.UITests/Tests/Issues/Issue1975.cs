@@ -13,6 +13,7 @@ namespace UITests
 		}
 
 		public override string Issue => "[iOS] ListView throws NRE when grouping enabled and data changed";
+		public override bool ResetMainPage => false;
 
 		protected override void FixtureTeardown()
 		{

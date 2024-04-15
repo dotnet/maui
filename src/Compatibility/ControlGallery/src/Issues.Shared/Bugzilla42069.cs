@@ -43,14 +43,14 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			var label2 = new Label { Text = instructions2, HorizontalTextAlignment = TextAlignment.Center };
 
 			var startButton = new Button { Text = "Start" };
-			startButton.Clicked += (sender, args) =>
+			startButton.Clicked += async (sender, args) =>
 			{
 				// We have to do the push-pop-push dance because NavigationPage
 				// holds a reference to its last page for unrelated reasons; our concern 
 				// here is that the first Bugzilla42069_Page that we pushed gets collected
-				PushAsync(new Bugzilla42069_Page(), false);
-				PopAsync(false);
-				PushAsync(new Bugzilla42069_Page(), false);
+				await PushAsync(new Bugzilla42069_Page(), false);
+				await PopAsync(false);
+				await PushAsync(new Bugzilla42069_Page(), false);
 			};
 
 			var collectButton = new Button { Text = "Collect" };

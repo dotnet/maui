@@ -10,6 +10,7 @@ namespace UITests
 		}
 
 		public override string Issue => "[iOS] CollectionView crash with empty ObservableCollection";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]

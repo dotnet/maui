@@ -11,6 +11,8 @@ namespace UITests
 
 		public override string Issue => "[Bug] NSInternalInconsistencyException when trying to run XamarinTV on iOS";
 
+		public override bool ResetMainPage => false;
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnIOS]

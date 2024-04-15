@@ -14,6 +14,7 @@ namespace UITests
 		}
 
 		public override string Issue => "Navigation Bar back button does not show when using InsertPageBefore";
+		public override bool ResetMainPage => false;
 
 		// Crashing when navigating
 		/*

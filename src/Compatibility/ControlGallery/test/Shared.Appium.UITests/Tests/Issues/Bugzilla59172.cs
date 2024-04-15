@@ -10,6 +10,7 @@ namespace UITests
 		}
 
 		public override string Issue => "[iOS] Popped page does not appear on top of current navigation stack, please file a bug.";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]

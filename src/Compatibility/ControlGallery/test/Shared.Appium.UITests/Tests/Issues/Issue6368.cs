@@ -10,6 +10,7 @@ namespace UITests
 		}
 
 		public override string Issue => "[CustomRenderer]Crash when navigating back from page with custom renderer control";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

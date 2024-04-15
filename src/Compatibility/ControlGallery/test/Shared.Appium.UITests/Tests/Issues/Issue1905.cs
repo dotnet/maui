@@ -10,8 +10,9 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "AlertView doesn't scroll when text is to large"; 
-		
+		public override string Issue => "AlertView doesn't scroll when text is to large";
+		public override bool ResetMainPage => false;
+
 		[Test]
 		[Category(UITestCategories.DisplayAlert)]
 		public void TestIssue1905RefreshShows()

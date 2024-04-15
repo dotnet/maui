@@ -10,6 +10,7 @@ namespace UITests
 		}
 
 		public override string Issue => "NullReferenceException on VisualElement Finalize";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

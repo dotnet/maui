@@ -10,6 +10,7 @@ namespace UITests
 		}
 
 		public override string Issue => "[Bug] Exception Ancestor must be provided for all pushes except first";
+		public override bool ResetMainPage => false;
 
 		// Crash after navigation
 		/*

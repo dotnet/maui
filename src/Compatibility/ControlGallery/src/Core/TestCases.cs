@@ -29,54 +29,9 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				return cell;
 			}
 
-			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
+			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type, bool reset = false)
 			{
-				Action navigationAction = null;
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
-				{
-					return async () =>
-					{
-						var page = ActivatePage(type);
-						TrackOnInsights(page);
-						await Navigation.PushAsync(page);
-					};
-				}
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushModalAsync)
-				{
-					return async () =>
-					{
-						var page = ActivatePage(type);
-						TrackOnInsights(page);
-						await Navigation.PushModalAsync(page);
-					};
-				}
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.Default)
-				{
-					return async () =>
-					{
-						var page = ActivatePage(type);
-						TrackOnInsights(page);
-						if (page is ContentPage || page is CarouselPage)
-						{
-
-							await Navigation.PushAsync(page);
-
-						}
-						else if (page is Shell)
-						{
-							Application.Current.MainPage = page;
-						}
-						else
-						{
-							await Navigation.PushModalAsync(page);
-						}
-					};
-				}
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot)
+				if (reset)
 				{
 					return () =>
 					{
@@ -85,8 +40,64 @@ namespace Microsoft.Maui.Controls.ControlGallery
 						Application.Current.MainPage = page;
 					};
 				}
+				else
+				{
+					Action navigationAction = null;
 
-				return navigationAction;
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
+					{
+						return async () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+							await Navigation.PushAsync(page);
+						};
+					}
+
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.PushModalAsync)
+					{
+						return async () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+							await Navigation.PushModalAsync(page);
+						};
+					}
+
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.Default)
+					{
+						return async () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+
+							if (page is ContentPage || page is CarouselPage)
+							{
+								await Navigation.PushAsync(page);
+							}
+							else if (page is Shell)
+							{
+								Application.Current.MainPage = page;
+							}
+							else
+							{
+								await Navigation.PushModalAsync(page);
+							}
+						};
+					}
+
+					if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot)
+					{
+						return () =>
+						{
+							var page = ActivatePage(type);
+							TrackOnInsights(page);
+							Application.Current.MainPage = page;
+						};
+					}
+
+					return navigationAction;
+				}
 			}
 
 			static void TrackOnInsights(Page page)
@@ -159,8 +170,10 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			   });
 			}
 
-			public TestCaseScreen()
+			public TestCaseScreen(bool resetMainPage = false)
 			{
+				ResetMainPage = resetMainPage;
+
 				AutomationId = "TestCasesIssueList";
 
 				Intent = TableIntent.Settings;
@@ -178,13 +191,15 @@ namespace Microsoft.Maui.Controls.ControlGallery
 						 IssueTestNumber = attribute.IssueTestNumber,
 						 Name = attribute.DisplayName,
 						 Description = attribute.Description,
-						 Action = ActivatePageAndNavigate(attribute, type)
+						 Action = ActivatePageAndNavigate(attribute, type, ResetMainPage)
 					 }).ToList();
 
 				VerifyNoDuplicates();
 
 				FilterIssues();
 			}
+			
+			internal bool ResetMainPage { get; set; }
 
 			public void FilterTracker(IssueTracker tracker)
 			{
@@ -293,7 +308,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			bool IsExempt(string name) => _exemptNames.Contains(name);
 		}
 
-		public static NavigationPage GetTestCases()
+		public static NavigationPage GetTestCases(bool resetMainPage = false)
 		{
 			TestCaseScreen testCaseScreen = null;
 			var rootLayout = new StackLayout();
@@ -347,7 +362,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			rootLayout.Children.Add(searchBar);
 			rootLayout.Children.Add(searchButton);
 
-			testCaseScreen = new TestCaseScreen();
+			testCaseScreen = new TestCaseScreen(resetMainPage);
 
 			rootLayout.Children.Add(CreateTrackerFilter(testCaseScreen));
 

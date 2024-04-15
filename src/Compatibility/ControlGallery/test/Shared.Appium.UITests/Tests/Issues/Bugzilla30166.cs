@@ -11,6 +11,7 @@ namespace UITests
 		}
 
 		public override string Issue => "NavigationBar.BarBackgroundColor resets on Lollipop after popping modal page";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

@@ -10,6 +10,7 @@ namespace UITests
 		}
 
 		public override string Issue => "App Crashes On Shadow Effect's OnDetached On Button That's Never Visible";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Button)]

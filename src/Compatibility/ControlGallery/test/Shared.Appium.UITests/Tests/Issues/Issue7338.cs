@@ -12,6 +12,7 @@ namespace UITests
 		}
 
 		public override string Issue => "[Bug] CollectionView crash if source is empty in XF 4.2.0.709249";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]

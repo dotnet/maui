@@ -10,6 +10,7 @@ namespace UITests
 		}
 
 		public override string Issue => "FlyoutPage throws ArgumentOutOfRangeException";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

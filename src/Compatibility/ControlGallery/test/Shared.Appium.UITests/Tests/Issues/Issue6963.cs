@@ -10,6 +10,7 @@ namespace UITests
 		}
 
 		public override string Issue => "[Bug] CollectionView multiple pre-selection throws ArgumentOutOfRangeException when SelectedItems is bound to an ObservableCollection initialized inside the constructor.";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]

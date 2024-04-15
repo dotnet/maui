@@ -10,8 +10,10 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "Horizontal ScrollView locks after rotation"; 
-		
+		public override string Issue => "Horizontal ScrollView locks after rotation";
+
+		public override bool ResetMainPage => false;
+
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[FailsOnAndroid]

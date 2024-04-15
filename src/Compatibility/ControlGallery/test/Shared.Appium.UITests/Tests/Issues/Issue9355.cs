@@ -12,6 +12,7 @@ namespace UITests
 		}
 
 		public override string Issue => "ScrollViewRenderer renderer dispose crash";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]

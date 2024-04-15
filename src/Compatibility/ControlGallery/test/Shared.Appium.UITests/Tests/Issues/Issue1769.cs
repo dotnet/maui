@@ -14,6 +14,7 @@ namespace UITests
 		}
 
 		public override string Issue => "PushAsync with Switch produces NRE";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Switch)]

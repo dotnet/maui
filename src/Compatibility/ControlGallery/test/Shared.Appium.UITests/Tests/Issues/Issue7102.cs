@@ -9,8 +9,9 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "[Bug] CollectionView Header cause delay to adding items."; 
-		
+		public override string Issue => "[Bug] CollectionView Header cause delay to adding items.";
+		public override bool ResetMainPage => false;
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderDoesNotBreakIndexes()

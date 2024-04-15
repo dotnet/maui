@@ -15,6 +15,7 @@ namespace UITests
 		}
 
 		public override string Issue => "[Android] Renderers associated with ListView cells are occasionaly not being disposed of which causes left over events to propagate to disposed views";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.ListView)]

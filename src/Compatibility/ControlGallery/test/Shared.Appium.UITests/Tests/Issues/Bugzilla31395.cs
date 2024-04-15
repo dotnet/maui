@@ -11,6 +11,7 @@ namespace UITests
 		}
 
 		public override string Issue => "Crash when switching MainPage and using a Custom Render";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

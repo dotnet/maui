@@ -12,7 +12,8 @@ namespace UITests
 		}
 
 		public override string Issue => "Exception thrown during NavigationPage.Navigation.PopAsync";
-		
+		public override bool ResetMainPage => false;
+
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void Issue2837Test()

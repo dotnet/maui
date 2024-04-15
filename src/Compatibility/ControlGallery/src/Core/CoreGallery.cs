@@ -550,6 +550,24 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 			var corePageView = new CorePageView(rootPage, navigationBehavior);
 
+			var resetCheckBox = new CheckBox
+			{
+				AutomationId = "ResetMainPage",
+				VerticalOptions = LayoutOptions.Center,
+			};
+			var resetLabel = new Label
+			{
+				Text = "Reset MainPage",
+				VerticalOptions = LayoutOptions.Center,
+			};
+			var resetLayout = new HorizontalStackLayout
+			{
+				resetCheckBox,
+				resetLabel
+			};
+			resetLayout.HorizontalOptions = LayoutOptions.End;
+			resetLayout.Margin = new Microsoft.Maui.Thickness(12);
+
 			var searchBar = new SearchBar()
 			{
 				AutomationId = "SearchBar"
@@ -566,28 +584,43 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				AutomationId = "GoToTestButton",
 				Command = new Command(async () =>
 				{
+					bool resetMainPage = resetCheckBox.IsChecked;
+
 					if (!string.IsNullOrEmpty(searchBar.Text))
 					{
 						if (!(await corePageView.PushPage(searchBar.Text)))
 						{
-							foreach (CoreViewContainer item in CoreRootView.ItemsSource)
+							var testCaseScreen = new TestCases.TestCaseScreen(resetMainPage);
+							await Task.Delay(50); // Load all the issues before try to navigate.
+
+							if (TestCases.TestCaseScreen.PageToAction.ContainsKey(searchBar.Text?.Trim()))
 							{
-								if (item.Name == searchBar.Text)
+								TestCases.TestCaseScreen.PageToAction[searchBar.Text?.Trim()]();
+							}
+							else
+							{
+								foreach (CoreViewContainer item in CoreRootView.ItemsSource)
 								{
-									CoreRootView.SelectedItem = item;
-									break;
+									if (item.Name == searchBar.Text)
+									{
+										CoreRootView.SelectedItem = item;
+										break;
+									}
 								}
 							}
 						}
 					}
 					else
-						await Navigation.PushModalAsync(TestCases.GetTestCases());
+					{
+						await Navigation.PushModalAsync(TestCases.GetTestCases(resetMainPage));
+					}
 				})
 			};
 
 			var stackLayout = new StackLayout()
 			{
 				Children = {
+					resetLayout,
 					testCasesButton,
 					searchBar,
 					new Button {

@@ -12,6 +12,7 @@ namespace UITests
 		}
 
 		public override string Issue => "Flyout's page Icon cause memory leak after FlyoutPage is popped out by holding on page";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Ignore("The sample is crashing.")]

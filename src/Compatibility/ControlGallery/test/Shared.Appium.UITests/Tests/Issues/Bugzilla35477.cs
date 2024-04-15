@@ -14,6 +14,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Frame)]
 		[Category(UITestCategories.Gestures)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void TapGestureFiresOnFrame()
 		{

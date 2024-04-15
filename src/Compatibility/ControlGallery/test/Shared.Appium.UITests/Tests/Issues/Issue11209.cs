@@ -14,6 +14,7 @@ namespace UITests
 		}
 
 		public override string Issue => "[Bug] [iOS][SwipeView] Swipe view not handling tap gesture events until swiped";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.SwipeView)]

@@ -15,6 +15,8 @@ namespace UITests
 
 		public override string Issue => "Label Renderer Dispose never called";
 
+		public override bool ResetMainPage => false;
+
 		[Test]
 		[Category(UITestCategories.Label)]
 		[FailsOnIOS]

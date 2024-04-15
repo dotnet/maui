@@ -12,6 +12,7 @@ namespace UITests
 		}
 
 		public override string Issue => "Memory leak when SwitchCell or EntryCell";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.ListView)]

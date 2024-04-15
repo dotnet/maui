@@ -12,6 +12,7 @@ namespace UITests
 		}
 
 		public override string Issue => "https://bugzilla.xamarin.com/show_bug.cgi?id=28570";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

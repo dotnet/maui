@@ -11,6 +11,8 @@ namespace UITests
 		}
 
 		public override string Issue => "[iOS] Tabbar Disappears with linker";
+		
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Shell)]

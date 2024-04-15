@@ -10,7 +10,8 @@ namespace UITests
 		}
 
 		public override string Issue => "[Android] ImageButton inside NavigationView.TitleView throw exception during device rotation";
-		
+		public override bool ResetMainPage => false;
+
 		[Test]
 		[Category(UITestCategories.ImageButton)]
 		public void RotatingDeviceDoesntCrashTitleView()

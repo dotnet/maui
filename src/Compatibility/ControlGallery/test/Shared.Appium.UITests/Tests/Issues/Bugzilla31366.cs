@@ -10,11 +10,12 @@ namespace UITests
 		}
 
 		public override string Issue => "Pushing and then popping a page modally causes ArgumentOutOfRangeException";
+		public override bool ResetMainPage => false;
 
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
-			RunningApp.Back();
+			Reset();
 		}
 
 		[Test]

@@ -12,6 +12,7 @@ namespace UITests
 		}
 
 		public override string Issue => "[UWP] Label inside Listview gets stuck inside infinite loop";
+		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.ListView)]
