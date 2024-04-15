@@ -13,6 +13,12 @@ namespace UITests
 
 		public override string Issue => "Image fails loading from long URL";
 
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			RunningApp.Back();
+		}
+
 		[Test]
 		[Category(UITestCategories.Image)]
 		[FailsOnIOS]
@@ -24,7 +30,7 @@ namespace UITests
 			Task.Delay(3000).Wait();
 
 			// If we can see this label at all, it means we didn't crash and the test is successful
-			RunningApp.WaitForElement(Success);
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }

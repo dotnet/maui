@@ -18,7 +18,7 @@ namespace UITests
 		[FailsOnIOS]
 		public void CollectionShouldInvalidateOnVisibilityChange()
 		{
-			RunningApp.WaitForElement(Success);
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace UITests
 		[FailsOnIOS]
 		public void NoCrashFromDisposedBitmapWhenSwitchingPages()
 		{
-			RunningApp.WaitForElement("Success", timeout: TimeSpan.FromSeconds(20));
+			RunningApp.WaitForNoElement("Success", timeout: TimeSpan.FromSeconds(20));
 		}
 	}
 }

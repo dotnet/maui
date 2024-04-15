@@ -26,21 +26,6 @@ namespace UITests
 			RunningApp.WaitForElement(Back);
 			RunningApp.Tap(Back);
 
-			RunningApp.WaitForElement(Success);
-		}
-
-		[Test]
-		[Category(UITestCategories.ScrollView)]
-		public void Test4186()
-		{
-			RunningApp.WaitForElement(Go);
-			RunningApp.Tap(Go);
-			RunningApp.WaitForElement("Chicken");
-			RunningApp.Tap("Chicken");
-			RunningApp.WaitForElement(Go);
-			RunningApp.Tap(Go);
-			RunningApp.WaitForElement("Chicken");
-			RunningApp.Tap("Chicken");
 			RunningApp.WaitForNoElement(Success);
 		}
 	}

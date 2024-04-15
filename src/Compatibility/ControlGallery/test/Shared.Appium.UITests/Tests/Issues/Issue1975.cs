@@ -14,6 +14,12 @@ namespace UITests
 
 		public override string Issue => "[iOS] ListView throws NRE when grouping enabled and data changed";
 
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			RunningApp.Back();
+		}
+
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[FailsOnAndroid]
