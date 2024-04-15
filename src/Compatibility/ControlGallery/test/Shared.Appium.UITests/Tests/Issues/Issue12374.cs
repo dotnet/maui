@@ -10,7 +10,7 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "[Bug] [iOS] CollectionView EmptyView causes the application to crash";
+		public override string Issue => "[Bug] iOS XF 5.0-pre1 crash with CollectionView when using EmptyView";
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
