@@ -23,12 +23,21 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public NSImage NativeRepresentation => _image;
 
+		/// <summary>
+		/// Saves the contents of this image to the provided <see cref="Stream"/> object.
+		/// </summary>
+		/// <param name="stream">The destination stream the bytes of this image will be saved to.</param>
+		/// <param name="format">The destination format of the image.</param>
+		/// <param name="quality">The destination quality of the image.</param>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="quality"/> is less than 0 or more than 1.</exception>
+		/// <remarks>Setting <paramref name="quality"/> is only supported for images with <see cref="ImageFormat.Jpeg"/>.</remarks>
 		public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			var data = CreateRepresentation(format, quality);
 			data.AsStream().CopyTo(stream);
 		}
 
+		/// <inheritdoc cref="Save" />
 		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			var data = CreateRepresentation(format, quality);
