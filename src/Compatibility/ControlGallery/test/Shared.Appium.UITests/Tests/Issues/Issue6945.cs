@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 
@@ -20,8 +21,6 @@ namespace UITests
 		[FailsOnIOS]
 		public void WrongTranslationBehaviorWhenChangingHeightRequestAndSettingAnchor()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			var rect = RunningApp.WaitForElement(BoxViewId).GetRect();
 			RunningApp.Tap(ClickMeId);
 			var rect2 = RunningApp.WaitForElement(BoxViewId).GetRect();
@@ -31,3 +30,4 @@ namespace UITests
 		}
 	}
 }
+#endif

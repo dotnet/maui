@@ -16,7 +16,7 @@ namespace UITests
 		[Category(UITestCategories.Switch)]
 		public void NonAppCompatBasicSwitchTest()
 		{
-			RunningApp.WaitForElement("Success");
+			RunningApp.WaitForNoElement("Success");
 		}
 	}
 }

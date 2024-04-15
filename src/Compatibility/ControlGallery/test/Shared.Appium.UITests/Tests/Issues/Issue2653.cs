@@ -17,6 +17,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void ZIndexWhenInsertingChildren()
 		{

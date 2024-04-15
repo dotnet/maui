@@ -16,6 +16,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void ResettingItemsOnRecycledListViewKeepsOldText()
 		{

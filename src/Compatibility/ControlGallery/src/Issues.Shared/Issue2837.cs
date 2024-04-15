@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 2837, " Exception thrown during NavigationPage.Navigation.PopAsync", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 2837, "Exception thrown during NavigationPage.Navigation.PopAsync", PlatformAffected.Android)]
 	public class Issue2837 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		string _labelText = "worked";
