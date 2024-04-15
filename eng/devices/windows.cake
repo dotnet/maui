@@ -229,15 +229,52 @@ Task("Test")
 
 	if (isPackagedTestRun)
 	{
+		Information("isPackagedTestRuns");
 		// Try to uninstall the app if it exists from before
 		uninstallPS();
 
 		Information("Uninstalled previously deployed app");
 
 		var projectDir = PROJECT.GetDirectory();
-		var cerPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer").First();
-		var msixPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix").First();
+		Information($"Get Cert {projectDir}");
 
+		var cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
+		var msixPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix");
+		if(cerPaths.Count() == 0 || msixPaths.Count() == 0)
+		{
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+
+			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
+		    msixPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix");
+			if(cerPaths.Count() == 0 || msixPaths.Count() == 0)
+			{
+				Error("Error: Couldn't find .cer or .msix file");
+				throw new Exception("Error: Couldn't find .cer or .msix file");
+			}
+		}
+
+		var msixPath = msixPaths.First();
+		var cerPath = cerPaths.First();
 		Information($"Found MSIX, installing: {msixPath}");
 
 		// Install dependencies
