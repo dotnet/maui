@@ -101,15 +101,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			{
 				var bindingContext = "foo";
-				var collectionView = new CollectionView
+				var collectionView = new MyUserControl
 				{
-					ItemTemplate = new DataTemplate(() =>
-					{
-						var label = new Label();
-						labels.Add(new(label));
-						return label;
-					}),
+					Labels = labels
 				};
+				collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
 
 				var handler = await CreateHandlerAsync(collectionView);
 
@@ -123,6 +119,24 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			await AssertionExtensions.WaitForGC(labels.ToArray());
+		}
+
+		/// <summary>
+		/// Simulates what a developer might do with a Page/View
+		/// </summary>
+		class MyUserControl : CollectionView
+		{
+			public List<WeakReference> Labels { get; set; }
+
+			/// <summary>
+			/// Used for reproducing a leak w/ instance methods on ItemsView.ItemTemplate
+			/// </summary>
+			public object LoadDataTemplate()
+			{
+				var label = new Label();
+				Labels.Add(new(label));
+				return label;
+			}
 		}
 
 		Rect GetCollectionViewCellBounds(IView cellContent)
