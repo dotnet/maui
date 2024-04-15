@@ -10,7 +10,9 @@ public static class MauiProgram
 		public static MauiApp CreateMauiApp() =>
 			MauiApp
 				.CreateBuilder()
+#if __ANDROID__ || __IOS__
 				.UseMauiMaps()
+#endif
 				.UseMauiApp<App>()
 				.Build();
 	}
