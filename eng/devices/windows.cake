@@ -259,7 +259,7 @@ Task("Test")
 			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
 			{
 				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/"));
-			}
+			}	
 			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
 			{
 				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/"));
@@ -281,7 +281,11 @@ Task("Test")
 		var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
 		foreach (var dep in dependencies) {
 			Information("Installing Dependency MSIX: {0}", dep);
-			StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+			try {
+				StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+			} catch { 
+				Warning($"Failed to install dependency: {dep}");
+			}
 		}
 
 		// Install the DeviceTests app
