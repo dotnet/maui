@@ -77,6 +77,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			Title = "Login";
 			var welcomeLabel = new Label()
 			{
+				AutomationId = "WelcomeLabel",
 				Text = "Welcome to the System",
 				HorizontalOptions = LayoutOptions.Center
 			};

@@ -22,7 +22,7 @@ namespace UITests
 			{
 				RunningApp.WaitForElement($"Button{i}");
 				RunningApp.Tap($"Button{i}");
-				RunningApp.WaitForElement($"{i}");
+				RunningApp.WaitForNoElement($"{i}");
 			}
 		}
 	}

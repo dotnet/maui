@@ -10,7 +10,7 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "[Navigation.PopToRootAsync does nothing";
+		public override string Issue => "Navigation.PopToRootAsync does nothing";
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

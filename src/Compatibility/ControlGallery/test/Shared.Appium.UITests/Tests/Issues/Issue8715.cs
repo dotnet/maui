@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -18,8 +19,6 @@ namespace UITests
 		[Category(UITestCategories.Shell)]
 		public void ReappearingCollectionViewShouldNotThrowNRE()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.Tap(FlyoutIconAutomationId);
 			RunningApp.Tap("CollectionView");
 			RunningApp.Tap("Toggle");
@@ -31,3 +30,4 @@ namespace UITests
 		}
 	}
 }
+#endif

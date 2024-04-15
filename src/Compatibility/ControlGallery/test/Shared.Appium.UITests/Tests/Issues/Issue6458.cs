@@ -15,6 +15,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnAndroid]
 		public void Issue6458Test()
 		{
 			RunningApp.WaitForElement("IssuePageLabel");

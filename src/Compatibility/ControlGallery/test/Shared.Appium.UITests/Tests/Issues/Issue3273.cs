@@ -16,8 +16,8 @@ namespace UITests
 		[FailsOnIOS]
 		public void Issue3273Test()
 		{
-			RunningApp.WaitForElement("MoveItems");
-			RunningApp.Tap("MoveItems");
+			RunningApp.WaitForElement("Move items");
+			RunningApp.Tap("Move items");
 			RunningApp.WaitForNoElement("Success");
 		}
 	}
