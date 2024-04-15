@@ -18,7 +18,7 @@ namespace UITests
 		public void TestSwitchDisable()
 		{
 			RunningApp.WaitForElement("switch");
-			RunningApp.Screenshot("Is the button here?");
+			RunningApp.Screenshot();
 		}
 	}
 }

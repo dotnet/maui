@@ -11,7 +11,7 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "[Bug] CarouselView content disappears after 2 rotations if TextType=Html is used\"";
+		public override string Issue => "[Bug] CarouselView content disappears after 2 rotations if TextType=Html is used";
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]

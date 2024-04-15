@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using UITest.Appium;
 
 namespace UITests
 {
@@ -9,6 +10,12 @@ namespace UITests
 		}
 
 		public override string Issue => "[Regression] CollectionView NSRangeException";
+
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			RunningApp.Back();
+		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]

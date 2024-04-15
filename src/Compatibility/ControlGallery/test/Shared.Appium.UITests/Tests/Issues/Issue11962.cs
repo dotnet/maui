@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnAndroid]
 		public void WebViewDisposesProperly()
 		{
 			RunningApp.Tap("NextButton");

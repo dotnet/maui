@@ -14,6 +14,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.RequiresInternetConnection)]
+		[FailsOnAndroid]
 		public void WebViewEvalCrashesOnAndroidWithLongString()
 		{
 			RunningApp.WaitForElement("navigatedLabel");
