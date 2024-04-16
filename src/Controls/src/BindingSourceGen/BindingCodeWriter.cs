@@ -86,7 +86,7 @@ public sealed class BindingCodeWriter
 
 	private string GenerateBindingMethods(int indent)
 	{
-		using var builder = new BidningInterceptorCodeBuilder(indent);
+		using var builder = new BindingInterceptorCodeBuilder(indent);
 
 		for (int i = 0; i < _bindings.Count; i++)
 		{
@@ -96,7 +96,7 @@ public sealed class BindingCodeWriter
 		return builder.ToString();
 	}
 
-	public sealed class BidningInterceptorCodeBuilder : IDisposable
+	public sealed class BindingInterceptorCodeBuilder : IDisposable
 	{
 		private StringWriter _stringWriter;
 		private IndentedTextWriter _indentedTextWriter;
@@ -107,7 +107,7 @@ public sealed class BindingCodeWriter
 			return _stringWriter.ToString();
 		}
 
-		public BidningInterceptorCodeBuilder(int indent = 0)
+		public BindingInterceptorCodeBuilder(int indent = 0)
 		{
 			_stringWriter = new StringWriter(CultureInfo.InvariantCulture);
 			_indentedTextWriter = new IndentedTextWriter(_stringWriter, "\t") { Indent = indent };
