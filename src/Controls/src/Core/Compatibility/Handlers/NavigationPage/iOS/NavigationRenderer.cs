@@ -1910,6 +1910,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			IPlatformViewHandler _child;
 			UIImageView _icon;
 			bool _disposed;
+
+			//https://developer.apple.com/documentation/uikit/uiview/2865930-directionallayoutmargins
 			const int SystemMargin = 16;
 
 			public Container(View view, UINavigationBar bar) : base(bar.Bounds)
