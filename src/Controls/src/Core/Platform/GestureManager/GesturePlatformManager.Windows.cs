@@ -202,10 +202,7 @@ namespace Microsoft.Maui.Controls.Platform
 				element = ve;
 			}
 
-			if (datapackage is null)
-				return;
-
-			var args = new DropEventArgs(datapackage.View, (relativeTo) => GetPosition(relativeTo, e), new PlatformDropEventArgs(sender as UIElement, e));
+			var args = new DropEventArgs(datapackage?.View, (relativeTo) => GetPosition(relativeTo, e), new PlatformDropEventArgs(sender as UIElement, e));
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
