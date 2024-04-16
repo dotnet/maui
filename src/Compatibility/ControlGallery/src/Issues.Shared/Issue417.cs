@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			public FirstPage()
 			{
 				Title = "First Page";
+				AutomationId = "FirstPage";
 				BackgroundColor = Colors.Black;
 
 				var nextPageBtn = new Button
@@ -57,6 +58,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			public NextPage()
 			{
 				Title = "Second Page";
+				AutomationId = "SecondPage";
 
 				var nextPage2Btn = new Button
 				{
@@ -76,6 +78,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			public NextPage2()
 			{
 				Title = "Third Page";
+				AutomationId = "ThirdPage";
 
 				var popToRootButton = new Button
 				{

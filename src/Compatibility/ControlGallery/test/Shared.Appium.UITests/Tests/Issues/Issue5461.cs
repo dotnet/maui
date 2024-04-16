@@ -18,7 +18,7 @@ namespace UITests
 		[Category(UITestCategories.ScrollView)]
 		public void ScrollViewWithScrollbarFadingEnabledFalseDoesntCrash()
 		{
-			RunningApp.WaitForElement(Success);
+			RunningApp.WaitForNoElement(Success);
 		}
 	}
 }

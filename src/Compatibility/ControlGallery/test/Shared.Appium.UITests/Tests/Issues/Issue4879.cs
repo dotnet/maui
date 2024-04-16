@@ -17,7 +17,7 @@ namespace UITests
 		public void Issue4879Test()
 		{
 			RunningApp.WaitForElement("TestReady");
-			RunningApp.Screenshot("I am at Issue 4879 - All buttons/images should be the same size.");
+			RunningApp.Screenshot("I am at Issue 4879. All buttons or images should be the same size.");
 		}
 	}
 }
