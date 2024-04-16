@@ -413,11 +413,8 @@ Task("cg-uitest")
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("APP_APK", $"{TEST_APP}");
 
-	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-
-	var resultName = $"{name}-{CONFIGURATION}-{DateTime.UtcNow.ToFileTimeUtc()}";
-	// build the test library
-	
+	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath)}-{CONFIGURATION}-{DateTime.UtcNow.ToFileTimeUtc()}";
+	Information("Run UITests project {0}", resultName);
 	RunTestWithLocalDotNet(
             PROJECT.FullPath,
             config: CONFIGURATION,

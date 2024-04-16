@@ -3,8 +3,6 @@
 #load "../cake/dotnet.cake"
 #load "./devices-shared.cake"
 
-#tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
-
 const string defaultVersion = "16.4";
 const string dotnetVersion = "net8.0";
 // required
@@ -370,47 +368,15 @@ Task("cg-uitest")
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("iOS_APP", $"{TEST_APP}");
 
-	// build the test library
-	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK);
-	Information("BinDir: {0}", binDir);
-	Information("PROJECT: {0}", PROJECT);
-	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{binDir}/{name}-{CONFIGURATION}-ios.binlog";
-	Information("Build UITests project {0}", PROJECT.FullPath);
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
-			ToolPath = DOTNET_TOOL_PATH,
-			Configuration = CONFIGURATION,
-			ArgumentCustomization = args => args
-				.Append("/bl:" + binlog)
-				.Append("/tl"),
-	});
-
-	if(PROJECT.FullPath.Contains("Compatibility.ControlGallery.iOS.UITests"))
-	{
-		var arcadeBin = new DirectoryPath("../../artifacts/bin/");
-		binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Compatibility.ControlGallery.iOS.UITests/" + CONFIGURATION + "/" + TEST_FRAMEWORK));
-	}
-	
-	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.iOS.UITests.dll";
-	Information("Run UITests lib {0}", testLibDllPath);
-	var nunitSettings = new NUnit3Settings { 
-		Configuration = CONFIGURATION,
-		OutputFile = $"{TEST_RESULTS}/ios/run_uitests_output.log",
-		Work = $"{TEST_RESULTS}/ios",
-		TraceLevel = NUnitInternalTraceLevel.Verbose
-	};
-
-	Information("Outputfile {0}", nunitSettings.OutputFile);
-
-	if(!string.IsNullOrEmpty(TEST_WHERE))
-	{
-		Information("Add Where filter to NUnit {0}", TEST_WHERE);
-		nunitSettings.Where = TEST_WHERE;
-	}
-	RunTestsNunit(testLibDllPath, nunitSettings);
-
-	// When all tests are inconclusive the run does not fail, check if this is the case and fail the pipeline so we get notified	
-	FailRunOnOnlyInconclusiveTests(System.IO.Path.Combine(nunitSettings.Work.FullPath, "TestResult.xml"));
+	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath)}-{CONFIGURATION}-{DateTime.UtcNow.ToFileTimeUtc()}";
+	Information("Run UITests project {0}", resultName);
+	RunTestWithLocalDotNet(
+            PROJECT.FullPath,
+            config: CONFIGURATION,
+            pathDotnet: DOTNET_PATH,
+            noBuild: false,
+            resultsFileNameWithoutExtension: resultName,
+            filter: Argument("filter", ""));
 });
 
 RunTarget(TARGET);
