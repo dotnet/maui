@@ -371,7 +371,7 @@ Task("cg-uitest")
 	SetEnvironmentVariable("iOS_APP", $"{TEST_APP}");
 
 	// build the test library
-	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK).FullPath;
+	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK);
 	Information("BinDir: {0}", binDir);
 	Information("PROJECT: {0}", PROJECT);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
@@ -384,6 +384,12 @@ Task("cg-uitest")
 				.Append("/bl:" + binlog)
 				.Append("/tl"),
 	});
+
+	if(PROJECT.FullPath.Contains("Compatibility.ControlGallery.iOS.UITests"))
+	{
+		var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+		binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Compatibility.ControlGallery.iOS.UITests/" + CONFIGURATION + "/" + TEST_FRAMEWORK));
+	}
 	
 	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.iOS.UITests.dll";
 	Information("Run UITests lib {0}", testLibDllPath);
@@ -426,7 +432,9 @@ void SetupAppPackageNameAndResult()
 			}
 			if(TEST_APP_PROJECT.FullPath.Contains("Compatibility"))
 			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Compatibility/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
+				//this is for the compatibility gallery
+				RUNTIME_IDENTIFIER = "iossimulator-x64";
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Compatibility.ControlGallery.iOS/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
 			}
 			Information("Looking for .app in arcade binDir {0}", binDir);
 			apps = GetDirectories(binDir + "/*.app");

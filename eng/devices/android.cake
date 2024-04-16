@@ -416,7 +416,7 @@ Task("cg-uitest")
 	SetEnvironmentVariable("APP_APK", $"{TEST_APP}");
 
 	// build the test library
-	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK).FullPath;
+	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK);
 	Information("BinDir: {0}", binDir);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{binDir}/{name}-{CONFIGURATION}-android-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
@@ -428,12 +428,18 @@ Task("cg-uitest")
 			ToolPath = DOTNET_PATH,
 	});
 	
-	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.Android.UITests.dll";
+	if(PROJECT.FullPath.Contains("Compatibility.ControlGallery.Android.UITests"))
+	{
+		var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+		binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Compatibility.ControlGallery.Android.UITests/" + CONFIGURATION + "/" + TEST_FRAMEWORK));
+	}
+	
+	var testLibDllPath = $"{binDir.FullPath}/Microsoft.Maui.Controls.Android.UITests.dll";
 	Information("Run UITests lib {0}", testLibDllPath);
 	var nunitSettings = new NUnit3Settings { 
 		Configuration = CONFIGURATION,
-		OutputFile = $"{TEST_RESULTS}/android/run_uitests_output-{DateTime.UtcNow.ToFileTimeUtc()}.log",
-		Work = $"{TEST_RESULTS}/android/"
+	//	OutputFile = $"{TEST_RESULTS}/android/run_uitests_output-{DateTime.UtcNow.ToFileTimeUtc()}.log",
+	//	Work = $"{TEST_RESULTS}/android/"
 	};
 
 	if(!string.IsNullOrEmpty(TEST_WHERE))
@@ -512,6 +518,10 @@ void SetupAppPackageNameAndResult()
 				if(TEST_APP_PROJECT.FullPath.Contains("Controls.Sample.UITests"))
 				{
 					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.Sample.UITests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK));
+				}
+				if(TEST_APP_PROJECT.FullPath.Contains("ControlGallery"))
+				{
+					binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Compatibility.ControlGallery.Android/" + CONFIGURATION + "/" + TARGET_FRAMEWORK));
 				}
 				Information("Looking for .app in arcade binDir {0}", binDir);
 				apps = GetFiles(binDir + "/*-Signed.apk");
