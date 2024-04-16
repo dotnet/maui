@@ -598,7 +598,7 @@ public class PlatformInterop {
      * @param defaultFontSize
      * @return FontMetrics object or null if context or display metrics is null
      */
-    public static Paint.FontMetrics getFontMetrics(Context context, double defaultFontSize) {
+    public static Paint.FontMetrics getFontMetrics(Context context, float defaultFontSize) {
         if (context == null)
             return null;
 
@@ -608,7 +608,7 @@ public class PlatformInterop {
                 setTextSize(
                     TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_SP,
-                        (float) defaultFontSize,
+                        defaultFontSize,
                         metrics
                 ));
             }}.getFontMetrics();
