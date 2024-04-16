@@ -62,7 +62,6 @@ override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.Platform.ContentView.WillRemoveSubview(UIKit.UIView! uiview) -> void
-override Microsoft.Maui.Platform.LayoutView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiActivityIndicator.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiBoxView.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiCheckBox.MovedToWindow() -> void

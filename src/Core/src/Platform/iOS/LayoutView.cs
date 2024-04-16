@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+using System;
+using System.Linq;
 using CoreGraphics;
 using UIKit;
 
@@ -7,26 +8,11 @@ namespace Microsoft.Maui.Platform
 	public class LayoutView : MauiView
 	{
 		bool _userInteractionEnabled;
-
-		public LayoutView()
-		{
-			Descendants = new List<UIView>();
-		}
 		
-		internal List<UIView>? Descendants { get; set; }
-
-		protected override void Dispose(bool disposing)
-		{
-			base.Dispose(disposing);
-
-			Descendants = null;
-		}
-
 		public override void SubviewAdded(UIView uiview)
 		{
 			InvalidateConstraintsCache();
 			base.SubviewAdded(uiview);
-			Descendants?.Add(uiview);
 			Superview?.SetNeedsLayout();
 		}
 
@@ -34,7 +20,6 @@ namespace Microsoft.Maui.Platform
 		{
 			InvalidateConstraintsCache();
 			base.WillRemoveSubview(uiview);
-			Descendants?.Remove(uiview);
 			Superview?.SetNeedsLayout();
 		}
 
@@ -56,7 +41,7 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 
-			if (Descendants is not null && Descendants.Contains(result) && !result.UserInteractionEnabled)
+			if (Subviews.Contains(result) && !result.UserInteractionEnabled)
 			{
 				// If the child also has user interaction disabled (IOW the child is InputTransparent),
 				// then we also want to exclude it from the hit testing.					}
