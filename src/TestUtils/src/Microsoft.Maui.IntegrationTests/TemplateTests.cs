@@ -203,6 +203,10 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
+		[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
+		[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
+		[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
+		[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
 		public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 		{
 			if (!TestEnvironment.IsMacOS)
@@ -216,40 +220,17 @@ namespace Microsoft.Maui.IntegrationTests
 
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add("PublishAot=true");
-			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
-			extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
-
-			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier),
-				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
-		}
-
-		[Test]
-		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
-		public void PublishNativeAOTCheckWarnings(string id, string framework, string runtimeIdentifier)
-		{
-			if (!TestEnvironment.IsMacOS)
-				Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
-
-			var projectDir = TestDirectory;
-			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
-
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
-				$"Unable to create template {id}. Check test output for errors.");
-
-			var extendedBuildProps = BuildProps;
-			extendedBuildProps.Add("PublishAot=true");
-			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060 in net9
+			extendedBuildProps.Add("_IsPublishing=true"); // This makes 'dotnet build -r iossimulator-x64' equivalent to 'dotnet publish -r iossimulator-x64'
 			extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
 			extendedBuildProps.Add("TrimmerSingleWarn=false");
 
 			string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-			var expectedWarnings = BuildWarningsUtilities.ExpectedNativeAOTWarnings;
 			var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
-
-			actualWarnings.AssertWarnings(expectedWarnings);
+			actualWarnings.AssertNoWarnings();
 		}
 
 		[Test]
