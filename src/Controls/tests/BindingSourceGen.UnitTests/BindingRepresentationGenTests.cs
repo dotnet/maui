@@ -18,7 +18,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("string"),
                 new TypeDescription("int", IsValueType: true),
                 [
@@ -40,7 +40,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Microsoft.Maui.Controls.Button"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
@@ -68,7 +68,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
@@ -93,7 +93,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
@@ -121,7 +121,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
@@ -143,7 +143,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
@@ -171,7 +171,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("string", IsNullable: true),
                 [
@@ -199,7 +199,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 4, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
                 new TypeDescription("global::Foo", IsNullable: true),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
@@ -228,7 +228,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 4, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
                 new TypeDescription("global::Foo", IsNullable: true),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
@@ -255,7 +255,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true),
                 [
@@ -284,7 +284,7 @@ public class BindingRepresentationGenTests
         """;
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 4, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true),
                 [
@@ -316,7 +316,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 6, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("int", IsValueType: true),
             [
@@ -344,7 +344,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("int", IsValueType: true, IsNullable: true),
             [
@@ -377,7 +377,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("int", IsValueType: true, IsNullable: true),
             [
@@ -424,7 +424,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 6, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
             new TypeDescription("global::MyNamespace.MySourceClass"),
             new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true),
             [
@@ -456,7 +456,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 6, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("char", IsValueType: true),
             [
@@ -485,7 +485,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 4, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("int", IsValueType: true),
             [
@@ -513,7 +513,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("string", IsNullable: true),
                 [
@@ -546,7 +546,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
                 [
@@ -580,7 +580,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
@@ -609,7 +609,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
@@ -643,7 +643,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-                new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
                 [
@@ -672,7 +672,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("char", IsValueType: true),
             [
@@ -700,7 +700,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("char", IsValueType: true),
             [
@@ -728,7 +728,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("string"),
             [
@@ -755,7 +755,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("string"),
             [
@@ -782,7 +782,7 @@ public class BindingRepresentationGenTests
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
         var expectedBinding = new CodeWriterBinding(
-            new SourceCodeLocation(@"Path\To\Program.cs", 3, 7),
+            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo", IsNullable: true),
             new TypeDescription("int", IsValueType: true, IsNullable: true),
             [

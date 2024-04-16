@@ -15,7 +15,7 @@ internal class PathParser
 
     private GeneratorSyntaxContext Context { get; }
 
-    internal (Diagnostic[] diagnostics, List<IPathPart> parts) ParsePath(CSharpSyntaxNode? expressionSyntax)
+    internal (DiagnosticInfo[] diagnostics, List<IPathPart> parts) ParsePath(CSharpSyntaxNode? expressionSyntax)
     {
         return expressionSyntax switch
         {
@@ -31,7 +31,7 @@ internal class PathParser
         };
     }
 
-    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleMemberAccessExpression(MemberAccessExpressionSyntax memberAccess)
+    private (DiagnosticInfo[] diagnostics, List<IPathPart> parts) HandleMemberAccessExpression(MemberAccessExpressionSyntax memberAccess)
     {
         var (diagnostics, parts) = ParsePath(memberAccess.Expression);
         if (diagnostics.Length > 0)
@@ -45,7 +45,7 @@ internal class PathParser
         return (diagnostics, parts);
     }
 
-    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleElementAccessExpression(ElementAccessExpressionSyntax elementAccess)
+    private (DiagnosticInfo[] diagnostics, List<IPathPart> parts) HandleElementAccessExpression(ElementAccessExpressionSyntax elementAccess)
     {
         var (diagnostics, parts) = ParsePath(elementAccess.Expression);
         if (diagnostics.Length > 0)
@@ -64,7 +64,7 @@ internal class PathParser
         return (diagnostics, parts);
     }
 
-    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleConditionalAccessExpression(ConditionalAccessExpressionSyntax conditionalAccess)
+    private (DiagnosticInfo[] diagnostics, List<IPathPart> parts) HandleConditionalAccessExpression(ConditionalAccessExpressionSyntax conditionalAccess)
     {
         var (diagnostics, parts) = ParsePath(conditionalAccess.Expression);
         if (diagnostics.Length > 0)
@@ -82,7 +82,7 @@ internal class PathParser
         return (diagnostics, parts);
     }
 
-    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleMemberBindingExpression(MemberBindingExpressionSyntax memberBinding)
+    private (DiagnosticInfo[] diagnostics, List<IPathPart> parts) HandleMemberBindingExpression(MemberBindingExpressionSyntax memberBinding)
     {
         var member = memberBinding.Name.Identifier.Text;
         IPathPart part = new MemberAccess(member);
@@ -91,7 +91,7 @@ internal class PathParser
         return ([], new List<IPathPart>([part]));
     }
 
-    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleElementBindingExpression(ElementBindingExpressionSyntax elementBinding)
+    private (DiagnosticInfo[] diagnostics, List<IPathPart> parts) HandleElementBindingExpression(ElementBindingExpressionSyntax elementBinding)
     {
         var elementAccessSymbol = Context.SemanticModel.GetSymbolInfo(elementBinding).Symbol;
         var (elementAccessDiagnostics, elementAccessParts) = HandleElementAccessSymbol(elementAccessSymbol, elementBinding.ArgumentList.Arguments, elementBinding.GetLocation());
@@ -104,7 +104,7 @@ internal class PathParser
         return (elementAccessDiagnostics, elementAccessParts);
     }
 
-    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleBinaryExpression(BinaryExpressionSyntax asExpression)
+    private (DiagnosticInfo[] diagnostics, List<IPathPart> parts) HandleBinaryExpression(BinaryExpressionSyntax asExpression)
     {
         var (diagnostics, parts) = ParsePath(asExpression.Left);
         if (diagnostics.Length > 0)
@@ -116,19 +116,19 @@ internal class PathParser
         var typeInfo = Context.SemanticModel.GetTypeInfo(castTo).Type;
         if (typeInfo == null)
         {
-            return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(asExpression.GetLocation()) }, new List<IPathPart>());
+            return (new DiagnosticInfo[] { DiagnosticsFactory.UnableToResolvePath(asExpression.GetLocation()) }, new List<IPathPart>());
         };
 
         parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionForCast(typeInfo)));
         return (diagnostics, parts);
     }
 
-    private (Diagnostic[] diagnostics, List<IPathPart> parts) HandleDefaultCase()
+    private (DiagnosticInfo[] diagnostics, List<IPathPart> parts) HandleDefaultCase()
     {
-        return (new Diagnostic[] { DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation()) }, new List<IPathPart>());
+        return (new DiagnosticInfo[] { DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation()) }, new List<IPathPart>());
     }
 
-    private (Diagnostic[], List<IPathPart>) HandleElementAccessSymbol(ISymbol? elementAccessSymbol, SeparatedSyntaxList<ArgumentSyntax> argumentList, Location location)
+    private (DiagnosticInfo[], List<IPathPart>) HandleElementAccessSymbol(ISymbol? elementAccessSymbol, SeparatedSyntaxList<ArgumentSyntax> argumentList, Location location)
     {
         if (argumentList.Count != 1)
         {

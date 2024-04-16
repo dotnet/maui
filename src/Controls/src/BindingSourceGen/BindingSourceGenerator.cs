@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
@@ -17,21 +18,21 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			predicate: static (node, _) => IsSetBindingMethod(node),
 			transform: static (ctx, t) => GetBindingForGeneration(ctx, t)
 		)
-		.WithTrackingName("BindingsWithDiagnostics");
+		.WithTrackingName(TrackingNames.BindingsWithDiagnostics);
 
 
 		context.RegisterSourceOutput(bindingsWithDiagnostics, (spc, bindingWithDiagnostic) =>
 		{
 			foreach (var diagnostic in bindingWithDiagnostic.Diagnostics)
 			{
-				spc.ReportDiagnostic(diagnostic);
+				spc.ReportDiagnostic(Diagnostic.Create(diagnostic.Descriptor, diagnostic.Location?.ToLocation()));
 			}
 		});
 
 		var bindings = bindingsWithDiagnostics
 			.Where(static binding => binding.Diagnostics.Length == 0 && binding.Binding != null)
 			.Select(static (binding, t) => binding.Binding!)
-			.WithTrackingName("Bindings")
+			.WithTrackingName(TrackingNames.Bindings)
 			.Collect();
 
 
@@ -57,18 +58,18 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 	static BindingDiagnosticsWrapper GetBindingForGeneration(GeneratorSyntaxContext context, CancellationToken t)
 	{
-		var diagnostics = new List<Diagnostic>();
+		var diagnostics = new List<DiagnosticInfo>();
 		NullableContext nullableContext = context.SemanticModel.GetNullableContext(context.Node.Span.Start);
 		var enabledNullable = (nullableContext & NullableContext.Enabled) == NullableContext.Enabled;
 
 		var invocation = (InvocationExpressionSyntax)context.Node;
 		var method = (MemberAccessExpressionSyntax)invocation.Expression;
 
-		var sourceCodeLocation = new SourceCodeLocation(
-			context.Node.SyntaxTree.FilePath,
-			method.Name.GetLocation().GetLineSpan().StartLinePosition.Line + 1,
-			method.Name.GetLocation().GetLineSpan().StartLinePosition.Character + 1
-		);
+		var sourceCodeLocation = SourceCodeLocation.CreateFrom(method.Name.GetLocation());
+		if (sourceCodeLocation == null)
+		{
+			return ReportDiagnostics([DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation())]);
+		}
 
 		var overloadDiagnostics = VerifyCorrectOverload(invocation, context, t);
 
@@ -98,7 +99,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		}
 
 		var codeWriterBinding = new CodeWriterBinding(
-			Location: sourceCodeLocation,
+			Location: sourceCodeLocation.ToInterceptorLocation(),
 			SourceType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
 			PropertyType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaTypeInfo.Type, enabledNullable),
 			Path: parts.ToArray(),
@@ -106,7 +107,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		return new BindingDiagnosticsWrapper(codeWriterBinding, diagnostics.ToArray());
 	}
 
-	private static Diagnostic[] VerifyCorrectOverload(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
+	private static DiagnosticInfo[] VerifyCorrectOverload(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
 	{
 		var argumentList = invocation.ArgumentList.Arguments;
 		if (argumentList.Count < 2)
@@ -120,10 +121,10 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return [DiagnosticsFactory.SuboptimalSetBindingOverload(getter.GetLocation())];
 		}
 
-		return Array.Empty<Diagnostic>();
+		return Array.Empty<DiagnosticInfo>();
 	}
 
-	private static (ExpressionSyntax? lambdaBodyExpression, IMethodSymbol? lambdaSymbol, Diagnostic[] diagnostics) GetLambda(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+	private static (ExpressionSyntax? lambdaBodyExpression, IMethodSymbol? lambdaSymbol, DiagnosticInfo[] diagnostics) GetLambda(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
 	{
 		var argumentList = invocation.ArgumentList.Arguments;
 		var lambda = (LambdaExpressionSyntax)argumentList[1].Expression;
@@ -138,7 +139,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return (null, null, [DiagnosticsFactory.GetterIsNotLambda(lambda.GetLocation())]);
 		}
 
-		return (lambdaBody, lambdaSymbol, Array.Empty<Diagnostic>());
+		return (lambdaBody, lambdaSymbol, Array.Empty<DiagnosticInfo>());
 	}
 
 	private static SetterOptions DeriveSetterOptions(ExpressionSyntax? lambdaBodyExpression, SemanticModel semanticModel, bool enabledNullable)
@@ -192,21 +193,45 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			};
 	}
 
-	private static BindingDiagnosticsWrapper ReportDiagnostics(Diagnostic[] diagnostics) => new(null, diagnostics);
+	private static BindingDiagnosticsWrapper ReportDiagnostics(DiagnosticInfo[] diagnostics) => new(null, diagnostics);
+}
+
+internal class TrackingNames
+{
+	public const string BindingsWithDiagnostics = nameof(BindingsWithDiagnostics);
+	public const string Bindings = nameof(Bindings);
 }
 
 public sealed record BindingDiagnosticsWrapper(
 	CodeWriterBinding? Binding,
-	Diagnostic[] Diagnostics); // TODO: use an "equatable array" type
+	DiagnosticInfo[] Diagnostics); // TODO: use an "equatable array" type
 
 public sealed record CodeWriterBinding(
-	SourceCodeLocation Location,
+	InterceptorLocation Location,
 	TypeDescription SourceType,
 	TypeDescription PropertyType,
 	IPathPart[] Path, // TODO: use an "equatable array" type
 	SetterOptions SetterOptions);
 
-public sealed record SourceCodeLocation(string FilePath, int Line, int Column);
+public sealed record SourceCodeLocation(string FilePath, TextSpan TextSpan, LinePositionSpan LineSpan)
+{
+	public static SourceCodeLocation? CreateFrom(Location location)
+		=> location.SourceTree is null
+			? null
+			: new SourceCodeLocation(location.SourceTree.FilePath, location.SourceSpan, location.GetLineSpan().Span);
+
+	public Location ToLocation() 
+	{
+		return Location.Create(FilePath, TextSpan, LineSpan);
+	}
+
+	public InterceptorLocation ToInterceptorLocation()
+	{
+		return new InterceptorLocation(FilePath, LineSpan.Start.Line + 1, LineSpan.Start.Character + 1);
+	}
+}
+
+public sealed record InterceptorLocation(string FilePath, int Line, int Column);
 
 public sealed record TypeDescription(
 	string GlobalName,

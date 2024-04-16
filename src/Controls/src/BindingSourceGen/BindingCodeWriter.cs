@@ -211,7 +211,7 @@ public sealed class BindingCodeWriter
 				""");
 		}
 
-		private void AppendInterceptorAttribute(SourceCodeLocation location)
+		private void AppendInterceptorAttribute(InterceptorLocation location)
 		{
 			AppendLine($"[InterceptsLocationAttribute(@\"{location.FilePath}\", {location.Line}, {location.Column})]");
 		}

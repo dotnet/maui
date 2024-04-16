@@ -1,11 +1,10 @@
+using System.Collections.Immutable;
 using System.Reflection;
-
+using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-
 using Microsoft.Maui.Controls.BindingSourceGen;
-using System.Runtime.Loader;
-using System.Collections.Immutable;
+
 
 internal record CodeGeneratorResult(
     string GeneratedCode,
@@ -19,15 +18,22 @@ internal static class SourceGenHelpers
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(
                 [new KeyValuePair<string, string>("InterceptorsPreviewNamespaces", "Microsoft.Maui.Controls.Generated")]);
 
+    internal static List<string> StepsForComparison = [TrackingNames.Bindings, TrackingNames.BindingsWithDiagnostics];
+
+    internal static CSharpGeneratorDriver CreateDriver()
+    {
+        var generator = new BindingSourceGenerator();
+        var sourceGenerator = generator.AsSourceGenerator();
+        return CSharpGeneratorDriver.Create(
+            [sourceGenerator],
+            driverOptions: new GeneratorDriverOptions(disabledOutputs: IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
+    }
+
     internal static CodeGeneratorResult Run(string source)
     {
         var inputCompilation = CreateCompilation(source);
-        var generator = new BindingSourceGenerator();
-        var sourceGenerator = generator.AsSourceGenerator();
-        var driver = CSharpGeneratorDriver.Create(
-            [sourceGenerator],
-            driverOptions: new GeneratorDriverOptions(default, trackIncrementalGeneratorSteps: true),
-            parseOptions: ParseOptions);
+        var driver = CreateDriver();
 
         var result = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out Compilation compilation, out _).GetRunResult().Results.Single();
 

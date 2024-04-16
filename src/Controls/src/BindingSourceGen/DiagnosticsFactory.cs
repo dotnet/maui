@@ -2,10 +2,22 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
+public sealed record DiagnosticInfo
+{
+    public DiagnosticInfo(DiagnosticDescriptor descriptor, Location? location)
+    {
+        Descriptor = descriptor;
+        Location = location is not null ? SourceCodeLocation.CreateFrom(location) : null;
+    }
+
+    public DiagnosticDescriptor Descriptor { get; }
+    public SourceCodeLocation? Location { get; }
+}
+
 internal static class DiagnosticsFactory
 {
-    public static Diagnostic UnableToResolvePath(Location location)
-        => Diagnostic.Create(
+    public static DiagnosticInfo UnableToResolvePath(Location location)
+        => new(
             new DiagnosticDescriptor(
                 id: "BSG0001",
                 title: "Unable to resolve path",
@@ -15,8 +27,8 @@ internal static class DiagnosticsFactory
                 isEnabledByDefault: true),
             location);
 
-    public static Diagnostic GetterIsNotLambda(Location location)
-        => Diagnostic.Create(
+    public static DiagnosticInfo GetterIsNotLambda(Location location)
+        => new(
             new DiagnosticDescriptor(
                 id: "BSG0002",
                 title: "Getter must be a lambda",
@@ -26,8 +38,8 @@ internal static class DiagnosticsFactory
                 isEnabledByDefault: true),
             location);
 
-    public static Diagnostic GetterLambdaBodyIsNotExpression(Location location)
-        => Diagnostic.Create(
+    public static DiagnosticInfo GetterLambdaBodyIsNotExpression(Location location)
+        => new(
             new DiagnosticDescriptor(
                 id: "BSG0003",
                 title: "Getter lambda's body must be an expression",
@@ -37,8 +49,8 @@ internal static class DiagnosticsFactory
                 isEnabledByDefault: true),
             location);
 
-    public static Diagnostic SuboptimalSetBindingOverload(Location location)
-        => Diagnostic.Create(
+    public static DiagnosticInfo SuboptimalSetBindingOverload(Location location)
+        => new(
             new DiagnosticDescriptor(
                 id: "BSG0004",
                 title: "SetBinding with string path",

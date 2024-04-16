@@ -11,7 +11,7 @@ public class BindingCodeWriterTests
     {
         var codeWriter = new BindingCodeWriter();
         codeWriter.AddBinding(new CodeWriterBinding(
-            Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
+            Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             Path: [
@@ -132,7 +132,7 @@ public class BindingCodeWriterTests
     {
         var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
         codeBuilder.AppendSetBindingInterceptor(id: 1, new CodeWriterBinding(
-            Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
+            Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             Path: [
@@ -202,7 +202,7 @@ public class BindingCodeWriterTests
     {
         var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
         codeBuilder.AppendSetBindingInterceptor(id: 1, new CodeWriterBinding(
-            Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
+            Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             Path: [
@@ -268,7 +268,7 @@ public class BindingCodeWriterTests
     {
         var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
         codeBuilder.AppendSetBindingInterceptor(id: 1, new CodeWriterBinding(
-            Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
+            Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
             Path: [
@@ -331,7 +331,7 @@ public class BindingCodeWriterTests
     {
         var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
         codeBuilder.AppendSetBindingInterceptor(id: 1, new CodeWriterBinding(
-            Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
+            Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true, IsGenericParameter: false),
             Path: [
@@ -405,7 +405,7 @@ public class BindingCodeWriterTests
     {
         var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
         codeBuilder.AppendSetBindingInterceptor(id: 1, new CodeWriterBinding(
-            Location: new SourceCodeLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
+            Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
             Path: [
