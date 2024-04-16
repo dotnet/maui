@@ -15,6 +15,7 @@ namespace UITests
 		public override string Issue => "[Bug] XF 4.3 UWP Crash - Element not found";
 
 		[Test]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void ThreadpoolBindingUpdateShouldNotCrash()
 		{

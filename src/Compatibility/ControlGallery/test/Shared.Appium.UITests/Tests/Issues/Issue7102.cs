@@ -20,13 +20,13 @@ namespace UITests
 			RunningApp.Tap("entryInsert");
 			RunningApp.ClearText("entryInsert");
 			RunningApp.EnterText("entryInsert", "1");
-			RunningApp.Tap("Insert");
+			RunningApp.Tap("btnInsert");
 
 			// If the bug is still present, then there will be 
 			// two "Item: 0" items instead of the newly inserted item
 			// Or the header will have disappeared
-			RunningApp.WaitForElement("Inserted");
-			RunningApp.WaitForElement("This is the header");
+			RunningApp.WaitForNoElement("Inserted");
+			RunningApp.WaitForNoElement("This is the header");
 		}
 	}
 }

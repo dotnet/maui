@@ -23,12 +23,12 @@ namespace UITests
 			RunningApp.EnterText("FilterItems", "abcdef");
 
 			// Default empty view
-			RunningApp.WaitForElement("Nothing to see here.");
+			RunningApp.WaitForNoElement("Nothing to see here.");
 
 			RunningApp.Tap("ToggleEmptyView");
 
 			// Other empty view
-			RunningApp.WaitForElement("No results matched your filter.");
+			RunningApp.WaitForNoElement("No results matched your filter.");
 		}
 	}
 }

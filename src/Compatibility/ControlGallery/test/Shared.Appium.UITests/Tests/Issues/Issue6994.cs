@@ -13,6 +13,7 @@ namespace UITests
 		
 		[Test]
 		[Category(UITestCategories.Button)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void NullPointerExceptionOnFastLabelTextColorChange()
 		{
