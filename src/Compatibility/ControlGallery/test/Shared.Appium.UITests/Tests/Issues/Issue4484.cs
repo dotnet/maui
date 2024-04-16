@@ -12,6 +12,12 @@ namespace UITests
 		public override string Issue => "[Android] ImageButton inside NavigationView.TitleView throw exception during device rotation";
 		public override bool ResetMainPage => false;
 
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			RunningApp.SetOrientationPortrait();
+		}
+
 		[Test]
 		[Category(UITestCategories.ImageButton)]
 		public void RotatingDeviceDoesntCrashTitleView()

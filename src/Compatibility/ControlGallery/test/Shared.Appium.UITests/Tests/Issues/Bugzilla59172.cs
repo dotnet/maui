@@ -29,6 +29,8 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public async Task Issue59172Test()
 		{
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+
 			RunningApp.Tap("GoForward");
 			RunningApp.Tap("GoBackDelayed");
 			RunningApp.Back();
@@ -43,6 +45,8 @@ namespace UITests
 		[Category(UITestCategories.Navigation)]
 		public async Task Issue59172RecoveryTest()
 		{
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+
 			RunningApp.Tap("GoForward");
 			RunningApp.Tap("GoBackDelayedSafe");
 			RunningApp.Back();

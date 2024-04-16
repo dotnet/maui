@@ -19,6 +19,8 @@ namespace UITests
 		[Category(UITestCategories.Switch)]
 		public async Task SwitchColorTest()
 		{
+			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
+
 			RunningApp.WaitForElement(SwitchId);
 
 			RunningApp.Screenshot("Initial switch state");

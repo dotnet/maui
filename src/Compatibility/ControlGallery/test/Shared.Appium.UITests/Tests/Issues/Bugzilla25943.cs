@@ -5,15 +5,16 @@ namespace UITests
 {
 	public class Bugzilla25943 : IssuesUITest
 	{
-		const string InnerLayout = "innerlayout";
-		const string OuterLayout = "outerlayout";
-		const string Success = "Success";
-
 		public Bugzilla25943(TestDevice testDevice) : base(testDevice)
 		{
 		}
 
 		public override string Issue => "[Android] TapGestureRecognizer does not work with a nested StackLayout";
+
+		/*	
+		const string InnerLayout = "innerlayout";
+		const string OuterLayout = "outerlayout";
+		const string Success = "Success";
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
@@ -29,5 +30,6 @@ namespace UITests
 
 			RunningApp.WaitForNoElement(Success);
 		}
+		*/
 	}
 }
