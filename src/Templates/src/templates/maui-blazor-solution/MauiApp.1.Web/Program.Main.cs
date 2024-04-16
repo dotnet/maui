@@ -115,17 +115,22 @@ public class Program
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
+            .AddAdditionalAssemblies(
+                typeof(MauiApp._1.Shared._Imports).Assembly,
+                typeof(MauiApp._1.Client._Imports).Assembly);
         #elif (UseServer)
         app.MapRazorComponents<App>()
-            .AddInteractiveServerRenderMode();
+            .AddInteractiveServerRenderMode()
+            .AddAdditionalAssemblies(typeof(MauiApp._1.Shared._Imports).Assembly);
         #elif (UseWebAssembly)
         app.MapRazorComponents<App>()
             .AddInteractiveWebAssemblyRenderMode()
+            .AddAdditionalAssemblies(
+                typeof(MauiApp._1.Shared._Imports).Assembly,
+                typeof(MauiApp._1.Client._Imports).Assembly);
         #else
-        app.MapRazorComponents<App>();
-        #endif
-        #if (UseWebAssembly)
-            .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
+        app.MapRazorComponents<App>()
+            .AddAdditionalAssemblies(typeof(MauiApp._1.Shared._Imports).Assembly);
         #endif
 
         #if (IndividualLocalAuth)
