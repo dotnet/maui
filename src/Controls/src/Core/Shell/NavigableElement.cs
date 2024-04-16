@@ -6,7 +6,8 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigableElement']/Docs/*" />
+	/// <summary>Represents an <see cref="Element"/> with base functionality for <see cref="Page"/> navigation. Does not necessarily render on screen.</summary>
+	/// <remarks>Not meant to be used directly. Instead, opt to use derived types, such as <see cref="View"/>.</remarks>
 	public class NavigableElement : Element, INavigationProxy, IStyleSelectable
 	{
 		static readonly BindablePropertyKey NavigationPropertyKey =
@@ -28,21 +29,27 @@ namespace Microsoft.Maui.Controls
 			_mergedStyle = new MergedStyle(GetType(), this);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='Navigation']/Docs/*" />
+		/// <summary>Gets the object responsible for handling stack-based navigation.</summary>
+		/// <remarks>Binds to the <see cref="NavigationProperty"/> <see cref="BindableProperty"/>.</remarks>
 		public INavigation Navigation
 		{
 			get { return (INavigation)GetValue(NavigationProperty); }
 			internal set { SetValue(NavigationPropertyKey, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='Style']/Docs/*" />
+		/// <summary>Gets or sets the unique <see cref="Style"/> for this element.</summary>
 		public Style Style
 		{
 			get { return (Style)GetValue(StyleProperty); }
 			set { SetValue(StyleProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='StyleClass']/Docs/*" />
+		/// <summary>Gets or sets the style classes for the element.</summary>
+		/// <remarks>
+		///		<para>Equiavalent to <see cref="@class"/>.</para>
+		///		<para>Style classes enable multiple styles to be applied to a control, without resorting to style inheritance.</para>
+		/// </remarks>
+		/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/styles/xaml?view=net-maui-8.0#style-classes">Conceptual documentation on style classes</seealso>
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> StyleClass
 		{
@@ -50,7 +57,12 @@ namespace Microsoft.Maui.Controls
 			set { @class = value; }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='class']/Docs/*" />
+		/// <summary>Gets or sets the style classes for the element.</summary>
+		/// <remarks>
+		///		<para>Equiavalent to <see cref="StyleClass"/>.</para>
+		///		<para>Style classes enable multiple styles to be applied to a control, without resorting to style inheritance.</para>
+		/// </remarks>
+		/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/styles/xaml?view=net-maui-8.0#style-classes">Conceptual documentation on style classes</seealso>
 		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> @class
 		{
@@ -63,13 +75,23 @@ namespace Microsoft.Maui.Controls
 
 		IList<string> IStyleSelectable.Classes => StyleClass;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='NavigationProxy']/Docs/*" />
+		/// <summary>Gets the cast of <see cref="Navigation"/> to a <see cref="Maui.Controls.Internals.NavigationProxy"/>.</summary>
+		/// <remarks>
+		///		<para>Determines whether the element will proxy navigation calls.</para>
+		///		<para>For internal use by .NET MAUI.</para>
+		/// </remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationProxy NavigationProxy
 		{
 			get { return Navigation as NavigationProxy; }
 		}
 
+
+		/// <summary>Raises the (internal) <c>ParentSet</c> event.</summary>
+		/// <remarks>
+		/// Will set the <see cref="NavigationProxy">NavigationProxy's</see> inner navigation object to closest topmost element capable of handling navigation calls.
+		/// </remarks>
+		/// <seealso cref="Element.OnParentSet"/>
 		protected override void OnParentSet()
 		{
 			base.OnParentSet();
