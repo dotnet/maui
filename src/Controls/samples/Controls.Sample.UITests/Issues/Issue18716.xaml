@@ -6,6 +6,7 @@
   <Grid>
     <WebView
       x:Name="WaitForStubControl"
+      AutomationId="WaitForStubControl"
       Source="https://freetestdata.com/wp-content/uploads/2021/09/Free_Test_Data_1MB_PDF.pdf">
     </WebView>
   </Grid>
