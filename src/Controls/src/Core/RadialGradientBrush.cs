@@ -33,15 +33,7 @@ namespace Microsoft.Maui.Controls
 			Radius = radius;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />
-		public override bool IsEmpty
-		{
-			get
-			{
-				var radialGradientBrush = this;
-				return radialGradientBrush == null || radialGradientBrush.GradientStops.Count == 0;
-			}
-		}
+		public override bool IsEmpty => base.IsEmpty;
 
 		/// <summary>Bindable property for <see cref="Center"/>.</summary>
 		public static readonly BindableProperty CenterProperty = BindableProperty.Create(

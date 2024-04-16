@@ -45,7 +45,11 @@ body:
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
         - 
+        - 9.0.0-preview.2.10293
         - 9.0.0-preview.1.9973
+        - 8.0.20 SR4
+        - 8.0.14 SR3.1
+        - 8.0.10 SR3
         - 8.0.7 SR2
         - 8.0.6 SR1
         - 8.0.3 GA
@@ -107,8 +111,12 @@ body:
         - 8.0.0-rc.2.9511
         - 8.0.3 GA
         - 8.0.6 SR1
-        - 8.0.7 SR2
+        - 8.0.7 SR2        
+        - 8.0.10 SR3
+        - 8.0.14 SR3.1
+        - 8.0.20 SR4
         - 9.0.0-preview.1.9973
+        - 9.0.0-preview.2.10293
     validations:
       required: true
   - type: dropdown

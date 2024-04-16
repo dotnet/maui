@@ -37,7 +37,7 @@ parameters:
   - name: VM_IMAGE_HOST
     type: object
     default:
-      name: AzurePipelines-EO
+      name: MAUI-1ESPT
       image: 1ESPT-Windows2022
       os: windows
 
@@ -158,7 +158,9 @@ extends:
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:
             dependsOn: ['pack_net']
-            os: windows
+            poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+            vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+            os: ${{ parameters.VM_IMAGE_HOST.os }}     
             scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
 
         

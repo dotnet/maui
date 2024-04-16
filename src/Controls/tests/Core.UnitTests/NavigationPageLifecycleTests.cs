@@ -67,9 +67,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ContentPage pageDisappeared = null;
 
 			NavigationPage nav = new TestNavigationPage(useMaui, initialPage);
-			_ = new TestWindow(nav);
-			nav.SendAppearing();
 
+			// Because of queued change propagation on BPs
+			// sometimes the appearing will fire a bit later than we expect.
+			// This ensures the first one fires before we move on
+			TaskCompletionSource waitForFirstAppearing = new TaskCompletionSource();
+			initialPage.Appearing += OnInitialPageAppearing;
+			void OnInitialPageAppearing(object sender, EventArgs e)
+			{
+				waitForFirstAppearing.SetResult();
+				initialPage.Appearing -= OnInitialPageAppearing;
+			}
+
+			_ = new TestWindow(nav);
+
+			nav.SendAppearing();
+			await waitForFirstAppearing.Task;
 			initialPage.Appearing += (sender, _)
 				=> rootPageFiresAppearingAfterPop = (ContentPage)sender;
 
