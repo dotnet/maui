@@ -8,10 +8,38 @@ namespace Microsoft.Maui.Controls
 {
 	class AppThemeBinding : BindingBase
 	{
+		public const string AppThemeResource = "__MAUI_ApplicationTheme__";
+		class AppThemeProxy : Element
+		{
+			public AppThemeProxy(Element parent, AppThemeBinding binding)
+			{
+				_parent = parent;
+				Binding = binding;
+				this.SetDynamicResource(AppThemeProperty, AppThemeResource);
+				((IElementDefinition)parent)?.AddResourcesChangedListener(OnParentResourcesChanged);
+			}
+
+			public static BindableProperty AppThemeProperty = BindableProperty.Create("AppTheme", typeof(AppTheme), typeof(AppThemeBinding), AppTheme.Unspecified,
+				propertyChanged: (bindable, oldValue, newValue) => ((AppThemeProxy)bindable).OnAppThemeChanged());
+			readonly Element _parent;
+
+			public void OnAppThemeChanged()
+			{
+				Binding.Apply(false);
+			}
+			
+			public AppThemeBinding Binding { get; }
+
+			public void Unsubscribe()
+			{
+				((IElementDefinition)_parent)?.RemoveResourcesChangedListener(OnParentResourcesChanged);
+			}
+		}
+
 		WeakReference<BindableObject> _weakTarget;
 		BindableProperty _targetProperty;
-		bool _attached;
 		SetterSpecificity specificity;
+		AppThemeProxy _appThemeProxy;
 
 		internal override BindingBase Clone()
 		{
@@ -34,7 +62,6 @@ namespace Microsoft.Maui.Controls
 		{
 			base.Apply(fromTarget);
 			ApplyCore();
-			SetAttached(true);
 		}
 
 		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
@@ -44,12 +71,15 @@ namespace Microsoft.Maui.Controls
 			base.Apply(context, bindObj, targetProperty, fromBindingContextChanged, specificity);
 			this.specificity = specificity;
 			ApplyCore(false);
-			SetAttached(true);
+			_appThemeProxy = new AppThemeProxy(bindObj as Element, this);
+
 		}
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
-			SetAttached(false);
+			_appThemeProxy?.Unsubscribe();
+			_appThemeProxy = null;
+
 			base.Unapply(fromBindingContextChanged);
 			_weakTarget = null;
 			_targetProperty = null;
@@ -62,7 +92,6 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_weakTarget == null || !_weakTarget.TryGetTarget(out var target))
 			{
-				SetAttached(false);
 				return;
 			}
 
@@ -146,25 +175,6 @@ namespace Microsoft.Maui.Controls
 				AppTheme.Dark => _isDarkSet ? Dark : Default,
 				_ => _isLightSet ? Light : Default,
 			};
-		}
-
-		void SetAttached(bool value)
-		{
-			var app = Application.Current;
-			if (app != null && _attached != value)
-			{
-				if (value)
-				{
-					// Going from false -> true
-					app.RequestedThemeChanged += OnRequestedThemeChanged;
-				}
-				else
-				{
-					// Going from true -> false
-					app.RequestedThemeChanged -= OnRequestedThemeChanged;
-				}
-				_attached = value;
-			}
 		}
 	}
 }

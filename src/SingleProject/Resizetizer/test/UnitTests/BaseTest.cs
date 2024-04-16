@@ -135,9 +135,22 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			var isSimilar = similarity.ErrorPixelPercentage <= ImageErrorThreshold;
 
-			Assert.True(
-				isSimilar,
-				$"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels)");
+			if (!isSimilar)
+			{
+				var maskFilename = Path.Combine(DestinationDirectory, GetTestImageFileName(args, methodName));
+				maskFilename = Path.ChangeExtension(maskFilename, ".mask.png");
+
+				Directory.CreateDirectory(Path.GetDirectoryName(maskFilename));
+
+				using var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected);
+				using var data = mask.Encode(SKEncodedImageFormat.Png, 100);
+				using var maskFile = File.Create(maskFilename);
+				data.SaveTo(maskFile);
+
+				Assert.True(
+					isSimilar,
+					$"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels). See {maskFilename}");
+			}
 		}
 
 		void SaveImageResultFileReal(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null)

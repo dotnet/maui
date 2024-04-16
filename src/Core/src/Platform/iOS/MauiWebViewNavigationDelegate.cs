@@ -26,12 +26,17 @@ namespace Microsoft.Maui.Platform
 		public void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
 			var handler = Handler;
-			var virtualView = handler?.VirtualView;
 
-			if (handler == null || virtualView == null)
+			if (handler is null || !handler.IsConnected())
 				return;
 
-			handler.PlatformView?.UpdateCanGoBackForward(handler.VirtualView);
+			var platformView = handler?.PlatformView;
+			var virtualView = handler?.VirtualView;
+
+			if (platformView is null || virtualView is null)
+				return;
+
+			platformView.UpdateCanGoBackForward(virtualView);
 
 			if (webView.IsLoading)
 				return;
@@ -47,39 +52,49 @@ namespace Microsoft.Maui.Platform
 			if (handler is WebViewHandler webViewHandler)
 				webViewHandler.ProcessNavigatedAsync(url).FireAndForget();
 			else
-				handler.PlatformView?.UpdateCanGoBackForward(virtualView);
+				platformView.UpdateCanGoBackForward(virtualView);
 		}
 
 		[Export("webView:didFailNavigation:withError:")]
 		public void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 		{
 			var handler = Handler;
+
+			if (handler is null || !handler.IsConnected())
+				return;
+
+			var platformView = handler?.PlatformView;
 			var virtualView = handler?.VirtualView;
 
-			if (handler == null || virtualView == null)
+			if (platformView is null || virtualView is null)
 				return;
 
 			var url = GetCurrentUrl();
 
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Failure);
 
-			handler.PlatformView?.UpdateCanGoBackForward(virtualView);
+			platformView.UpdateCanGoBackForward(virtualView);
 		}
 
 		[Export("webView:didFailProvisionalNavigation:withError:")]
 		public void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 		{
 			var handler = Handler;
+
+			if (handler is null || !handler.IsConnected())
+				return;
+
+			var platformView = handler?.PlatformView;
 			var virtualView = handler?.VirtualView;
 
-			if (handler == null || virtualView == null)
+			if (platformView is null || virtualView is null)
 				return;
 
 			var url = GetCurrentUrl();
 
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Failure);
 
-			handler.PlatformView?.UpdateCanGoBackForward(virtualView);
+			platformView.UpdateCanGoBackForward(virtualView);
 		}
 
 		// https://stackoverflow.com/questions/37509990/migrating-from-uiwebview-to-wkwebview
@@ -87,9 +102,17 @@ namespace Microsoft.Maui.Platform
 		public void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 		{
 			var handler = Handler;
+
+			if (handler is null || !handler.IsConnected())
+			{
+				decisionHandler.Invoke(WKNavigationActionPolicy.Cancel);
+				return;
+			}
+
+			var platformView = handler?.PlatformView;
 			var virtualView = handler?.VirtualView;
 
-			if (handler == null || virtualView == null)
+			if (platformView is null || virtualView is null)
 			{
 				decisionHandler.Invoke(WKNavigationActionPolicy.Cancel);
 				return;
@@ -130,7 +153,7 @@ namespace Microsoft.Maui.Platform
 			var lastUrl = request.Url.ToString();
 
 			bool cancel = virtualView.Navigating(navEvent, lastUrl);
-			handler.PlatformView?.UpdateCanGoBackForward(virtualView);
+			platformView.UpdateCanGoBackForward(virtualView);
 			decisionHandler(cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
 		}
 

@@ -1,28 +1,34 @@
+parameters:
+  poolName: Azure Pipelines
+  vmImage: windows-latest
+  os: windows
+  teamName: $(TeamName)
+  signType: 'Real'
+  dependsOn: []
+  stageName: 'nuget_signing'
+  displayName: 'Sign Nuget'
+
+
 stages:
-  - stage: nuget_signing
-    dependsOn: pack_net
-    displayName: Sign Nuget
+  - stage: ${{ parameters.stageName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    displayName: ${{ parameters.displayName }}
     jobs:
       - template: sign-artifacts/jobs/v2.yml@yaml-templates
         parameters:
-          signType: Real
-          teamName: $(TeamName)
-          usePipelineArtifactTasks: false
-          targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
-          signedArtifactName: nuget
-          signedArtifactPath: signed
-          displayName: Sign Phase
-          condition: and(succeeded(), eq(variables.signingCondition, true))
-      
+          signType: ${{ parameters.signType }}
+          teamName: ${{ parameters.teamName }}
+          condition: eq(variables.signingCondition, true)
+          use1ESTemplate: true
+          usePipelineArtifactTasks: true
+        
       - template: nuget-msi-convert/job/v3.yml@yaml-templates
         parameters:
           yamlResourceName: yaml-templates
-          artifactName: nuget
-          artifactPatterns: |
-            **/signed/*.nupkg
-          artifactPath: signed
-          propsArtifactName: nuget
-          signType: Real
+          artifactName: nuget-signed
+          propsArtifactName:  nuget
+          signType: ${{ parameters.signType }}
+          use1ESTemplate: true
           postConvertSteps:
           - task: DownloadPipelineArtifact@2
             inputs:

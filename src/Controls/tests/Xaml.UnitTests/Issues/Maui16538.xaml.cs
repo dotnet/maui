@@ -38,6 +38,7 @@ public partial class Maui16538
 
 			Application.Current.UserAppTheme = AppTheme.Dark;
 			var page = new Maui16538(useCompiledXaml);
+			Application.Current.MainPage = page;
 			Button button = page.button0;
 			Assert.That(button.BackgroundColor, Is.EqualTo(Color.FromHex("404040")));
 			button.IsEnabled = true;
