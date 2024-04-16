@@ -22,8 +22,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			
 			await Task.Yield();
 
-			await Task.Delay(500); // Avoid Ripple effect animation in the snapshot.
-
 			// 2. Verify that the Entry TextColor is correct (Green).
 			VerifyScreenshot();
 		}
