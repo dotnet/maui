@@ -20,9 +20,46 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			this.IgnoreIfPlatforms(new[]
 			{
-				TestDevice.Mac, TestDevice.Windows
+				TestDevice.Windows
 			});
+   
+			App.WaitForElement("HideSoftInputOnTappedTrue");
 
+			if (this.Device == TestDevice.Mac)
+			{
+				HideSoftInputOnTappedPageTestForMac(control, hideOnTapped);
+			}
+			else
+			{
+				HideSoftInputOnTappedPageTestForAndroidiOS(control, hideOnTapped);
+			}
+		}
+
+		void HideSoftInputOnTappedPageTestForMac(string control, bool hideOnTapped)
+		{
+			try
+			{
+				if (hideOnTapped)
+					App.Click("HideSoftInputOnTappedTrue");
+				else
+					App.Click("HideSoftInputOnTappedFalse");
+
+				App.WaitForElement(control);
+				App.Click(control);
+
+				Assert.IsTrue(App.IsFocused(control));
+
+				App.Click("EmptySpace");
+				Assert.AreEqual(!hideOnTapped, App.IsFocused(control));
+			}
+			finally
+			{
+				this.Back();
+			}
+		}
+
+		void HideSoftInputOnTappedPageTestForAndroidiOS(string control, bool hideOnTapped)
+		{
 			try
 			{
 				if (App.IsKeyboardShown())
@@ -52,9 +89,49 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			this.IgnoreIfPlatforms(new[]
 			{
-				TestDevice.Mac, TestDevice.Windows
+				TestDevice.Windows
 			});
+   
+			App.WaitForElement("HideSoftInputOnTappedFalse");
 
+			if (this.Device == TestDevice.Mac)
+			{
+				TogglingHideSoftInputOnTappedForMac();
+			}
+			else
+			{
+				TogglingHideSoftInputOnTappedForAndroidiOS();
+			}
+		}
+
+		public void TogglingHideSoftInputOnTappedForMac()
+		{
+			try
+			{
+				App.Click("HideSoftInputOnTappedFalse");
+
+				// Switch between enabling/disabling feature
+				for (int i = 0; i < 2; i++)
+				{
+					App.Click("HideKeyboardWhenTappingPage");
+					Assert.True(App.IsFocused("HideKeyboardWhenTappingPage"));
+					App.Click("EmptySpace");
+					Assert.AreEqual(false, App.IsFocused("HideKeyboardWhenTappingPage"));
+
+					App.Click("DontHideKeyboardWhenTappingPage");
+					Assert.True(App.IsFocused("DontHideKeyboardWhenTappingPage"));
+					App.Click("EmptySpace");
+					Assert.AreEqual(true, App.IsFocused("DontHideKeyboardWhenTappingPage"));
+				}
+			}
+			finally
+			{
+				this.Back();
+			}
+		}
+
+		public void TogglingHideSoftInputOnTappedForAndroidiOS()
+		{
 			try
 			{
 				if (App.IsKeyboardShown())

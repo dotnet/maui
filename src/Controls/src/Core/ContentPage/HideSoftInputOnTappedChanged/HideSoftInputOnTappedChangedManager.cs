@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-#if !(ANDROID || (IOS && !MACCATALYST))
+#if !(ANDROID || IOS)
 		internal void UpdateFocusForView(InputView iv)
 		{
 
