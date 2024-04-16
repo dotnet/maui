@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 			return clone;
 		}
 
-		internal static readonly object DoNothing = new object();
+		internal static readonly object DoNothing = new object(); // this object instance must be the same as Binding.DoNothing
 
 		internal override void Apply(bool fromTarget)
 		{
