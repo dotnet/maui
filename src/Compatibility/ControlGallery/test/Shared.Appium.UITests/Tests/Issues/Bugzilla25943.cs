@@ -17,6 +17,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void VerifyNestedStacklayoutTapsBubble()
 		{

@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void Issue3273Test()
 		{

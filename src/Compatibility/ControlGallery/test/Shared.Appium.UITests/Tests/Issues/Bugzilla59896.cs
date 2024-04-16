@@ -11,7 +11,7 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "v2.4.0: Adding inserting section to ListView causes crash IF first section is empty ";
+		public override string Issue => "v2.4.0: Adding inserting section to ListView causes crash IF first section is empty";
 
 		[Test]
 		[Category(UITestCategories.ListView)]

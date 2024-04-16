@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 57674, "ListView not honoring INotifyCollectionChanged ", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Bugzilla, 57674, "ListView not honoring INotifyCollectionChanged", PlatformAffected.UWP)]
 	public class Bugzilla57674 : TestContentPage
 	{
 		MyCollection _myCollection;

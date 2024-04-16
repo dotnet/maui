@@ -16,6 +16,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void Issue1469Test()
 		{

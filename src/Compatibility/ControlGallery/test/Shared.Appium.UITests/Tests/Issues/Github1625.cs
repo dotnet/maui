@@ -10,7 +10,7 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "Slider value is not changed for the first position change\"";
+		public override string Issue => "Slider value is not changed for the first position change";
 
 		[Test]
 		[Category(UITestCategories.Slider)]

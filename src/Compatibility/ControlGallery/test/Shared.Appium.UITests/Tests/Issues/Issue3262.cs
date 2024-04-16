@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnAndroid]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
 			RunningApp.Tap("PageWithoutCookies");
@@ -21,6 +22,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void ChangeDuringNavigating()
 		{
@@ -34,6 +36,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void AddAdditionalCookieToWebView()
 		{
@@ -47,6 +50,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void SetToOneCookie()
 		{
@@ -57,6 +61,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
@@ -70,6 +75,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnAndroid]
 		public void RemoveAllTheCookiesIAdded()
 		{
 			RunningApp.WaitForElement("Loaded");

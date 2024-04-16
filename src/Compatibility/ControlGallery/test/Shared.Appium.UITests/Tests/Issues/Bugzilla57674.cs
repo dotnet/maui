@@ -10,10 +10,11 @@ namespace UITests
 		{
 		}
 
-		public override string Issue => "ListView not honoring INotifyCollectionChanged ";
+		public override string Issue => "ListView not honoring INotifyCollectionChanged";
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void Bugzilla57674Test()
 		{

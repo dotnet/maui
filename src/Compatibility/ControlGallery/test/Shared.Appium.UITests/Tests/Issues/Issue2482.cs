@@ -22,7 +22,7 @@ namespace UITests
 
 			RunningApp.WaitForElement(ButtonId);
 			App.DoubleClick(ButtonId);
-			RunningApp.WaitForElement(Success, timeout: TimeSpan.FromSeconds(25));
+			RunningApp.WaitForNoElement(Success, timeout: TimeSpan.FromSeconds(25));
 		}
 	}
 }

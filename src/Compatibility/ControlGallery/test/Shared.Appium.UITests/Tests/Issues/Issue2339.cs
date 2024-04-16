@@ -22,6 +22,7 @@ namespace UITests
 			RunningApp.Tap("btnFocusThenUnFocus");
 			RunningApp.WaitForNoElement("Picker Focused: 1");
 			RunningApp.WaitForNoElement("Picker UnFocused: 1");
+			RunningApp.Back();
 			RunningApp.Tap("btnFocusThenUnFocus");
 			RunningApp.WaitForNoElement("Picker Focused: 2");
 			RunningApp.WaitForNoElement("Picker UnFocused: 2");
