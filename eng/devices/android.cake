@@ -4,8 +4,6 @@
 #load "../cake/dotnet.cake"
 #load "./devices-shared.cake"
 
-#tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
-
 const int defaultVersion = 30;
 const string dotnetVersion = "net8.0";
 
@@ -415,43 +413,21 @@ Task("cg-uitest")
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("APP_APK", $"{TEST_APP}");
 
-	// build the test library
-	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK);
-	Information("BinDir: {0}", binDir);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{binDir}/{name}-{CONFIGURATION}-android-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-	Information("Build UITests project {0}", PROJECT.FullPath);
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
-			Configuration = CONFIGURATION,
-			ArgumentCustomization = args => args
-				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
-	});
-	
-	if(PROJECT.FullPath.Contains("Compatibility.ControlGallery.Android.UITests"))
-	{
-		var arcadeBin = new DirectoryPath("../../artifacts/bin/");
-		binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Compatibility.ControlGallery.Android.UITests/" + CONFIGURATION + "/" + TEST_FRAMEWORK));
-	}
-	
-	var testLibDllPath = $"{binDir.FullPath}/Microsoft.Maui.Controls.Android.UITests.dll";
-	Information("Run UITests lib {0}", testLibDllPath);
-	var nunitSettings = new NUnit3Settings { 
-		Configuration = CONFIGURATION,
-	//	OutputFile = $"{TEST_RESULTS}/android/run_uitests_output-{DateTime.UtcNow.ToFileTimeUtc()}.log",
-	//	Work = $"{TEST_RESULTS}/android/"
-	};
 
-	if(!string.IsNullOrEmpty(TEST_WHERE))
-	{
-		Information("Add Where filter to NUnit {0}", TEST_WHERE);
-		nunitSettings.Where = TEST_WHERE;
-	}
-
-	RunTestsNunit(testLibDllPath, nunitSettings);
+	var resultName = $"{name}-{CONFIGURATION}-{DateTime.UtcNow.ToFileTimeUtc()}";
+	// build the test library
+	
+	RunTestWithLocalDotNet(
+            PROJECT.FullPath,
+            config: CONFIGURATION,
+            pathDotnet: DOTNET_PATH,
+            noBuild: false,
+            resultsFileNameWithoutExtension: resultName,
+            filter: Argument("filter", ""));
 
 	// When all tests are inconclusive the run does not fail, check if this is the case and fail the pipeline so we get notified
-	FailRunOnOnlyInconclusiveTests(System.IO.Path.Combine(nunitSettings.Work.FullPath, "TestResult.xml"));
+	//FailRunOnOnlyInconclusiveTests(System.IO.Path.Combine(nunitSettings.Work.FullPath, "resultName.xml"));
 });
 
 
