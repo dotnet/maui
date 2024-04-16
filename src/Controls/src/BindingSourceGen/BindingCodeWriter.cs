@@ -319,11 +319,13 @@ public sealed class BindingCodeWriter
 		private void AppendLine(char character) => _indentedTextWriter.WriteLine(character);
 		private void Append(string str) => _indentedTextWriter.Write(str);
 		private void Append(char character) => _indentedTextWriter.Write(character);
+
+		private readonly char[] LineSeparators = ['\n', '\r'];
 		private void AppendLines(string lines)
 		{
-			foreach (var line in lines.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
+			foreach (var line in lines.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries))
 			{
-				AppendLine(line.TrimEnd('\r'));
+				AppendLine(line);
 			}
 		}
 
