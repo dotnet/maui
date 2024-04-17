@@ -172,7 +172,7 @@
     <RemoveDir Directories="$(_WorkloadManifestDir);@(_WorkloadDirectoriesToRemove)" />
     <MakeDir Directories="$(_WorkloadManifestDir)" />
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(NugetArtifactsPath)/logs/DotNetWorkloads.binlog"
+        Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(ArtifactsLogDir)/DotNetWorkloads.binlog"
         EnvironmentVariables="MSBuildSDKsPath=;NUGET_PACKAGES=$(_WorkloadManifestDir);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
     />
     <!--
