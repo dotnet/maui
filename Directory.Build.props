@@ -8,6 +8,8 @@
     <LangVersion>Latest</LangVersion>
     <IsShipping>true</IsShipping>
     <SignAssembly>false</SignAssembly>
+    <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
+    <MauiSrcDirectory>$(MSBuildThisFileDirectory)src/</MauiSrcDirectory>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -161,8 +163,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
-    <MauiSrcDirectory>$(MSBuildThisFileDirectory)src/</MauiSrcDirectory>
     <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
     <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
     <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
