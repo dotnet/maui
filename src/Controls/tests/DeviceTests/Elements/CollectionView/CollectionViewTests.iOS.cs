@@ -120,7 +120,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			// HACK: test passes running individually, but fails when running entire suite.
 			// Skip the assertion on Catalyst for now.
-#if MACCATALYST
+#if !MACCATALYST
 			await AssertionExtensions.WaitForGC(labels.ToArray());
 #endif
 		}
