@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
-			_changeHandlers = _changeHandlers ?? new List<Action<object, ResourcesChangedEventArgs>>(2);
+			_changeHandlers ??= new List<Action<object, ResourcesChangedEventArgs>>(2);
 			_changeHandlers.Add(onchanged);
 		}
 
@@ -354,6 +354,9 @@ namespace Microsoft.Maui.Controls
 			if (RealParent != null)
 			{
 				OnParentResourcesChanged(RealParent.GetMergedResources());
+				if (Application.Current?.RequestedTheme != ApplicationModel.AppTheme.Unspecified)
+					OnParentResourcesChanged([new KeyValuePair<string, object>(AppThemeBinding.AppThemeResource, Application.Current.RequestedTheme)]);
+
 				((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
 			}
 

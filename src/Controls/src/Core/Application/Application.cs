@@ -108,8 +108,8 @@ namespace Microsoft.Maui.Controls
 
 				if (value is not null)
 				{
-					OnParentResourcesChanged(this.GetMergedResources());
-					OnParentResourcesChanged([new KeyValuePair<string, object>(AppThemeBinding.AppThemeResource, _lastAppTheme)]);
+					value.OnResourcesChanged(this.GetMergedResources());
+					value.OnResourcesChanged([new KeyValuePair<string, object>(AppThemeBinding.AppThemeResource, _lastAppTheme)]);
 					((IElementDefinition)this).AddResourcesChangedListener(value.OnParentResourcesChanged);
 				}
 
