@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -51,6 +52,11 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<TableView, TableViewRenderer>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
+#if IOS || MACCATALYST
+				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 			});
 		});
 	}
@@ -138,6 +144,56 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+	}
+
+	[Theory("Gesture Does Not Leak")]
+	[InlineData(typeof(DragGestureRecognizer))]
+	[InlineData(typeof(DropGestureRecognizer))]
+	[InlineData(typeof(PanGestureRecognizer))]
+	[InlineData(typeof(PinchGestureRecognizer))]
+	[InlineData(typeof(PointerGestureRecognizer))]
+	[InlineData(typeof(SwipeGestureRecognizer))]
+	[InlineData(typeof(TapGestureRecognizer))]
+	public async Task GestureDoesNotLeak(Type type)
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference handlerReference = null;
+
+		var observable = new ObservableCollection<int> { 1 };
+		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			await navPage.Navigation.PushAsync(new ContentPage
+			{
+				Content = new CollectionView
+				{
+					ItemTemplate = new DataTemplate(() =>
+					{
+						var view = new Label
+						{
+							GestureRecognizers =
+							{
+								(GestureRecognizer)Activator.CreateInstance(type)
+							}
+						};
+						view.SetBinding(Label.TextProperty, ".");
+
+						viewReference = new WeakReference(view);
+						handlerReference = new WeakReference(view.Handler);
+
+						return view;
+					}),
+					ItemsSource = observable
+				}
+			});
+
+			await navPage.Navigation.PopAsync();
+		});
+
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
 	}
 
 #if IOS
