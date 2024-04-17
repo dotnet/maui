@@ -17,6 +17,8 @@ variables:
     value: 3.0.0
   - name: SymbolToolVersion
     value: 1.0.1
+  - name: BinlogToolVersion
+    value: 1.0.11
 
   - name: runCodesignValidationInjection
     value: false

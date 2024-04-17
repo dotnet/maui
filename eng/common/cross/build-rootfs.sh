@@ -8,7 +8,7 @@ usage()
     echo "BuildArch can be: arm(default), arm64, armel, armv6, ppc64le, riscv64, s390x, x64, x86"
     echo "CodeName - optional, Code name for Linux, can be: xenial(default), zesty, bionic, alpine"
     echo "                               for alpine can be specified with version: alpineX.YY or alpineedge"
-    echo "                               for FreeBSD can be: freebsd12, freebsd13"
+    echo "                               for FreeBSD can be: freebsd13, freebsd14"
     echo "                               for illumos can be: illumos"
     echo "                               for Haiku can be: haiku."
     echo "lldbx.y - optional, LLDB version, can be: lldb3.9(default), lldb4.0, lldb5.0, lldb6.0 no-lldb. Ignored for alpine and FreeBSD"
@@ -71,9 +71,9 @@ __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
 
-__FreeBSDBase="12.4-RELEASE"
+__FreeBSDBase="13.2-RELEASE"
 __FreeBSDPkg="1.17.0"
-__FreeBSDABI="12"
+__FreeBSDABI="13"
 __FreeBSDPackages="libunwind"
 __FreeBSDPackages+=" icu"
 __FreeBSDPackages+=" libinotify"
@@ -142,7 +142,6 @@ while :; do
     case $lowerI in
         -\?|-h|--help)
             usage
-            exit 1
             ;;
         arm)
             __BuildArch=arm
@@ -182,12 +181,12 @@ while :; do
             __AlpinePackages="${__AlpinePackages// lldb-dev/}"
             __QEMUArch=riscv64
             __UbuntuArch=riscv64
-            __UbuntuRepo="http://deb.debian.org/debian-ports"
+            __UbuntuRepo="http://deb.debian.org/debian"
             __UbuntuPackages="${__UbuntuPackages// libunwind8-dev/}"
             unset __LLDB_Package
 
-            if [[ -e "/usr/share/keyrings/debian-ports-archive-keyring.gpg" ]]; then
-                __Keyring="--keyring /usr/share/keyrings/debian-ports-archive-keyring.gpg --include=debian-ports-archive-keyring"
+            if [[ -e "/usr/share/keyrings/debian-archive-keyring.gpg" ]]; then
+                __Keyring="--keyring /usr/share/keyrings/debian-archive-keyring.gpg --include=debian-archive-keyring"
             fi
             ;;
         ppc64le)
@@ -229,12 +228,19 @@ while :; do
             __UbuntuRepo="http://archive.ubuntu.com/ubuntu/"
             ;;
         lldb*)
-            version="${lowerI/lldb/}"
-            parts=(${version//./ })
+            version="$(echo "$lowerI" | tr -d '[:alpha:]-=')"
+            majorVersion="${version%%.*}"
+
+            [ -z "${version##*.*}" ] && minorVersion="${version#*.}"
+            if [ -z "$minorVersion" ]; then
+                minorVersion=0
+            fi
 
             # for versions > 6.0, lldb has dropped the minor version
-            if [[ "${parts[0]}" -gt 6 ]]; then
-                version="${parts[0]}"
+            if [ "$majorVersion" -le 6 ]; then
+                version="$majorVersion.$minorVersion"
+            else
+                version="$majorVersion"
             fi
 
             __LLDB_Package="liblldb-${version}-dev"
@@ -243,15 +249,19 @@ while :; do
             unset __LLDB_Package
             ;;
         llvm*)
-            version="${lowerI/llvm/}"
-            parts=(${version//./ })
-            __LLVM_MajorVersion="${parts[0]}"
-            __LLVM_MinorVersion="${parts[1]}"
+            version="$(echo "$lowerI" | tr -d '[:alpha:]-=')"
+            __LLVM_MajorVersion="${version%%.*}"
 
-            # for versions > 6.0, llvm has dropped the minor version
-            if [[ -z "$__LLVM_MinorVersion" && "$__LLVM_MajorVersion" -le 6 ]]; then
-                __LLVM_MinorVersion=0;
+            [ -z "${version##*.*}" ] && __LLVM_MinorVersion="${version#*.}"
+            if [ -z "$__LLVM_MinorVersion" ]; then
+                __LLVM_MinorVersion=0
             fi
+
+            # for versions > 6.0, lldb has dropped the minor version
+            if [ "$__LLVM_MajorVersion" -gt 6 ]; then
+                __LLVM_MinorVersion=
+            fi
+
             ;;
         xenial) # Ubuntu 16.04
             if [[ "$__CodeName" != "jessie" ]]; then
@@ -323,25 +333,24 @@ while :; do
         alpine*)
             __CodeName=alpine
             __UbuntuRepo=
-            version="${lowerI/alpine/}"
 
-            if [[ "$version" == "edge" ]]; then
+            if [[ "$lowerI" == "alpineedge" ]]; then
                 __AlpineVersion=edge
             else
-                parts=(${version//./ })
-                __AlpineMajorVersion="${parts[0]}"
-                __AlpineMinoVersion="${parts[1]}"
-                __AlpineVersion="$__AlpineMajorVersion.$__AlpineMinoVersion"
+                version="$(echo "$lowerI" | tr -d '[:alpha:]-=')"
+                __AlpineMajorVersion="${version%%.*}"
+                __AlpineMinorVersion="${version#*.}"
+                __AlpineVersion="$__AlpineMajorVersion.$__AlpineMinorVersion"
             fi
-            ;;
-        freebsd12)
-            __CodeName=freebsd
-            __SkipUnmount=1
             ;;
         freebsd13)
             __CodeName=freebsd
-            __FreeBSDBase="13.2-RELEASE"
-            __FreeBSDABI="13"
+            __SkipUnmount=1
+            ;;
+        freebsd14)
+            __CodeName=freebsd
+            __FreeBSDBase="14.0-RELEASE"
+            __FreeBSDABI="14"
             __SkipUnmount=1
             ;;
         illumos)
@@ -444,11 +453,18 @@ __RootfsDir="$( cd "$__RootfsDir" && pwd )"
 
 if [[ "$__CodeName" == "alpine" ]]; then
     __ApkToolsVersion=2.12.11
-    __ApkToolsSHA512SUM=53e57b49230da07ef44ee0765b9592580308c407a8d4da7125550957bb72cb59638e04f8892a18b584451c8d841d1c7cb0f0ab680cc323a3015776affaa3be33
     __ApkToolsDir="$(mktemp -d)"
     __ApkKeysDir="$(mktemp -d)"
 
-    wget "https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic//v$__ApkToolsVersion/x86_64/apk.static" -P "$__ApkToolsDir"
+    arch="$(uname -m)"
+    wget "https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v$__ApkToolsVersion/$arch/apk.static" -P "$__ApkToolsDir"
+    if [[ "$arch" == "x86_64" ]]; then
+      __ApkToolsSHA512SUM="53e57b49230da07ef44ee0765b9592580308c407a8d4da7125550957bb72cb59638e04f8892a18b584451c8d841d1c7cb0f0ab680cc323a3015776affaa3be33"
+    elif [[ "$arch" == "aarch64" ]]; then
+      __ApkToolsSHA512SUM="9e2b37ecb2b56c05dad23d379be84fd494c14bd730b620d0d576bda760588e1f2f59a7fcb2f2080577e0085f23a0ca8eadd993b4e61c2ab29549fdb71969afd0"
+    else
+      echo "WARNING: add missing hash for your host architecture. To find the value, use: 'find /tmp -name apk.static -exec sha512sum {} \;'"
+    fi
     echo "$__ApkToolsSHA512SUM $__ApkToolsDir/apk.static" | sha512sum -c
     chmod +x "$__ApkToolsDir/apk.static"
 
@@ -477,20 +493,23 @@ if [[ "$__CodeName" == "alpine" ]]; then
     fi
 
     # initialize DB
+    # shellcheck disable=SC2086
     "$__ApkToolsDir/apk.static" \
         -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
         -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
         -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" --initdb add
 
     if [[ "$__AlpineLlvmLibsLookup" == 1 ]]; then
+        # shellcheck disable=SC2086
         __AlpinePackages+=" $("$__ApkToolsDir/apk.static" \
             -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
             -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
             -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" \
-            search 'llvm*-libs' | sort | tail -1 | sed 's/-[^-]*//2g')"
+            search 'llvm*-libs' | grep -E '^llvm' | sort | tail -1 | sed 's/-[^-]*//2g')"
     fi
 
     # install all packages in one go
+    # shellcheck disable=SC2086
     "$__ApkToolsDir/apk.static" \
         -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
         -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
@@ -514,6 +533,7 @@ elif [[ "$__CodeName" == "freebsd" ]]; then
     rm -rf "$__RootfsDir/tmp/pkg-${__FreeBSDPkg}"
     # install packages we need.
     INSTALL_AS_USER=$(whoami) "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf update
+    # shellcheck disable=SC2086
     INSTALL_AS_USER=$(whoami) "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf install --yes $__FreeBSDPackages
 elif [[ "$__CodeName" == "illumos" ]]; then
     mkdir "$__RootfsDir/tmp"
@@ -575,8 +595,8 @@ elif [[ "$__CodeName" == "haiku" ]]; then
     mkdir "$__RootfsDir/tmp/download"
 
     echo "Downloading Haiku package tool"
-    git clone https://github.com/haiku/haiku-toolchains-ubuntu --depth 1 $__RootfsDir/tmp/script
-    wget -O "$__RootfsDir/tmp/download/hosttools.zip" $($__RootfsDir/tmp/script/fetch.sh --hosttools)
+    git clone https://github.com/haiku/haiku-toolchains-ubuntu --depth 1 "$__RootfsDir/tmp/script"
+    wget -O "$__RootfsDir/tmp/download/hosttools.zip" "$("$__RootfsDir/tmp/script/fetch.sh" --hosttools)"
     unzip -o "$__RootfsDir/tmp/download/hosttools.zip" -d "$__RootfsDir/tmp/bin"
 
     DepotBaseUrl="https://depot.haiku-os.org/__api/v2/pkg/get-pkg"
@@ -609,7 +629,7 @@ elif [[ "$__CodeName" == "haiku" ]]; then
 
     # Download buildtools
     echo "Downloading Haiku buildtools"
-    wget -O "$__RootfsDir/tmp/download/buildtools.zip" $($__RootfsDir/tmp/script/fetch.sh --buildtools --arch=$__HaikuArch)
+    wget -O "$__RootfsDir/tmp/download/buildtools.zip" "$("$__RootfsDir/tmp/script/fetch.sh" --buildtools --arch=$__HaikuArch)"
     unzip -o "$__RootfsDir/tmp/download/buildtools.zip" -d "$__RootfsDir"
 
     # Cleaning up temporary files
@@ -622,10 +642,12 @@ elif [[ -n "$__CodeName" ]]; then
         __Keyring="$__Keyring --force-check-gpg"
     fi
 
+    # shellcheck disable=SC2086
     debootstrap "--variant=minbase" $__Keyring --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"
     cp "$__CrossDir/$__BuildArch/sources.list.$__CodeName" "$__RootfsDir/etc/apt/sources.list"
     chroot "$__RootfsDir" apt-get update
     chroot "$__RootfsDir" apt-get -f -y install
+    # shellcheck disable=SC2086
     chroot "$__RootfsDir" apt-get -y install $__UbuntuPackages
     chroot "$__RootfsDir" symlinks -cr /usr
     chroot "$__RootfsDir" apt-get clean
@@ -643,6 +665,5 @@ elif [[ "$__Tizen" == "tizen" ]]; then
     ROOTFS_DIR="$__RootfsDir" "$__CrossDir/tizen-build-rootfs.sh" "$__BuildArch"
 else
     echo "Unsupported target platform."
-    usage;
-    exit 1
+    usage
 fi

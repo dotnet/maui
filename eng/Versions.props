@@ -1,13 +1,14 @@
 <Project>
- <PropertyGroup>
+  <PropertyGroup>
     <!-- The .NET product branding version -->
-    <ProductVersion>8.0.20</ProductVersion>
+    <ProductVersion>8.0.40</ProductVersion>
     <MajorVersion>8</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>20</PatchVersion>
+    <PatchVersion>40</PatchVersion>
     <SdkBandVersion>8.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>ci.net8</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration></PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>
+    </PreReleaseVersionIteration>
     <!-- Enable to remove prerelease label. -->
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
@@ -123,38 +124,13 @@
     <CoverletCollectorPackageVersion>6.0.0</CoverletCollectorPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
-       <!-- arcade -->
-    <MicrosoftDotNetBuildTasksFeedVersion>8.0.0-beta.23463.1</MicrosoftDotNetBuildTasksFeedVersion>
-    <MicrosoftDotNetSignToolVersion>8.0.0-beta.23463.1</MicrosoftDotNetSignToolVersion>
-    <MicrosoftDotNetSwaggerGeneratorMSBuildVersion>8.0.0-beta.23463.1</MicrosoftDotNetSwaggerGeneratorMSBuildVersion>
-    <!-- arcade-services -->
-    <MicrosoftDotNetMaestroClientVersion>1.1.0-beta.23477.2</MicrosoftDotNetMaestroClientVersion>
-    <MicrosoftDotNetMaestroTasksVersion>1.1.0-beta.24157.2</MicrosoftDotNetMaestroTasksVersion>
-    <!-- corefx -->
-    <MicrosoftBclHashCodeVersion>1.1.1</MicrosoftBclHashCodeVersion>
-    <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
-    <SystemRuntimeInteropServicesRuntimeInformation>4.3.0</SystemRuntimeInteropServicesRuntimeInformation>
-    <!-- deployment-tools -->
-    <MicrosoftDeploymentDotNetReleasesVersion>1.0.0-preview6.1.23159.4</MicrosoftDeploymentDotNetReleasesVersion>
-    <!-- dotnet-symuploader -->
-    <MicrosoftSymbolUploaderBuildTaskVersion>2.0.0-preview.1.23470.14</MicrosoftSymbolUploaderBuildTaskVersion>
-    <MicrosoftSymbolUploaderVersion>2.0.0-preview.1.23470.14</MicrosoftSymbolUploaderVersion>
-    <!-- linker -->
-    <MicrosoftNETILLinkTasksVersion>6.0.100-1.22103.2</MicrosoftNETILLinkTasksVersion>
-    <!-- msbuild -->
-    <MicrosoftBuildFrameworkVersion>17.3.2</MicrosoftBuildFrameworkVersion>
-    <MicrosoftBuildTasksCoreVersion>17.3.2</MicrosoftBuildTasksCoreVersion>
-    <MicrosoftBuildUtilitiesCoreVersion>17.3.2</MicrosoftBuildUtilitiesCoreVersion>
-    <MicrosoftBuildVersion>17.3.2</MicrosoftBuildVersion>
-    <!-- netstandard -->
-    <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
+    <!-- arcade -->
     <!-- xunit -->
     <XUnitVersion>$(XunitPackageVersion)</XUnitVersion>
     <XUnitAnalyzersVersion>$(XUnitAnalyzersPackageVersion)</XUnitAnalyzersVersion>
     <XUnitRunnerConsoleVersion>$(XunitPackageVersion)</XUnitRunnerConsoleVersion>
     <XUnitRunnerVisualStudioVersion>$(XunitRunnerVisualStudioPackageVersion)</XUnitRunnerVisualStudioVersion>
-
-  </PropertyGroup>  
+  </PropertyGroup>
   <PropertyGroup>
     <VersionBand Condition=" '$(VersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</VersionBand>
     <DotNetVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$(VersionBand)$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `\-(preview|rc|alpha).\d+`))</DotNetVersionBand>
