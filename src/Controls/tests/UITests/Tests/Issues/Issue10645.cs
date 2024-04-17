@@ -4,9 +4,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
-	public class Issue17665 : _IssuesUITest
+	public class Issue10645 : _IssuesUITest
 	{
-		public Issue17665(TestDevice device) : base(device)
+		public Issue10645(TestDevice device) : base(device)
 		{
 		}
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		[Test]
 		[Category(UITestCategories.ActionSheet)]
-		public void Issue17665Test()
+		public void Issue10645Test()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.iOS }, "Only affects Windows.");
 

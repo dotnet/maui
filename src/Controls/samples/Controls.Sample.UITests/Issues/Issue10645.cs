@@ -2,8 +2,8 @@
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 17665, "Image is not centered in AspectFill mode", PlatformAffected.UWP)]
-	public class Issue17665 : TestContentPage
+	[Issue(IssueTracker.Github, 10645, "Image is not centered in AspectFill mode", PlatformAffected.UWP)]
+	public class Issue10645 : TestContentPage
 	{
 		protected override void Init()
 		{
@@ -15,6 +15,7 @@ namespace Maui.Controls.Sample.Issues
 						AutomationId = "AspectFillImage",
 						Aspect = Microsoft.Maui.Aspect.AspectFill,
 						WidthRequest = 100,
+						HeightRequest = 200,
 					}
 				};
 		}
