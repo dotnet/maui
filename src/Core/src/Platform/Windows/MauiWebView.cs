@@ -33,9 +33,11 @@ namespace Microsoft.Maui.Platform
 
 		// Script to insert a <base> tag into an HTML document
 		const string BaseInsertionScript = @"
-			var base = document.createElement('base');
-			base.href = 'baseTag';
-			document.getElementsByTagName('head')[0].appendChild(base);";
+			var head = document.getElementsByTagName('head')[0];
+			var bases = head.getElementsByTagName('base');
+			if(bases.length == 0) {
+				head.innerHTML = 'baseTag' + head.innerHTML;
+			}";
 
 		// Allow for packaged/unpackaged app support
 		static string ApplicationPath => AppInfoUtils.IsPackagedApp
@@ -62,7 +64,7 @@ namespace Microsoft.Maui.Platform
 		    }
 
 			// Insert script to set the base tag
-			var script = $"<script>{BaseInsertionScript.Replace("baseTag", baseUrl, StringComparison.Ordinal)}</script>";
+			var script = GetBaseTagInsertionScript(baseUrl);
 			var htmlWithScript = $"{script}\n{html}";
 
 			NavigateToString(htmlWithScript);
@@ -142,10 +144,16 @@ namespace Microsoft.Maui.Platform
 				Convert.FromBase64String(
 					uri.Substring(dataUriBase64.Length)));
 
-			var localSchemeScript = $"<script>{BaseInsertionScript.Replace("baseTag", LocalScheme, StringComparison.Ordinal)}</script>";
+			var localSchemeScript = GetBaseTagInsertionScript(LocalScheme);
 			return decodedHtml.Contains(
 				localSchemeScript,
 				StringComparison.OrdinalIgnoreCase);
+		}
+
+		static string GetBaseTagInsertionScript(string baseUrl)
+		{
+			var baseTag = $"<base href=\"{baseUrl}\"></base>";
+			return $"<script>{BaseInsertionScript.Replace("baseTag", baseTag, StringComparison.Ordinal)}</script>";
 		}
 	}
 }
