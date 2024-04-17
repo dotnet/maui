@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 
@@ -125,6 +126,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="fallbackValue">The value to use instead of the default value for the property, if no specified value exists.</param>
 		/// <param name="targetNullValue">The value to supply for a bound property when the target of the binding is <see langword="null" />.</param>
 		/// <exception cref="ArgumentNullException"></exception>
+		[EditorBrowsable(EditorBrowsableState.Never)] // TODO: remove the attribute once the source generator is enabled by default
 		public static void SetBinding<TSource, TProperty>(
 			this BindableObject self,
 			BindableProperty targetProperty,
