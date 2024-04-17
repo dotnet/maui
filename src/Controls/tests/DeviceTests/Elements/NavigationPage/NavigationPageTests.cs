@@ -362,5 +362,19 @@ namespace Microsoft.Maui.DeviceTests
 				await OnLoadedAsync(reusedPage.Content);
 			});
 		}
+
+		[Fact]
+		public async Task SettingTitleIconImageSourceDoesntCrash()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var page = new ContentPage() { Content = new Frame(), Title = "Detail" };
+				await navPage.PushAsync(new NavigationPage(page));
+				NavigationPage.SetTitleIconImageSource(page, "red.png");
+			});
+		}
 	}
 }
