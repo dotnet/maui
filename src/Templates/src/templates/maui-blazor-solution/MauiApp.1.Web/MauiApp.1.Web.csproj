@@ -27,10 +27,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="${MicrosoftEntityFrameworkCoreSqlServerVersion}" Condition="'$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' == 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
   </ItemGroup>
-
-  <!--#endif -->
+  <!--#else -->
   <ItemGroup>
 	    <ProjectReference Include="..\MauiApp.1.Shared\MauiApp.1.Shared.csproj" />
   </ItemGroup>
+  <!--#endif -->
 
 </Project>

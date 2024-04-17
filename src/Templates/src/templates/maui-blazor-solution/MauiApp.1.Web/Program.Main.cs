@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 #endif
 #if (UseWebAssembly && SampleContent)
-using MauiApp._1.Web.Client.Pages;
 #endif
 using MauiApp._1.Web.Components;
 #if (IndividualLocalAuth)
@@ -117,7 +116,7 @@ public class Program
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(
                 typeof(MauiApp._1.Shared._Imports).Assembly,
-                typeof(MauiApp._1.Client._Imports).Assembly);
+                typeof(MauiApp._1.Web.Client._Imports).Assembly);
         #elif (UseServer)
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
@@ -127,7 +126,7 @@ public class Program
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(
                 typeof(MauiApp._1.Shared._Imports).Assembly,
-                typeof(MauiApp._1.Client._Imports).Assembly);
+                typeof(MauiApp._1.Web.Client._Imports).Assembly);
         #else
         app.MapRazorComponents<App>()
             .AddAdditionalAssemblies(typeof(MauiApp._1.Shared._Imports).Assembly);

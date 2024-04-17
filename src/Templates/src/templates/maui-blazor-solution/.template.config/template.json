@@ -68,12 +68,6 @@
             }
           },
           {
-            "condition": "(!(UseServer && !UseWebAssembly))",
-            "exclude": [
-              "MauiApp.1.Web/Components/Pages/Counter.razor"
-            ]
-          },
-          {
             "condition": "(ExcludeLaunchSettings)",
             "exclude": [
               "MauiApp.1.Web/Properties/launchSettings.json"
