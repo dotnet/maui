@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -97,6 +98,11 @@ namespace Microsoft.Maui.HotReload
 		static Dictionary<string, Type> replacedViews = new(StringComparer.Ordinal);
 		static Dictionary<IHotReloadableView, object[]> currentViews = new Dictionary<IHotReloadableView, object[]>();
 		static Dictionary<string, List<KeyValuePair<Type, Type>>> replacedHandlers = new(StringComparer.Ordinal);
+
+		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Hot Reload is not AOT compatible")]
+#endif
 		public static void RegisterReplacedView(string oldViewType, Type newViewType)
 		{
 			if (!IsSupported || !IsEnabled)
@@ -145,17 +151,15 @@ namespace Microsoft.Maui.HotReload
 				}
 			}
 
-		}
-
-
-		static void RegisterHandler(KeyValuePair<Type, Type> pair, Type newHandler)
-		{
-			_ = HandlerService ?? throw new ArgumentNullException(nameof(HandlerService));
-			var view = pair.Key;
-			var newType = newHandler;
-			if (pair.Value.IsGenericType)
-				newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
-			HandlerService.AddHandler(view, newType);
+			static void RegisterHandler(KeyValuePair<Type, Type> pair, Type newHandler)
+			{
+				_ = HandlerService ?? throw new ArgumentNullException(nameof(HandlerService));
+				var view = pair.Key;
+				var newType = newHandler;
+				if (pair.Value.IsGenericType)
+					newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
+				HandlerService.AddHandler(view, newType);
+			}
 		}
 
 		public static void TriggerReload()
@@ -179,6 +183,10 @@ namespace Microsoft.Maui.HotReload
 			}
 		}
 		#region Metadata Update Handler
+		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Hot Reload is not AOT compatible")]
+#endif
 		public static void UpdateApplication(Type[] types)
 		{
 			IsEnabled = true;

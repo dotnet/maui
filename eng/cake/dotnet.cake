@@ -9,6 +9,7 @@ var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
+string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
 string TestTFM = Argument("testtfm", "");
 var useNuget = Argument("usenuget", true);
@@ -737,13 +738,29 @@ void RunMSBuildWithDotNet(
 
 void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
 {
+    if (string.IsNullOrWhiteSpace(filter))
+    {
+        filter = testFilter;
+    }
+
+    if (!string.IsNullOrWhiteSpace(filter))
+    {
+        Information("Run Tests With Filter {0}", filter);	
+    }
+
     string binlog;
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var logDirectory = GetLogDirectory();
 
-    if(localDotnet)
-        SetDotNetEnvironmentVariables();
+    if (!string.IsNullOrWhiteSpace(pathDotnet) && localDotnet)
+    {
+        // Make sure the path doesn't refer to the dotnet executable and make path absolute
+        var localDotnetRoot = MakeAbsolute(Directory(System.IO.Path.GetDirectoryName(pathDotnet)));
+    	Information("new dotnet root: {0}", localDotnetRoot);
+
+        SetDotNetEnvironmentVariables(localDotnetRoot.FullPath);
+    }
 
     if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
     {

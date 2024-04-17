@@ -9,6 +9,7 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 		public string File { get; set; } = string.Empty;
 		public List<WarningsPerCode> WarningsPerCode { get; set; } = new List<WarningsPerCode>();
+		public override string ToString() => string.Join("\n", WarningsPerCode.SelectMany(warningPerCode => warningPerCode.Messages.Select(message => $"{File}: {warningPerCode.Code}: {message}")).ToList());
 	}
 
 	public class WarningsPerCode
@@ -82,6 +83,11 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
+		public static void AssertNoWarnings(this List<WarningsPerFile> actualWarnings)
+		{
+			Assert.AreEqual(0, actualWarnings.Count, $"No warnings expected, but got {actualWarnings.Count} warnings:\n{string.Join("\n", actualWarnings.Select(actualWarning => actualWarning.ToString()))}");
+		}
+
 		public static void AssertWarnings(this List<WarningsPerFile> actualWarnings, List<WarningsPerFile> expectedWarnings)
 		{
 			foreach (var expectedWarningsPerFile in expectedWarnings)
@@ -121,25 +127,7 @@ namespace Microsoft.Maui.IntegrationTests
 		#region Expected warning messages
 
 		// IMPORTANT: Always store expected File information as a relative path to the repo ROOT
-		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new()
-		{
-			new WarningsPerFile
-			{
-				File = "src/Controls/src/Core/Xaml/TypeConversionExtensions.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2070",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetImplicitConversionOperator(Type,Type,Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods' in call to 'System.Type.GetMethod(String,BindingFlags,Binder,Type[],ParameterModifier[])'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetImplicitConversionOperator(Type,Type,Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetImplicitConversionOperator(Type,Type,Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods' in call to 'System.Type.GetMethods(BindingFlags)'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetImplicitConversionOperator(Type,Type,Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
-		};
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new();
 
 		#region Utility methods for generating the list of expected warnings
 

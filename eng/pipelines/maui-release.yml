@@ -37,7 +37,7 @@ parameters:
   - name: VM_IMAGE_HOST
     type: object
     default:
-      name: AzurePipelines-EO
+      name: MAUI-1ESPT
       image: 1ESPT-Windows2022
       os: windows
 
@@ -160,7 +160,7 @@ extends:
             dependsOn: ['pack_net']
             poolName: ${{ parameters.VM_IMAGE_HOST.name }}
             vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
-            os: ${{ parameters.VM_IMAGE_HOST.os }}
+            os: ${{ parameters.VM_IMAGE_HOST.os }}     
             scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
 
         

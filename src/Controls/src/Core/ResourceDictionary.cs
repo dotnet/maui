@@ -34,40 +34,29 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_source == value)
 					return;
-				throw new InvalidOperationException("Source can only be set from XAML."); //through the RDSourceTypeConverter
+				throw new InvalidOperationException("Source can only be set from XAML."); // through SetSource
 			}
 		}
 
 		//Used by the XamlC compiled converter
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='SetAndLoadSource']/Docs/*" />
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='SetAndCreateSource']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetAndLoadSource(Uri value, string resourcePath, Assembly assembly, global::System.Xml.IXmlLineInfo lineInfo)
+		public void SetAndCreateSource<T>(Uri value)
+			where T : ResourceDictionary, new()
 		{
-			_source = value;
+			var instance = s_instances.GetValue(typeof(T), static _ => new T());
+			SetSource(value, instance);
+		}
 
-			//this will return a type if the RD as an x:Class element, and codebehind
-			var type = XamlResourceIdAttribute.GetTypeForPath(assembly, resourcePath);
-			if (type != null)
-			{
-				_mergedInstance = s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type));
-			}
-			else
-			{
-				if (RuntimeFeature.IsXamlRuntimeParsingSupported)
-				{
-					_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateFromResource<ResourceDictionary>(resourcePath, assembly, lineInfo);
-				}
-				else
-				{
-					// This codepath is only ever hit when XamlC is explicitly disabled for a given resource dictionary.
-					// The developer had to add [XamlCompilation(XamlCompilationOptions.Skip)] or <?xaml-comp compile="false" ?> to their code.
-					// XamlC will produce a warning in this case (MAUIG0070 or XC0010).
-					throw new InvalidOperationException(
-						$"The resource '{resourcePath}' has not been compiled using XamlC and parsing XAML resources at runtime is disabled. "
-						+ "Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting "
-						+ "the MauiXamlRuntimeParsingSupport MSBuild property to true.");
-				}
-			}
+		internal static ResourceDictionary GetOrCreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+		{
+			return s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type));
+		}
+
+		internal void SetSource(Uri source, ResourceDictionary sourceInstance)
+		{
+			_source = source;
+			_mergedInstance = sourceInstance;
 			OnValuesChanged(_mergedInstance.ToArray());
 		}
 
@@ -213,9 +202,17 @@ namespace Microsoft.Maui.Controls
 				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
 					return _mergedInstance[index];
 				if (_mergedDictionaries != null)
-					foreach (var dict in MergedDictionaries.Reverse())
-						if (dict.ContainsKey(index))
-							return dict[index];
+				{
+					var dictionaries = (ObservableCollection<ResourceDictionary>)MergedDictionaries;
+					for (int i = dictionaries.Count - 1; i >= 0 ; i--)
+					{
+						if (dictionaries[i].TryGetValue(index, out var value))
+						{
+							return value;
+						}
+					}
+				}
+
 				throw new KeyNotFoundException($"The resource '{index}' is not present in the dictionary.");
 			}
 			set
@@ -304,12 +301,16 @@ namespace Microsoft.Maui.Controls
 
 		bool TryGetMergedDictionaryValue(string key, out object value, out ResourceDictionary source)
 		{
-			foreach (var dictionary in MergedDictionaries.Reverse())
+			var dictionaries = (ObservableCollection<ResourceDictionary>)MergedDictionaries;
+			for (int i = dictionaries.Count - 1; i >= 0 ; i--)
+			{
+				var dictionary = dictionaries[i];
 				if (dictionary.TryGetValue(key, out value))
 				{
 					source = dictionary;
 					return true;
 				}
+			}
 
 			value = null;
 			source = null;
@@ -396,26 +397,29 @@ namespace Microsoft.Maui.Controls
 				if (rootObjectType == null)
 					return null;
 
-				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
-				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
-				var assembly = rootObjectType.Assembly;
+				return GetUriWithExplicitAssembly(value, rootObjectType.Assembly);
+			}
 
+			internal static Uri GetUriWithExplicitAssembly(string value, Assembly defaultAssembly)
+			{
+				(value, var assembly) = SplitUriAndAssembly(value, defaultAssembly);
+				return CombineUriAndAssembly(value, assembly);
+			}
+
+			internal static ValueTuple<string, Assembly> SplitUriAndAssembly(string value, Assembly defaultAssembly)
+			{
 				if (value.IndexOf(";assembly=", StringComparison.Ordinal) != -1)
 				{
 					var parts = value.Split(new[] { ";assembly=" }, StringSplitOptions.RemoveEmptyEntries);
-					value = parts[0];
-					var asmName = parts[1];
-					assembly = Assembly.Load(asmName);
+					return (parts[0], Assembly.Load(parts[1]));
 				}
 
-				var uri = new Uri(value, UriKind.Relative); //we don't want file:// uris, even if they start with '/'
-				var resourcePath = GetResourcePath(uri, rootTargetPath);
+				return (value, defaultAssembly);
+			}
 
-				//Re-add the assembly= in all cases, so HotReload doesn't have to make assumptions
-				uri = new Uri($"{value};assembly={assembly.GetName().Name}", UriKind.Relative);
-				targetRD.SetAndLoadSource(uri, resourcePath, assembly, lineInfo);
-
-				return uri;
+			internal static Uri CombineUriAndAssembly(string value, Assembly assembly)
+			{
+				return new Uri($"{value};assembly={assembly.GetName().Name}", UriKind.Relative);
 			}
 
 			internal static string GetResourcePath(Uri uri, string rootTargetPath)

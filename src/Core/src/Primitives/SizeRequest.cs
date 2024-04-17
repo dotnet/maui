@@ -1,11 +1,14 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
 	/// <include file="../../docs/Microsoft.Maui/SizeRequest.xml" path="Type[@FullName='Microsoft.Maui.SizeRequest']/Docs/*" />
 	[DebuggerDisplay("Request={Request.Width}x{Request.Height}, Minimum={Minimum.Width}x{Minimum.Height}")]
+	[TypeConverter(typeof(SizeRequestTypeConverter))]
 	public struct SizeRequest : IEquatable<SizeRequest>
 	{
 		/// <include file="../../docs/Microsoft.Maui/SizeRequest.xml" path="//Member[@MemberName='Request']/Docs/*" />
@@ -47,5 +50,30 @@ namespace Microsoft.Maui
 		public static bool operator ==(SizeRequest left, SizeRequest right) => left.Equals(right);
 
 		public static bool operator !=(SizeRequest left, SizeRequest right) => !(left == right);
+
+		private sealed class SizeRequestTypeConverter : TypeConverter
+		{
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
+				=> sourceType == typeof(Size);
+			public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
+				=> value switch
+				{
+					Size size => (SizeRequest)size,
+					_ => throw new NotSupportedException(),
+				};
+
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
+				=> destinationType == typeof(Size);
+			public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type? destinationType)
+			{
+				if (value is SizeRequest sizeRequest)
+				{
+					if (destinationType == typeof(Size))
+						return (Size)sizeRequest;
+				}
+
+				throw new NotSupportedException();
+			}
+		}
 	}
 }

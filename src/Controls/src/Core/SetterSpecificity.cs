@@ -41,9 +41,6 @@ namespace Microsoft.Maui.Controls
 		// We store all information in one single UInt64 value to have the fastest comparison possible
 		readonly ulong _value;
 
-#if DEBUG
-
-		// Make internal debug convenient by unpacking the UInt64 value
 
 		public bool IsDefault => _value == 0ul;
 		public bool IsHandler => _value == 0xFFFFFFFFFFFFFFFF; 
@@ -69,7 +66,6 @@ namespace Microsoft.Maui.Controls
 			return (style, (byte)((_value >> 16) & 0xFF), (byte)((_value >> 8) & 0xFF), (byte)(_value & 0xFF));
 		}
 
-#endif
 
 		/// <summary>
 		/// Creates a new setter specificity

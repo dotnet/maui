@@ -32,7 +32,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -188,6 +187,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					resources.Accept(new CreateValuesVisitor(visitorContext), null);
 					resources.Accept(new RegisterXNamesVisitor(visitorContext), null);
 					resources.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
+					resources.Accept(new SimplifyTypeExtensionVisitor(), null);
 					resources.Accept(new ApplyPropertiesVisitor(visitorContext, true), null);
 
 					return visitorContext.Values[resources] as IResourceDictionary;
@@ -207,6 +207,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
 			rootnode.Accept(new RegisterXNamesVisitor(visitorContext), null);
 			rootnode.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
+			rootnode.Accept(new SimplifyTypeExtensionVisitor(), null);
 			rootnode.Accept(new ApplyPropertiesVisitor(visitorContext, true), null);
 		}
 
@@ -353,12 +354,85 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				var xaml = reader.ReadToEnd();
 
-				var pattern = $"x:Class *= *\"{type.FullName}\"";
-				var regex = new Regex(pattern, RegexOptions.ECMAScript);
-				if (regex.IsMatch(xaml) || xaml.IndexOf($"x:Class=\"{type.FullName}\"") != -1)
+				if (ContainsXClass(xaml, type.FullName))
+				{
 					return xaml;
+				}
 			}
 			return null;
+
+			// Equivalent to regex $"x:Class *= *\"{fullName}\""
+			static bool ContainsXClass(string xaml, string fullName)
+			{
+				int index = 0;
+				while (index >= 0 && index < xaml.Length)
+				{
+					if (FindNextXClass()
+						&& SkipWhitespaces()
+						&& NextCharacter('=')
+						&& SkipWhitespaces()
+						&& NextCharacter('"')
+						&& NextFullName()
+						&& NextCharacter('"'))
+					{
+						return true;
+					}
+				}
+
+				return false;
+
+				bool FindNextXClass()
+				{
+					const string xClass = "x:Class";
+
+					index = xaml.IndexOf(xClass, startIndex: index);
+					if (index < 0)
+					{
+						return false;
+					}
+
+					index += xClass.Length;
+					return true;
+				}
+				
+				bool SkipWhitespaces()
+				{
+					while (index < xaml.Length && xaml[index] == ' ')
+					{
+						index++;
+					}
+
+					return true;
+				}
+				
+				bool NextCharacter(char character)
+				{
+					if (index < xaml.Length && xaml[index] != character)
+					{
+						return false;
+					}
+
+					index++;
+					return true;
+				}
+
+				bool NextFullName()
+				{
+					if (index >= xaml.Length - fullName.Length)
+					{
+						return false;
+					}
+
+					var slice = xaml.AsSpan().Slice(index, fullName.Length);
+					if (!MemoryExtensions.Equals(slice, fullName.AsSpan(), StringComparison.Ordinal))
+					{
+						return false;
+					}
+
+					index += fullName.Length;
+					return true;
+				}
+			}
 		}
 	}
 }

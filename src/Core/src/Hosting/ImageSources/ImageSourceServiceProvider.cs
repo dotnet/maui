@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Hosting.Internal;
 
 namespace Microsoft.Maui.Hosting
@@ -31,37 +32,54 @@ namespace Microsoft.Maui.Hosting
 			return (IImageSourceService?)GetService(imageSourceService);
 		}
 
-		public Type GetImageSourceServiceType(Type imageSource) =>
-			_serviceCache.GetOrAdd(imageSource, type =>
+#if !NETSTANDARD
+		[RequiresDynamicCode("The GetImageSourceServiceType method is not AOT compatible. Use GetImageSourceService instead.")]
+#endif
+		[RequiresUnreferencedCode("The GetImageSourceServiceType method is not trimming compatible. Use GetImageSourceService instead.")]
+		public Type GetImageSourceServiceType(Type imageSource)
+		{
+			return _serviceCache.GetOrAdd(imageSource, CreateImageSourceServiceTypeCacheEntry);
+
+			Type CreateImageSourceServiceTypeCacheEntry(Type type)
 			{
 				var genericConcreteType = ImageSourceServiceType.MakeGenericType(type);
 
 				if (genericConcreteType != null && InternalCollection.TryGetService(genericConcreteType, out _))
+				{
 					return genericConcreteType;
+				}
 
 				return ImageSourceServiceType.MakeGenericType(GetImageSourceType(type));
-			});
+			}
+		}
 
-		public Type GetImageSourceType(Type imageSource) =>
-			_imageSourceCache.GetOrAdd(imageSource, CreateImageSourceTypeCacheEntry);
-
-		Type CreateImageSourceTypeCacheEntry(Type type)
+		[RequiresUnreferencedCode("The GetImageSourceType method is not trimming compatible. Use GetImageSourceService instead.")]
+		public Type GetImageSourceType(Type imageSource)
 		{
-			if (type.IsInterface)
-			{
-				if (type.GetInterface(ImageSourceInterface) != null)
-					return type;
-			}
-			else
-			{
-				foreach (var directInterface in type.GetInterfaces())
-				{
-					if (directInterface.GetInterface(ImageSourceInterface) != null)
-						return directInterface;
-				}
-			}
+			return _imageSourceCache.GetOrAdd(imageSource, CreateImageSourceTypeCacheEntry);
 
-			throw new InvalidOperationException($"Unable to find the image source type because none of the interfaces on {type.Name} were derived from {nameof(IImageSource)}.");
+			Type CreateImageSourceTypeCacheEntry(Type type)
+			{
+				if (type.IsInterface)
+				{
+					if (type.GetInterface(ImageSourceInterface) != null)
+					{
+						return type;
+					}
+				}
+				else
+				{
+					foreach (var directInterface in type.GetInterfaces())
+					{
+						if (directInterface.GetInterface(ImageSourceInterface) != null)
+						{
+							return directInterface;
+						}
+					}
+				}
+
+				throw new InvalidOperationException($"Unable to find the image source type because none of the interfaces on {type.Name} were derived from {nameof(IImageSource)}.");
+			}
 		}
 	}
 }

@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellContent']/Docs/*" />
 	[ContentProperty(nameof(Content))]
+	[TypeConverter(typeof(ShellContentConverter))]
 	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
 	{
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
@@ -363,6 +364,30 @@ namespace Microsoft.Maui.Controls
 				// parameters used during navigation
 				if (content is ContentPage)
 					query.ResetToQueryParameters();
+			}
+		}
+
+		private sealed class ShellContentConverter : TypeConverter
+		{
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(TemplatedPage);
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+				=> false;
+
+			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			{
+				if (value is TemplatedPage templatedPage)
+				{
+					return (ShellContent)templatedPage;
+				}
+
+				throw new NotSupportedException();
+			}
+
+			public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+			{
+				throw new NotSupportedException();
 			}
 		}
 	}
