@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 
@@ -48,6 +49,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObjectExtensions.xml" path="//Member[@MemberName='SetBinding']/Docs/*" />
+		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 		public static void SetBinding(this BindableObject self, BindableProperty targetProperty, string path, BindingMode mode = BindingMode.Default, IValueConverter converter = null,
 									  string stringFormat = null)
 		{
