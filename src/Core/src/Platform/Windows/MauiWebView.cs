@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel;
@@ -28,19 +27,15 @@ namespace Microsoft.Maui.Platform
 			SetupPlatformEvents();
 		}
 
-		WebView2? _internalWebView;
-
 		// Arbitrary local host name for virtual folder mapping
 		const string LocalHostName = "appdir";
 		const string LocalScheme = $"https://{LocalHostName}/";
 
 		// Script to insert a <base> tag into an HTML document
 		const string BaseInsertionScript = @"
-			var head = document.getElementsByTagName('head')[0];
-			var bases = head.getElementsByTagName('base');
-			if(bases.length == 0) {
-				head.innerHTML = 'baseTag' + head.innerHTML;
-			}";
+			var base = document.createElement('base');
+			base.href = 'baseTag';
+			document.getElementsByTagName('head')[0].appendChild(base);";
 
 		// Allow for packaged/unpackaged app support
 		static string ApplicationPath => AppInfoUtils.IsPackagedApp
@@ -48,66 +43,29 @@ namespace Microsoft.Maui.Platform
 			: AppContext.BaseDirectory;
 
 		public async void LoadHtml(string? html, string? baseUrl)
-		{
+		{       
 			var mapBaseDirectory = false;
-
 			if (string.IsNullOrEmpty(baseUrl))
 			{
 				baseUrl = LocalScheme;
 				mapBaseDirectory = true;
 			}
 
-			// Generate a base tag for the document
-			var baseTag = $"<base href=\"{baseUrl}\"></base>";
+			await EnsureCoreWebView2Async();
 
-			string htmlWithBaseTag;
+			if (mapBaseDirectory)
+		    {
+		    	CoreWebView2.SetVirtualHostNameToFolderMapping(
+		    		LocalHostName,
+		    		ApplicationPath,
+		    		Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+		    }
 
-			// Set up an internal WebView we can use to load and parse the original HTML string
-			// Make _internalWebView a field instead of local variable to avoid garbage collection
-			_internalWebView = new WebView2();
+			// Insert script to set the base tag
+			var script = $"<script>{BaseInsertionScript.Replace("baseTag", baseUrl, StringComparison.Ordinal)}</script>";
+			var htmlWithScript = $"{script}\n{html}";
 
-			// TODO: For now, the CoreWebView2 won't be created without either setting Source or
-			// calling EnsureCoreWebView2Async().
-			await _internalWebView.EnsureCoreWebView2Async();
-
-			// When the 'navigation' to the original HTML string is done, we can modify it to include our <base> tag
-			_internalWebView.NavigationCompleted += async (sender, args) =>
-			{
-				// Generate a version of the <base> script with the correct <base> tag
-				var script = BaseInsertionScript.Replace("baseTag", baseTag, StringComparison.Ordinal);
-
-				// Run it and retrieve the updated HTML from our WebView
-				await sender.ExecuteScriptAsync(script);
-				htmlWithBaseTag = await sender.ExecuteScriptAsync("document.documentElement.outerHTML;");
-
-				htmlWithBaseTag = Regex.Unescape(htmlWithBaseTag);
-				htmlWithBaseTag = htmlWithBaseTag.Remove(0, 1);
-				htmlWithBaseTag = htmlWithBaseTag.Remove(htmlWithBaseTag.Length - 1, 1);
-
-				await EnsureCoreWebView2Async();
-
-				if (mapBaseDirectory)
-				{
-					CoreWebView2.SetVirtualHostNameToFolderMapping(
-						LocalHostName,
-						ApplicationPath,
-						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
-				}
-
-				// Set the HTML for the 'real' WebView to the updated HTML
-				NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
-
-				// Free up memory after we're done with _internalWebView
-				if (_internalWebView.IsValid())
-				{
-					_internalWebView.Close();
-					_internalWebView = null;
-				}
-			};
-
-			// Kick off the initial navigation
-			if (_internalWebView.IsValid())
-				_internalWebView.NavigateToString(html);
+			NavigateToString(htmlWithScript);
 		}
 
 		public async void LoadUrl(string? url)
@@ -184,8 +142,9 @@ namespace Microsoft.Maui.Platform
 				Convert.FromBase64String(
 					uri.Substring(dataUriBase64.Length)));
 
+			var localSchemeScript = $"<script>{BaseInsertionScript.Replace("baseTag", LocalScheme, StringComparison.Ordinal)}</script>";
 			return decodedHtml.Contains(
-				$"<base href=\"{LocalScheme}",
+				localSchemeScript,
 				StringComparison.OrdinalIgnoreCase);
 		}
 	}
