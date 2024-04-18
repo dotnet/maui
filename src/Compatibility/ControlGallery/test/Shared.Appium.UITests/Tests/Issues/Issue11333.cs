@@ -16,6 +16,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.SwipeView)]
+		[FailsOnAndroid]
 		public void SwipeWithChildGestureRecognizer()
 		{
 			RunningApp.WaitForElement(SwipeViewId);

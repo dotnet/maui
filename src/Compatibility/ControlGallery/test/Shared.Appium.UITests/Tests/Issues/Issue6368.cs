@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if iOS
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -17,8 +18,6 @@ namespace UITests
 		[FailsOnIOS]
 		public void Issue6368Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			RunningApp.WaitForElement("btnGo");
 			RunningApp.Tap("btnGo");
 			RunningApp.WaitForElement("GoToNextPage");
@@ -26,3 +25,4 @@ namespace UITests
 		}
 	}
 }
+#endif
