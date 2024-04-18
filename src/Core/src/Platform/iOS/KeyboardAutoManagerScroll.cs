@@ -313,6 +313,7 @@ public static class KeyboardAutoManagerScroll
 
 		if (window is null)
 		{
+			IsKeyboardAutoScrollHandling = false;
 			return;
 		}
 
@@ -406,7 +407,10 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		else if (cursorRect.Y >= topBoundary && cursorRect.Y < bottomBoundary)
+		{
+			IsKeyboardAutoScrollHandling = false;
 			return;
+		}
 
 		else if (cursorRect.Y > bottomBoundary)
 			move = cursorRect.Y - (nfloat)bottomBoundary;
