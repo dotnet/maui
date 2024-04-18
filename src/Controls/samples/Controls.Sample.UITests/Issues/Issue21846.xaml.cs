@@ -14,9 +14,9 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 
-		void OnButtonClicked(object sender, System.EventArgs e)
+		async void OnButtonClicked(object sender, System.EventArgs e)
 		{
-			Navigation.PushModalAsync(new Issue21846Modal());
+			await Navigation.PushModalAsync(new Issue21846Modal());
 		}
 	}
 }
