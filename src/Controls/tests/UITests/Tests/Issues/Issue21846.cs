@@ -16,7 +16,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.WebView)]
 		public void WebViewNoCrashPopup()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Windows]);
 
 			App.WaitForElement("OpenModalButton");
 			App.Click("OpenModalButton");
