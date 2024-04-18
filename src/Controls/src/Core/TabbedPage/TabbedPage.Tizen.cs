@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Internals;
 using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
 using GColor = Microsoft.Maui.Graphics.Color;
@@ -199,10 +200,10 @@ namespace Microsoft.Maui.Controls
 				Padding = new Thickness(0);
 				HasShadow = false;
 				BorderColor = GColors.DarkGray;
-				SetBinding(BackgroundProperty, new Binding("BarBackground", source: _page));
-				SetBinding(BackgroundColorProperty, new Binding("BarBackgroundColor", source: _page));
-				SetBinding(SelectedTabColorProperty, new Binding("SelectedTabColor", source: _page));
-				SetBinding(UnselectedTabColorProperty, new Binding("UnselectedTabColor", source: _page));
+				SetBinding(BackgroundProperty, TypedBinding.ForSingleNestingLevel("BarBackground", static (TabbedPage page) => page.BarBackground, source: _page));
+				SetBinding(BackgroundColorProperty, TypedBinding.ForSingleNestingLevel("BarBackgroundColor", static (TabbedPage page) => page.BarBackgroundColor, source: _page));
+				SetBinding(SelectedTabColorProperty, TypedBinding.ForSingleNestingLevel("SelectedTabColor", static (TabbedPage page) => page.SelectedTabColor, source: _page));
+				SetBinding(UnselectedTabColorProperty, TypedBinding.ForSingleNestingLevel("UnselectedTabColor", static (TabbedPage page) => page.UnselectedTabColor, source: _page));
 
 				var label = new XLabel
 				{
@@ -211,8 +212,8 @@ namespace Microsoft.Maui.Controls
 					HorizontalTextAlignment = TextAlignment.Center,
 					VerticalTextAlignment = TextAlignment.Center,
 				};
-				label.SetBinding(XLabel.TextProperty, new Binding("Title"));
-				label.SetBinding(XLabel.TextColorProperty, new Binding("BarTextColor", source: _page));
+				label.SetBinding(XLabel.TextProperty, TypedBinding.ForSingleNestingLevel("Title", static (TabbedPage page) => page.Title, source: _page));
+				label.SetBinding(XLabel.TextColorProperty, TypedBinding.ForSingleNestingLevel("BarTextColor", static (TabbedPage page) => page.BarTextColor, source: _page));
 
 				_bar = new BoxView
 				{
