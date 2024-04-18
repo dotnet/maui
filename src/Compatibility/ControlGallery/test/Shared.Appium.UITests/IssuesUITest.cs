@@ -38,14 +38,7 @@ namespace UITests
 			base.FixtureTeardown();
 			try
 			{
-				if (ResetMainPage)
-				{
-					Reset();
-				}
-				else
-				{
-					this.Back();
-				}
+				RunningApp.ResetApp();
 			}
 			catch (Exception e)
 			{
@@ -61,7 +54,7 @@ namespace UITests
 		{
 			if (ResetMainPage)
 			{
-				App.Click("ResetMainPage");
+				RunningApp.Click("ResetMainPage");
 
 				RunningApp.ClearText("SearchBar");
 				RunningApp.EnterText("SearchBar", issue);
