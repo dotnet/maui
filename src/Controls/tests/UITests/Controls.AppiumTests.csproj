@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\samples\Controls.Sample.UITests\Test.cs" Link="Test.cs" />
+    <Compile Include="..\..\samples\Controls.Sample.UITests\Controls.Sample.UITests\Test.cs" Link="Test.cs" />
   </ItemGroup>
 
   <ItemGroup>

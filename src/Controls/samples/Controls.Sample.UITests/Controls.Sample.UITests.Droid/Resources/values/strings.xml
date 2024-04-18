@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Controls.Sample.UITests</string>
+    <string name="app_text">Hello, Android!</string>
+</resources>
