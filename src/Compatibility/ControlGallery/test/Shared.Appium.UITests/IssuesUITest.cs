@@ -45,7 +45,6 @@ namespace UITests
 				else
 				{
 					this.Back();
-					RunningApp.Tap("GoBackToGalleriesButton");
 				}
 			}
 			catch (Exception e)
