@@ -205,7 +205,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests.Int
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.AppiumTests", "src\Controls\tests\UITests\Controls.AppiumTests.csproj", "{2A0CB35C-ED05-4FCB-91BC-21B288B749B1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Sample.UITests", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.csproj", "{07C26A25-08C2-4C52-9574-1C33EC8E7919}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests\Controls.Sample.UITests.csproj", "{3A67E753-0737-4624-AD8D-BA5631591A11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests.Droid", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.Droid\Controls.Sample.UITests.Droid.csproj", "{EC07940A-BF0A-4237-B208-110549D0AB9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests.iOS", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.iOS\Controls.Sample.UITests.iOS.csproj", "{BFEAF608-A849-4398-9578-EE576E8C1BBE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests.Mac", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.Mac\Controls.Sample.UITests.Mac.csproj", "{10A29EBB-065A-474F-B8C1-5D933AC2F448}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests.WinUI", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.WinUI\Controls.Sample.UITests.WinUI.csproj", "{EA8A1F07-23B3-4A76-AD54-D6885FD819FD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.IntegrationTests", "src\TestUtils\src\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj", "{A6976D43-B3A4-47AF-89D9-FA388B56B52B}"
 EndProject
