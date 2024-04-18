@@ -16,6 +16,7 @@ namespace Maui.Controls.Sample.Issues
 						Aspect = Microsoft.Maui.Aspect.AspectFill,
 						WidthRequest = 100,
 						HeightRequest = 200,
+	  					Source = "dotnet_bot.png",
 					}
 				};
 		}
