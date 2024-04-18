@@ -111,6 +111,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			return new MarkupExpansionParser { ExceptionHandler = Context.ExceptionHandler }.Parse(match, ref expression, serviceProvider);
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 		public class MarkupExpansionParser : MarkupExpressionParser, IExpressionParser<INode>
 		{
 			IElementNode _node;
