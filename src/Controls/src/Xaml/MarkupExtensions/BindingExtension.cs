@@ -22,12 +22,23 @@ namespace Microsoft.Maui.Controls.Xaml
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (TypedBinding == null)
-				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
+			{
+				if (RuntimeFeature.AreNonCompiledBindingsInXamlSupported)
 				{
-					UpdateSourceEventName = UpdateSourceEventName,
-					FallbackValue = FallbackValue,
-					TargetNullValue = TargetNullValue,
-				};
+					return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
+					{
+						UpdateSourceEventName = UpdateSourceEventName,
+						FallbackValue = FallbackValue,
+						TargetNullValue = TargetNullValue,
+					};
+				}
+				else
+				{
+					throw new InvalidOperationException(
+						$"It was not possible to compile binding with path '{Path}'. Bindings with string paths are not supported. " +
+						"Make sure all bindings in XAML are correctly annotated with x:DataType.");
+				}
+			}
 
 			TypedBinding.Mode = Mode;
 			TypedBinding.Converter = Converter;

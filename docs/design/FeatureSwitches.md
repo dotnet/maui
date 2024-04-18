@@ -9,6 +9,7 @@ Certain features of MAUI can be enabled or disabled using feature switches. The 
 | MauiShellSearchResultsRendererDisplayMemberNameSupported | Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported | When disabled, it is necessary to always set `ItemTemplate` of any `SearchHandler`. Displaying search results through `DisplayMemberName` will not work. |
 | MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
 | MauiImplicitCastOperatorsUsageViaReflectionSupport | Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported | When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This feature is not trim-compatible. |
+| MauiNonCompiledBindingsInXamlSupport | Microsoft.Maui.RuntimeFeature.AreNonCompiledBindingsInXamlSupported | When disabled, it is not possible to use string-based bindings in XAML. All bindings are required to be annotated with x:DataType so they can be compiled. |
 
 ## MauiXamlRuntimeParsingSupport
 
@@ -37,3 +38,8 @@ When disabled, MAUI won't look for implicit cast operators when converting value
 If your library or your app defines an implicit operator on a type that can be used in one of the previous scenarios, you should define a custom `TypeConverter` for your type and attach it to the type using the `[TypeConverter(typeof(MyTypeConverter))]` attribute.
 
 _Note: Prefer using the `TypeConverterAttribute` as it can help the trimmer achieve better binary size in certain scenarios._
+
+## MauiNonCompiledBindingsInXamlSupport
+
+When disabled, XAML compiler will require that all bindings are compiled. All bindings that cannot be compiled due to missing x:DataType annotations will throw runtime exceptions.
+
