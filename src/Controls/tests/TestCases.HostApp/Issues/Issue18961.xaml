@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18961">
+  <ContentPage.Resources>
+    <ResourceDictionary>
+
+      <Style TargetType="Entry">
+        <Setter Property="BackgroundColor" Value="LightGray" />
+        <Setter Property="Margin" Value="0, 12" />
+      </Style>
+
+    </ResourceDictionary>
+  </ContentPage.Resources>
+  <ScrollView
+        x:Name="TestScrollView"
+        AutomationId="TestScrollView">
+    <StackLayout
+            Padding="12">
+      <Label 
+                AutomationId="WaitForStubControl"
+                Text="Modal Page margin correct after Keyboard opens"/>
+      <!--
+            Add enough entries into the stack layout so that we can						
+            guarantee we'll have entries that would be covered by the keyboard
+            -->
+      <Button AutomationId="ScrollButton" Text="Scroll To End" Clicked="OnButtonClicked" />
+      <Entry AutomationId="TestEntry1" Placeholder="First Entry" />
+      <Entry AutomationId="TestEntry2" Placeholder="2" />
+      <Entry AutomationId="TestEntry3" Placeholder="3" />
+      <Entry AutomationId="TestEntry4" Placeholder="4" />
+      <Entry AutomationId="TestEntry5" Placeholder="5" />
+      <Entry AutomationId="TestEntry6" Placeholder="6" />
+      <Entry AutomationId="TestEntry7" Placeholder="7" />
+      <Entry AutomationId="TestEntry8" Placeholder="8" />
+      <Entry AutomationId="TestEntry9" Placeholder="9" />
+      <Entry AutomationId="TestEntry10" Placeholder="10" />
+      <Entry AutomationId="TestEntry11" Placeholder="11" />
+      <Entry AutomationId="TestEntry12" Placeholder="12" />
+      <Entry AutomationId="TestEntry13" Placeholder="13" />
+      <Entry AutomationId="TestEntry14" Placeholder="14" />
+      <Entry AutomationId="TestEntry15" Placeholder="15" />
+      <Entry AutomationId="TestEntry16" Placeholder="16" />
+      <Entry AutomationId="TestEntry17" Placeholder="17" />
+      <Entry AutomationId="TestEntry18" Placeholder="18" />
+      <Entry AutomationId="TestEntry19" Placeholder="19" />
+      <Entry AutomationId="TestEntry20" Placeholder="Last Entry" />
+    </StackLayout>
+  </ScrollView>
+</ContentPage>
