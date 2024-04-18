@@ -19,14 +19,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Constraint.Active = true;
 		}
 
-		public override void ConstrainTo(CGSize constraint)
-		{
-			Constraint.Constant = constraint.Width;
-		}
-
-		public override CGSize Measure()
-		{
-			return new CGSize(Constraint.Constant, Label.IntrinsicContentSize.Height);
-		}
+		// public override void ConstrainTo(CGSize constraint)
+		// {
+		// 	Constraint.Constant = constraint.Width;
+		// }
+		//
+		// public override CGSize Measure()
+		// {
+		// 	return new CGSize(Constraint.Constant, Label.IntrinsicContentSize.Height);
+		// }
 	}
 }

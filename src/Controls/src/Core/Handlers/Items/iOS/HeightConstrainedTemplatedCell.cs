@@ -13,38 +13,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		public override void ConstrainTo(CGSize constraint)
-		{
-			ClearConstraints();
-			ConstrainedDimension = constraint.Height;
-		}
+		// public override void ConstrainTo(CGSize constraint)
+		// {
+		// 	ClearConstraints();
+		// 	ConstrainedDimension = constraint.Height;
+		// }
 
-		protected override (bool, Size) NeedsContentSizeUpdate(Size currentSize)
-		{
-			if (PlatformHandler?.VirtualView == null)
-			{
-				return (false, currentSize);
-			}
-
-			var bounds = PlatformHandler.VirtualView.Frame;
-
-			if (bounds.Width <= 0 || bounds.Height <= 0)
-			{
-				return (false, currentSize);
-			}
-
-			var desiredBounds = PlatformHandler.VirtualView.Measure(double.PositiveInfinity, bounds.Height);
-
-			if (desiredBounds.Width == currentSize.Width)
-			{
-				// Nothing in the cell needs more room, so leave it as it is
-				return (false, currentSize);
-			}
-
-			// Keep the current height in the updated content size
-			desiredBounds.Height = bounds.Height;
-
-			return (true, desiredBounds);
-		}
+		// protected override (bool, Size) NeedsContentSizeUpdate(Size currentSize)
+		// {
+		// 	if (PlatformHandler?.VirtualView == null)
+		// 	{
+		// 		return (false, currentSize);
+		// 	}
+		//
+		// 	var bounds = PlatformHandler.VirtualView.Frame;
+		//
+		// 	if (bounds.Width <= 0 || bounds.Height <= 0)
+		// 	{
+		// 		return (false, currentSize);
+		// 	}
+		//
+		// 	var desiredBounds = PlatformHandler.VirtualView.Measure(double.PositiveInfinity, bounds.Height);
+		//
+		// 	if (desiredBounds.Width == currentSize.Width)
+		// 	{
+		// 		// Nothing in the cell needs more room, so leave it as it is
+		// 		return (false, currentSize);
+		// 	}
+		//
+		// 	// Keep the current height in the updated content size
+		// 	desiredBounds.Height = bounds.Height;
+		//
+		// 	return (true, desiredBounds);
+		// }
 	}
 }

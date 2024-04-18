@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
-		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, ItemsViewLayout layout)
+		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, UICollectionViewLayout layout)
 			=> new SelectableItemsViewController<TItemsView>(itemsView, layout);
 
 		public static void MapItemsSource(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)

@@ -17,12 +17,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// Keep out header measurement cells for iOS handy so we don't have to
 		// create new ones all the time. For other versions, the reusable cells
 		// queueing mechanism does this for us.
-		TemplatedCell _measurementCellTemplated;
-		DefaultCell _measurementCellDefault;
+		// TemplatedCell _measurementCellTemplated;
+		// DefaultCell _measurementCellDefault;
 
 		Action _scrollAnimationEndedCallback;
 
-		public GroupableItemsViewController(TItemsView groupableItemsView, ItemsViewLayout layout)
+		public GroupableItemsViewController(TItemsView groupableItemsView, UICollectionViewLayout layout)
 			: base(groupableItemsView, layout)
 		{
 			_isGrouped = ItemsView.IsGrouped;
@@ -94,10 +94,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			cell.Label.Text = ItemsSource.Group(indexPath).ToString();
 
-			if (cell is ItemsViewCell)
-			{
-				cell.ConstrainTo(GetLayoutSpanCount() * ItemsViewLayout.ConstrainedDimension);
-			}
+			// if (cell is ItemsViewCell)
+			// {
+			// 	cell.ConstrainTo(GetLayoutSpanCount() * ItemsViewLayout.ConstrainedDimension);
+			// }
 		}
 
 		void UpdateTemplatedSupplementaryView(TemplatedCell cell, NSString elementKind, NSIndexPath indexPath)
@@ -110,10 +110,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			cell.Bind(template, bindingContext, ItemsView);
 
-			if (cell is ItemsViewCell)
-			{
-				cell.ConstrainTo(GetLayoutSpanCount() * ItemsViewLayout.ConstrainedDimension);
-			}
+			// if (cell is ItemsViewCell)
+			// {
+			// 	cell.ConstrainTo(GetLayoutSpanCount() * ItemsViewLayout.ConstrainedDimension);
+			// }
 		}
 
 		string DetermineViewReuseId(NSString elementKind)
@@ -125,66 +125,73 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		string DetermineViewReuseId(DataTemplate template)
 		{
+			var orientation = ItemsLayoutOrientation.Vertical;
+
+			if (this.ItemsView.ItemsLayout is LinearItemsLayout linearItemsLayout)
+				orientation = linearItemsLayout.Orientation;
+			else if (this.ItemsView.ItemsLayout is GridItemsLayout gridItemsLayout)
+				orientation = gridItemsLayout.Orientation;
+			
 			if (template == null)
 			{
 				// No template, fall back the the default supplemental views
-				return ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
+				return orientation == ItemsLayoutOrientation.Horizontal
 					? HorizontalDefaultSupplementalView.ReuseId
 					: VerticalDefaultSupplementalView.ReuseId;
 			}
 
-			return ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
+			return orientation == ItemsLayoutOrientation.Horizontal
 				? HorizontalSupplementaryView.ReuseId
 				: VerticalSupplementaryView.ReuseId;
 		}
 
-		internal CGSize GetReferenceSizeForHeader(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
-		{
-			if (!_isGrouped)
-			{
-				return CGSize.Empty;
-			}
+		// internal CGSize GetReferenceSizeForHeader(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
+		// {
+		// 	if (!_isGrouped)
+		// 	{
+		// 		return CGSize.Empty;
+		// 	}
+		//
+		// 	// Currently we explicitly measure all of the headers/footers 
+		// 	// Long-term, we might want to look at performance hints (similar to ItemSizingStrategy) for 
+		// 	// headers/footers (if the dev knows for sure they'll all the be the same size)
+		// 	return GetReferenceSizeForheaderOrFooter(collectionView, ItemsView.GroupHeaderTemplate, UICollectionElementKindSectionKey.Header, section);
+		// }
 
-			// Currently we explicitly measure all of the headers/footers 
-			// Long-term, we might want to look at performance hints (similar to ItemSizingStrategy) for 
-			// headers/footers (if the dev knows for sure they'll all the be the same size)
-			return GetReferenceSizeForheaderOrFooter(collectionView, ItemsView.GroupHeaderTemplate, UICollectionElementKindSectionKey.Header, section);
-		}
+		// internal CGSize GetReferenceSizeForFooter(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
+		// {
+		// 	if (!_isGrouped)
+		// 	{
+		// 		return CGSize.Empty;
+		// 	}
+		//
+		// 	return GetReferenceSizeForheaderOrFooter(collectionView, ItemsView.GroupFooterTemplate, UICollectionElementKindSectionKey.Footer, section);
+		// }
 
-		internal CGSize GetReferenceSizeForFooter(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
-		{
-			if (!_isGrouped)
-			{
-				return CGSize.Empty;
-			}
-
-			return GetReferenceSizeForheaderOrFooter(collectionView, ItemsView.GroupFooterTemplate, UICollectionElementKindSectionKey.Footer, section);
-		}
-
-		internal CGSize GetReferenceSizeForheaderOrFooter(UICollectionView collectionView, DataTemplate template, NSString elementKind, nint section)
-		{
-			if (!_isGrouped || template == null)
-			{
-				return CGSize.Empty;
-			}
-
-			if (ItemsSource.GroupCount < 1 || section > ItemsSource.GroupCount - 1)
-			{
-				return CGSize.Empty;
-			}
-
-			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
-			{
-				// iOS 10 crashes if we try to dequeue a cell for measurement
-				// so we'll use an alternate method
-				return MeasureSupplementaryView(elementKind, section);
-			}
-
-			var cell = GetViewForSupplementaryElement(collectionView, elementKind,
-				NSIndexPath.FromItemSection(0, section)) as ItemsViewCell;
-
-			return cell.Measure();
-		}
+		// internal CGSize GetReferenceSizeForheaderOrFooter(UICollectionView collectionView, DataTemplate template, NSString elementKind, nint section)
+		// {
+		// 	if (!_isGrouped || template == null)
+		// 	{
+		// 		return CGSize.Empty;
+		// 	}
+		//
+		// 	if (ItemsSource.GroupCount < 1 || section > ItemsSource.GroupCount - 1)
+		// 	{
+		// 		return CGSize.Empty;
+		// 	}
+		//
+		// 	// if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+		// 	// {
+		// 	// 	// iOS 10 crashes if we try to dequeue a cell for measurement
+		// 	// 	// so we'll use an alternate method
+		// 	// 	return MeasureSupplementaryView(elementKind, section);
+		// 	// }
+		//
+		// 	var cell = GetViewForSupplementaryElement(collectionView, elementKind,
+		// 		NSIndexPath.FromItemSection(0, section)) as ItemsViewCell;
+		//
+		// 	return cell.Measure();
+		// }
 
 		internal void SetScrollAnimationEndedCallback(Action callback)
 		{
@@ -209,96 +216,96 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return span;
 		}
 
-		internal UIEdgeInsets GetInsetForSection(ItemsViewLayout itemsViewLayout,
-			UICollectionView collectionView, nint section)
-		{
-			var uIEdgeInsets = itemsViewLayout.GetInsetForSection(collectionView, itemsViewLayout, section);
-
-			if (!ItemsView.IsGrouped)
-			{
-				return uIEdgeInsets;
-			}
-
-			// If we're grouping, we'll need to inset the sections to maintain the spacing between the 
-			// groups and their group headers/footers
-
-			nfloat spacing = itemsViewLayout.GetMinimumLineSpacingForSection(collectionView, itemsViewLayout, section);
-
-			var top = uIEdgeInsets.Top;
-			var left = uIEdgeInsets.Left;
-
-			if (itemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
-			{
-				left += spacing;
-			}
-			else
-			{
-				top += spacing;
-			}
-
-			return new UIEdgeInsets(top, left,
-				uIEdgeInsets.Bottom, uIEdgeInsets.Right);
-		}
+		// internal UIEdgeInsets GetInsetForSection(UICollectionViewLayout itemsViewLayout,
+		// 	UICollectionView collectionView, nint section)
+		// {
+		// 	var uIEdgeInsets = itemsViewLayout.GetInsetForSection(collectionView, itemsViewLayout, section);
+		//
+		// 	if (!ItemsView.IsGrouped)
+		// 	{
+		// 		return uIEdgeInsets;
+		// 	}
+		//
+		// 	// If we're grouping, we'll need to inset the sections to maintain the spacing between the 
+		// 	// groups and their group headers/footers
+		// 	
+		// 	nfloat spacing = itemsViewLayout.GetMinimumLineSpacingForSection(collectionView, itemsViewLayout, section);
+		//
+		// 	var top = uIEdgeInsets.Top;
+		// 	var left = uIEdgeInsets.Left;
+		//
+		// 	if (itemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+		// 	{
+		// 		left += spacing;
+		// 	}
+		// 	else
+		// 	{
+		// 		top += spacing;
+		// 	}
+		//
+		// 	return new UIEdgeInsets(top, left,
+		// 		uIEdgeInsets.Bottom, uIEdgeInsets.Right);
+		// }
 
 		// These measurement methods are only necessary for iOS 10 and lower
-		CGSize MeasureTemplatedSupplementaryCell(NSString elementKind, nint section, NSString reuseId)
-		{
-			if (_measurementCellTemplated == null)
-			{
-				if (reuseId == HorizontalSupplementaryView.ReuseId)
-				{
-					_measurementCellTemplated = new HorizontalSupplementaryView(CGRect.Empty);
-				}
-				else if (reuseId == VerticalSupplementaryView.ReuseId)
-				{
-					_measurementCellTemplated = new VerticalSupplementaryView(CGRect.Empty);
-				}
-			}
+		// CGSize MeasureTemplatedSupplementaryCell(NSString elementKind, nint section, NSString reuseId)
+		// {
+		// 	if (_measurementCellTemplated == null)
+		// 	{
+		// 		if (reuseId == HorizontalSupplementaryView.ReuseId)
+		// 		{
+		// 			_measurementCellTemplated = new HorizontalSupplementaryView(CGRect.Empty);
+		// 		}
+		// 		else if (reuseId == VerticalSupplementaryView.ReuseId)
+		// 		{
+		// 			_measurementCellTemplated = new VerticalSupplementaryView(CGRect.Empty);
+		// 		}
+		// 	}
+		//
+		// 	if (_measurementCellTemplated == null)
+		// 	{
+		// 		return CGSize.Empty;
+		// 	}
+		//
+		// 	UpdateTemplatedSupplementaryView(_measurementCellTemplated, elementKind, NSIndexPath.FromItemSection(0, section));
+		// 	return _measurementCellTemplated.Measure();
+		// }
 
-			if (_measurementCellTemplated == null)
-			{
-				return CGSize.Empty;
-			}
-
-			UpdateTemplatedSupplementaryView(_measurementCellTemplated, elementKind, NSIndexPath.FromItemSection(0, section));
-			return _measurementCellTemplated.Measure();
-		}
-
-		CGSize MeasureDefaultSupplementaryCell(NSString elementKind, nint section, NSString reuseId)
-		{
-			if (_measurementCellDefault == null)
-			{
-				if (reuseId == HorizontalDefaultSupplementalView.ReuseId)
-				{
-					_measurementCellDefault = new HorizontalDefaultSupplementalView(CGRect.Empty);
-				}
-				else if (reuseId == VerticalDefaultSupplementalView.ReuseId)
-				{
-					_measurementCellDefault = new VerticalDefaultSupplementalView(CGRect.Empty);
-				}
-			}
-
-			if (_measurementCellDefault == null)
-			{
-				return CGSize.Empty;
-			}
-
-			UpdateDefaultSupplementaryView(_measurementCellDefault, elementKind, NSIndexPath.FromItemSection(0, section));
-			return _measurementCellDefault.Measure();
-		}
-
-		CGSize MeasureSupplementaryView(NSString elementKind, nint section)
-		{
-			var reuseId = (NSString)DetermineViewReuseId(elementKind);
-
-			if (reuseId == HorizontalDefaultSupplementalView.ReuseId
-				|| reuseId == VerticalDefaultSupplementalView.ReuseId)
-			{
-				return MeasureDefaultSupplementaryCell(elementKind, section, reuseId);
-			}
-
-			return MeasureTemplatedSupplementaryCell(elementKind, section, reuseId);
-		}
+		// CGSize MeasureDefaultSupplementaryCell(NSString elementKind, nint section, NSString reuseId)
+		// {
+		// 	if (_measurementCellDefault == null)
+		// 	{
+		// 		if (reuseId == HorizontalDefaultSupplementalView.ReuseId)
+		// 		{
+		// 			_measurementCellDefault = new HorizontalDefaultSupplementalView(CGRect.Empty);
+		// 		}
+		// 		else if (reuseId == VerticalDefaultSupplementalView.ReuseId)
+		// 		{
+		// 			_measurementCellDefault = new VerticalDefaultSupplementalView(CGRect.Empty);
+		// 		}
+		// 	}
+		//
+		// 	if (_measurementCellDefault == null)
+		// 	{
+		// 		return CGSize.Empty;
+		// 	}
+		//
+		// 	UpdateDefaultSupplementaryView(_measurementCellDefault, elementKind, NSIndexPath.FromItemSection(0, section));
+		// 	return _measurementCellDefault.Measure();
+		// }
+		//
+		// CGSize MeasureSupplementaryView(NSString elementKind, nint section)
+		// {
+		// 	var reuseId = (NSString)DetermineViewReuseId(elementKind);
+		//
+		// 	if (reuseId == HorizontalDefaultSupplementalView.ReuseId
+		// 		|| reuseId == VerticalDefaultSupplementalView.ReuseId)
+		// 	{
+		// 		return MeasureDefaultSupplementaryCell(elementKind, section, reuseId);
+		// 	}
+		//
+		// 	return MeasureTemplatedSupplementaryCell(elementKind, section, reuseId);
+		// }
 
 		// end of iOS 10 workaround stuff
 	}

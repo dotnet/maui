@@ -25,16 +25,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected void InitializeContentConstraints(UIView platformView)
 		{
-			ContentView.TranslatesAutoresizingMaskIntoConstraints = false;
+			//ContentView.TranslatesAutoresizingMaskIntoConstraints = false;
 			platformView.TranslatesAutoresizingMaskIntoConstraints = false;
 
 			ContentView.AddSubview(platformView);
 
 			// We want the cell to be the same size as the ContentView
-			ContentView.TopAnchor.ConstraintEqualTo(TopAnchor).Active = true;
-			ContentView.BottomAnchor.ConstraintEqualTo(BottomAnchor).Active = true;
-			ContentView.LeadingAnchor.ConstraintEqualTo(LeadingAnchor).Active = true;
-			ContentView.TrailingAnchor.ConstraintEqualTo(TrailingAnchor).Active = true;
+			// ContentView.TopAnchor.ConstraintEqualTo(TopAnchor).Active = true;
+			// ContentView.BottomAnchor.ConstraintEqualTo(BottomAnchor).Active = true;
+			// ContentView.LeadingAnchor.ConstraintEqualTo(LeadingAnchor).Active = true;
+			// ContentView.TrailingAnchor.ConstraintEqualTo(TrailingAnchor).Active = true;
 
 			// And we want the ContentView to be the same size as the root renderer for the Forms element
 			ContentView.TopAnchor.ConstraintEqualTo(platformView.TopAnchor).Active = true;
@@ -43,8 +43,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ContentView.TrailingAnchor.ConstraintEqualTo(platformView.TrailingAnchor).Active = true;
 		}
 
-		public abstract void ConstrainTo(nfloat constant);
-		public abstract void ConstrainTo(CGSize constraint);
-		public abstract CGSize Measure();
+		// public abstract void ConstrainTo(nfloat constant);
+		// public abstract void ConstrainTo(CGSize constraint);
+		// public abstract CGSize Measure();
 	}
 }

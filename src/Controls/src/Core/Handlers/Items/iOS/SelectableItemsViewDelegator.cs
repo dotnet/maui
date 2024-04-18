@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TItemsView : SelectableItemsView
 		where TViewController : SelectableItemsViewController<TItemsView>
 	{
-		public SelectableItemsViewDelegator(ItemsViewLayout itemsViewLayout, TViewController itemsViewController)
+		public SelectableItemsViewDelegator(UICollectionViewLayout itemsViewLayout, TViewController itemsViewController)
 			: base(itemsViewLayout, itemsViewController)
 		{
 		}

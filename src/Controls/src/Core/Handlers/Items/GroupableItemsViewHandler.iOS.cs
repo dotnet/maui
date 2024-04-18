@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class GroupableItemsViewHandler<TItemsView> : SelectableItemsViewHandler<TItemsView> where TItemsView : GroupableItemsView
 	{
-		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, ItemsViewLayout layout)
+		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, UICollectionViewLayout layout)
 			 => new GroupableItemsViewController<TItemsView>(itemsView, layout);
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)

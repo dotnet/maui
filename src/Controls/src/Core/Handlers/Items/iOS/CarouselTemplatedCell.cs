@@ -19,30 +19,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		public override void ConstrainTo(nfloat constant)
-		{
-		}
+		// public override void ConstrainTo(nfloat constant)
+		// {
+		// }
+		//
+		// public override void ConstrainTo(CGSize constraint)
+		// {
+		// 	ClearConstraints();
+		//
+		// 	_constraint = constraint;
+		// }
 
-		public override void ConstrainTo(CGSize constraint)
-		{
-			ClearConstraints();
-
-			_constraint = constraint;
-		}
-
-		public override CGSize Measure()
-		{
-			return new CGSize(_constraint.Width, _constraint.Height);
-		}
-
-		protected override (bool, Size) NeedsContentSizeUpdate(Size currentSize)
-		{
-			return (false, Size.Zero);
-		}
-
-		protected override bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes)
-		{
-			return false;
-		}
+		// public override CGSize Measure()
+		// {
+		// 	return new CGSize(_constraint.Width, _constraint.Height);
+		// }
+		//
+		// protected override (bool, Size) NeedsContentSizeUpdate(Size currentSize)
+		// {
+		// 	return (false, Size.Zero);
+		// }
+		//
+		// protected override bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes)
+		// {
+		// 	return false;
+		// }
 	}
 }

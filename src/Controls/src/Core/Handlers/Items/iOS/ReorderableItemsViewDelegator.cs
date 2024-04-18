@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TItemsView : ReorderableItemsView
 		where TViewController : ReorderableItemsViewController<TItemsView>
 	{
-		public ReorderableItemsViewDelegator(ItemsViewLayout itemsViewLayout, TViewController itemsViewController)
+		public ReorderableItemsViewDelegator(UICollectionViewLayout itemsViewLayout, TViewController itemsViewController)
 			: base(itemsViewLayout, itemsViewController)
 		{
 		}

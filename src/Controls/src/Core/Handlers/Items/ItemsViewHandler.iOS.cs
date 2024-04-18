@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
 	{
-		ItemsViewLayout _layout;
+		UICollectionViewLayout _layout;
 
 		protected override void DisconnectHandler(UIView platformView)
 		{
@@ -38,9 +38,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected internal ItemsViewController<TItemsView> Controller { get; private set; }
 
-		protected abstract ItemsViewLayout SelectLayout();
+		protected abstract UICollectionViewLayout SelectLayout();
 
-		protected abstract ItemsViewController<TItemsView> CreateController(TItemsView newElement, ItemsViewLayout layout);
+		protected abstract ItemsViewController<TItemsView> CreateController(TItemsView newElement, UICollectionViewLayout layout);
 
 		protected override UIView CreatePlatformView() => Controller?.View;
 
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler._layout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
+			// TODO: Fix handler._layout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
 		}
 
 		protected virtual void UpdateLayout()
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				Controller.CollectionView.ScrollToItem(indexPath,
-					args.ScrollToPosition.ToCollectionViewScrollPosition(_layout.ScrollDirection), args.IsAnimated);
+					args.ScrollToPosition.ToCollectionViewScrollPosition( UICollectionViewScrollDirection.Vertical /* TODO: Fix _layout.ScrollDirection */), args.IsAnimated);
 			}
 
 			NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)
@@ -147,33 +147,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return true;
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			var size = base.GetDesiredSize(widthConstraint, heightConstraint);
-
-			var potentialContentSize = Controller.GetSize();
-
-			// If contentSize comes back null, it means none of the content has been realized yet;
-			// we need to return the expansive size the collection view wants by default to get
-			// it to start measuring its content
-			if (potentialContentSize == null)
-			{
-				return size;
-			}
-
-			var contentSize = potentialContentSize.Value;
-
-			// If contentSize does have a value, our target size is the smaller of it and the constraints
-
-			size.Width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
-			size.Height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
-
-			var virtualView = this.VirtualView as IView;
-
-			size.Width = ViewHandlerExtensions.ResolveConstraints(size.Width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
-			size.Height = ViewHandlerExtensions.ResolveConstraints(size.Height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
-
-			return size;
-		}
+		// public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		// {
+		// 	var size = base.GetDesiredSize(widthConstraint, heightConstraint);
+		//
+		// 	var potentialContentSize = Controller.GetSize();
+		//
+		// 	// If contentSize comes back null, it means none of the content has been realized yet;
+		// 	// we need to return the expansive size the collection view wants by default to get
+		// 	// it to start measuring its content
+		// 	if (potentialContentSize == null)
+		// 	{
+		// 		return size;
+		// 	}
+		//
+		// 	var contentSize = potentialContentSize.Value;
+		//
+		// 	// If contentSize does have a value, our target size is the smaller of it and the constraints
+		//
+		// 	size.Width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
+		// 	size.Height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
+		//
+		// 	var virtualView = this.VirtualView as IView;
+		//
+		// 	size.Width = ViewHandlerExtensions.ResolveConstraints(size.Width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+		// 	size.Height = ViewHandlerExtensions.ResolveConstraints(size.Height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
+		//
+		// 	return size;
+		// }
 	}
 }

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public class SelectableItemsViewController<TItemsView> : StructuredItemsViewController<TItemsView>
 		where TItemsView : SelectableItemsView
 	{
-		public SelectableItemsViewController(TItemsView selectableItemsView, ItemsViewLayout layout)
+		public SelectableItemsViewController(TItemsView selectableItemsView, UICollectionViewLayout layout)
 			: base(selectableItemsView, layout)
 		{
 		}

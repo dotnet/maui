@@ -16,25 +16,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		public override CGSize Measure()
-		{
-			if (PlatformHandler?.VirtualView == null)
-			{
-				return CGSize.Empty;
-			}
-
-			var measure = PlatformHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
-
-
-			var width = PlatformHandler.VirtualView.Width > 0
-				? PlatformHandler.VirtualView.Width : measure.Width;
-
-			return new CGSize(width, ConstrainedDimension);
-		}
-
-		protected override bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes)
-		{
-			return attributes.Frame.Height == ConstrainedDimension;
-		}
+		// public override CGSize Measure()
+		// {
+		// 	if (PlatformHandler?.VirtualView == null)
+		// 	{
+		// 		return CGSize.Empty;
+		// 	}
+		//
+		// 	var measure = PlatformHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
+		//
+		//
+		// 	var width = PlatformHandler.VirtualView.Width > 0
+		// 		? PlatformHandler.VirtualView.Width : measure.Width;
+		//
+		// 	return new CGSize(width, ConstrainedDimension);
+		// }
+		//
+		// protected override bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes)
+		// {
+		// 	return attributes.Frame.Height == ConstrainedDimension;
+		// }
 	}
 }

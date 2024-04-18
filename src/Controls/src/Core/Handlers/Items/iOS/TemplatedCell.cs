@@ -9,60 +9,40 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract class TemplatedCell : ItemsViewCell
+	public class TemplatedCell : ItemsViewCell
 	{
-		public event EventHandler<EventArgs> ContentSizeChanged;
-		public event EventHandler<LayoutAttributesChangedEventArgs> LayoutAttributesChanged;
-
-		protected CGSize ConstrainedSize;
-
-		protected nfloat ConstrainedDimension;
-
-		public DataTemplate CurrentTemplate { get; private set; }
-
-		// Keep track of the cell size so we can verify whether a measure invalidation 
-		// actually changed the size of the cell
-		Size _size;
-
-		internal CGSize CurrentSize => _size.ToCGSize();
-
+		public const string ReuseId = "Microsoft.Maui.Controls.TemplatedCell";
+		
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		protected TemplatedCell(CGRect frame) : base(frame)
+		public TemplatedCell(CGRect frame) : base(frame)
 		{
+
 		}
 
-		WeakReference<IPlatformViewHandler> _handler;
-
+		// WeakReference<IPlatformViewHandler> _handler;
+		//
+		// internal IPlatformViewHandler PlatformHandler
+		// {
+		// 	get => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
+		// 	set => _handler = value == null ? null : new(value);
+		// }
+		
+		public UICollectionViewScrollDirection ScrollDirection { get; set; }
+		
 		internal IPlatformViewHandler PlatformHandler
 		{
-			get => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
-			set => _handler = value == null ? null : new(value);
+			get;
+			set;
 		}
 
-		public override void ConstrainTo(CGSize constraint)
-		{
-			ClearConstraints();
-			ConstrainedSize = constraint;
-		}
-
-		public override void ConstrainTo(nfloat constant)
-		{
-			ClearConstraints();
-			ConstrainedDimension = constant;
-		}
-
-		protected void ClearConstraints()
-		{
-			ConstrainedSize = default;
-			ConstrainedDimension = default;
-		}
-
+		internal UIView PlatformView { get; set; }
+		
 		internal void Unbind()
 		{
 			if (PlatformHandler?.VirtualView is View view)
 			{
-				view.MeasureInvalidated -= MeasureInvalidated;
+				//view.MeasureInvalidated -= MeasureInvalidated;
 				view.BindingContext = null;
 			}
 		}
@@ -72,150 +52,62 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 
-			var preferredSize = preferredAttributes.Frame.Size;
-
-			if (preferredSize.IsCloseTo(_size)
-				&& AttributesConsistentWithConstrainedDimension(preferredAttributes))
+			if (PlatformHandler?.VirtualView is not null)
 			{
-				return preferredAttributes;
+				if (ScrollDirection == UICollectionViewScrollDirection.Vertical)
+				{
+					var measure =
+						PlatformHandler.VirtualView.Measure(preferredAttributes.Size.Width, double.PositiveInfinity);
+
+					preferredAttributes.Frame =
+						new CGRect(preferredAttributes.Frame.X, preferredAttributes.Frame.Y,
+							preferredAttributes.Frame.Width, measure.Height);
+				}
+				else
+				{
+					var measure =
+						PlatformHandler.VirtualView.Measure(double.PositiveInfinity, preferredAttributes.Size.Height);
+
+					preferredAttributes.Frame =
+						new CGRect(preferredAttributes.Frame.X, preferredAttributes.Frame.Y,
+							measure.Width, preferredAttributes.Frame.Height);
+				}
+
+				preferredAttributes.ZIndex = 2;
 			}
-
-			var size = UpdateCellSize();
-
-			// Adjust the preferred attributes to include space for the Forms element
-			preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
-
-			OnLayoutAttributesChanged(preferredAttributes);
-
+			
 			return preferredAttributes;
-		}
-
-		CGSize UpdateCellSize()
-		{
-			// Measure this cell (including the Forms element) if there is no constrained size
-			var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
-
-			// Update the size of the root view to accommodate the Forms element
-			var platformView = PlatformHandler.ToPlatform();
-			platformView.Frame = new CGRect(CGPoint.Empty, size);
-
-			// Layout the Maui element 
-			var nativeBounds = platformView.Frame.ToRectangle();
-			PlatformHandler.VirtualView.Arrange(nativeBounds);
-			_size = nativeBounds.Size;
-
-			return size;
-		}
-
-		[Obsolete]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected void Layout(CGSize constraints)
-		{
-			var platformView = PlatformHandler.ToPlatform();
-
-			var width = constraints.Width;
-			var height = constraints.Height;
-
-			PlatformHandler.VirtualView.Measure(width, height);
-
-			platformView.Frame = new CGRect(0, 0, width, height);
-
-			var rectangle = platformView.Frame.ToRectangle();
-			PlatformHandler.VirtualView.Arrange(rectangle);
-			_size = rectangle.Size;
 		}
 
 		public override void PrepareForReuse()
 		{
-			Unbind();
+			//Unbind();
 			base.PrepareForReuse();
 		}
-
+		
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
-			var oldElement = PlatformHandler?.VirtualView as View;
-
-			// Run this through the extension method in case it's really a DataTemplateSelector
-			var itemTemplate = template.SelectDataTemplate(bindingContext, itemsView);
-
-			if (itemTemplate != CurrentTemplate)
+			if (PlatformHandler is null)
 			{
-				// Remove the old view, if it exists
-				if (oldElement != null)
-				{
-					oldElement.MeasureInvalidated -= MeasureInvalidated;
-					oldElement.BindingContext = null;
-					itemsView.RemoveLogicalChild(oldElement);
-					ClearSubviews();
-					_size = Size.Zero;
-				}
+				var virtualView = template.CreateContent() as View;
 
-				// Create the content and renderer for the view 
-				var view = itemTemplate.CreateContent() as View;
+				var mauiContext = itemsView.FindMauiContext();
+				var nativeView = virtualView.ToPlatform(mauiContext);
 
-				// Set the binding context _before_ we create the renderer; that way, it's available during OnElementChanged
-				view.BindingContext = bindingContext;
-
-				var renderer = TemplateHelpers.GetHandler(view, itemsView.FindMauiContext());
-				SetRenderer(renderer);
-
-				// And make the new Element a "child" of the ItemsView
-				// We deliberately do this _after_ setting the binding context for the new element;
-				// if we do it before, the element briefly inherits the ItemsView's bindingcontext and we 
-				// emit a bunch of needless binding errors
-				itemsView.AddLogicalChild(view);
-
-				UpdateSelectionColor(view);
+				PlatformView = nativeView;
+				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
+				
+				InitializeContentConstraints(nativeView);
+				
+				virtualView.BindingContext = bindingContext;
 			}
-			else
+			
+			if (PlatformHandler?.VirtualView is View view)
 			{
-				// Same template
-				if (oldElement != null)
-				{
-					oldElement.BindingContext = bindingContext;
-					oldElement.MeasureInvalidated += MeasureInvalidated;
-
-					UpdateCellSize();
-				}
-			}
-
-			CurrentTemplate = itemTemplate;
-		}
-
-		void SetRenderer(IPlatformViewHandler renderer)
-		{
-			PlatformHandler = renderer;
-
-			var platformView = PlatformHandler.ToPlatform();
-
-			// Clear out any old views if this cell is being reused
-			ClearSubviews();
-
-			InitializeContentConstraints(platformView);
-
-			UpdateVisualStates();
-
-			(renderer.VirtualView as View).MeasureInvalidated += MeasureInvalidated;
-		}
-
-		void ClearSubviews()
-		{
-			for (int n = ContentView.Subviews.Length - 1; n >= 0; n--)
-			{
-				ContentView.Subviews[n].RemoveFromSuperview();
+				view.SetValueFromRenderer(View.BindingContextProperty, bindingContext);
 			}
 		}
-
-		internal void UseContent(TemplatedCell measurementCell)
-		{
-			// Copy all the content and values from the measurement cell 
-			ConstrainedDimension = measurementCell.ConstrainedDimension;
-			ConstrainedSize = measurementCell.ConstrainedSize;
-			CurrentTemplate = measurementCell.CurrentTemplate;
-			_size = measurementCell._size;
-			SetRenderer(measurementCell.PlatformHandler);
-		}
-
+		
 		bool IsUsingVSMForSelectionColor(View view)
 		{
 			var groups = VisualStateManager.GetVisualStateGroups(view);
@@ -260,36 +152,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 			}
 		}
-
-		protected abstract (bool, Size) NeedsContentSizeUpdate(Size currentSize);
-
-		void MeasureInvalidated(object sender, EventArgs args)
-		{
-			var (needsUpdate, toSize) = NeedsContentSizeUpdate(_size);
-
-			if (!needsUpdate)
-			{
-				return;
-			}
-
-			// Cache the size for next time
-			_size = toSize;
-
-			// Let the controller know that things need to be laid out again
-			OnContentSizeChanged();
-		}
-
-		protected void OnContentSizeChanged()
-		{
-			ContentSizeChanged?.Invoke(this, EventArgs.Empty);
-		}
-
-		protected void OnLayoutAttributesChanged(UICollectionViewLayoutAttributes newAttributes)
-		{
-			LayoutAttributesChanged?.Invoke(this, new LayoutAttributesChangedEventArgs(newAttributes));
-		}
-
-		protected abstract bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes);
 
 		void UpdateVisualStates()
 		{

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		ILoopItemsViewSource LoopItemsSource => ItemsSource as ILoopItemsViewSource;
 		bool _isDragging;
 
-		public CarouselViewController(CarouselView itemsView, ItemsViewLayout layout) : base(itemsView, layout)
+		public CarouselViewController(CarouselView itemsView, UICollectionViewLayout layout) : base(itemsView, layout)
 		{
 			CollectionView.AllowsSelection = false;
 			CollectionView.AllowsMultipleSelection = false;
@@ -37,22 +37,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			UICollectionViewCell cell;
 
+			var finalIndexPath = indexPath;
+			
 			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
 			{
 				var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
 				cell = cellAndCorrectedIndex.cell;
 				var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
 
-				if (cell is DefaultCell defaultCell)
-					UpdateDefaultCell(defaultCell, correctedIndexPath);
-
-				if (cell is TemplatedCell templatedCell)
-					UpdateTemplatedCell(templatedCell, correctedIndexPath);
+				finalIndexPath = correctedIndexPath;
 			}
-			else
-			{
-				cell = base.GetCell(collectionView, indexPath);
-			}
+			
+			cell = base.GetCell(collectionView, finalIndexPath);
 
 			var element = (cell as TemplatedCell)?.PlatformHandler?.VirtualView as VisualElement;
 
@@ -169,11 +165,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return itemsSource;
 		}
 
-		protected override void CacheCellAttributes(NSIndexPath indexPath, CGSize size)
-		{
-			var itemIndex = GetIndexFromIndexPath(indexPath);
-			base.CacheCellAttributes(NSIndexPath.FromItemSection(itemIndex, 0), size);
-		}
+		
 
 		internal void TearDown()
 		{

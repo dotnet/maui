@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		UIView _footerUIView;
 		VisualElement _footerViewFormsElement;
 
-		public StructuredItemsViewController(TItemsView structuredItemsView, ItemsViewLayout layout)
+		public StructuredItemsViewController(TItemsView structuredItemsView, UICollectionViewLayout layout)
 			: base(structuredItemsView, layout)
 		{
 		}
@@ -38,12 +38,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (_headerViewFormsElement != null)
 				{
-					_headerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+					//_headerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
 				}
 
 				if (_footerViewFormsElement != null)
 				{
-					_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+					//_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
 				}
 
 				_headerUIView = null;
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (formsElement != null)
 			{
 				ItemsView.RemoveLogicalChild(formsElement);
-				formsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+				//formsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
 			}
 
 			UpdateView(view, viewTemplate, ref uiView, ref formsElement);
@@ -139,8 +139,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (formsElement != null)
 			{
-				RemeasureLayout(formsElement);
-				formsElement.MeasureInvalidated += OnFormsElementMeasureInvalidated;
+				//RemeasureLayout(formsElement);
+				//formsElement.MeasureInvalidated += OnFormsElementMeasureInvalidated;
 			}
 			else
 			{
@@ -225,19 +225,5 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		protected override void HandleFormsElementMeasureInvalidated(VisualElement formsElement)
-		{
-			base.HandleFormsElementMeasureInvalidated(formsElement);
-			UpdateHeaderFooterPosition();
-		}
-
-		internal void UpdateLayoutMeasurements()
-		{
-			if (_headerViewFormsElement != null)
-				HandleFormsElementMeasureInvalidated(_headerViewFormsElement);
-
-			if (_footerViewFormsElement != null)
-				HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
-		}
 	}
 }

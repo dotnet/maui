@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class CarouselViewDelegator : ItemsViewDelegator<CarouselView, CarouselViewController>
 	{
-		public CarouselViewDelegator(ItemsViewLayout itemsViewLayout, CarouselViewController itemsViewController)
+		public CarouselViewDelegator(UICollectionViewLayout itemsViewLayout, CarouselViewController itemsViewController)
 			: base(itemsViewLayout, itemsViewController)
 		{
 		}

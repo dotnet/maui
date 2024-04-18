@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _disposed;
 		UILongPressGestureRecognizer _longPressGestureRecognizer;
 
-		public ReorderableItemsViewController(TItemsView reorderableItemsView, ItemsViewLayout layout)
+		public ReorderableItemsViewController(TItemsView reorderableItemsView, UICollectionViewLayout layout)
 			: base(reorderableItemsView, layout)
 		{
 			// The UICollectionViewController has built-in recognizer for reorder that can be installed by setting "InstallsStandardGestureForInteractiveMovement".

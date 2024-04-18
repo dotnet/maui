@@ -1,18 +1,19 @@
 ﻿#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
-		ItemsViewLayout _layout;
+		UICollectionViewLayout _layout;
 
-		protected override CarouselViewController CreateController(CarouselView newElement, ItemsViewLayout layout)
+		protected override CarouselViewController CreateController(CarouselView newElement, UICollectionViewLayout layout)
 				=> new CarouselViewController(newElement, layout);
 
-		protected override ItemsViewLayout SelectLayout() =>
-				_layout ??= new CarouselViewLayout(VirtualView.ItemsLayout, VirtualView);
+		protected override UICollectionViewLayout SelectLayout() =>
+				_layout ??= LayoutFactory.CreateCarousel(VirtualView.ItemsLayout);
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				Controller.CollectionView.ScrollToItem(goToIndexPath,
-					args.ScrollToPosition.ToCollectionViewScrollPosition(_layout.ScrollDirection),
+					args.ScrollToPosition.ToCollectionViewScrollPosition( UICollectionViewScrollDirection.Vertical), // TODO: Fix _layout.ScrollDirection),
 					args.IsAnimated);
 			}
 			else
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView)
 		{
-			(handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.PlatformView.Frame.Size);
+			// TODO: Fix (handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.PlatformView.Frame.Size);
 			handler.Controller.Layout.InvalidateLayout();
 		}
 

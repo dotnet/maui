@@ -14,12 +14,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		readonly WeakReference<TViewController> _viewController;
 
-		public ItemsViewLayout ItemsViewLayout { get; }
+		public UICollectionViewLayout ItemsViewLayout { get; }
 		public TViewController ViewController => _viewController.TryGetTarget(out var vc) ? vc : null;
 
 		protected float PreviousHorizontalOffset, PreviousVerticalOffset;
 
-		public ItemsViewDelegator(ItemsViewLayout itemsViewLayout, TViewController itemsViewController)
+		public ItemsViewDelegator(UICollectionViewLayout itemsViewLayout, TViewController itemsViewController)
 		{
 			ItemsViewLayout = itemsViewLayout;
 			_viewController = new(itemsViewController);
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return default;
 			}
 
-			return ItemsViewLayout.GetInsetForSection(collectionView, layout, section);
+			return default; // TODO: FIx  ItemsViewLayout.GetInsetForSection(collectionView, layout, section);
 		}
 
 		public override nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView,
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return default;
 			}
 
-			return ItemsViewLayout.GetMinimumInteritemSpacingForSection(collectionView, layout, section);
+			return default; // TODO: Fix ItemsViewLayout.GetMinimumInteritemSpacingForSection(collectionView, layout, section);
 		}
 
 		public override nfloat GetMinimumLineSpacingForSection(UICollectionView collectionView,
@@ -103,27 +103,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return default;
 			}
 
-			return ItemsViewLayout.GetMinimumLineSpacingForSection(collectionView, layout, section);
+			return default; // TODO: Fix ItemsViewLayout.GetMinimumLineSpacingForSection(collectionView, layout, section);
 		}
 
-		public override void CellDisplayingEnded(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
-		{
-			if (cell is TemplatedCell templatedCell &&
-				(templatedCell.PlatformHandler?.VirtualView as View)?.BindingContext is object bindingContext)
-			{
-				// We want to unbind a cell that is no longer present in the items source. Unfortunately
-				// it's too expensive to check directly, so let's check that the current binding context
-				// matches the item at a given position.
-
-				var itemsSource = ViewController?.ItemsSource;
-				if (itemsSource is null ||
-					!itemsSource.IsIndexPathValid(indexPath) ||
-					!Equals(itemsSource[indexPath], bindingContext))
-				{
-					templatedCell.Unbind();
-				}
-			}
-		}
+		// public override void CellDisplayingEnded(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
+		// {
+		// 	if (cell is TemplatedCell templatedCell &&
+		// 		(templatedCell.PlatformHandler?.VirtualView as View)?.BindingContext is object bindingContext)
+		// 	{
+		// 		// We want to unbind a cell that is no longer present in the items source. Unfortunately
+		// 		// it's too expensive to check directly, so let's check that the current binding context
+		// 		// matches the item at a given position.
+		//
+		// 		var itemsSource = ViewController?.ItemsSource;
+		// 		if (itemsSource is null ||
+		// 			!itemsSource.IsIndexPathValid(indexPath) ||
+		// 			!Equals(itemsSource[indexPath], bindingContext))
+		// 		{
+		// 			templatedCell.Unbind();
+		// 		}
+		// 	}
+		// }
 
 		protected virtual (bool VisibleItems, NSIndexPath First, NSIndexPath Center, NSIndexPath Last) GetVisibleItemsIndexPath()
 		{
@@ -176,9 +176,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return centerItemIndex;
 		}
 
-		public override CGSize GetSizeForItem(UICollectionView collectionView, UICollectionViewLayout layout, NSIndexPath indexPath)
-		{
-			return ViewController?.GetSizeForItem(indexPath) ?? CGSize.Empty;
-		}
+		// public override CGSize GetSizeForItem(UICollectionView collectionView, UICollectionViewLayout layout, NSIndexPath indexPath)
+		// {
+		// 	return ViewController?.GetSizeForItem(indexPath) ?? CGSize.Empty;
+		// }
 	}
 }

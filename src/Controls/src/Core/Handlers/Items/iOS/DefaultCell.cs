@@ -7,15 +7,17 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract class DefaultCell : ItemsViewCell
+	public class DefaultCell : ItemsViewCell
 	{
+		public const string ReuseId = "Microsoft.Maui.Controls.DefaultCell";
+		
 		public UILabel Label { get; }
 
 		protected NSLayoutConstraint Constraint { get; set; }
 
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		protected DefaultCell(CGRect frame) : base(frame)
+		public DefaultCell(CGRect frame) : base(frame)
 		{
 			Label = new UILabel(frame)
 			{
@@ -30,9 +32,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			InitializeContentConstraints(Label);
 		}
 
-		public override void ConstrainTo(nfloat constant)
-		{
-			Constraint.Constant = constant;
-		}
+		// public override void ConstrainTo(nfloat constant)
+		// {
+		// 	Constraint.Constant = constant;
+		// }
 	}
 }

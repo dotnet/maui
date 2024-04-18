@@ -6,26 +6,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
-		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, ItemsViewLayout layout)
+		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, UICollectionViewLayout layout)
 				=> new StructuredItemsViewController<TItemsView>(itemsView, layout);
 
-		protected override ItemsViewLayout SelectLayout()
+		protected override UICollectionViewLayout SelectLayout()
 		{
 			var itemSizingStrategy = ItemsView.ItemSizingStrategy;
 			var itemsLayout = ItemsView.ItemsLayout;
 
 			if (itemsLayout is GridItemsLayout gridItemsLayout)
 			{
-				return new GridViewLayout(gridItemsLayout, itemSizingStrategy);
+				return LayoutFactory.CreateGrid(gridItemsLayout);
 			}
 
 			if (itemsLayout is LinearItemsLayout listItemsLayout)
 			{
-				return new ListViewLayout(listItemsLayout, itemSizingStrategy);
+				return LayoutFactory.CreateList(listItemsLayout);
 			}
-
+			
 			// Fall back to vertical list
-			return new ListViewLayout(new LinearItemsLayout(ItemsLayoutOrientation.Vertical), itemSizingStrategy);
+			return LayoutFactory.CreateList(new LinearItemsLayout(ItemsLayoutOrientation.Vertical));
 		}
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
