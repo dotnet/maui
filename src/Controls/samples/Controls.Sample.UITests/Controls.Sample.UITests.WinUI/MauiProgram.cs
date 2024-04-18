@@ -1,4 +1,6 @@
-﻿namespace Maui.Controls.Sample.WinUI
+﻿using Microsoft.Maui.Hosting;
+
+namespace Maui.Controls.Sample.WinUI
 {
 	public static class MauiProgram
 	{
