@@ -51,11 +51,12 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Switch, SwitchHandler>();
 				handlers.AddHandler<TableView, TableViewRenderer>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
+				handlers.AddHandler<Toolbar, ToolbarHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
 #if IOS || MACCATALYST
-				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+				handlers.AddHandler<NavigationPage, NavigationRenderer>();
 #else
-				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #endif
 			});
 		});
