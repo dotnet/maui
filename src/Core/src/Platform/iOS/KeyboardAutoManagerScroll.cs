@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This class is adapted from IQKeyboardManager which is an open-source
  * library implemented for iOS to handle Keyboard interactions with
  * UITextFields/UITextViews. Link to their MIT License can be found here:
