@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (listeningProviders.Count == 0)
 				listeningProviders.Add(providerInfo.Provider);
 
-			var continuousListener = new ContinuousLocationListener(LocationManager, providerInfo.Accuracy, listeningProviders);
+			continuousListener = new ContinuousLocationListener(LocationManager, providerInfo.Accuracy, listeningProviders);
 			continuousListener.LocationHandler = HandleLocation;
 			continuousListener.ErrorHandler = HandleError;
 
