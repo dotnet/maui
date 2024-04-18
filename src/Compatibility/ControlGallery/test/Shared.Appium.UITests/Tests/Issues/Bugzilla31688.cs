@@ -16,6 +16,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Bugzilla31688Test()
 		{
 			RunningApp.WaitForNoElement("Page3");

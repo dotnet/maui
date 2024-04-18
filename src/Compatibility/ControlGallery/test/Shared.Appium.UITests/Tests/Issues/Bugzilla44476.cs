@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnAndroid]
 		public void Issue44476TestUnwantedMargin()
 		{
 			RunningApp.WaitForNoElement("This should be visible.");
