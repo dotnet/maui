@@ -364,18 +364,21 @@ public static class KeyboardAutoManagerScroll
 		bool cursorTooHigh = false;
 		bool cursorTooLow = false;
 
-		// Find the next parent ScrollView that is scrollable
-		var superView = View.FindResponder<UIScrollView>();
+		// Find the nearest scrollable area
+		var superView = View as UIScrollView ?? View.FindResponder<UIScrollView>();
 		var superScrollView = FindParentScroll(superView);
 
 		CGRect? superScrollViewRect = null;
 		var topBoundary = topLayoutGuide;
 		var bottomBoundary = (double)keyboardYPosition;
 
-		if (superScrollView is not null){
+		if (superScrollView is not null)
+		{
 			superScrollViewRect = superScrollView.ConvertRectToView(superScrollView.Bounds, window);
 			topBoundary = Math.Max(topBoundary, superScrollViewRect.Value.Top + TextViewDistanceFromTop);
-			bottomBoundary = Math.Min(bottomBoundary, superScrollViewRect.Value.Bottom - TextViewDistanceFromBottom);
+			bottomBoundary = superScrollViewRect.Value.Bottom > keyboardYPosition
+				? Math.Min(keyboardYPosition, superScrollViewRect.Value.Bottom)
+				: keyboardYPosition;
 		}
 
 		// scenario where we go into an editor with the "Next" keyboard button,
