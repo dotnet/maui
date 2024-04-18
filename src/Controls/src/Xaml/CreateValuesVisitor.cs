@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public void Visit(ListNode node, INode parentNode)
 		{
 			//this is a gross hack to keep ListNode alive. ListNode must go in favor of Properties
-			if (ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+			if (node.TryGetPropertyName(parentNode, out XmlName name))
 				node.XmlName = name;
 		}
 

@@ -517,7 +517,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				// looking for BindingContext="{Binding ...}"
 				return GetParent(node) is IElementNode parentNode
-					&& ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out var propertyName)
+					&& node.TryGetPropertyName(parentNode, out var propertyName)
 					&& propertyName.NamespaceURI == ""
 					&& propertyName.LocalName == nameof(BindableObject.BindingContext);
 			}

@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return;
 
 
-			if (TryGetPropertyName(node, parentNode, out XmlName propertyName))
+			if (node.TryGetPropertyName(parentNode, out XmlName propertyName))
 			{
 				if (TrySetRuntimeName(propertyName, source, value, node))
 					return;
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			if (TryGetPropertyName(node, parentNode, out XmlName propertyName) && propertyName == XmlName._CreateContent)
+			if (node.TryGetPropertyName(parentNode, out XmlName propertyName) && propertyName == XmlName._CreateContent)
 			{
 				var s0 = Values[parentNode];
 				if (s0 is ElementTemplate)
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (!Values.TryGetValue(node, out var value) && Context.ExceptionHandler != null)
 				return;
 
-			if (propertyName != XmlName.Empty || TryGetPropertyName(node, parentNode, out propertyName))
+			if (propertyName != XmlName.Empty || node.TryGetPropertyName(parentNode, out propertyName))
 			{
 				if (Skips.Contains(propertyName))
 					return;
@@ -227,22 +227,6 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(ListNode node, INode parentNode)
 		{
-		}
-
-		public static bool TryGetPropertyName(INode node, INode parentNode, out XmlName name)
-		{
-			name = default(XmlName);
-			var parentElement = parentNode as IElementNode;
-			if (parentElement == null)
-				return false;
-			foreach (var kvp in parentElement.Properties)
-			{
-				if (kvp.Value != node)
-					continue;
-				name = kvp.Key;
-				return true;
-			}
-			return false;
 		}
 
 		internal static bool IsCollectionItem(INode node, INode parentNode)

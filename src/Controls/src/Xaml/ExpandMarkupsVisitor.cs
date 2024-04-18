@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			var parentElement = parentNode as IElementNode;
 			XmlName propertyName;
-			if (!ApplyPropertiesVisitor.TryGetPropertyName(markupnode, parentNode, out propertyName))
+			if (!markupnode.TryGetPropertyName(parentNode, out propertyName))
 				return;
 			if (Skips.Contains(propertyName))
 				return;
