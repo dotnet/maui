@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Issues
 			BindingContext = this;
 		}
 		
-		void OnButtonClicked(object sender, System.EventArgs e)
+		async void OnButtonClicked(object sender, System.EventArgs e)
 		{
 			if (TestWebView is IElement visualElement)
 			{
@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			Navigation.PopModalAsync();
+			await Navigation.PopModalAsync();
 		}
 	}
 }
