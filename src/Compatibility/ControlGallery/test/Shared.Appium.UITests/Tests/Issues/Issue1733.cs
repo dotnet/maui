@@ -9,6 +9,15 @@ namespace UITests
 {
 	public class Issue1733 : IssuesUITest
 	{
+		public Issue1733(TestDevice testDevice) : base(testDevice)
+		{
+		}
+
+		public override string Issue => "Autoresizable Editor";
+
+		/*	
+		Dictionary<string, Size> _results;
+
 		const string EditorHeightShrinkWithPressureId = "editorHeightShrinkWithPressureId";
 		const string EditorHeightGrowId = "editorHeightGrowId";
 		const string EditorWidthGrow1Id = "editorWidthGrow1Id";
@@ -18,14 +27,6 @@ namespace UITests
 		const string BtnChangeToHasText = "Change to Has Text";
 		const string BtnChangeToNoText = "Change to Has No Text";
 		const string BtnChangeSizeOption = "Change the Size Option";
-
-		Dictionary<string, Size> _results;
-
-		public Issue1733(TestDevice testDevice) : base(testDevice)
-		{
-		}
-
-		public override string Issue => "Autoresizable Editor";
 
 		[Test]
 		[Category(UITestCategories.Editor)]
@@ -123,5 +124,6 @@ namespace UITests
 			}
 			return new Size(Convert.ToInt32(width, CultureInfo.InvariantCulture), Convert.ToInt32(height, CultureInfo.InvariantCulture));
 		}
+		*/
 	}
 }

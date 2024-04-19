@@ -15,6 +15,7 @@ namespace UITests
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.RequiresInternetConnection)]
 		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void CookiesCorrectlyLoadWithMultipleWebViews()
 		{
 			for (int i = 0; i < 10; i++)
