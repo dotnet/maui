@@ -414,9 +414,7 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		else if (cursorRect.Y >= topBoundary && cursorRect.Y < bottomBoundary)
-		{
 			return;
-		}
 
 		else if (cursorRect.Y > bottomBoundary)
 			move = cursorRect.Y - (nfloat)bottomBoundary;
