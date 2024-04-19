@@ -48,12 +48,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (_headerUIView is MauiView hv)
 				{
-					hv.LayoutChanged -= HeaderView_LayoutChanged;
+					hv.LayoutChanged -= HeaderViewLayoutChanged;
 				}
 
 				if (_footerUIView is MauiView fv)
 				{
-					fv.LayoutChanged -= FooterView_LayoutChanged;
+					fv.LayoutChanged -= FooterViewLayoutChanged;
 				}
 
 				_headerUIView = null;
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_footerUIView is MauiView mv)
 			{
-				mv.LayoutChanged += FooterView_LayoutChanged;
+				mv.LayoutChanged += FooterViewLayoutChanged;
 			}
 		}
 
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if(_headerUIView is MauiView mv)
 			{
-				mv.LayoutChanged += HeaderView_LayoutChanged;
+				mv.LayoutChanged += HeaderViewLayoutChanged;
 			}
 		}
 
@@ -261,12 +261,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
 		}
 
-		private void HeaderView_LayoutChanged(object sender, EventArgs e)
+		void HeaderViewLayoutChanged(object sender, EventArgs e)
 		{
 			HandleFormsElementMeasureInvalidated(_headerViewFormsElement);
 		}
 
-		private void FooterView_LayoutChanged(object sender, EventArgs e)
+		void FooterViewLayoutChanged(object sender, EventArgs e)
 		{
 			HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
 		}
