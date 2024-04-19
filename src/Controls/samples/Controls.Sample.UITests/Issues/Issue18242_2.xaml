@@ -11,7 +11,8 @@
       <Button 
         x:Name="BottonButton"
         ImageSource="dotnet_bot.png" 
-        Text="Button 1" 
+        Text="Button 1"
+        TextColor="Black"
         ContentLayout="Bottom, 20" 
         Background="LightGray"/>
       <BoxView 
@@ -22,7 +23,8 @@
       <Button 
         x:Name="TopButton"
         ImageSource="dotnet_bot.png" 
-        Text="Button 2" 
+        Text="Button 2"
+        TextColor="Black"
         ContentLayout="Top, 20" 
         Background="LightGray"/>
       <BoxView 
@@ -33,7 +35,8 @@
       <Button 
         x:Name="LeftButton"
         ImageSource="dotnet_bot.png" 
-        Text="Button 3" 
+        Text="Button 3"
+        TextColor="Black"
         ContentLayout="Left, 20" 
         Background="LightGray"/>
       <BoxView 
@@ -44,7 +47,8 @@
       <Button 
         x:Name="RightButton"
         ImageSource="dotnet_bot.png" 
-        Text="Button 4" 
+        Text="Button 4"
+        TextColor="Black"
         ContentLayout="Right, 20" 
         Background="LightGray"/>
       <BoxView 

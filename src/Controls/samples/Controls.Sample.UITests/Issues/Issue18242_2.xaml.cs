@@ -1,6 +1,7 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Platform;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -31,7 +32,7 @@ namespace Maui.Controls.Sample.Issues
 			BottonButton.HeightRequest = BottonButton.WidthRequest =
 			LeftButton.HeightRequest = LeftButton.WidthRequest =
 			RightButton.HeightRequest = RightButton.WidthRequest =
-			_random.Next(60, 120);
+			_random.Next(200, 300);
 		}
 	}
 }
