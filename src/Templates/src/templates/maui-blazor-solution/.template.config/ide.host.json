@@ -22,11 +22,6 @@
       "persistenceScope": "templateGroup"
     },
     {
-      "id": "InteractivityLocation",
-      "isVisible": true,
-      "persistenceScope": "templateGroup"
-    },
-    {
       "id": "IncludeSampleContent",
       "isVisible": true,
       "persistenceScope": "shared",

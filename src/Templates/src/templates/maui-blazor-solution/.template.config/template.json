@@ -395,24 +395,11 @@
         ]
       },
       "InteractivityLocation": {
-        "type": "parameter",
-        "datatype": "choice",
-        "defaultValue": "InteractivePerPage",
-        "displayName": "_Interactivity location",
-        "description": "Chooses which components will have interactive rendering enabled",
-        "isEnabled": "(InteractivityPlatform != \"None\")",
-        "choices": [
-          {
-            "choice": "InteractivePerPage",
-            "displayName": "Per page/component",
-            "description": "Interactivity is applied on a per-page or per-component basis"
-          },
-          {
-            "choice": "InteractiveGlobal",
-            "displayName": "Global",
-            "description": "Interactivity is applied at the root level"
-          }
-        ]
+        "type": "generated",
+        "generator": "constant",
+        "parameters": {
+          "value":"InteractiveGlobal"
+        }
       },
       "UseWebAssembly": {
         "type": "computed",
@@ -436,14 +423,18 @@
         "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
       },
       "auth": {
-        "type": "parameter",
-        "defaultValue": "None"
+        "type": "generated",
+        "generator": "constant",
+        "parameters": {
+          "value":"None"
+        }
       },
       "UseLocalDB": {
-        "type": "parameter",
-        "datatype": "bool",
-        "defaultValue": "false",
-        "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual is specified."
+        "type": "generated",
+        "generator": "constant",
+        "parameters": {
+          "value":"false"
+        }
       },
       "SampleContent": {
         "type": "computed",
