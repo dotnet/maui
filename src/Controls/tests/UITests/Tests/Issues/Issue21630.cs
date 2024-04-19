@@ -14,6 +14,7 @@ public class Issue21630 : _IssuesUITest
 
     string NavBarEntry => "NavBarEntry";
     string HeaderEntry => "HeaderEntry";
+    string FocusButton => "FocusButton";
 
     [Test]
 	public void NavBarEntryDoesNotTriggerKeyboardScroll()
@@ -23,7 +24,7 @@ public class Issue21630 : _IssuesUITest
 		var headerEntry = App.WaitForElement(HeaderEntry);
 		var headerLocation = headerEntry.GetRect();
 
-        App.Click(NavBarEntry);
+        App.Click(FocusButton);
 
         var newNavBarEntry = App.WaitForElement(NavBarEntry);
 		var newNavBarEntryLocation = newNavBarEntry.GetRect();

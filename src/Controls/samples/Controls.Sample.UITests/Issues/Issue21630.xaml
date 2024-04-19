@@ -6,7 +6,7 @@
 
     <NavigationPage.TitleView>
         <HorizontalStackLayout Spacing="40">
-            <Entry BackgroundColor="Yellow" Text="Input Entry" AutomationId="NavBarEntry"/>
+            <Entry BackgroundColor="Yellow" Text="Input Entry" AutomationId="NavBarEntry" x:Name="NavBarEntry"/>
         </HorizontalStackLayout>
     </NavigationPage.TitleView>
 
@@ -58,6 +58,7 @@
         <CollectionView.Header>
             <VerticalStackLayout Spacing="20" Padding="10,20">
                 <Entry BackgroundColor="Yellow" Text="Input Entry" AutomationId="HeaderEntry"/>
+                <Button Text="Focus NavBarEntry" Clicked="FocusNavBarEntry" AutomationId="FocusButton"/>
             </VerticalStackLayout>
         </CollectionView.Header>
 

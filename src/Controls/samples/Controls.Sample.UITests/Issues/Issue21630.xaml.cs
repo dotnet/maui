@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -10,5 +11,10 @@ public partial class Issue21630 : ContentPage
 	public Issue21630()
 	{
 		InitializeComponent();
+	}
+
+	void FocusNavBarEntry (object sender, EventArgs e)
+	{
+		NavBarEntry.Focus();
 	}
 }
