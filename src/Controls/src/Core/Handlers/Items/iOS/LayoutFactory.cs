@@ -1,165 +1,148 @@
+using System;
+using System.Collections.Generic;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items;
 
 internal static class LayoutFactory
 {
-	public static UICollectionViewLayout CreateList(LinearItemsLayout linearItemsLayout)
-	{
-		if (linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
-			return CreateVerticalList(linearItemsLayout);
-		
-		return CreateHorizontalList(linearItemsLayout);
-	}
+	public static UICollectionViewLayout CreateList(LinearItemsLayout linearItemsLayout,
+		LayoutGroupingInfo groupingInfo)
+		=> linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
+			? CreateVerticalList(linearItemsLayout, groupingInfo)
+			: CreateHorizontalList(linearItemsLayout, groupingInfo);
 	
-	public static UICollectionViewLayout CreateCarousel(LinearItemsLayout linearItemsLayout)
-	{
-		if (linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
-			return CreateVerticalList(linearItemsLayout);
-		
-		return CreateHorizontalList(linearItemsLayout);
-	}
+	public static UICollectionViewLayout CreateCarousel(LinearItemsLayout linearItemsLayout, LayoutGroupingInfo groupingInfo)
+		=> linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
+			? CreateVerticalList(linearItemsLayout, groupingInfo)
+			: CreateHorizontalList(linearItemsLayout, groupingInfo);
+	
+	public static UICollectionViewLayout CreateGrid(GridItemsLayout gridItemsLayout, LayoutGroupingInfo groupingInfo)
+		=> gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
+			? CreateVerticalGrid(gridItemsLayout, groupingInfo)
+			: CreateHorizontalGrid(gridItemsLayout, groupingInfo);
 
-	public static UICollectionViewLayout CreateVerticalList(LinearItemsLayout linearItemsLayout)
+	static NSCollectionLayoutBoundarySupplementaryItem[] CreateSupplementaryItems(LayoutGroupingInfo groupingInfo,
+		UICollectionViewScrollDirection scrollDirection, NSCollectionLayoutDimension width, NSCollectionLayoutDimension height)
 	{
-		var layoutConfig = new UICollectionViewCompositionalLayoutConfiguration(); 
-            
-		var headerItemSize = NSCollectionLayoutSize.Create(NSCollectionLayoutDimension.CreateFractionalWidth(1f),
-			NSCollectionLayoutDimension.CreateEstimated(30f));
-		var headerItemObj = NSCollectionLayoutBoundarySupplementaryItem.Create(layoutSize: headerItemSize, UICollectionElementKindSectionKey.Header.ToString(), NSRectAlignment.Top);
-		var headerItem = headerItemObj as NSCollectionLayoutBoundarySupplementaryItem;
-
-		layoutConfig.BoundarySupplementaryItems = new [] { headerItem! };
-			
-		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
+		if (groupingInfo.IsGrouped)
 		{
-			var itemSize = NSCollectionLayoutSize.Create(
-				NSCollectionLayoutDimension.CreateFractionalWidth(1f),
-				NSCollectionLayoutDimension.CreateEstimated(30f));
-			var item = NSCollectionLayoutItem.Create(itemSize);
+			var items = new List<NSCollectionLayoutBoundarySupplementaryItem>();
 			
-			var groupSize = NSCollectionLayoutSize.Create(
-				NSCollectionLayoutDimension.CreateFractionalWidth(1f),
-				NSCollectionLayoutDimension.CreateEstimated(30f));
+			if (groupingInfo.HasHeader)
+			{
+				items.Add(NSCollectionLayoutBoundarySupplementaryItem.Create(
+					NSCollectionLayoutSize.Create(width, height),
+					UICollectionElementKindSectionKey.Header.ToString(),
+					scrollDirection == UICollectionViewScrollDirection.Vertical
+						? NSRectAlignment.Top
+						: NSRectAlignment.Leading));
+			}
 
-			var group = NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, count: 1);
+			if (groupingInfo.HasFooter)
+			{
+				items.Add(NSCollectionLayoutBoundarySupplementaryItem.Create(
+					NSCollectionLayoutSize.Create(width, height),
+					UICollectionElementKindSectionKey.Footer.ToString(),
+					scrollDirection == UICollectionViewScrollDirection.Vertical
+						? NSRectAlignment.Bottom
+						: NSRectAlignment.Trailing));
+			}
 
-			var section = NSCollectionLayoutSection.Create(group: group);
+			return items.ToArray();
+		}
 
-			return section;
-		}, layoutConfig);
-
-		return layout;
+		return [];
 	}
-	
-	public static UICollectionViewLayout CreateHorizontalList(LinearItemsLayout linearItemsLayout)
-	{
-		var layoutConfig = new UICollectionViewCompositionalLayoutConfiguration();
-		layoutConfig.ScrollDirection = UICollectionViewScrollDirection.Horizontal;
-            
-		var headerItemSize = NSCollectionLayoutSize.Create(NSCollectionLayoutDimension.CreateEstimated(1f),
-			NSCollectionLayoutDimension.CreateFractionalHeight(1f));
-		var headerItem = NSCollectionLayoutBoundarySupplementaryItem.Create(layoutSize: headerItemSize) as NSCollectionLayoutBoundarySupplementaryItem;
 
-		layoutConfig.BoundarySupplementaryItems = new [] { headerItem! };
-			
-		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
-		{
-			var itemSize = NSCollectionLayoutSize.Create(
-				NSCollectionLayoutDimension.CreateEstimated(30f),
-				NSCollectionLayoutDimension.CreateFractionalHeight(1f));
-			var item = NSCollectionLayoutItem.Create(itemSize);
-			
-			var groupSize = NSCollectionLayoutSize.Create(
-				NSCollectionLayoutDimension.CreateEstimated(30f),
-				NSCollectionLayoutDimension.CreateFractionalHeight(1f));
-
-			var group = NSCollectionLayoutGroup.CreateVertical(groupSize, item, count: 1);
-
-			var section = NSCollectionLayoutSection.Create(group: group);
-
-			return section;
-		}, layoutConfig);
-
-		
-		return layout;
-	}
-	
-	public static UICollectionViewLayout CreateGrid(GridItemsLayout gridItemsLayout)
-	{
-		if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
-			return CreateVerticalGrid(gridItemsLayout);
-
-		return CreateHorizontalGrid(gridItemsLayout);
-	}
-	
-	public static UICollectionViewLayout CreateVerticalGrid(GridItemsLayout gridItemsLayout)
+	static UICollectionViewLayout CreateLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, int columns = 1)
 	{
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
-		layoutConfiguration.ScrollDirection = UICollectionViewScrollDirection.Vertical;
+		layoutConfiguration.ScrollDirection = scrollDirection;
 		
-		var headerItemSize = NSCollectionLayoutSize.Create(NSCollectionLayoutDimension.CreateFractionalWidth(1f),
-			NSCollectionLayoutDimension.CreateEstimated(30f));
-		var headerItem = NSCollectionLayoutBoundarySupplementaryItem.Create(layoutSize: headerItemSize) as NSCollectionLayoutBoundarySupplementaryItem;
+		// Setup the header/footer views
+		// The header/footer will use the same size as the group itself so it spans the size of it
+		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(
+			groupingInfo,
+			scrollDirection,
+			groupWidth,
+			groupHeight);
 
-		//layoutConfig.BoundarySupplementaryItems = new [] { headerItem! };
-			
 		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 		{
-			var columns = gridItemsLayout.Span; // sectionIndex == 0 ? 2 : 4
-
-			var itemSize = NSCollectionLayoutSize.Create(
-				NSCollectionLayoutDimension.CreateFractionalWidth(1f / columns),
-				NSCollectionLayoutDimension.CreateEstimated(30f));
+			// Each item has a size
+			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
+			// Create the item itself from the size
 			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
+			
+			// Each group of items (for grouped collections) has a size
+			var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
 
-			var groupSize = NSCollectionLayoutSize.Create(NSCollectionLayoutDimension.CreateFractionalWidth(1f),
-				NSCollectionLayoutDimension.CreateEstimated(30f));
-
-			var group = NSCollectionLayoutGroup.CreateHorizontal(layoutSize: groupSize,
-				subitem: item,
-				count: columns);
-
-			var section = NSCollectionLayoutSection.Create(group: group);
-
-			return section;
+			// Create the group
+			// If vertical list, we want the group to layout horizontally (eg: grid columns go left to right)
+			// for horizontal list, we want to lay grid rows out vertically
+			// For simple lists it doesn't matter so much since the items span the entire width or height
+			var group = scrollDirection == UICollectionViewScrollDirection.Vertical
+				? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, columns)
+				: NSCollectionLayoutGroup.CreateVertical(groupSize, item, columns);
+			
+			// Create our section layout
+			return NSCollectionLayoutSection.Create(group: group);
 		}, layoutConfiguration);
 
 		return layout;
 	}
-	
-	
-	public static UICollectionViewLayout CreateHorizontalGrid(GridItemsLayout gridItemsLayout)
-	{
-		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
-		layoutConfiguration.ScrollDirection = UICollectionViewScrollDirection.Horizontal;
-		
-		var headerItemSize = NSCollectionLayoutSize.Create(NSCollectionLayoutDimension.CreateEstimated(30f),
+
+	public static UICollectionViewLayout CreateVerticalList(LinearItemsLayout linearItemsLayout,
+		LayoutGroupingInfo groupingInfo)
+		=> CreateLayout(UICollectionViewScrollDirection.Vertical,
+			groupingInfo,
+			// Fill the width
+			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
+			// Dynamic (estimate required)
+			NSCollectionLayoutDimension.CreateEstimated(30f),
+			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
+			NSCollectionLayoutDimension.CreateEstimated(30f));
+
+
+	public static UICollectionViewLayout CreateHorizontalList(LinearItemsLayout linearItemsLayout,
+		LayoutGroupingInfo groupingInfo)
+		=> CreateLayout(UICollectionViewScrollDirection.Horizontal,
+			groupingInfo,
+			// Dynamic, estimated width
+			NSCollectionLayoutDimension.CreateEstimated(30f),
+			// Fill the height for horizontal
+			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
+			NSCollectionLayoutDimension.CreateEstimated(30f),
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f));
-		var headerItem = NSCollectionLayoutBoundarySupplementaryItem.Create(layoutSize: headerItemSize) as NSCollectionLayoutBoundarySupplementaryItem;
-
-		//layoutConfig.BoundarySupplementaryItems = new [] { headerItem! };
-			
-		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
-		{
-			var rows = gridItemsLayout.Span; // sectionIndex == 0 ? 2 : 4
-			var itemSize = NSCollectionLayoutSize.Create(
-				NSCollectionLayoutDimension.CreateEstimated(30f),
-				NSCollectionLayoutDimension.CreateFractionalHeight(1f / rows));
-			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
-
-			var groupSize = NSCollectionLayoutSize.Create(NSCollectionLayoutDimension.CreateEstimated(30f),
-				NSCollectionLayoutDimension.CreateFractionalHeight(1f));
-
-			var group = NSCollectionLayoutGroup.CreateVertical(layoutSize: groupSize,
-				subitem: item,
-				count: rows);
-
-			var section = NSCollectionLayoutSection.Create(group: group);
-
-			return section;
-		}, layoutConfiguration);
-
-		return layout;
-	}
+	
+	public static UICollectionViewLayout CreateVerticalGrid(GridItemsLayout gridItemsLayout,
+		LayoutGroupingInfo groupingInfo)
+		=> CreateLayout(UICollectionViewScrollDirection.Vertical,
+			groupingInfo,
+			// Width is the number of columns
+			NSCollectionLayoutDimension.CreateFractionalWidth(1f / gridItemsLayout.Span),
+			// Height is dynamic, estimated
+			NSCollectionLayoutDimension.CreateEstimated(30f),
+			// Group spans all columns, full width for vertical
+			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
+			// Group is dynamic height for vertical
+			NSCollectionLayoutDimension.CreateEstimated(30f),
+			gridItemsLayout.Span);
+	
+	
+	public static UICollectionViewLayout CreateHorizontalGrid(GridItemsLayout gridItemsLayout,
+		LayoutGroupingInfo groupingInfo)
+		=> CreateLayout(UICollectionViewScrollDirection.Horizontal,
+			groupingInfo,
+			// Item width is estimated
+			NSCollectionLayoutDimension.CreateEstimated(30f),
+			// Item height is number of rows
+			NSCollectionLayoutDimension.CreateFractionalHeight(1f / gridItemsLayout.Span),
+			// Group width is dynamic for horizontal
+			NSCollectionLayoutDimension.CreateEstimated(30f),
+			// Group spans all rows, full height for horizontal
+			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
+			gridItemsLayout.Span);
+	
 }

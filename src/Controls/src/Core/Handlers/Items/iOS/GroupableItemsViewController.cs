@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateDefaultSupplementaryView(DefaultCell cell, NSString elementKind, NSIndexPath indexPath)
 		{
-			cell.Label.Text = ItemsSource.Group(indexPath).ToString();
+			cell.Label.Text = ItemsSource?.Group(indexPath)?.ToString();
 
 			// if (cell is ItemsViewCell)
 			// {

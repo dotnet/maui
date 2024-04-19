@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				=> new CarouselViewController(newElement, layout);
 
 		protected override UICollectionViewLayout SelectLayout() =>
-				_layout ??= LayoutFactory.CreateCarousel(VirtualView.ItemsLayout);
+				_layout ??= LayoutFactory.CreateCarousel(VirtualView.ItemsLayout, new LayoutGroupingInfo());
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
