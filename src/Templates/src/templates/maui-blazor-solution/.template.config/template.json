@@ -45,12 +45,6 @@
             ]
           },
           {
-            "condition": "(UseWebAssembly && InteractiveAtRoot)",
-            "rename": {
-              "MauiApp.1.Web/Components/Routes.razor": "./MauiApp.1.Web.Client/Routes.razor"
-            }
-          },
-          {
             "condition": "(!UseProgramMain)",
             "exclude": [
               "MauiApp.1.Web/Program.Main.cs",
@@ -74,15 +68,19 @@
             ]
           },
           {
+            "condition": "(InteractivityPlatform == \"None\")",
+            "exclude": [
+                "MauiApp.1.Shared/Pages/Counter.*"
+            ]
+          },
+            {
             "condition": "(!SampleContent)",
             "exclude": [
-              "MauiApp.1.Web/Components/Pages/Auth.*",
-              "MauiApp.1.Web/Components/Pages/Counter.*",
-              "MauiApp.1.Web/Components/Pages/Weather.*",
-              "MauiApp.1.Web/Components/Layout/NavMenu.*",
-              "MauiApp.1.Web/wwwroot/bootstrap/**",
-              "MauiApp.1.Web/wwwroot/favicon.*",
-              "MauiApp.1.Web.Client/Pages/**",
+              "MauiApp.1.Shared/Pages/Counter.*",
+              "MauiApp.1.Shared/Pages/Weather.*",
+              "MauiApp.1.Shared/Layout/NavMenu.*",
+              "MauiApp.1.Shared/wwwroot/bootstrap/**",
+              "MauiApp.1.Shared/wwwroot/favicon.*",
               "MauiApp.1.Web.Client/wwwroot/**"
             ]
           },
@@ -91,88 +89,6 @@
             "exclude": [
               "*.sln"
             ]
-          },
-          {
-            "condition": "(!IndividualLocalAuth)",
-            "exclude": [
-              "MauiApp.1.Web/Components/Account/**",
-              "MauiApp.1.Web/Data/**",
-              "MauiApp.1.Web.Client/PersistentAuthenticationStateProvider.cs",
-              "MauiApp.1.Web.Client/UserInfo.cs",
-              "MauiApp.1.Web.Client/Pages/Auth.razor"
-            ]
-          },
-          {
-            "condition": "(!(IndividualLocalAuth && !UseLocalDB))",
-            "exclude": [
-              "MauiApp.1.Web/Data/app.db"
-            ]
-          },
-          {
-            "condition": "(!(IndividualLocalAuth && !UseWebAssembly))",
-            "exclude": [
-              "MauiApp.1.Web/Components/Pages/Auth.razor"
-            ]
-          },
-          {
-            "condition": "(!(IndividualLocalAuth && UseServer && UseWebAssembly))",
-            "exclude": [
-              "MauiApp.1.Web/Components/Account/PersistingRevalidatingAuthenticationStateProvider.cs"
-            ]
-          },
-          {
-            "condition": "(!(IndividualLocalAuth && UseServer && !UseWebAssembly))",
-            "exclude": [
-              "MauiApp.1.Web/Components/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
-            ]
-          },
-          {
-            "condition": "(!(IndividualLocalAuth && !UseServer && UseWebAssembly))",
-            "exclude": [
-              "MauiApp.1.Web/Components/Account/PersistingServerAuthenticationStateProvider.cs"
-            ]
-          },
-          {
-            "condition": "(IndividualLocalAuth && UseLocalDB && UseWebAssembly)",
-            "rename": {
-              "MauiApp.1.Web/Data/SqlServer/": "MauiApp.1.Web/Data/Migrations/"
-            },
-            "exclude": [
-              "MauiApp.1.Web/Data/SqlLite/**"
-            ]
-          },
-          {
-            "condition": "(IndividualLocalAuth && UseLocalDB && !UseWebAssembly)",
-            "rename": {
-              "MauiApp.1.Web/Data/SqlServer/": "Data/Migrations/"
-            },
-            "exclude": [
-              "MauiApp.1.Web/Data/SqlLite/**"
-            ]
-          },
-          {
-            "condition": "(IndividualLocalAuth && !UseLocalDB && UseWebAssembly)",
-            "rename": {
-              "MauiApp.1.Web/Data/SqlLite/": "MauiApp.1.Web/Data/Migrations/"
-            },
-            "exclude": [
-              "MauiApp.1.Web/Data/SqlServer/**"
-            ]
-          },
-          {
-            "condition": "(IndividualLocalAuth && !UseLocalDB && !UseWebAssembly)",
-            "rename": {
-              "MauiApp.1.Web/Data/SqlLite/": "Data/Migrations/"
-            },
-            "exclude": [
-              "MauiApp.1.Web/Data/SqlServer/**"
-            ]
-          },
-          {
-            "condition": "(IndividualLocalAuth && UseWebAssembly)",
-            "rename": {
-              "MauiApp.1.Web/Components/Account/Shared/RedirectToLogin.razor": "MauiApp.1.Web.Client/RedirectToLogin.razor"
-            }
           }
         ]
     }
