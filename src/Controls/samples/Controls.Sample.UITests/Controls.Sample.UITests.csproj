@@ -23,6 +23,7 @@
     <PublishAot>true</PublishAot>
     <_IsPublishing>true</_IsPublishing>
     <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
+    <WarningsNotAsErrors>IL3050;XC0022</WarningsNotAsErrors>
     <DefineConstants>$(DefineConstants);NATIVE_AOT</DefineConstants>
   </PropertyGroup>
 
