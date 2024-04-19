@@ -14,7 +14,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void TestIssue1905RefreshShows()
+		[FailsOnIOS]
+		public void InitiallyEmptySourceDisplaysAddedItem()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 

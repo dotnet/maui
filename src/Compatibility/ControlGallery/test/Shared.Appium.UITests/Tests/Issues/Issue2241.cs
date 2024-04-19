@@ -1,5 +1,6 @@
 ﻿#if IOS
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -24,7 +25,7 @@ namespace UITests
 			var grid2 = RunningApp.FindElement("MainGrid").GetRect();
 			RunningApp.Screenshot("Did it resize ok? Do you see some white on the bottom?");
 
-			Assert.Equals(grid1.CenterY(), grid2.CenterY());
+			ClassicAssert.AreEqual(grid1.CenterY(), grid2.CenterY());
 		}
 	}
 }

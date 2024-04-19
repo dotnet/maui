@@ -12,16 +12,6 @@ namespace UITests
 		public override string Issue => "[iOS] Popped page does not appear on top of current navigation stack, please file a bug.";
 		public override bool ResetMainPage => false;
 
-		[Test]
-		[Category(UITestCategories.LifeCycle)]
-		public void AppDoesntCrashWhenResettingPage()
-		{
-			this.IgnoreIfPlatform(TestDevice.Android, "MultiWindowService not implemented.");
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
-			RunningApp.WaitForElement("Success");
-		}
-
 		// Test scenario: Tapping the GoBack link triggers a PopAsync 2500ms after the tap event.
 		//   Right before PopAsync is triggered, manually navigate back pressing the back arrow in the navigation bar
 

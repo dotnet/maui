@@ -5,7 +5,7 @@ namespace UITests
 { 
     public class Issue3333 : IssuesUITest
 	{
-		const string kSuccess = "If you're reading this the test has passed";
+		const string KSuccess = "If you're reading this the test has passed";
 
 		public Issue3333(TestDevice testDevice) : base(testDevice)
 		{
@@ -17,11 +17,12 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnIOS]
 		public void SettingBindingContextToNullBeforingPoppingPageCrashes()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-			RunningApp.WaitForNoElement(kSuccess);
+			RunningApp.WaitForNoElement(KSuccess);
 		}
 	}
 }

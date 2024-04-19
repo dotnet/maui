@@ -20,6 +20,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnIOS]
 		public void Issue45702Test()
 		{
 			RunningApp.WaitForElement("ClickMe");

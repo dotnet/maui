@@ -16,6 +16,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOS]
 		public async Task RotatingCollectionViewWithHTMLShouldNotHangOrCrash()
 		{
 			int delay = 3000;

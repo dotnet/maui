@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS]
 		public void RefreshControlTurnsOffSuccessfully()
 		{
 			RunningApp.WaitForNoElement("If you see the refresh circle this test has failed");

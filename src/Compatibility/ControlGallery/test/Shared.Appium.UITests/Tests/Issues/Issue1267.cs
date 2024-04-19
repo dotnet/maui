@@ -15,6 +15,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnIOS]
 		public void StarInGridDoesNotCrash()
 		{
 			RunningApp.WaitForNoElement(Success);

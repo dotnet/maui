@@ -14,7 +14,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[FailsOnIOS]
-		public void AppDoesntCrashWhenResettingPage()
+		public void Issue1Test()
 		{
 			RunningApp.WaitForElement("TapMe");
 			RunningApp.Tap("TapMe"); // Crashes the app if the issue isn't fixed

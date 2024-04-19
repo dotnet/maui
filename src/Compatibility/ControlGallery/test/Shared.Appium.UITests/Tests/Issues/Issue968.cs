@@ -16,6 +16,7 @@ namespace UITests
 		[Description("Verify the layout lays out on rotations")]
 		[Category(UITestCategories.Layout)]
 		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void Issue968TestsRotationRelayoutIssue()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);

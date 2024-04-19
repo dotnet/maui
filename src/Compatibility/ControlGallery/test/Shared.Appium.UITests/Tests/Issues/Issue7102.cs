@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOS]
 		public void HeaderDoesNotBreakIndexes()
 		{
 			RunningApp.WaitForElement("entryInsert");

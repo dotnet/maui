@@ -14,7 +14,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[FailsOnIOS]
-		public void AppDoesntCrashWhenResettingPage()
+		public void Issue1Test()
 		{
 			RunningApp.WaitForElement("ListView");
 			RunningApp.ScrollDown("ListView");

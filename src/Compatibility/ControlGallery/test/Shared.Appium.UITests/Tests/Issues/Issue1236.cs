@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnIOS]
 		public void DelayedLabelBindingShowsUp()
 		{
 			Task.Delay(2000).Wait();

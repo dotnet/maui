@@ -18,7 +18,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[FailsOnIOS]
-		public void AppDoesntCrashWhenResettingPage()
+		public void Bugzilla56771Test()
 		{
 			RunningApp.WaitForElement(BtnAdd);
 			RunningApp.Tap(BtnAdd);

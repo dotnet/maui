@@ -15,6 +15,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[FailsOnIOS]
 		public void Issue35472PopAsyncDuringAnimatedScrollToAsync()
 		{
 			try

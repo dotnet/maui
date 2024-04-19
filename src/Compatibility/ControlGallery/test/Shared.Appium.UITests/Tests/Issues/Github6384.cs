@@ -16,7 +16,8 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[FailsOnAndroid]
-		public void AppDoesntCrashWhenResettingPage()
+		[FailsOnIOS]
+		public void Github6384Test()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 

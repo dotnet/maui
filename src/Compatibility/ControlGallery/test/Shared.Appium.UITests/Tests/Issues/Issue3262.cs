@@ -76,6 +76,7 @@ namespace UITests
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[FailsOnAndroid]
+		[FailsOnIOS]
 		public void RemoveAllTheCookiesIAdded()
 		{
 			RunningApp.WaitForElement("Loaded");

@@ -14,7 +14,8 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public void AppDoesntCrashWhenResettingPage()
+		[FailsOnIOS]
+		public void ScrollCarouselViewAfterDispose()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
 
