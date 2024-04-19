@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
+using CoreImage;
 using Foundation;
 using ImageIO;
 using Microsoft.Maui.Graphics;
@@ -146,10 +147,31 @@ namespace Microsoft.Maui
 				if (cgimage is null)
 					throw new InvalidOperationException("Unable to create CGImage from CGImageSource.");
 
-				image = new UIImage(cgimage, scale, UIImageOrientation.Up);
+				image = new UIImage(cgimage, scale, ToUIImageOrientation(cgImageSource));
 			}
 
 			return image;
 		}
+
+		static UIImageOrientation ToUIImageOrientation(CGImageSource cgImageSource)
+		{
+			var props = cgImageSource.GetProperties(0);
+			if (props is null || props.Orientation is null)
+				return UIImageOrientation.Up;
+			
+			return ToUIImageOrientation(props.Orientation.Value);
+		}
+
+		static UIImageOrientation ToUIImageOrientation(CIImageOrientation cgOrient) => cgOrient switch {
+			CIImageOrientation.TopLeft => UIImageOrientation.Up,
+			CIImageOrientation.TopRight => UIImageOrientation.UpMirrored,
+			CIImageOrientation.BottomRight => UIImageOrientation.Down,
+			CIImageOrientation.BottomLeft => UIImageOrientation.DownMirrored,
+			CIImageOrientation.LeftTop => UIImageOrientation.LeftMirrored,
+			CIImageOrientation.RightTop => UIImageOrientation.Right,
+			CIImageOrientation.RightBottom => UIImageOrientation.RightMirrored,
+			CIImageOrientation.LeftBottom => UIImageOrientation.Left,
+			_ => throw new ArgumentOutOfRangeException(nameof (cgOrient)),
+		};
 	}
 }

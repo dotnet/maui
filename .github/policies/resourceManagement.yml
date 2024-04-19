@@ -579,5 +579,15 @@ configuration:
       - removeLabel:
           label: s/try-latest-version
       description: Remove 's/try-latest-version' when new reply from author comes in
+    - if:
+      - payloadType: Issues
+      - activitySenderHasPermission:
+          permission: Write
+      - isAction:
+          action: Opened
+      then:
+      - addLabel:
+          label: s/triaged
+      description: Add 's/triaged' label to issues opened by the core team, we assume these issues do not need triaging
 onFailure: 
 onSuccess: 

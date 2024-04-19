@@ -34,7 +34,8 @@
             <Button
                 AutomationId="button"
                 Text="Update text"
-                Clicked="Button_Clicked"/>
+                Clicked="Button_Clicked"
+                x:Name="button"/>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

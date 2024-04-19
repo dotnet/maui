@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Drawing;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interfaces;
 using UITest.Core;
 
@@ -602,6 +603,15 @@ namespace UITest.Appium
 
 			var activeElement = aaa.Driver.SwitchTo().ActiveElement();
 			var element = (AppiumDriverElement)app.WaitForElement(id);
+
+			if (app.GetTestDevice() == TestDevice.Mac && activeElement is AppiumElement activeAppiumElement)
+			{
+				// For some reason on catalyst the ActiveElement returns an AppiumElement with a different id
+				// The TagName (AutomationId) and the location all match, so, other than the Id it walks and talks
+				// like the same element
+				return element.AppiumElement.TagName.Equals(activeAppiumElement.TagName, StringComparison.OrdinalIgnoreCase) &&
+					element.AppiumElement.Location.Equals(activeAppiumElement.Location);
+			}
 
 			return element.AppiumElement.Equals(activeElement);
 		}
