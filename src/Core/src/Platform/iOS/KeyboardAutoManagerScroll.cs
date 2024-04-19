@@ -415,7 +415,6 @@ public static class KeyboardAutoManagerScroll
 
 		else if (cursorRect.Y >= topBoundary && cursorRect.Y < bottomBoundary)
 		{
-			IsKeyboardAutoScrollHandling = false;
 			return;
 		}
 
