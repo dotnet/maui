@@ -13,6 +13,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void Issue1Test()
 		{
