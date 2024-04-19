@@ -14,11 +14,11 @@ public class BindingCodeWriterTests
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
-            Path: [
+            Path: new EquatableArray<IPathPart>([
                 new MemberAccess("A"),
                 new ConditionalAccess(new MemberAccess("B")),
                 new ConditionalAccess(new MemberAccess("C")),
-            ],
+            ]),
             SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
 
         var code = codeWriter.GenerateCode();
@@ -135,11 +135,11 @@ public class BindingCodeWriterTests
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
-            Path: [
+            Path: new EquatableArray<IPathPart>([
                 new MemberAccess("A"),
                 new ConditionalAccess(new MemberAccess("B")),
                 new ConditionalAccess(new MemberAccess("C")),
-            ],
+            ]),
             SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
 
         var code = codeBuilder.ToString();
@@ -205,11 +205,11 @@ public class BindingCodeWriterTests
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
-            Path: [
+            Path: new EquatableArray<IPathPart>([
                 new MemberAccess("A"),
                 new MemberAccess("B"),
                 new MemberAccess("C"),
-            ],
+            ]),
             SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
 
         var code = codeBuilder.ToString();
@@ -271,11 +271,11 @@ public class BindingCodeWriterTests
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
-            Path: [
+            Path: new EquatableArray<IPathPart>([
                 new MemberAccess("A"),
                 new MemberAccess("B"),
                 new MemberAccess("C"),
-            ],
+            ]),
             SetterOptions: new(IsWritable: false)));
 
         var code = codeBuilder.ToString();
@@ -334,11 +334,11 @@ public class BindingCodeWriterTests
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true, IsGenericParameter: false),
-            Path: [
+            Path: new EquatableArray<IPathPart>([
                 new IndexAccess("Item", 12),
                 new ConditionalAccess(new IndexAccess("Indexer", "Abc")),
                 new IndexAccess("Item", 0),
-            ],
+            ]),
             SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
 
         var code = codeBuilder.ToString();
@@ -408,7 +408,7 @@ public class BindingCodeWriterTests
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
-            Path: [
+            Path: new EquatableArray<IPathPart>([
                 new MemberAccess("A"),
                 new Cast(new TypeDescription("X", IsValueType: false, IsNullable: false, IsGenericParameter: false)),
                 new ConditionalAccess(new MemberAccess("B")),
@@ -416,7 +416,7 @@ public class BindingCodeWriterTests
                 new ConditionalAccess(new MemberAccess("C")),
                 new Cast(new TypeDescription("Z", IsValueType: true, IsNullable: true, IsGenericParameter: false)),
                 new ConditionalAccess(new MemberAccess("D")),
-            ],
+            ]),
             SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
 
         var code = codeBuilder.ToString();

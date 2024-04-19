@@ -25,7 +25,7 @@ internal static class AssertExtensions
 
         //TODO: Change arrays to custom collections implementing IEquatable
         Assert.Equal(expectedBinding.Path, codeGeneratorResult.Binding.Path);
-        Assert.Equivalent(expectedBinding, codeGeneratorResult.Binding, strict: true);
+        Assert.Equal(expectedBinding, codeGeneratorResult.Binding);
     }
 
     private static IEnumerable<string> SplitCode(string code)

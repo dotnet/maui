@@ -279,7 +279,7 @@ public sealed class BindingCodeWriter
 			}
 		}
 
-		private void AppendHandlersArray(TypeDescription sourceType, IPathPart[] path)
+		private void AppendHandlersArray(TypeDescription sourceType, EquatableArray<IPathPart> path)
 		{
 			AppendLine($"new Tuple<Func<{sourceType}, object?>, string>[]");
 			AppendLine('{');

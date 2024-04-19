@@ -4,15 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
-public static class EquatableArray
-{
-    public static EquatableArray<T> AsEquatableArray<T>(this T[] array)
-        where T : IEquatable<T>
-    {
-        return new(array);
-    }
-}
-
 public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnumerable<T>
     where T : IEquatable<T>
 {
@@ -69,11 +60,6 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnume
     public ImmutableArray<T> AsImmutableArray()
     {
         return Unsafe.As<T[]?, ImmutableArray<T>>(ref Unsafe.AsRef(in this.array));
-    }
-
-    public static EquatableArray<T> FromImmutableArray(ImmutableArray<T> array)
-    {
-        return new(array);
     }
 
     public ReadOnlySpan<T> AsSpan()

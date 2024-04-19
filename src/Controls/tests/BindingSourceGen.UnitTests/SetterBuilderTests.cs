@@ -21,7 +21,7 @@ public class SetterBuilderTests
     [Fact]
     public void GeneratesSetterWithSourceNotNullPatternMatchingForSignlePathStepWhenSourceTypeIsNullable()
     {
-        var setter = Setter.From(NullableType, [new MemberAccess("A")]);
+        var setter = Setter.From(NullableType, new EquatableArray<IPathPart>([new MemberAccess("A")]));
 
         Assert.Single(setter.PatternMatchingExpressions);
         Assert.Equal("source is {} p0", setter.PatternMatchingExpressions[0]);
@@ -31,7 +31,7 @@ public class SetterBuilderTests
     [Fact]
     public void GeneratesSetterWithoutAnyPatternMatchingForSignlePathStepWhenSourceTypeIsNotNullable()
     {
-        var setter = Setter.From(NonNullableType, [new MemberAccess("A")]);
+        var setter = Setter.From(NonNullableType, new EquatableArray<IPathPart>([new MemberAccess("A")]));
 
         Assert.Empty(setter.PatternMatchingExpressions);
         Assert.Equal("source.A = value;", setter.AssignmentStatement);
@@ -40,12 +40,12 @@ public class SetterBuilderTests
     [Fact]
     public void GeneratesSetterWithCorrectConditionalAccess()
     {
-        var setter = Setter.From(NonNullableType, 
-            [
+        var setter = Setter.From(NonNullableType,
+            new EquatableArray<IPathPart>([
                 new MemberAccess("A"),
                 new ConditionalAccess(new MemberAccess("B")),
                 new ConditionalAccess(new MemberAccess("C")),
-            ]);
+            ]));
 
         Assert.Equal(2, setter.PatternMatchingExpressions.Length);
         Assert.Equal("source.A is {} p0", setter.PatternMatchingExpressions[0]);
@@ -56,15 +56,15 @@ public class SetterBuilderTests
     [Fact]
     public void GeneratesSetterWithPatternMatchingWithValueTypeCast1()
     {
-        var setter = Setter.From(NonNullableType, 
-            [
+        var setter = Setter.From(NonNullableType,
+            new EquatableArray<IPathPart>([
                 new MemberAccess("A"),
                 new Cast(new TypeDescription("X", IsValueType: false)),
                 new ConditionalAccess(new MemberAccess("B")),
                 new Cast(new TypeDescription("Y", IsValueType: true)),
                 new ConditionalAccess(new MemberAccess("C")),
                 new MemberAccess("D"),
-            ]);
+            ]));
 
         Assert.Equal(2, setter.PatternMatchingExpressions.Length);
         Assert.Equal("source.A is X p0", setter.PatternMatchingExpressions[0]);
@@ -75,15 +75,15 @@ public class SetterBuilderTests
     [Fact]
     public void GeneratesSetterWithPatternMatchingWithValueTypeCast2()
     {
-        var setter = Setter.From(NonNullableType, 
-            [
+        var setter = Setter.From(NonNullableType,
+            new EquatableArray<IPathPart>([
                 new MemberAccess("A"),
                 new Cast(new TypeDescription("X", IsValueType: false)),
                 new ConditionalAccess(new MemberAccess("B")),
                 new Cast(new TypeDescription("Y", IsValueType: true)),
                 new ConditionalAccess(new MemberAccess("C")),
                 new ConditionalAccess(new MemberAccess("D")),
-            ]);
+            ]));
 
         Assert.Equal(3, setter.PatternMatchingExpressions.Length);
         Assert.Equal("source.A is X p0", setter.PatternMatchingExpressions[0]);
@@ -95,8 +95,8 @@ public class SetterBuilderTests
     [Fact]
     public void GeneratesSetterWithPatternMatchingWithCastsAndConditionalAccess()
     {
-        var setter = Setter.From(NonNullableType, 
-            [
+        var setter = Setter.From(NonNullableType,
+            new EquatableArray<IPathPart>([
                 new MemberAccess("A"),
                 new Cast(TargetType: new TypeDescription("X", IsValueType: false, IsNullable: false, IsGenericParameter: false)),
                 new ConditionalAccess(new MemberAccess("B")),
@@ -104,7 +104,7 @@ public class SetterBuilderTests
                 new ConditionalAccess(new MemberAccess("C")),
                 new Cast(new TypeDescription("Z", IsValueType: true, IsNullable: true, IsGenericParameter: false)),
                 new ConditionalAccess(new MemberAccess("D")),
-            ]);
+            ]));
 
         Assert.Equal(3, setter.PatternMatchingExpressions.Length);
         Assert.Equal("source.A is X p0", setter.PatternMatchingExpressions[0]);

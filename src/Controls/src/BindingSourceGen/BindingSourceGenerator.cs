@@ -8,10 +8,6 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 [Generator(LanguageNames.CSharp)]
 public class BindingSourceGenerator : IIncrementalGenerator
 {
-	// TODO:
-	// Edge cases
-	// Optimizations
-
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		var bindingsWithDiagnostics = context.SyntaxProvider.CreateSyntaxProvider(
@@ -68,7 +64,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var sourceCodeLocation = SourceCodeLocation.CreateFrom(method.Name.GetLocation());
 		if (sourceCodeLocation == null)
 		{
-			return ReportDiagnostics([DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation())]);
+			return ReportDiagnostic(DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation()));
 		}
 
 		var overloadDiagnostics = VerifyCorrectOverload(invocation, context, t);
@@ -88,7 +84,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var lambdaTypeInfo = context.SemanticModel.GetTypeInfo(lambdaBody, t);
 		if (lambdaTypeInfo.Type == null)
 		{
-			return ReportDiagnostics([DiagnosticsFactory.UnableToResolvePath(lambdaBody.GetLocation())]); // TODO: New diagnostic
+			return ReportDiagnostic(DiagnosticsFactory.UnableToResolvePath(lambdaBody.GetLocation()));
 		}
 
 		var pathParser = new PathParser(context);
@@ -102,44 +98,44 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			Location: sourceCodeLocation.ToInterceptorLocation(),
 			SourceType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
 			PropertyType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaTypeInfo.Type, enabledNullable),
-			Path: parts.ToArray(),
+			Path: new EquatableArray<IPathPart>([.. parts]),
 			SetterOptions: DeriveSetterOptions(lambdaBody, context.SemanticModel, enabledNullable));
-		return new BindingDiagnosticsWrapper(codeWriterBinding, diagnostics.ToArray());
+		return new BindingDiagnosticsWrapper(codeWriterBinding, new EquatableArray<DiagnosticInfo>([.. diagnostics]));
 	}
 
-	private static DiagnosticInfo[] VerifyCorrectOverload(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
+	private static EquatableArray<DiagnosticInfo> VerifyCorrectOverload(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
 	{
 		var argumentList = invocation.ArgumentList.Arguments;
 		if (argumentList.Count < 2)
 		{
-			return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
+			return new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())]);
 		}
 
 		var getter = argumentList[1].Expression;
 		if (getter is not LambdaExpressionSyntax)
 		{
-			return [DiagnosticsFactory.SuboptimalSetBindingOverload(getter.GetLocation())];
+			return new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.SuboptimalSetBindingOverload(getter.GetLocation())]);
 		}
 
-		return Array.Empty<DiagnosticInfo>();
+		return [];
 	}
 
-	private static (ExpressionSyntax? lambdaBodyExpression, IMethodSymbol? lambdaSymbol, DiagnosticInfo[] diagnostics) GetLambda(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+	private static (ExpressionSyntax? lambdaBodyExpression, IMethodSymbol? lambdaSymbol, EquatableArray<DiagnosticInfo> diagnostics) GetLambda(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
 	{
 		var argumentList = invocation.ArgumentList.Arguments;
 		var lambda = (LambdaExpressionSyntax)argumentList[1].Expression;
 
 		if (lambda.Body is not ExpressionSyntax lambdaBody)
 		{
-			return (null, null, [DiagnosticsFactory.GetterLambdaBodyIsNotExpression(lambda.Body.GetLocation())]);
+			return (null, null, new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.GetterLambdaBodyIsNotExpression(lambda.Body.GetLocation())]));
 		}
 
 		if (semanticModel.GetSymbolInfo(lambda).Symbol is not IMethodSymbol lambdaSymbol)
 		{
-			return (null, null, [DiagnosticsFactory.GetterIsNotLambda(lambda.GetLocation())]);
+			return (null, null, new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.GetterIsNotLambda(lambda.GetLocation())]));
 		}
 
-		return (lambdaBody, lambdaSymbol, Array.Empty<DiagnosticInfo>());
+		return (lambdaBody, lambdaSymbol, []);
 	}
 
 	private static SetterOptions DeriveSetterOptions(ExpressionSyntax? lambdaBodyExpression, SemanticModel semanticModel, bool enabledNullable)
@@ -193,10 +189,11 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			};
 	}
 
-	private static BindingDiagnosticsWrapper ReportDiagnostics(DiagnosticInfo[] diagnostics) => new(null, diagnostics);
+	private static BindingDiagnosticsWrapper ReportDiagnostics(EquatableArray<DiagnosticInfo> diagnostics) => new(null, diagnostics);
+	private static BindingDiagnosticsWrapper ReportDiagnostic(DiagnosticInfo diagnostic) => new(null, new EquatableArray<DiagnosticInfo>([diagnostic]));
 }
 
-internal class TrackingNames
+public class TrackingNames
 {
 	public const string BindingsWithDiagnostics = nameof(BindingsWithDiagnostics);
 	public const string Bindings = nameof(Bindings);
@@ -204,13 +201,13 @@ internal class TrackingNames
 
 public sealed record BindingDiagnosticsWrapper(
 	CodeWriterBinding? Binding,
-	DiagnosticInfo[] Diagnostics); // TODO: use an "equatable array" type
+	EquatableArray<DiagnosticInfo> Diagnostics);
 
 public sealed record CodeWriterBinding(
 	InterceptorLocation Location,
 	TypeDescription SourceType,
 	TypeDescription PropertyType,
-	IPathPart[] Path, // TODO: use an "equatable array" type
+	EquatableArray<IPathPart> Path,
 	SetterOptions SetterOptions);
 
 public sealed record SourceCodeLocation(string FilePath, TextSpan TextSpan, LinePositionSpan LineSpan)
@@ -220,7 +217,7 @@ public sealed record SourceCodeLocation(string FilePath, TextSpan TextSpan, Line
 			? null
 			: new SourceCodeLocation(location.SourceTree.FilePath, location.SourceSpan, location.GetLineSpan().Span);
 
-	public Location ToLocation() 
+	public Location ToLocation()
 	{
 		return Location.Create(FilePath, TextSpan, LineSpan);
 	}
@@ -250,24 +247,44 @@ public sealed record SetterOptions(bool IsWritable, bool AcceptsNullValue = fals
 public sealed record MemberAccess(string MemberName) : IPathPart
 {
 	public string? PropertyName => MemberName;
+
+	public bool Equals(IPathPart other)
+	{
+		return other is MemberAccess memberAccess && MemberName == memberAccess.MemberName;
+	}
 }
 
 public sealed record IndexAccess(string DefaultMemberName, object Index) : IPathPart
 {
 	public string? PropertyName => $"{DefaultMemberName}[{Index}]";
+
+	public bool Equals(IPathPart other)
+	{
+		return other is IndexAccess indexAccess && DefaultMemberName == indexAccess.DefaultMemberName && Index.Equals(indexAccess.Index);
+	}
 }
 
 public sealed record ConditionalAccess(IPathPart Part) : IPathPart
 {
 	public string? PropertyName => Part.PropertyName;
+
+	public bool Equals(IPathPart other)
+	{
+		return other is ConditionalAccess conditionalAccess && Part.Equals(conditionalAccess.Part);
+	}
 }
 
 public sealed record Cast(TypeDescription TargetType) : IPathPart
 {
 	public string? PropertyName => null;
+
+	public bool Equals(IPathPart other)
+	{
+		return other is Cast cast && TargetType.Equals(cast.TargetType);
+	}
 }
 
-public interface IPathPart
+public interface IPathPart : IEquatable<IPathPart>
 {
 	public string? PropertyName { get; }
 }

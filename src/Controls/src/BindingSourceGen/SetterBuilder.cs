@@ -7,7 +7,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 {
     public static Setter From(
         TypeDescription sourceTypeDescription,
-        IPathPart[] path,
+        EquatableArray<IPathPart> path,
         string sourceVariableName = "source",
         string assignedValueExpression = "value")
     {
