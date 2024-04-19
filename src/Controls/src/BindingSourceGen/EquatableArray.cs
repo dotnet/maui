@@ -4,6 +4,9 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
+// Original source:
+// https://github.com/CommunityToolkit/dotnet/blob/main/src/CommunityToolkit.Mvvm.SourceGenerators/Helpers/EquatableArray%7BT%7D.cs
+
 public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnumerable<T>
     where T : IEquatable<T>
 {
