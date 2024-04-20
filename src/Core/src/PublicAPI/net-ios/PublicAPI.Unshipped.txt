@@ -14,6 +14,7 @@ Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.
 Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.HybridWebViewInvokeJavaScriptRequest(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo? returnTypeJsonTypeInfo, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos) -> void
+override Microsoft.Maui.Platform.MauiShapeView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.MethodName.get -> string!
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamJsonTypeInfos.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]?
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamValues.get -> object?[]?

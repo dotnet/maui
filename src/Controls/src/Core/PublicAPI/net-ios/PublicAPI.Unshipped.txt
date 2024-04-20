@@ -203,6 +203,7 @@ const Microsoft.Maui.Controls.TitleBar.TrailingHiddenState = "TrailingContentCol
 const Microsoft.Maui.Controls.TitleBar.TrailingVisibleState = "TrailingContentVisible" -> string!
 Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 Microsoft.Maui.Controls.HandlerProperties
+override Microsoft.Maui.Controls.Handlers.BoxViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 *REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker
 *REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.Dispose() -> void
 *REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.OnLayoutSubviews() -> void

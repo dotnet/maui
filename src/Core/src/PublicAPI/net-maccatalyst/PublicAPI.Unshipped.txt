@@ -12,6 +12,7 @@ Microsoft.Maui.Handlers.IHybridWebViewHandler
 Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> WebKit.WKWebView!
 Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
 Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions
+override Microsoft.Maui.Platform.MauiShapeView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.HybridWebViewInvokeJavaScriptRequest(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo? returnTypeJsonTypeInfo, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos) -> void
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.MethodName.get -> string!
