@@ -714,8 +714,6 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateDragAndDropGestureRecognizers();
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
-			IList<TapGestureRecognizer>? childGestures =
-				children?.GetChildGesturesFor<TapGestureRecognizer>().ToList();
 
 			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1)
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
