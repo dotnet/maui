@@ -23,6 +23,13 @@ namespace Microsoft.Maui.Controls.Platform
 		FrameworkElement? _control;
 		VisualElement? _element;
 
+		bool _areContainerDragEventsSubscribed;
+		bool _areContainerDropEventsSubscribed;
+		bool _areContainerPgrPointerEventsSubscribed;
+		bool _areContainerManipulationAndPointerEventsSubscribed;
+		bool _areContainerTapAndRightTabEventSubscribed;
+		bool _isContainerDoubleTapEventSubscribed;
+
 		bool _isDisposed;
 		bool _isPanning;
 		bool _isSwiping;
@@ -310,24 +317,61 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_container != null)
 			{
-				_container.DragStarting -= HandleDragStarting;
-				_container.DropCompleted -= HandleDropCompleted;
-				_container.DragOver -= HandleDragOver;
-				_container.Drop -= HandleDrop;
-				_container.Tapped -= OnTap;
-				_container.DoubleTapped -= OnTap;
-				_container.ManipulationDelta -= OnManipulationDelta;
-				_container.ManipulationStarted -= OnManipulationStarted;
-				_container.ManipulationCompleted -= OnManipulationCompleted;
-				_container.PointerPressed -= OnPointerPressed;
-				_container.PointerExited -= OnPointerExited;
-				_container.PointerReleased -= OnPointerReleased;
-				_container.PointerCanceled -= OnPointerCanceled;
-				_container.PointerEntered -= OnPgrPointerEntered;
-				_container.PointerExited -= OnPgrPointerExited;
-				_container.PointerMoved -= OnPgrPointerMoved;
-				_container.PointerPressed -= OnPgrPointerPressed;
-				_container.PointerReleased -= OnPgrPointerReleased;
+				if (_areContainerDragEventsSubscribed)
+				{
+					_areContainerDragEventsSubscribed = false;
+
+					_container.DragStarting -= HandleDragStarting;
+					_container.DropCompleted -= HandleDropCompleted;
+				}
+
+				if (_areContainerDropEventsSubscribed)
+				{
+					_areContainerDropEventsSubscribed = false;
+
+					_container.DragOver -= HandleDragOver;
+					_container.Drop -= HandleDrop;
+					_container.DragLeave -= HandleDragLeave;
+				}
+
+				if (_areContainerTapAndRightTabEventSubscribed)
+				{
+					_areContainerTapAndRightTabEventSubscribed = false;
+
+					_container.Tapped -= OnTap;
+					_container.RightTapped -= OnTap;
+				}
+
+				if (_isContainerDoubleTapEventSubscribed)
+				{
+					_isContainerDoubleTapEventSubscribed = false;
+
+					_container.DoubleTapped -= OnTap;
+				}
+
+				if (_areContainerPgrPointerEventsSubscribed)
+				{
+					_areContainerPgrPointerEventsSubscribed = false;
+
+					_container.PointerEntered -= OnPgrPointerEntered;
+					_container.PointerExited -= OnPgrPointerExited;
+					_container.PointerMoved -= OnPgrPointerMoved;
+					_container.PointerPressed -= OnPgrPointerPressed;
+					_container.PointerReleased -= OnPgrPointerReleased;
+				}
+
+				if (_areContainerManipulationAndPointerEventsSubscribed)
+				{
+					_areContainerManipulationAndPointerEventsSubscribed = false;
+
+					_container.ManipulationDelta -= OnManipulationDelta;
+					_container.ManipulationStarted -= OnManipulationStarted;
+					_container.ManipulationCompleted -= OnManipulationCompleted;
+					_container.PointerPressed -= OnPointerPressed;
+					_container.PointerExited -= OnPointerExited;
+					_container.PointerReleased -= OnPointerReleased;
+					_container.PointerCanceled -= OnPointerCanceled;
+				}
 			}
 		}
 
@@ -688,12 +732,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (canDrag)
 			{
+				_areContainerDragEventsSubscribed = true;
+
 				_container.DragStarting += HandleDragStarting;
 				_container.DropCompleted += HandleDropCompleted;
 			}
 
 			if (allowDrop)
 			{
+				_areContainerDropEventsSubscribed = true;
+				
 				_container.DragOver += HandleDragOver;
 				_container.Drop += HandleDrop;
 				_container.DragLeave += HandleDragLeave;
@@ -718,6 +766,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1)
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
+				_areContainerTapAndRightTabEventSubscribed = true;
+				
 				_container.Tapped += OnTap;
 				_container.RightTapped += OnTap;
 			}
@@ -732,6 +782,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2)
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
 			{
+				_isContainerDoubleTapEventSubscribed = true;
+
 				_container.DoubleTapped += OnTap;
 			}
 			else
@@ -742,6 +794,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
+			_areContainerPgrPointerEventsSubscribed = true;
 			_container.PointerEntered += OnPgrPointerEntered;
 			_container.PointerExited += OnPgrPointerExited;
 			_container.PointerMoved += OnPgrPointerMoved;
@@ -769,6 +822,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			_areContainerManipulationAndPointerEventsSubscribed = true;
 			_container.ManipulationMode = ManipulationModes.Scale | ManipulationModes.TranslateX | ManipulationModes.TranslateY;
 			_container.ManipulationDelta += OnManipulationDelta;
 			_container.ManipulationStarted += OnManipulationStarted;
