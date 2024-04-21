@@ -105,12 +105,12 @@ namespace Microsoft.Maui
 				throw new ArgumentNullException(nameof(enumerable));
 			}
 
-			if (enumerable is IList list && list.Count > 0)
+			if (enumerable is IList list)
 			{
 				return list.IndexOf(item);
 			}
 
-			if (enumerable is Array array && array.Length > 0)
+			if (enumerable is Array array)
 			{
 				return Array.IndexOf(array, item);
 			}
@@ -147,9 +147,16 @@ namespace Microsoft.Maui
 				throw new ArgumentNullException(nameof(enumerable));
 			}
 
-			if (enumerable is IList<T> list && list.Count > 0)
+			if (enumerable is List<T> list)
 			{
-				return list.IndexOf(predicate);
+				var listPredicate = new Predicate<T>(predicate);
+				return list.FindIndex(listPredicate);
+			}
+
+			if (enumerable is T[] array)
+			{
+				var arrayPredicate = new Predicate<T>(predicate);
+				return Array.FindIndex(array, arrayPredicate);
 			}
 
 			var i = 0;
