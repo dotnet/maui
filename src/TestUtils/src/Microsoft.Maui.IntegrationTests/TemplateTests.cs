@@ -49,6 +49,61 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		// Parameters:  target framework, build config, use pack target, dotnet new additional parameters
+
+		// First, 4 default scenarios
+		[TestCase(DotNetCurrent, "Debug", false)]
+		[TestCase(DotNetCurrent, "Release", false)]
+		[TestCase(DotNetCurrent, "Debug", true)]
+		[TestCase(DotNetCurrent, "Release", true)]
+
+		// Then, scenarios with additional template parameters:
+		// - Interactivity Location: None/WASM/Server/Auto
+		// - Empty vs. With Sample Content
+		// - ProgramMain vs. TopLevel statements
+		// And alternately testing other options for a healthy mix.
+		[TestCase(DotNetCurrent, "Debug", false, "-I None --Empty")]
+		[TestCase(DotNetCurrent, "Release", false, "-I WebAssembly --Empty")]
+		[TestCase(DotNetCurrent, "Debug", true, "-I Server --Empty")]
+		[TestCase(DotNetCurrent, "Release", true, "-I Auto --Empty")]
+		[TestCase(DotNetCurrent, "Debug", false, "-I None")]
+		[TestCase(DotNetCurrent, "Release", false, "-I WebAssembly")]
+		[TestCase(DotNetCurrent, "Debug", true, "-I Server")]
+		[TestCase(DotNetCurrent, "Release", true, "-I Auto")]
+		[TestCase(DotNetCurrent, "Debug", false, "-I None --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", false, "-I WebAssembly --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Debug", true, "-I Server --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", true, "-I Auto --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Debug", false, "-I None --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", false, "-I WebAssembly --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Debug", true, "-I Server --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", true, "-I Auto --UseProgramMain")]
+		public void BuildMauiBlazorWebSolution(string framework, string config, bool shouldPack, string additionalDotNetNewParams)
+		{
+			const string templateShortName = "maui-blazor-web";
+
+			var solutionProjectDir = TestDirectory;
+			var mauiAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir));
+			var mauiAppProjectFile = Path.Combine(mauiAppProjectDir, $"{Path.GetFileName(mauiAppProjectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(templateShortName, outputDirectory: solutionProjectDir, framework: framework, additionalDotNetNewParams: additionalDotNetNewParams),
+				$"Unable to create template {templateShortName}. Check test output for errors.");
+
+			EnableTizen(mauiAppProjectFile);
+
+			if (shouldPack)
+			{
+				FileUtilities.ReplaceInFile(mauiAppProjectFile,
+					"</Project>",
+					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
+			}
+
+			string target = shouldPack ? "Pack" : "";
+			Assert.IsTrue(DotnetInternal.Build(mauiAppProjectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(mauiAppProjectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		[TestCase("Debug")]
 		[TestCase("Release")]
 		public void BuildMultiProject(string config)
@@ -75,7 +130,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", "Project Space", "projectspace")]
 		[TestCase("maui-blazor", "Project Space", "projectspace")]
 		[TestCase("mauilib", "Project Space", "projectspace")]
-  		// with invalid characters
+		// with invalid characters
 		[TestCase("maui", "Project@Symbol", "projectsymbol")]
 		[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
 		[TestCase("mauilib", "Project@Symbol", "projectsymbol")]

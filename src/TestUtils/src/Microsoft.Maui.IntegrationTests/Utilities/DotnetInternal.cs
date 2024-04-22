@@ -80,12 +80,16 @@ namespace Microsoft.Maui.IntegrationTests
 			return Run("publish", $"{buildArgs}");
 		}
 
-		public static bool New(string shortName, string outputDirectory, string framework = "")
+		public static bool New(string shortName, string outputDirectory, string framework = "", string? additionalDotNetNewParams = null)
 		{
 			var args = $"{shortName} -o \"{outputDirectory}\"";
 
 			if (!string.IsNullOrEmpty(framework))
+			{
 				args += $" -f {framework}";
+			}
+
+			args += $" {additionalDotNetNewParams}";
 
 			var output = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300);
 			TestContext.WriteLine(output);

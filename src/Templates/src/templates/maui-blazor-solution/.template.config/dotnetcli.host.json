@@ -6,6 +6,6 @@
     }
   },
   "usageExamples": [
-    "TODO: This"
+    "--framework DOTNET_TFM_VALUE"
   ]
 }
