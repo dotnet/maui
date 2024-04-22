@@ -17,6 +17,8 @@ public class Issue19926 : _IssuesUITest
 	public void PropertiesShouldBeCorrectlyApplied()
 	{
 		_ = App.WaitForElement("boxView");
+		App.Click("button");
+		_ = App.WaitForElement("boxView2");
 
 		VerifyScreenshot();
 	}
