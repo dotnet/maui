@@ -53,7 +53,7 @@
 
   <ItemGroup>
     <ProjectReference
-      Include="..\..\..\Controls\src\Core\Controls.SourceGen.csproj"
+      Include="..\..\..\Controls\src\Core\SourceGen\Controls.SourceGen.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"/>
   </ItemGroup>
