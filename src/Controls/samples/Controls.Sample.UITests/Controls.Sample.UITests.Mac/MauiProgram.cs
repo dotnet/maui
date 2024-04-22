@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Hosting;
 
-namespace Maui.Controls.Sample.Platform
+namespace Maui.Controls.Sample
 {
 	public static class MauiProgram
 	{

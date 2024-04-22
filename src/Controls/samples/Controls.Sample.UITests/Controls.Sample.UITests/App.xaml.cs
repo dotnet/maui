@@ -1,4 +1,8 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
 
 namespace Maui.Controls.Sample
 {
@@ -65,7 +69,6 @@ namespace Maui.Controls.Sample
 			window.MaximumHeight = desktopWindowHeight;
 			window.MinimumHeight = desktopWindowHeight;
 #endif
-
 			return window;
 		}
 #endif

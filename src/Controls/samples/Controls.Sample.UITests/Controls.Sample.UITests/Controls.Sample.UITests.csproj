@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>$(_MauiDotNetTfm)</TargetFrameworks>
+		<TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
 		<SingleProject>true</SingleProject>
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
