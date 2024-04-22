@@ -240,11 +240,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(
-#if WINDOWS
-			Skip = "Currently causes a layout cycle due to https://github.com/dotnet/maui/pull/20949"
-#endif
-		)]
+		[Fact]
 		[Category(TestCategory.Button, TestCategory.FlexLayout)]
 		public async Task ButtonWithImageInFlexLayoutInGridDoesNotCycle()
 		{
