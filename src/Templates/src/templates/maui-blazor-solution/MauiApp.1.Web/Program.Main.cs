@@ -13,6 +13,10 @@ using MauiApp._1.Web.Components;
 using MauiApp._1.Components.Account;
 using MauiApp._1.Data;
 #endif
+#if (SampleContent)
+using MauiApp._1.Shared.Services;
+using MauiApp._1.Web.Services;
+#endif
 
 namespace MauiApp._1;
 
@@ -37,6 +41,11 @@ public class Program
           #endif
         #endif
 
+        #if (SampleContent)
+        // Add device-specific services used by the MauiApp._1.Shared project
+        builder.Services.AddSingleton<IFormFactor, FormFactor>();
+
+        #endif
         #if (IndividualLocalAuth)
         builder.Services.AddCascadingAuthenticationState();
         builder.Services.AddScoped<IdentityUserAccessor>();

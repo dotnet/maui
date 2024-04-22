@@ -76,11 +76,15 @@
             {
             "condition": "(!SampleContent)",
             "exclude": [
+              "MauiApp.1/Services/**",
+              "MauiApp.1.Shared/Layout/NavMenu.*",
               "MauiApp.1.Shared/Pages/Counter.*",
               "MauiApp.1.Shared/Pages/Weather.*",
-              "MauiApp.1.Shared/Layout/NavMenu.*",
+              "MauiApp.1.Shared/Services/**",
               "MauiApp.1.Shared/wwwroot/bootstrap/**",
               "MauiApp.1.Shared/wwwroot/favicon.*",
+              "MauiApp.1.Web/Services/**",
+              "MauiApp.1.Web.Client/Services/**",
               "MauiApp.1.Web.Client/wwwroot/**"
             ]
           },
