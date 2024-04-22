@@ -281,14 +281,7 @@ namespace Microsoft.Maui.Controls
 				return string.Empty;
 			}
 
-			Page target = _currentPage;
-
-			if (_currentNavigationPage?.CurrentPage is TabbedPage tabbedPage && !string.IsNullOrEmpty(tabbedPage.Title))
-			{
-				target = tabbedPage;
-			}
-
-			return target?.Title;
+			return _currentNavigationPage?.CurrentPage?.Title;
 		}
 
 		VisualElement GetTitleView()
