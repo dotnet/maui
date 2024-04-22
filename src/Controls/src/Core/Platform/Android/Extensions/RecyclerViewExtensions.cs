@@ -1,7 +1,5 @@
 ﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Android.Graphics;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Handlers.Items;
 
@@ -37,6 +35,40 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 					return;
 			}
+		}
+
+		internal static double GetMaxHeight(this RecyclerView recyclerView, ItemsView itemsView, double heightConstraint)
+		{
+			var remainingItemsThreshold = itemsView.RemainingItemsThreshold;
+
+			if (remainingItemsThreshold == -1)
+				return heightConstraint;
+
+			double visibleItemsHeight = 0;
+
+			LinearLayoutManager layoutManager = recyclerView.GetLayoutManager() as LinearLayoutManager;
+
+			if (layoutManager != null)
+			{
+				var firstVisibleIndex = layoutManager.FindFirstCompletelyVisibleItemPosition();
+
+				if (firstVisibleIndex == -1)
+					return heightConstraint;
+
+				var lastVisibleIndex = layoutManager.FindLastCompletelyVisibleItemPosition();
+
+				for (int i = firstVisibleIndex; i <= lastVisibleIndex; i++)
+				{
+					var cell = layoutManager.FindViewByPosition(i);
+					Rect rect = new Rect();
+					bool isVisible = cell.GetLocalVisibleRect(rect);
+
+					if (isVisible)
+						visibleItemsHeight += cell.Height;
+				}
+			}
+
+			return visibleItemsHeight;
 		}
 	}
 }

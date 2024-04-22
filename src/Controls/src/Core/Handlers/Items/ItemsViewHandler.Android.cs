@@ -1,10 +1,7 @@
 #nullable disable
-using System;
-using System.Collections.Generic;
-using System.Text;
 using AndroidX.RecyclerView.Widget;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -43,10 +40,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (!double.IsInfinity(height))
 				height = Context.ToPixels(height);
+			else
+				height = PlatformView.GetMaxHeight(VirtualView, heightConstraint);
 
 			UpdateEmptyViewSize(width, height);
 
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
+			return base.GetDesiredSize(width, height);
 		}
 
 		public override void PlatformArrange(Rect frame)
