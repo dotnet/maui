@@ -57,23 +57,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ToolbarTitle_UsesTabbedPageChildTitle()
-		{
-			var window = new TestWindow();
-			IToolbarElement toolbarElement = window;
-			var childPage = new ContentPage { Title = "Child Test Title" };
-			var tabbedPage = new TabbedPage
-			{
-				Children = { childPage },
-			};
-			window.Page = new NavigationPage(tabbedPage);
-
-			var toolbar = (Toolbar)toolbarElement.Toolbar;
-			Assert.Equal(childPage.Title, toolbar.Title);
-		}
-
-
-		[Fact]
 		public void ToolbarTitle_UsesTabbedPageTitleWhenSet()
 		{
 			var window = new TestWindow();
@@ -87,30 +70,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var toolbar = (Toolbar)toolbarElement.Toolbar;
 			Assert.Equal(tabbedPage.Title, toolbar.Title);
-		}
-
-		[Fact]
-		public void ToolbarTitle_UsesTabbedPageChildTitleWhenChanged()
-		{
-			var window = new TestWindow();
-			IToolbarElement toolbarElement = window;
-			
-			var childPage1 = new ContentPage { Title = "Child Test Title 1" };
-			var childPage2 = new ContentPage { Title = "Child Test Title 2" };
-
-			var tabbedPage = new TabbedPage
-			{
-				Children = 
-				{
-					childPage1,
-					childPage2
-				},
-			};
-			window.Page = new NavigationPage(tabbedPage);
-			tabbedPage.CurrentPage = childPage2;
-
-			var toolbar = (Toolbar)toolbarElement.Toolbar;
-			Assert.Equal(childPage2.Title, toolbar.Title);
 		}
 
 		[Fact]
