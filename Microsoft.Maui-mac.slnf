@@ -13,6 +13,7 @@
       "src\\Controls\\samples\\Controls.Sample\\Maui.Controls.Sample.csproj",
       "src\\Controls\\samples\\Controls.Sample.UITests\\Controls.Sample.UITests\\Controls.Sample.UITests.csproj",
       "src\\Controls\\samples\\Controls.Sample.UITests\\Controls.Sample.UITests.Droid\\Controls.Sample.UITests.Droid.csproj",
+      "src\\Controls\\samples\\Controls.Sample.UITests\\Controls.Sample.UITests.Tizen\\Controls.Sample.UITests.Tizen.csproj",
       "src\\Controls\\samples\\Controls.Sample.UITests\\Controls.Sample.UITests.iOS\\Controls.Sample.UITests.iOS.csproj",
       "src\\Controls\\samples\\Controls.Sample.UITests\\Controls.Sample.UITests.Mac\\Controls.Sample.UITests.Mac.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",

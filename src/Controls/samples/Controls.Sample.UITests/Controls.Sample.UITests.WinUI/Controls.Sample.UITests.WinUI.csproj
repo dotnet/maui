@@ -1,75 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>$(_MauiDotNetTfm)-windows$(WindowsTargetFrameworkVersion)</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>Maui.Controls.Sample.WinUI</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;ARM64</Platforms>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-    <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
-    <PublishTrimmed>false</PublishTrimmed>
-    <UseWinUI>true</UseWinUI>
-    <EnableMsixTooling>true</EnableMsixTooling>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <!-- We do not want XAML files to be processed as .NET MAUI XAML, but rather WinUI XAML. -->
-    <EnableDefaultMauiItems>false</EnableDefaultMauiItems>
-    <UseRidGraph>true</UseRidGraph>
-    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
-  </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(RuntimeIdentifierOverride)' != ''">
-    <RuntimeIdentifier>$(RuntimeIdentifierOverride)</RuntimeIdentifier>
-  </PropertyGroup>
-  
-  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
-    <ProjectReference Condition="'$(IncludeCompatibilityProjects)' == 'true'" Include="..\..\..\..\Compatibility\Core\src\Compatibility.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
-    <ProjectReference Include="..\..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
-    <ProjectReference Include="..\..\..\..\Graphics\src\Graphics\Graphics.csproj" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFrameworks>$(_MauiDotNetTfm)-windows$(WindowsTargetFrameworkVersion)</TargetFrameworks>
+		<OutputType>Exe</OutputType>
+		<SingleProject>true</SingleProject>
+		<IsPackable>false</IsPackable>
+		<WindowsPackageType>None</WindowsPackageType>
+	</PropertyGroup>
 
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
-    <PackageReference Include="Microsoft.Maui.Controls.Foldable" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
-  </ItemGroup>
+	<PropertyGroup>
+		<ApplicationTitle>Controls UITests</ApplicationTitle>
+		<ApplicationId>com.microsoft.maui.uitests</ApplicationId>
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Controls.Sample.UITests\Controls.Sample.UITests.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Controls.Sample.UITests\Controls.Sample.UITests.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <!-- Make sure all image assets to be in the root of the package to match the other platforms -->
-    <Content Update="Assets\Images\*" TargetPath="%(Filename)%(Extension)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Manifest Include="$(ApplicationManifest)" />
-  </ItemGroup>
-
-  <!--
-		Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-		Tools extension to be activated for this project even if the Windows App SDK Nuget
-		package has not yet been restored.
-	-->
-  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <ProjectCapability Include="Msix" />
-  </ItemGroup>
-
-  <!--
-		Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
-		Explorer "Package and Publish" context menu entry to be enabled for this project even if
-		the Windows App SDK Nuget package has not yet been restored.
-	-->
-  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
-  </PropertyGroup>
+	<Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

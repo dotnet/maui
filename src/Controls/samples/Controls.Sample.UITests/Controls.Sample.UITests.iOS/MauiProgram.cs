@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Controls.Hosting;
 
-namespace Maui.Controls.Sample.iOS
+namespace Maui.Controls.Sample.Platform
 {
 	public static class MauiProgram
 	{

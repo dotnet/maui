@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Controls.Hosting;
 
-namespace Maui.Controls.Sample.Droid
+namespace Maui.Controls.Sample.Platform
 {
 	public static class MauiProgram
 	{
