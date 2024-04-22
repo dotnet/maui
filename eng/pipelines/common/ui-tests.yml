@@ -40,7 +40,7 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.android, '') }}:
+        - ${{ if ne(project.androidTestProject, '') }}:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
@@ -70,7 +70,7 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.ios, '') }}:
+        - ${{ if ne(project.iosTestProject, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: ios_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
@@ -103,7 +103,7 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.winui, '') }}:
+        - ${{ if ne(project.winuiTestProject, '') }}:
               - job: winui_ui_tests_${{ project.name }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
@@ -126,7 +126,7 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.mac, '') }}:
+        - ${{ if ne(project.macTestProject, '') }}:
               - job: mac_ui_tests_${{ project.name }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
@@ -152,7 +152,7 @@ stages:
       dependsOn: []
       jobs:
         - ${{ each project in parameters.projects }}:
-          - ${{ if ne(project.android, '') }}:
+          - ${{ if ne(project.compatibilityAndroidTestProject, '') }}:
             - ${{ each api in parameters.androidApiLevels }}:
               - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
                 - job: android_compatibility_ui_tests_${{ project.name }}_${{ api }}
@@ -185,7 +185,7 @@ stages:
       dependsOn: []
       jobs:
         - ${{ each project in parameters.projects }}:
-          - ${{ if ne(project.ios, '') }}:
+          - ${{ if ne(project.compatibilityiOSTestProject, '') }}:
             - ${{ each version in parameters.iosVersions }}:
               - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
                 - job: ios_compatibility_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
@@ -221,7 +221,7 @@ stages:
       dependsOn: []
       jobs:
         - ${{ each project in parameters.projects }}:
-          - ${{ if ne(project.android, '') }}:
+          - ${{ if ne(project.legacyAndroidTestProject, '') }}:
             - ${{ each api in parameters.androidApiLevels }}:
               - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
                 - job: android_legacy_ui_tests_${{ project.name }}_${{ api }}
@@ -252,7 +252,7 @@ stages:
       dependsOn: []
       jobs:
         - ${{ each project in parameters.projects }}:
-          - ${{ if ne(project.ios, '') }}:
+          - ${{ if ne(project.legacyiOSTestProject, '') }}:
             - ${{ each version in parameters.iosVersions }}:
               - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
                 - job: ios_legacy_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
