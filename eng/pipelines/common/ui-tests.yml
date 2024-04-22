@@ -16,11 +16,14 @@ parameters:
   projects:
     - name: name
       desc: Human Description
-      android: /optional/path/to/android.csproj
-      ios: /optional/path/to/ios.csproj
-      winui: /optional/path/to/winui.csproj
-      mac: /optional/path/to/mac.csproj
-      app: /optional/path/to/app.csproj
+      androidTestProject: /optional/path/to/android.csproj
+      iosTestProject: /optional/path/to/ios.csproj
+      winuiTestProject: /optional/path/to/winui.csproj
+      macTestProject: /optional/path/to/mac.csproj
+      androidApp: /optional/path/to/app.csproj
+      iosApp: /optional/path/to/app.csproj
+      winUIApp: /optional/path/to/app.csproj
+      macApp: /optional/path/to/app.csproj
       compatibilityAndroidApp: /optional/path/to/app.csproj
       compatibilityAndroidTestProject: /optional/path/to/android.csproj
       compatibilityiOSTestProject: /optional/path/to/ios.csproj
@@ -53,8 +56,8 @@ stages:
                     parameters:
                       platform: android
                       version: ${{ api }}
-                      path: ${{ project.android }}
-                      app: ${{ project.app }}
+                      path: ${{ project.androidTestProject }}
+                      app: ${{ project.androidApp }}
                       ${{ if eq(api, 27) }}:
                         device: android-emulator-32_${{ api }}
                       ${{ if not(eq(api, 27)) }}:
@@ -86,8 +89,8 @@ stages:
                         version: 16.4
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
-                      path: ${{ project.ios }}
-                      app: ${{ project.app }}
+                      path: ${{ project.iosTestProject }}
+                      app: ${{ project.iosApp }}
                       ${{ if eq(version, 'latest') }}:
                         device: ios-simulator-64
                       ${{ if ne(version, 'latest') }}:
@@ -113,8 +116,8 @@ stages:
                       platform: windows
                       version: "10.0.19041.0"
                       device: windows10
-                      path: ${{ project.winui }}
-                      app: ${{ project.app }}
+                      path: ${{ project.winuiTestProject }}
+                      app: ${{ project.winuiApp }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
@@ -138,8 +141,8 @@ stages:
                       platform: catalyst
                       version: "13.1"
                       device: mac
-                      path: ${{ project.mac }}
-                      app: ${{ project.app }}
+                      path: ${{ project.macTestProject }}
+                      app: ${{ project.macApp }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
