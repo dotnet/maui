@@ -24,6 +24,17 @@ namespace Microsoft.Maui.Platform
 		{
 			if (Content is DefaultMauiButtonContent defaultButtonContent)
 			{
+				if (double.IsNaN(Width) && double.IsNaN(Height))
+				{
+					// No size is set, allow image to be native size
+					defaultButtonContent.SetImageStretch(UI.Xaml.Media.Stretch.None);
+				}
+				else
+				{
+					// Tell image to resize to fit
+					defaultButtonContent.SetImageStretch(UI.Xaml.Media.Stretch.Uniform);
+				}
+
 				if (double.IsNaN(Width))
 				{
 					// If the width is NaN, we don't want to limit the width of the image
@@ -78,7 +89,7 @@ namespace Microsoft.Maui.Platform
 			{
 				VerticalAlignment = VerticalAlignment.Stretch,
 				HorizontalAlignment = HorizontalAlignment.Stretch,
-				Stretch = Stretch.Uniform,
+				Stretch = Stretch.None,
 				Margin = new WThickness(0),
 				Visibility = UI.Xaml.Visibility.Collapsed,
 			};
@@ -95,6 +106,11 @@ namespace Microsoft.Maui.Platform
 			Children.Add(_textBlock);
 
 			LayoutImageLeft(0);
+		}
+
+		internal void SetImageStretch(UI.Xaml.Media.Stretch stretch)
+		{
+			_image.Stretch = stretch;
 		}
 
 		/// <summary>
