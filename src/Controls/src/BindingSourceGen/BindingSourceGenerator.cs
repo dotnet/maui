@@ -49,7 +49,10 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	{
 		return node is InvocationExpressionSyntax invocation
 			&& invocation.Expression is MemberAccessExpressionSyntax method
-			&& method.Name.Identifier.Text == "SetBinding";
+			&& method.Name.Identifier.Text == "SetBinding"
+			&& invocation.ArgumentList.Arguments.Count >= 2
+			&& invocation.ArgumentList.Arguments[1].Expression is not LiteralExpressionSyntax
+			&& invocation.ArgumentList.Arguments[1].Expression is not ObjectCreationExpressionSyntax;
 	}
 
 	static BindingDiagnosticsWrapper GetBindingForGeneration(GeneratorSyntaxContext context, CancellationToken t)
@@ -106,15 +109,25 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	private static EquatableArray<DiagnosticInfo> VerifyCorrectOverload(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
 	{
 		var argumentList = invocation.ArgumentList.Arguments;
+
 		if (argumentList.Count < 2)
 		{
-			return new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())]);
+			throw new ArgumentOutOfRangeException(nameof(invocation));
 		}
 
-		var getter = argumentList[1].Expression;
-		if (getter is not LambdaExpressionSyntax)
+		var secondArgument = argumentList[1].Expression;
+
+		if (secondArgument is IdentifierNameSyntax)
 		{
-			return new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.SuboptimalSetBindingOverload(getter.GetLocation())]);
+			var type = context.SemanticModel.GetTypeInfo(secondArgument, cancellationToken: t).Type;
+			if (type != null && type.Name == "Func")
+			{
+				return new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.GetterIsNotLambda(secondArgument.GetLocation())]);
+			}
+			else // String and Binding
+			{
+				return new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.SuboptimalSetBindingOverload(secondArgument.GetLocation())]);
+			}
 		}
 
 		return [];
