@@ -142,8 +142,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (configuration is UIButtonConfiguration configLayout)
 					{
-						if (availableHeight <= 0 && button.HeightRequest != -1)
-							configLayout.Title = string.Empty;
+						// if (availableHeight <= 0 && button.HeightRequest != -1)
+						// 	configLayout.Title = string.Empty;
 
 						configLayout.ImagePlacement = NSDirectionalRectEdge.Top;
 						platformButton.Configuration = configLayout;
@@ -175,8 +175,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (configuration is UIButtonConfiguration configLayout)
 					{
-						if (availableHeight <= 0 && button.HeightRequest != -1)
-							configLayout.Title = string.Empty;
+						// if (availableHeight <= 0 && button.HeightRequest != -1)
+						// 	configLayout.Title = string.Empty;
 
 						configLayout.ImagePlacement = NSDirectionalRectEdge.Bottom;
 						platformButton.Configuration = configLayout;
@@ -209,8 +209,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (configuration is UIButtonConfiguration configLayout)
 					{
-						if (availableWidth <= 0)
-							configLayout.Title = string.Empty;
+						// if (availableWidth <= 0)
+						// 	configLayout.Title = string.Empty;
 
 						if ((button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft)
 							configLayout.ImagePlacement = NSDirectionalRectEdge.Trailing;
@@ -247,8 +247,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (configuration is UIButtonConfiguration configLayout)
 					{
-						if (availableWidth <= 0)
-							configLayout.Title = string.Empty;
+						// if (availableWidth <= 0)
+						// 	configLayout.Title = string.Empty;
 
 						if ((button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft)
 							configLayout.ImagePlacement = NSDirectionalRectEdge.Leading;
