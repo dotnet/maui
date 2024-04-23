@@ -19,6 +19,15 @@ namespace Microsoft.Maui.Handlers
 		protected override UIButton CreatePlatformView()
 		{
 			var button = new UIButton(UIButtonType.System);
+
+			// Starting with iOS 15, we can use the button.Configuration and assign future UIButton.Configuration.ContentInsets here instead of the deprecated UIButton.ContentEdgeInsets.
+			// It is important to note that the configuration will change any set style changes so we will do this right after creating the button.
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
+			{
+				var config = UIButtonConfiguration.PlainButtonConfiguration;
+				button.Configuration = config;
+			}
+
 			SetControlPropertiesFromProxy(button);
 			return button;
 		}
@@ -95,8 +104,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			//If this is a Mac optimized interface
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+			// Use UIButton.Configuration for iOS 15+
+			if (OperatingSystem.IsIOSVersionAtLeast(15))
 			{
 				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
 				if (button?.TextColor != null && handler.PlatformView != null)
