@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Path))]
 	[AcceptEmptyServiceProvider]
+	[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 	public sealed class TemplateBindingExtension : IMarkupExtension<BindingBase>
 	{
 		public TemplateBindingExtension()
