@@ -614,7 +614,7 @@ configuration:
         - isActivitySender:
             user: rachelkang
             issueAuthor: False
-          - isActivitySender:
+        - isActivitySender:
             user: Eilon
             issueAuthor: False
         - isActivitySender:
