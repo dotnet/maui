@@ -210,10 +210,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetPresentationMode(BindableObject obj, PresentationMode presentationMode) => obj.SetValue(PresentationModeProperty, presentationMode);
 
 		/// <summary>
-		/// Gets the navigation animation that occurs when a page is navigated to with the <see cref = "GoToAsync(ShellNavigationState, bool)" /> method.
+		/// Gets the behavior used to open the flyout when the given <paramref name="obj"/> is presented.
 		/// </summary>
-		/// <param name="obj">The object that modifies the tabs visibility.</param>
-		/// <returns>The navigation animation that occurs when a page is navigated.</returns>
+		/// <param name="obj">The object that modifies the Shell behavior used to open the flyout.</param>
+		/// <returns>The behavior used to open the flyout.</returns>
 		public static FlyoutBehavior GetFlyoutBehavior(BindableObject obj) => (FlyoutBehavior)obj.GetValue(FlyoutBehaviorProperty);
 
 		/// <summary>
