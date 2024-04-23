@@ -20,8 +20,8 @@ internal static class DiagnosticsFactory
 		=> new(
 			new DiagnosticDescriptor(
 				id: "BSG0001",
-				title: "Unable to resolve path",
-				messageFormat: "TODO: unable to resolve path",
+				title: "Invalid getter method",
+				messageFormat: "The getter expression is not valid. The expression can only consist of property access, index access, and type casts.",
 				category: "Usage",
 				defaultSeverity: DiagnosticSeverity.Error,
 				isEnabledByDefault: true),
@@ -31,8 +31,8 @@ internal static class DiagnosticsFactory
 		=> new(
 			new DiagnosticDescriptor(
 				id: "BSG0002",
-				title: "Getter must be a lambda",
-				messageFormat: "TODO: getter must be a lambda",
+				title: "Getter method is not a lambda",
+				messageFormat: "The getter must be a lambda expression.",
 				category: "Usage",
 				defaultSeverity: DiagnosticSeverity.Error,
 				isEnabledByDefault: true),
@@ -42,8 +42,8 @@ internal static class DiagnosticsFactory
 		=> new(
 			new DiagnosticDescriptor(
 				id: "BSG0003",
-				title: "Getter lambda's body must be an expression",
-				messageFormat: "TODO: getter lambda's body must be an expression",
+				title: "Getter method body is not an expression",
+				messageFormat: "The getter lambda's body must be an expression.",
 				category: "Usage",
 				defaultSeverity: DiagnosticSeverity.Error,
 				isEnabledByDefault: true),
@@ -53,8 +53,8 @@ internal static class DiagnosticsFactory
 		=> new(
 			new DiagnosticDescriptor(
 				id: "BSG0004",
-				title: "SetBinding with string path",
-				messageFormat: "TODO: consider using SetBinding overload with a lambda getter",
+				title: "Using SetBinding with a string path",
+				messageFormat: "Consider using SetBinding<TSource, TProperty> with a lambda expression for improved performance.",
 				category: "Usage",
 				defaultSeverity: DiagnosticSeverity.Hidden,
 				isEnabledByDefault: false),
