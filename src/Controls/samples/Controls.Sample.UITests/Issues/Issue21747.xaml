@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue21747"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+  <StackLayout
+    Padding="12">
+    <local:MyButton 
+      CornerRadius="10,10,10,10" 
+      Text="New Text">
+      <local:MyButton.ControlTemplate>
+        <ControlTemplate>
+          <Border 
+            AutomationId="WaitForStubControl"
+            Stroke="#C49B33"
+            StrokeThickness="4"
+            Background="#2B0B98"
+            Padding="16,8"
+            HorizontalOptions="Center">
+            <Border.StrokeShape>
+              <RoundRectangle 
+                CornerRadius="{TemplateBinding CornerRadius}" />
+            </Border.StrokeShape>
+            <Label 
+              Text="{TemplateBinding Text}"
+              TextColor="White"
+              FontSize="24"
+              FontAttributes="Bold" />
+          </Border>
+        </ControlTemplate>
+      </local:MyButton.ControlTemplate>
+    </local:MyButton>
+  </StackLayout>
+</ContentPage>
