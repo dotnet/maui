@@ -261,17 +261,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.Shared.Appiu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UITests", "UITests", "{0770D9C4-3AC4-401A-94F9-EDDBF4B345E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests\Controls.Sample.UITests.csproj", "{3A67E753-0737-4624-AD8D-BA5631591A11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Sample.UITests", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests\Controls.Sample.UITests.csproj", "{3A67E753-0737-4624-AD8D-BA5631591A11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests.Droid", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.Droid\Controls.Sample.UITests.Droid.csproj", "{EC07940A-BF0A-4237-B208-110549D0AB9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Sample.UITests.Droid", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.Droid\Controls.Sample.UITests.Droid.csproj", "{EC07940A-BF0A-4237-B208-110549D0AB9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests.Tizen", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.Tizen\Controls.Sample.UITests.Tizen.csproj", "{EC07940A-BF0A-4237-B208-110549D0AB91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Sample.UITests.Tizen", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.Tizen\Controls.Sample.UITests.Tizen.csproj", "{EC07940A-BF0A-4237-B208-110549D0AB91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests.iOS", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.iOS\Controls.Sample.UITests.iOS.csproj", "{BFEAF608-A849-4398-9578-EE576E8C1BBE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Sample.UITests.iOS", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.iOS\Controls.Sample.UITests.iOS.csproj", "{BFEAF608-A849-4398-9578-EE576E8C1BBE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests.Mac", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.Mac\Controls.Sample.UITests.Mac.csproj", "{10A29EBB-065A-474F-B8C1-5D933AC2F448}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Sample.UITests.Mac", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.Mac\Controls.Sample.UITests.Mac.csproj", "{10A29EBB-065A-474F-B8C1-5D933AC2F448}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests.WinUI", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.WinUI\Controls.Sample.UITests.WinUI.csproj", "{EA8A1F07-23B3-4A76-AD54-D6885FD819FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Sample.UITests.WinUI", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.WinUI\Controls.Sample.UITests.WinUI.csproj", "{EA8A1F07-23B3-4A76-AD54-D6885FD819FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -697,6 +697,10 @@ Global
 		{10A29EBB-065A-474F-B8C1-5D933AC2F448}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10A29EBB-065A-474F-B8C1-5D933AC2F448}.Release|Any CPU.Build.0 = Release|Any CPU
 		{10A29EBB-065A-474F-B8C1-5D933AC2F448}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{EA8A1F07-23B3-4A76-AD54-D6885FD819FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA8A1F07-23B3-4A76-AD54-D6885FD819FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA8A1F07-23B3-4A76-AD54-D6885FD819FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA8A1F07-23B3-4A76-AD54-D6885FD819FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
