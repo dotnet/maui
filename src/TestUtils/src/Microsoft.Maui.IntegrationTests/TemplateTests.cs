@@ -52,10 +52,10 @@ namespace Microsoft.Maui.IntegrationTests
 		// Parameters:  target framework, build config, use pack target, dotnet new additional parameters
 
 		// First, 4 default scenarios
-		[TestCase(DotNetCurrent, "Debug", false)]
-		[TestCase(DotNetCurrent, "Release", false)]
-		[TestCase(DotNetCurrent, "Debug", true)]
-		[TestCase(DotNetCurrent, "Release", true)]
+		[TestCase(DotNetCurrent, "Debug", false, "")]
+		[TestCase(DotNetCurrent, "Release", false, "")]
+		[TestCase(DotNetCurrent, "Debug", true, "")]
+		[TestCase(DotNetCurrent, "Release", true, "")]
 
 		// Then, scenarios with additional template parameters:
 		// - Interactivity Location: None/WASM/Server/Auto
@@ -86,8 +86,14 @@ namespace Microsoft.Maui.IntegrationTests
 			var mauiAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir));
 			var mauiAppProjectFile = Path.Combine(mauiAppProjectDir, $"{Path.GetFileName(mauiAppProjectDir)}.csproj");
 
+			TestContext.WriteLine($"Creating project in {solutionProjectDir}");
+
 			Assert.IsTrue(DotnetInternal.New(templateShortName, outputDirectory: solutionProjectDir, framework: framework, additionalDotNetNewParams: additionalDotNetNewParams),
 				$"Unable to create template {templateShortName}. Check test output for errors.");
+
+			TestContext.WriteLine($"Solution directory: {solutionProjectDir} (exists? {Directory.Exists(solutionProjectDir)})");
+			TestContext.WriteLine($"MAUI app project directory: {mauiAppProjectDir} (exists? {Directory.Exists(mauiAppProjectDir)})");
+			TestContext.WriteLine($"MAUI app project file: {mauiAppProjectFile} (exists? {File.Exists(mauiAppProjectFile)})");
 
 			EnableTizen(mauiAppProjectFile);
 
@@ -98,6 +104,7 @@ namespace Microsoft.Maui.IntegrationTests
 					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 			}
 
+			TestContext.WriteLine($"Building{(shouldPack ? " and packing" : "")} .NET MAUI app: {mauiAppProjectFile}");
 			string target = shouldPack ? "Pack" : "";
 			Assert.IsTrue(DotnetInternal.Build(mauiAppProjectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(mauiAppProjectFile)} failed to build. Check test output/attachments for errors.");

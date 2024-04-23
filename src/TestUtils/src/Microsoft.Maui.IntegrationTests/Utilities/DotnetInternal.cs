@@ -109,6 +109,8 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static string RunForOutput(string command, string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
 		{
+			TestContext.WriteLine($"Running: '{DotnetTool}' with '{command}'");
+			TestContext.WriteLine($"Args list: {args}");
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 			//Workaround: https://github.com/dotnet/linker/issues/3012
