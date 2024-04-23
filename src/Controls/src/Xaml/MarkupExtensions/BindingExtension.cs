@@ -22,12 +22,18 @@ namespace Microsoft.Maui.Controls.Xaml
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (TypedBinding == null)
+			{
+#pragma warning disable IL2026 // Using member 'Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. Using bindings with string paths is not trim safe. Use expression-based binding instead.
+				// This code is only reachable in XamlC compiled code when there is a missing x:DataType and the binding could not be compiled.
+				// In that case, we produce a warning that the binding could not be compiled.
 				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
 				{
 					UpdateSourceEventName = UpdateSourceEventName,
 					FallbackValue = FallbackValue,
 					TargetNullValue = TargetNullValue,
 				};
+#pragma warning restore IL2026
+			}
 
 			TypedBinding.Mode = Mode;
 			TypedBinding.Converter = Converter;
