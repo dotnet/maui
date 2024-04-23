@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
@@ -476,19 +477,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		void UpdateIsSwipeToRefreshEnabled()
+		async void UpdateIsSwipeToRefreshEnabled()
 		{
 			if (_refresh != null)
 			{
 				var isEnabled = Element.IsPullToRefreshEnabled && (Element as IListViewController).RefreshAllowed;
-				_refresh.Post(() =>
-				{
-					// NOTE: only disable while NOT refreshing, otherwise Command bindings CanExecute behavior will effectively
-					// cancel refresh animation. If not possible right now we will be called by UpdateIsRefreshing().
-					// For details see https://github.com/xamarin/Xamarin.Forms/issues/8384
-					if (isEnabled || !_refresh.Refreshing)
-						_refresh.Enabled = isEnabled;
-				});
+				await Task.Yield();
+				// NOTE: only disable while NOT refreshing, otherwise Command bindings CanExecute behavior will effectively
+				// cancel refresh animation. If not possible right now we will be called by UpdateIsRefreshing().
+				// For details see https://github.com/xamarin/Xamarin.Forms/issues/8384
+				if (isEnabled || !_refresh.Refreshing)
+					_refresh.Enabled = isEnabled;
 			}
 		}
 
