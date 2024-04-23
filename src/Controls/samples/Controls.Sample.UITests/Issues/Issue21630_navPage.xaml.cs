@@ -13,7 +13,9 @@ public partial class Issue21630_navPage : ContentPage
 	public Issue21630_navPage()
 	{
 		InitializeComponent();
-		_page = Shell.Current.BindingContext as Page;
+		var bc = (ValueTuple<Page, List<Page>>)Shell.Current.BindingContext;
+		_page = bc.Item1;
+		_modalStack = bc.Item2;
 	}
 
 	public Issue21630_navPage(Page page, List<Page> modalStack)

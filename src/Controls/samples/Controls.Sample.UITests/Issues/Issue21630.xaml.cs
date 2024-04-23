@@ -16,6 +16,11 @@ public partial class Issue21630 : ContentPage
 	public Issue21630()
 	{
 		InitializeComponent();
+		Loaded += OnLoaded;
+	}
+
+	private void OnLoaded(object sender, EventArgs e)
+	{
 		_page = Application.Current.MainPage;
 		_modalStack = Navigation.ModalStack.ToList();
 	}
@@ -27,6 +32,6 @@ public partial class Issue21630 : ContentPage
 
 	void SwapMainPageShell (object sender, EventArgs e)
 	{
-		Application.Current.MainPage = new Issue21630_shellPage(_page);
+		Application.Current.MainPage = new Issue21630_shellPage(_page, _modalStack);
 	}
 }
