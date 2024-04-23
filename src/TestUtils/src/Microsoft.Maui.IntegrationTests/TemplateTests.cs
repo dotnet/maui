@@ -49,36 +49,36 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		// Parameters:  target framework, build config, use pack target, dotnet new additional parameters
+		// Parameters:  target framework, build config, dotnet new additional parameters
 
 		// First, 4 default scenarios
-		[TestCase(DotNetCurrent, "Debug", false, "")]
-		[TestCase(DotNetCurrent, "Release", false, "")]
-		[TestCase(DotNetCurrent, "Debug", true, "")]
-		[TestCase(DotNetCurrent, "Release", true, "")]
+		[TestCase(DotNetCurrent, "Debug", "")]
+		[TestCase(DotNetCurrent, "Release", "")]
+		[TestCase(DotNetCurrent, "Debug", "")]
+		[TestCase(DotNetCurrent, "Release", "")]
 
 		// Then, scenarios with additional template parameters:
 		// - Interactivity Location: None/WASM/Server/Auto
 		// - Empty vs. With Sample Content
 		// - ProgramMain vs. TopLevel statements
 		// And alternately testing other options for a healthy mix.
-		[TestCase(DotNetCurrent, "Debug", false, "-I None --Empty")]
-		[TestCase(DotNetCurrent, "Release", false, "-I WebAssembly --Empty")]
-		[TestCase(DotNetCurrent, "Debug", true, "-I Server --Empty")]
-		[TestCase(DotNetCurrent, "Release", true, "-I Auto --Empty")]
-		[TestCase(DotNetCurrent, "Debug", false, "-I None")]
-		[TestCase(DotNetCurrent, "Release", false, "-I WebAssembly")]
-		[TestCase(DotNetCurrent, "Debug", true, "-I Server")]
-		[TestCase(DotNetCurrent, "Release", true, "-I Auto")]
-		[TestCase(DotNetCurrent, "Debug", false, "-I None --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", false, "-I WebAssembly --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Debug", true, "-I Server --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", true, "-I Auto --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Debug", false, "-I None --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", false, "-I WebAssembly --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Debug", true, "-I Server --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", true, "-I Auto --UseProgramMain")]
-		public void BuildMauiBlazorWebSolution(string framework, string config, bool shouldPack, string additionalDotNetNewParams)
+		[TestCase(DotNetCurrent, "Debug", "-I None --Empty")]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty")]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty")]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty")]
+		[TestCase(DotNetCurrent, "Debug", "-I None")]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly")]
+		[TestCase(DotNetCurrent, "Debug", "-I Server")]
+		[TestCase(DotNetCurrent, "Release", "-I Auto")]
+		[TestCase(DotNetCurrent, "Debug", "-I None --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Debug", "-I None --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --UseProgramMain")]
+		public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams)
 		{
 			const string templateShortName = "maui-blazor-web";
 
@@ -97,16 +97,8 @@ namespace Microsoft.Maui.IntegrationTests
 
 			EnableTizen(mauiAppProjectFile);
 
-			if (shouldPack)
-			{
-				FileUtilities.ReplaceInFile(mauiAppProjectFile,
-					"</Project>",
-					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
-			}
-
-			TestContext.WriteLine($"Building{(shouldPack ? " and packing" : "")} .NET MAUI app: {mauiAppProjectFile}");
-			string target = shouldPack ? "Pack" : "";
-			Assert.IsTrue(DotnetInternal.Build(mauiAppProjectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true),
+			TestContext.WriteLine($"Building .NET MAUI app: {mauiAppProjectFile}");
+			Assert.IsTrue(DotnetInternal.Build(mauiAppProjectFile, config, target: "", properties: BuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(mauiAppProjectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
