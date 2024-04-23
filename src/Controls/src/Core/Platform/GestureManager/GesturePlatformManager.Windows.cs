@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_container != null)
 			{
-				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerDragEventsSubscribed))
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerDragEventsSubscribed) != 0)
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDragEventsSubscribed;
 
@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_container.DropCompleted -= HandleDropCompleted;
 				}
 
-				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerDropEventsSubscribed))
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerDropEventsSubscribed) != 0)
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDropEventsSubscribed;
 
@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_container.DragLeave -= HandleDragLeave;
 				}
 
-				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerTapAndRightTabEventSubscribed))
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerTapAndRightTabEventSubscribed) != 0)
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
 
@@ -336,14 +336,14 @@ namespace Microsoft.Maui.Controls.Platform
 					_container.RightTapped -= OnTap;
 				}
 
-				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerDoubleTapEventSubscribed))
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerDoubleTapEventSubscribed) != 0)
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDoubleTapEventSubscribed;
 
 					_container.DoubleTapped -= OnTap;
 				}
 
-				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerPgrPointerEventsSubscribed))
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerPgrPointerEventsSubscribed) != 0)
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
 
@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_container.PointerReleased -= OnPgrPointerReleased;
 				}
 
-				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed))
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed;
 
