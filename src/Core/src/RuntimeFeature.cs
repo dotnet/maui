@@ -19,7 +19,6 @@ namespace Microsoft.Maui
 		private const bool IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault = true;
 		private const bool IsQueryPropertyAttributeSupportedByDefault = true;
 		private const bool IsImplicitCastOperatorsUsageViaReflectionSupportedByDefault = true;
-		private const bool IsStringBasedBindingSupportedByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if !NETSTANDARD
@@ -72,15 +71,6 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported", out bool isSupported)
 				? isSupported
 				: IsImplicitCastOperatorsUsageViaReflectionSupportedByDefault;
-
-#if !NETSTANDARD
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.AreStringBasedBindingSupported")]
-		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
-#endif
-		internal static bool AreNonCompiledBindingsInXamlSupported =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.AreNonCompiledBindingsInXamlSupported", out bool isSupported)
-				? isSupported
-				: IsStringBasedBindingSupportedByDefault;
 #pragma warning restore IL4000
 	}
 }

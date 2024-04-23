@@ -24,24 +24,15 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
-			if (RuntimeFeature.AreNonCompiledBindingsInXamlSupported)
+			return new Binding
 			{
-				return new Binding
-				{
-					Source = RelativeBindingSource.TemplatedParent,
-					Path = Path,
-					Mode = Mode,
-					Converter = Converter,
-					ConverterParameter = ConverterParameter,
-					StringFormat = StringFormat
-				};
-			}
-			else
-			{
-				throw new InvalidOperationException(
-					$"It was not possible to compile binding with path '{Path}'. Bindings with string paths are not supported. " +
-					"Use {Binding RelativeSource={RelativeSource TemplatedParent}} instead of {TemplateBinding} Make sure all bindings in XAML are correctly annotated with x:DataType.");
-			}
+				Source = RelativeBindingSource.TemplatedParent,
+				Path = Path,
+				Mode = Mode,
+				Converter = Converter,
+				ConverterParameter = ConverterParameter,
+				StringFormat = StringFormat
+			};
 		}
 
 		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
