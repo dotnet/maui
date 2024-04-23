@@ -291,15 +291,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
-				if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension")
+				if (bpRef is not null) // do not compile bindings if we're not gonna SetBinding
 				{
-					foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "BindingExtension")))
-						yield return instruction;
-				}
-				else if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")
-				{
-					foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "TemplateBindingExtension")))
-						yield return instruction;
+					if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension")
+					{
+						foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "BindingExtension")))
+							yield return instruction;
+					}
+					else if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")
+					{
+						foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "TemplateBindingExtension")))
+							yield return instruction;
+					}
 				}
 
 				var markExt = markupExtension.ResolveCached(context.Cache);
