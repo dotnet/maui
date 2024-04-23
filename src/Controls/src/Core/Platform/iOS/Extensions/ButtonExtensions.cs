@@ -70,7 +70,22 @@ namespace Microsoft.Maui.Controls.Platform
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
 
+			object configuration = OperatingSystem.IsIOSVersionAtLeast(15) ? platformButton.Configuration : null;
+
+			if (configuration is UIButtonConfiguration config)
+			{
+				config.ImagePadding = spacing;
+				platformButton.Configuration = config;
+			}
+
 			var image = platformButton.CurrentImage;
+
+			NSDirectionalRectEdge? originalContentMode = null;
+			if (configuration is UIButtonConfiguration config1)
+			{
+				originalContentMode = config1.ImagePlacement;
+				config1.ImagePlacement = NSDirectionalRectEdge.None;
+			}
 
 			// if the image is too large then we just position at the edge of the button
 			// depending on the position the user has picked
@@ -122,7 +137,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
-					if (imageHeight > buttonHeight)
+					if (configuration is UIButtonConfiguration configLayout)
 					{
 						contentMode = UIViewContentMode.Top;
 					}
@@ -135,9 +150,13 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
-					if (imageHeight > buttonHeight)
+					if (configuration is UIButtonConfiguration configLayout)
 					{
-						contentMode = UIViewContentMode.Bottom;
+						if (availableHeight <= 0 && button.HeightRequest != -1)
+							configLayout.Title = string.Empty;
+
+						configLayout.ImagePlacement = NSDirectionalRectEdge.Bottom;
+						platformButton.Configuration = configLayout;
 					}
 
 					imageInsets.Top += (titleHeight / 2) + sharedSpacing;
@@ -148,9 +167,17 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
 				{
-					if (imageWidth > buttonWidth)
+					if (configuration is UIButtonConfiguration configLayout)
 					{
-						contentMode = UIViewContentMode.Left;
+						if (availableWidth <= 0)
+							configLayout.Title = string.Empty;
+
+						if ((button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft)
+							configLayout.ImagePlacement = NSDirectionalRectEdge.Trailing;
+						else
+							configLayout.ImagePlacement = NSDirectionalRectEdge.Leading;
+
+						platformButton.Configuration = configLayout;
 					}
 
 					imageInsets.Left -= (titleWidthMove / 2) + sharedSpacing;
@@ -162,9 +189,17 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					if (imageWidth > buttonWidth)
+					if (configuration is UIButtonConfiguration configLayout)
 					{
-						contentMode = UIViewContentMode.Right;
+						if (availableWidth <= 0)
+							configLayout.Title = string.Empty;
+
+						if ((button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft)
+							configLayout.ImagePlacement = NSDirectionalRectEdge.Leading;
+						else
+							configLayout.ImagePlacement = NSDirectionalRectEdge.Trailing;
+
+						platformButton.Configuration = configLayout;
 					}
 
 					imageInsets.Left += (titleWidthMove / 2) + sharedSpacing;
@@ -193,6 +228,18 @@ namespace Microsoft.Maui.Controls.Platform
 				platformButton.TitleLabel.Layer.Hidden = false;
 			else
 				platformButton.TitleLabel.Layer.Hidden = true;
+
+			if (configuration is UIButtonConfiguration config6)
+			{
+				// If there is an image above or below the Title, the button will need to be redrawn the first time.
+				if ((config6.ImagePlacement == NSDirectionalRectEdge.Top || config6.ImagePlacement == NSDirectionalRectEdge.Bottom)
+					&& originalContentMode != config6.ImagePlacement)
+				{
+					platformButton.UpdatePadding(button);
+					platformButton.Superview?.SetNeedsLayout();
+					return;
+				}
+			}
 
 			platformButton.UpdatePadding(button);
 
@@ -225,7 +272,7 @@ namespace Microsoft.Maui.Controls.Platform
 #pragma warning disable CA1416, CA1422
 				// If the button's content is larger than the button, we need to adjust the ContentEdgeInsets.
 				// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel
-				if (buttonContentHeight - button.Height > 1 && button.HeightRequest == -1)
+				if (configuration is not UIButtonConfiguration && buttonContentHeight - button.Height > 1 && button.HeightRequest == -1)
 				{
 					var contentInsets = platformButton.ContentEdgeInsets;
 
@@ -343,6 +390,12 @@ namespace Microsoft.Maui.Controls.Platform
 				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
 				_ => throw new ArgumentOutOfRangeException()
 			};
+
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && nativeButton.Configuration is UIButtonConfiguration config)
+			{
+				config.TitleLineBreakMode = nativeButton.TitleLabel.LineBreakMode;
+				nativeButton.Configuration = config;
+			}
 		}
 	}
 }
