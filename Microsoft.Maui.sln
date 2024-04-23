@@ -261,6 +261,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.iOS.Appium.U
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.Shared.Appium.UITests", "src\Compatibility\ControlGallery\test\Shared.Appium.UITests\ControlGallery.Shared.Appium.UITests.csproj", "{07D8D4B5-C89D-4BE3-A14A-17668358587C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.UnitTests", "src\Controls\tests\SourceGen.UnitTests\SourceGen.UnitTests.csproj", "{0F5167EC-0521-4E41-B3D3-C6D3E16C844F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -662,6 +664,10 @@ Global
 		{07D8D4B5-C89D-4BE3-A14A-17668358587C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07D8D4B5-C89D-4BE3-A14A-17668358587C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07D8D4B5-C89D-4BE3-A14A-17668358587C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F5167EC-0521-4E41-B3D3-C6D3E16C844F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F5167EC-0521-4E41-B3D3-C6D3E16C844F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F5167EC-0521-4E41-B3D3-C6D3E16C844F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F5167EC-0521-4E41-B3D3-C6D3E16C844F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -783,6 +789,7 @@ Global
 		{F748974F-A8E4-4659-801C-804B739D6326} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 		{5923B35B-EA24-4B86-A384-9DAF9F2AFD56} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 		{07D8D4B5-C89D-4BE3-A14A-17668358587C} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
+		{0F5167EC-0521-4E41-B3D3-C6D3E16C844F} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

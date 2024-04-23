@@ -27,6 +27,7 @@
       "src\\Controls\\tests\\Xaml.UnitTests.InternalsVisibleAssembly\\Controls.Xaml.UnitTests.InternalsVisibleAssembly.csproj",
       "src\\Controls\\tests\\Xaml.UnitTests.InternalsHiddenAssembly\\Controls.Xaml.UnitTests.InternalsHiddenAssembly.csproj",
       "src\\Controls\\tests\\Xaml.UnitTests\\Controls.Xaml.UnitTests.csproj",
+      "src\\Controls\\tests\\SourceGen.UnitTests\\SourceGen.UnitTests.csproj",
       "src\\Core\\maps\\src\\Maps.csproj",
       "src\\Core\\src\\Core.csproj",
       "src\\Core\\tests\\Benchmarks\\Core.Benchmarks.csproj",
