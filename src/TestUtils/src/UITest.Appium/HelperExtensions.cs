@@ -25,7 +25,12 @@ namespace UITest.Appium
 
 		public static void RightClick(this IApp app, string element)
 		{
-			app.FindElement(element).RightClick();
+			var uiElement = app.FindElement(element);
+			uiElement.Command.Execute("click", new Dictionary<string, object>()
+			{
+				{ "element", uiElement },
+				{ "button", "right" }
+			});
 		}
 
 		public static string? GetText(this IUIElement element)
@@ -121,15 +126,6 @@ namespace UITest.Appium
 			element.Command.Execute("click", new Dictionary<string, object>()
 			{
 				{ "element", element }
-			});
-		}
-
-		public static void RightClick(this IUIElement element)
-		{
-			element.Command.Execute("click", new Dictionary<string, object>()
-			{
-				{ "element", element },
-				{ "button", "right" }
 			});
 		}
 

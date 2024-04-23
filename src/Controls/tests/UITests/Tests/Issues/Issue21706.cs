@@ -8,9 +8,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 	{
 		public override string Issue => "ImageButton stuck in PointerOver state";
 
-		public Issue21706(TestDevice device) : base(device)
-		{
-		}
+		public Issue21706(TestDevice device) : base(device) { }
 
 		[Test]
 		public async Task ImageButtonStuckAfterRightClick()
@@ -18,8 +16,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.iOS });
 			App.WaitForElement("WaitForElement");
 			App.RightClick("WaitForElement");
+			await Task.Delay(200);
 			App.Click("OtherButton");
-			await Task.Delay(500);
+			await Task.Delay(200);
 			VerifyScreenshot();
 		}
 	}
