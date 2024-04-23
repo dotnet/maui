@@ -28,7 +28,7 @@
     <PackageVersion>$(DotNetVersionBand)-dev</PackageVersion>
     <PackageOutputPath>$(MauiRootDirectory)artifacts</PackageOutputPath>
     <LicenseFile>$(MauiRootDirectory)LICENSE.TXT</LicenseFile>
-    <PackageIcon>$(MauiRootDirectory)Assets\icon.png</PackageIcon>
+    <PackageIconFullPath>$(MauiRootDirectory)Assets\icon.png</PackageIconFullPath>
     <PackageThirdPartyNoticesFile>$(MauiRootDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
     <DefaultPackageTags>dotnet-maui;dotnet;maui;cross-platform;ios;android;macos;maccatalyst;windows;winui;tizen</DefaultPackageTags>
     <ContinuousIntegrationBuild Condition=" '$(CI)' == 'true' ">true</ContinuousIntegrationBuild>
