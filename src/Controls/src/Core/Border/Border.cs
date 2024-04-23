@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -14,6 +15,7 @@ namespace Microsoft.Maui.Controls
 	{
 		float[]? _strokeDashPattern;
 
+		WeakReference<Element>? _parentRef;
 		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
 		PropertyChangedEventHandler? _strokeShapeChanged;
 		WeakNotifyPropertyChangedProxy? _strokeProxy = null;
@@ -21,6 +23,7 @@ namespace Microsoft.Maui.Controls
 
 		~Border()
 		{
+			_parentRef = null;
 			_strokeShapeProxy?.Unsubscribe();
 			_strokeProxy?.Unsubscribe();
 		}
@@ -64,6 +67,12 @@ namespace Microsoft.Maui.Controls
 
 			if (strokeShape is VisualElement visualElement)
 			{
+				if (_parentRef is null)
+					_parentRef = new WeakReference<Element>(this);
+
+				_parentRef.TryGetTarget(out Element? parent);
+				visualElement.Parent = parent;
+
 				SetInheritedBindingContext(visualElement, BindingContext);
 				_strokeShapeChanged ??= (sender, e) => OnPropertyChanged(nameof(StrokeShape));
 				_strokeShapeProxy ??= new();
@@ -80,6 +89,7 @@ namespace Microsoft.Maui.Controls
 
 			if (strokeShape is VisualElement visualElement)
 			{
+				visualElement.Parent = null;
 				((IElementDefinition)this).RemoveResourcesChangedListener(visualElement.OnParentResourcesChanged);
 
 				SetInheritedBindingContext(visualElement, null);
