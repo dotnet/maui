@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>UITests</RootNamespace>
+    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.7" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="NUnit" Version="4.0.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
+    <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
+    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.46-beta" />
+    <PackageReference Include="VisualTestUtils" Version="0.9.46-beta" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) != ''">
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils\VisualTestUtils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared.Appium.UITests\**\*.cs" LinkBase="Shared" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
+  </ItemGroup>
+
+</Project>
