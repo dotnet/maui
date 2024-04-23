@@ -16,7 +16,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.Border)]
 		public void BorderTemplateBindingWorks()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
+
 			App.WaitForElement("WaitForStubControl");
+			VerifyScreenshot();
 		}
 	}
 }
