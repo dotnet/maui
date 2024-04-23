@@ -23,12 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 		FrameworkElement? _control;
 		VisualElement? _element;
 
-		bool _areContainerDragEventsSubscribed;
-		bool _areContainerDropEventsSubscribed;
-		bool _areContainerPgrPointerEventsSubscribed;
-		bool _areContainerManipulationAndPointerEventsSubscribed;
-		bool _areContainerTapAndRightTabEventSubscribed;
-		bool _isContainerDoubleTapEventSubscribed;
+		SubscriptionFlags _subscriptionFlags = SubscriptionFlags.None;
 
 		bool _isDisposed;
 		bool _isPanning;
@@ -317,41 +312,41 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_container != null)
 			{
-				if (_areContainerDragEventsSubscribed)
+				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerDragEventsSubscribed))
 				{
-					_areContainerDragEventsSubscribed = false;
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerDragEventsSubscribed;
 
 					_container.DragStarting -= HandleDragStarting;
 					_container.DropCompleted -= HandleDropCompleted;
 				}
 
-				if (_areContainerDropEventsSubscribed)
+				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerDropEventsSubscribed))
 				{
-					_areContainerDropEventsSubscribed = false;
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerDropEventsSubscribed;
 
 					_container.DragOver -= HandleDragOver;
 					_container.Drop -= HandleDrop;
 					_container.DragLeave -= HandleDragLeave;
 				}
 
-				if (_areContainerTapAndRightTabEventSubscribed)
+				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerTapAndRightTabEventSubscribed))
 				{
-					_areContainerTapAndRightTabEventSubscribed = false;
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
 
 					_container.Tapped -= OnTap;
 					_container.RightTapped -= OnTap;
 				}
 
-				if (_isContainerDoubleTapEventSubscribed)
+				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerDoubleTapEventSubscribed))
 				{
-					_isContainerDoubleTapEventSubscribed = false;
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerDoubleTapEventSubscribed;
 
 					_container.DoubleTapped -= OnTap;
 				}
 
-				if (_areContainerPgrPointerEventsSubscribed)
+				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerPgrPointerEventsSubscribed))
 				{
-					_areContainerPgrPointerEventsSubscribed = false;
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
 
 					_container.PointerEntered -= OnPgrPointerEntered;
 					_container.PointerExited -= OnPgrPointerExited;
@@ -360,9 +355,9 @@ namespace Microsoft.Maui.Controls.Platform
 					_container.PointerReleased -= OnPgrPointerReleased;
 				}
 
-				if (_areContainerManipulationAndPointerEventsSubscribed)
+				if (_subscriptionFlags.HasFlag(SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed))
 				{
-					_areContainerManipulationAndPointerEventsSubscribed = false;
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed;
 
 					_container.ManipulationDelta -= OnManipulationDelta;
 					_container.ManipulationStarted -= OnManipulationStarted;
@@ -732,7 +727,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (canDrag)
 			{
-				_areContainerDragEventsSubscribed = true;
+				_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
 
 				_container.DragStarting += HandleDragStarting;
 				_container.DropCompleted += HandleDropCompleted;
@@ -740,7 +735,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (allowDrop)
 			{
-				_areContainerDropEventsSubscribed = true;
+				_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
 				
 				_container.DragOver += HandleDragOver;
 				_container.Drop += HandleDrop;
@@ -766,7 +761,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1)
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
-				_areContainerTapAndRightTabEventSubscribed = true;
+				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
 				
 				_container.Tapped += OnTap;
 				_container.RightTapped += OnTap;
@@ -782,7 +777,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2)
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
 			{
-				_isContainerDoubleTapEventSubscribed = true;
+				_subscriptionFlags |= SubscriptionFlags.ContainerDoubleTapEventSubscribed;
 
 				_container.DoubleTapped += OnTap;
 			}
@@ -794,7 +789,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			_areContainerPgrPointerEventsSubscribed = true;
+			_subscriptionFlags |= SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
 			_container.PointerEntered += OnPgrPointerEntered;
 			_container.PointerExited += OnPgrPointerExited;
 			_container.PointerMoved += OnPgrPointerMoved;
@@ -822,7 +817,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			_areContainerManipulationAndPointerEventsSubscribed = true;
+			_subscriptionFlags |= SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed;
 			_container.ManipulationMode = ManipulationModes.Scale | ManipulationModes.TranslateX | ManipulationModes.TranslateY;
 			_container.ManipulationDelta += OnManipulationDelta;
 			_container.ManipulationStarted += OnManipulationStarted;
@@ -849,6 +844,18 @@ namespace Microsoft.Maui.Controls.Platform
 			var package = e.DataView.Properties[_doNotUsePropertyString] as DataPackage;
 
 			return new DragEventArgs(package!, (relativeTo) => GetPosition(relativeTo, e), platformArgs);
+		}
+
+		[Flags]
+		enum SubscriptionFlags : byte
+		{
+			None = 0,
+			ContainerDragEventsSubscribed = 1,
+			ContainerDropEventsSubscribed = 1 << 1,
+			ContainerPgrPointerEventsSubscribed = 1 << 2,
+			ContainerManipulationAndPointerEventsSubscribed = 1 << 3,
+			ContainerTapAndRightTabEventSubscribed = 1 << 4,
+			ContainerDoubleTapEventSubscribed = 1 << 5
 		}
 	}
 }
