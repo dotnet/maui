@@ -991,9 +991,8 @@ namespace Microsoft.Maui.Layouts.Flex
 				if (item.ShouldOrderChildren && item.Count > 0)
 				{
 					// The children need to be ordered using a *stable* sort by Order
-					var indices = item.Select((value, index) => new {value, index})
-									.OrderBy(x => x.value.Order)
-									.Select(x => x.index)
+					var indices = item.OrderBy(x => x.Order)
+									.Select((value, index) => index)
 									.ToArray();
 					ordered_indices = indices;
 				}
