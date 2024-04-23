@@ -15,24 +15,44 @@ public class Issue21630 : _IssuesUITest
     string NavBarEntry => "NavBarEntry";
     string HeaderEntry => "HeaderEntry";
     string FocusButton => "FocusButton";
+    string RestoreButton => "RestoreMainPageButton";
 
-    [Test]
-	public void NavBarEntryDoesNotTriggerKeyboardScroll()
+	[TestCase("SwapNavigationPage")]
+	[TestCase("SwapShellPage")]
+	public void NavBarEntryDoesNotTriggerKeyboardScroll(string scenario)
 	{
-        var navBarEntry = App.WaitForElement(NavBarEntry);
-		var navBarLocation = navBarEntry.GetRect();
-		var headerEntry = App.WaitForElement(HeaderEntry);
-		var headerLocation = headerEntry.GetRect();
+		try
+		{
+			var scenarioSuffix = scenario == "SwapNavigationPage" ? "NavigationPage" : "ShellPage";
 
-        App.Click(FocusButton);
+			App.WaitForElement(scenario);
+			App.Click(scenario);
 
-        var newNavBarEntry = App.WaitForElement(NavBarEntry);
-		var newNavBarEntryLocation = newNavBarEntry.GetRect();
-        Assert.AreEqual(navBarLocation, newNavBarEntryLocation);
+			var navBarEntry = App.WaitForElement(NavBarEntry + scenarioSuffix);
+			var navBarLocation = navBarEntry.GetRect();
+			var headerEntry = App.WaitForElement(HeaderEntry);
+			var headerLocation = headerEntry.GetRect();
 
-        var newHeaderEntry = App.WaitForElement(HeaderEntry);
-		var newHeaderLocation = newHeaderEntry.GetRect();
+			App.Click(FocusButton + scenarioSuffix);
 
-        Assert.AreEqual(headerLocation, newHeaderLocation);
+			var newNavBarEntry = App.WaitForElement(NavBarEntry + scenarioSuffix);
+			var newNavBarEntryLocation = newNavBarEntry.GetRect();
+			Assert.AreEqual(navBarLocation, newNavBarEntryLocation);
+
+			var newHeaderEntry = App.WaitForElement(HeaderEntry);
+			var newHeaderLocation = newHeaderEntry.GetRect();
+
+			Assert.AreEqual(headerLocation, newHeaderLocation);
+
+			App.WaitForElement(RestoreButton);
+			App.Click(RestoreButton);
+		}
+		catch
+		{
+			// Just in case these tests leave the app in an unreliable state
+			App.ResetApp();
+			FixtureSetup();
+			throw;
+		}
 	}
 }

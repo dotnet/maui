@@ -299,8 +299,7 @@ public static class KeyboardAutoManagerScroll
 	internal static void AdjustPosition()
 	{
 		if (ContainerView is null
-			|| (View is not UITextField && View is not UITextView)
-			|| !View.IsDescendantOfView(ContainerView))
+			|| (View is not UITextField && View is not UITextView))
 		{
 			IsKeyboardAutoScrollHandling = false;
 			return;
