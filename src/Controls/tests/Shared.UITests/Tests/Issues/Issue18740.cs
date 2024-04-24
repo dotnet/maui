@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -20,8 +21,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[TestCase("SearchBar")]
 		public void Issue18740Test(string view)
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 			try
 			{
 				// Navigate to the specific View test
@@ -47,3 +46,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

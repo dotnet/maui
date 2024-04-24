@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -16,12 +17,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void EntryClearButtonWorksEntryDoesntClearWhenNotClickingOnClear()
 		{
 			// https://github.com/dotnet/maui/issues/17453
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.iOS,
-				TestDevice.Mac,
-				TestDevice.Windows
-			});
 
 			App.WaitForElement("WaitForStubControl");
 			string? rtlEntryText = App.FindElement("RtlEntry").GetText();
@@ -47,12 +42,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void EntryClearButtonWorks()
 		{
 			// https://github.com/dotnet/maui/issues/17453
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.iOS,
-				TestDevice.Mac,
-				TestDevice.Windows
-			});
 
 			App.WaitForElement("WaitForStubControl");
 
@@ -76,3 +65,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

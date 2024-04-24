@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,9 +16,9 @@ public class Issue19926 : _IssuesUITest
     [Test]
 	public void PropertiesShouldBeCorrectlyApplied()
 	{
-		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
 		_ = App.WaitForElement("boxView");
 
 		VerifyScreenshot();
 	}
 }
+#endif

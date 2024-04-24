@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +19,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public async Task VerifyCollectionViewItemsAfterScrolling()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			App.WaitForElement(scrollUpButton);
 
 			App.Click(scrollDownButton);
@@ -33,4 +32,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
-
+#endif

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,9 +17,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void Issue17400Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Android, TestDevice.Mac },
-				"Is a Windows issue; see https://github.com/dotnet/maui/issues/17400");
-
 			App.WaitForElement("UpdateBtn");
 			App.Click("UpdateBtn");
 
@@ -27,3 +25,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

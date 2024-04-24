@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.AppiumTests;
+﻿#if ANDROID
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -16,9 +16,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.Gestures)]
 		public void Issue5191Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
-				"Android Test.");
-
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Drag and drop.
@@ -30,3 +27,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

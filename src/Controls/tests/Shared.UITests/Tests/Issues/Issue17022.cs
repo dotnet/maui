@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -39,8 +40,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		public void Issue17022Test(string testButtonID, bool isTopOfScreen, bool requiresScreenshot = false)
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, "This test is only for iOS");
-
             App.WaitForElement(testButtonID).Click();
             var boxView = App.WaitForElement("TopBoxView");
             ClassicAssert.NotNull(boxView);
@@ -74,3 +73,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

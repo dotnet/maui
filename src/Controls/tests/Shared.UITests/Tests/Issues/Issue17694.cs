@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,13 +16,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue17694Test()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.iOS,
-				TestDevice.Mac,
-				TestDevice.Android
-			});
-
 			App.WaitForElement("Spin");
 
 			// 1. Click button
@@ -31,3 +25,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

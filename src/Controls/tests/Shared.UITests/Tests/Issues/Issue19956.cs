@@ -1,12 +1,10 @@
-﻿using System.Drawing;
+﻿#if IOS
+using System.Drawing;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
-using Microsoft.Maui.AppiumTests;
-using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Appium.Interactions;
-using System.Reflection;
 using NUnit.Framework.Legacy;
 
 namespace Microsoft.Maui.AppiumTests.Issues;
@@ -20,10 +18,8 @@ public class Issue19956: _IssuesUITest
 	[Category(UITestCategories.Entry)]
 	public void ContentAccountsForStickyHeaders()
     {
-        this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
-            "This is an iOS Keyboard Scrolling issue.");
-
         var app = App as AppiumApp;
+
         if (app is null)
             return;
 
@@ -62,9 +58,6 @@ public class Issue19956: _IssuesUITest
     [Test]
     public void BottomInsetsSetCorrectly()
     {
-        this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
-            "This is an iOS Keyboard Scrolling issue.");
-
         var app = App as AppiumApp;
         if (app is null)
             return;
@@ -128,3 +121,4 @@ public class Issue19956: _IssuesUITest
 		ClassicAssert.Less(bottomEntryRect.Bottom, keyboardPosition!.Value.Y);
     }
 }
+#endif

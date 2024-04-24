@@ -1,6 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
-using OpenQA.Selenium.Appium.Android;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,13 +17,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public async Task TappingNextMovesToNextElement()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac,
-				TestDevice.iOS,
-				TestDevice.Windows,
-			}, "Send Keys only works on Android which is why we are ignoring these other platforms");
-
 			App.WaitForElement("Entry1");
 			App.Click("Entry1");
 
@@ -38,13 +31,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public async Task TappingDoneClosesKeyboard()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac,
-				TestDevice.iOS,
-				TestDevice.Windows,
-			}, "Send Keys only works on Android which is why we are ignoring these other platforms");
-
 			App.WaitForElement("EntryDone");
 			App.Click("EntryDone");
 
@@ -56,3 +42,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

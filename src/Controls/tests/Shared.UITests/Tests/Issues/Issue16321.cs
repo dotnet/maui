@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,11 +15,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.DisplayAlert)]
 		public void OpenAlertWithModals()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac, TestDevice.Windows, TestDevice.Android
-			});
-
 			App.WaitForElement("OpenAlertWithModals").Click();
 			App.WaitForElement("Cancel").Click();
 		}
@@ -27,13 +23,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.DisplayAlert)]
 		public void OpenAlertWithNewUIWindow()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac, TestDevice.Windows, TestDevice.Android
-			});
-
 			App.WaitForElement("OpenAlertWithNewUIWindow").Click();
 			App.WaitForElement("Cancel").Click();
 		}
 	}
 }
+#endif

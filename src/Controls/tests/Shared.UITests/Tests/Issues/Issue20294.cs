@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,8 +14,6 @@ public class Issue20294 : _IssuesUITest
 	[Test]
 	public void ScrollToEndDoesntCrash()
 	{
-		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
-		
 		App.ScrollTo("FOOTER");
 		App.ScrollUp("theCollectionView", ScrollStrategy.Gesture, 0.5);
 		App.ScrollDown("theCollectionView", ScrollStrategy.Gesture, 0.5);
@@ -24,3 +22,4 @@ public class Issue20294 : _IssuesUITest
 		App.ScrollDown("theCollectionView", ScrollStrategy.Gesture, 0.5);
 	}
 }
+#endif

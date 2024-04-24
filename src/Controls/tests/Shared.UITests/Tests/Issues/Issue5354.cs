@@ -1,9 +1,9 @@
-﻿using Microsoft.Maui.AppiumTests;
+﻿#if ANDROID
+using Microsoft.Maui.AppiumTests;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
-
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -16,10 +16,7 @@ namespace Maui.Controls.Sample.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsLayoutUpdate()
-		{
-  			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
-				"This is a product bug.");
-	
+		{	
 			App.WaitForElement("CollectionView5354");
 			App.WaitForElement("Button5354");
 			
@@ -44,3 +41,4 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 }
+#endif

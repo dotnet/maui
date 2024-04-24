@@ -1,8 +1,6 @@
-﻿using System.Drawing.Imaging;
+﻿#if ANDROID
 using NUnit.Framework;
-using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
@@ -21,13 +19,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.RefreshView)]
 		public void RefreshIconDisappearsWhenUserCancelsRefreshByScrollingBackUp()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.iOS,
-				TestDevice.Mac,
-				TestDevice.Windows
-			});
-
 			if (App is not AppiumAndroidApp androidApp)
 				throw new InvalidOperationException($"Invalid App Type For this Test: {App} Expected AppiumAndroidApp.");
 
@@ -52,3 +43,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

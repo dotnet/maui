@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,11 +16,10 @@ public class Issue19556 : _IssuesUITest
     [Test]
 	public void SystemFontsShouldRenderCorrectly()
 	{
-		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 		_ = App.WaitForElement("label");
 
 		// The test passes if fonts are correctly rendered
 		VerifyScreenshot();
 	}
 }
+#endif

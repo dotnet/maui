@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +16,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void ScrollCarouselViewAfterDispose()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
-
 			try
 			{
 				_ = App.WaitForElement("GoToTest");
@@ -33,7 +32,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				App.Click("goToBack");
 				App.WaitForElement("goToShow");
 			}
-			finally{
+			finally
+			{
 				Reset();
 			}
 		}
@@ -44,3 +44,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

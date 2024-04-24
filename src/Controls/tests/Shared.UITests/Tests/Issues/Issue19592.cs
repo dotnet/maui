@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +16,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void SpanLineHeightShouldNotGrowProgressively()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 			_ = App.WaitForElement("label");
 
 			// The line height should be the same for each line
@@ -26,3 +25,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

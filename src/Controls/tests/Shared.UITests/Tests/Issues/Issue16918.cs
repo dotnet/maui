@@ -1,3 +1,4 @@
+#if WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,15 +17,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void Issue16918Test()
 		{
 			// https://github.com/dotnet/maui/issues/16918
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac,
-				TestDevice.Android,
-				TestDevice.iOS
-			});
 
 			App.WaitForElement("MenuImage");
 			VerifyScreenshot();
 		}
 	}
 }
+#endif

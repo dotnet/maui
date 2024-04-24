@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,14 +15,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.Editor)]
 		public void EditorPlaceholderPosition()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Android, TestDevice.Mac, TestDevice.Windows
-			});
-
 			App.WaitForElement("WaitForStubControl");
 
 			VerifyScreenshot();
 		}
 	}
 }
+#endif
