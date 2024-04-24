@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapHomeIndicatorAutoHidden(IPageHandler handler, IContentView page)
+		internal static void MapHomeIndicatorAutoHidden(IPageHandler handler, IContentView page)
 		{
 			if (handler is IPlatformViewHandler platformViewHandler && platformViewHandler.ViewController is not null)
 			{
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapPrefersStatusBarHiddenMode(IPageHandler handler, IContentView page)
+		internal static void MapPrefersStatusBarHiddenMode(IPageHandler handler, IContentView page)
 		{
 			if (handler is IPlatformViewHandler platformViewHandler && platformViewHandler.ViewController is not null)
 			{
