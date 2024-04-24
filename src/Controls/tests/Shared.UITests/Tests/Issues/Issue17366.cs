@@ -17,6 +17,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.Brush)]
 		public void Issue17366Test()
 		{
+			// The bug only happens on iOS; see https://github.com/dotnet/maui/pull/17789
 			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
 		}

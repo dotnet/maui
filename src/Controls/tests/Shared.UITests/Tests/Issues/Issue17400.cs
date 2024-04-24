@@ -17,6 +17,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void Issue17400Test()
 		{
+			// Is a Windows issue; see https://github.com/dotnet/maui/issues/17400
+
 			App.WaitForElement("UpdateBtn");
 			App.Click("UpdateBtn");
 

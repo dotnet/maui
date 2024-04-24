@@ -18,7 +18,9 @@ public class Issue19956: _IssuesUITest
 	[Category(UITestCategories.Entry)]
 	public void ContentAccountsForStickyHeaders()
     {
-        var app = App as AppiumApp;
+		// This is an iOS Keyboard Scrolling issue.
+
+		var app = App as AppiumApp;
 
         if (app is null)
             return;

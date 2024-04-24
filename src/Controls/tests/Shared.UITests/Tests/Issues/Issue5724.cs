@@ -17,6 +17,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public async Task TappingNextMovesToNextElement()
 		{
+			// Send Keys only works on Android which is why we are ignoring these other platforms.
+
 			App.WaitForElement("Entry1");
 			App.Click("Entry1");
 
