@@ -5,14 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
-using Windows.ApplicationModel.Core;
 using ThreadPool = Windows.System.Threading.ThreadPool;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public class IdleSynchronizer : IDisposable
+	public partial class IdleSynchronizer : IDisposable
 	{
-		const int _idleTimeoutMs = 100000;
+		const int _idleTimeoutMs = 10000;
 
 		const string _animationsCompleteHandleName = "AnimationsComplete";
 		const string _hasAnimationsHandleName = "HasAnimations";
@@ -77,7 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 			return error;
 		}
 
-		public string Wait()
+		private string Wait()
 		{
 			var errorString = string.Empty;
 

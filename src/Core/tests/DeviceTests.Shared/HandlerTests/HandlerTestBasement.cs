@@ -200,6 +200,8 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(updatePropertyValue);
 				}
 
+				await IdleSynchronizer.GetForCurrentProcess().WaitAsync();
+
 				await plaformView.AssertContainsColor(color, mauiContext, tolerance: tolerance);
 			});
 		}
