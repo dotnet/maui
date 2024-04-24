@@ -171,8 +171,7 @@ Task("dotnet-samples")
                 // ["GenerateAppxPackageOnBuild"] = "true",
                 ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
             };
-        } 
-        
+        }
         RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
     });
 
