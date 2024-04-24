@@ -99,6 +99,10 @@ public class MemoryTests : ControlsHandlerTestBase
 		SetupBuilder();
 
 #if ANDROID
+		// TODO: fixing upstream at https://github.com/xamarin/xamarin-android/pull/8900
+		if (type == typeof(ListView))
+			return;
+
 		// NOTE: skip certain controls on older Android devices
 		if (type == typeof (DatePicker) && !OperatingSystem.IsAndroidVersionAtLeast(30))
 				return;
