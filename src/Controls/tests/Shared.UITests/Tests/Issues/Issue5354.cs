@@ -5,7 +5,7 @@ using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Maui.Controls.Sample.Issues
+namespace Microsoft.Maui.AppiumTests.Issues
 {
 	public partial class Issue5354 : _IssuesUITest
 	{
