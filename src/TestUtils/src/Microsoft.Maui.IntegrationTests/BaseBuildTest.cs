@@ -15,7 +15,7 @@ namespace Microsoft.Maui.IntegrationTests
 		public const string MauiVersionCurrent = "8.0.0-rc.1.9171"; // this should not be the same as the last release
 		public const string MauiVersionPrevious = "7.0.86"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 
-		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', };
+		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
 
 		public string TestName
 		{
