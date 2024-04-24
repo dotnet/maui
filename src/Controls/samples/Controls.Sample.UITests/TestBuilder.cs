@@ -2,7 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 
-namespace Maui.Controls.Sample
+namespace Controls.Sample.UITests
 {
 	public static class TestBuilder
 	{

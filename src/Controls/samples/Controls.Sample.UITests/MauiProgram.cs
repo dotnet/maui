@@ -6,15 +6,29 @@ using Microsoft.Maui.Hosting;
 
 namespace Maui.Controls.Sample
 {
-	public partial class App : Application
+	public static class MauiProgram
+	{
+		public static MauiApp CreateMauiApp() =>
+			MauiApp
+				.CreateBuilder()
+	#if IOS || ANDROID
+				.UseMauiMaps()
+	#endif
+				.UseMauiApp<App>()
+				.ConfigureFonts(fonts =>
+				{
+					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+				})
+				.Build();
+	}
+
+	class App : Application
 	{
 		public const string AppName = "CompatibilityGalleryControls";
 		public const string DefaultMainPageId = "ControlGalleryMainPage";
 
 		public App()
 		{
-			InitializeComponent();
-
 			SetMainPage(CreateDefaultMainPage());
 		}
 
@@ -69,6 +83,8 @@ namespace Maui.Controls.Sample
 			window.MaximumHeight = desktopWindowHeight;
 			window.MinimumHeight = desktopWindowHeight;
 #endif
+
+
 			return window;
 		}
 #endif
