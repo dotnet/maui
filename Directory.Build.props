@@ -16,7 +16,7 @@
     <!-- NuGet package information -->
     <Copyright>$(CopyrightNetFoundation)</Copyright>
     <Company>Microsoft</Company>
-    <Product>Microsoft MAUI</Product>
+    <Product>Microsoft .NET MAUI</Product>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>Microsoft</Authors>
     <NeutralLanguage>en</NeutralLanguage>
