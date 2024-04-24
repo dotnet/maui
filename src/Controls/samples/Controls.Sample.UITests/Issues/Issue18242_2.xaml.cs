@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.ManualTest, "18242_2", "Button ImageSource not Scaling as expected", PlatformAffected.iOS)]
+	[Issue(IssueTracker.ManualTest, "18242_2", "Button ImageSource not Scaling as expected - manual test", PlatformAffected.iOS)]
 	public partial class Issue18242_2 : ContentPage
 	{
 		readonly Random _random;
