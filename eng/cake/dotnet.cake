@@ -172,7 +172,15 @@ Task("dotnet-samples")
                 ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
             };
         }
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
+        if (IsRunningOnWindows())
+        {
+            RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
+        }
+        else
+        {
+            RunMSBuildWithDotNet("./Microsoft.Maui.Samples-mac.slnf", properties, binlogPrefix: "sample-");
+        }
+
     });
 
 Task("dotnet-legacy-controlgallery")
