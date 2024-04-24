@@ -20,10 +20,7 @@ parameters:
       iosTestProject: /optional/path/to/ios.csproj
       winuiTestProject: /optional/path/to/winui.csproj
       macTestProject: /optional/path/to/mac.csproj
-      androidApp: /optional/path/to/app.csproj
-      iosApp: /optional/path/to/app.csproj
-      winUIApp: /optional/path/to/app.csproj
-      macApp: /optional/path/to/app.csproj
+      app: /optional/path/to/app.csproj
       compatibilityAndroidApp: /optional/path/to/app.csproj
       compatibilityAndroidTestProject: /optional/path/to/android.csproj
       compatibilityiOSTestProject: /optional/path/to/ios.csproj
@@ -57,7 +54,7 @@ stages:
                       platform: android
                       version: ${{ api }}
                       path: ${{ project.androidTestProject }}
-                      app: ${{ project.androidApp }}
+                      app: ${{ project.app }}
                       ${{ if eq(api, 27) }}:
                         device: android-emulator-32_${{ api }}
                       ${{ if not(eq(api, 27)) }}:
@@ -90,7 +87,7 @@ stages:
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.iosTestProject }}
-                      app: ${{ project.iosApp }}
+                      app: ${{ project.app }}
                       ${{ if eq(version, 'latest') }}:
                         device: ios-simulator-64
                       ${{ if ne(version, 'latest') }}:
@@ -117,7 +114,7 @@ stages:
                       version: "10.0.19041.0"
                       device: windows10
                       path: ${{ project.winuiTestProject }}
-                      app: ${{ project.winuiApp }}
+                      app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
@@ -142,7 +139,7 @@ stages:
                       version: "13.1"
                       device: mac
                       path: ${{ project.macTestProject }}
-                      app: ${{ project.macApp }}
+                      app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
