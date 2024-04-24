@@ -579,5 +579,50 @@ configuration:
       - removeLabel:
           label: s/try-latest-version
       description: Remove 's/try-latest-version' when new reply from author comes in
+    - if:
+      - payloadType: Issues
+      - isAction:
+          action: Opened
+      - or:
+        - isActivitySender:
+            user: PureWeen
+            issueAuthor: False
+        - isActivitySender:
+            user: mattleibow
+            issueAuthor: False
+        - isActivitySender:
+            user: rmarinho
+            issueAuthor: False
+        - isActivitySender:
+            user: jsuarezruiz
+            issueAuthor: False
+        - isActivitySender:
+            user: Redth
+            issueAuthor: False
+        - isActivitySender:
+            user: StephaneDelcroix
+            issueAuthor: False
+        - isActivitySender:
+            user: samhouts
+            issueAuthor: False
+        - isActivitySender:
+            user: jamesmontemagno
+            issueAuthor: False
+        - isActivitySender:
+            user: jonathanpeppers
+            issueAuthor: False
+        - isActivitySender:
+            user: rachelkang
+            issueAuthor: False
+        - isActivitySender:
+            user: Eilon
+            issueAuthor: False
+        - isActivitySender:
+            user: jfversluis
+            issueAuthor: False
+      then:
+      - addLabel:
+          label: s/triaged
+      description: Add 's/triaged' label to issues opened by the (core) team, we assume these issues do not need triaging
 onFailure: 
 onSuccess: 

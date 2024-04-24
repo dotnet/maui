@@ -18,7 +18,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected nfloat ConstrainedDimension;
 
-		public DataTemplate CurrentTemplate { get; private set; }
+		private WeakReference<DataTemplate> _currentTemplate;
+
+		public DataTemplate CurrentTemplate
+		{
+			get => _currentTemplate is not null && _currentTemplate.TryGetTarget(out var target) ? target : null;
+			private set => _currentTemplate = value is null ? null : new(value);
+		}
 
 		// Keep track of the cell size so we can verify whether a measure invalidation 
 		// actually changed the size of the cell
