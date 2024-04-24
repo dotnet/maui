@@ -164,13 +164,13 @@ stages:
           androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
           iosVersionsExclude: [ '12.4' ]  # Ignore iOS 12.4 while we can't make it work on CI
           # new Appium UI tests
-          androidApp: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.Droid/Controls.Sample.UITests.Droid.csproj
+          androidApp: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           androidTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.Android.AppiumTests.csproj
-          iosApp: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.iOS/Controls.Sample.UITests.iOS.csproj
+          iosApp: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           iosTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/iOS.UITests/Controls.iOS.AppiumTests.csproj
-          winuiApp: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.WinUI/Controls.Sample.UITests.WinUI.csproj
+          winuiApp: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           winuiTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/WinUI.UITests/Controls.WinUI.AppiumTests.csproj
-          macApp: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.Mac/Controls.Sample.UITests.Mac.csproj
+          macApp: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           macTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/Mac.UITests/Controls.Mac.AppiumTests.csproj
           # compatibility Xamarin.UI tests
           compatibilityAndroidApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj 
