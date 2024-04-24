@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 
-		[Export("webView:didFinishNavigation:")]
+		[Obsolete("Use MauiWebViewNavigationDelegate.DidFinishNavigation instead.")]
 		public async void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
 			var url = CurrentUrl;

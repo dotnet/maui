@@ -4,14 +4,14 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
-namespace Maui.Controls.Sample
+namespace Controls.Sample.UITests
 {
-	class ScrollViewCoreGalleryPage : ContentPage
+	public class ScrollViewCoreGalleryPage : ContentPage
 	{
 		readonly ScrollView _scrollview;
 		readonly StackLayout _stack;
-		ScrollOrientation _orientation;
-		List<Button> _buttons = new List<Button>();
+		readonly ScrollOrientation _orientation;
+		readonly List<Button> _buttons = new List<Button>();
 		Button _toNavigateTo;
 
 		public ScrollViewCoreGalleryPage(ScrollOrientation orientation = ScrollOrientation.Vertical)
@@ -31,18 +31,18 @@ namespace Maui.Controls.Sample
 			var btnStack2 = new StackLayout { Orientation = StackOrientation.Horizontal };
 			var btnStack3 = new StackLayout { Orientation = StackOrientation.Horizontal };
 
-			var btn = new Button { Text = "Scroll to 100" };
-			var btn4 = new Button { Text = "Scroll to 100 no anim" };
-			var btn1 = new Button { Text = "Start" };
-			var btn2 = new Button { Text = "Center" };
-			var btn3 = new Button { Text = "End" };
+			var btn = new Button { AutomationId = "Scroll100", Text = "Scroll to 100" };
+			var btn4 = new Button { AutomationId = "Scroll100Anim", Text = "Scroll to 100 no anim" };
+			var btn1 = new Button { AutomationId = "Start", Text = "Start" };
+			var btn2 = new Button { AutomationId = "Center", Text = "Center" };
+			var btn3 = new Button { AutomationId = "End", Text = "End" };
 			var btn7 = new Button { Text = "Toggle Scroll Bar Visibility", WidthRequest = 120 };
 			var btn6 = new Button { Text = "MakeVisible", HorizontalOptions = LayoutOptions.Center, BackgroundColor = Colors.Blue };
 			var btn8 = new Button { Text = "Toggle Orientation", WidthRequest = 120 };
 			var btn9 = new Button { Text = "Default Scroll Bar Visibility", WidthRequest = 120 };
 
 			var labelStack = new StackLayout { Orientation = StackOrientation.Horizontal };
-			var label = new Label { Text = string.Format("X: {0}, Y: {1}", 0, 0) };
+			var label = new Label { AutomationId = "WaitForStubControl", Text = string.Format("X: {0}, Y: {1}", 0, 0) };
 			var scrollStatusLabel = new Label { Text = string.Empty };
 
 			root.Children.Add(labelStack);

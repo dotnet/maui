@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Drawing;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interfaces;
 using UITest.Core;
 
@@ -95,7 +96,7 @@ namespace UITest.Appium
 				ske.PressKeyCode(keyCode, metastate);
 				return;
 			}
-			
+
 			throw new InvalidOperationException($"SendKeys is not supported on {aaa.Driver}");
 		}
 
@@ -453,6 +454,15 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// If the application is already running then it will be brought to the foreground.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ForegroundApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("foregroundApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
 		/// Reset the currently running app for this session.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -539,6 +549,71 @@ namespace UITest.Appium
 		public static void Back(this IApp app)
 		{
 			app.CommandExecutor.Execute("back", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Return the AppId of the running app. This is used inside any appium command that want the app id
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static string GetAppId(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"GetAppId is only supported on AppiumApp");
+			}
+
+			var appId = aaa.Config.GetProperty<string>("AppId");
+			if (appId is not null)
+			{
+				return appId;
+			}
+
+			throw new InvalidOperationException("AppId not found");
+		}
+
+		/// <summary>
+		/// Retrieve the target device this test is running against
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns></returns>
+		/// <exception cref="InvalidOperationException"></exception>
+		public static TestDevice GetTestDevice(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"GetTestDevice is only supported on AppiumApp");
+			}
+
+			return aaa.Config.GetProperty<TestDevice>("TestDevice");
+		}
+
+		/// <summary>
+		/// Check if element has focused
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="id">Target element</param>
+		/// <returns>Returns <see langword="true"/> if focused</returns>
+		/// <exception cref="InvalidOperationException"></exception>
+		public static bool IsFocused(this IApp app, string id)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"IsFocused is only supported on AppiumApp");
+			}
+
+			var activeElement = aaa.Driver.SwitchTo().ActiveElement();
+			var element = (AppiumDriverElement)app.WaitForElement(id);
+
+			if (app.GetTestDevice() == TestDevice.Mac && activeElement is AppiumElement activeAppiumElement)
+			{
+				// For some reason on catalyst the ActiveElement returns an AppiumElement with a different id
+				// The TagName (AutomationId) and the location all match, so, other than the Id it walks and talks
+				// like the same element
+				return element.AppiumElement.TagName.Equals(activeAppiumElement.TagName, StringComparison.OrdinalIgnoreCase) &&
+					element.AppiumElement.Location.Equals(activeAppiumElement.Location);
+			}
+
+			return element.AppiumElement.Equals(activeElement);
 		}
 
 		static IUIElement Wait(Func<IUIElement> query,

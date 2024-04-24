@@ -13,6 +13,14 @@ parameters:
   rebootAgent: true
 
 steps:
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
+        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      displayName: 'Clean bot'
+      continueOnError: true
+      timeoutInMinutes: 60
   - template: provision.yml
     parameters:
       ${{ if eq(parameters.platform, 'windows')}}:
@@ -71,6 +79,23 @@ steps:
       Write-Host "##vso[task.setvariable variable=Platform.Name]${platformName}"
     displayName: 'Set Platform.Name'
 
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+        if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
+      displayName: Delete Old Simulator Logs
+      condition: always()
+      continueOnError: true
+
+  - ${{ if eq(parameters.platform, 'windows')}}:
+    - pwsh: |
+        $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+        New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value "$(Build.ArtifactStagingDirectory)/crash-dumps"
+        New-ItemProperty -Path $errorPath -Name DumpType -PropertyType DWORD -Value 2
+      displayName: 'Set dump file location'
+      continueOnError: true
+      timeoutInMinutes: 5
+
   - pwsh: |
       ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
@@ -85,6 +110,24 @@ steps:
     workingDirectory: ${{ parameters.checkoutDirectory }}
     condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
     retryCountOnTaskFailure: 1
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        suffix=$(date +%Y%m%d%H%M%S)
+        zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
+        zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
+      displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
+
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+        zip -9r "$(LogDirectory)/DiagnosticReports.zip" "$HOME/Library/Logs/DiagnosticReports/"
+      displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
 
   - task: PublishTestResults@2
     displayName: Publish the $(Agent.JobName) test results

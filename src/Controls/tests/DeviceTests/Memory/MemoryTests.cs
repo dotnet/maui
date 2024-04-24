@@ -25,6 +25,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
+				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
@@ -42,6 +43,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
+				handlers.AddHandler<SearchBar, SearchBarHandler>();
 				handlers.AddHandler<Slider, SliderHandler>();
 				handlers.AddHandler<Stepper, StepperHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
@@ -74,6 +76,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Polyline))]
 	[InlineData(typeof(RefreshView))]
 	[InlineData(typeof(ScrollView))]
+	[InlineData(typeof(SearchBar))]
 	[InlineData(typeof(Slider))]
 	[InlineData(typeof(Stepper))]
 	[InlineData(typeof(SwipeView))]
@@ -81,6 +84,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(TimePicker))]
 	[InlineData(typeof(TableView))]
 	[InlineData(typeof(WebView))]
+	[InlineData(typeof(CollectionView))]
 	public async Task HandlerDoesNotLeak(Type type)
 	{
 		SetupBuilder();
@@ -114,7 +118,12 @@ public class MemoryTests : ControlsHandlerTestBase
 			}
 			else if (view is ItemsView items)
 			{
-				items.ItemTemplate = new DataTemplate(() => new Label());
+				items.ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				});
 				items.ItemsSource = observable;
 			}
 			else if (view is WebView webView)

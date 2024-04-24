@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Controls.Sample.UITests;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
@@ -48,6 +49,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new DragAndDropGallery(), "Drag and Drop Gallery"),
 			new GalleryPageFactory(() => new GestureRecognizerGallery(), "Gesture Recognizer Gallery"),
 			new GalleryPageFactory(() => new InputTransparencyGalleryPage(), "Input Transparency Gallery"),
+			new GalleryPageFactory(() => new ImageLoadingGalleryPage(), "Image Loading Gallery"),
 			// Elements
 			new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
 			new GalleryPageFactory(() => new BoxViewCoreGalleryPage(), "Box Gallery"),
