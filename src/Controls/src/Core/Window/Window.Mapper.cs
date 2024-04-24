@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls
 
 #if WINDOWS
 			WindowHandler.Mapper.PrependToMapping<Window, IWindowHandler>(nameof(ITitledElement.Title), MapTitle);
+			WindowHandler.Mapper.PrependToMapping<Window, IWindowHandler>(nameof(TitleBar), MapTitleBar);;
 #endif
 		}
 	}

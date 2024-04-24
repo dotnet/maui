@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -6,6 +7,11 @@ using Microsoft.Win32;
 using Windows.Foundation;
 using ViewManagement = Windows.UI.ViewManagement;
 using WThickness = Microsoft.UI.Xaml.Thickness;
+using Rect32 = Windows.Graphics.RectInt32;
+using FRect = Windows.Foundation.Rect;
+using Microsoft.UI.Input;
+using Microsoft.UI;
+using System.Collections;
 
 namespace Microsoft.Maui.Platform
 {
@@ -39,6 +45,7 @@ namespace Microsoft.Maui.Platform
 
 		Image? AppFontIcon { get; set; }
 		internal TextBlock? AppTitle { get; private set; }
+		internal WindowId? AppWindowId { get; set; }
 
 		public RootNavigationView? NavigationViewControl { get; private set; }
 
@@ -180,12 +187,73 @@ namespace Microsoft.Maui.Platform
 				if (sender is not FrameworkElement fe)
 					return;
 
-				if (_appTitleBarHeight != fe.ActualHeight)
-				{
-					UpdateRootNavigationViewMargins(fe.ActualHeight);
-					this.RefreshThemeResources();
-				}
+				UpdateTitleBarContentSize(fe);
 			};
+
+			UpdateTitleBarContentSize(AppTitleBarContentControl);
+		}
+
+		void UpdateTitleBarContentSize(FrameworkElement fe)
+		{
+			if (_appTitleBarHeight != fe.ActualHeight)
+			{
+				UpdateRootNavigationViewMargins(fe.ActualHeight);
+				this.RefreshThemeResources();
+			}
+
+			var rectArray = new List<Rect32>();
+			// TODO: the list of pass through children should be cached when the content changes
+			foreach (var child in GetAllChildren(fe))
+			{
+				// TODO: use attributes to determine if a control should be included in
+				// the pass through drag region
+				if (child is not null && child is TextBox)
+				{
+					var transform = child.TransformToVisual(null);
+					var bounds = transform.TransformBounds(
+						new FRect(0, 0, child.ActualWidth, child.ActualHeight));
+					var rect = GetRect(bounds, child.XamlRoot.RasterizationScale);
+
+					rectArray.Add(rect);
+				}
+			}
+
+			if (rectArray.Count > 0 && AppWindowId.HasValue)
+			{
+				var nonClientInputSrc =
+					InputNonClientPointerSource.GetForWindowId(AppWindowId.Value);
+				nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [.. rectArray]);
+			}
+		}
+
+		private static IEnumerable<FrameworkElement> GetAllChildren(FrameworkElement parent)
+		{
+			var queue = new Queue<FrameworkElement>();
+			queue.Enqueue(parent);
+
+			while (queue.Count > 0)
+			{
+				var current = queue.Dequeue();
+				yield return current;
+
+				foreach (var child in current.GetChildren<FrameworkElement>())
+				{
+					if (child != null)
+					{
+						queue.Enqueue(child);
+					}
+				}
+			}
+		}
+
+		private static Rect32 GetRect(FRect bounds, double scale)
+		{
+			return new Rect32(
+				_X: (int)Math.Round(bounds.X * scale),
+				_Y: (int)Math.Round(bounds.Y * scale),
+				_Width: (int)Math.Round(bounds.Width * scale),
+				_Height: (int)Math.Round(bounds.Height * scale)
+			);
 		}
 
 		void OnAppTitleBarContentControlLoaded(object sender, RoutedEventArgs e)
@@ -405,6 +473,19 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_setTitleBarBackgroundToTransparent && _appTitleBar is Border border)
 				border.Background = null;
+		}
+
+		internal static readonly DependencyProperty WindowTitleBarContentProperty =
+			DependencyProperty.Register(
+				nameof(WindowTitleBarContent),
+				typeof(FrameworkElement),
+				typeof(WindowRootView),
+				new PropertyMetadata(null));
+
+		internal FrameworkElement WindowTitleBarContent
+		{
+			get => (FrameworkElement)GetValue(WindowTitleBarContentProperty);
+			set => SetValue(WindowTitleBarContentProperty, value);
 		}
 
 		internal static readonly DependencyProperty WindowTitleForegroundProperty =

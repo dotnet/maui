@@ -130,6 +130,7 @@ namespace Microsoft.Maui
 		float RequestDisplayDensity();
 
 #if WINDOWS
+		IView? TitleBar => null;
 		Rect[]? TitleBarDragRectangles => null;
 #endif
 	}

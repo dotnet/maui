@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -150,6 +151,13 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetTitle(string? title) =>
 			_rootView.WindowTitle = title;
+
+		internal void SetTitleBar(FrameworkElement content)
+		{
+			_rootView.AppWindowId = _platformWindow.GetAppWindow()?.Id;
+			_rootView.WindowTitleBarContent = content;
+			_rootView.WindowTitle = "hello";
+		}
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)
 		{

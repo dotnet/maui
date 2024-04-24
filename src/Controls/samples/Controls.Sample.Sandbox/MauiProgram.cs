@@ -26,7 +26,12 @@ namespace Maui.Controls.Sample
 
 			if (!useShell)
 			{
-				return new Window(new NavigationPage(new MainPage()));
+				var wnd = new Window(new NavigationPage(new MainPage()));
+
+				var titlebar = new TitlebarSample();
+				titlebar.HeightRequest = 60;
+				wnd.TitleBar = titlebar;
+				return wnd;
 			}
 			else
 			{

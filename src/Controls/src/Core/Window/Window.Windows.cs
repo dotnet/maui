@@ -24,6 +24,13 @@ namespace Microsoft.Maui.Controls
 				.UpdateTitle(window, window.GetCurrentlyPresentedMauiContext());
 		}
 
+		static void MapTitleBar(IWindowHandler handler, Window window)
+		{
+			handler
+				.PlatformView
+				.UpdateTitleBar(window, window.GetCurrentlyPresentedMauiContext());
+		}
+
 		Rect[] IWindow.TitleBarDragRectangles
 		{
 			get
@@ -32,5 +39,17 @@ namespace Microsoft.Maui.Controls
 					.GetDefaultTitleBarDragRectangles(this.GetCurrentlyPresentedMauiContext());
 			}
 		}
+
+		public IView TitleBar
+		{
+			get => (IView)GetValue(TitleBarProperty);
+#pragma warning disable RS0036 // Annotate nullability of public types and members in the declared API
+			set => SetValue(TitleBarProperty, value);
+#pragma warning restore RS0036 // Annotate nullability of public types and members in the declared API
+		}
+
+		/// <summary>Bindable property for <see cref="TitleBar"/>.</summary>
+		public static readonly BindableProperty TitleBarProperty = BindableProperty.Create(
+			nameof(TitleBar), typeof(IView), typeof(Window), default(IView));
 	}
 }

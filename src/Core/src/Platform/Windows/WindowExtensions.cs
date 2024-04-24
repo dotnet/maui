@@ -52,6 +52,21 @@ namespace Microsoft.Maui.Platform
 				.SetTitle(window.Title);
 		}
 
+		internal static void UpdateTitleBar(this UI.Xaml.Window platformWindow, IWindow window, IMauiContext? mauiContext)
+		{
+			if (mauiContext != null)
+			{
+				var handler = window.TitleBar?.ToHandler(mauiContext);
+				if (handler != null &&
+					handler.PlatformView != null)
+				{
+					mauiContext?
+						.GetNavigationRootManager()?
+						.SetTitleBar(handler.PlatformView);
+				}
+			}
+		}
+
 		public static void UpdateX(this UI.Xaml.Window platformWindow, IWindow window) =>
 			platformWindow.UpdatePosition(window);
 
