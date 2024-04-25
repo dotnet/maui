@@ -20,23 +20,28 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
 
-			App.WaitForElement("Button1");
-
-			App.SetOrientationLandscape();
-
-			var buttonAutomationIds = new[]
+			try
 			{
+				App.WaitForElement("Button1");
+
+				App.SetOrientationLandscape();
+
+				var buttonAutomationIds = new[]
+				{
 					"Button1",
 					"Button2",
 					"Button3",
 				};
 
-			foreach (string buttonAutomationId in buttonAutomationIds)
-				App.WaitForElement(buttonAutomationId);
+				foreach (string buttonAutomationId in buttonAutomationIds)
+					App.WaitForElement(buttonAutomationId);
 
-			App.Screenshot("StackLayout respects rotation");
-
-			App.SetOrientationPortrait();
+				App.Screenshot("StackLayout respects rotation");
+			}
+			finally
+			{
+				App.SetOrientationPortrait();
+			}
 		}
 	}
 }
