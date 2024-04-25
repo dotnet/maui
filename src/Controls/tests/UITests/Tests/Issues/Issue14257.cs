@@ -15,13 +15,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void ResizeScrollViewAndTapButtonTest()
 		{
 			// Tapping the Resize button will change the height of the ScrollView content
-			App.Click("Resize");
+			App.Tap("Resize");
 
 			// Scroll down to the Test button. When the bug is present, the button cannot be tapped.
 			App.ScrollTo("Test");
 
 			App.WaitForElement("Test");
-			App.Click("Test");
+			App.Tap("Test");
 
 			// If we can successfully tap the button, the Success label will be displayed
 			Assert.IsTrue(App.WaitForTextToBePresentInElement("Result", "Success"));

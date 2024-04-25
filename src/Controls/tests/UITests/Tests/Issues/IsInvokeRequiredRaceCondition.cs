@@ -16,7 +16,7 @@ namespace Microsoft.Maui.AppiumTests.Issues;
 		public void ApplicationDispatcherIsInvokeRequiredRaceConditionCausesCrash()
 		{
 			App.WaitForElement("crashButton");
-			App.Click("crashButton");
+			App.Tap("crashButton");
 			App.WaitForElement("successLabel");
 		}
 	}
