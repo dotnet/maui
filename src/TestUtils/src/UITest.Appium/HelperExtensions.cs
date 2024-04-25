@@ -34,11 +34,6 @@ namespace UITest.Appium
 			app.FindElement(element).Click();
 		}
 
-		public static void Tap(this IApp app, string element)
-		{
-			app.FindElement(element).Click();
-		}
-
 		public static string? GetText(this IUIElement element)
 		{
 			var response = element.Command.Execute("getText", new Dictionary<string, object>()
