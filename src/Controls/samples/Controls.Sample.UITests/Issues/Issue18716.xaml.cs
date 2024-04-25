@@ -9,5 +9,22 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 		}
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+			WaitForStubControl.Navigating += OnWebViewNavigating;
+		}
+
+		protected override void OnDisappearing()
+		{
+			base.OnDisappearing();
+			WaitForStubControl.Navigating -= OnWebViewNavigating;
+		}
+		
+		void OnWebViewNavigating(object sender, WebNavigatingEventArgs e)
+		{
+			LoadedControl.Text = "Ready";
+		}
 	}
 }

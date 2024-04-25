@@ -3,11 +3,15 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
     x:Class="Maui.Controls.Sample.Issues.Issue18716">
-  <Grid>
+  <Grid
+    RowDefinitions="*, Auto">
     <WebView
       x:Name="WaitForStubControl"
       AutomationId="WaitForStubControl"
       Source="https://freetestdata.com/wp-content/uploads/2021/09/Free_Test_Data_1MB_PDF.pdf">
     </WebView>
+    <Label
+      x:Name="LoadedControl"
+      AutomationId="LoadedControl" />
   </Grid>
 </ContentPage>

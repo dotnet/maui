@@ -14,11 +14,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		[Test]
 		[Category(UITestCategories.WebView)]
-		public async Task CanScrollWebView()
+		public void CanScrollWebView()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
 
-			await Task.Delay(1000); // Wait WebView to load.
+			App.WaitForElement("LoadedControl", timeout: TimeSpan.FromSeconds(1));
+			var result = App.FindElement("LoadedControl").GetText();
+			Assert.AreEqual("Ready", result);
 
 			App.WaitForElement("WaitForStubControl");
 			App.ScrollDown("WaitForStubControl", ScrollStrategy.Gesture, 0.75);
