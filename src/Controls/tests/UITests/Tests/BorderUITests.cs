@@ -32,7 +32,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "BordersWithVariousShapes");
-			App.Click("GoButton");
+			App.Tap("GoButton");
 
 			App.WaitForElement("WaitForStubControl");
 
