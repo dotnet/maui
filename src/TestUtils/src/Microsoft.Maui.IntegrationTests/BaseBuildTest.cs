@@ -32,7 +32,7 @@ namespace Microsoft.Maui.IntegrationTests
 				if (result.Length > 20)
 				{
 					// If the test name is too long, hash it to avoid path length issues
-					result = result.Substring(0, 15) + Convert.ToString(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal), CultureInfo.InvariantCulture);
+					result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
 				}
 				return result;
 			}
