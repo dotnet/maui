@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using SkiaSharp;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
@@ -15,6 +16,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		public abstract class ExecuteForApp : MSBuildTaskTestFixture<ResizetizeImages>
 		{
 			protected static readonly Dictionary<string, string> ResizeMetadata = new() { ["Resize"] = "true" };
+
+			protected ExecuteForApp(ITestOutputHelper output)
+				: base(output)
+			{
+			}
 
 			protected ResizetizeImages GetNewTask(string type, params ITaskItem[] items) =>
 				new ResizetizeImages
@@ -33,12 +39,59 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		public abstract class ExecuteForPlatformApp : ExecuteForApp
 		{
+			protected ExecuteForPlatformApp(ITestOutputHelper output)
+				: base(output)
+			{
+			}
+
 			protected abstract string Platform { get; }
 
 			protected abstract string GetPlatformOutputFileName(string file);
 
 			protected ResizetizeImages GetNewTask(params ITaskItem[] items) =>
 				GetNewTask(Platform, items);
+
+			[Theory]
+			[InlineData("appicon.svg")]
+			[InlineData("bicycle.svg")]
+			[InlineData("camera.svg")]
+			[InlineData("camera.png")]
+			[InlineData("dotnet_bot.svg")]
+			[InlineData("dotnet_logo.svg")]
+			[InlineData("find_icon.svg")]
+			[InlineData("not_working.svg")]
+			[InlineData("prismicon.svg")]
+			[InlineData("warning.svg")]
+			[InlineData("yes_working.svg")]
+			public void BasicImageProcessingWorks(string image)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{image}"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileExists(GetPlatformOutputFileName(Path.ChangeExtension(image, ".png")));
+			}
+
+			[Theory]
+			[InlineData("link_out.svg")]
+			public void BadImagesReportImageWithError(string image)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{image}"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.False(success);
+
+				Assert.Contains(image, LogErrorEvents.FirstOrDefault()?.Message, StringComparison.OrdinalIgnoreCase);
+			}
 
 			[Fact]
 			public void GenerationSkippedOnIncrementalBuild()
@@ -179,6 +232,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		public class ExecuteForAndroid : ExecuteForPlatformApp
 		{
+			public ExecuteForAndroid(ITestOutputHelper output)
+				: base(output)
+			{
+			}
+
 			protected override string Platform => "android";
 
 			protected override string GetPlatformOutputFileName(string file) =>
@@ -930,6 +988,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		public class ExecuteForiOS : ExecuteForPlatformApp
 		{
+			public ExecuteForiOS(ITestOutputHelper output)
+				: base(output)
+			{
+			}
+
 			protected override string Platform => "ios";
 
 			protected override string GetPlatformOutputFileName(string file) => $"{file}";
@@ -1243,6 +1306,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		public class ExecuteForWindows : ExecuteForPlatformApp
 		{
+			public ExecuteForWindows(ITestOutputHelper output)
+				: base(output)
+			{
+			}
+
 			protected override string Platform => "uwp";
 
 			protected override string GetPlatformOutputFileName(string file) =>
@@ -1602,6 +1670,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		public class ExecuteForAny : ExecuteForApp
 		{
+			public ExecuteForAny(ITestOutputHelper output)
+				: base(output)
+			{
+			}
+
 			[Theory]
 			[InlineData("image.svg", "100,100", true)]
 			[InlineData("image.png", "100,100", true)]
