@@ -21,6 +21,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Quick single taps on Android have wrong second tap location";
 
 		[Test]
+		[Category(UITestCategories.Label)]
 		public void TapTwoPlacesQuickly()
 		{
 			// https://github.com/dotnet/maui/issues/17435
@@ -70,8 +71,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			{
 				// Windows will throw an error if we try to execute Taps with a TouchAction
 				// or if we try to use ExecuteScript, so we'll just use TapCoordinates instead
-				app.Click(point1.X, point1.Y);
-				app.Click(point2.X, point2.Y);
+				app.TapCoordinates(point1.X, point1.Y);
+				app.TapCoordinates(point2.X, point2.Y);
 			}
 			else if (driver is IOSDriver)
 			{

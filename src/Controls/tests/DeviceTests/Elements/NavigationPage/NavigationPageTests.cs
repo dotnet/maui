@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -33,15 +35,19 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 #endif
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Window, WindowHandlerStub>();
-					handlers.AddHandler<Frame, FrameRenderer>();
-					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
+					handlers.AddHandler<Border, BorderHandler>();
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<CarouselView, CarouselViewHandler>();
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
-					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
-					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
+					handlers.AddHandler<Frame, FrameRenderer>();
+					handlers.AddHandler<IContentView, ContentViewHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<RadioButton, RadioButtonHandler>();
+					handlers.AddHandler<Shape, ShapeViewHandler>();
+					handlers.AddHandler<Window, WindowHandlerStub>();
 				});
 			});
 		}
@@ -323,6 +329,7 @@ namespace Microsoft.Maui.DeviceTests
 						new ContentView(),
 						new Label(),
 						new ScrollView(),
+						new RadioButton(),
 					}
 				};
 				pageReference = new WeakReference(page);
@@ -353,6 +360,20 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.Navigation.PopAsync();
 				await navPage.Navigation.PushAsync(reusedPage);
 				await OnLoadedAsync(reusedPage.Content);
+			});
+		}
+
+		[Fact]
+		public async Task SettingTitleIconImageSourceDoesntCrash()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var page = new ContentPage() { Content = new Frame(), Title = "Detail" };
+				await navPage.PushAsync(new NavigationPage(page));
+				NavigationPage.SetTitleIconImageSource(page, "red.png");
 			});
 		}
 	}

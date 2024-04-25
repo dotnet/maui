@@ -1,4 +1,5 @@
-﻿using UITest.Appium;
+﻿using NUnit.Framework;
+using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
@@ -26,11 +27,12 @@ namespace Microsoft.Maui.AppiumTests
 
 		// TODO: Enable this as a test once fully working
 		//[Test]
+		//[Category(UITestCategories.Border)]
 		public void BordersWithVariousShapes()
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "BordersWithVariousShapes");
-			App.Click("GoButton");
+			App.Tap("GoButton");
 
 			App.WaitForElement("WaitForStubControl");
 

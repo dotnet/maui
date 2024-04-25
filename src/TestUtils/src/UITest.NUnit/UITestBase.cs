@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -56,24 +56,29 @@ namespace UITest.Appium.NUnit
 		[TearDown]
 		public void UITestBaseTearDown()
 		{
-			if (App.AppState == ApplicationState.NotRunning)
+			try
 			{
-				SaveDeviceDiagnosticInfo();
+				if (App.AppState == ApplicationState.NotRunning)
+				{
+					SaveDeviceDiagnosticInfo();
 
-				Reset();
-				FixtureSetup();
+					Reset();
+					FixtureSetup();
 
-				// Assert.Fail will immediately exit the test which is desirable as the app is not
-				// running anymore so we can't capture any UI structures or any screenshots
-				Assert.Fail("The app was expected to be running still, investigate as possible crash");
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we can't capture any UI structures or any screenshots
+					Assert.Fail("The app was expected to be running still, investigate as possible crash");
+				}
 			}
-
-			var testOutcome = TestContext.CurrentContext.Result.Outcome;
-			if (testOutcome == ResultState.Error ||
-				testOutcome == ResultState.Failure)
+			finally
 			{
-				SaveDeviceDiagnosticInfo();
-				SaveUIDiagnosticInfo();
+				var testOutcome = TestContext.CurrentContext.Result.Outcome;
+				if (testOutcome == ResultState.Error ||
+					testOutcome == ResultState.Failure)
+				{
+					SaveDeviceDiagnosticInfo();
+					SaveUIDiagnosticInfo();
+				}
 			}
 		}
 
@@ -104,7 +109,9 @@ namespace UITest.Appium.NUnit
 				outcome.Site == ResultState.SetUpFailure.Site)
 			{
 				SaveDeviceDiagnosticInfo();
-				SaveUIDiagnosticInfo();
+
+				if (App.AppState != ApplicationState.NotRunning)
+					SaveUIDiagnosticInfo();
 			}
 
 			FixtureTeardown();
@@ -131,8 +138,11 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		void SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
+		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
 		{
+			if (App.AppState == ApplicationState.NotRunning)
+				return false;
+
 			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
 			if (screenshotPath is not null)
 			{
@@ -148,6 +158,8 @@ namespace UITest.Appium.NUnit
 
 				AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
 			}
+
+			return true;
 		}
 
 		string? GetGeneratedFilePath(string filename, string? note = null)

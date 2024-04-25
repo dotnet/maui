@@ -26,15 +26,7 @@ namespace Microsoft.Maui.Controls
 			EndPoint = endPoint;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />
-		public override bool IsEmpty
-		{
-			get
-			{
-				var linearGradientBrush = this;
-				return linearGradientBrush == null || linearGradientBrush.GradientStops.Count == 0;
-			}
-		}
+		public override bool IsEmpty => base.IsEmpty;
 
 		/// <summary>Bindable property for <see cref="StartPoint"/>.</summary>
 		public static readonly BindableProperty StartPointProperty = BindableProperty.Create(

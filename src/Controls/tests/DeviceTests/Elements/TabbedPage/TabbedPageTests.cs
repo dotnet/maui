@@ -426,6 +426,37 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		[Fact(DisplayName = "Does Not Leak"
+#if WINDOWS
+			, Skip = "FIXME: fails on Windows"
+#endif
+		)]
+		public async Task DoesNotLeak()
+		{
+			SetupBuilder();
+			WeakReference pageReference = null;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var page = new TabbedPage
+				{
+					Children =
+					{
+						new ContentPage
+						{
+							Content = new VerticalStackLayout { new Label() },
+						}
+					}
+				};
+				pageReference = new WeakReference(page);
+				await navPage.Navigation.PushAsync(page);
+				await navPage.Navigation.PopAsync();
+			});
+
+			await AssertionExtensions.WaitForGC(pageReference);
+		}
+
 
 		TabbedPage CreateBasicTabbedPage(bool bottomTabs = false, bool isSmoothScrollEnabled = true, IEnumerable<Page> pages = null)
 		{

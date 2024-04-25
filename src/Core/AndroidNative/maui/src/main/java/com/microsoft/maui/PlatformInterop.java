@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -589,6 +590,31 @@ public class PlatformInterop {
             .getOrCreate()
             .computeCurrentWindowMetrics(activity)
             .getBounds();
+    }
+
+    /**
+     * Gets font metrics based on the given context and default font size
+     * @param context
+     * @param defaultFontSize
+     * @return FontMetrics object or null if context or display metrics is null
+     */
+    public static Paint.FontMetrics getFontMetrics(Context context, float defaultFontSize) {
+        if (context == null)
+            return null;
+
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        if (metrics != null) {
+            return new Paint() {{
+                setTextSize(
+                    TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_SP,
+                        defaultFontSize,
+                        metrics
+                ));
+            }}.getFontMetrics();
+        } else {
+            return null;
+        }
     }
 
     private static class ColorStates
