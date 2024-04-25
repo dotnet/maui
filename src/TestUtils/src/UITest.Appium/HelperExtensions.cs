@@ -34,11 +34,6 @@ namespace UITest.Appium
 			app.FindElement(element).Click();
 		}
 
-		public static void Tap(this IApp app, string element)
-		{
-			app.FindElement(element).Click();
-		}
-
 		public static void RightClick(this IApp app, string element)
 		{
 			var uiElement = app.FindElement(element);
