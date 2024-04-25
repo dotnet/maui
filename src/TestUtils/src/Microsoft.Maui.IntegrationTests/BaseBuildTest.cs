@@ -1,4 +1,5 @@
-﻿
+﻿using System.Globalization;
+
 namespace Microsoft.Maui.IntegrationTests
 {
 	public enum RuntimeVariant
@@ -26,7 +27,14 @@ namespace Microsoft.Maui.IntegrationTests
 				{
 					result = result.Replace(c, '_');
 				}
-				return result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+				result = result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+				if (result.Length > 20)
+				{
+					// If the test name is too long, hash it to avoid path length issues
+					result = result.Substring(0, 15) + Convert.ToString(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal), CultureInfo.InvariantCulture);
+				}
+				return result;
 			}
 		}
 
