@@ -20,17 +20,17 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			try
 			{
 				_ = App.WaitForElement("GoToTest");
-				App.Click("GoToTest");
+				App.Tap("GoToTest");
 				App.WaitForElement("goToShow");
-				App.Click("goToShow");
+				App.Tap("goToShow");
 				App.WaitForElement("goToBack");
 				ScrollNextItem();
-				App.Click("goToBack");
+				App.Tap("goToBack");
 				App.WaitForElement("goToShow");
-				App.Click("goToShow");
+				App.Tap("goToShow");
 				ScrollNextItem();
 				App.WaitForElement("goToBack");
-				App.Click("goToBack");
+				App.Tap("goToBack");
 				App.WaitForElement("goToShow");
 			}
 			finally{

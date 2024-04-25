@@ -5,11 +5,14 @@ parameters:
   macosPool: { }
   androidCompatibilityPool: { }
   iosCompatibilityPool: { }
+  androidLegacyPool: { }
+  iosLegacyPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   runCompatibilityTests: false
+  runLegacyTests: true
   projects:
     - name: name
       desc: Human Description
@@ -22,6 +25,10 @@ parameters:
       compatibilityAndroidTestProject: /optional/path/to/android.csproj
       compatibilityiOSTestProject: /optional/path/to/ios.csproj
       compatibilityiOSApp: /optional/path/to/app.csproj
+      legacyAndroidApp: /optional/path/to/app.csproj
+      legacyAndroidTestProject: /optional/path/to/android.csproj
+      legacyiOSTestProject: /optional/path/to/ios.csproj
+      legacyiOSApp: /optional/path/to/app.csproj
 
 stages:
 
@@ -170,7 +177,6 @@ stages:
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
-
     - stage: ios_compatibility_ui_tests
       displayName: iOS Compatibility UITests
       dependsOn: []
@@ -199,6 +205,71 @@ stages:
                           version: ${{ version }}
                         path: ${{ project.compatibilityiOSTestProject }}
                         app: ${{ project.compatibilityiOSApp }}
+                        targetSample: "dotnet-legacy-controlgallery-ios"
+                        ${{ if eq(version, 'latest') }}:
+                          device: ios-simulator-64
+                        ${{ if ne(version, 'latest') }}:
+                          device: ios-simulator-64_${{ version }}
+                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+  - ${{ if eq(parameters.runLegacyTests, true) }}:  
+    - stage: android_legacy_ui_tests
+      displayName: Android Legacy UITests
+      dependsOn: []
+      jobs:
+        - ${{ each project in parameters.projects }}:
+          - ${{ if ne(project.android, '') }}:
+            - ${{ each api in parameters.androidApiLevels }}:
+              - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+                - job: android_legacy_ui_tests_${{ project.name }}_${{ api }}
+                  timeoutInMinutes: 240
+                  workspace:
+                    clean: all
+                  displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
+                  pool: ${{ parameters.androidLegacyPool }}
+                  variables:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  steps:
+                    - template: ui-tests-legacy-steps.yml
+                      parameters:
+                        platform: android
+                        version: ${{ api }}
+                        path: ${{ project.legacyAndroidTestProject }}
+                        app: ${{ project.legacyAndroidApp }}
+                        targetSample: "dotnet-legacy-controlgallery-android"
+                        ${{ if eq(api, 27) }}:
+                          device: android-emulator-32_${{ api }}
+                        ${{ if not(eq(api, 27)) }}:
+                          device: android-emulator-64_${{ api }}
+                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+
+    - stage: ios_legacy_ui_tests
+      displayName: iOS Legacy UITests
+      dependsOn: []
+      jobs:
+        - ${{ each project in parameters.projects }}:
+          - ${{ if ne(project.ios, '') }}:
+            - ${{ each version in parameters.iosVersions }}:
+              - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
+                - job: ios_legacy_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
+                  timeoutInMinutes: 240
+                  workspace:
+                    clean: all
+                  displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                  pool: ${{ parameters.iosLegacyPool }}
+                  variables:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  steps:
+                    - template: ui-tests-legacy-steps.yml
+                      parameters:
+                        platform: ios
+                        ${{ if eq(version, 'latest') }}:
+                          version: 16.4
+                        ${{ if ne(version, 'latest') }}:
+                          version: ${{ version }}
+                        path: ${{ project.legacyiOSTestProject }}
+                        app: ${{ project.legacyiOSApp }}
                         targetSample: "dotnet-legacy-controlgallery-ios"
                         ${{ if eq(version, 'latest') }}:
                           device: ios-simulator-64
