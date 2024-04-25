@@ -21,7 +21,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IApp app, string element)
 		{
-			app.FindElement(element).Tap();
+			app.FindElement(element).Click();
 		}
 
 		/// <summary>
