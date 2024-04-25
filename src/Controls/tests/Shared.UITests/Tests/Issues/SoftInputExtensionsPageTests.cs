@@ -18,9 +18,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// Make sure the buttons appear on the screen.
 			Task.Delay(1000).Wait();
 			App.Tap("ShowKeyboard");
-			Assert.IsTrue(App.WaitForTextToBePresentInElement("Result", "True"));
+			ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("Result", "True"));
 			App.Tap("HideKeyboard");
-			Assert.IsTrue(App.WaitForTextToBePresentInElement("Result", "False"));
+			ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("Result", "False"));
 		}
 	}
 }

@@ -144,14 +144,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				for (int i = 0; i < 2; i++)
 				{
 					App.Tap("HideKeyboardWhenTappingPage");
-					Assert.True(App.IsKeyboardShown());
+					ClassicAssert.True(App.IsKeyboardShown());
 					App.Tap("EmptySpace");
-					Assert.AreEqual(false, App.IsKeyboardShown());
+					ClassicAssert.AreEqual(false, App.IsKeyboardShown());
 
 					App.Tap("DontHideKeyboardWhenTappingPage");
-					Assert.True(App.IsKeyboardShown());
+					ClassicAssert.True(App.IsKeyboardShown());
 					App.Tap("EmptySpace");
-					Assert.AreEqual(true, App.IsKeyboardShown());
+					ClassicAssert.AreEqual(true, App.IsKeyboardShown());
 				}
 			}
 			finally

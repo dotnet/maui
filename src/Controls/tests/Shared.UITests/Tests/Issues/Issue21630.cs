@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -37,12 +38,12 @@ public class Issue21630 : _IssuesUITest
 
 			var newNavBarEntry = App.WaitForElement(NavBarEntry + scenarioSuffix);
 			var newNavBarEntryLocation = newNavBarEntry.GetRect();
-			Assert.AreEqual(navBarLocation, newNavBarEntryLocation);
+			ClassicAssert.AreEqual(navBarLocation, newNavBarEntryLocation);
 
 			var newHeaderEntry = App.WaitForElement(HeaderEntry);
 			var newHeaderLocation = newHeaderEntry.GetRect();
 
-			Assert.AreEqual(headerLocation, newHeaderLocation);
+			ClassicAssert.AreEqual(headerLocation, newHeaderLocation);
 
 			App.WaitForElement(RestoreButton);
 			App.Click(RestoreButton);

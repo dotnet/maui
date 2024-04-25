@@ -37,7 +37,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.Tap("EntryDone");
 
 			await Task.Yield();
-			Assert.True(App.IsKeyboardShown());
+			ClassicAssert.True(App.IsKeyboardShown());
 			App.Tap("SendDone");
 			await Task.Yield();
 			ClassicAssert.False(App.IsKeyboardShown());
