@@ -15,7 +15,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void ButtonStillWorksWhenItHasPointerOverVSMSet()
 		{
 			App.WaitForElement("btn");
-			App.Click("btn");
+			App.Tap("btn");
 			App.WaitForElement("Success");
 		}
 	}

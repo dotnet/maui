@@ -42,16 +42,16 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			try
 			{
 				if (hideOnTapped)
-					App.Click("HideSoftInputOnTappedTrue");
+					App.Tap("HideSoftInputOnTappedTrue");
 				else
-					App.Click("HideSoftInputOnTappedFalse");
+					App.Tap("HideSoftInputOnTappedFalse");
 
 				App.WaitForElement(control);
-				App.Click(control);
+				App.Tap(control);
 
 				Assert.IsTrue(App.IsFocused(control));
 
-				App.Click("EmptySpace");
+				App.Tap("EmptySpace");
 				Assert.AreEqual(!hideOnTapped, App.IsFocused(control));
 			}
 			finally
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 					App.Tap("HideSoftInputOnTappedFalse");
 
 				App.WaitForElement(control);
-				App.Click(control);
+				App.Tap(control);
 
 				Assert.True(App.IsKeyboardShown());
 
@@ -111,19 +111,19 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			try
 			{
-				App.Click("HideSoftInputOnTappedFalse");
+				App.Tap("HideSoftInputOnTappedFalse");
 
 				// Switch between enabling/disabling feature
 				for (int i = 0; i < 2; i++)
 				{
-					App.Click("HideKeyboardWhenTappingPage");
+					App.Tap("HideKeyboardWhenTappingPage");
 					Assert.True(App.IsFocused("HideKeyboardWhenTappingPage"));
-					App.Click("EmptySpace");
+					App.Tap("EmptySpace");
 					Assert.AreEqual(false, App.IsFocused("HideKeyboardWhenTappingPage"));
 
-					App.Click("DontHideKeyboardWhenTappingPage");
+					App.Tap("DontHideKeyboardWhenTappingPage");
 					Assert.True(App.IsFocused("DontHideKeyboardWhenTappingPage"));
-					App.Click("EmptySpace");
+					App.Tap("EmptySpace");
 					Assert.AreEqual(true, App.IsFocused("DontHideKeyboardWhenTappingPage"));
 				}
 			}
@@ -141,23 +141,23 @@ namespace Microsoft.Maui.AppiumTests.Issues
 					App.DismissKeyboard();
 
 				App.WaitForElement("HideSoftInputOnTappedFalse");
-				App.Click("HideSoftInputOnTappedFalse");
+				App.Tap("HideSoftInputOnTappedFalse");
 
 				// Switch between enabling/disabling feature
 				for (int i = 0; i < 2; i++)
 				{
 					App.WaitForElement("HideKeyboardWhenTappingPage");
-					App.Click("HideKeyboardWhenTappingPage");
+					App.Tap("HideKeyboardWhenTappingPage");
 					Assert.True(App.IsKeyboardShown());
 					App.WaitForElement("EmptySpace");
-					App.Click("EmptySpace");
+					App.Tap("EmptySpace");
 					Assert.AreEqual(false, App.IsKeyboardShown());
 
 					App.WaitForElement("DontHideKeyboardWhenTappingPage");
-					App.Click("DontHideKeyboardWhenTappingPage");
+					App.Tap("DontHideKeyboardWhenTappingPage");
 					Assert.True(App.IsKeyboardShown());
 					App.WaitForElement("EmptySpace");
-					App.Click("EmptySpace");
+					App.Tap("EmptySpace");
 					Assert.AreEqual(true, App.IsKeyboardShown());
 				}
 			}

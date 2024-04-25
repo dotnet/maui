@@ -17,7 +17,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void IsRefreshingAndCommandTest()
 		{
 			App.WaitForElement("ToggleRefresh");
-			App.Click("ToggleRefresh");
+			App.Tap("ToggleRefresh");
 			Assert.IsTrue(App.WaitForTextToBePresentInElement("IsRefreshingLabel", "IsRefreshing: True"));
 			Assert.IsTrue(App.WaitForTextToBePresentInElement("IsRefreshingLabel", "IsRefreshing: False"));
 		}

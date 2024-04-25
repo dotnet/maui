@@ -17,7 +17,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			App.WaitForElement("Add");
 
-			App.Click("Add");
+			App.Tap("Add");
 
 			App.WaitForElement("Item2");
 			App.WaitForElement("Item3");
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			App.WaitForElement("Insert");
 
-			App.Click("Insert");
+			App.Tap("Insert");
 
 			App.WaitForElement("Item2");
 			App.WaitForElement("Item3");
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			App.WaitForElement("Update");
 
-			App.Click("Update");
+			App.Tap("Update");
 
 			App.WaitForElement("Item3");
 		}
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			App.WaitForElement("Remove");
 
-			App.Click("Remove");
+			App.Tap("Remove");
 
 			App.WaitForElement("Item2");
 		}

@@ -19,10 +19,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Windows]);
 
 			App.WaitForElement("OpenModalButton");
-			App.Click("OpenModalButton");
+			App.Tap("OpenModalButton");
 
 			App.WaitForElement("CloseModalButton");
-			App.Click("CloseModalButton");
+			App.Tap("CloseModalButton");
 		}
 	}
 }

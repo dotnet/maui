@@ -26,14 +26,14 @@ public class Issue21630 : _IssuesUITest
 			var scenarioSuffix = scenario == "SwapNavigationPage" ? "NavigationPage" : "ShellPage";
 
 			App.WaitForElement(scenario);
-			App.Click(scenario);
+			App.Tap(scenario);
 
 			var navBarEntry = App.WaitForElement(NavBarEntry + scenarioSuffix);
 			var navBarLocation = navBarEntry.GetRect();
 			var headerEntry = App.WaitForElement(HeaderEntry);
 			var headerLocation = headerEntry.GetRect();
 
-			App.Click(FocusButton + scenarioSuffix);
+			App.Tap(FocusButton + scenarioSuffix);
 
 			var newNavBarEntry = App.WaitForElement(NavBarEntry + scenarioSuffix);
 			var newNavBarEntryLocation = newNavBarEntry.GetRect();
@@ -45,7 +45,7 @@ public class Issue21630 : _IssuesUITest
 			Assert.AreEqual(headerLocation, newHeaderLocation);
 
 			App.WaitForElement(RestoreButton);
-			App.Click(RestoreButton);
+			App.Tap(RestoreButton);
 		}
 		catch
 		{

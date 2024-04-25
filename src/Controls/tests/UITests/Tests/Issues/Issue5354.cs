@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Issues
 				Assert.AreEqual(linearRect0.X, linearRect1.X);
 				Assert.GreaterOrEqual(linearRect1.Y, linearRect0.Y + linearRect0.Height);
 
-				App.Click("Button5354");
+				App.Tap("Button5354");
 
 				var gridRect0 = App.WaitForElement("Image0").GetRect();
 				var gridRect1 = App.WaitForElement("Image1").GetRect();
@@ -38,7 +38,7 @@ namespace Maui.Controls.Sample.Issues
 				Assert.AreEqual(gridRect0.Y, gridRect1.Y);
 				Assert.AreEqual(gridRect0.Height, gridRect1.Height);
 				
-				App.Click("Button5354");
+				App.Tap("Button5354");
 			}
 		}
 	}
