@@ -21,7 +21,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IApp app, string element)
 		{
-			app.FindElement(element).Click();
+			app.FindElement(element).Tap();
 		}
 
 		/// <summary>
@@ -30,11 +30,6 @@ namespace UITest.Appium
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="element">Target Element.</param>
 		public static void Click(this IApp app, string element)
-		{
-			app.FindElement(element).Click();
-		}
-
-		public static void Tap(this IApp app, string element)
 		{
 			app.FindElement(element).Click();
 		}
