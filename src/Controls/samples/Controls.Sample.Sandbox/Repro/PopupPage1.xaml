@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mopups:PopupPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                  xmlns:mopups="clr-namespace:Mopups.Pages;assembly=Mopups"
+                  x:Class="WebViewCrashMidLoad.PopupPage1"
+                  BackgroundColor="Cyan">
+  
+  <VerticalStackLayout>
+    <Label Text="This is Popup Page 1"
+           FontSize="60"
+           VerticalOptions="Center"
+           HorizontalOptions="Center" />
+    
+    <Label Text="Press the close button below, and immediately minimize the app. Upon resuming the app the crash will take place."
+           FontSize="24"
+           VerticalOptions="Center"
+           HorizontalOptions="Center" />
+
+    <Button x:Name="CloseButton"
+            Text="Close popup after a 2 seconds delay"
+            Clicked="OnCloseButtonClicked"
+            HorizontalOptions="Fill" />
+  </VerticalStackLayout>
+  
+</mopups:PopupPage>

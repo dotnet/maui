@@ -1,7 +1,9 @@
-﻿using Microsoft.Maui;
+﻿using CommunityToolkit.Maui;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using Mopups.Hosting;
 
 namespace Maui.Controls.Sample
 {
@@ -13,7 +15,10 @@ namespace Maui.Controls.Sample
 #if __ANDROID__ || __IOS__
 				.UseMauiMaps()
 #endif
-				.UseMauiApp<App>()
+			
+				.UseMauiApp<WebViewCrashMidLoad.App>()
+				.UseMauiCommunityToolkit()
+                .ConfigureMopups()
 				.Build();
 	}
 
