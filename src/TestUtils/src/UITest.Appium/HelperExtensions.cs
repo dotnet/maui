@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Drawing;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interfaces;
 using UITest.Core;
 
@@ -17,8 +18,23 @@ namespace UITest.Appium
 		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <param name="element">Target Element</param>
+		/// <param name="element">Target Element.</param>
+		public static void Tap(this IApp app, string element)
+		{
+			app.FindElement(element).Click();
+		}
+
+		/// <summary>
+		/// Performs a mouse click on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
 		public static void Click(this IApp app, string element)
+		{
+			app.FindElement(element).Click();
+		}
+
+		public static void Tap(this IApp app, string element)
 		{
 			app.FindElement(element).Click();
 		}
@@ -57,6 +73,12 @@ namespace UITest.Appium
 			throw new InvalidOperationException($"Could not get Rect of element");
 		}
 
+		/// <summary>
+		/// Enters text into the currently focused element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		/// <param name="text">The text to enter.</param>
 		public static void EnterText(this IApp app, string element, string text)
 		{
 			var appElement = app.FindElement(element);
@@ -64,11 +86,20 @@ namespace UITest.Appium
 			app.DismissKeyboard();
 		}
 
+		/// <summary>
+		/// Hides soft keyboard if present.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void DismissKeyboard(this IApp app)
 		{
 			app.CommandExecutor.Execute("dismissKeyboard", ImmutableDictionary<string, object>.Empty);
 		}
 
+		/// <summary>
+		/// Whether or not the soft keyboard is shown.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>true if the soft keyboard is shown; otherwise, false.</returns>
 		public static bool IsKeyboardShown(this IApp app)
 		{
 			var response = app.CommandExecutor.Execute("isKeyboardShown", ImmutableDictionary<string, object>.Empty);
@@ -99,9 +130,26 @@ namespace UITest.Appium
 			throw new InvalidOperationException($"SendKeys is not supported on {aaa.Driver}");
 		}
 
+		/// <summary>
+		/// Clears text from the currently focused element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
 		public static void ClearText(this IApp app, string element)
 		{
 			app.FindElement(element).Clear();
+		}
+
+		/// <summary>
+		/// Performs a mouse click on the matched element.
+		/// </summary>
+		/// <param name="element">Target Element.</param>
+		public static void Click(this IUIElement element)
+		{
+			element.Command.Execute("click", new Dictionary<string, object>()
+			{
+				{ "element", element }
+			});
 		}
 
 		/// <summary>
@@ -110,10 +158,10 @@ namespace UITest.Appium
 		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
 		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
-		/// <param name="element">Target Element</param>
-		public static void Click(this IUIElement element)
+		/// <param name="element">Target Element.</param>
+		public static void Tap(this IUIElement element)
 		{
-			element.Command.Execute("click", new Dictionary<string, object>()
+			element.Command.Execute("tap", new Dictionary<string, object>()
 			{
 				{ "element", element }
 			});
@@ -136,15 +184,98 @@ namespace UITest.Appium
 			});
 		}
 
+		/// <summary>
+		/// Performs a mouse double click on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
 		public static void DoubleClick(this IApp app, string element)
 		{
-			var elementToClick = app.FindElement(element);
+			var elementToDoubleClick = app.FindElement(element);
 			app.CommandExecutor.Execute("doubleClick", new Dictionary<string, object>
 			{
-				{ "element", elementToClick },
+				{ "element", elementToDoubleClick },
 			});
 		}
 
+		/// <summary>
+		/// Performs a mouse double click on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to double click.</param>
+		/// <param name="y">The y coordinate to double click.</param>
+		public static void DoubleClickCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("doubleClickCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
+		/// Performs two quick tap / touch gestures on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		public static void DoubleTap(this IApp app, string element)
+		{
+			var elementToDoubleTap = app.FindElement(element);
+			app.CommandExecutor.Execute("doubleTap", new Dictionary<string, object>
+			{
+				{ "element", elementToDoubleTap },
+			});
+		}
+
+		/// <summary>
+		/// Performs two quick tap / touch gestures on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to double tap.</param>
+		/// <param name="y">The y coordinate to double tap.</param>
+		public static void DoubleTapCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("doubleTapCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
+		/// Performs a long mouse click on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		public static void LongPress(this IApp app, string element)
+		{
+			var elementToLongPress = app.FindElement(element);
+			app.CommandExecutor.Execute("longPress", new Dictionary<string, object>
+			{
+				{ "element", elementToLongPress },
+			});
+		}
+
+		/// <summary>
+		/// Performs a continuous touch gesture on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		public static void TouchAndHold(this IApp app, string element)
+		{
+			var elementToTouchAndHold = app.FindElement(element);
+			app.CommandExecutor.Execute("touchAndHold", new Dictionary<string, object>
+			{
+				{ "element", elementToTouchAndHold },
+			});
+		}
+
+		/// <summary>
+		/// Performs a long touch on an item, followed by dragging the item to a second item and dropping it.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="dragSource">Element to be dragged.</param>
+		/// <param name="dragTarget">Element to be dropped.</param>
 		public static void DragAndDrop(this IApp app, string dragSource, string dragTarget)
 		{
 			var dragSourceElement = app.FindElement(dragSource);
@@ -157,6 +288,12 @@ namespace UITest.Appium
 			});
 		}
 
+		/// <summary>
+		/// Scroll until an element that matches the toElementId is shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="toElementId">Specify what element to scroll within.</param>
+		/// <param name="down">Whether scrolls should be down or up.</param>
 		public static void ScrollTo(this IApp app, string toElementId, bool down = true)
 		{
 			app.CommandExecutor.Execute("scrollTo", new Dictionary<string, object>
@@ -415,6 +552,21 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Performs a mouse click on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to click.</param>
+		/// <param name="y">The y coordinate to click.</param>
+		public static void ClickCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("clickCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
 		/// Performs a tap / touch gesture on the given coordinates.
 		/// This API currently doesn't work on Catalyst https://github.com/dotnet/maui/issues/19754
 		/// For Catalyst you'll currently need to use Click instead. 
@@ -602,6 +754,15 @@ namespace UITest.Appium
 
 			var activeElement = aaa.Driver.SwitchTo().ActiveElement();
 			var element = (AppiumDriverElement)app.WaitForElement(id);
+
+			if (app.GetTestDevice() == TestDevice.Mac && activeElement is AppiumElement activeAppiumElement)
+			{
+				// For some reason on catalyst the ActiveElement returns an AppiumElement with a different id
+				// The TagName (AutomationId) and the location all match, so, other than the Id it walks and talks
+				// like the same element
+				return element.AppiumElement.TagName.Equals(activeAppiumElement.TagName, StringComparison.OrdinalIgnoreCase) &&
+					element.AppiumElement.Location.Equals(activeAppiumElement.Location);
+			}
 
 			return element.AppiumElement.Equals(activeElement);
 		}
