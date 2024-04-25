@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +19,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[TestCase("RemoveAddTabs")]
 		public void MakingFragmentRelatedChangesWhileAppIsBackgroundedFails(string scenario)
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
-
 			try
 			{
 				App.WaitForElement(scenario);
@@ -43,3 +42,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,11 +15,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public async Task NavigateToStringWithWebviewWorks()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.iOS });
-
 			App.WaitForElement("WaitForWebView");
 			await Task.Delay(500);
 			VerifyScreenshot();
 		}
 	}
 }
+#endif

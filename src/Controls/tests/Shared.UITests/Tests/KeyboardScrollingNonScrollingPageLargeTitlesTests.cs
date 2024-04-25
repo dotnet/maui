@@ -1,4 +1,5 @@
-﻿using Maui.Controls.Sample;
+﻿#if IOS
+using Maui.Controls.Sample;
 using NUnit.Framework;
 using UITest.Core;
 
@@ -27,22 +28,20 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void EntriesScrollingPageTest()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
 			KeyboardScrolling.EntriesScrollingTest(App, KeyboardScrollingGallery);
 		}
 
 		[Test]
 		public void EditorsScrollingPageTest()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
 			KeyboardScrolling.EditorsScrollingTest(App, KeyboardScrollingGallery);
 		}
 
 		[Test]
 		public void EntryNextEditorTest()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
 			KeyboardScrolling.EntryNextEditorScrollingTest(App, KeyboardScrollingGallery);
 		}
 	}
 }
+#endif

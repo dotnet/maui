@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -30,8 +31,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Set different slider values")]
 		public void SetSliderValue()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
-
 			const string customSlider = "CustomSlider";
 			App.WaitForElement(customSlider);
 
@@ -49,3 +48,4 @@ namespace Microsoft.Maui.AppiumTests
 		}
 	}
 }
+#endif

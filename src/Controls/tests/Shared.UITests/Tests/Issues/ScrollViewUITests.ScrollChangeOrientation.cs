@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +19,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ScrollRotationRelayoutIssue()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
-
 			App.WaitForElement("Button1");
 
 			App.SetOrientationLandscape();
@@ -40,3 +39,4 @@ namespace Microsoft.Maui.AppiumTests
 		}
 	}
 }
+#endif

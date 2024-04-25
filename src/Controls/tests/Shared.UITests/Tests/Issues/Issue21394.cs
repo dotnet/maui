@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue21394Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.iOS, TestDevice.Android }, "iOS will be fixed in https://github.com/dotnet/maui/pull/20953");
+			// iOS will be fixed in https://github.com/dotnet/maui/pull/20953
 
 			App.WaitForElement("WaitForStubControl");
 
@@ -23,3 +24,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif
