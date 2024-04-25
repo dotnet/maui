@@ -28,9 +28,6 @@ Then in the Controls.AppiumTests project add a new class that derives from `_Iss
 
 You can use the example for the sample project [here](https://github.com/dotnet/maui/blob/main/src/Controls/samples/Controls.Sample.UITests/Issues/RefreshViewPage.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/tree/main/src/Controls/tests/UITests/Tests/Issues/RefreshViewTests.cs).
 
-
-
-
 ### Adding a GalleryPage
 
 Gallery tests are to make it easier to run the same set of tests on controls, if you are creating a new control you would want to add a new gallery page.
@@ -81,13 +78,7 @@ Assert.IsTrue(text.StartsWith("Logging in", StringComparison.CurrentCulture));
 ```
 
 ## Running tests
-
 Please see the [wiki](https://github.com/dotnet/maui/wiki/UITests) for setting up/running tests.
-
-
-## Adding new functionality
-
-We are implementing the IApp interface from Xamarin UITests, the implementation of which is [here](https://github.com/dotnet/maui/blob/main/src/TestUtils/src/TestUtils.Appium.UITests/AppiumUITestApp.cs).
 
 ## Known Issues
 - iOS doesn't support nested accessibility elements which will make some elements unreachable
