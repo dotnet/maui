@@ -105,6 +105,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal Type DataType { get; set; }
+
 		internal override void Apply(bool fromTarget)
 		{
 			base.Apply(fromTarget);
@@ -120,7 +122,13 @@ namespace Microsoft.Maui.Controls
 			object src = _source;
 			var isApplied = IsApplied;
 
-			base.Apply(src ?? context, bindObj, targetProperty, fromBindingContextChanged, specificity);
+			var bindingContext = src ?? Context ?? context;
+			if (DataType != null && bindingContext != null && !DataType.IsAssignableFrom(bindingContext.GetType()))
+			{
+				bindingContext = null;
+			}
+
+			base.Apply(bindingContext, bindObj, targetProperty, fromBindingContextChanged, specificity);
 
 			if (src != null && isApplied && fromBindingContextChanged)
 				return;
@@ -131,7 +139,6 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				object bindingContext = src ?? Context ?? context;
 				if (_expression == null)
 					_expression = new BindingExpression(this, SelfPath);
 				_expression.Apply(bindingContext, bindObj, targetProperty, specificity);
