@@ -48,6 +48,9 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			protected abstract string GetPlatformOutputFileName(string file);
 
+			protected virtual string GetPlatformCopyOutputFileName(string file) =>
+				GetPlatformOutputFileName(file);
+
 			protected ResizetizeImages GetNewTask(params ITaskItem[] items) =>
 				GetNewTask(Platform, items);
 
@@ -74,7 +77,10 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				AssertFileExists(GetPlatformOutputFileName(Path.ChangeExtension(image, ".png")));
+				if (Path.GetExtension(image) == ".png" || Path.GetExtension(image) == ".jpeg" || Path.GetExtension(image) == ".gif")
+					AssertFileExists(GetPlatformCopyOutputFileName(Path.ChangeExtension(image, ".png")));
+				else
+					AssertFileExists(GetPlatformOutputFileName(Path.ChangeExtension(image, ".png")));
 			}
 
 			[Theory]
@@ -241,6 +247,9 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			protected override string GetPlatformOutputFileName(string file) =>
 				$"drawable-mdpi/{file}";
+
+			protected override string GetPlatformCopyOutputFileName(string file) =>
+				$"drawable/{file}";
 
 			[Fact]
 			public void NoItemsSucceed()
@@ -995,7 +1004,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			protected override string Platform => "ios";
 
-			protected override string GetPlatformOutputFileName(string file) => $"{file}";
+			protected override string GetPlatformOutputFileName(string file) =>
+				$"{file}";
+
+			protected override string GetPlatformCopyOutputFileName(string file) =>
+				$"Resources/{file}";
 
 			[Fact]
 			public void NoItemsSucceed()
