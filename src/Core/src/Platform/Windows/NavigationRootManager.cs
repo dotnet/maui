@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -156,8 +157,12 @@ namespace Microsoft.Maui.Platform
 		{
 			_rootView.AppWindowId = _platformWindow.GetAppWindow()?.Id;
 			_rootView.WindowTitleBarContent = content;
-			_rootView.WindowTitle = "hello";
 		}
+
+        internal void SetTitleBarInputElements(IEnumerable<FrameworkElement> elements)
+        {
+            _rootView.PassthroughTitlebarElements = elements;
+        }
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)
 		{

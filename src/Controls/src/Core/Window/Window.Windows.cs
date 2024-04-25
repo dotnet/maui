@@ -24,13 +24,6 @@ namespace Microsoft.Maui.Controls
 				.UpdateTitle(window, window.GetCurrentlyPresentedMauiContext());
 		}
 
-		static void MapTitleBar(IWindowHandler handler, Window window)
-		{
-			handler
-				.PlatformView
-				.UpdateTitleBar(window, window.GetCurrentlyPresentedMauiContext());
-		}
-
 		Rect[] IWindow.TitleBarDragRectangles
 		{
 			get

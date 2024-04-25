@@ -22,21 +22,24 @@ namespace Maui.Controls.Sample
 		protected override Window CreateWindow(IActivationState? activationState)
 		{
 			// To test shell scenarios, change this to true
-			bool useShell = false;
+			bool useShell = true;
 
+			Window window;
 			if (!useShell)
 			{
-				var wnd = new Window(new NavigationPage(new MainPage()));
-
-				var titlebar = new TitlebarSample();
-				titlebar.HeightRequest = 60;
-				wnd.TitleBar = titlebar;
-				return wnd;
+				window = new Window(new NavigationPage(new MainPage()));
 			}
 			else
 			{
-				return new Window(new SandboxShell());
+				window = new Window(new SandboxShell());
 			}
+
+			window.TitleBar = new TitlebarSample
+			{
+				HeightRequest = 60
+			};
+
+			return window;
 		}
 	}
 }

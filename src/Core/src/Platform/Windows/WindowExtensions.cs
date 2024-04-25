@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
@@ -60,6 +62,32 @@ namespace Microsoft.Maui.Platform
 				if (handler != null &&
 					handler.PlatformView != null)
 				{
+					var passthroughElements = new List<FrameworkElement>();
+					if (window.TitleBar is IVisualTreeElement layoutParent)
+					{
+						// We already check for mauiContext null above?
+						foreach (var p in layoutParent.GetVisualTreeDescendants())
+						{
+							if (p is IContentView)
+								continue;
+
+							var asView = p as IView;
+							if (mauiContext != null &&
+								asView != null &&
+								!asView.InputTransparent)
+							{
+								var childView = asView.ToHandler(mauiContext).PlatformView;
+								if (childView != null)
+								{
+									passthroughElements.Add(childView);
+								}
+							}
+						}
+					}
+					mauiContext?
+						.GetNavigationRootManager()
+						.SetTitleBarInputElements(passthroughElements);
+
 					mauiContext?
 						.GetNavigationRootManager()?
 						.SetTitleBar(handler.PlatformView);

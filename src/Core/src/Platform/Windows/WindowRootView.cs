@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Platform
 		public WindowRootView()
 		{
 			IsTabStop = false;
+			PassthroughTitlebarElements = new List<FrameworkElement>();
 			_viewSettings = new ViewManagement.UISettings();
 		}
 
@@ -202,23 +203,16 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var rectArray = new List<Rect32>();
-			// TODO: the list of pass through children should be cached when the content changes
-			foreach (var child in GetAllChildren(fe))
+			foreach (var child in PassthroughTitlebarElements)
 			{
-				// TODO: use attributes to determine if a control should be included in
-				// the pass through drag region
-				if (child is not null && child is TextBox)
-				{
-					var transform = child.TransformToVisual(null);
-					var bounds = transform.TransformBounds(
-						new FRect(0, 0, child.ActualWidth, child.ActualHeight));
-					var rect = GetRect(bounds, child.XamlRoot.RasterizationScale);
-
-					rectArray.Add(rect);
-				}
+				var transform = child.TransformToVisual(null);
+				var bounds = transform.TransformBounds(
+					new FRect(0, 0, child.ActualWidth, child.ActualHeight));
+				var rect = GetRect(bounds, child.XamlRoot.RasterizationScale);
+				rectArray.Add(rect);
 			}
 
-			if (rectArray.Count > 0 && AppWindowId.HasValue)
+			if (AppWindowId.HasValue)
 			{
 				var nonClientInputSrc =
 					InputNonClientPointerSource.GetForWindowId(AppWindowId.Value);
@@ -565,5 +559,7 @@ namespace Microsoft.Maui.Platform
 			get => (double)GetValue(WindowTitleBarContentControlMinHeightProperty);
 			set => SetValue(WindowTitleBarContentControlMinHeightProperty, value);
 		}
+
+		internal IEnumerable<FrameworkElement> PassthroughTitlebarElements { get; set; }
 	}
 }

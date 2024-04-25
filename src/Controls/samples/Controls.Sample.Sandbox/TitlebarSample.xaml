@@ -4,12 +4,15 @@
     x:Class="Maui.Controls.Sample.TitlebarSample"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
     <Grid
-        ColumnDefinitions="*, *, *">
+        ColumnDefinitions="*, *, *"
+        InputTransparent="True"
+        CascadeInputTransparent="False">
         <Label
             Text="Hello, world!" 
             HorizontalOptions="Start" 
             VerticalOptions="Center"
-            Grid.Column="0"/>
+            Grid.Column="0"
+            InputTransparent="True"/>
 
         <Entry
             Placeholder="Search"
@@ -18,5 +21,16 @@
             Grid.Column="1"
             MinimumWidthRequest="200"
             MaximumWidthRequest="500"/>
+
+        <Button
+            Text="MC"
+            FontSize="12"
+            Padding="0"
+            WidthRequest="40"
+            HeightRequest="40"
+            CornerRadius="20"
+            Grid.Column="2"
+            Margin="0,0,16,0"
+            VerticalOptions="Center"/>
     </Grid>
 </ContentView>
