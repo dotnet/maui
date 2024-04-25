@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			SetRealCell(item, tvc);
 
 			tvc.Cell = textCell;
-			tvc.PropertyChanged = HandleCellPropertyChanged;
+			tvc.PropertyChanged += HandleCellPropertyChanged;
 
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel', DetailTextLabel is unsupported on: 'ios' 14.0 and later
 			tvc.TextLabel.Text = textCell.Text;

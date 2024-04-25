@@ -9,9 +9,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class CellTableViewCell : UITableViewCell, INativeElementView
 	{
-		Cell _cell;
+		WeakReference<Cell> _cell;
+		readonly WeakEventManager _weakEventManager = new();
 
-		public Action<object, PropertyChangedEventArgs> PropertyChanged;
+		public event Action<object, PropertyChangedEventArgs> PropertyChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
 
 		bool _disposed;
 
@@ -21,30 +26,37 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public Cell Cell
 		{
-			get { return _cell; }
+			get => _cell?.GetTargetOrDefault();
 			set
 			{
-				if (_cell == value)
-					return;
-
-				if (_cell != null)
+				if (_cell is null)
 				{
-					_cell.PropertyChanged -= HandlePropertyChanged;
-					BeginInvokeOnMainThread(_cell.SendDisappearing);
+					_cell = new(value);
 				}
-				_cell = value;
-
-				if (_cell != null)
+				else
 				{
-					_cell.PropertyChanged += HandlePropertyChanged;
-					BeginInvokeOnMainThread(_cell.SendAppearing);
+					if (_cell.TryGetTarget(out var cell) && cell == value)
+						return;
+
+					if (cell != null)
+					{
+						cell.PropertyChanged -= HandlePropertyChanged;
+						BeginInvokeOnMainThread(cell.SendDisappearing);
+					}
+					_cell = new(value);
+				}
+
+				if (value != null)
+				{
+					value.PropertyChanged += HandlePropertyChanged;
+					BeginInvokeOnMainThread(value.SendAppearing);
 				}
 			}
 		}
 
 		public Element Element => Cell;
 
-		public void HandlePropertyChanged(object sender, PropertyChangedEventArgs e) => PropertyChanged?.Invoke(sender, e);
+		public void HandlePropertyChanged(object sender, PropertyChangedEventArgs e) => _weakEventManager.HandleEvent(sender, e, nameof(PropertyChanged));
 
 		internal static UITableViewCell GetPlatformCell(UITableView tableView, Cell cell, bool recycleCells = false, string templateId = "")
 		{
@@ -109,12 +121,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
-				PropertyChanged = null;
-
-				if (_cell != null)
+				if (Cell is Cell cell)
 				{
-					_cell.PropertyChanged -= HandlePropertyChanged;
-					CellRenderer.SetRealCell(_cell, null);
+					cell.PropertyChanged -= HandlePropertyChanged;
+					CellRenderer.SetRealCell(cell, null);
 				}
 				_cell = null;
 			}

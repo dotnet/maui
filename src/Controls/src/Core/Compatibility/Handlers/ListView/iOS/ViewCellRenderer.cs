@@ -43,9 +43,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		internal sealed class ViewTableCell : UITableViewCell, INativeElementView
 		{
-			IMauiContext MauiContext => _viewCell.FindMauiContext();
+			IMauiContext MauiContext => ViewCell?.FindMauiContext();
 			WeakReference<IPlatformViewHandler> _rendererRef;
-			ViewCell _viewCell;
+			WeakReference<ViewCell> _viewCell;
 
 			Element INativeElementView.Element => ViewCell;
 			internal bool SupressSeparator { get; set; }
@@ -57,13 +57,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public ViewCell ViewCell
 			{
-				get { return _viewCell; }
+				get => _viewCell?.GetTargetOrDefault();
 				set
 				{
-					if (_viewCell == value)
-						return;
-
-					_viewCell?.Handler?.DisconnectHandler();
+					if (_viewCell is null)
+					{
+						_viewCell = new(value);
+					}
+					else
+					{
+						if (_viewCell.TryGetTarget(out var viewCell) && viewCell == value)
+							return;
+						viewCell?.Handler?.DisconnectHandler();
+					}
 					UpdateCell(value);
 				}
 			}
@@ -82,7 +88,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var realCell = (ViewTableCell)GetRealCell(viewCell);
 
 				if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
-					UpdateIsEnabled(_viewCell.IsEnabled);
+					UpdateIsEnabled(viewCell.IsEnabled);
 			}
 
 			public override void LayoutSubviews()
@@ -149,11 +155,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						_rendererRef = null;
 					}
 
-					if (_viewCell != null)
+					if (ViewCell is ViewCell viewCell)
 					{
-						_viewCell.PropertyChanged -= ViewCellPropertyChanged;
-						_viewCell.View.MeasureInvalidated -= OnMeasureInvalidated;
-						SetRealCell(_viewCell, null);
+						viewCell.PropertyChanged -= ViewCellPropertyChanged;
+						viewCell.View.MeasureInvalidated -= OnMeasureInvalidated;
+						SetRealCell(viewCell, null);
 					}
 					_viewCell = null;
 				}
@@ -165,10 +171,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			IPlatformViewHandler GetNewRenderer()
 			{
-				if (_viewCell.View == null)
-					throw new InvalidOperationException($"ViewCell must have a {nameof(_viewCell.View)}");
+				if (ViewCell is not ViewCell viewCell || viewCell.View == null)
+					throw new InvalidOperationException($"ViewCell must have a {nameof(viewCell.View)}");
 
-				var newRenderer = _viewCell.View.ToHandler(_viewCell.View.FindMauiContext());
+				var newRenderer = viewCell.View.ToHandler(viewCell.View.FindMauiContext());
 				_rendererRef = new WeakReference<IPlatformViewHandler>(newRenderer);
 				ContentView.ClearSubviews();
 				ContentView.AddSubview(newRenderer.VirtualView.ToPlatform());
@@ -179,15 +185,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				Performance.Start(out string reference);
 
-				var oldCell = _viewCell;
-				if (oldCell != null)
+				if (ViewCell is ViewCell oldCell)
 				{
 					BeginInvokeOnMainThread(oldCell.SendDisappearing);
 					oldCell.PropertyChanged -= ViewCellPropertyChanged;
 					oldCell.View.MeasureInvalidated -= OnMeasureInvalidated;
 				}
 
-				_viewCell = cell;
+				_viewCell = new(cell);
 
 				if (cell is null)
 				{
@@ -196,20 +201,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
-				_viewCell.PropertyChanged += ViewCellPropertyChanged;
-				BeginInvokeOnMainThread(_viewCell.SendAppearing);
+				cell.PropertyChanged += ViewCellPropertyChanged;
+				BeginInvokeOnMainThread(cell.SendAppearing);
 
 				IPlatformViewHandler renderer;
 				if (_rendererRef == null || !_rendererRef.TryGetTarget(out renderer))
 					renderer = GetNewRenderer();
 				else
 				{
-					var viewHandlerType = MauiContext.Handlers.GetHandlerType(_viewCell.View.GetType());
+					var viewHandlerType = MauiContext.Handlers.GetHandlerType(cell.View.GetType());
 					var reflectableType = renderer as System.Reflection.IReflectableType;
 					var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (renderer != null ? renderer.GetType() : typeof(System.Object));
 
 					if (rendererType == viewHandlerType/* || (renderer is Platform.DefaultRenderer && type == null)*/)
-						renderer.SetVirtualView(this._viewCell.View);
+						renderer.SetVirtualView(cell.View);
 					else
 					{
 						//when cells are getting reused the element could be already set to another cell
@@ -219,8 +224,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 				}
 
-				UpdateIsEnabled(_viewCell.IsEnabled);
-				_viewCell.View.MeasureInvalidated += OnMeasureInvalidated;
+				UpdateIsEnabled(cell.IsEnabled);
+				cell.View.MeasureInvalidated += OnMeasureInvalidated;
 				Performance.Stop(reference);
 			}
 
