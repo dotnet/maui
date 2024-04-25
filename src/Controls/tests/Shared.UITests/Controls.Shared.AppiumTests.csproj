@@ -19,12 +19,6 @@
     <ProjectReference Include="..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="snapshots\android\" />
-    <Folder Include="snapshots\ios\" />
-    <Folder Include="snapshots\windows\" />
-  </ItemGroup>
-
   <PropertyGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
     <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
   </PropertyGroup>
