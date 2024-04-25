@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
@@ -9,12 +10,11 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 			var navPage = new NavigationPage(new MainPage());
-			NavigatedTo += Issue14829_NavigatedTo;
+			Loaded += OnLoaded;
 
-			async void Issue14829_NavigatedTo(object sender, NavigatedToEventArgs e)
+			async void OnLoaded(object sender, EventArgs e)
 			{
-				NavigatedTo -= Issue14829_NavigatedTo;
-
+				Loaded -= OnLoaded;
 				await Navigation.PushModalAsync(navPage);
 			}
 		}
