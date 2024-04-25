@@ -22,13 +22,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			});
 
 			App.WaitForElement("PushPage");
-			App.Click("PushPage");
+			App.Tap("PushPage");
 			App.WaitForElement("PushPage");
-			App.Click("PushPage");
+			App.Tap("PushPage");
 			App.WaitForElement("PushPage");
 
 			App.WaitForElement("CheckResult");
-			App.Click("CheckResult");
+			App.Tap("CheckResult");
 
 			App.WaitForElement("SuccessLabel");
 		}

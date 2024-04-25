@@ -13,7 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void TapStateButton()
 		{
 			App.Screenshot("Before state change");
-			App.Click(StateButtonQuery);
+			App.Tap(StateButtonQuery);
 			App.Screenshot("After state change");
 		}
 
