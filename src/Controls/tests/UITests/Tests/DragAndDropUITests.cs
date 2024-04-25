@@ -27,11 +27,12 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public void DragEvents()
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropEvents");
-			App.Click("GoButton");
+			App.Tap("GoButton");
 
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
@@ -51,14 +52,15 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public void DragAndDropBetweenLayouts()
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
-			App.Click("GoButton");
+			App.Tap("GoButton");
 
 			App.WaitForElement("ResetButton");
-			App.Click("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("Red");
 			App.WaitForElement("Green");
@@ -80,11 +82,12 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public void PlatformDragEventArgs()
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropEventArgs");
-			App.Click("GoButton");
+			App.Tap("GoButton");
 
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
@@ -164,13 +167,14 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public void DragStartEventCoordinates()
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
-			App.Click("GoButton");
+			App.Tap("GoButton");
 
-			App.Click("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("Blue");
 			App.WaitForElement("Green");
@@ -197,13 +201,14 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public void DragEventCoordinates()
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
-			App.Click("GoButton");
+			App.Tap("GoButton");
 
-			App.Click("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("Blue");
 			App.WaitForElement("Green");
@@ -235,13 +240,14 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public void DropEventCoordinates()
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
-			App.Click("GoButton");
+			App.Tap("GoButton");
 
-			App.Click("ResetButton");
+			App.Tap("ResetButton");
 
 			App.WaitForElement("Blue");
 			App.WaitForElement("Green");

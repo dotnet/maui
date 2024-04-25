@@ -15,6 +15,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "[Android] BoxView Opacity not working";
 
 		[Test]
+		[Category(UITestCategories.BoxView)]
 		public void WhenChangingBoxViewOpacityThenValueIsCorrectlySet()
 		{
 			App.WaitForElement(buttonId);
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		string? ChangeOpacityAndGetCurrentStatus()
 		{
-			App.Click(buttonId);
+			App.Tap(buttonId);
 
 			return GetCurrentOpacityStatus();
 		}

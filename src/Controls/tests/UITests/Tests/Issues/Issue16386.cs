@@ -14,6 +14,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Process the hardware enter key as \"Done\"";
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void HittingEnterKeySendsDone()
 		{
 			this.IgnoreIfPlatforms(new[]
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				TestDevice.Windows,
 			});
 
-			App.Click("HardwareEnterKeyEntry");
+			App.Tap("HardwareEnterKeyEntry");
 			App.SendKeys(66);
 			App.WaitForElement("Success");
 		}

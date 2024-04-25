@@ -1,6 +1,8 @@
 ﻿using NUnit.Framework;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
 
@@ -32,7 +34,7 @@ namespace Microsoft.Maui.AppiumTests
 			else
 				app.EnterText("TargetView", "KeyboardScrollingEntriesPage");
 
-			app.Click("GoButton");
+			App.Tap("GoButton");
 
 			// Entries 6 - 14 hit a group of interesting areas on scrolling
 			// depending on the type of iOS device.
@@ -44,9 +46,15 @@ namespace Microsoft.Maui.AppiumTests
 				else
 					ClickText(app, $"Entry{i}", isEditor, out didReachEndofPage);
 
-				// Scroll to the top of the page
-				var actions = new TouchAction(App.Driver);
-				actions.LongPress(null, 5, 300).MoveTo(null, 5, 650).Release().Perform();
+				// Scroll to the top of the page			
+				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+				var scrollSequence = new ActionSequence(touchDevice, 0);
+				scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 300, TimeSpan.Zero));
+				scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500)));
+				scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, 5, 650, TimeSpan.FromMilliseconds(250)));
+				scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				App.Driver.PerformActions([scrollSequence]);
 
 				if (!didReachEndofPage)
 					break;
@@ -55,7 +63,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		static void ClickText(IApp app, string marked, bool isEditor, out bool didReachEndofPage)
 		{
-			app.Click(marked);
+			app.Tap(marked);
 			didReachEndofPage = CheckIfViewAboveKeyboard(app, marked, isEditor);
 			if (didReachEndofPage)
 				HideKeyboard(app, (app as AppiumApp)?.Driver, isEditor);
@@ -120,10 +128,10 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			app.WaitForElement("TargetView");
 			app.EnterText("TargetView", "KeyboardScrollingEntryNextEditorPage");
-			app.Click("GoButton");
+			app.Tap("GoButton");
 
 			app.WaitForElement("Entry1");
-			app.Click("Entry1");
+			app.Tap("Entry1");
 			CheckIfViewAboveKeyboard(app, "Entry1", false);
 			NextiOSKeyboardPress((app as AppiumApp)?.Driver);
 
@@ -149,7 +157,7 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				var entry = $"Entry{i}";
 				app.WaitForElement(entry);
-				app.Click(entry);
+				app.Tap(entry);
 				CheckIfViewAboveKeyboard(app, entry, false);
 				HideKeyboard(app, (app as AppiumApp)?.Driver, false);
 			}
