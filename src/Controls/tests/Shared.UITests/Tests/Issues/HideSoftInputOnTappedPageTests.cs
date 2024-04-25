@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -67,15 +67,15 @@ namespace Microsoft.Maui.AppiumTests.Issues
 					App.DismissKeyboard();
 
 				if (hideOnTapped)
-					App.Click("HideSoftInputOnTappedTrue");
+					App.Tap("HideSoftInputOnTappedTrue");
 				else
-					App.Click("HideSoftInputOnTappedFalse");
+					App.Tap("HideSoftInputOnTappedFalse");
 
-				App.Click(control);
+				App.Tap(control);
 
 				ClassicAssert.True(App.IsKeyboardShown());
 
-				App.Click("EmptySpace");
+				App.Tap("EmptySpace");
 				ClassicAssert.AreEqual(!hideOnTapped, App.IsKeyboardShown());
 			}
 			finally
@@ -138,20 +138,20 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				if (App.IsKeyboardShown())
 					App.DismissKeyboard();
 
-				App.Click("HideSoftInputOnTappedFalse");
+				App.Tap("HideSoftInputOnTappedFalse");
 
 				// Switch between enabling/disabling feature
 				for (int i = 0; i < 2; i++)
 				{
-					App.Click("HideKeyboardWhenTappingPage");
-					ClassicAssert.True(App.IsKeyboardShown());
-					App.Click("EmptySpace");
-					ClassicAssert.AreEqual(false, App.IsKeyboardShown());
+					App.Tap("HideKeyboardWhenTappingPage");
+					Assert.True(App.IsKeyboardShown());
+					App.Tap("EmptySpace");
+					Assert.AreEqual(false, App.IsKeyboardShown());
 
-					App.Click("DontHideKeyboardWhenTappingPage");
-					ClassicAssert.True(App.IsKeyboardShown());
-					App.Click("EmptySpace");
-					ClassicAssert.AreEqual(true, App.IsKeyboardShown());
+					App.Tap("DontHideKeyboardWhenTappingPage");
+					Assert.True(App.IsKeyboardShown());
+					App.Tap("EmptySpace");
+					Assert.AreEqual(true, App.IsKeyboardShown());
 				}
 			}
 			finally

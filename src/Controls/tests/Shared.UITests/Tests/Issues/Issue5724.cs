@@ -1,4 +1,4 @@
-﻿#if ANDROID
+#if ANDROID
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -20,11 +20,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// Send Keys only works on Android which is why we are ignoring these other platforms.
 
 			App.WaitForElement("Entry1");
-			App.Click("Entry1");
+			App.Tap("Entry1");
 
 			await Task.Yield();
 
-			App.Click("SendNext");
+			App.Tap("SendNext");
 			await Task.Yield();
 
 			ClassicAssert.True(App.IsFocused("Entry2"));
@@ -34,11 +34,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public async Task TappingDoneClosesKeyboard()
 		{
 			App.WaitForElement("EntryDone");
-			App.Click("EntryDone");
+			App.Tap("EntryDone");
 
 			await Task.Yield();
-			ClassicAssert.True(App.IsKeyboardShown());
-			App.Click("SendDone");
+			Assert.True(App.IsKeyboardShown());
+			App.Tap("SendDone");
 			await Task.Yield();
 			ClassicAssert.False(App.IsKeyboardShown());
 		}

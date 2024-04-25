@@ -23,7 +23,7 @@ namespace Microsoft.Maui.AppiumTests
 
 			App.WaitForElement ("Tap");
 			App.Screenshot ("At test page");
-			App.Click ("Tap");
+			App.Tap("Tap");
 
 			App.WaitForElement ("28570Target");
 		}

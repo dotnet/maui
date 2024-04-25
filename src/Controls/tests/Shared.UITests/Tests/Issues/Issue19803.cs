@@ -19,7 +19,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			_ = App.WaitForElement("button");
 
 			//The test passes if no NullReferenceException is thrown
-			App.Click("button");
+			App.Tap("button");
 
 		}
 	}

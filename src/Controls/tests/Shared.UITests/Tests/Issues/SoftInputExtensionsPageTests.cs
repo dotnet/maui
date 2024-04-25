@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -17,10 +17,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			// Make sure the buttons appear on the screen.
 			Task.Delay(1000).Wait();
-			App.Click("ShowKeyboard");
-			ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("Result", "True"));
-			App.Click("HideKeyboard");
-			ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("Result", "False"));
+			App.Tap("ShowKeyboard");
+			Assert.IsTrue(App.WaitForTextToBePresentInElement("Result", "True"));
+			App.Tap("HideKeyboard");
+			Assert.IsTrue(App.WaitForTextToBePresentInElement("Result", "False"));
 		}
 	}
 }

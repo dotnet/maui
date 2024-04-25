@@ -1,4 +1,4 @@
-﻿#if ANDROID
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.Entry)]
 		public void HittingEnterKeySendsDone()
 		{
-			App.Click("HardwareEnterKeyEntry");
+			App.Tap("HardwareEnterKeyEntry");
 			App.SendKeys(66);
 			App.WaitForElement("Success");
 		}

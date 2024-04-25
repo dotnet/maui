@@ -30,7 +30,7 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 1. Enable the ScrollView.
 			App.WaitForElement(InitiallyEnabled);
-			App.Click(InitiallyEnabled);
+			App.Tap(InitiallyEnabled);
 			App.WaitForElement(FirstItem);
 			App.WaitForElement(ScrollView);
 
@@ -52,11 +52,11 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 1. Enable the ScrollView.
 			App.WaitForElement(InitiallyEnabled);
-			App.Click(InitiallyEnabled);
+			App.Tap(InitiallyEnabled);
 
 			// 2. Disable the ScrollView.
 			App.WaitForElement(ToggleButton);
-			App.Click(ToggleButton);
+			App.Tap(ToggleButton);
 
 			// Scrolling should now be IsEnabled = false
 
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 1. Disable the ScrollView.
 			App.WaitForElement(InitiallyNotEnabled);
-			App.Click(InitiallyNotEnabled);
+			App.Tap(InitiallyNotEnabled);
 			App.WaitForElement(FirstItem);
 			App.WaitForElement(ScrollView);
 			App.ScrollTo("Item10", true);
@@ -100,11 +100,11 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 1. Disable the ScrollView.
 			App.WaitForElement(InitiallyNotEnabled);
-			App.Click(InitiallyNotEnabled);
+			App.Tap(InitiallyNotEnabled);
 
 			// 2. Enable the ScrollView.
 			App.WaitForElement(ToggleButton);
-			App.Click(ToggleButton);
+			App.Tap(ToggleButton);
 
 			// Scrolling should now be IsEnabled = true
 

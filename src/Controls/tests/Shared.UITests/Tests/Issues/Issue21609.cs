@@ -21,9 +21,9 @@ public class Issue21609 : _IssuesUITest
 
 		App.WaitForElement("ChangeCarouselViewDimensions");
 		var imageInitial = App.WaitForElement("DotnetBot").GetRect();
-		App.Click("ChangeCarouselViewDimensions");
+		App.Tap("ChangeCarouselViewDimensions");
 		var imageAfterSizeChange = App.WaitForElement("DotnetBot").GetRect();
-		App.Click("ChangeCarouselViewDimensions");
+		App.Tap("ChangeCarouselViewDimensions");
 		var imageAfterSizeChangedBacktoInitial = App.WaitForElement("DotnetBot").GetRect();
 
 		ClassicAssert.AreEqual(imageInitial, imageAfterSizeChangedBacktoInitial);

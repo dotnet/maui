@@ -34,7 +34,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		string? TapButtonAndGetStatus()
 		{
-			App.Click(buttonId);
+			App.Tap(buttonId);
 
 			return GetStatus();
 		}
