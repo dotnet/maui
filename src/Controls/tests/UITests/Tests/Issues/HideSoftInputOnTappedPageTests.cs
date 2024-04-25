@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -68,16 +68,16 @@ namespace Microsoft.Maui.AppiumTests.Issues
 					App.DismissKeyboard();
 
 				if (hideOnTapped)
-					App.Click("HideSoftInputOnTappedTrue");
+					App.Tap("HideSoftInputOnTappedTrue");
 				else
-					App.Click("HideSoftInputOnTappedFalse");
+					App.Tap("HideSoftInputOnTappedFalse");
 
 				App.WaitForElement(control);
 				App.Click(control);
 
 				Assert.True(App.IsKeyboardShown());
 
-				App.Click("EmptySpace");
+				App.Tap("EmptySpace");
 				Assert.AreEqual(!hideOnTapped, App.IsKeyboardShown());
 			}
 			finally

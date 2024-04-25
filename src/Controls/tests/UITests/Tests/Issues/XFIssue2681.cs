@@ -21,9 +21,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void ListViewDoesntFreezeApp()
 		{
 			App.WaitForElement(NavigateToPage);
-			App.Click(NavigateToPage);
+			App.Tap(NavigateToPage);
 			App.WaitForElement("3");
-			App.Click("GoBack");
+			App.Tap("GoBack");
 		}
 	}
 }

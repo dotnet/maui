@@ -319,6 +319,12 @@ public static class KeyboardAutoManagerScroll
 
 		if (View.FindResponder<UINavigationController>() is UINavigationController navigationController)
 		{
+			if (View.IsDescendantOfView(navigationController.NavigationBar))
+			{
+				IsKeyboardAutoScrollHandling = false;
+				return;
+			}
+
 			navigationBarAreaHeight = navigationController.NavigationBar.Frame.GetMaxY();
 		}
 		else
