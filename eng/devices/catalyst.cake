@@ -5,7 +5,8 @@
 const string dotnetVersion = "net8.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_PROJECT);
+string DEFAULT_MAC_PROJECT = "../../src/Controls/tests/Mac.UITests/Controls.Mac.AppiumTests.csproj";
+FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_MAC_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? "maccatalyst");
 
 // optional

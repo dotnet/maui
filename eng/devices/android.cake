@@ -10,7 +10,8 @@ const int defaultVersion = 30;
 const string dotnetVersion = "net8.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_PROJECT);
+string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/Android.UITests/Controls.Android.AppiumTests.csproj";
+FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{defaultVersion}");
 string DEVICE_SKIN = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 

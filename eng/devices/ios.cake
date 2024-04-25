@@ -8,7 +8,8 @@
 const string defaultVersion = "16.4";
 const string dotnetVersion = "net8.0";
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? DEFAULT_PROJECT);
+string DEFAULT_IOS_PROJECT = "../../src/Controls/tests/iOS.UITests/Controls.iOS.AppiumTests.csproj";
+FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? DEFAULT_IOS_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? $"ios-simulator-64_{defaultVersion}"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
