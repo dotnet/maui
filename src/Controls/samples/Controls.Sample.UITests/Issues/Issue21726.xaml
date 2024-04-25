@@ -5,6 +5,5 @@
              Title="Issue21726">
     <VerticalStackLayout>
         <Button Text="AddVC" AutomationId="AddVC" Clicked="AddVC"/>
-        <Label Background="Green" HeightRequest="100" WidthRequest="100" Text="SUCCESS" x:Name="successLabel" AutomationId="SuccessLabel" IsVisible="false"/>
     </VerticalStackLayout>
 </ContentPage>

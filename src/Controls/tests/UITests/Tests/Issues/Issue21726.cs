@@ -15,15 +15,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
         [Test]
         public void PushViewControllerWithNullWindow()
         {
-            App.WaitForElement("AddVC");
-
-            App.Click("AddVC");
-
-            App.WaitForElement("AddVC");
-
             try
             {
-                var didSucceed = App.WaitForElement("SuccessLabel");
+                App.WaitForElement("AddVC");
+                App.Click("AddVC");
+                App.WaitForElement("TextField1").Click();
+                App.WaitForElement("Button1").Click();
+                var mainPageElement = App.WaitForElement("AddVC");
+                Assert.NotNull(mainPageElement);
             }
             catch
             {
