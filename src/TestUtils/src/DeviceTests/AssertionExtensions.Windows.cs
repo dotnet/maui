@@ -228,10 +228,7 @@ namespace Microsoft.Maui.DeviceTests
 				// wait for element to be loaded
 				await loadedTcs.Task;
 				view.Unloaded += OnViewUnloaded;
-
-				var idleSynchronizer = IdleSynchronizer.GetForCurrentProcess(window.DispatcherQueue);
-				await idleSynchronizer.WaitAsync();
-
+				
 				try
 				{
 					return await Run(() => action(window));
@@ -248,7 +245,6 @@ namespace Microsoft.Maui.DeviceTests
 
 					// close the window
 					window.Close();
-					idleSynchronizer?.Dispose();
 				}
 
 				void OnViewLoaded(object sender, RoutedEventArgs e)
