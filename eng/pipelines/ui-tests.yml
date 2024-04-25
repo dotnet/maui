@@ -164,7 +164,7 @@ stages:
           androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
           iosVersionsExclude: [ '12.4' ]  # Ignore iOS 12.4 while we can't make it work on CI
           # new Appium UI tests
-          app: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
+          app: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj
           androidTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.Android.AppiumTests.csproj
           iosTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/iOS.UITests/Controls.iOS.AppiumTests.csproj
           winuiTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/WinUI.UITests/Controls.WinUI.AppiumTests.csproj
