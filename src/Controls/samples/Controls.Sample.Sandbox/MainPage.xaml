@@ -3,4 +3,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
+    <VerticalStackLayout
+        Spacing="8">
+        <Button
+            Text="Set custom titlebar with search + avatar"
+            HorizontalOptions="Center"
+            Clicked="CustomTitlebarButton_Clicked"/>
+
+        <Button
+            Text="Set to plain text titlebar"
+            HorizontalOptions="Center"
+            Clicked="NormalTitlebarButton_Clicked"/>
+
+        <Label
+            Text="Search input:"
+            HorizontalOptions="Center"/>
+        <Label
+            Text="{Binding SearchText}"
+            HorizontalOptions="Center"/>
+    </VerticalStackLayout>
 </ContentPage>

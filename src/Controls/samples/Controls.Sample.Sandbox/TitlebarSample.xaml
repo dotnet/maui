@@ -7,20 +7,30 @@
         ColumnDefinitions="*, *, *"
         InputTransparent="True"
         CascadeInputTransparent="False">
+        <Image
+            Source="dotnet_bot.png"
+            WidthRequest="24"
+            HeightRequest="24"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"/>
+
         <Label
             Text="Hello, world!" 
             HorizontalOptions="Start" 
             VerticalOptions="Center"
             Grid.Column="0"
-            InputTransparent="True"/>
+            InputTransparent="True"
+            Margin="24, 0, 0, 0"/>
 
         <Entry
+            x:Name="TitlebarSearchBox"
             Placeholder="Search"
             HorizontalOptions="Fill"
             VerticalOptions="Center"
             Grid.Column="1"
             MinimumWidthRequest="200"
-            MaximumWidthRequest="500"/>
+            MaximumWidthRequest="500"
+            Text="{Binding SearchText}"/>
 
         <Button
             Text="MC"

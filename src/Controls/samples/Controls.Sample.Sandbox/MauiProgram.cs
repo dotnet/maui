@@ -34,11 +34,6 @@ namespace Maui.Controls.Sample
 				window = new Window(new SandboxShell());
 			}
 
-			window.TitleBar = new TitlebarSample
-			{
-				HeightRequest = 60
-			};
-
 			return window;
 		}
 	}
