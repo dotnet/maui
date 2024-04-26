@@ -487,7 +487,7 @@
 ~Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.CellTableViewCell(UIKit.UITableViewCellStyle style, string key) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.Element.get -> Microsoft.Maui.Controls.Element
 ~Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.HandlePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.PropertyChanged -> System.Action<object, System.ComponentModel.PropertyChangedEventArgs>
+~Microsoft.Maui.Controls.Handlers.Compatibility.CellTableViewCell.PropertyChanged -> System.Action<object, System.ComponentModel.PropertyChangedEventArgs>
 ~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell.EntryCellTableViewCell(string cellName) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell.TextField.get -> UIKit.UITextField
 ~Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.Element.get -> Microsoft.Maui.Controls.VisualElement

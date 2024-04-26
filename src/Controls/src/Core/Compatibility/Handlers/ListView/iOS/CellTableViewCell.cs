@@ -12,7 +12,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<Cell> _cell;
 		readonly WeakEventManager _weakEventManager = new();
 
-		public event Action<object, PropertyChangedEventArgs> PropertyChanged
+		// NOTE: internal callers can use InternalPropertyChanged
+		[Obsolete("To be removed in a future release.")]
+		public Action<object, PropertyChangedEventArgs> PropertyChanged;
+
+		internal event Action<object, PropertyChangedEventArgs> InternalPropertyChanged
 		{
 			add => _weakEventManager.AddEventHandler(value);
 			remove => _weakEventManager.RemoveEventHandler(value);
@@ -56,7 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public Element Element => Cell;
 
-		public void HandlePropertyChanged(object sender, PropertyChangedEventArgs e) => _weakEventManager.HandleEvent(sender, e, nameof(PropertyChanged));
+		public void HandlePropertyChanged(object sender, PropertyChangedEventArgs e) => _weakEventManager.HandleEvent(sender, e, nameof(InternalPropertyChanged));
 
 		internal static UITableViewCell GetPlatformCell(UITableView tableView, Cell cell, bool recycleCells = false, string templateId = "")
 		{

@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				tvc = new EntryCellTableViewCell(item.GetType().FullName);
 			else
 			{
-				tvc.PropertyChanged -= HandlePropertyChanged;
+				tvc.InternalPropertyChanged -= HandlePropertyChanged;
 				tvc.TextFieldTextChanged -= OnTextFieldTextChanged;
 				tvc.KeyboardDoneButtonPressed -= OnKeyBoardDoneButtonPressed;
 			}
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			SetRealCell(item, tvc);
 
 			tvc.Cell = item;
-			tvc.PropertyChanged += HandlePropertyChanged;
+			tvc.InternalPropertyChanged += HandlePropertyChanged;
 			tvc.TextFieldTextChanged += OnTextFieldTextChanged;
 			tvc.KeyboardDoneButtonPressed += OnKeyBoardDoneButtonPressed;
 

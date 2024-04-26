@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 			{
 				uiSwitch = tvc.AccessoryView as UISwitch;
-				tvc.PropertyChanged -= HandlePropertyChanged;
+				tvc.InternalPropertyChanged -= HandlePropertyChanged;
 			}
 
 			SetRealCell(item, tvc);
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_defaultOnColor = UISwitch.Appearance.OnTintColor;
 
 			tvc.Cell = item;
-			tvc.PropertyChanged += HandlePropertyChanged;
+			tvc.InternalPropertyChanged += HandlePropertyChanged;
 			tvc.AccessoryView = uiSwitch;
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 			tvc.TextLabel.Text = boolCell.Text;
