@@ -1,4 +1,4 @@
-﻿#if ANDROID
+#if ANDROID
 using Microsoft.Maui.AppiumTests;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
@@ -19,9 +19,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{	
 			App.WaitForElement("CollectionView5354");
 			App.WaitForElement("Button5354");
-			
-			for(int i = 0; i < 3; i++)
-			{			
+
+			for (int i = 0; i < 3; i++)
+			{
 				var linearRect0 = App.WaitForElement("Image0").GetRect();
 				var linearRect1 = App.WaitForElement("Image1").GetRect();
 

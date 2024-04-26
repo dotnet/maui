@@ -21,12 +21,6 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(DragAndDropGallery);
 		}
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
-		}
-
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DragEvents()

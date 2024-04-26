@@ -1,4 +1,4 @@
-﻿#if ANDROID || IOS
+#if ANDROID || IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,21 +21,24 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.WaitForElement("Button1");
 
-			App.SetOrientationLandscape();
+				App.SetOrientationLandscape();
 
-			var buttonAutomationIds = new[]
-			{
+				var buttonAutomationIds = new[]
+				{
 					"Button1",
 					"Button2",
 					"Button3",
 				};
 
-			foreach (string buttonAutomationId in buttonAutomationIds)
-				App.WaitForElement(buttonAutomationId);
+				foreach (string buttonAutomationId in buttonAutomationIds)
+					App.WaitForElement(buttonAutomationId);
 
-			App.Screenshot("StackLayout respects rotation");
-
-			App.SetOrientationPortrait();
+				App.Screenshot("StackLayout respects rotation");
+			}
+			finally
+			{
+				App.SetOrientationPortrait();
+			}
 		}
 	}
 }

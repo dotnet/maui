@@ -71,6 +71,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				else
 					App.Tap("HideSoftInputOnTappedFalse");
 
+				App.WaitForElement(control);
 				App.Tap(control);
 
 				ClassicAssert.True(App.IsKeyboardShown());
@@ -143,6 +144,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				// Switch between enabling/disabling feature
 				for (int i = 0; i < 2; i++)
 				{
+					App.WaitForElement("HideKeyboardWhenTappingPage");
 					App.Tap("HideKeyboardWhenTappingPage");
 					ClassicAssert.True(App.IsKeyboardShown());
 					App.Tap("EmptySpace");

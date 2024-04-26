@@ -15,7 +15,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		[Test]
 		[Category(UITestCategories.ActionSheet)]
-		public void Issue14829Test()
+		public void DisplayActionSheetStillNotWorkingOnWindows()
 		{
 			App.WaitForElement("DisplayActionSheetButton", timeout: TimeSpan.FromSeconds(4)).Click();
 			App.WaitForElement("ActionSheetTitle", timeout: TimeSpan.FromSeconds(4));
