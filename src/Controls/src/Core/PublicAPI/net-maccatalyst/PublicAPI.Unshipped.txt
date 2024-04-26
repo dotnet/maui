@@ -1,6 +1,8 @@
 #nullable enable
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
+override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersStatusBarHidden() -> bool
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.DragInteraction.get -> UIKit.UIDragInteraction!
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.DragSession.get -> UIKit.IUIDragSession!
@@ -85,6 +87,11 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedC
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersStatusBarHidden() -> bool
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewDidAppear(bool animated) -> void
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?

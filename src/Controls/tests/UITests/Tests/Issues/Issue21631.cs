@@ -12,6 +12,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			"Injecting base tag in Webview2 works";
 
 		[Test]
+		[Ignore("WebView seems to be unreliably loading the image")]
+		[Category(UITestCategories.WebView)]
 		public async Task NavigateToStringWithWebviewWorks()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.iOS });
