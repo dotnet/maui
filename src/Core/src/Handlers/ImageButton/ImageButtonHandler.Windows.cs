@@ -98,7 +98,6 @@ namespace Microsoft.Maui.Handlers
 		void OnClick(object sender, RoutedEventArgs e)
 		{
 			VirtualView?.Clicked();
-			VirtualView?.Released();
 		}
 
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
