@@ -43,6 +43,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForNoElement(target);
 
 			App.Screenshot("Dismiss ActionSheet");
+			VerifyScreenshot();
 		}
 	}
 }
