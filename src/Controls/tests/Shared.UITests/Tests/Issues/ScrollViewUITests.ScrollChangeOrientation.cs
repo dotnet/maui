@@ -19,7 +19,9 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ScrollRotationRelayoutIssue()
 		{
-			App.WaitForElement("Button1");
+			try
+			{
+				App.WaitForElement("Button1");
 
 				App.SetOrientationLandscape();
 
