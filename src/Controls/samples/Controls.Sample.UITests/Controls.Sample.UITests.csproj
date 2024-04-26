@@ -50,5 +50,11 @@
     <MauiFont Include="Resources\Fonts\OpenSans-Regular.ttf" />
   </ItemGroup>
   
+  <ItemGroup>
+    <Compile Include="..\..\tests\CustomAttributes\*.cs" />
+    <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
+  </ItemGroup>
+
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
 </Project>

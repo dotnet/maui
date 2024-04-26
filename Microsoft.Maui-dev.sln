@@ -251,6 +251,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.iOS.AppiumTests", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Mac.AppiumTests", "src\Controls\tests\Mac.UITests\Controls.Mac.AppiumTests.csproj", "{453B4975-421F-417B-A08D-DBBC67FD686C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.WinUI.AppiumTests", "src\Controls\tests\WinUI.UITests\Controls.WinUI.AppiumTests.csproj", "{719A5439-F43C-49FD-B3E3-A21DD17369C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -636,6 +638,10 @@ Global
 		{453B4975-421F-417B-A08D-DBBC67FD686C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{453B4975-421F-417B-A08D-DBBC67FD686C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{453B4975-421F-417B-A08D-DBBC67FD686C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{719A5439-F43C-49FD-B3E3-A21DD17369C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{719A5439-F43C-49FD-B3E3-A21DD17369C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{719A5439-F43C-49FD-B3E3-A21DD17369C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{719A5439-F43C-49FD-B3E3-A21DD17369C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -752,6 +758,7 @@ Global
 		{3A1CABFA-B751-474A-A042-2A5CC46D2C92} = {33A2F9BD-2F23-4986-91C1-BEA63BFDF3FE}
 		{1085CE94-66CF-4903-A9BD-886A235EBBAB} = {33A2F9BD-2F23-4986-91C1-BEA63BFDF3FE}
 		{453B4975-421F-417B-A08D-DBBC67FD686C} = {33A2F9BD-2F23-4986-91C1-BEA63BFDF3FE}
+		{719A5439-F43C-49FD-B3E3-A21DD17369C8} = {33A2F9BD-2F23-4986-91C1-BEA63BFDF3FE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
