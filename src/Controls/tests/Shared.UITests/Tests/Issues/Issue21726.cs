@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
             App.WaitForElement("TextField1").Click();
             App.WaitForElement("Button1").Click();
             var mainPageElement = App.WaitForElement("AddVC");
-            Assert.NotNull(mainPageElement);
+            ClassicAssert.NotNull(mainPageElement);
         }
     }
 }
