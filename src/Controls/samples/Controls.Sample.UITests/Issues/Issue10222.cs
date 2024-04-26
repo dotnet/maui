@@ -7,20 +7,28 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 10222, "[CollectionView] ObjectDisposedException if the page is closed during scrolling", PlatformAffected.iOS)]
-	public class Issue10222 : TestContentPage
+	public class Issue10222 : NavigationPage
 	{
-		protected override void Init()
+		public Issue10222() : base(new Issue10222Content())
 		{
-			// Initialize ui here instead of ctor
-			Navigation.PushAsync(new ContentPage
+
+		}
+
+		public class Issue10222Content : TestContentPage
+		{
+			protected override void Init()
 			{
-				Content = new Button
+				// Initialize ui here instead of ctor
+				Navigation.PushAsync(new ContentPage
 				{
-					AutomationId = "goTo",
-					Text = "Go",
-					Command = new Command(async () => await Navigation.PushAsync(new CarouselViewTestPage()))
-				}
-			});
+					Content = new Button
+					{
+						AutomationId = "goTo",
+						Text = "Go",
+						Command = new Command(async () => await Navigation.PushAsync(new CarouselViewTestPage()))
+					}
+				});
+			}
 		}
 	}
 
