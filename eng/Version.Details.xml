@@ -16,9 +16,9 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>f553ea9b92c7a1821c091761bc6571acc24fce4a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net9.0_14.2" Version="14.2.9519-net9-p5">
+    <Dependency Name="Microsoft.macOS.Sdk.net9.0_14.2" Version="14.2.9520-net9-p5">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>fa3b1512c5253263658bf868ed9d67ccc9135bdb</Sha>
+      <Sha>f553ea9b92c7a1821c091761bc6571acc24fce4a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.iOS.Sdk.net9.0_17.2" Version="17.2.9520-net9-p5">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
