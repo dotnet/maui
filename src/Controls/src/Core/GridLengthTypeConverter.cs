@@ -17,20 +17,42 @@ namespace Microsoft.Maui.Controls
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			var strValue = value?.ToString();
+			string s = value?.ToString();
 
-			if (strValue == null)
+			if (s is null)
+			{
 				return null;
+			}
 
-			strValue = strValue.Trim();
-			if (string.Compare(strValue, "auto", StringComparison.OrdinalIgnoreCase) == 0)
+#if NETSTANDARD2_0_OR_GREATER
+			string strValue = s.Trim();
+#else
+			ReadOnlySpan<char> strValue = s.AsSpan().Trim();
+#endif
+
+			if (strValue.Equals("auto", StringComparison.OrdinalIgnoreCase))
+			{
 				return GridLength.Auto;
-			if (string.Compare(strValue, "*", StringComparison.OrdinalIgnoreCase) == 0)
+			}
+
+			if (strValue.Equals("*", StringComparison.OrdinalIgnoreCase))
+			{
 				return new GridLength(1, GridUnitType.Star);
+			}
+
+#if NETSTANDARD2_0_OR_GREATER
 			if (strValue.EndsWith("*", StringComparison.Ordinal) && double.TryParse(strValue.Substring(0, strValue.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out var length))
+#else
+			if (strValue.EndsWith("*", StringComparison.Ordinal) && double.TryParse(strValue[0..(strValue.Length - 1)], NumberStyles.Number, CultureInfo.InvariantCulture, out var length))
+#endif
+			{
 				return new GridLength(length, GridUnitType.Star);
+			}
+
 			if (double.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out length))
+			{
 				return new GridLength(length);
+			}
 
 			throw new FormatException();
 		}
@@ -38,11 +60,20 @@ namespace Microsoft.Maui.Controls
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not GridLength length)
+			{
 				throw new NotSupportedException();
+			}
+
 			if (length.IsAuto)
+			{
 				return "auto";
+			}
+
 			if (length.IsStar)
+			{
 				return $"{length.Value.ToString(CultureInfo.InvariantCulture)}*";
+			}
+
 			return $"{length.Value.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}
