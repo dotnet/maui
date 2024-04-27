@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19950"
+             Title="Issue19950">
+
+     <TabBar x:Name="tabbar">
+        <ShellContent Title="Tab 1" Icon="groceries.png">
+            <ContentPage>
+                <ContentPage.ToolbarItems>
+                    <ToolbarItem IconImageSource="groceries.png" />
+                </ContentPage.ToolbarItems>
+                <Button
+                    Text="Navigate to tab 2"
+                    VerticalOptions="Start"
+                    AutomationId="button"
+                    Clicked="Button_Clicked"/>
+            </ContentPage>
+        </ShellContent>
+        <ShellContent x:Name="tab2" Route="tab2" Title="Tab 2" Icon="groceries.png">
+            <ContentPage>
+                <ContentPage.ToolbarItems>
+                    <ToolbarItem Text="Toolbar Item" />
+                </ContentPage.ToolbarItems>
+                <Label Text="Page 2" AutomationId="labelOnPage2"/>
+            </ContentPage>
+        </ShellContent>
+    </TabBar>
+</Shell>
