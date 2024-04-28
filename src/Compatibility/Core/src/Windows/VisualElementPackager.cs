@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public VisualElementPackager(IVisualElementRenderer renderer)
 		{
 			if (renderer == null)
-				throw new ArgumentNullException("renderer");
+				throw new ArgumentNullException(nameof(renderer));
 
 			_renderer = renderer;
 

@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		public VisualElementTracker(IVisualElementRenderer renderer, bool trackFrame)
 		{
-			Renderer = renderer ?? throw new ArgumentNullException("renderer");
+			Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
 
 			_propertyChangedHandler = HandlePropertyChanged;
 			_sizeChangedEventHandler = HandleSizeChanged;

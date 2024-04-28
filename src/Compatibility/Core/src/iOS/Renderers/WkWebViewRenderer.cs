@@ -703,7 +703,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			public CustomWebViewNavigationDelegate(WkWebViewRenderer renderer)
 			{
 				if (renderer == null)
-					throw new ArgumentNullException("renderer");
+					throw new ArgumentNullException(nameof(renderer));
 				_renderer = renderer;
 			}
 

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static InputScope ToInputScope(this Keyboard self)
 		{
 			if (self == null)
-				throw new ArgumentNullException("self");
+				throw new ArgumentNullException(nameof(self));
 
 			var result = new InputScope();
 			var name = new InputScopeName();

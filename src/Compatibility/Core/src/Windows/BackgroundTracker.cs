@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public BackgroundTracker(DependencyProperty backgroundProperty)
 		{
 			if (backgroundProperty == null)
-				throw new ArgumentNullException("backgroundProperty");
+				throw new ArgumentNullException(nameof(backgroundProperty));
 
 			_backgroundProperty = backgroundProperty;
 		}

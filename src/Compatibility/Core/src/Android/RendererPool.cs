@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public RendererPool(IVisualElementRenderer renderer, VisualElement oldElement)
 		{
 			if (renderer == null)
-				throw new ArgumentNullException("renderer");
+				throw new ArgumentNullException(nameof(renderer));
 
 			if (oldElement == null)
-				throw new ArgumentNullException("oldElement");
+				throw new ArgumentNullException(nameof(oldElement));
 
 			_oldElement = oldElement;
 			_parent = renderer;
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public IVisualElementRenderer GetFreeRenderer(VisualElement view)
 		{
 			if (view == null)
-				throw new ArgumentNullException("view");
+				throw new ArgumentNullException(nameof(view));
 
 			Type rendererType = Internals.Registrar.Registered.GetHandlerTypeForObject(view) ?? typeof(ViewRenderer);
 

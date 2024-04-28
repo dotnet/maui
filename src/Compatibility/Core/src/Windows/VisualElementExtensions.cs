@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public static IVisualElementRenderer GetOrCreateRenderer(this VisualElement self)
 		{
 			if (self == null)
-				throw new ArgumentNullException("self");
+				throw new ArgumentNullException(nameof(self));
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(self);
 			if (renderer == null)
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		internal static void Cleanup(this VisualElement self)
 		{
 			if (self == null)
-				throw new ArgumentNullException("self");
+				throw new ArgumentNullException(nameof(self));
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(self);
 

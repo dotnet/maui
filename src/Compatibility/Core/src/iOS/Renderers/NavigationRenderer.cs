@@ -568,9 +568,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void InsertPageBefore(Page page, Page before)
 		{
 			if (before == null)
-				throw new ArgumentNullException("before");
+				throw new ArgumentNullException(nameof(before));
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 
 			var pageContainer = CreateViewControllerForPage(page);
 			var target = Platform.GetRenderer(before).ViewController.ParentViewController;
@@ -610,7 +610,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void RemovePage(Page page)
 		{
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 			if (page == Current)
 				throw new NotSupportedException(); // should never happen as NavPage protects against this
 

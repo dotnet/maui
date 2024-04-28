@@ -21,10 +21,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public RendererPool(IVisualElementRenderer renderer, VisualElement oldElement)
 		{
 			if (renderer == null)
-				throw new ArgumentNullException("renderer");
+				throw new ArgumentNullException(nameof(renderer));
 
 			if (oldElement == null)
-				throw new ArgumentNullException("oldElement");
+				throw new ArgumentNullException(nameof(oldElement));
 
 			_oldElement = oldElement;
 			_parent = renderer;
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public IVisualElementRenderer GetFreeRenderer(VisualElement view)
 		{
 			if (view == null)
-				throw new ArgumentNullException("view");
+				throw new ArgumentNullException(nameof(view));
 
 			var rendererType = Controls.Internals.Registrar.Registered.GetHandlerTypeForObject(view) ?? typeof(ViewRenderer);
 
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public void UpdateNewElement(VisualElement newElement)
 		{
 			if (newElement == null)
-				throw new ArgumentNullException("newElement");
+				throw new ArgumentNullException(nameof(newElement));
 
 			var sameChildrenTypes = true;
 

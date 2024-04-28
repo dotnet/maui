@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		string _lastUrlNavigatedCancel;
 
 		public FormsWebViewClient(WebViewRenderer renderer)
-			=> _renderer = renderer ?? throw new ArgumentNullException("renderer");
+			=> _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
 
 		protected FormsWebViewClient(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{

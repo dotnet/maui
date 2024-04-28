@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		protected void LoadApplication(Application application)
 		{
 			if (application == null)
-				throw new ArgumentNullException("application");
+				throw new ArgumentNullException(nameof(application));
 
 			Application.SetCurrentApplication(application);
 			_application = application;

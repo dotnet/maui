@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		public void SetElement(VisualElement element)
 		{
 			if (element != null && !(element is TabbedPage))
-				throw new ArgumentException("Element must be a TabbedPage", "element");
+				throw new ArgumentException("Element must be a TabbedPage", nameof(element));
 
 			TabbedPage oldElement = Element;
 			Element = (TabbedPage)element;
