@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for attached property <c>FlyoutBehavior</c>.</summary>
 		public static readonly BindableProperty FlyoutBehaviorProperty =
-			BindableProperty.CreateAttached("FlyoutBehavior", typeof(FlyoutBehavior), typeof(Shell), FlyoutBehavior.Flyout,
+			BindableProperty.CreateAttached(nameof(FlyoutBehavior), typeof(FlyoutBehavior), typeof(Shell), FlyoutBehavior.Flyout,
 				propertyChanged: OnFlyoutBehaviorChanged);
 
 		/// <summary>Bindable property for attached property <c>NavBarIsVisible</c>.</summary>
@@ -231,17 +231,17 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for attached property <c>FlyoutBackdrop</c>.</summary>
 		public static readonly BindableProperty FlyoutBackdropProperty =
-			BindableProperty.CreateAttached("FlyoutBackdrop", typeof(Brush), typeof(Shell), Brush.Default,
+			BindableProperty.CreateAttached(nameof(FlyoutBackdrop), typeof(Brush), typeof(Shell), Brush.Default,
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <summary>Bindable property for attached property <c>FlyoutWidth</c>.</summary>
 		public static readonly BindableProperty FlyoutWidthProperty =
-			BindableProperty.CreateAttached("FlyoutWidth", typeof(double), typeof(Shell), -1d,
+			BindableProperty.CreateAttached(nameof(FlyoutWidth), typeof(double), typeof(Shell), -1d,
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <summary>Bindable property for attached property <c>FlyoutHeight</c>.</summary>
 		public static readonly BindableProperty FlyoutHeightProperty =
-			BindableProperty.CreateAttached("FlyoutHeight", typeof(double), typeof(Shell), -1d,
+			BindableProperty.CreateAttached(nameof(FlyoutHeight), typeof(double), typeof(Shell), -1d,
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetBackgroundColor']/Docs/*" />

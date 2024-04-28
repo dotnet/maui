@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='DefaultCellHeight']/Docs/*" />
 		public const int DefaultCellHeight = 40;
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
-		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
+		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
 
 		ObservableCollection<MenuItem> _contextActions;
 		List<MenuItem> _currentContextActions;
@@ -116,11 +116,11 @@ namespace Microsoft.Maui.Controls
 				if (_height == value)
 					return;
 
-				OnPropertyChanging("Height");
-				OnPropertyChanging("RenderHeight");
+				OnPropertyChanging(nameof(Height));
+				OnPropertyChanging(nameof(RenderHeight));
 				_height = value;
-				OnPropertyChanged("Height");
-				OnPropertyChanged("RenderHeight");
+				OnPropertyChanged(nameof(Height));
+				OnPropertyChanged(nameof(RenderHeight));
 			}
 		}
 
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls
 
 			_currentContextActions = new List<MenuItem>(_contextActions);
 
-			OnPropertyChanged("HasContextActions");
+			OnPropertyChanged(nameof(HasContextActions));
 		}
 
 		async void OnForceUpdateSizeRequested()
@@ -279,7 +279,7 @@ namespace Microsoft.Maui.Controls
 
 		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
-			(bindable as Cell).OnPropertyChanged("HasContextActions");
+			(bindable as Cell).OnPropertyChanged(nameof(HasContextActions));
 		}
 
 		void OnParentPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -287,7 +287,7 @@ namespace Microsoft.Maui.Controls
 			// Technically we might be raising this even if it didn't change, but I'm taking the bet that
 			// its uncommon enough that we don't want to take the penalty of N GetValue calls to verify.
 			if (e.PropertyName == "RowHeight")
-				OnPropertyChanged("RenderHeight");
+				OnPropertyChanged(nameof(RenderHeight));
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName ||
 					 e.PropertyName == VisualElement.VisualProperty.PropertyName)
 				PropertyPropagationController.PropagatePropertyChanged(e.PropertyName);
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls
 		void OnParentPropertyChanging(object sender, PropertyChangingEventArgs e)
 		{
 			if (e.PropertyName == "RowHeight")
-				OnPropertyChanging("RenderHeight");
+				OnPropertyChanging(nameof(RenderHeight));
 		}
 
 #if ANDROID
