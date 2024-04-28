@@ -47,10 +47,21 @@ namespace Microsoft.Maui.Handlers
 			bool setupPlatformView = oldVirtualView == null;
 
 			VirtualView = view;
-			PlatformView ??= CreatePlatformElement();
+
+			bool isNew = false;
+
+			if (PlatformView is null)
+			{
+				PlatformView = CreatePlatformElement();
+				isNew = true;
+			}
+
+			VirtualView.IsPlatformViewNew = isNew;
 
 			if (VirtualView.Handler != this)
+			{
 				VirtualView.Handler = this;
+			}
 
 			// We set the previous virtual view to null after setting it on the incoming virtual view.
 			// This makes it easier for the incoming virtual view to have influence
@@ -77,6 +88,8 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			_mapper.UpdateProperties(this, VirtualView);
+
+			VirtualView.IsPlatformViewNew = false;
 		}
 
 		public virtual void UpdateValue(string property)
