@@ -273,6 +273,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					.Dispatch(() =>
 					{
 
+						if (carouselPosition >= observableItemsSource.Count)
+							carouselPosition--;
+						if (carouselPosition < 0)
+							carouselPosition = 0;
+
 						SetCurrentItem(carouselPosition);
 						UpdatePosition(carouselPosition);
 
