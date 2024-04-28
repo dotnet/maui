@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls
 			_parent = parent;
 		}
 
+		public bool IsPlatformViewNew { get; set; }
 		public IEnumerable<ToolbarItem> ToolbarItems { get => _toolbarItems; set => SetProperty(ref _toolbarItems, value); }
 		public double? BarHeight { get => _barHeight; set => SetProperty(ref _barHeight, value); }
 		public string BackButtonTitle { get => _backButtonTitle; set => SetProperty(ref _backButtonTitle, value); }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
@@ -8,7 +8,7 @@
     <IsTrimmable>false</IsTrimmable>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0016;RS0017;RS0027</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

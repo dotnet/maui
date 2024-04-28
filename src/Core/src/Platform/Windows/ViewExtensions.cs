@@ -94,7 +94,10 @@ namespace Microsoft.Maui.Platform
 		{
 			var opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
 
-			platformView.UpdateOpacity(opacity);
+			if (!view.IsPlatformViewNew || opacity != 1)
+			{
+				platformView.UpdateOpacity(opacity);
+			}
 		}
 
 		internal static void UpdateOpacity(this FrameworkElement platformView, double opacity) => platformView.Opacity = (float)opacity;
@@ -135,8 +138,13 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateAutomationId(this FrameworkElement platformView, IView view) =>
-			AutomationProperties.SetAutomationId(platformView, view.AutomationId);
+		public static void UpdateAutomationId(this FrameworkElement platformView, IView view)
+		{
+			if (!view.IsPlatformViewNew || view.AutomationId is not null)
+			{
+				AutomationProperties.SetAutomationId(platformView, view.AutomationId);
+			}
+		}
 
 		public static void UpdateSemantics(this FrameworkElement platformView, IView view)
 		{
@@ -177,16 +185,22 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateWidth(this FrameworkElement platformView, IView view)
 		{
-			// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
-			// we can just propagate the value straight through
-			platformView.Width = view.Width;
+			if (!view.IsPlatformViewNew || !double.IsNaN(view.Width)) 
+			{
+				// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
+				// we can just propagate the value straight through
+				platformView.Width = view.Width;
+			}
 		}
 
 		public static void UpdateHeight(this FrameworkElement platformView, IView view)
 		{
-			// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
-			// we can just propagate the value straight through
-			platformView.Height = view.Height;
+			if (!view.IsPlatformViewNew || !double.IsNaN(view.Height))
+			{
+				// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
+				// we can just propagate the value straight through
+				platformView.Height = view.Height;
+			}
 		}
 
 		public static void UpdateMinimumHeight(this FrameworkElement platformView, IView view)
@@ -205,7 +219,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var minWidth = view.MinimumWidth;
 
-			if (Dimension.IsMinimumSet(minWidth))
+			if (!view.IsPlatformViewNew || Dimension.IsMinimumSet(minWidth))
 			{
 				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
 				// because the platform/theme may have a minimum width for this control
@@ -215,12 +229,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximumHeight(this FrameworkElement platformView, IView view)
 		{
-			platformView.MaxHeight = view.MaximumHeight;
+			if (!view.IsPlatformViewNew || !Dimension.IsMaximumSet(view.MaximumHeight))
+			{
+				platformView.MaxHeight = view.MaximumHeight;
+			}
 		}
 
 		public static void UpdateMaximumWidth(this FrameworkElement platformView, IView view)
 		{
-			platformView.MaxWidth = view.MaximumWidth;
+			if (!view.IsPlatformViewNew || !Dimension.IsMaximumSet(view.MaximumWidth))
+			{
+				platformView.MaxWidth = view.MaximumWidth;
+			}
 		}
 
 		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
@@ -406,9 +426,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateInputTransparent(this FrameworkElement nativeView, IViewHandler handler, IView view)
 		{
-			if (nativeView is UIElement element)
-			{
-				element.IsHitTestVisible = !view.InputTransparent;
+			if (!view.IsPlatformViewNew || !view.InputTransparent) {
+
+				if (nativeView is UIElement element)
+				{
+					element.IsHitTestVisible = !view.InputTransparent;
+				}
 			}
 		}
 
