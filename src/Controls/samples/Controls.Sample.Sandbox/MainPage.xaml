@@ -3,4 +3,26 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+    <VerticalStackLayout>
+        <Rectangle
+        WidthRequest="200"
+        HeightRequest="200"
+        BackgroundColor="red">
+
+            <Rectangle.GestureRecognizers>
+                <PointerGestureRecognizer
+                PointerEntered="PointerGestureRecognizer_PointerEntered"
+                PointerExited="PointerGestureRecognizer_PointerExited"
+                PointerMoved="PointerGestureRecognizer_PointerMoved"
+                PointerPressed="PointerGestureRecognizer_PointerPressed"
+                PointerReleased="PointerGestureRecognizer_PointerReleased"/>
+            </Rectangle.GestureRecognizers>
+
+        </Rectangle>
+
+        <Label
+            Text="debug"
+            x:Name="debug"/>
+    </VerticalStackLayout>
 </ContentPage>

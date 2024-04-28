@@ -6,7 +6,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class PointerGestureHandler : Java.Lang.Object, AView.IOnHoverListener
+	internal class PointerGestureHandler : Java.Lang.Object, AView.IOnHoverListener, AView.IOnTouchListener
 	{
 		internal PointerGestureHandler(Func<View> getView, Func<AView> getControl)
 		{
@@ -50,6 +50,34 @@ namespace Microsoft.Maui.Controls.Platform
 			return false;
 		}
 
+		public bool OnTouch(AView control, MotionEvent e)
+		{
+			var view = GetView();
+			if (view == null)
+				return false;
+
+			var platformPointerArgs = new PlatformPointerEventArgs(control, e);
+
+			foreach (var gesture in view.GetCompositeGestureRecognizers())
+			{
+				var pgr = gesture as PointerGestureRecognizer;
+				switch (e.Action)
+				{
+					case MotionEventActions.Move:
+						pgr.SendPointerMoved(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs);
+						break;
+					case MotionEventActions.Down:
+						pgr.SendPointerPressed(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs);
+						break;
+					case MotionEventActions.Up:
+						pgr.SendPointerReleased(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs);
+						break;
+				}
+			}
+
+			return true;
+		}
+
 		public void SetupHandlerForPointer()
 		{
 			var view = GetView();
@@ -61,9 +89,15 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			if (HasAnyPointerGestures())
+			{
 				control.SetOnHoverListener(this);
+				control.SetOnTouchListener(this);
+			}
 			else
+			{
 				control.SetOnHoverListener(null);
+				control.SetOnTouchListener(null);
+			}
 
 			return;
 		}
