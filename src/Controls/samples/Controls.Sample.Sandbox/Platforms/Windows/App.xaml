@@ -5,4 +5,7 @@
     xmlns:maui="using:Microsoft.Maui"
     xmlns:local="using:Maui.Controls.Sample.Platform">
 
+    <maui:MauiWinUIApplication.Resources>
+        <x:Double x:Key="ControlContentThemeFontSize">14</x:Double>
+    </maui:MauiWinUIApplication.Resources>
 </maui:MauiWinUIApplication>
