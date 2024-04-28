@@ -25,7 +25,12 @@ namespace Microsoft.Maui.Platform
 		{
 			var font = label.Font;
 
-			platformControl.FontSize = fontManager.GetFontSize(font);
+			var fontSize = fontManager.GetFontSize(font);
+
+			if (!label.IsPlatformViewNew || fontSize != fontManager.DefaultFontSize)
+			{
+				platformControl.FontSize = fontSize;
+			}
 
 			UI.Xaml.Media.FontFamily fontFamily = fontManager.GetFontFamily(font);
 
