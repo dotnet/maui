@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 
 		public MauiWebChromeClient(IWebViewHandler handler)
 		{
-			_ = handler ?? throw new ArgumentNullException("handler");
+			_ = handler ?? throw new ArgumentNullException(nameof(handler));
 
 			SetContext(handler);
 		}

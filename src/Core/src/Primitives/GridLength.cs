@@ -47,9 +47,9 @@ namespace Microsoft.Maui
 		public GridLength(double value, GridUnitType type)
 		{
 			if (value < 0 || double.IsNaN(value))
-				throw new ArgumentException("value is less than 0 or is not a number", "value");
+				throw new ArgumentException("value is less than 0 or is not a number", nameof(value));
 			if ((int)type < (int)GridUnitType.Absolute || (int)type > (int)GridUnitType.Auto)
-				throw new ArgumentException("type is not a valid GridUnitType", "type");
+				throw new ArgumentException("type is not a valid GridUnitType", nameof(type));
 
 			Value = value;
 			GridUnitType = type;
