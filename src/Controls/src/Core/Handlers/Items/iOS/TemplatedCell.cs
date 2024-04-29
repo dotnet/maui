@@ -19,22 +19,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 
 		}
-
-		// WeakReference<IPlatformViewHandler> _handler;
-		//
-		// internal IPlatformViewHandler PlatformHandler
-		// {
-		// 	get => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
-		// 	set => _handler = value == null ? null : new(value);
-		// }
 		
 		public UICollectionViewScrollDirection ScrollDirection { get; set; }
 		
-		internal IPlatformViewHandler PlatformHandler
-		{
-			get;
-			set;
-		}
+		internal IPlatformViewHandler PlatformHandler  {  get; set;  }
 
 		internal UIView PlatformView { get; set; }
 		
@@ -51,14 +39,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UICollectionViewLayoutAttributes layoutAttributes)
 		{
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
-
+		
 			if (PlatformHandler?.VirtualView is not null)
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Vertical)
 				{
 					var measure =
 						PlatformHandler.VirtualView.Measure(preferredAttributes.Size.Width, double.PositiveInfinity);
-
+		
 					preferredAttributes.Frame =
 						new CGRect(preferredAttributes.Frame.X, preferredAttributes.Frame.Y,
 							preferredAttributes.Frame.Width, measure.Height);
@@ -67,12 +55,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					var measure =
 						PlatformHandler.VirtualView.Measure(double.PositiveInfinity, preferredAttributes.Size.Height);
-
+		
 					preferredAttributes.Frame =
 						new CGRect(preferredAttributes.Frame.X, preferredAttributes.Frame.Y,
 							measure.Width, preferredAttributes.Frame.Height);
 				}
-
+		
 				preferredAttributes.ZIndex = 2;
 			}
 			
@@ -91,10 +79,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var virtualView = template.CreateContent() as View;
 
-				var mauiContext = itemsView.FindMauiContext();
-				var nativeView = virtualView.ToPlatform(mauiContext);
-
+				var mauiContext = itemsView.FindMauiContext()!;
+				var nativeView = virtualView!.ToPlatform(mauiContext);
+				
 				PlatformView = nativeView;
+
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
 				
 				InitializeContentConstraints(nativeView);
@@ -104,7 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			
 			if (PlatformHandler?.VirtualView is View view)
 			{
-				view.SetValueFromRenderer(View.BindingContextProperty, bindingContext);
+				view.SetValueFromRenderer(BindableObject.BindingContextProperty, bindingContext);
 			}
 		}
 		
