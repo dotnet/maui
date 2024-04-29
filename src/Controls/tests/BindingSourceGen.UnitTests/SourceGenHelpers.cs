@@ -54,9 +54,9 @@ internal static class SourceGenHelpers
             Binding: resultBinding);
     }
 
-    internal static Compilation CreateCompilation(string source)
+    private static Compilation CreateCompilationFromSyntaxTrees(List<SyntaxTree> syntaxTrees)
         => CSharpCompilation.Create("compilation",
-            [CSharpSyntaxTree.ParseText(source, ParseOptions, path: @"Path\To\Program.cs")],
+            syntaxTrees,
             [
                 MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
@@ -64,4 +64,16 @@ internal static class SourceGenHelpers
             ],
             new CSharpCompilationOptions(OutputKind.ConsoleApplication)
             .WithNullableContextOptions(NullableContextOptions.Enable));
+
+
+    internal static Compilation CreateCompilation(string source)
+    {
+        return CreateCompilationFromSyntaxTrees([CSharpSyntaxTree.ParseText(source, ParseOptions, path: @"Path\To\Program.cs")]);
+    }
+
+    internal static Compilation CreateCompilation(List<string> sources)
+    {
+        var syntaxTrees = sources.Select(source => CSharpSyntaxTree.ParseText(source, ParseOptions, path: $@"Path\To\Program{sources.IndexOf(source)}.cs")).ToList();
+        return CreateCompilationFromSyntaxTrees(syntaxTrees);
+    }
 }

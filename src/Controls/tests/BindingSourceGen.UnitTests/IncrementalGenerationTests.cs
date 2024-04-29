@@ -36,8 +36,90 @@ public class IncrementalGenerationTests
         label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
         """;
 
-        var inputCompilation = SourceGenHelpers.CreateCompilation(source);
-        var inputCompilationClone = inputCompilation.Clone();
+        RunGeneratorOnTwoSourcesAndVerifyResults([source], [source], reason => Assert.True(reason == IncrementalStepRunReason.Unchanged || reason == IncrementalStepRunReason.Cached));
+    }
+
+    [Fact]
+    public void DoesRegenerateCodeWhenSourceChanged()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
+        """;
+
+        var newSource = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (string s) => s);
+        """;
+
+        RunGeneratorOnTwoSourcesAndVerifyResults([source], [newSource], reason => Assert.True(reason == IncrementalStepRunReason.Modified));
+    }
+
+    [Fact]
+    public void DoesRegenerateCodeWhenNewCodeInsertedAbove()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
+        """;
+
+        var newSource = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        var x = 42;
+        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
+        """;
+
+        RunGeneratorOnTwoSourcesAndVerifyResults([source], [newSource], reason => Assert.True(reason == IncrementalStepRunReason.Modified));
+    }
+
+    [Fact]
+    public void DoesNotRegenerateCodeWhenNewCodeInsertedBelow()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
+        """;
+
+        var newSource = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
+
+        var x = 42;
+        """;
+
+        RunGeneratorOnTwoSourcesAndVerifyResults([source], [newSource], reason => Assert.True(reason == IncrementalStepRunReason.Unchanged || reason == IncrementalStepRunReason.Cached));
+    }
+
+    [Fact]
+    public void DoesNotRegerateCodeWhenDifferentFileEdited()
+    {
+        var fileASource = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
+        """;
+
+        var fileBSource = """
+        var x = 42;
+        """;
+
+        var fileBModified = """
+        var x = 43;
+        """;
+
+        RunGeneratorOnTwoSourcesAndVerifyResults([fileASource, fileBSource], [fileASource, fileBModified], reason => Assert.True(reason == IncrementalStepRunReason.Unchanged || reason == IncrementalStepRunReason.Cached));
+    }
+
+    private static void RunGeneratorOnTwoSourcesAndVerifyResults(List<string> sources, List<string> modified, Action<IncrementalStepRunReason> assert)
+    {
+        var inputCompilation = SourceGenHelpers.CreateCompilation(sources);
+        var cloneCompilation = inputCompilation.Clone();
         var driver = SourceGenHelpers.CreateDriver();
 
         var driverWithCachedInfo = driver.RunGenerators(inputCompilation);
@@ -48,16 +130,17 @@ public class IncrementalGenerationTests
         var reasons = steps.SelectMany(step => step.Value).SelectMany(x => x.Outputs).Select(x => x.Reason);
         Assert.All(reasons, reason => Assert.Equal(IncrementalStepRunReason.New, reason));
 
-        result = driverWithCachedInfo.RunGenerators(inputCompilationClone).GetRunResult().Results.Single();
-        steps = result.TrackedSteps;
+        var newCompilation = SourceGenHelpers.CreateCompilation(modified);
+        var newResult = driverWithCachedInfo.RunGenerators(newCompilation).GetRunResult().Results.Single();
+        var newSteps = newResult.TrackedSteps;
 
-        reasons = steps
+        var newReasons = newSteps
             .Where(step => SourceGenHelpers.StepsForComparison.Contains(step.Key))
             .SelectMany(step => step.Value)
             .SelectMany(x => x.Outputs)
             .Select(x => x.Reason);
 
-        Assert.All(reasons, reason => Assert.True(reason == IncrementalStepRunReason.Unchanged || reason == IncrementalStepRunReason.Cached));
+        Assert.All(newReasons, reason => assert(reason));
     }
 
     private static void CompareGeneratorOutputs(GeneratorRunResult result1, GeneratorRunResult result2)
