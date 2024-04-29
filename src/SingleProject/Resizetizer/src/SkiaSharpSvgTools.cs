@@ -21,10 +21,13 @@ namespace Microsoft.Maui.Resizetizer
 			sw.Start();
 
 			svg = new SKSvg();
-			svg.Load(filename);
+			var pic = svg.Load(filename);
 
 			sw.Stop();
 			Logger?.Log($"Open SVG took {sw.ElapsedMilliseconds}ms ({filename})");
+
+			if (pic.CullRect.Size.IsEmpty)
+				Logger?.Log($"SVG picture did not have a size and will fail to generate. ({Filename})");
 		}
 
 		public override SKSize GetOriginalSize() =>
