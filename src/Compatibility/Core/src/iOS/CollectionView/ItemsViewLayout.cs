@@ -368,50 +368,50 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			InvalidateLayout();
 		}
 
-		public override UICollectionViewLayoutInvalidationContext GetInvalidationContext(UICollectionViewLayoutAttributes preferredAttributes, UICollectionViewLayoutAttributes originalAttributes)
-		{
-			if (preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Header
-				&& preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Footer)
-			{
-				if (Forms.IsiOS12OrNewer)
-				{
-					return base.GetInvalidationContext(preferredAttributes, originalAttributes);
-				}
+		// public override UICollectionViewLayoutInvalidationContext GetInvalidationContext(UICollectionViewLayoutAttributes preferredAttributes, UICollectionViewLayoutAttributes originalAttributes)
+		// {
+		// 	if (preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Header
+		// 		&& preferredAttributes.RepresentedElementKind != UICollectionElementKindSectionKey.Footer)
+		// 	{
+		// 		if (Forms.IsiOS12OrNewer)
+		// 		{
+		// 			return base.GetInvalidationContext(preferredAttributes, originalAttributes);
+		// 		}
 
-				try
-				{
-					// We only have to do this on older iOS versions; sometimes when removing a cell that's right at the edge
-					// of the viewport we'll run into a race condition where the invalidation context will have the removed
-					// indexpath. And then things crash. So 
+		// 		try
+		// 		{
+		// 			// We only have to do this on older iOS versions; sometimes when removing a cell that's right at the edge
+		// 			// of the viewport we'll run into a race condition where the invalidation context will have the removed
+		// 			// indexpath. And then things crash. So 
 
-					var defaultContext = base.GetInvalidationContext(preferredAttributes, originalAttributes);
-					return defaultContext;
-				}
-				catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSRangeException")
-				{
-					Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
-				}
+		// 			var defaultContext = base.GetInvalidationContext(preferredAttributes, originalAttributes);
+		// 			return defaultContext;
+		// 		}
+		// 		catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSRangeException")
+		// 		{
+		// 			Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
+		// 		}
 
-				UICollectionViewFlowLayoutInvalidationContext context = new UICollectionViewFlowLayoutInvalidationContext();
-				return context;
-			}
+		// 		UICollectionViewFlowLayoutInvalidationContext context = new UICollectionViewFlowLayoutInvalidationContext();
+		// 		return context;
+		// 	}
 
-			// Ensure that if this invalidation was triggered by header/footer changes, the header/footer are being invalidated
+		// 	// Ensure that if this invalidation was triggered by header/footer changes, the header/footer are being invalidated
 
-			UICollectionViewFlowLayoutInvalidationContext invalidationContext = new UICollectionViewFlowLayoutInvalidationContext();
-			var indexPath = preferredAttributes.IndexPath;
+		// 	UICollectionViewFlowLayoutInvalidationContext invalidationContext = new UICollectionViewFlowLayoutInvalidationContext();
+		// 	var indexPath = preferredAttributes.IndexPath;
 
-			if (preferredAttributes.RepresentedElementKind == UICollectionElementKindSectionKey.Header)
-			{
-				invalidationContext.InvalidateSupplementaryElements(UICollectionElementKindSectionKey.Header, new[] { indexPath });
-			}
-			else if (preferredAttributes.RepresentedElementKind == UICollectionElementKindSectionKey.Footer)
-			{
-				invalidationContext.InvalidateSupplementaryElements(UICollectionElementKindSectionKey.Footer, new[] { indexPath });
-			}
+		// 	if (preferredAttributes.RepresentedElementKind == UICollectionElementKindSectionKey.Header)
+		// 	{
+		// 		invalidationContext.InvalidateSupplementaryElements(UICollectionElementKindSectionKey.Header, new[] { indexPath });
+		// 	}
+		// 	else if (preferredAttributes.RepresentedElementKind == UICollectionElementKindSectionKey.Footer)
+		// 	{
+		// 		invalidationContext.InvalidateSupplementaryElements(UICollectionElementKindSectionKey.Footer, new[] { indexPath });
+		// 	}
 
-			return invalidationContext;
-		}
+		// 	return invalidationContext;
+		// }
 
 		public override void PrepareLayout()
 		{

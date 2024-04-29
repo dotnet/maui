@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
+			return;
 			if (VirtualView?.Loop == true)
 			{
 				var goToIndexPath = (Controller as CarouselViewController).GetScrollToIndexPath(args.Index);
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => 
-			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+		// public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => 
+		// 	this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 	}
 }
