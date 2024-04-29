@@ -124,6 +124,11 @@ namespace UITest.Appium
 					{ "bundleId", _app.GetAppId() },
 				});
 			}
+			else if (_app.GetTestDevice() == TestDevice.Windows)
+			{
+				if (_app.Driver is WindowsDriver windowsDriver)
+					windowsDriver.CloseApp();
+			}
 			else
 				_app.Driver.TerminateApp(_app.GetAppId());
 
