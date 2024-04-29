@@ -3,27 +3,34 @@
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 19465, "Double tap gesture NullReferenceException when navigating", PlatformAffected.Android)]
-	public class Issue19465 : ContentPage
+	public class Issue19465 : NavigationPage
 	{
-		public Issue19465()
+		public Issue19465() : base(new Issue19465Content())
 		{
-			var layout = new StackLayout();
-
-			var button = new Button
-			{
-				AutomationId = "FirstButton",
-				Text = "Navigate"
-			};
-
-			button.Clicked += OnNavigateClicked;
-
-			layout.Children.Add(button);
-			Content = layout;
 		}
 
-		async void OnNavigateClicked(object sender, System.EventArgs e)
+		public class Issue19465Content : ContentPage
 		{
-			await Navigation.PushAsync(new Issue19465SecondPage());
+			public Issue19465Content()
+			{
+				var layout = new StackLayout();
+
+				var button = new Button
+				{
+					AutomationId = "FirstButton",
+					Text = "Navigate"
+				};
+
+				button.Clicked += OnNavigateClicked;
+
+				layout.Children.Add(button);
+				Content = layout;
+			}
+
+			async void OnNavigateClicked(object sender, System.EventArgs e)
+			{
+				await Navigation.PushAsync(new Issue19465SecondPage());
+			}
 		}
 	}
 
