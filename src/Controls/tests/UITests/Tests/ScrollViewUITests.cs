@@ -20,12 +20,6 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(LayoutGallery);
 		}
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
-		}
-
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the start")]

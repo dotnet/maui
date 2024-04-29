@@ -88,9 +88,7 @@ namespace Microsoft.Maui.Resizetizer
 				}
 				catch (Exception ex)
 				{
-					LogWarning("MAUI0000", ex.ToString());
-
-					throw;
+					LogCodedError("MAUI0000", $"There was an exception processing the image '{img.Filename}': {ex}");
 				}
 			});
 

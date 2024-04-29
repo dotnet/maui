@@ -14,6 +14,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.ScrollView)]
 		public void ResizeScrollViewAndTapButtonTest()
 		{
+			App.WaitForElement("Resize");
+
 			// Tapping the Resize button will change the height of the ScrollView content
 			App.Tap("Resize");
 
