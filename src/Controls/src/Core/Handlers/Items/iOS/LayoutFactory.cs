@@ -14,8 +14,8 @@ internal static class LayoutFactory
 	
 	public static UICollectionViewLayout CreateCarousel(LinearItemsLayout linearItemsLayout, LayoutGroupingInfo groupingInfo)
 		=> linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
-			? CreateVerticalList(linearItemsLayout, groupingInfo)
-			: CreateHorizontalList(linearItemsLayout, groupingInfo);
+			? CreateVerticalCarousel(linearItemsLayout)
+			: CreateHorizontalCarousel(linearItemsLayout);
 	
 	public static UICollectionViewLayout CreateGrid(GridItemsLayout gridItemsLayout, LayoutGroupingInfo groupingInfo)
 		=> gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
@@ -114,6 +114,25 @@ internal static class LayoutFactory
 			// Fill the height for horizontal
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
 			NSCollectionLayoutDimension.CreateEstimated(30f),
+			NSCollectionLayoutDimension.CreateFractionalHeight(1f));
+
+public static UICollectionViewLayout CreateVerticalCarousel(LinearItemsLayout linearItemsLayout)
+		=> CreateLayout(UICollectionViewScrollDirection.Vertical,
+			new LayoutGroupingInfo { IsGrouped = false, HasHeader = false, HasFooter = false },
+			// Fill the width and height
+			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
+			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
+			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
+			NSCollectionLayoutDimension.CreateFractionalHeight(1f));
+
+
+	public static UICollectionViewLayout CreateHorizontalCarousel(LinearItemsLayout linearItemsLayout)
+		=> CreateLayout(UICollectionViewScrollDirection.Vertical,
+			new LayoutGroupingInfo { IsGrouped = false, HasHeader = false, HasFooter = false },
+			// Fill the width and height
+			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
+			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
+			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f));
 	
 	public static UICollectionViewLayout CreateVerticalGrid(GridItemsLayout gridItemsLayout,
