@@ -17,6 +17,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.Entry)]
 		public void HittingEnterKeySendsDone()
 		{
+			App.WaitForElement("HardwareEnterKeyEntry");
 			App.Tap("HardwareEnterKeyEntry");
 			App.SendKeys(66);
 			App.WaitForElement("Success");
