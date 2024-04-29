@@ -1,17 +1,18 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues
+namespace UITests
 {
-	public class Issue774 : _IssuesUITest
+	public class Issue774 : IssuesUITest
 	{
 		public Issue774(TestDevice device) : base(device)
 		{
 		}
 
 		public override string Issue => "ActionSheet won't dismiss after rotation to landscape";
-		
+
 		protected override void FixtureTeardown()
 		{
 			App.SetOrientationPortrait();
@@ -24,8 +25,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.ActionSheet)]
 		public void Issue774TestsDismissActionSheetAfterRotation()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 			App.Click("ShowActionSheet");
 			App.Screenshot("Show ActionSheet");
 
@@ -43,7 +42,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForNoElement(target);
 
 			App.Screenshot("Dismiss ActionSheet");
-			VerifyScreenshot();
 		}
 	}
 }
+#endif

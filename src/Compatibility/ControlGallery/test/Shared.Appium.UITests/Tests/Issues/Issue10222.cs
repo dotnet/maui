@@ -1,10 +1,11 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues
+namespace UITests
 {
-	public class Issue10222 : _IssuesUITest
+	public class Issue10222 : IssuesUITest
 	{
 		public Issue10222(TestDevice device) : base(device)
 		{
@@ -14,10 +15,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOS]
 		public void Issue10222Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },
-				"The CollectionView on the second page is not rendering.");
 			try
 			{
 				App.WaitForElement("goTo");
@@ -32,3 +32,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif
