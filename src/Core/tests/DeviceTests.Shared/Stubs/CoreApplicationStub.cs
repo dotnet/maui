@@ -5,6 +5,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class CoreApplicationStub : IApplication
 	{
+		bool IElement.IsPlatformViewNew { get; set; }
 		IWindow _singleWindow;
 
 		readonly List<IWindow> _windows = new List<IWindow>();

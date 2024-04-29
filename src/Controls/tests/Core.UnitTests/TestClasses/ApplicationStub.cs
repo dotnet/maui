@@ -5,6 +5,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	class ApplicationStub : IApplication
 	{
+		bool IElement.IsPlatformViewNew { get; set; }
 		readonly List<IWindow> _windows = new List<IWindow>();
 
 		public IElementHandler Handler { get; set; }

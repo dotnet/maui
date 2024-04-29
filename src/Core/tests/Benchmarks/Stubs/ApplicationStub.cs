@@ -6,6 +6,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	class ApplicationStub : IApplication
 	{
 		readonly List<IWindow> _windows = new List<IWindow>();
+		
+		bool IElement.IsPlatformViewNew { get; set; }
 
 		public IElementHandler Handler { get; set; }
 
