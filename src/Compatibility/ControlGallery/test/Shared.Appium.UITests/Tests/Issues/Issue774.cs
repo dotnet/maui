@@ -25,6 +25,7 @@ namespace UITests
 		[Category(UITestCategories.ActionSheet)]
 		public void Issue774TestsDismissActionSheetAfterRotation()
 		{
+			App.WaitForElement("ShowActionSheet");
 			App.Click("ShowActionSheet");
 			App.Screenshot("Show ActionSheet");
 
