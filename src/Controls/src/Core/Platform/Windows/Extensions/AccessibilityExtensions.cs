@@ -66,7 +66,8 @@ namespace Microsoft.Maui.Controls.Platform
 				newValue = AccessibilityView.Raw;
 			}
 
-			if (currentValue is null || currentValue != newValue)
+
+			if (!Element.IsPlatformViewNew || currentValue is null || newValue != AccessibilityView.Content)
 			{
 				Control.SetValue(NativeAutomationProperties.AccessibilityViewProperty, newValue);
 			}
