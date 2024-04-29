@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
+#if IOS
+	,IiOSPageSpecifics
+#endif
 	{
 		/// <summary>
 		/// The identifier used by the internal messaging system to set <see cref="IsBusy"/>.
@@ -206,6 +209,44 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc/>
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
+
+#if IOS
+		/// <inheritdoc/>
+		bool IiOSPageSpecifics.IsHomeIndicatorAutoHidden
+		{
+			get
+			{
+				if (Parent is Page page && page.IsSet(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty))
+					return page.On<PlatformConfiguration.iOS>().PrefersHomeIndicatorAutoHidden();
+
+				return On<PlatformConfiguration.iOS>().PrefersHomeIndicatorAutoHidden();
+			}
+		}
+
+		/// <inheritdoc/>
+		int IiOSPageSpecifics.PrefersStatusBarHiddenMode
+		{
+			get
+			{
+				if (Parent is Page page && page.IsSet(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty))
+					return (int)page.On<PlatformConfiguration.iOS>().PrefersStatusBarHidden();
+
+				return (int)On<PlatformConfiguration.iOS>().PrefersStatusBarHidden();
+			}
+		}
+
+		/// <inheritdoc/>
+		int IiOSPageSpecifics.PreferredStatusBarUpdateAnimationMode
+		{
+			get
+			{
+				if (Parent is Page page && page.IsSet(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty))
+					return (int)page.On<PlatformConfiguration.iOS>().PreferredStatusBarUpdateAnimation();
+
+				return (int)On<PlatformConfiguration.iOS>().PreferredStatusBarUpdateAnimation();
+			}
+		}
+#endif
 
 		/// <inheritdoc/>
 		Thickness ISafeAreaView2.SafeAreaInsets
