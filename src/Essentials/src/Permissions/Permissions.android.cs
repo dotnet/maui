@@ -176,10 +176,10 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				lock (locker)
 				{
-					if (requests.ContainsKey(requestCode))
+					if (requests.TryGetValue(requestCode, out var requestResult))
 					{
 						var result = new PermissionResult(permissions, grantResults);
-						requests[requestCode].TrySetResult(result);
+						requestResult.TrySetResult(result);
 						requests.Remove(requestCode);
 					}
 				}

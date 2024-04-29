@@ -202,9 +202,9 @@ namespace Microsoft.Maui.Controls
 			if (message == null)
 				throw new ArgumentNullException(nameof(message));
 			var key = new Sender(message, senderType, argType);
-			if (!_subscriptions.ContainsKey(key))
+			if (!_subscriptions.TryGetValue(key, out List<Subscription> subcriptions))
 				return;
-			List<Subscription> subcriptions = _subscriptions[key];
+
 			if (subcriptions == null || !subcriptions.Any())
 				return; // should not be reachable
 
@@ -229,9 +229,9 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(message));
 			var key = new Sender(message, senderType, argType);
 			var value = new Subscription(subscriber, target, methodInfo, filter);
-			if (_subscriptions.ContainsKey(key))
+			if (_subscriptions.TryGetValue(key, out List<Subscription> subscriptions))
 			{
-				_subscriptions[key].Add(value);
+				subscriptions.Add(value);
 			}
 			else
 			{
@@ -248,10 +248,10 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(message));
 
 			var key = new Sender(message, senderType, argType);
-			if (!_subscriptions.ContainsKey(key))
+			if (!_subscriptions.TryGetValue(key, out List<Subscription> subscriptions))
 				return;
-			_subscriptions[key].RemoveAll(sub => sub.CanBeRemoved() || sub.Subscriber.Target == subscriber);
-			if (!_subscriptions[key].Any())
+			subscriptions.RemoveAll(sub => sub.CanBeRemoved() || sub.Subscriber.Target == subscriber);
+			if (!subscriptions.Any())
 				_subscriptions.Remove(key);
 		}
 

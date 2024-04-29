@@ -138,13 +138,13 @@ namespace Microsoft.Maui
 		{
 			if (_categoryPrefix == null)
 			{
-				if (!Traits.ContainsKey(CategoryDiscoverer.Category))
+				if (!Traits.TryGetValue(CategoryDiscoverer.Category, out List<string>? categoryTraits))
 				{
 					_categoryPrefix = string.Empty;
 				}
 				else
 				{
-					_categoryPrefix = $"[{string.Join(", ", Traits[CategoryDiscoverer.Category])}] ";
+					_categoryPrefix = $"[{string.Join(", ", categoryTraits)}] ";
 				}
 			}
 

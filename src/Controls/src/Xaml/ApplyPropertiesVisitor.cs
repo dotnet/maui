@@ -130,9 +130,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				string xKey = null;
 				if (xpe == null
-					&& node.Properties.ContainsKey(XmlName.xKey))
+					&& node.Properties.TryGetValue(XmlName.xKey, out INode nodePropertyValue))
 				{
-					if ((node.Properties[XmlName.xKey] is ValueNode valueNode))
+					if (nodePropertyValue is ValueNode valueNode)
 						xKey = valueNode.Value as string;
 					if (xKey == null)
 						xpe = new XamlParseException("x:Key expects a string literal.", node as IXmlLineInfo);
@@ -192,9 +192,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					return;
 				Exception xpe = null;
 				string xKey = null;
-				if (xpe == null && node.Properties.ContainsKey(XmlName.xKey))
+				if (xpe == null && node.Properties.TryGetValue(XmlName.xKey, out INode nodePropertyValue))
 				{
-					if ((node.Properties[XmlName.xKey] is ValueNode valueNode))
+					if (nodePropertyValue is ValueNode valueNode)
 						xKey = valueNode.Value as string;
 					if (xKey == null)
 						xpe = new XamlParseException("x:Key expects a string literal.", node as IXmlLineInfo);
@@ -357,7 +357,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static void SetPropertyValue(object xamlelement, XmlName propertyName, object value, object rootElement, INode node, HydrationContext context, IXmlLineInfo lineInfo)
 		{
 			var serviceProvider = new XamlServiceProvider(node, context);
-			var xKey = node is IElementNode eNode && eNode.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)eNode.Properties[XmlName.xKey]).Value as string : null;
+			var xKey = node is IElementNode eNode && eNode.Properties.TryGetValue(XmlName.xKey, out INode nodePropertyValue) ? ((ValueNode)nodePropertyValue).Value as string : null;
 
 			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, out var xpe))
 				return;

@@ -350,10 +350,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_currentContent = newContent;
 				_currentIndex = newIndex;
 
-				if (!_renderers.ContainsKey(newContent))
+				if (!_renderers.TryGetValue(newContent, out var currentRenderer))
 					return;
 
-				var currentRenderer = _renderers[newContent];
 				_isAnimatingOut = oldRenderer;
 				_pageAnimation?.StopAnimation(true);
 				_pageAnimation = null;

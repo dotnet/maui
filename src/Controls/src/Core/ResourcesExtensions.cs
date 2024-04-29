@@ -35,11 +35,11 @@ namespace Microsoft.Maui.Controls
 				{
 					resources = resources ?? new Dictionary<string, object>(8, StringComparer.Ordinal);
 					foreach (KeyValuePair<string, object> res in app.SystemResources)
-						if (!resources.ContainsKey(res.Key))
+						if (!resources.TryGetValue(res.Key, out var resourceValue))
 							resources.Add(res.Key, res.Value);
 						else if (res.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
 						{
-							var mergedClassStyles = new List<Style>(resources[res.Key] as List<Style>);
+							var mergedClassStyles = new List<Style>(resourceValue as List<Style>);
 							mergedClassStyles.AddRange(res.Value as List<Style>);
 							resources[res.Key] = mergedClassStyles;
 						}

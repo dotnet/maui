@@ -78,12 +78,13 @@ namespace Microsoft.Maui.Platform
 				cache = new Dictionary<char, LocalizedDigitsKeyListener>(1);
 			}
 
-			if (!cache.ContainsKey(decimalSeparator))
+			if (!cache.TryGetValue(decimalSeparator, out LocalizedDigitsKeyListener? listener))
 			{
-				cache.Add(decimalSeparator, new LocalizedDigitsKeyListener(inputTypes, decimalSeparator));
+				listener = new LocalizedDigitsKeyListener(inputTypes, decimalSeparator);
+				cache.Add(decimalSeparator, listener);
 			}
 
-			return cache[decimalSeparator];
+			return listener;
 		}
 
 		protected LocalizedDigitsKeyListener(InputTypes inputTypes, char decimalSeparator)

@@ -8,15 +8,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 	{
 		public static bool MatchXArguments(this MethodDefinition methodDef, ElementNode enode, TypeReference declaringTypeRef, ModuleDefinition module, ILContext context)
 		{
-			if (!enode.Properties.ContainsKey(XmlName.xArguments))
+			if (!enode.Properties.TryGetValue(XmlName.xArguments, out INode value))
 				return !methodDef.HasParameters;
 
 			var arguments = new List<INode>();
-			var node = enode.Properties[XmlName.xArguments] as ElementNode;
+			var node = value as ElementNode;
 			if (node != null)
 				arguments.Add(node);
 
-			var list = enode.Properties[XmlName.xArguments] as ListNode;
+			var list = value as ListNode;
 			if (list != null)
 				foreach (var n in list.CollectionItems)
 					arguments.Add(n);

@@ -96,8 +96,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			MethodDefinition factoryMethodInfo = null;
 			MethodDefinition parameterizedCtorInfo = null;
 			MethodDefinition ctorInfo = null;
-
-			if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.ContainsKey(XmlName.xFactoryMethod))
+			
+			INode factoryMethodNode = null;
+			if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.TryGetValue(XmlName.xFactoryMethod, out factoryMethodNode))
 			{
 				factoryCtorInfo = typedef.AllMethods(Context.Cache).FirstOrDefault(md => md.methodDef.IsConstructor &&
 																			!md.methodDef.IsStatic &&
@@ -107,9 +108,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!typedef.IsValueType) //for ctor'ing typedefs, we first have to ldloca before the params
 					Context.IL.Append(PushCtorXArguments(factoryCtorInfo.ResolveGenericParameters(typeref, Module), node));
 			}
-			else if (node.Properties.ContainsKey(XmlName.xFactoryMethod))
+			else if (factoryMethodNode != null)
 			{
-				var factoryMethod = (string)(node.Properties[XmlName.xFactoryMethod] as ValueNode).Value;
+				var factoryMethod = (string)(factoryMethodNode as ValueNode).Value;
 				factoryMethodInfo = typedef.AllMethods(Context.Cache).FirstOrDefault(md => !md.methodDef.IsConstructor &&
 																			  md.methodDef.Name == factoryMethod &&
 																			  md.methodDef.IsStatic &&
@@ -317,14 +318,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		IEnumerable<Instruction> PushCtorXArguments(MethodReference factoryCtorInfo, ElementNode enode)
 		{
-			if (!enode.Properties.ContainsKey(XmlName.xArguments))
+			if (!enode.Properties.TryGetValue(XmlName.xArguments, out INode value))
 				yield break;
 
 			var arguments = new List<INode>();
-			var node = enode.Properties[XmlName.xArguments] as ElementNode;
+			var node = value as ElementNode;
 			if (node != null)
 				arguments.Add(node);
-			var list = enode.Properties[XmlName.xArguments] as ListNode;
+			var list = value as ListNode;
 			if (list != null)
 			{
 				foreach (var n in list.CollectionItems)

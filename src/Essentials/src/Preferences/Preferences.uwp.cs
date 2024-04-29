@@ -100,9 +100,8 @@ namespace Microsoft.Maui.Storage
 			lock (locker)
 			{
 				var appDataContainer = GetApplicationDataContainer(sharedName);
-				if (appDataContainer.Values.ContainsKey(key))
+				if (appDataContainer.Values.TryGetValue(key, out var tempValue))
 				{
-					var tempValue = appDataContainer.Values[key];
 					if (tempValue != null)
 					{
 						if (defaultValue is DateTime dt)

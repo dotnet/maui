@@ -52,10 +52,10 @@ namespace Microsoft.Maui.Controls.Internals
 			if (name == "")
 				throw new ArgumentException("name was provided as empty string.", nameof(name));
 
-			if (!_names.ContainsKey(name))
+			if (!_names.TryGetValue(name, out var nameValue))
 				throw new ArgumentException("name provided had not been registered.", nameof(name));
 
-			_values.Remove(_names[name]);
+			_values.Remove(nameValue);
 			_names.Remove(name);
 		}
 	}
