@@ -14,10 +14,7 @@ namespace UITest.Appium
 		{
 			try
 			{
-				if (_app.Driver.IsKeyboardShown())
-				{
-					_app.Driver.SwitchTo().ActiveElement().SendKeys(Keys.Return);
-				}
+				_app.Driver.SwitchTo().ActiveElement().SendKeys(Keys.Return);
 			}
 			catch (InvalidElementStateException)
 			{
