@@ -241,9 +241,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Appium", "src\TestUt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.NUnit", "src\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj", "{A307B624-48D4-494E-A70D-5B3CDF6620CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.SourceGen.UnitTests", "src\Controls\tests\SourceGen.UnitTests\Controls.SourceGen.UnitTests\Controls.SourceGen.UnitTests.csproj", "{06747B55-91DB-47F5-B7A2-56526C28A0D3}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.UnitTests", "src\Controls\tests\SourceGen.UnitTests\SourceGen.UnitTests.csproj", "{BC7F7C82-694F-4B97-86FC-273FB3FACA25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.UnitTests", "src\Controls\tests\SourceGen.UnitTests\SourceGen.UnitTests.csproj", "{06747B55-91DB-47F5-B7A2-56526C28A0D3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{054C5BAC-3671-4F76-B32E-47CF4E64BB39}"
 EndProject

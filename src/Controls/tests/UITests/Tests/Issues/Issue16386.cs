@@ -24,7 +24,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				TestDevice.Windows,
 			});
 
-			App.Click("HardwareEnterKeyEntry");
+			App.WaitForElement("HardwareEnterKeyEntry");
+			App.Tap("HardwareEnterKeyEntry");
 			App.SendKeys(66);
 			App.WaitForElement("Success");
 		}
