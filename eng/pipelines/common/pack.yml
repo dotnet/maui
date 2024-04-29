@@ -164,8 +164,8 @@ steps:
     inputs:
       SourceFolder: ${{ parameters.checkoutDirectory }}/artifacts
       Contents: |
-        metadata/**
-        api-diff/**
+        **/metadata/**
+        **/api-diff/**
       TargetFolder: ${{ parameters.artifactsPath }}
 
   - task: CopyFiles@2
@@ -173,6 +173,7 @@ steps:
     condition: always()
     inputs:
       Contents: |
+        ${{ parameters.checkoutDirectory }}/artifacts/log/**
         ${{ parameters.checkoutDirectory }}/artifacts/logs/**
       TargetFolder: ${{ parameters.artifactsPath }}/logs
       flattenFolders: true
