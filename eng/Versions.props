@@ -27,7 +27,7 @@
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdknet90_172PackageVersion>17.2.9521-net9-p5</MicrosoftMacCatalystSdknet90_172PackageVersion>
     <MicrosoftmacOSSdknet90_142PackageVersion>14.2.9521-net9-p5</MicrosoftmacOSSdknet90_142PackageVersion>
-    <MicrosoftiOSSdknet90_172PackageVersion>17.2.9521-net9-p5</MicrosoftiOSSdknet90_172PackageVersion>
+    <MicrosoftiOSSdknet90_172PackageVersion>17.2.9539-net9-p5</MicrosoftiOSSdknet90_172PackageVersion>
     <MicrosofttvOSSdknet90_172PackageVersion>17.2.9521-net9-p5</MicrosofttvOSSdknet90_172PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
