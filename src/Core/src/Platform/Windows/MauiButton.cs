@@ -3,8 +3,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using WRect = global::Windows.Foundation.Rect;
+using WSize = global::Windows.Foundation.Size;
 using WThickness = Microsoft.UI.Xaml.Thickness;
-using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.Maui.Platform
 {
@@ -16,47 +17,6 @@ namespace Microsoft.Maui.Platform
 
 			VerticalAlignment = VerticalAlignment.Stretch;
 			HorizontalAlignment = HorizontalAlignment.Stretch;
-
-			SizeChanged += MauiButton_SizeChanged;
-		}
-
-		private void MauiButton_SizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			if (Content is DefaultMauiButtonContent defaultButtonContent)
-			{
-				if (double.IsNaN(Width) && double.IsNaN(Height))
-				{
-					// No size is set, allow image to be native size
-					defaultButtonContent.SetImageStretch(UI.Xaml.Media.Stretch.None);
-				}
-				else
-				{
-					// Tell image to resize to fit
-					defaultButtonContent.SetImageStretch(UI.Xaml.Media.Stretch.Uniform);
-				}
-
-				if (double.IsNaN(Width))
-				{
-					// If the width is NaN, we don't want to limit the width of the image
-					defaultButtonContent.LimitImageWidth(double.PositiveInfinity);
-				}
-				else
-				{
-					var maxWidth = Math.Max(0, ActualWidth - (Padding.Left + Padding.Right) - defaultButtonContent.ColumnSpacing);
-					defaultButtonContent.LimitImageWidth(maxWidth);
-				}
-
-				if (double.IsNaN(Height))
-				{
-					// If the height is NaN, we don't want to limit the height of the image
-					defaultButtonContent.LimitImageHeight(double.PositiveInfinity);
-				}
-				else
-				{
-					var maxHeight = Math.Max(0, ActualHeight - (Padding.Top + Padding.Bottom) - defaultButtonContent.RowSpacing);
-					defaultButtonContent.LimitImageHeight(maxHeight);
-				}
-			}
 		}
 
 		protected override AutomationPeer OnCreateAutomationPeer()
@@ -65,22 +25,17 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 
-	internal class DefaultMauiButtonContent : Grid
+	internal class DefaultMauiButtonContent : MauiPanel
 	{
 		readonly Image _image;
 		readonly TextBlock _textBlock;
 
-		int _imgRow = -1;
-		int _imgColumn = -1;
+		double _spacing;
+		bool _isHorizontalLayout;
+		bool _imageOnBottomOrRight;
 
 		public DefaultMauiButtonContent()
 		{
-			RowDefinitions.Add(new RowDefinition { Height = UI.Xaml.GridLength.Auto });
-			RowDefinitions.Add(new RowDefinition { Height = UI.Xaml.GridLength.Auto });
-
-			ColumnDefinitions.Add(new ColumnDefinition { Width = UI.Xaml.GridLength.Auto });
-			ColumnDefinitions.Add(new ColumnDefinition { Width = UI.Xaml.GridLength.Auto });
-
 			HorizontalAlignment = HorizontalAlignment.Center;
 			VerticalAlignment = VerticalAlignment.Center;
 			Margin = new WThickness(0);
@@ -89,7 +44,7 @@ namespace Microsoft.Maui.Platform
 			{
 				VerticalAlignment = VerticalAlignment.Stretch,
 				HorizontalAlignment = HorizontalAlignment.Stretch,
-				Stretch = Stretch.None,
+				Stretch = Stretch.Uniform,
 				Margin = new WThickness(0),
 				Visibility = UI.Xaml.Visibility.Collapsed,
 			};
@@ -108,147 +63,184 @@ namespace Microsoft.Maui.Platform
 			LayoutImageLeft(0);
 		}
 
-		internal void SetImageStretch(UI.Xaml.Media.Stretch stretch)
+		protected override WSize MeasureOverride(WSize availableSize)
 		{
-			_image.Stretch = stretch;
-		}
+			double measuredHeight = 0;
+			double measuredWidth = 0;
 
-		/// <summary>
-		/// Limit the width of the image to the specified value
-		/// Setting the value to double.PositiveInfinity will remove the width limit
-		/// </summary>
-		/// <param name="width"></param>
-		internal void LimitImageWidth(double width)
-		{
-			if (_imgColumn == -1)
+			// Always measure the image first, and use the remaining space for the text
+			if (_image.Source != null &&
+				_image.Visibility == UI.Xaml.Visibility.Visible)
 			{
-				return;
+				_image.Measure(availableSize);
+				measuredWidth = _image.DesiredSize.Width;
+				measuredHeight = _image.DesiredSize.Height;
 			}
 
-			if (double.IsInfinity(width))
+			if (!string.IsNullOrEmpty(_textBlock.Text) &&
+				_textBlock.Visibility == UI.Xaml.Visibility.Visible)
 			{
-				ColumnDefinitions[_imgColumn].Width = UI.Xaml.GridLength.Auto;
+				if (_isHorizontalLayout)
+				{
+					var availableWidth = Math.Max(0, availableSize.Width - measuredWidth - _spacing);
+					_textBlock.Measure(new WSize(availableWidth, availableSize.Height));
+
+					measuredWidth += _textBlock.DesiredSize.Width;
+					measuredHeight = Math.Max(measuredHeight, _textBlock.DesiredSize.Height);
+				}
+				else // Vertical
+				{
+					var availableHeight = Math.Max(0, availableSize.Height - measuredHeight - _spacing);
+					_textBlock.Measure(new WSize(availableSize.Width, availableHeight));
+
+					measuredWidth = Math.Max(measuredWidth, _textBlock.DesiredSize.Width);
+					measuredHeight += _textBlock.DesiredSize.Height;
+				}
+			}
+
+			if (_isHorizontalLayout)
+			{
+				measuredWidth += _spacing;
+			}
+			else // Vertical
+			{
+				measuredHeight += _spacing;
+			}
+
+			if (!double.IsInfinity(availableSize.Width) &&
+				HorizontalAlignment == HorizontalAlignment.Stretch)
+			{
+				measuredWidth = Math.Max(measuredWidth, availableSize.Width);
+			}
+
+			if (!double.IsInfinity(availableSize.Height) &&
+				VerticalAlignment == VerticalAlignment.Stretch)
+			{
+				measuredHeight = Math.Max(measuredHeight, availableSize.Height);
+			}
+			return new WSize(measuredWidth, measuredHeight);
+		}
+
+		protected override WSize ArrangeOverride(WSize finalSize)
+		{
+			if (_imageOnBottomOrRight)
+			{
+				ArrangeBottomAndRight(finalSize);
 			}
 			else
 			{
-				var maxWidth = width;
-				if (_image.Source is BitmapImage bitmap)
-				{
-					// Image isn't loaded yet, wait for it to load to get the width
-					if (bitmap.PixelWidth == 0)
-					{
-						// Make sure that the column width is not larger than the image width or clamped width
-						// For some unknown reason, setting the ColumnDefinition MaxWidth doesn't work
-						bitmap.ImageOpened += ImageOpened;
-						void ImageOpened(object sender, RoutedEventArgs _)
-						{
-							bitmap.ImageOpened -= ImageOpened;
-							maxWidth = Math.Min(bitmap.PixelWidth, maxWidth);
-							ColumnDefinitions[_imgColumn].Width = new UI.Xaml.GridLength(maxWidth, UI.Xaml.GridUnitType.Pixel);
-						};
-					}
-					else
-					{
-						maxWidth = Math.Min(bitmap.PixelWidth, maxWidth);
-					}
-				}
-				ColumnDefinitions[_imgColumn].Width = new UI.Xaml.GridLength(maxWidth, UI.Xaml.GridUnitType.Pixel);
+				ArrangeLeftAndTop(finalSize);
+			}
+
+			return new WSize(finalSize.Width, finalSize.Height);
+		}
+
+		private void ArrangeLeftAndTop(WSize finalSize)
+		{
+			var x = 0.0;
+			var y = 0.0;
+
+			if (_image.Visibility == UI.Xaml.Visibility.Visible)
+			{
+				var (newX, newY) = ArrangePrimaryElement(_image, x, y, finalSize);
+				x = newX;
+				y = newY;
+			}
+
+			if (!string.IsNullOrEmpty(_textBlock.Text) &&
+				_textBlock.Visibility == UI.Xaml.Visibility.Visible)
+			{
+				ArrangeSecondaryElement(_textBlock, x, y, finalSize);
+			}
+		}
+
+		private void ArrangeBottomAndRight(WSize finalSize)
+		{
+			var x = 0.0;
+			var y = 0.0;
+
+			if (!string.IsNullOrEmpty(_textBlock.Text) &&
+				_textBlock.Visibility == UI.Xaml.Visibility.Visible)
+			{
+				var (newX, newY) = ArrangePrimaryElement(_textBlock, x, y, finalSize);
+				x = newX;
+				y = newY;
+			}
+
+			if (_image.Visibility == UI.Xaml.Visibility.Visible)
+			{
+				ArrangeSecondaryElement(_image, x, y, finalSize);
 			}
 		}
 
 		/// <summary>
-		/// Limit the height of the image to the specified value
-		/// Setting the value to double.PositiveInfinity will remove the height limit
+		/// Arrange and center primary element (image or text) and return the new x or y position
+		/// based on the element's size and if we're horizontal or vertical
 		/// </summary>
-		/// <param name="height"></param>
-		internal void LimitImageHeight(double height)
+		/// <param name="element"></param>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="finalSize"></param>
+		/// <returns></returns>
+		private (double newX, double newY) ArrangePrimaryElement(FrameworkElement element, double x, double y, WSize finalSize)
 		{
-			if (_imgRow == -1)
+			if (_isHorizontalLayout)
 			{
-				return;
-			}
+				var centeredY = Math.Max(0, (finalSize.Height / 2.0) - (element.DesiredSize.Height / 2.0));
 
-			if (double.IsInfinity(height))
+				element.Arrange(new WRect(0, centeredY,
+					element.DesiredSize.Width, element.DesiredSize.Height));
+
+				return (x + element.DesiredSize.Width + _spacing, 0);
+			}
+			else // Vertical
 			{
-				RowDefinitions[_imgRow].Height = UI.Xaml.GridLength.Auto;
+				var centeredX = Math.Max(0, (finalSize.Width / 2.0) - (element.DesiredSize.Width / 2.0));
+
+				element.Arrange(new WRect(centeredX, 0,
+					element.DesiredSize.Width, element.DesiredSize.Height));
+
+				return (0, y + element.DesiredSize.Height + _spacing);
+			}
+		}
+
+		private void ArrangeSecondaryElement(FrameworkElement element, double x, double y, WSize finalSize)
+		{
+			if (_isHorizontalLayout)
+			{
+				y = Math.Max(0, (finalSize.Height / 2.0) - (element.DesiredSize.Height / 2.0));
 			}
 			else
 			{
-				var maxHeight = height;
-				if (_image.Source is BitmapImage bitmap)
-				{
-					// Image isn't loaded yet, wait for it to load to get the height
-					if (bitmap.PixelHeight == 0)
-					{
-						// Make sure that the row height is not larger than the image height or clamped height
-						// For some unknown reason, setting the RowDefinition MaxHeight doesn't work
-						bitmap.ImageOpened += ImageOpened;
-						void ImageOpened(object sender, RoutedEventArgs _) 
-						{
-							bitmap.ImageOpened -= ImageOpened;
-							maxHeight = Math.Min(bitmap.PixelHeight, maxHeight);
-							RowDefinitions[_imgRow].Height = new UI.Xaml.GridLength(maxHeight, UI.Xaml.GridUnitType.Pixel);
-						};
-					}
-					else
-					{
-						maxHeight = Math.Min(bitmap.PixelHeight, maxHeight);
-					}
-				}
-				RowDefinitions[_imgRow].Height = new UI.Xaml.GridLength(maxHeight, UI.Xaml.GridUnitType.Pixel);
+				x = Math.Max(0, (finalSize.Width / 2.0) - (element.DesiredSize.Width / 2.0));
 			}
+
+			element.Arrange(new WRect(x, y,
+				element.DesiredSize.Width, element.DesiredSize.Height));
 		}
 
 		public void LayoutImageLeft(double spacing)
 		{
-			_imgColumn = 0;
-
+			_imageOnBottomOrRight = false;
 			SetupHorizontalLayout(spacing);
-
-			Grid.SetColumn(_image, 0);
-			Grid.SetColumn(_textBlock, 1);
-
-			ColumnDefinitions[0].Width = UI.Xaml.GridLength.Auto;
-			ColumnDefinitions[1].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
 		}
 
 		public void LayoutImageRight(double spacing)
 		{
-			_imgColumn = 1;
-
+			_imageOnBottomOrRight = true;
 			SetupHorizontalLayout(spacing);
-
-			Grid.SetColumn(_image, 1);
-			Grid.SetColumn(_textBlock, 0);
-
-			ColumnDefinitions[0].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
-			ColumnDefinitions[1].Width = UI.Xaml.GridLength.Auto;
 		}
 
 		public void LayoutImageTop(double spacing)
 		{
-			_imgRow = 0;
-
+			_imageOnBottomOrRight = false;
 			SetupVerticalLayout(spacing);
-
-			Grid.SetRow(_image, 0);
-			Grid.SetRow(_textBlock, 1);
-
-			RowDefinitions[0].Height = UI.Xaml.GridLength.Auto;
-			RowDefinitions[1].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
 		}
 
 		public void LayoutImageBottom(double spacing)
 		{
-			_imgRow = 1;
-
+			_imageOnBottomOrRight = true;
 			SetupVerticalLayout(spacing);
-
-			Grid.SetRow(_image, 1);
-			Grid.SetRow(_textBlock, 0);
-
-			RowDefinitions[0].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
-			RowDefinitions[1].Height = UI.Xaml.GridLength.Auto;
 		}
 
 		double AdjustSpacing(double spacing)
@@ -264,43 +256,14 @@ namespace Microsoft.Maui.Platform
 
 		void SetupHorizontalLayout(double spacing)
 		{
-			_imgRow = -1;
-
-			RowSpacing = 0;
-			ColumnSpacing = AdjustSpacing(spacing);
-
-			RowDefinitions[0].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
-			RowDefinitions[1].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
-
-			Grid.SetRow(_image, 0);
-			Grid.SetRowSpan(_image, 2);
-			Grid.SetColumnSpan(_image, 1);
-
-			Grid.SetRow(_textBlock, 0);
-			Grid.SetRowSpan(_textBlock, 2);
-			Grid.SetColumnSpan(_textBlock, 1);
+			_isHorizontalLayout = true;
+			_spacing = AdjustSpacing(spacing);
 		}
 
 		void SetupVerticalLayout(double spacing)
 		{
-			_imgColumn = -1;
-
-			ColumnSpacing = 0;
-			RowSpacing = AdjustSpacing(spacing);
-
-			RowDefinitions[0].Height = UI.Xaml.GridLength.Auto;
-			RowDefinitions[1].Height = UI.Xaml.GridLength.Auto;
-
-			ColumnDefinitions[0].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
-			ColumnDefinitions[1].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
-
-			Grid.SetRowSpan(_image, 1);
-			Grid.SetColumn(_image, 0);
-			Grid.SetColumnSpan(_image, 2);
-
-			Grid.SetRowSpan(_textBlock, 1);
-			Grid.SetColumn(_textBlock, 0);
-			Grid.SetColumnSpan(_textBlock, 2);
+			_isHorizontalLayout = false;
+			_spacing = AdjustSpacing(spacing);
 		}
 	}
 }
