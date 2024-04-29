@@ -19,6 +19,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			this.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac,
+				TestDevice.Windows
 			});
 
 			App.WaitForElement("HardwareEnterKeyEntry");

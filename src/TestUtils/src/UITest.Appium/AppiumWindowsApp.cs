@@ -10,7 +10,7 @@ namespace UITest.Appium
 		public AppiumWindowsApp(Uri remoteAddress, IConfig config)
 			: base(new WindowsDriver(remoteAddress, GetOptions(config)), config)
 		{
-			_commandExecutor.AddCommandGroup(new AppiumWindowsVirtualKeyboardActions(this));
+
 		}
 
 		public override ApplicationState AppState
