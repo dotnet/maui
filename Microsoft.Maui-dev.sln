@@ -245,6 +245,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls.AppiumTests.Browse
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.AppiumTests.BrowserStack.Android", "src\Controls\tests\UITests.BrowserStack\UITests.BrowserStack.Android\Controls.AppiumTests.BrowserStack.Android.csproj", "{88654C2E-9298-4FE3-8CD3-AC311100C0F6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.UnitTests", "src\Controls\tests\SourceGen.UnitTests\SourceGen.UnitTests.csproj", "{06747B55-91DB-47F5-B7A2-56526C28A0D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -786,6 +788,10 @@ Global
 		{88654C2E-9298-4FE3-8CD3-AC311100C0F6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{88654C2E-9298-4FE3-8CD3-AC311100C0F6}.TestConfiguration|Any CPU.ActiveCfg = Debug|Any CPU
 		{88654C2E-9298-4FE3-8CD3-AC311100C0F6}.TestConfiguration|Any CPU.Build.0 = Debug|Any CPU
+		{06747B55-91DB-47F5-B7A2-56526C28A0D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06747B55-91DB-47F5-B7A2-56526C28A0D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06747B55-91DB-47F5-B7A2-56526C28A0D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06747B55-91DB-47F5-B7A2-56526C28A0D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -899,6 +905,7 @@ Global
 		{A307B624-48D4-494E-A70D-5B3CDF6620CF} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{219476DA-624C-44B6-BBEF-C9F7C86A52CB} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{88654C2E-9298-4FE3-8CD3-AC311100C0F6} = {219476DA-624C-44B6-BBEF-C9F7C86A52CB}
+		{06747B55-91DB-47F5-B7A2-56526C28A0D3} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -83,8 +83,15 @@ namespace UITest.Appium.NUnit
 
 		protected virtual void FixtureTeardown()
 		{
-			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureTeardown)} for {name}");
+			try
+			{
+				Reset();
+			}
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+			}
 		}
 
 		[OneTimeSetUp]
@@ -98,17 +105,30 @@ namespace UITest.Appium.NUnit
 
 		void SetUpForFixtureTests()
 		{
-			InitialSetup(UITestContextSetupFixture.ServerContext);
+
 			try
 			{
-				//SaveDiagnosticLogs("BeforeFixtureSetup");
-				FixtureSetup();
+				if (App.AppState == ApplicationState.NotRunning)
+				{
+					SaveDeviceDiagnosticInfo();
+
+					Reset();
+					FixtureSetup();
+
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we can't capture any UI structures or any screenshots
+					Assert.Fail("The app was expected to be running still, investigate as possible crash");
+				}
 			}
-			catch
+			finally
 			{
-				SaveDeviceDiagnosticInfo();
-				SaveUIDiagnosticInfo();
-				throw;
+				var testOutcome = TestContext.CurrentContext.Result.Outcome;
+				if (testOutcome == ResultState.Error ||
+					testOutcome == ResultState.Failure)
+				{
+					SaveDeviceDiagnosticInfo();
+					SaveUIDiagnosticInfo();
+				}
 			}
 		}
 
@@ -126,7 +146,9 @@ namespace UITest.Appium.NUnit
 					outcome.Site == ResultState.SetUpFailure.Site)
 				{
 					SaveDeviceDiagnosticInfo();
-					SaveUIDiagnosticInfo();
+
+					if (App.AppState != ApplicationState.NotRunning)
+						SaveUIDiagnosticInfo();
 				}
 
 				FixtureTeardown();
@@ -154,8 +176,11 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		void SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
+		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
 		{
+			if (App.AppState == ApplicationState.NotRunning)
+				return false;
+
 			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
 			if (screenshotPath is not null)
 			{
@@ -171,6 +196,8 @@ namespace UITest.Appium.NUnit
 
 				AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
 			}
+
+			return true;
 		}
 
 		string? GetGeneratedFilePath(string filename, string? note = null)

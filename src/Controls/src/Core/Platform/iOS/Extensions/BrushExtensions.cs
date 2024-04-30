@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CoreAnimation;
@@ -163,10 +164,11 @@ namespace Microsoft.Maui.Controls.Platform
 				if (layer.Name == BackgroundLayer)
 					layer?.RemoveFromSuperLayer();
 
-				if (layer.Sublayers == null || layer.Sublayers.Count() == 0)
+				var sublayers = layer.Sublayers;
+				if (sublayers is null || sublayers.Length == 0)
 					return;
 
-				foreach (var subLayer in layer.Sublayers)
+				foreach (var subLayer in sublayers)
 				{
 					if (subLayer.Name == BackgroundLayer)
 						subLayer?.RemoveFromSuperLayer();
@@ -186,9 +188,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static void UpdateBackgroundLayer(this CALayer layer, CGRect bounds)
 		{
-			if (layer != null && layer.Sublayers != null)
+			var sublayers = layer?.Sublayers;
+			if (sublayers is not null)
 			{
-				foreach (var sublayer in layer.Sublayers)
+				foreach (var sublayer in sublayers)
 				{
 					UpdateBackgroundLayer(sublayer, bounds);
 
@@ -222,7 +225,7 @@ namespace Microsoft.Maui.Controls.Platform
 		static NSNumber[] GetCAGradientLayerLocations(List<GradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
-				return new NSNumber[0];
+				return Array.Empty<NSNumber>();
 
 			if (gradientStops.Count > 1 && gradientStops.Any(gt => gt.Offset != 0))
 				return gradientStops.Select(x => new NSNumber(x.Offset)).ToArray();
@@ -254,7 +257,7 @@ namespace Microsoft.Maui.Controls.Platform
 		static CGColor[] GetCAGradientLayerColors(List<GradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
-				return new CGColor[0];
+				return Array.Empty<CGColor>();
 
 			CGColor[] colors = new CGColor[gradientStops.Count];
 

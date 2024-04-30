@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,6 +21,7 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -498,6 +499,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateHideNavigationBarSeparator();
 			}
+			else if (e.PropertyName == PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
+			{
+				UpdateHomeIndicatorAutoHidden();
+			}
+			else if (e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
+			{
+				UpdateStatusBarHidden();
+			}
 		}
 
 		void ValidateNavbarExists(Page newCurrentPage)
@@ -506,6 +515,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			//we will need to relayout. This is because Current is updated async of the layout happening
 			if (_hasNavigationBar != NavigationPage.GetHasNavigationBar(newCurrentPage))
 				View.InvalidateMeasure(Element);
+		}
+
+		void UpdateHomeIndicatorAutoHidden()
+		{
+			if (Element == null)
+				return;
+
+			SetNeedsUpdateOfHomeIndicatorAutoHidden();
+		}
+
+		void UpdateStatusBarHidden()
+		{
+			if (Element == null)
+				return;
+
+			SetNeedsStatusBarAppearanceUpdate();
 		}
 
 		void UpdateHideNavigationBarSeparator()
@@ -676,26 +701,42 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateBarBackground()
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
+			var barBackgroundBrush = NavPage.BarBackground;
+
+			// if the brush has a solid color, treat it as a Color so we can compute the alpha value
+			if (NavPage.BarBackground is SolidColorBrush scb)
+			{
+				barBackgroundColor = scb.Color;
+				barBackgroundBrush = null;
+			}
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
-
-				navigationBarAppearance.ConfigureWithOpaqueBackground();
-
-				if (barBackgroundColor == null)
+				if (barBackgroundColor is null)
 				{
+					navigationBarAppearance.ConfigureWithOpaqueBackground();
 					navigationBarAppearance.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
 
 					var parentingViewController = GetParentingViewController();
 					parentingViewController?.SetupDefaultNavigationBarAppearance();
 				}
 				else
-					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
+				{
+					if(barBackgroundColor?.Alpha < 1f)
+						navigationBarAppearance.ConfigureWithTransparentBackground();
+					else
+						navigationBarAppearance.ConfigureWithOpaqueBackground();
 
-				var barBackgroundBrush = NavPage.BarBackground;
-				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
-				navigationBarAppearance.BackgroundImage = backgroundImage;
+					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
+				}
+
+				if (barBackgroundBrush is not null)
+				{
+					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+
+					navigationBarAppearance.BackgroundImage = backgroundImage;
+				}
 
 				NavigationBar.CompactAppearance = navigationBarAppearance;
 				NavigationBar.StandardAppearance = navigationBarAppearance;
@@ -703,14 +744,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				// Set navigation bar background color
-				NavigationBar.BarTintColor = barBackgroundColor == null
-					? UINavigationBar.Appearance.BarTintColor
-					: barBackgroundColor.ToPlatform();
+				if(barBackgroundColor?.Alpha == 0f)
+				{
+					NavigationBar.SetTransparentNavigationBar();
+				}
+				else
+				{
+					// Set navigation bar background color
+					NavigationBar.BarTintColor = barBackgroundColor == null
+						? UINavigationBar.Appearance.BarTintColor
+						: barBackgroundColor.ToPlatform();
 
-				var barBackgroundBrush = NavPage.BarBackground;
-				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
-				NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+					NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
+				}
 			}
 		}
 
@@ -1152,24 +1199,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					!n._disposed &&
 					!n._navigating
 					)
-				{
-					nfloat offset = 0;
+				{	
+					var vc = ChildViewControllers[^1];
 
-					if (n._hasNavigationBar)
-						offset = n.NavigationBar.Frame.Bottom;
+					if (vc is null)
+						return;
 
-					if (!n._secondaryToolbar.Hidden)
+					var newAdditionalSafeArea = vc.AdditionalSafeAreaInsets;
+					var offset = n._secondaryToolbar.Hidden ? 0 : n._secondaryToolbar.Frame.Height;
+
+					if (newAdditionalSafeArea.Top != offset)
 					{
-						offset += n._secondaryToolbar.Bounds.Height;
-					}
-
-					if (View.Frame.Y != offset)
-					{
-						var newY = offset - View.Frame.Y;
-						var newHeight = View.Frame.Height - newY;
-
-						View.Frame =
-							new RectangleF(0, offset, View.Bounds.Width, newHeight);
+						newAdditionalSafeArea.Top = offset;
+						vc.AdditionalSafeAreaInsets = newAdditionalSafeArea;
 					}
 				}
 			}
@@ -1433,18 +1475,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					titleIcon.LoadImage(titleIcon.FindMauiContext(), result =>
+					if (_navigation.TryGetTarget(out NavigationRenderer n) && n.MauiContext is IMauiContext mc)
 					{
-						var image = result?.Value;
-						try
+						titleIcon.LoadImage(mc, result =>
 						{
-							titleViewContainer.Icon = new UIImageView(image);
-						}
-						catch
-						{
-							//UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
-						}
-					});
+							var image = result?.Value;
+							try
+							{
+								titleViewContainer.Icon = new UIImageView(image);
+							}
+							catch
+							{
+								//UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
+							}
+						});
+					}
 				}
 			}
 
@@ -1462,6 +1507,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				View.SetNeedsLayout();
 				ParentViewController?.View.SetNeedsLayout();
+				SetNeedsStatusBarAppearanceUpdate();
 			}
 
 			void TrackerOnCollectionChanged(object sender, EventArgs eventArgs)
@@ -1531,8 +1577,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (primaries != null)
 					primaries.Reverse();
-				NavigationItem.SetRightBarButtonItems(primaries == null ? new UIBarButtonItem[0] : primaries.ToArray(), false);
-				ToolbarItems = secondaries == null ? new UIBarButtonItem[0] : secondaries.ToArray();
+				NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
+				ToolbarItems = secondaries == null ? Array.Empty<UIBarButtonItem>() : secondaries.ToArray();
 
 				NavigationRenderer n;
 				if (_navigation.TryGetTarget(out n))

@@ -33,6 +33,12 @@ namespace Maui.Controls.Sample.Pages
 			ResizeImageButton.HeightRequest = 100;
 			ResizeImageButton.WidthRequest = 100;
 		}
+
+		void UseOnlineSource_Clicked(object sender, EventArgs e)
+		{
+			AnimatedGifImage.Source =
+				ImageSource.FromUri(new Uri("https://raw.githubusercontent.com/dotnet/maui/126f47aaf9d5c01224f54fe1c6bfb1c8299cc2fe/src/Compatibility/ControlGallery/src/iOS/GifTwo.gif"));
+		}
 	}
 
 	public class ImageButtonPageViewModel : BindableObject

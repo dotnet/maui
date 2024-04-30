@@ -202,10 +202,7 @@ namespace Microsoft.Maui.Controls.Platform
 				element = ve;
 			}
 
-			if (datapackage is null)
-				return;
-
-			var args = new DropEventArgs(datapackage.View, (relativeTo) => GetPosition(relativeTo, e), new PlatformDropEventArgs(sender as UIElement, e));
+			var args = new DropEventArgs(datapackage?.View, (relativeTo) => GetPosition(relativeTo, e), new PlatformDropEventArgs(sender as UIElement, e));
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
@@ -318,6 +315,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_container.DragOver -= HandleDragOver;
 				_container.Drop -= HandleDrop;
 				_container.Tapped -= OnTap;
+				_container.DoubleTapped -= OnTap;
 				_container.ManipulationDelta -= OnManipulationDelta;
 				_container.ManipulationStarted -= OnManipulationStarted;
 				_container.ManipulationCompleted -= OnManipulationCompleted;
@@ -384,7 +382,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (view == null)
 				return;
-
+			
 			_isPanning = true;
 
 			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
@@ -440,8 +438,10 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
 		{
 			var view = Element as View;
+
 			if (view == null)
 				return;
+
 			HandleSwipe(e, view);
 			HandlePinch(e, view);
 			HandlePan(e, view);
@@ -468,12 +468,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
-			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-				_fingers.Remove(id);
+			if (!_isPanning)
+			{
+				uint id = e.Pointer.PointerId;
+				if (_fingers.Contains(id))
+					_fingers.Remove(id);
+			}
+			
 			SwipeComplete(true);
 			PinchComplete(true);
-			PanComplete(true);
 		}
 
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -664,28 +667,32 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateDragAndDropGestureRecognizers()
 		{
-			if (_container == null)
+			if (_container is null)
+			{
 				return;
+			}
 
 			var view = Element as View;
 			IList<IGestureRecognizer>? gestures = view?.GestureRecognizers;
 
-			if (gestures == null)
+			if (gestures is null)
+			{
 				return;
+			}
 
-			_container.CanDrag = gestures.GetGesturesFor<DragGestureRecognizer>()
-				.FirstOrDefault()?.CanDrag ?? false;
+			bool canDrag = gestures.FirstGestureOrDefault<DragGestureRecognizer>()?.CanDrag ?? false;
+			_container.CanDrag = canDrag;
 
-			_container.AllowDrop = gestures.GetGesturesFor<DropGestureRecognizer>()
-				.FirstOrDefault()?.AllowDrop ?? false;
+			bool allowDrop = gestures.FirstGestureOrDefault<DropGestureRecognizer>()?.AllowDrop ?? false;
+			_container.AllowDrop = allowDrop;
 
-			if (_container.CanDrag)
+			if (canDrag)
 			{
 				_container.DragStarting += HandleDragStarting;
 				_container.DropCompleted += HandleDropCompleted;
 			}
 
-			if (_container.AllowDrop)
+			if (allowDrop)
 			{
 				_container.DragOver += HandleDragOver;
 				_container.Drop += HandleDrop;
@@ -698,17 +705,17 @@ namespace Microsoft.Maui.Controls.Platform
 			var view = Element as View;
 			IList<IGestureRecognizer>? gestures = view?.GestureRecognizers;
 
-			if (_container == null || gestures == null)
+			if (_container is null || gestures is null)
+			{
 				return;
+			}
 
 			ClearContainerEventHandlers();
 			UpdateDragAndDropGestureRecognizers();
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
-			IList<TapGestureRecognizer>? childGestures =
-				children?.GetChildGesturesFor<TapGestureRecognizer>().ToList();
 
-			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any()
+			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1)
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
 				_container.Tapped += OnTap;
@@ -722,7 +729,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any()
+			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2)
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
 			{
 				_container.DoubleTapped += OnTap;
@@ -741,11 +748,13 @@ namespace Microsoft.Maui.Controls.Platform
 			_container.PointerPressed += OnPgrPointerPressed;
 			_container.PointerReleased += OnPgrPointerReleased;
 
-			bool hasSwipeGesture = gestures.GetGesturesFor<SwipeGestureRecognizer>().GetEnumerator().MoveNext();
-			bool hasPinchGesture = gestures.GetGesturesFor<PinchGestureRecognizer>().GetEnumerator().MoveNext();
-			bool hasPanGesture = gestures.GetGesturesFor<PanGestureRecognizer>().GetEnumerator().MoveNext();
+			bool hasSwipeGesture = gestures.HasAnyGesturesFor<SwipeGestureRecognizer>();
+			bool hasPinchGesture = gestures.HasAnyGesturesFor<PinchGestureRecognizer>();
+			bool hasPanGesture = gestures.HasAnyGesturesFor<PanGestureRecognizer>();
 			if (!hasSwipeGesture && !hasPinchGesture && !hasPanGesture)
+			{
 				return;
+			}
 
 			//We can't handle ManipulationMode.Scale and System , so we don't support pinch/pan on a scrollview 
 			if (Element is ScrollView)

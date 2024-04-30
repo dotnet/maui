@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			Context.WarningLevel = warningLevel;
 			Context.TreatWarningsAsErrors = treatWarningsAsErrors;
 
-			Context.NoWarn = noWarn?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s =>
+			Context.NoWarn = noWarn?.Split([';', ','], StringSplitOptions.RemoveEmptyEntries).Select(s =>
 			{
 				if (int.TryParse(s, out var i))
 					return i;
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return -1;
 			}).Where(i => i != -1).ToList();
 
-			Context.WarningsAsErrors = warningsAsErrors?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s =>
+			Context.WarningsAsErrors = warningsAsErrors?.Split([';', ','], StringSplitOptions.RemoveEmptyEntries).Select(s =>
 			{
 				if (int.TryParse(s, out var i))
 					return i;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return -1;
 			}).Where(i => i != -1).ToList();
 
-			Context.WarningsNotAsErrors = warningsNotAsErrors?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s =>
+			Context.WarningsNotAsErrors = warningsNotAsErrors?.Split([';', ','], StringSplitOptions.RemoveEmptyEntries).Select(s =>
 			{
 				if (int.TryParse(s, out var i))
 					return i;
@@ -364,6 +364,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				rootnode.Accept(new CreateObjectVisitor(visitorContext), null);
 				rootnode.Accept(new SetNamescopesAndRegisterNamesVisitor(visitorContext), null);
 				rootnode.Accept(new SetFieldVisitor(visitorContext), null);
+				rootnode.Accept(new SimplifyTypeExtensionVisitor(), null);
 				rootnode.Accept(new SetResourcesVisitor(visitorContext), null);
 				rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
 

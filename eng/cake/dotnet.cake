@@ -9,6 +9,7 @@ var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
+string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
 string TestTFM = Argument("testtfm", "");
 var useNuget = Argument("usenuget", true);
@@ -54,6 +55,12 @@ Task("dotnet")
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration),
         });
+
+        DotNetTool("tool",  new DotNetToolSettings {
+		    ToolPath = dotnetPath,
+		    DiagnosticOutput = true,	
+		    ArgumentCustomization = args => args.Append("restore")
+	    });
     });
 
 Task("dotnet-local-workloads")
@@ -81,6 +88,12 @@ Task("dotnet-local-workloads")
                 .WithTarget("Install"),
             ToolPath = dotnetPath,
         });
+
+        DotNetTool("tool",  new DotNetToolSettings {
+		    ToolPath = dotnetPath,
+		    DiagnosticOutput = true,	
+		    ArgumentCustomization = args => args.Append("restore")
+	    });
     });
 
 Task("dotnet-buildtasks")
@@ -209,6 +222,7 @@ Task("dotnet-test")
             "**/Controls.Core.UnitTests.csproj",
             "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
+            "**/SourceGen.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
@@ -719,6 +733,16 @@ void RunTestWithLocalDotNet(string csproj)
 
 void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "")
 {
+    if (string.IsNullOrWhiteSpace(filter))
+    {
+        filter = testFilter;
+    }
+
+    if (!string.IsNullOrWhiteSpace(filter))
+    {
+        Information("Run Tests With Filter {0}", filter);	
+    }
+
     string binlog;
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);

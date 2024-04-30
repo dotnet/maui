@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[InlineData("t_w_o2.png")]
 		[InlineData("t_3_hree.png")]
 		[InlineData("f4_our5.png")]
+		[InlineData("a.png")]
 		public void ValidFilenames(string filename)
 			=> Assert.True(IsValidFilename(filename));
 
@@ -65,6 +66,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[InlineData("f4our 5.png")]
 		[InlineData("_1one.png")]
 		[InlineData("o1_.png")]
+		[InlineData("o=.png")]
+		[InlineData("1a.png")]
 		public void InvalidFilenames(string filename)
 			=> Assert.False(IsValidFilename(filename));
 

@@ -45,6 +45,17 @@ namespace Microsoft.Maui.Platform
 
 			var window = application.CreateWindow(activationState);
 
+			if (window.Handler?.PlatformView is Activity oldActivity && 
+				oldActivity != activity &&
+				!oldActivity.IsDestroyed)
+			{
+				throw new InvalidOperationException(
+					$"This window is already associated with an active Activity ({oldActivity.GetType()}). " + 
+					$"Please override CreateWindow on {application.GetType()} "  + 
+					$"to add support for multiple activities https://aka.ms/maui-docs-create-window"  + 
+					$"or set the LaunchMode to SingleTop on {activity.GetType()}.");
+			}
+
 			activity.SetWindowHandler(window, mauiContext);
 		}
 

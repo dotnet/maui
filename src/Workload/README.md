@@ -226,7 +226,7 @@ To do this, you will need a `Directory.Packages.props` file with:
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <MauiVersion>8.0.0</MauiVersion>
+    <MauiVersion>8.0.3</MauiVersion>
     <MicrosoftExtensionsVersion>8.0.0</MicrosoftExtensionsVersion>
   </PropertyGroup>
   <ItemGroup>
