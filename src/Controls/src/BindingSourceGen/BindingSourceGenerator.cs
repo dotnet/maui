@@ -96,13 +96,13 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return ReportDiagnostics(pathDiagnostics);
 		}
 
-		var codeWriterBinding = new CodeWriterBinding(
+		var binding = new SetBindingInvocationDescription(
 			Location: sourceCodeLocation.ToInterceptorLocation(),
 			SourceType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
 			PropertyType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaTypeInfo.Type, enabledNullable),
 			Path: new EquatableArray<IPathPart>([.. parts]),
 			SetterOptions: DeriveSetterOptions(lambdaBody, context.SemanticModel, enabledNullable));
-		return new BindingDiagnosticsWrapper(codeWriterBinding, new EquatableArray<DiagnosticInfo>([.. diagnostics]));
+		return new BindingDiagnosticsWrapper(binding, new EquatableArray<DiagnosticInfo>([.. diagnostics]));
 	}
 
 	private static EquatableArray<DiagnosticInfo> VerifyCorrectOverload(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)

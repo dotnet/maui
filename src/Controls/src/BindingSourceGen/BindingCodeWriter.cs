@@ -1,10 +1,5 @@
-using System;
 using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Text;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
@@ -77,9 +72,9 @@ public sealed class BindingCodeWriter
 		}
 		""";
 
-	private readonly List<CodeWriterBinding> _bindings = new();
+	private readonly List<SetBindingInvocationDescription> _bindings = new();
 
-	public void AddBinding(CodeWriterBinding binding)
+	public void AddBinding(SetBindingInvocationDescription binding)
 	{
 		_bindings.Add(binding);
 	}
@@ -113,7 +108,7 @@ public sealed class BindingCodeWriter
 			_indentedTextWriter = new IndentedTextWriter(_stringWriter, "\t") { Indent = indent };
 		}
 
-		public void AppendSetBindingInterceptor(int id, CodeWriterBinding binding)
+		public void AppendSetBindingInterceptor(int id, SetBindingInvocationDescription binding)
 		{
 			AppendBlankLine();
 
@@ -216,7 +211,7 @@ public sealed class BindingCodeWriter
 			AppendLine($"[InterceptsLocationAttribute(@\"{location.FilePath}\", {location.Line}, {location.Column})]");
 		}
 
-		private void AppendSetterAction(CodeWriterBinding binding, string sourceVariableName = "source", string valueVariableName = "value")
+		private void AppendSetterAction(SetBindingInvocationDescription binding, string sourceVariableName = "source", string valueVariableName = "value")
 		{
 			var assignedValueExpression = valueVariableName;
 

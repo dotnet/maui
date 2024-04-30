@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 public sealed record Setter(string[] PatternMatchingExpressions, string AssignmentStatement)

@@ -1,4 +1,3 @@
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -11,10 +10,10 @@ public class TrackingNames
 }
 
 public sealed record BindingDiagnosticsWrapper(
-	CodeWriterBinding? Binding,
+	SetBindingInvocationDescription? Binding,
 	EquatableArray<DiagnosticInfo> Diagnostics);
 
-public sealed record CodeWriterBinding(
+public sealed record SetBindingInvocationDescription(
 	InterceptorLocation Location,
 	TypeDescription SourceType,
 	TypeDescription PropertyType,

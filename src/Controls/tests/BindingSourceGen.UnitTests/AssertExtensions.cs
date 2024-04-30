@@ -18,7 +18,7 @@ internal static class AssertExtensions
         }
     }
 
-    internal static void BindingsAreEqual(CodeWriterBinding expectedBinding, CodeGeneratorResult codeGeneratorResult)
+    internal static void BindingsAreEqual(SetBindingInvocationDescription expectedBinding, CodeGeneratorResult codeGeneratorResult)
     {
         AssertNoDiagnostics(codeGeneratorResult);
         Assert.NotNull(codeGeneratorResult.Binding);

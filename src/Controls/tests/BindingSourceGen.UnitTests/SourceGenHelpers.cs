@@ -11,7 +11,7 @@ internal record CodeGeneratorResult(
     ImmutableArray<Diagnostic> SourceCompilationDiagnostics,
     ImmutableArray<Diagnostic> SourceGeneratorDiagnostics,
     ImmutableArray<Diagnostic> GeneratedCodeCompilationDiagnostics,
-    CodeWriterBinding? Binding);
+    SetBindingInvocationDescription? Binding);
 
 internal static class SourceGenHelpers
 {
@@ -43,7 +43,7 @@ internal static class SourceGenHelpers
         var trackedSteps = result.TrackedSteps;
 
         var resultBinding = trackedSteps.TryGetValue("Bindings", out ImmutableArray<IncrementalGeneratorRunStep> value)
-            ? (CodeWriterBinding)value[0].Outputs[0].Value
+            ? (SetBindingInvocationDescription)value[0].Outputs[0].Value
             : null;
 
         return new CodeGeneratorResult(
