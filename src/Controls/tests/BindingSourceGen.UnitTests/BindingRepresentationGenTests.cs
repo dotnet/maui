@@ -526,6 +526,34 @@ public class BindingRepresentationGenTests
     }
 
     [Fact]
+    public void GenerateBindingWhenGetterContainsSimpleReferenceTypeExplicitCast()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (Foo f) => (string)f.Value);
+
+        class Foo
+        {
+            public object Value { get; set; } = "Value";
+        }
+        """;
+
+        var codeGeneratorResult = SourceGenHelpers.Run(source);
+        var expectedBinding = new CodeWriterBinding(
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("string"),
+                new EquatableArray<IPathPart>([
+                    new MemberAccess("Value"),
+                    new Cast(new TypeDescription("string")),
+                ]),
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: false));
+
+        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+    }
+
+    [Fact]
     public void GenerateBindingWhenGetterContainsMemberAccessOfCastReferenceType()
     {
         var source = """
@@ -560,12 +588,49 @@ public class BindingRepresentationGenTests
     }
 
     [Fact]
-    public void GenerateBindingWhenGetterContainsMemberAccessOfCastNullableReferenceType()
+    public void GenerateBindingWhenGetterContainsMemberAccessOfExplicitCastReferenceType()
     {
         var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
-        label.SetBinding(Label.RotationProperty, static (Foo f) => (f.C as C)?.X);
+        label.SetBinding(Label.RotationProperty, static (Foo f) => ((C)f.C).X);
+
+        public class Foo
+        {
+            public object C { get; set; } = new C();
+        }
+
+        class C
+        {
+            public int X { get; set; }
+        }
+        """;
+
+        var codeGeneratorResult = SourceGenHelpers.Run(source);
+        var expectedBinding = new CodeWriterBinding(
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("int", IsValueType: true),
+                new EquatableArray<IPathPart>([
+                    new MemberAccess("C"),
+                    new Cast(new TypeDescription("global::C")),
+                    new MemberAccess("X"),
+                ]),
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: false));
+
+        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+    }
+
+
+    [Theory]
+    [InlineData("static (Foo f) => (f.C as C)?.X")]
+    [InlineData("static (Foo f) => ((C?)f.C)?.X")]
+    public void GenerateBindingWhenGetterContainsMemberAccessOfCastNullableReferenceType(string bindingLambda)
+    {
+        var source = $$"""
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, {{bindingLambda}});
 
         public class Foo
         {
@@ -593,13 +658,15 @@ public class BindingRepresentationGenTests
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsSimpleValueTypeCast()
+    [Theory]
+    [InlineData("static (Foo f) => f.Value as int?")]
+    [InlineData("static (Foo f) => (int?)f.Value")]
+    public void GenerateBindingWhenGetterContainsSimpleValueTypeCast(string bindingLambda)
     {
-        var source = """
+        var source = $$"""
         using Microsoft.Maui.Controls;
         var label = new Label();
-        label.SetBinding(Label.RotationProperty, static (Foo f) => f.Value as int?);
+        label.SetBinding(Label.RotationProperty, {{bindingLambda}});
 
         class Foo
         {
@@ -623,12 +690,43 @@ public class BindingRepresentationGenTests
     }
 
     [Fact]
-    public void GenerateBindingWhenGetterContainsMemberAccessOfCastNullableValueType()
+    public void GenerateBindingWhenGetterContainsSimpleValueTypeExplicitCast()
     {
         var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
-        label.SetBinding(Label.RotationProperty, static (Foo f) => (f.C as C?)?.X);
+        label.SetBinding(Label.RotationProperty, static (Foo f) => (int)f.Value);
+
+        class Foo
+        {
+            public int Value { get; set; }
+        }
+        """;
+
+        var codeGeneratorResult = SourceGenHelpers.Run(source);
+        var expectedBinding = new CodeWriterBinding(
+                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+                new TypeDescription("global::Foo"),
+                new TypeDescription("int", IsValueType: true),
+                new EquatableArray<IPathPart>([
+                    new MemberAccess("Value"),
+                    new Cast(new TypeDescription("int", IsValueType: true)),
+                ]),
+                SetterOptions: new(IsWritable: true, AcceptsNullValue: false));
+
+
+        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+    }
+
+    [Theory]
+    [InlineData("static (Foo f) => (f.C as C?)?.X")]
+    [InlineData("static (Foo f) => ((C?)f.C)?.X")]
+    public void GenerateBindingWhenGetterContainsMemberAccessOfCastNullableValueType(string bindingLambda)
+    {
+        var source = $$"""
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, {{bindingLambda}});
 
         public class Foo
         {

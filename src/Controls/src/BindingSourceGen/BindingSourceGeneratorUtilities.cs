@@ -31,7 +31,19 @@ internal static class BindingGenerationUtilities
             IsValueType: typeSymbol.IsValueType);
     }
 
-    internal static TypeDescription CreateTypeDescriptionForCast(ITypeSymbol typeSymbol)
+    internal static TypeDescription CreateTypeDescriptionForExplicitCast(ITypeSymbol typeSymbol, bool enabledNullable)
+    {
+        var isNullable = IsTypeNullable(typeSymbol, enabledNullable);
+        var name = GetGlobalName(typeSymbol, isNullable, typeSymbol.IsValueType);
+
+        return new TypeDescription(
+            GlobalName: name,
+            IsNullable: isNullable,
+            IsGenericParameter: typeSymbol.Kind == SymbolKind.TypeParameter,
+            IsValueType: typeSymbol.IsValueType);
+    }
+
+    internal static TypeDescription CreateTypeDescriptionForAsCast(ITypeSymbol typeSymbol)
     {
         // We can cast to nullable value type or non-nullable reference type
         var name = typeSymbol.IsValueType ?

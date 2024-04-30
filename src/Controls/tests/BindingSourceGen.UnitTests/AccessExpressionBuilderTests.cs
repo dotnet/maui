@@ -1,4 +1,3 @@
-using System.Linq;
 using Microsoft.Maui.Controls.BindingSourceGen;
 using Xunit;
 

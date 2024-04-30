@@ -7,12 +7,14 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 internal class PathParser
 {
-    internal PathParser(GeneratorSyntaxContext context)
+    internal PathParser(GeneratorSyntaxContext context, bool enabledNullable)
     {
         Context = context;
+        EnabledNullable = enabledNullable;
     }
 
     private GeneratorSyntaxContext Context { get; }
+    private bool EnabledNullable { get; }
 
     internal (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) ParsePath(CSharpSyntaxNode? expressionSyntax)
     {
@@ -26,6 +28,7 @@ internal class PathParser
             MemberBindingExpressionSyntax memberBinding => HandleMemberBindingExpression(memberBinding),
             ParenthesizedExpressionSyntax parenthesized => ParsePath(parenthesized.Expression),
             BinaryExpressionSyntax asExpression when asExpression.Kind() == SyntaxKind.AsExpression => HandleBinaryExpression(asExpression),
+            CastExpressionSyntax castExpression => HandleCastExpression(castExpression),
             _ => HandleDefaultCase(),
         };
     }
@@ -118,7 +121,25 @@ internal class PathParser
             return (new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation())]), new List<IPathPart>());
         };
 
-        parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionForCast(typeInfo)));
+        parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionForAsCast(typeInfo)));
+        return (diagnostics, parts);
+    }
+
+    private (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) HandleCastExpression(CastExpressionSyntax castExpression)
+    {
+        var (diagnostics, parts) = ParsePath(castExpression.Expression);
+        if (diagnostics.Length > 0)
+        {
+            return (diagnostics, parts);
+        }
+
+        var typeInfo = Context.SemanticModel.GetTypeInfo(castExpression.Type).Type;
+        if (typeInfo == null)
+        {
+            return (new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation())]), new List<IPathPart>());
+        };
+
+        parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionForExplicitCast(typeInfo, EnabledNullable)));
         return (diagnostics, parts);
     }
 

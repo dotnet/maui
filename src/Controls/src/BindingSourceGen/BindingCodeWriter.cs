@@ -287,25 +287,37 @@ public sealed class BindingCodeWriter
 			Indent();
 
 			string nextExpression = "source";
+			bool forceConditonalAccessToNextPart = false;
 			foreach (var part in path)
 			{
-				var expression = nextExpression;
-				nextExpression = AccessExpressionBuilder.Build(nextExpression, part);
+				var previousExpression = nextExpression;
+				nextExpression = AccessExpressionBuilder.Build(previousExpression, MaybeWrapInConditionalAccess(part, forceConditonalAccessToNextPart));
+				forceConditonalAccessToNextPart = part is Cast;
 
 				// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
-				var propertyName = part.PropertyName;
-				if (propertyName is null)
+				if (part.PropertyName is string propertyName)
 				{
-					continue;
+					AppendLine($"new(static source => {previousExpression}, \"{propertyName}\"),");
 				}
-
-				Append("new(static source => ");
-				Append(expression);
-				AppendLine($", \"{part.PropertyName}\"),");
 			}
 			Unindent();
 
 			Append('}');
+
+			static IPathPart MaybeWrapInConditionalAccess(IPathPart part, bool forceConditonalAccess)
+			{
+				if (!forceConditonalAccess)
+				{
+					return part;
+				}
+
+				return part switch
+				{
+					MemberAccess memberAccess => new ConditionalAccess(memberAccess),
+					IndexAccess indexAccess => new ConditionalAccess(indexAccess),
+					_ => part,
+				};
+			}
 		}
 
 		public void Dispose()
