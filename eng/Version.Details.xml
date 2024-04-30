@@ -1,5 +1,6 @@
 <Dependencies>
   <ProductDependencies>
+     <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="9.0.100-preview.4.24221.5" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/installer</Uri>
       <Sha>22ffa42d6c777ea9381459c83d4d9977744db2c8</Sha>
     </Dependency>
