@@ -113,12 +113,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			tracker.IsRootPage = true;
 			tracker.ViewController = this;
 
-			_tracker = tracker;
 			if (ShellSection.CurrentItem != null)
-			{
 				tracker.Page = ((IShellContentController)ShellSection.CurrentItem).GetOrCreateContent();
-				NavigationItem.Title = _shellContext.Shell.Toolbar.Title;
-			}
+			_tracker = tracker;
 			UpdateFlowDirection();
 		}
 
