@@ -21,6 +21,15 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		/// <summary>
+		/// Typed ResourceDictionaries are cached when first loaded.
+		/// For hot reload to be able to modify and reload them, the cache must be able to be cleared.
+		/// </summary>
+		public static void ClearResourceCache()
+		{
+			ResourceDictionary.ClearCache();
+		}
+
 		public class ResourceLoadingQuery
 		{
 			public AssemblyName AssemblyName { get; set; }

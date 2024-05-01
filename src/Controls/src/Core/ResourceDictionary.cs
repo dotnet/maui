@@ -366,7 +366,7 @@ namespace Microsoft.Maui.Controls
 
 		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
 
-		//only used for unit testing
+		// Only used for unit testing and hot reload
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 
 		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.RDSourceTypeConverter")]
