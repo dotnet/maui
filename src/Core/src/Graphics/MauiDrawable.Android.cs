@@ -155,6 +155,7 @@ namespace Microsoft.Maui.Graphics
 
 			_borderColor = borderColor;
 
+			InitializeBorderIfNeeded();
 			InvalidateSelf();
 		}
 
@@ -183,6 +184,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			_invalidatePath = true;
 			_borderColor = null;
+			_borderPaint = null;
 
 			var borderColor = solidPaint.Color == null
 				? (AColor?)null
