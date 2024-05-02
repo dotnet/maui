@@ -11,6 +11,14 @@ parameters:
   type: string
   default: 'nuget'
 
+- name: artifactMetadata
+  type: string
+  default: 'metadata'
+
+- name: artifactLogs
+  type: string
+  default: 'logs'
+
 - name: artifactBinaries
   type: string
   default: 'pack-binaries'
@@ -155,7 +163,9 @@ steps:
         ${{ parameters.checkoutDirectory }}/eng/automation/SignVerifyIgnore.txt
         !${{ parameters.checkoutDirectory}}/artifacts/docs-packs/**
         !${{ parameters.checkoutDirectory}}/artifacts/binaries/**
-      TargetFolder: ${{ parameters.artifactsPath }}
+        !${{ parameters.checkoutDirectory}}/artifacts/**/res.zip
+        !${{ parameters.checkoutDirectory}}/artifacts/**/annotations.zip
+      TargetFolder: ${{ parameters.artifactsPath }}/nuget
       flattenFolders: true
 
   - task: CopyFiles@2
@@ -166,7 +176,7 @@ steps:
       Contents: |
         **/metadata/**
         **/api-diff/**
-      TargetFolder: ${{ parameters.artifactsPath }}
+      TargetFolder: ${{ parameters.artifactsPath }}/metadata
 
   - task: CopyFiles@2
     displayName: 'Copy Log Files'
@@ -184,8 +194,23 @@ steps:
       displayName: publish artifacts
       inputs:
         ArtifactName: ${{ parameters.artifact }}
-        PathToPublish: ${{ parameters.artifactsPath }}
+        PathToPublish: ${{ parameters.artifactsPath }}/nuget
+
+    - task: PublishBuildArtifacts@1
+      condition: always()
+      displayName: publish artifacts
+      inputs:
+        ArtifactName: ${{ parameters.artifactMetadata }}
+        PathToPublish: ${{ parameters.artifactsPath }}/metadata
+
+    - task: PublishBuildArtifacts@1
+      condition: always()
+      displayName: publish artifacts
+      inputs:
+        ArtifactName: ${{ parameters.artifactLogs }}
+        PathToPublish: ${{ parameters.artifactsPath }}/logs
   
+    
     # xml-docs
     - ${{ if eq(parameters.platform, 'Windows') }}:
       - task: PublishBuildArtifacts@1
