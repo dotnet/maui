@@ -13,9 +13,9 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 
-		void OnToolbarItemClicked(object sender, EventArgs e)
+		async void OnToolbarItemClicked(object sender, EventArgs e)
 		{
-			Navigation.PopAsync();
+			await Navigation.PopAsync();
 		}
 	}
 }

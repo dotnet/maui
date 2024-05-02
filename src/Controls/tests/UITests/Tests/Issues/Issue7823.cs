@@ -14,19 +14,16 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "In a ToolbarItems, if an item has no icon but just text, MAUI uses the icon from the previous page in the Navigation";
 
 		[Test]
-		public async Task UpdateToolbarItemAfterNavigate()
+		public void UpdateToolbarItemAfterNavigate()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
-			// 1. Navigate from Page with a TollbarItem using an Icon. 
+			// 1. Navigate from Page with a ToolbarItem using an Icon. 
 			App.WaitForElement("WaitForStubControl");
-			App.Click("WaitForStubControl");
+			App.Tap("WaitForStubControl");
 
-			await Task.Delay(1000); // Wait navigation animation to complete
+			App.WaitForElement("SecondPageLoaded");
 
-			// 2. Verify that the second page with a TollbarItem without an icon does not show the icon of the previous page.
+			// 2. Verify that the second page with a ToolbarItem without an icon does not show the icon of the previous page.
 			VerifyScreenshot();
-			App.Back();
 		}
 	}
 }
