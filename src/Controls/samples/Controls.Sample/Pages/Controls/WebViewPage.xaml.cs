@@ -66,12 +66,12 @@ namespace Maui.Controls.Sample.Pages
 			MauiWebView.Eval("alert('text')");
 		}
 
-		void OnMauiWebViewNavigating(object sender, Microsoft.Maui.Controls.WebNavigatingEventArgs e)
+		void OnMauiWebViewNavigating(object? sender, Microsoft.Maui.Controls.WebNavigatingEventArgs e)
 		{
 			Debug.WriteLine($"Navigating - Url: {e.Url}, Event: {e.NavigationEvent}");
 		}
 
-		void OnMauiWebViewNavigated(object sender, Microsoft.Maui.Controls.WebNavigatedEventArgs e)
+		void OnMauiWebViewNavigated(object? sender, Microsoft.Maui.Controls.WebNavigatedEventArgs e)
 		{
 			Debug.WriteLine($"Navigated - Url: {e.Url}, Event: {e.NavigationEvent}, Result: {e.Result}");
 		}

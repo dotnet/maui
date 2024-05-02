@@ -1,12 +1,16 @@
 #nullable disable
+using System;
+
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal class ItemTemplateContext
 	{
+		readonly WeakReference<BindableObject> _container;
+
 		public DataTemplate FormsDataTemplate { get; }
 		public IMauiContext MauiContext { get; }
 		public object Item { get; }
-		public BindableObject Container { get; }
+		public BindableObject Container => _container.TryGetTarget(out var c) ? c : null;
 		public double ItemHeight { get; }
 		public double ItemWidth { get; }
 		public Thickness ItemSpacing { get; }
@@ -16,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			FormsDataTemplate = formsDataTemplate;
 			Item = item;
-			Container = container;
+			_container = new(container);
 			MauiContext = mauiContext;
 
 			if (height.HasValue)

@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Android.App.Roles;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.Fragment.App;
+using AndroidX.Lifecycle;
 
 namespace Microsoft.Maui.Handlers
 {
-
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, View>
 	{
 		View? _flyoutView;
@@ -46,37 +49,64 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		IDisposable? _pendingFragment;
 		void UpdateDetailsFragmentView()
 		{
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			if (_detailViewFragment != null && _detailViewFragment?.DetailView == VirtualView.Detail)
+			if (_detailViewFragment is not null &&
+				_detailViewFragment?.DetailView == VirtualView.Detail &&
+				!_detailViewFragment.IsDestroyed)
+			{
+				return;
+			}
+
+			var context = MauiContext.Context;
+			if (context is null)
 				return;
 
 			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
 				pvh.DisconnectHandler();
 
-			if (VirtualView.Detail == null)
+			var fragmentManager = MauiContext.GetFragmentManager();
+
+			if (VirtualView.Detail is null)
 			{
-				if (_detailViewFragment != null)
+				if (_detailViewFragment is not null)
 				{
-					MauiContext
-						.GetFragmentManager()
-						.BeginTransaction()
-						.Remove(_detailViewFragment)
-						.SetReorderingAllowed(true)
-						.Commit();
+					_pendingFragment =
+						fragmentManager
+							.RunOrWaitForResume(context, (fm) =>
+							{
+								if (_detailViewFragment is null)
+								{
+									return;
+								}
+
+								fm
+									.BeginTransactionEx()
+									.RemoveEx(_detailViewFragment)
+									.SetReorderingAllowed(true)
+									.Commit();
+							});
 				}
 			}
 			else
 			{
-				_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
-				MauiContext
-					.GetFragmentManager()
-					.BeginTransaction()
-					.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
-					.SetReorderingAllowed(true)
-					.Commit();
+				_pendingFragment =
+					fragmentManager
+						.RunOrWaitForResume(context, (fm) =>
+						{
+							_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
+							fm
+								.BeginTransaction()
+								.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
+								.SetReorderingAllowed(true)
+								.Commit();
+						});
 			}
 		}
 
@@ -266,13 +296,24 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(View platformView)
 		{
 			if (platformView is DrawerLayout dl)
+			{
 				dl.DrawerStateChanged += OnDrawerStateChanged;
+				dl.ViewAttachedToWindow += DrawerLayoutAttached;
+			}
 		}
 
 		protected override void DisconnectHandler(View platformView)
 		{
 			if (platformView is DrawerLayout dl)
+			{
 				dl.DrawerStateChanged -= OnDrawerStateChanged;
+				dl.ViewAttachedToWindow -= DrawerLayoutAttached;
+			}
+		}
+
+		void DrawerLayoutAttached(object? sender, View.ViewAttachedToWindowEventArgs e)
+		{
+			UpdateDetailsFragmentView();
 		}
 
 		void OnDrawerStateChanged(object? sender, DrawerLayout.DrawerStateChangedEventArgs e)

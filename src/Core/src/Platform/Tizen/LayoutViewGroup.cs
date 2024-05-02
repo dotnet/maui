@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		Size _measureCache;
 
 		bool _needMeasureUpdate;
-		internal int IsLayoutUpdating { get; set; } = 0;
+		internal int IsLayoutUpdating { get; set; }
 
 		public LayoutViewGroup(IView view)
 		{
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Platform
 			return InvokeCrossPlatformMeasure(availableWidth.ToScaledDP(), availableHeight.ToScaledDP()).ToPixel();
 		}
 
-		public bool InputTransparent { get; set; } = false;
+		public bool InputTransparent { get; set; }
 
 		protected override bool HitTest(TTouch touch)
 		{

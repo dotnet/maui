@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Layouts.Flex
 		/// <summary>
 		/// Auto basis.
 		/// </summary>
-		public static Basis Auto = new Basis();
+		public static Basis Auto;
 		/// <summary>
 		/// Whether the basis length is relative to parent's size.
 		/// </summary>
@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Layouts.Flex
 	/// <summary>
 	/// An item with flexbox properties. Items can also contain other items and be enumerated.
 	/// </summary>
-	class Item : IEnumerable<Item>
+	class Item : List<Item>
 	{
 		/// <summary>
 		/// Gets the frame (x, y, w, h).
@@ -239,7 +239,6 @@ namespace Microsoft.Maui.Layouts.Flex
 		/// <summary>The parent item.</summary>
 		/// <value>The parent item, or null if the item is a root item.</value>
 		public Item? Parent { get; private set; }
-		IList<Item>? Children { get; set; }
 		bool ShouldOrderChildren { get; set; }
 
 		///<summary>This property defines how the layout engine will distribute space between and around child items that have been laid out on multiple lines. This property is ignored if the root item does not have its <see cref="P:Microsoft.Maui.Controls.Flex.Item.Wrap" /> property set to Wrap or WrapReverse.</summary>
@@ -274,7 +273,7 @@ namespace Microsoft.Maui.Layouts.Flex
 		/// <summary>This property defines the grow factor of the item; the amount of available space it should use on the main-axis. If this property is set to 0, the item will not grow.</summary>
 		/// <value>The item grow factor.</value>
 		/// <remarks>The default value for this property is 0 (does not take any available space).</remarks>
-		public float Grow { get; set; } = 0f;
+		public float Grow { get; set; }
 
 		/// <summary>This property defines the height size dimension of the item.</summary>
 		/// <value>The height size dimension.</value>
@@ -296,22 +295,22 @@ namespace Microsoft.Maui.Layouts.Flex
 		/// <summary>This property defines the margin space required on the bottom edge of the item.</summary>
 		/// <value>The top edge margin space (negative values are allowed).</value>
 		/// <remarks>The default value for this property is 0.</remarks>
-		public float MarginBottom { get; set; } = 0f;
+		public float MarginBottom { get; set; }
 
 		/// <summary>This property defines the margin space required on the left edge of the item.</summary>
 		/// <value>The top edge margin space (negative values are allowed).</value>
 		/// <remarks>The default value for this property is 0.</remarks>
-		public float MarginLeft { get; set; } = 0f;
+		public float MarginLeft { get; set; }
 
 		/// <summary>This property defines the margin space required on the right edge of the item.</summary>
 		/// <value>The top edge margin space (negative values are allowed).</value>
 		/// <remarks>The default value for this property is 0.</remarks>
-		public float MarginRight { get; set; } = 0f;
+		public float MarginRight { get; set; }
 
 		/// <summary>This property defines the margin space required on the top edge of the item.</summary>
 		/// <value>The top edge margin space (negative values are allowed).</value>
 		/// <remarks>The default value for this property is 0.</remarks>
-		public float MarginTop { get; set; } = 0f;
+		public float MarginTop { get; set; }
 
 		int order;
 
@@ -330,19 +329,19 @@ namespace Microsoft.Maui.Layouts.Flex
 
 		/// <summary>This property defines the height of the item's bottom edge padding space that should be used when laying out child items.</summary>
 		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
-		public float PaddingBottom { get; set; } = 0f;
+		public float PaddingBottom { get; set; }
 
 		/// <summary>This property defines the height of the item's left edge padding space that should be used when laying out child items.</summary>
 		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
-		public float PaddingLeft { get; set; } = 0f;
+		public float PaddingLeft { get; set; }
 
 		/// <summary>This property defines the height of the item's right edge padding space that should be used when laying out child items.</summary>
 		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
-		public float PaddingRight { get; set; } = 0f;
+		public float PaddingRight { get; set; }
 
 		/// <summary>This property defines the height of the item's top edge padding space that should be used when laying out child items.</summary>
 		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
-		public float PaddingTop { get; set; } = 0f;
+		public float PaddingTop { get; set; }
 
 		/// <summary>This property defines whether the item should be positioned by the flexbox rules of the layout engine(Relative) or have an absolute fixed position (Absolute). If this property is set to Absolute, the<see cref="P:Microsoft.Maui.Controls.Flex.Item.Left" />, <see cref = "P:Microsoft.Maui.Controls.Flex.Item.Right" />, <see cref = "P:Microsoft.Maui.Controls.Flex.Item.Top" /> and <see cref= "P:Microsoft.Maui.Controls.Flex.Item.Bottom" /> properties will then be used to determine the item's fixed position in its container.</summary>
 		/// <value>Any value part of the<see cref="T:Microsoft.Maui.Controls.Flex.Position" /> enumeration.</value>
@@ -392,10 +391,10 @@ namespace Microsoft.Maui.Layouts.Flex
 			Height = height;
 		}
 
-		public void Add(Item child)
+		public new void Add(Item child)
 		{
 			ValidateChild(child);
-			(Children ?? (Children = new List<Item>())).Add(child);
+			base.Add(child);
 			child.Parent = this;
 			ShouldOrderChildren |= child.Order != 0;
 		}
@@ -403,28 +402,17 @@ namespace Microsoft.Maui.Layouts.Flex
 		public void InsertAt(int index, Item child)
 		{
 			ValidateChild(child);
-			(Children ?? (Children = new List<Item>())).Insert(index, child);
+			base.Insert(index, child);
 			child.Parent = this;
 			ShouldOrderChildren |= child.Order != 0;
 		}
 
 		public Item RemoveAt(uint index)
 		{
-			var child = Children![(int)index];
+			var child = this[(int)index];
 			child.Parent = null;
-			Children.RemoveAt((int)index);
+			base.RemoveAt((int)index);
 			return child;
-		}
-
-		public int Count =>
-			(Children?.Count ?? 0);
-
-		public Item ItemAt(int index) =>
-			Children![index];
-
-		public Item this[int index]
-		{
-			get => ItemAt(index);
 		}
 
 		public Item Root
@@ -453,12 +441,6 @@ namespace Microsoft.Maui.Layouts.Flex
 
 		public SelfSizingDelegate? SelfSizing { get; set; }
 
-		IEnumerator IEnumerable.GetEnumerator() =>
-			((IEnumerable<Item>)this).GetEnumerator();
-
-		IEnumerator<Item> IEnumerable<Item>.GetEnumerator() =>
-			(Children ?? global::System.Linq.Enumerable.Empty<Item>()).GetEnumerator();
-
 		void ValidateChild(Item child)
 		{
 			if (this == child)
@@ -469,7 +451,7 @@ namespace Microsoft.Maui.Layouts.Flex
 
 		static void layout_item(Item item, float width, float height)
 		{
-			if (item.Children == null || item.Children.Count == 0)
+			if (item == null || item.Count == 0)
 				return;
 
 			var layout = new flex_layout();
@@ -667,7 +649,7 @@ namespace Microsoft.Maui.Layouts.Flex
 		static void layout_align(Justify align, float flex_dim, int children_count, ref float pos_p, ref float spacing_p)
 		{
 			if (flex_dim < 0)
-				throw new ArgumentException();
+				throw new ArgumentException($"{nameof(flex_dim)} must not be negative", nameof(flex_dim));
 			pos_p = 0;
 			spacing_p = 0;
 
@@ -700,14 +682,14 @@ namespace Microsoft.Maui.Layouts.Flex
 					}
 					return;
 				default:
-					throw new ArgumentException();
+					throw new ArgumentException($"{nameof(Justify)} option not handled", nameof(align));
 			}
 		}
 
 		static void layout_align(AlignContent align, float flex_dim, uint children_count, ref float pos_p, ref float spacing_p)
 		{
 			if (flex_dim < 0)
-				throw new ArgumentException();
+				throw new ArgumentException($"{nameof(flex_dim)} must not be negative", nameof(flex_dim));
 			pos_p = 0;
 			spacing_p = 0;
 
@@ -743,14 +725,14 @@ namespace Microsoft.Maui.Layouts.Flex
 					spacing_p = flex_dim / children_count;
 					return;
 				default:
-					throw new ArgumentException();
+					throw new ArgumentException($"{nameof(AlignContent)} option not handled", nameof(align));
 			}
 		}
 
 		static void layout_items(Item item, int child_begin, int child_end, int children_count, ref flex_layout layout)
 		{
 			if (children_count > (child_end - child_begin))
-				throw new ArgumentException();
+				throw new ArgumentException($"The {children_count} must not be smaller than the requested range between {child_begin} and {child_end}", nameof(children_count));
 			if (children_count <= 0)
 				return;
 			if (layout.flex_dim > 0 && layout.extra_flex_dim > 0)
@@ -975,7 +957,7 @@ namespace Microsoft.Maui.Layouts.Flex
 					|| item.PaddingRight < 0
 					|| item.PaddingTop < 0
 					|| item.PaddingBottom < 0)
-					throw new ArgumentException();
+					throw new ArgumentException($"The padding on {nameof(item)} must not be negative", nameof(item));
 
 				width = Math.Max(0, width - item.PaddingLeft + item.PaddingRight);
 				height = Math.Max(0, height - item.PaddingTop + item.PaddingBottom);
@@ -1021,7 +1003,7 @@ namespace Microsoft.Maui.Layouts.Flex
 						{
 							int prev = indices[j - 1];
 							int curr = indices[j];
-							if (item.Children![prev].Order <= item.Children[curr].Order)
+							if (item[prev].Order <= item[curr].Order)
 							{
 								break;
 							}
@@ -1057,7 +1039,7 @@ namespace Microsoft.Maui.Layouts.Flex
 			}
 
 			public Item child_at(Item item, int i) =>
-				item.Children![(ordered_indices?[i] ?? i)];
+				item[ordered_indices?[i] ?? i];
 
 			public void cleanup()
 			{

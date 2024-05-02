@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Platform
 
 			if (format != null)
 			{
-				if (format.IndexOf("H", StringComparison.Ordinal) != -1)
+				if (format.Contains('H', StringComparison.Ordinal))
 				{
 					var ci = new CultureInfo("de-DE");
 					NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Platform
 					if (picker != null)
 						picker.Locale = locale;
 				}
-				else if (format.IndexOf("h", StringComparison.Ordinal) != -1)
+				else if (format.Contains('h', StringComparison.Ordinal))
 				{
 					var ci = new CultureInfo("en-US");
 					NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);

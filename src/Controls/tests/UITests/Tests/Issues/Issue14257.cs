@@ -1,5 +1,6 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -10,13 +11,18 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "VerticalStackLayout inside Scrollview: Button at the bottom not clickable on IOS";
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void ResizeScrollViewAndTapButtonTest()
 		{
+			App.WaitForElement("Resize");
+
 			// Tapping the Resize button will change the height of the ScrollView content
 			App.Tap("Resize");
 
 			// Scroll down to the Test button. When the bug is present, the button cannot be tapped.
-			App.ScrollDownTo("Test");
+			App.ScrollTo("Test");
+
+			App.WaitForElement("Test");
 			App.Tap("Test");
 
 			// If we can successfully tap the button, the Success label will be displayed

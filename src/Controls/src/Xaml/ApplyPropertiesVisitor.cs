@@ -326,26 +326,15 @@ namespace Microsoft.Maui.Controls.Xaml
 			return false;
 		}
 
-		static BindableProperty GetBindableProperty(Type elementType, string localName, IXmlLineInfo lineInfo,
-			bool throwOnError = false)
+		static BindableProperty GetBindableProperty(Type elementType, string localName, IXmlLineInfo lineInfo)
 		{
 			// F# does not support public fields, so allow internal (Assembly) as well as public
 			const BindingFlags supportedFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
-			var bindableFieldInfo = elementType.GetFields(supportedFlags)
-												.FirstOrDefault(fi => (fi.IsAssembly || fi.IsPublic) && fi.Name == localName + "Property");
-
-			Exception exception = null;
-			if (exception == null && bindableFieldInfo == null)
+			var bindableFieldInfo = elementType.GetField(localName + "Property", supportedFlags);
+			if (bindableFieldInfo is not null && (bindableFieldInfo.IsAssembly || bindableFieldInfo.IsPublic))
 			{
-				exception =
-					new XamlParseException(
-						Format("BindableProperty {0} not found on {1}", localName + "Property", elementType.Name), lineInfo);
-			}
-
-			if (exception == null)
 				return bindableFieldInfo.GetValue(null) as BindableProperty;
-			if (throwOnError)
-				throw exception;
+			}
 			return null;
 		}
 
@@ -355,7 +344,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			//If it's an attached BP, update elementType and propertyName
 			var bpOwnerType = xamlelement.GetType();
 			GetRealNameAndType(ref bpOwnerType, propertyName.NamespaceURI, ref localName, rootElement, lineInfo);
-			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
+			var property = GetBindableProperty(bpOwnerType, localName, lineInfo);
 
 			if (property != null)
 				return property;
@@ -387,6 +376,8 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			void registerSourceInfo(object target, string path)
 			{
+				if (VisualDiagnostics.GetSourceInfo(target) != null)
+					return;
 				var assemblyName = rootElement.GetType().Assembly?.GetName().Name;
 				if (lineInfo != null)
 					VisualDiagnostics.RegisterSourceInfo(target, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), lineInfo.LineNumber, lineInfo.LinePosition);
@@ -395,7 +386,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			//If it's an attached BP, update elementType and propertyName
 			var bpOwnerType = element.GetType();
 			var attached = GetRealNameAndType(ref bpOwnerType, propertyName.NamespaceURI, ref localName, rootElement, lineInfo);
-			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
+			var property = GetBindableProperty(bpOwnerType, localName, lineInfo);
 
 			//If the target is an event, connect
 			if (xpe == null && TryConnectEvent(element, localName, attached, value, rootElement, lineInfo, out xpe))
@@ -450,7 +441,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			//If it's an attached BP, update elementType and propertyName
 			var bpOwnerType = xamlElement.GetType();
 			var attached = GetRealNameAndType(ref bpOwnerType, propertyName.NamespaceURI, ref localName, rootElement, lineInfo);
-			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
+			var property = GetBindableProperty(bpOwnerType, localName, lineInfo);
 
 			//If it's a BindableProberty, GetValue
 			if (xpe == null && TryGetValue(xamlElement, property, attached, out var value, lineInfo, out xpe, out targetProperty))
@@ -483,9 +474,36 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (addMethod == null)
 				return false;
 
-			foreach (var mi in rootElement.GetType().GetRuntimeMethods())
+			var rootElementType = rootElement.GetType();
+			do
 			{
-				if (mi.Name == (string)value)
+				MethodInfo mi = null;
+				try
+				{
+					mi = rootElementType.GetMethod((string)value, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+				}
+				catch (AmbiguousMatchException)
+				{
+					var n_params = eventInfo.EventHandlerType.GetMethod("Invoke").GetParameters().Length;
+					var methodinfos = rootElementType.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+						.Where(mi => mi.Name == (string)value && mi.GetParameters().Length == n_params)
+						.ToArray();
+
+					//try to find an event handler with a signature matching the button delegate signature
+					foreach (var methodinfo in methodinfos)
+					{
+						var parameters = methodinfo.GetParameters();
+						for (var i = 0; i < n_params; i++)
+						{
+							if (!parameters[i].ParameterType.IsAssignableFrom(eventInfo.EventHandlerType.GetMethod("Invoke").GetParameters()[i].ParameterType))
+								break;
+						}
+						mi = methodinfo;
+						break;
+					}
+				}
+
+				if (mi != null)
 				{
 					try
 					{
@@ -497,7 +515,8 @@ namespace Microsoft.Maui.Controls.Xaml
 						// incorrect method signature
 					}
 				}
-			}
+				rootElementType = rootElementType.BaseType;
+			} while (rootElementType is not null);
 
 			exception = new XamlParseException($"No method {value} with correct signature found on type {rootElement.GetType()}", lineInfo);
 			return false;
@@ -583,17 +602,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					}
 				};
 			else
-				minforetriever = () =>
-				{
-					try
-					{
-						return property.DeclaringType.GetRuntimeProperty(property.PropertyName);
-					}
-					catch (AmbiguousMatchException e)
-					{
-						throw new XamlParseException($"Multiple properties with name '{property.DeclaringType}.{property.PropertyName}' found.", lineInfo, innerException: e);
-					}
-				};
+				minforetriever = () => property.DeclaringType.GetRuntimeProperties().FirstOrDefault(pi => pi.Name == property.PropertyName);
 			var convertedValue = value.ConvertTo(property.ReturnType, minforetriever, serviceProvider, out exception);
 			if (exception != null)
 				return false;
@@ -707,7 +716,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (!IsVisibleFrom(getter, rootElement))
 				return false;
 
-			value = getter.Invoke(element, new object[] { });
+			value = getter.Invoke(element, Array.Empty<object>());
 			return true;
 		}
 

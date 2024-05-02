@@ -1,10 +1,18 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <Import Project="../Shared/Common.targets" />
+  <Import Project="../Shared/Maestro.targets" />
 
   <PropertyGroup>
-    <Description>.NET MAUI SDK. Enabled via &lt;UseMaui&gt;true&lt;/UseMaui&gt;.</Description>
     <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Sdk</PackageId>
+    <Title>.NET MAUI SDK</Title>
+    <Description>.NET Multi-platform App UI (.NET MAUI) SDK. Please do not reference this package directly.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,8 +29,6 @@
     <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
     <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
     <_ValuesToReplace Include="MicrosoftWindowsAppSDKPackageVersion" PropertyName="MicrosoftWindowsAppSDKPackageVersion" />
-    <_ValuesToReplace Include="MicrosoftExtensionsPackageVersion" PropertyName="MicrosoftExtensionsPackageVersion" />
-    <_ValuesToReplace Include="MicrosoftExtensionsServicingPackageVersion" PropertyName="MicrosoftExtensionsServicingPackageVersion" />
     <_ValuesToReplace Include="TizenUIExtensionsVersion" PropertyName="TizenUIExtensionsVersion" />
     <_ValuesToReplace Include="_XamarinAndroidGlideVersion" PropertyName="_XamarinAndroidGlideVersion" />
     <_ValuesToReplace Include="_XamarinAndroidXSecurityVersion" PropertyName="_XamarinAndroidXSecurityVersion" />

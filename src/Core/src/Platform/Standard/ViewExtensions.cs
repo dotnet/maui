@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateOpacity(this object platformView, IView view) { }
 
+		internal static void UpdateOpacity(this object platformView, double opacity) { }
+
 		public static void UpdateSemantics(this object platformView, IView view) { }
 
 		public static void UpdateFlowDirection(this object platformView, IView view) { }
@@ -67,6 +69,8 @@ namespace Microsoft.Maui.Platform
 
 		internal static System.Numerics.Matrix4x4 GetViewTransform(this IView view) => new System.Numerics.Matrix4x4();
 
+		// Used by MAUI XAML Hot Reload.
+		// Consult XET if updating!
 		internal static Graphics.Rect GetBoundingBox(this IView view) => view.Frame;
 
 		internal static object? GetParent(this object? view)

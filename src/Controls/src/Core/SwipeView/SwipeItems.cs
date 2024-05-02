@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
@@ -16,6 +17,13 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public SwipeItems(IEnumerable<ISwipeItem> swipeItems)
 		{
+			foreach (var item in swipeItems)
+				if (item is Element e)
+				{
+					CheckParent(e);
+					AddLogicalChild(e);
+				}
+
 			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
 		}
@@ -68,6 +76,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Clear']/Docs/*" />
 		public void Clear()
 		{
+			foreach (var item in _swipeItems)
+				if (item is Element e)
+					RemoveLogicalChild(e);
+
 			_swipeItems.Clear();
 		}
 
@@ -114,30 +126,44 @@ namespace Microsoft.Maui.Controls
 			_swipeItems.RemoveAt(index);
 		}
 
-		protected override void OnBindingContextChanged()
-		{
-			base.OnBindingContextChanged();
-
-			object bc = BindingContext;
-
-			foreach (BindableObject item in _swipeItems)
-				SetInheritedBindingContext(item, bc);
-		}
-
 		void OnSwipeItemsChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
-			if (notifyCollectionChangedEventArgs.NewItems != null)
+			if (notifyCollectionChangedEventArgs.NewItems is not null)
 			{
-				object bc = BindingContext;
-				foreach (BindableObject item in notifyCollectionChangedEventArgs.NewItems)
-					SetInheritedBindingContext(item, bc);
+				foreach (var item in notifyCollectionChangedEventArgs.NewItems)
+					if (item is Element e)
+					{
+						CheckParent(e);
+						AddLogicalChild(e);
+					}
 			}
+
+			if (notifyCollectionChangedEventArgs.OldItems is not null)
+			{
+				foreach (var item in notifyCollectionChangedEventArgs.OldItems)
+					if (item is Element e)
+						RemoveLogicalChild(e);
+			}
+
 			CollectionChanged?.Invoke(this, notifyCollectionChangedEventArgs);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return _swipeItems.GetEnumerator();
+		}
+
+		// If a SwipeItem occupies multiple SwipeItems, we only want the logical hierarchy
+		// to wire up to the SwipeItems that are currently part of a SwipeView.
+		// We could throw an exception here but that would be too hostile of a breaking behavior.
+		// TODO NET9 This warning should probably be elevated to `Element` for NET9
+		void CheckParent(Element e)
+		{
+			if (e.Parent is not null && e.Parent != this)
+			{
+				this.CreateLogger<SwipeItems>()
+					?.LogWarning($"{e} is already part of {e.Parent}. Remove from {e.Parent} to avoid inconsistent behavior.");
+			}
 		}
 	}
 }

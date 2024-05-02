@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 			SizeChanged += OnPageSizeChanged;
 		}
 
-		void OnPageSizeChanged(object sender, EventArgs e)
+		void OnPageSizeChanged(object? sender, EventArgs e)
 		{
 			if (Width <= 0 || Height <= 0)
 			{
@@ -63,7 +63,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 
 	public class AnimateShapeGallery : SpiralDemoPage
 	{
-		IDispatcherTimer _timer;
+		IDispatcherTimer? _timer;
 
 		public AnimateShapeGallery()
 		{
@@ -92,7 +92,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 
 		protected override void OnDisappearing()
 		{
-			_timer.Stop();
+			_timer!.Stop();
 			_timer = null;
 		}
 	}

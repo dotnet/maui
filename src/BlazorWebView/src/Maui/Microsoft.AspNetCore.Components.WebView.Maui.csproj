@@ -3,9 +3,17 @@
   <PropertyGroup>
     <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <Nullable>enable</Nullable>
-    <Description>Build .NET MAUI applications with Blazor web UI in the BlazorWebView control.</Description>
     <DefineConstants>$(DefineConstants);WEBVIEW2_MAUI</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.AspNetCore.Components.WebView.Maui</PackageId>
+    <PackageTags>$(DefaultPackageTags);blazor;webview;aspnet</PackageTags>
+    <PackageIconFile>$(MauiRootDirectory)Assets\aspnet-icon.png</PackageIconFile>
+    <Description>Build .NET Multi-platform App UI (.NET MAUI) apps with Blazor web UI in the BlazorWebView control.</Description>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />

@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void Clear(LayoutViewGroup platformView)
+		static void Clear(LayoutViewGroup platformView)
 		{
 			if (platformView != null && !platformView.IsDisposed())
 				platformView.RemoveAllViews();
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			AView platformChildView = child.ToPlatform(MauiContext!);
-			var currentIndex = IndexOf(PlatformView, platformChildView);
+			var currentIndex = PlatformView.IndexOfChild(platformChildView);
 
 			if (currentIndex == -1)
 			{
@@ -135,20 +135,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		static int IndexOf(ViewGroup viewGroup, AView view)
+		public static partial void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
-			for (int n = 0; n < viewGroup.ChildCount; n++)
-			{
-				if (viewGroup.GetChildAt(n) == view)
-				{
-					return n;
-				}
-			}
-
-			return -1;
+			handler.PlatformView?.UpdateBackground(layout);
 		}
 
-		static void MapInputTransparent(ILayoutHandler handler, ILayout layout)
+		public static partial void MapInputTransparent(ILayoutHandler handler, ILayout layout)
 		{
 			if (handler.PlatformView is LayoutViewGroup layoutViewGroup)
 			{

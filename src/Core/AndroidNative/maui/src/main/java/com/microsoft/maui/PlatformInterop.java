@@ -1,12 +1,17 @@
 package com.microsoft.maui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.BlendMode;
+import android.graphics.BlendModeColorFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathEffect;
+import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
@@ -14,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -26,11 +32,13 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.TintTypedArray;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
+import androidx.window.layout.WindowMetricsCalculator;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
@@ -55,9 +63,34 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PlatformInterop {
-    public static void requestLayoutIfNeeded(View view) {
-        if (!view.isInLayout())
+     public static void requestLayoutIfNeeded(View view) {
+        
+        // If the view isn't currently in the layout process, then we simply request
+        // that layout happen next time around
+        if (!view.isInLayout())	{
             view.requestLayout();
+			return;
+		}
+		
+        /* 
+            Something is requesting layout while the view is already in the middle of a layout pass. This is most 
+            likely because a layout-affecting property has been data bound to another layout-affecting property, e.g. 
+            binding the width of a child control to the ActualWidth of its parent.
+            
+            If we simply call `requestLayout()` again right now, it will set a flag which will be cleared at the end 
+            of the current layout pass, and the view will not be laid out with the updated values.
+
+            Instead, we post the layout request to the UI thread's queue, ensuring that it will happen after the current
+            layout pass has finished. Layout will happen again with the updated values.
+        */
+
+		Runnable runnable = () -> { 
+			if (!view.isInLayout())	{
+				view.requestLayout();
+			}
+		};
+		
+		view.post(runnable);
     }
 
     public static void removeFromParent(View view) {
@@ -224,7 +257,43 @@ public class PlatformInterop {
         return pager;
     }
 
-    private static void prepare(RequestBuilder<Drawable> builder, Target<Drawable> target, Boolean cachingEnabled, ImageLoaderCallback callback) {
+    /**
+     * Call setColorFilter on a Drawable, passing in (int)Microsoft.Maui.FilterMode
+     * Calls the appropriate methods for Android API 29/Q+
+     * @param drawable android.graphics.Drawable
+     * @param color android.graphics.Color
+     * @param mode (int)Microsoft.Maui.FilterMode
+     */
+    public static void setColorFilter(@NonNull Drawable drawable, int color, int mode) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            drawable.setColorFilter(new BlendModeColorFilter(color, getBlendMode(mode)));
+        } else {
+            drawable.setColorFilter(color, getPorterMode(mode));
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    static BlendMode getBlendMode(int mode) {
+        // NOTE: keep in sync with src/Core/src/Primitives/FilterMode.cs
+        switch (mode) {
+            case 0: return BlendMode.SRC_IN;
+            case 1: return BlendMode.MULTIPLY;
+            case 2: return BlendMode.SRC_ATOP;
+            default: throw new RuntimeException("Invalid Mode");
+        }
+    }
+
+    static PorterDuff.Mode getPorterMode(int mode) {
+        // NOTE: keep in sync with src/Core/src/Primitives/FilterMode.cs
+        switch (mode) {
+            case 0: return PorterDuff.Mode.SRC_IN;
+            case 1: return PorterDuff.Mode.MULTIPLY;
+            case 2: return PorterDuff.Mode.SRC_ATOP;
+            default: throw new RuntimeException("Invalid Mode");
+        }
+    }
+
+    private static void prepare(RequestBuilder<Drawable> builder, Target<Drawable> target, boolean cachingEnabled, ImageLoaderCallback callback) {
         // A special value to work around https://github.com/dotnet/maui/issues/6783 where targets
         // are actually re-used if all the variables are the same.
         // Adding this "error image" that will always load a null image makes each request unique,
@@ -242,12 +311,12 @@ public class PlatformInterop {
             .into(target);
     }
 
-    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, Boolean cachingEnabled, ImageLoaderCallback callback) {
+    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback) {
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback);
         prepare(builder, target, cachingEnabled, callback);
     }
 
-    private static void load(RequestBuilder<Drawable> builder, Context context, Boolean cachingEnabled, ImageLoaderCallback callback) {
+    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback) {
         MauiCustomTarget target = new MauiCustomTarget(context, callback);
         prepare(builder, target, cachingEnabled, callback);
     }
@@ -259,7 +328,7 @@ public class PlatformInterop {
         loadInto(builder, imageView, true, callback);
     }
 
-    public static void loadImageFromUri(ImageView imageView, String uri, Boolean cachingEnabled, ImageLoaderCallback callback) {
+    public static void loadImageFromUri(ImageView imageView, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
         Uri androidUri = Uri.parse(uri);
         if (androidUri == null) {
             callback.onComplete(false, null, null);
@@ -294,7 +363,7 @@ public class PlatformInterop {
         load(builder, context, true, callback);
     }
 
-    public static void loadImageFromUri(Context context, String uri, Boolean cachingEnabled, ImageLoaderCallback callback) {
+    public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
         Uri androidUri = Uri.parse(uri);
         if (androidUri == null) {
             callback.onComplete(false, null, null);
@@ -507,6 +576,44 @@ public class PlatformInterop {
         if (changed) {
             InputFilter[] newFilter = new InputFilter[currentFilters.size()];
             editText.setFilters(currentFilters.toArray(newFilter));
+        }
+    }
+
+    /**
+     * Computes the current WindowMetrics' bounds
+     * @param activity
+     * @return Rect value of the bounds
+     */
+    @NonNull
+    public static Rect getCurrentWindowMetrics(Activity activity) {
+        return WindowMetricsCalculator.Companion
+            .getOrCreate()
+            .computeCurrentWindowMetrics(activity)
+            .getBounds();
+    }
+
+    /**
+     * Gets font metrics based on the given context and default font size
+     * @param context
+     * @param defaultFontSize
+     * @return FontMetrics object or null if context or display metrics is null
+     */
+    public static Paint.FontMetrics getFontMetrics(Context context, float defaultFontSize) {
+        if (context == null)
+            return null;
+
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        if (metrics != null) {
+            return new Paint() {{
+                setTextSize(
+                    TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_SP,
+                        defaultFontSize,
+                        metrics
+                ));
+            }}.getFontMetrics();
+        } else {
+            return null;
         }
     }
 

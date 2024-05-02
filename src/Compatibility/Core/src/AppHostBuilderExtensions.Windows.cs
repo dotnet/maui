@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 				// Inside OnLaunched we grab the MauiContext that's on the window so we can have the correct
 				// MauiContext inside Forms
 
-				var services = MauiWinUIApplication.Current.Services;
+				var services = IPlatformApplication.Current?.Services ?? throw new InvalidOperationException("Unable to find Application Services");
 				var mauiContext = new MauiContext(services);
 				var state = new ActivationState(mauiContext, args);
 #pragma warning disable CS0612 // Type or member is obsolete

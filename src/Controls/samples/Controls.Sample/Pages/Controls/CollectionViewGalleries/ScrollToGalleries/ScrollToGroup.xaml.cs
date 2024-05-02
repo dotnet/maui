@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollToGalleries
 			ScrollToItem.Clicked += ScrollToItemClicked;
 		}
 
-		void ScrollToItemClicked(object sender, EventArgs e)
+		void ScrollToItemClicked(object? sender, EventArgs e)
 		{
 			var groupName = GroupName.Text;
 			var itemName = ItemName.Text;
@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollToGalleries
 			CollectionView.ScrollTo(member, team);
 		}
 
-		void ScrollToClicked(object sender, EventArgs e)
+		void ScrollToClicked(object? sender, EventArgs e)
 		{
 			var groupIndex = int.Parse(GroupIndex.Text);
 			var itemIndex = int.Parse(ItemIndex.Text);

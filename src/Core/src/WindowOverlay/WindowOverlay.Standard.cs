@@ -2,7 +2,7 @@
 {
 	public partial class WindowOverlay
 	{
-		object? _graphicsView = null;
+		object? _graphicsView = new();
 
 		/// <inheritdoc/>
 		public void Invalidate()

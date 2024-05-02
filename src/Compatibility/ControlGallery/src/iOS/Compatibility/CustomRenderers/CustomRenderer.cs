@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.iOS
 			// --- Important --- //
 			//
 			// This is a WRONG Pattern!
-			//Pattern taken from: https://docs.microsoft.com/en-us/xamarin/xamarin-forms/app-fundamentals/custom-renderer/view
 			if (this.Control == null)
 			{
 				// Instantiate the native control and assign it to the Control property with

@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.Controls
 	{
 		const string ElementIcon = "PART_Icon";
 
-		View _icon;
+		View _icon = default!;
 
 		public static readonly BindableProperty ItemSizeProperty =
 			BindableProperty.Create(nameof(ItemSize), typeof(double), typeof(RateItem), 30.0d);
@@ -104,7 +104,7 @@ namespace Maui.Controls.Sample.Controls
 		{
 			base.OnApplyTemplate();
 
-			_icon = GetTemplateChild(ElementIcon) as View;
+			_icon = (GetTemplateChild(ElementIcon) as View)!;
 			_icon.WidthRequest = Width;
 		}
 	}

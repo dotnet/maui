@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Test]
+			[Ignore("capability disabled for now")]
 			public void OnPlatformAreSimplified([Values("net6.0-ios", "net6.0-android")] string targetFramework)
 			{
 				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, targetFramework);

@@ -16,6 +16,7 @@ namespace Maui.Controls.Sample
 			bool _filterBugzilla;
 			bool _filterNone;
 			bool _filterGitHub;
+			bool _filterManual;
 			string _filter;
 
 			static TextCell MakeIssueCell(string text, string detail, Action tapped)
@@ -38,7 +39,6 @@ namespace Maui.Controls.Sample
 					return async () =>
 					{
 						var page = ActivatePage(type);
-						TrackOnInsights(page);
 						await Navigation.PushAsync(page);
 					};
 				}
@@ -48,50 +48,21 @@ namespace Maui.Controls.Sample
 					return async () =>
 					{
 						var page = ActivatePage(type);
-						TrackOnInsights(page);
 						await Navigation.PushModalAsync(page);
 					};
 				}
 
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.Default)
-				{
-					return async () =>
-					{
-						var page = ActivatePage(type);
-						TrackOnInsights(page);
-						if (page is ContentPage /*|| page is CarouselPage*/)
-						{
-
-							await Navigation.PushAsync(page);
-
-						}
-						else if (page is Shell)
-						{
-							Application.Current.MainPage = page;
-						}
-						else
-						{
-							await Navigation.PushModalAsync(page);
-						}
-					};
-				}
-
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot)
+				if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot ||
+					issueAttribute.NavigationBehavior == NavigationBehavior.Default)
 				{
 					return () =>
 					{
 						var page = ActivatePage(type);
-						TrackOnInsights(page);
 						Application.Current.MainPage = page;
 					};
 				}
 
 				return navigationAction;
-			}
-
-			static void TrackOnInsights(Page page)
-			{
-
 			}
 
 			Page ActivatePage(Type type)
@@ -107,7 +78,7 @@ namespace Maui.Controls.Sample
 			class IssueModel
 			{
 				public IssueTracker IssueTracker { get; set; }
-				public int IssueNumber { get; set; }
+				public string IssueNumber { get; set; }
 				public int IssueTestNumber { get; set; }
 				public string Name { get; set; }
 				public string Description { get; set; }
@@ -149,7 +120,8 @@ namespace Maui.Controls.Sample
 				var duplicates = new HashSet<string>();
 				_issues.ForEach(im =>
 				{
-					if (duplicates.Contains(im.Name, StringComparer.OrdinalIgnoreCase) && !IsExempt(im.Name))
+					if (im.IssueTracker != IssueTracker.None &&
+					duplicates.Contains(im.Name, StringComparer.OrdinalIgnoreCase) && !IsExempt(im.Name))
 					{
 						throw new NotSupportedException("Please provide unique tracker + issue number combo: "
 							+ im.IssueTracker.ToString() + im.IssueNumber.ToString() + im.IssueTestNumber.ToString());
@@ -182,7 +154,6 @@ namespace Maui.Controls.Sample
 					 }).ToList();
 
 				VerifyNoDuplicates();
-
 				FilterIssues();
 			}
 
@@ -195,6 +166,9 @@ namespace Maui.Controls.Sample
 						break;
 					case IssueTracker.Bugzilla:
 						_filterBugzilla = !_filterBugzilla;
+						break;
+					case IssueTracker.ManualTest:
+						_filterManual = !_filterManual;
 						break;
 					case IssueTracker.None:
 						_filterNone = !_filterNone;
@@ -209,6 +183,8 @@ namespace Maui.Controls.Sample
 			public bool TryToNavigateTo(string name)
 			{
 				var issue = _issues.SingleOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+				issue = _issues.SingleOrDefault(x => string.Equals(x.Description, name, StringComparison.OrdinalIgnoreCase));
+
 				if (issue == null)
 					return false;
 
@@ -216,12 +192,11 @@ namespace Maui.Controls.Sample
 				return true;
 			}
 
-			public async void FilterIssues(string filter = null)
+			public void FilterIssues(string filter = null)
 			{
 				filter = filter?.Trim();
 				_filter = filter;
 
-				await Task.Delay(10);
 				if (_filter != filter)
 				{
 					return;
@@ -251,6 +226,17 @@ namespace Maui.Controls.Sample
 						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
 
 					issueCells = issueCells.Concat(githubIssueCells);
+				}
+
+				if (!_filterManual)
+				{
+					var manualIssueCells =
+						from issueModel in _issues
+						where issueModel.IssueTracker == IssueTracker.ManualTest && issueModel.Matches(filter)
+						orderby issueModel.IssueNumber descending
+						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
+
+					issueCells = issueCells.Concat(manualIssueCells);
 				}
 
 				if (!_filterNone)
@@ -349,6 +335,7 @@ namespace Maui.Controls.Sample
 			searchBar.TextChanged += (sender, args) => SearchBarOnTextChanged(sender, args, testCaseScreen);
 
 			var page = new NavigationPage(testCasesRoot);
+			CoreNavigationPage.InitNavigationPageStyling(page);
 
 			if (Microsoft.Maui.Devices.DeviceInfo.Platform == Microsoft.Maui.Devices.DevicePlatform.iOS ||
 			   Microsoft.Maui.Devices.DeviceInfo.Platform == Microsoft.Maui.Devices.DevicePlatform.Android)
@@ -372,17 +359,22 @@ namespace Maui.Controls.Sample
 			};
 
 			var bzSwitch = new Switch { IsToggled = true };
-			trackerFilterLayout.Children.Add(new Label { Text = "Bugzilla" });
+			trackerFilterLayout.Children.Add(new Label { Text = "Bugzilla", VerticalOptions = LayoutOptions.Center });
 			trackerFilterLayout.Children.Add(bzSwitch);
 			bzSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.Bugzilla);
 
 			var ghSwitch = new Switch { IsToggled = true };
-			trackerFilterLayout.Children.Add(new Label { Text = "GitHub" });
+			trackerFilterLayout.Children.Add(new Label { Text = "GitHub", VerticalOptions = LayoutOptions.Center });
 			trackerFilterLayout.Children.Add(ghSwitch);
 			ghSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.Github);
 
+			var manualSwitch = new Switch { IsToggled = true };
+			trackerFilterLayout.Children.Add(new Label { Text = "Manual", VerticalOptions = LayoutOptions.Center });
+			trackerFilterLayout.Children.Add(manualSwitch);
+			manualSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.ManualTest);
+
 			var noneSwitch = new Switch { IsToggled = true };
-			trackerFilterLayout.Children.Add(new Label { Text = "None" });
+			trackerFilterLayout.Children.Add(new Label { Text = "None", VerticalOptions = LayoutOptions.Center });
 			trackerFilterLayout.Children.Add(noneSwitch);
 			noneSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.None);
 

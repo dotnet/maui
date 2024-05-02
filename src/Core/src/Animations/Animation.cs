@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Animations
 		public bool Repeats { get; set; }
 
 		double _skippedSeconds;
-		int _usingResource = 0;
+		int _usingResource;
 
 		/// <summary>
 		/// Provides an <see cref="IEnumerator"/> of the child animations.
@@ -194,12 +194,11 @@ namespace Microsoft.Maui.Animations
 			var secondsSinceLastUpdate = millisecondsSinceLastUpdate / 1000.0;
 			CurrentTime += secondsSinceLastUpdate;
 
-			if (childrenAnimations.Any())
+			if (childrenAnimations.Count > 0)
 			{
 				var hasFinished = true;
 				foreach (var animation in childrenAnimations)
 				{
-
 					animation.OnTick(millisecondsSinceLastUpdate);
 					if (!animation.HasFinished)
 						hasFinished = false;
@@ -347,7 +346,7 @@ namespace Microsoft.Maui.Animations
 		/// </summary>
 		public bool IsDisposed => _disposedValue;
 
-		private bool _disposedValue = false; // To detect redundant calls
+		private bool _disposedValue; // To detect redundant calls
 
 		protected virtual void Dispose(bool disposing)
 		{
@@ -373,6 +372,14 @@ namespace Microsoft.Maui.Animations
 		{
 			// Do not change this code. Put cleanup code in Dispose(bool disposing) above.
 			Dispose(true);
+		}
+
+		internal virtual void ForceFinish()
+		{
+			if (Progress < 1.0)
+			{
+				Update(1.0);
+			}
 		}
 	}
 }

@@ -19,7 +19,6 @@
   <Docs>
     <summary>Base class for generalized user-defined behaviors that can respond to arbitrary conditions and events.</summary>
     <remarks>Application developers should specialize the <see cref="T:Microsoft.Maui.Controls.Behavior`1" /> generic class, instead of directly using <see cref="T:Microsoft.Maui.Controls.Behavior" />.</remarks>
-    <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/application-fundamentals/behaviors/creating/">Microsoft.Maui.Controls Behaviors</related>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

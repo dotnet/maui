@@ -1,17 +1,15 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
 	public class EditorUITests : _ViewUITests
 	{
-		public static readonly string Editor = "android.widget.EditorEditText";
-		public const string EditorGallery = "* marked:'Editor Gallery'";
+		public const string EditorGallery = "Editor Gallery";
 
 		public EditorUITests(TestDevice device)
 			: base(device)
 		{
-			PlatformViewType = Editor;
 		}
 
 		protected override void NavigateToGallery()
@@ -20,10 +18,11 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public override void _IsEnabled()
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
-				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
+			if (Device == TestDevice.Mac ||
+				Device == TestDevice.iOS)
 			{
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}

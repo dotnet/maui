@@ -21,9 +21,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 					{
 						descriptionLabel,
 						GalleryBuilder.NavButton("Snap Points (Code, Horizontal List)", () =>
-							new SnapPointsCodeGallery(LinearItemsLayout.Horizontal as ItemsLayout), Navigation),
+							new SnapPointsCodeGallery((LinearItemsLayout.Horizontal as ItemsLayout)!)!, Navigation),
 						GalleryBuilder.NavButton("Snap Points (Code, Vertical List)", () =>
-							new SnapPointsCodeGallery(LinearItemsLayout.Vertical as ItemsLayout), Navigation),
+							new SnapPointsCodeGallery((LinearItemsLayout.Vertical as ItemsLayout)!)!, Navigation),
 						GalleryBuilder.NavButton("Snap Points (Code, Horizontal Grid)", () =>
 							new SnapPointsCodeGallery(new GridItemsLayout(2, ItemsLayoutOrientation.Horizontal)), Navigation),
 						GalleryBuilder.NavButton("Snap Points (Code, Vertical Grid)", () =>

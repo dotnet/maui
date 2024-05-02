@@ -129,6 +129,7 @@ namespace Microsoft.Maui.Graphics
 
 		public static bool TryParse(string value, out Point point)
 		{
+			// IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
 			if (!string.IsNullOrEmpty(value))
 			{
 				string[] xy = value.Split(',');

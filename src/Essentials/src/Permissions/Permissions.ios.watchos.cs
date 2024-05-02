@@ -28,8 +28,20 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				var eventStore = new EKEventStore();
 
-				var results = await eventStore.RequestAccessAsync(entityType);
-
+				Tuple<bool, NSError> results = null;
+#if NET8_0_OR_GREATER
+				if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+				{
+					if (entityType == EKEntityType.Reminder)
+						results = await eventStore.RequestFullAccessToRemindersAsync();
+					if (entityType == EKEntityType.Event)
+						results = await eventStore.RequestFullAccessToEventsAsync();
+				}
+				else
+#endif
+				{
+					results = await eventStore.RequestAccessAsync(entityType);
+				}
 				return results.Item1 ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}
 		}
@@ -37,8 +49,20 @@ namespace Microsoft.Maui.ApplicationModel
 		public partial class CalendarRead : BasePlatformPermission
 		{
 			/// <inheritdoc/>
-			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
-				() => new string[] { "NSCalendarsUsageDescription" };
+			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys
+			{
+				get
+				{
+					if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+					{
+						return () => new string[] { "NSCalendarsFullAccessUsageDescription" };
+					}
+					else
+					{
+						return () => new string[] { "NSCalendarsUsageDescription" };
+					}
+				}
+			}
 
 			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
@@ -64,8 +88,20 @@ namespace Microsoft.Maui.ApplicationModel
 		public partial class CalendarWrite : BasePlatformPermission
 		{
 			/// <inheritdoc/>
-			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
-				() => new string[] { "NSCalendarsUsageDescription" };
+			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys
+			{
+				get
+				{
+					if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+					{
+						return () => new string[] { "NSCalendarsWriteOnlyAccessUsageDescription" };
+					}
+					else
+					{
+						return () => new string[] { "NSCalendarsUsageDescription" };
+					}
+				}
+			}
 
 			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
@@ -91,8 +127,20 @@ namespace Microsoft.Maui.ApplicationModel
 		public partial class Reminders : BasePlatformPermission
 		{
 			/// <inheritdoc/>
-			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
-				() => new string[] { "NSRemindersUsageDescription" };
+			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys
+			{
+				get
+				{
+					if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+					{
+						return () => new string[] { "NSRemindersFullAccessUsageDescription" };
+					}
+					else
+					{
+						return () => new string[] { "NSRemindersUsageDescription" };
+					}
+				}
+			}
 
 			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()

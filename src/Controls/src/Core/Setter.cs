@@ -71,8 +71,6 @@ namespace Microsoft.Maui.Controls
 			if (Property == null)
 				return;
 
-			//FIXME: use Specificity everywhere
-			var fromStyle = specificity.Style > 0;
 			if (Value is BindingBase binding)
 				targetObject.SetBinding(Property, binding.Clone(), specificity);
 			else if (Value is DynamicResource dynamicResource)
@@ -96,7 +94,10 @@ namespace Microsoft.Maui.Controls
 
 			if (Property == null)
 				return;
-
+			if (Value is BindingBase binding)
+				targetObject.RemoveBinding(Property, specificity);
+			else if (Value is DynamicResource dynamicResource)
+				targetObject.RemoveDynamicResource(Property, specificity);
 			targetObject.ClearValue(Property, specificity);
 		}
 	}

@@ -186,11 +186,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void NavBarIsVisibleUpdates()
 		{
 			var page = new ContentPage() { Title = "Test" };
-			TestShell testShell = new TestShell(page);
+			var testShell = new TestShell(page);
 			var toolBar = testShell.Toolbar;
-			Assert.True(toolBar.IsVisible);
+			Assert.True(toolBar.IsVisible); // visible by default
+
+			// Change the Shell
+			Shell.SetNavBarIsVisible(testShell, false);
+			Assert.False(toolBar.IsVisible);
+			testShell.ClearValue(Shell.NavBarIsVisibleProperty);
+			Assert.True(toolBar.IsVisible); // back to default
+
+			// Change the Page's parent
+			Shell.SetNavBarIsVisible(page.Parent, false);
+			Assert.False(toolBar.IsVisible);
+			page.Parent.ClearValue(Shell.NavBarIsVisibleProperty);
+			Assert.True(toolBar.IsVisible); // back to default
+
+			// Change the Page
 			Shell.SetNavBarIsVisible(page, false);
 			Assert.False(toolBar.IsVisible);
+			page.ClearValue(Shell.NavBarIsVisibleProperty);
+			Assert.True(toolBar.IsVisible); // back to default
 		}
 
 		[Fact]

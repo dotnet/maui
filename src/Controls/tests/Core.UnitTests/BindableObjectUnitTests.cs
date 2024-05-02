@@ -627,7 +627,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				changing = true;
 			};
 
-			bool changed = true;
+			bool changed = false;
 			mock.PropertyChanged += (o, e) =>
 			{
 				Assert.Equal(e.PropertyName, MockBindable.TextProperty.PropertyName);
@@ -639,8 +639,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				BindableObject.SetValuePrivateFlags.Default,
 				SetterSpecificity.ManualValueSetter);
 
-			Assert.True(changing); // "PropertyChanging event did not fire"
-			Assert.True(changed); // "PropertyChanged event did not fire"
+			Assert.True(changing, "PropertyChanging event did not fire");
+			Assert.True(changed, "PropertyChanged event did not fire");
+		}
+
+		[Fact]
+		public void DoesNotRaiseOnSilent()
+		{
+			const string OldValue = "foo";
+			const string NewValue = "foo too";
+
+			var mock = new MockBindable();
+			mock.SetValue(MockBindable.TextProperty, OldValue);
+
+			bool changing = false;
+			mock.PropertyChanging += (o, e) =>
+			{
+				changing = true;
+			};
+
+			bool changed = false;
+			mock.PropertyChanged += (o, e) =>
+			{
+				changed = true;
+			};
+
+			mock.SetValueCore(MockBindable.TextProperty, NewValue,
+				SetValueFlags.None,
+				BindableObject.SetValuePrivateFlags.Silent,
+				SetterSpecificity.ManualValueSetter);
+
+			Assert.False(changing, "PropertyChanging event fired.");
+			Assert.False(changed, "PropertyChanged event fired");
+			Assert.Equal(NewValue, mock.Text);
+			Assert.Equal(NewValue, mock.GetValue(MockBindable.TextProperty));
+		}
+
+		[Fact]
+		public void DoesNotRaiseOnSilentEvenWithRaiseOnEqual()
+		{
+			const string OldValue = "foo";
+			const string NewValue = "foo too";
+
+			var mock = new MockBindable();
+			mock.SetValue(MockBindable.TextProperty, OldValue);
+
+			bool changing = false;
+			mock.PropertyChanging += (o, e) =>
+			{
+				changing = true;
+			};
+
+			bool changed = false;
+			mock.PropertyChanged += (o, e) =>
+			{
+				changed = true;
+			};
+
+			mock.SetValueCore(MockBindable.TextProperty, NewValue,
+				SetValueFlags.RaiseOnEqual,
+				BindableObject.SetValuePrivateFlags.Silent,
+				SetterSpecificity.ManualValueSetter);
+
+			Assert.False(changing, "PropertyChanging event fired.");
+			Assert.False(changed, "PropertyChanged event fired");
+			Assert.Equal(NewValue, mock.Text);
+			Assert.Equal(NewValue, mock.GetValue(MockBindable.TextProperty));
 		}
 
 		[Fact]

@@ -73,5 +73,11 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBorderColorSet() => false;
 		bool IBorderElement.IsBorderWidthSet() => false;
 		public Paint Foreground => Color?.AsPaint();
+
+		bool ICheckBox.IsChecked
+		{
+			get => IsChecked;
+			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+		}
 	}
 }

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample
@@ -25,9 +21,9 @@ namespace Maui.Controls.Sample
 			element.Text = "Button";
 		}
 
-		protected override void Build(StackLayout stackLayout)
+		protected override void Build()
 		{
-			base.Build(stackLayout);
+			base.Build();
 
 			IsEnabledStateViewContainer.View.Clicked += (sender, args) => IsEnabledStateViewContainer.TitleLabel.Text += " (Tapped)";
 

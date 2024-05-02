@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>For internal use by .NET MAUI.</summary>
 		/// <param name="name">The name of the effect.</param>
-		/// <remarks><langword>true</langword> if the effect is attached to the element, <langword>false</langword> otherwise.</remarks>
+		/// <remarks><see langword="true"/> if the effect is attached to the element, <see langword="false"/> otherwise.</remarks>
 		bool EffectIsAttached(string name);
 
 		/// <summary>For internal use by .NET MAUI.</summary>

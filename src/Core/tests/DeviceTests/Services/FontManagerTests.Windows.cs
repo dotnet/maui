@@ -25,7 +25,11 @@ public partial class FontManagerTests : TestBase
 		});
 
 	// TODO: this is not going to work in unpackaged
-	[Fact]
+	[Fact(
+#if WINDOWS
+			Skip = "Not working for unpackaged"
+#endif
+	)]
 	public Task CanLoadEmbeddedFont() =>
 		InvokeOnMainThreadAsync(() =>
 		{

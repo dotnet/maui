@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		public static MauiAppBuilder ConfigureEffects(this MauiAppBuilder builder, Action<IEffectsBuilder> configureDelegate)
 		{
-			builder.Services.TryAddSingleton<EffectsFactory>();
+			builder.Services.TryAddSingleton(svc => new EffectsFactory(svc.GetServices<EffectsRegistration>()));
 			if (configureDelegate != null)
 			{
 				builder.Services.AddSingleton<EffectsRegistration>(new EffectsRegistration(configureDelegate));

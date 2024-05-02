@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Dispatching
 			return true;
 		}
 
-		IDispatcherTimer CreateTimerImplementation()
+		DispatcherTimer CreateTimerImplementation()
 		{
 			return new DispatcherTimer(_context);
 		}
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Dispatching
 	/// <inheritdoc/>
 	public partial class DispatcherProvider
 	{
-		static IDispatcher? GetForCurrentThreadImplementation()
+		static Dispatcher? GetForCurrentThreadImplementation()
 		{
 			var context = SynchronizationContext.Current;
 			if (context == null)

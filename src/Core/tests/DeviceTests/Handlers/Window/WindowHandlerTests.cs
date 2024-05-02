@@ -61,7 +61,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
+		[Fact(
+#if MACCATALYST
+		Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
 		public async Task WindowSupportsEmptyPage()
 		{
 			var window = new Window(new ContentPage());
@@ -72,7 +76,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory]
+		[Theory(
+#if MACCATALYST
+		Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
 		[InlineData(150, 300)]
 		[InlineData(200, 300)]
 		[InlineData(500, 500)]
@@ -99,7 +107,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory]
+		[Theory(
+#if MACCATALYST
+		Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
 		[InlineData(150, 300)]
 		[InlineData(200, 300)]
 		[InlineData(500, 500)]
@@ -126,7 +138,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory]
+		[Theory(
+#if MACCATALYST
+		Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
 		[InlineData(150, 150)]
 		[InlineData(200, 200)]
 		[InlineData(500, 300)]
@@ -153,7 +169,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory]
+		[Theory(
+#if MACCATALYST
+		Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
 		[InlineData(150, 150)]
 		[InlineData(200, 200)]
 		[InlineData(500, 300)]

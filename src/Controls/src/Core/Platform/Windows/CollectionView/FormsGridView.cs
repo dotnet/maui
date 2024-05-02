@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -25,7 +26,8 @@ namespace Microsoft.Maui.Controls.Platform
 			DefaultStyleKey = typeof(FormsGridView);
 
 			RegisterPropertyChangedCallback(ItemsPanelProperty, ItemsPanelChanged);
-			Loaded += OnLoaded;
+
+			ChoosingItemContainer += OnChoosingItemContainer;
 		}
 
 		public int Span
@@ -95,6 +97,11 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateItemSize();
 		}
 
+		void OnChoosingItemContainer(ListViewBase sender, ChoosingItemContainerEventArgs args)
+		{
+			FindItemsWrapGrid();
+		}
+
 		void WrapGridSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			UpdateItemSize();
@@ -102,22 +109,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateItemSize()
 		{
+			// Avoid the ItemWrapGrid grow beyond what this grid view is configured to
+			_wrapGrid.MaximumRowsOrColumns = Span;
+
 			if (_orientation == Orientation.Horizontal)
 			{
-				_wrapGrid.ItemHeight = _wrapGrid.ActualHeight / Span;
+				_wrapGrid.ItemHeight = Math.Floor(_wrapGrid.ActualHeight / Span);
 			}
 			else
 			{
-				_wrapGrid.ItemWidth = _wrapGrid.ActualWidth / Span;
+				_wrapGrid.ItemWidth = Math.Floor(_wrapGrid.ActualWidth / Span);
 			}
 		}
 
 		void ItemsPanelChanged(DependencyObject sender, DependencyProperty dp)
-		{
-			FindItemsWrapGrid();
-		}
-
-		void OnLoaded(object sender, RoutedEventArgs e)
 		{
 			FindItemsWrapGrid();
 		}
@@ -149,10 +154,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			if (_formsEmptyView != null)
-			{
-				_formsEmptyView.Layout(new Rect(0, 0, finalSize.Width, finalSize.Height));
-			}
+			_formsEmptyView?.Layout(new Rect(0, 0, finalSize.Width, finalSize.Height));
 
 			return base.ArrangeOverride(finalSize);
 		}

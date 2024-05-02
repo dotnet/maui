@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls
 			get
 			{
 				if (Target == null)
-					return new TMenuItem[0];
+					return Array.Empty<TMenuItem>();
 
 				// I realize this is sorting on every single get but we don't have 
 				// a mechanism in place currently to invalidate a stored version of this

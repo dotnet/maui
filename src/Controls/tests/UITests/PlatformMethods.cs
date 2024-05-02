@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui.Appium;
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {

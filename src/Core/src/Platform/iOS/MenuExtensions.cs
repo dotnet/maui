@@ -9,6 +9,35 @@ namespace Microsoft.Maui.Platform
 {
 	public static class MenuExtensions
 	{
+		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, IMenuBarItem menuBarItem)
+		{
+			uiMenuElement.UpdateIsEnabled(menuBarItem.IsEnabled);
+		}
+
+		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, IMenuFlyoutItem menuFlyoutItem)
+		{
+			uiMenuElement.UpdateIsEnabled(menuFlyoutItem.IsEnabled);
+		}
+
+		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, bool isEnabled)
+		{
+			uiMenuElement.UpdateMenuElementAttributes(isEnabled);
+		}
+
+		internal static void UpdateMenuElementAttributes(this UIMenuElement uiMenuElement, bool isEnabled)
+		{
+			if (uiMenuElement is UIAction action)
+				action.Attributes = isEnabled.ToUIMenuElementAttributes();
+
+			if (uiMenuElement is UICommand command)
+				command.Attributes = isEnabled.ToUIMenuElementAttributes();
+		}
+
+		internal static UIMenuElementAttributes ToUIMenuElementAttributes(this bool isEnabled)
+		{
+			return isEnabled ? 0 : UIMenuElementAttributes.Disabled;
+		}
+
 		internal static UIImage? GetPlatformMenuImage(this IImageSource? imageSource, IMauiContext mauiContext)
 		{
 			if (imageSource == null)

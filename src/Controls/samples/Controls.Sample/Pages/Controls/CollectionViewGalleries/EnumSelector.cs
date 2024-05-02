@@ -40,7 +40,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			Content = layout;
 		}
 
-		void PickerOnSelectedIndexChanged(object sender, EventArgs e)
+		void PickerOnSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			if (Enum.TryParse(_picker.SelectedItem.ToString(), true, out T enumValue))
 			{

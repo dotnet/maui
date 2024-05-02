@@ -6,11 +6,19 @@
       https://github.com/MicrosoftEdge/WebView2Feedback/issues/710 -->
     <TargetFrameworks>$(_MauiDotNetTfm)-windows</TargetFrameworks>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <Description>Build WPF applications with Blazor and WebView2.</Description>
     <DefineConstants>$(DefineConstants);WEBVIEW2_WPF</DefineConstants>
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.AspNetCore.Components.WebView.Wpf</PackageId>
+    <PackageIconFile>$(MauiRootDirectory)Assets\aspnet-icon.png</PackageIconFile>
+    <PackageTags>blazor;webview;aspnet;wpf</PackageTags>
+    <Description>Build WPF apps with Blazor and WebView2.</Description>
   </PropertyGroup>
 
   <ItemGroup>

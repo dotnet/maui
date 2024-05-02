@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
@@ -10,8 +11,9 @@ using WebKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiWKWebView : WKWebView, IWebViewDelegate
+	public class MauiWKWebView : WKWebView, IWebViewDelegate, IUIViewLifeCycleEvents
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Used to persist cookies across WebView instances. Not a leak.")]
 		static WKProcessPool? SharedPool;
 
 		string? _pendingUrl;
@@ -70,9 +72,11 @@ namespace Microsoft.Maui.Platform
 						await handler.FirstLoadUrlAsync(closure);
 				});
 			}
+
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 
-		[Export("webView:didFinishNavigation:")]
+		[Obsolete("Use MauiWebViewNavigationDelegate.DidFinishNavigation instead.")]
 		public async void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
 			var url = CurrentUrl;
@@ -124,14 +128,14 @@ namespace Microsoft.Maui.Platform
 					if (!LoadFile(url))
 					{
 						if (_handler.TryGetTarget(out var handler))
-							handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning(nameof(MauiWKWebView), $"Unable to Load Url {url}: {formatException}");
+							handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning($"Unable to Load Url {url}: {formatException}");
 					}
 				}
 			}
 			catch (Exception exc)
 			{
 				if (_handler.TryGetTarget(out var handler))
-					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning(nameof(MauiWKWebView), $"Unable to Load Url {url}: {exc}");
+					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning($"Unable to Load Url {url}: {exc}");
 			}
 		}
 
@@ -190,10 +194,18 @@ namespace Microsoft.Maui.Platform
 			catch (Exception ex)
 			{
 				if (_handler.TryGetTarget(out var handler))
-					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning(nameof(MauiWKWebView), $"Could not load {url} as local file: {ex}");
+					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning($"Could not load {url} as local file: {ex}");
 			}
 
 			return false;
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
 		}
 	}
 }

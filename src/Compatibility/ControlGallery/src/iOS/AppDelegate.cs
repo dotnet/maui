@@ -96,7 +96,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.iOS
 
 			//Forms.ViewInitialized += (object sender, ViewInitializedEventArgs e) =>
 			//{
-			//	// http://developer.xamarin.com/recipes/testcloud/set-accessibilityidentifier-ios/
 			//	if (null != e.View.AutomationId && null != e.NativeView)
 			//	{
 			//		//	e.NativeView.AccessibilityIdentifier = e.View.StyleId;
@@ -186,8 +185,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.iOS
 		[Export("navigateToTest:")]
 		public string NavigateToTest(string test)
 		{
-			// According to https://developer.xamarin.com/guides/testcloud/uitest/working-with/backdoors/
-			// this method has to return a string
 			return (Microsoft.Maui.Controls.Application.Current as App).NavigateToTestPage(test).ToString();
 		}
 

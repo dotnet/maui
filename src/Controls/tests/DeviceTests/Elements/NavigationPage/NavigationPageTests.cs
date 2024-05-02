@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -31,14 +34,20 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 #endif
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Window, WindowHandlerStub>();
-					handlers.AddHandler<Frame, FrameRenderer>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Button, ButtonHandler>();
-					handlers.AddHandler<CollectionView, CollectionViewHandler>();
-					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
+					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
+					handlers.AddHandler<CarouselView, CarouselViewHandler>();
+					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+					handlers.AddHandler<Frame, FrameRenderer>();
+					handlers.AddHandler<IContentView, ContentViewHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<RadioButton, RadioButtonHandler>();
+					handlers.AddHandler<Shape, ShapeViewHandler>();
+					handlers.AddHandler<Window, WindowHandlerStub>();
 				});
 			});
 		}
@@ -120,7 +129,7 @@ namespace Microsoft.Maui.DeviceTests
 				await (navPage.CurrentNavigationTask ?? Task.CompletedTask);
 
 				// Wait for back button to hide
-				Assert.True(await AssertionExtensions.Wait(() => !IsBackButtonVisible(handler)));
+				await AssertEventually(() => !IsBackButtonVisible(handler));
 
 				stackNavigationView.RequestNavigation(
 					   new NavigationRequest(_currentNavStack, true));
@@ -129,7 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 				await (navPage.CurrentNavigationTask ?? Task.CompletedTask);
 
 				// Wait for back button to reveal itself
-				Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(handler)));
+				await AssertEventually(() => IsBackButtonVisible(handler));
 			});
 		}
 
@@ -174,11 +183,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(handler)));
+				await AssertEventually(() => IsNavigationBarVisible(handler));
 				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, false);
-				Assert.True(await AssertionExtensions.Wait(() => !IsNavigationBarVisible(handler)));
+				await AssertEventually(() => !IsNavigationBarVisible(handler));
 				NavigationPage.SetHasNavigationBar(navPage.CurrentPage, true);
-				Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(handler)));
+				await AssertEventually(() => IsNavigationBarVisible(handler));
 			});
 		}
 
@@ -194,7 +203,7 @@ namespace Microsoft.Maui.DeviceTests
 				var contentPage = new ContentPage();
 				window.Page = contentPage;
 				await OnLoadedAsync(contentPage);
-				Assert.True(await AssertionExtensions.Wait(() => !IsNavigationBarVisible(handler)));
+				await AssertEventually(() => !IsNavigationBarVisible(handler));
 			});
 		}
 
@@ -314,11 +323,13 @@ namespace Microsoft.Maui.DeviceTests
 					Title = "Page 2",
 					Content = new VerticalStackLayout
 					{
-						new Label(),
 						new Button(),
+						new CarouselView(),
 						new CollectionView(),
+						new ContentView(),
+						new Label(),
 						new ScrollView(),
-						new ContentView()
+						new RadioButton(),
 					}
 				};
 				pageReference = new WeakReference(page);
@@ -327,7 +338,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(pageReference);
-			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 
 		[Fact(DisplayName = "Can Reuse Pages"
@@ -350,6 +360,20 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.Navigation.PopAsync();
 				await navPage.Navigation.PushAsync(reusedPage);
 				await OnLoadedAsync(reusedPage.Content);
+			});
+		}
+
+		[Fact]
+		public async Task SettingTitleIconImageSourceDoesntCrash()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var page = new ContentPage() { Content = new Frame(), Title = "Detail" };
+				await navPage.PushAsync(new NavigationPage(page));
+				NavigationPage.SetTitleIconImageSource(page, "red.png");
 			});
 		}
 	}

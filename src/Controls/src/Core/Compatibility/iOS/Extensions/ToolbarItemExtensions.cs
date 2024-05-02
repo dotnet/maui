@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					base.LayoutSubviews();
 
 					const float padding = 5f;
-					var imageSize = _imageView.SizeThatFits(Bounds.Size);
+					var imageSize = _imageView.SizeThatFitsImage(Bounds.Size);
 					var fullStringSize = _label.SizeThatFits(Bounds.Size);
 
 					if (imageSize.Width > 0 && (string.IsNullOrEmpty(Text) || fullStringSize.Width > Bounds.Width / 3))

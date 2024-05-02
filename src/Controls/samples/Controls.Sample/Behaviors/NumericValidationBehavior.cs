@@ -17,10 +17,10 @@ namespace Controls.Sample.Behaviors
 			base.OnDetachingFrom(entry);
 		}
 
-		void OnEntryTextChanged(object sender, TextChangedEventArgs args)
+		void OnEntryTextChanged(object? sender, TextChangedEventArgs args)
 		{
 			bool isValid = double.TryParse(args.NewTextValue, out var result);
-			((Entry)sender).TextColor = isValid ? Colors.Transparent : Colors.Red;
+			((Entry)sender!).TextColor = isValid ? Colors.Transparent : Colors.Red;
 		}
 	}
 }
