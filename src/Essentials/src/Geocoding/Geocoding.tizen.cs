@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // Type or member is obsolete
 #nullable enable
 using System;
 using System.Collections.Generic;

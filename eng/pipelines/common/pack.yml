@@ -3,10 +3,6 @@ parameters:
   type: string
   default: ''
 
-- name: poolName
-  type: string
-  default: ''
-
 - name: provisionatorChannel
   type: string
   default: 'latest'
@@ -15,12 +11,23 @@ parameters:
   type: string
   default: 'nuget'
 
+- name: artifactBinaries
+  type: string
+  default: 'pack-binaries'
+
+- name: artifactsPath
+  type: string
+  default: (Build.ArtifactStagingDirectory)
+
 - name: nugetFolder
   type: string
   default: 'artifacts'
   
-
 - name: prepareSteps
+  type: stepList
+  default: []
+
+- name: postSteps
   type: stepList
   default: []
 
@@ -32,17 +39,63 @@ parameters:
   type: string
   default: $(System.DefaultWorkingDirectory)
 
+- name: additionalArtifacts
+  type: object
+  default: []
+
+- name: publishArtifacts
+  type: boolean
+  default: true
+
 steps:
-  - template: provision.yml
-    parameters:
-      checkoutDirectory: ${{ parameters.checkoutDirectory }}
-      poolName: ${{ parameters.poolName }}
-      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      gitHubToken: ${{ parameters.gitHubToken }}
 
   - ${{ each step in parameters.prepareSteps }}:
     - ${{ each pair in step }}:
         ${{ pair.key }}: ${{ pair.value }}
+
+  - task: PowerShell@2
+    condition: eq(variables['PrivateBuild'], 'true')
+    displayName: Setup Private Feeds Credentials
+    inputs:
+      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
+      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
+    env:
+      Token: $(dn-bot-dnceng-artifact-feeds-rw) 
+      
+  - pwsh: |
+      if ($env:JAVA_HOME_11_X64) {
+        $env:JAVA_HOME = $env:JAVA_HOME_11_X64
+      } else {
+        $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-11.*\bin\java.exe) | Select-Object -First 1
+        if ($path -and (Test-Path $path)) {
+          $env:JAVA_HOME = $path.Directory.Parent.FullName
+        }
+      }
+      if ($env:JAVA_HOME) {
+        echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
+        echo "JAVA_HOME set to '$env:JAVA_HOME'"
+      } else {
+        echo "Unable to set JAVA_HOME"
+      }
+    displayName: 'Setup JDK Paths'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+
+  - pwsh: |
+      if ($env:ANDROID_SDK_ROOT) {
+        echo "ANDROID_SDK_ROOT already set to '$env:ANDROID_SDK_ROOT'"
+      } else {
+        if ((Test-Path "${env:ProgramFiles(x86)}\Android\android-sdk")) {
+          $env:ANDROID_SDK_ROOT = "${env:ProgramFiles(x86)}\Android\android-sdk"
+        }
+        if ($env:ANDROID_SDK_ROOT) {
+          echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$env:ANDROID_SDK_ROOT"
+          echo "ANDROID_SDK_ROOT set to '$env:ANDROID_SDK_ROOT'"
+        } else {
+          echo "Unable to set ANDROID_SDK_ROOT"
+        }
+      }
+    displayName: 'Setup ANDROID_SDK_ROOT Paths'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
@@ -65,6 +118,16 @@ steps:
       displayName: 'Diff .NET Maui artifacts with NuGet'
       workingDirectory: ${{ parameters.checkoutDirectory }}
 
+      # binaries for compliance scanning
+    - task: CopyFiles@2
+      displayName: 'Copy Binaries Files'
+      condition: succeeded()
+      inputs:
+        Contents: |
+          ${{ parameters.checkoutDirectory }}/src/Controls/src/Nuget/bin/Release/**/*.dll
+        TargetFolder: ${{ parameters.checkoutDirectory }}/artifacts/binaries
+        flattenFolders: false
+
   # artifacts
   - task: CopyFiles@2
     condition: always()
@@ -75,8 +138,10 @@ steps:
         ${{ parameters.checkoutDirectory }}/artifacts/**/*.zip
         ${{ parameters.checkoutDirectory }}/artifacts/vs-workload.props
         ${{ parameters.checkoutDirectory }}/eng/automation/SignList.xml
+        ${{ parameters.checkoutDirectory }}/eng/automation/SignVerifyIgnore.txt
         !${{ parameters.checkoutDirectory}}/artifacts/docs-packs/**
-      TargetFolder: $(build.artifactstagingdirectory)
+        !${{ parameters.checkoutDirectory}}/artifacts/binaries/**
+      TargetFolder: ${{ parameters.artifactsPath }}
       flattenFolders: true
 
   - task: CopyFiles@2
@@ -87,7 +152,7 @@ steps:
       Contents: |
         metadata/**
         api-diff/**
-      TargetFolder: $(build.artifactstagingdirectory)
+      TargetFolder: ${{ parameters.artifactsPath }}
 
   - task: CopyFiles@2
     displayName: 'Copy Log Files'
@@ -95,20 +160,33 @@ steps:
     inputs:
       Contents: |
         ${{ parameters.checkoutDirectory }}/artifacts/logs/**
-      TargetFolder: $(build.artifactstagingdirectory)/logs
+      TargetFolder: ${{ parameters.artifactsPath }}/logs
       flattenFolders: true
-
-  - task: PublishBuildArtifacts@1
-    condition: always()
-    displayName: publish artifacts
-    inputs:
-      ArtifactName: ${{ parameters.artifact }}
-  # xml-docs
-  - ${{ if eq(parameters.platform, 'Windows') }}:
+  
+  - ${{ if eq(parameters.publishArtifacts, 'true') }}:
     - task: PublishBuildArtifacts@1
       condition: always()
-      displayName: publish docs artifacts
+      displayName: publish artifacts
       inputs:
-        PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/docs-packs
-        ArtifactName: xml-docs
+        ArtifactName: ${{ parameters.artifact }}
+        PathToPublish: ${{ parameters.artifactsPath }}
+  
+    # xml-docs
+    - ${{ if eq(parameters.platform, 'Windows') }}:
+      - task: PublishBuildArtifacts@1
+        condition: always()
+        displayName: publish docs artifacts
+        inputs:
+          PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/docs-packs
+          ArtifactName: xml-docs
 
+      - task: PublishBuildArtifacts@1
+        condition: succeeded()
+        displayName: publish binaries artifacts
+        inputs:
+          PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/binaries
+          ArtifactName: ${{ parameters.artifactBinaries }}
+
+  - ${{ each step in parameters.postSteps }}:
+    - ${{ each pair in step }}:
+        ${{ pair.key }}: ${{ pair.value }}

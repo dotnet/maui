@@ -3,7 +3,8 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample
 {
-	internal class ViewContainer<T> where T : View
+	internal class ViewContainer<T> : IViewContainer<T>
+		where T : View
 	{
 		public Label TitleLabel { get; private set; }
 		public Label BoundsLabel { get; private set; }
@@ -12,25 +13,32 @@ namespace Maui.Controls.Sample
 		// May want to override the container layout in subclasses
 		public StackLayout ContainerLayout { get; protected set; }
 
-		public ViewContainer(Enum formsMember, T view)
+		Layout IViewContainer<T>.ContainerLayout => ContainerLayout;
+
+		public ViewContainer(Enum key, T view)
+			: this(key.ToString(), view)
 		{
-			view.AutomationId = formsMember + "VisualElement";
+		}
+
+		public ViewContainer(string key, T view)
+		{
+			view.AutomationId = $"{key}VisualElement";
 			View = view;
 
 			TitleLabel = new Label
 			{
-				Text = formsMember + " View"
+				Text = $"{key} View"
 			};
 
 			BoundsLabel = new Label
 			{
 				BindingContext = new MultiBindingHack(view)
 			};
-			BoundsLabel.SetBinding(Label.TextProperty, "LabelWithBounds");
+			BoundsLabel.SetBinding(Label.TextProperty, nameof(MultiBindingHack.LabelWithBounds));
 
 			ContainerLayout = new StackLayout
 			{
-				AutomationId = formsMember + "Container",
+				AutomationId = $"{key}Container",
 				Padding = 10,
 				Children = { TitleLabel, BoundsLabel, view }
 			};

@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Platform
 
 			while (source.Count < dest.Count)
 			{
-				dest.RemoveAt(0);
+				dest.RemoveAt(dest.Count - 1);
 			}
 
 			for (var i = 0; i < source.Count; i++)

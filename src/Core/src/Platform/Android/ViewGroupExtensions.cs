@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
@@ -52,6 +53,14 @@ namespace Microsoft.Maui.Platform
 		{
 			result = viewGroup.GetFirstChildOfType<T>();
 			return result is not null;
+		}
+
+		internal static T? GetChildAt<T>(this AView view, int index) where T : AView
+		{
+			if (view is AViewGroup viewGroup && viewGroup.ChildCount < index)
+				return (T?)viewGroup.GetChildAt(index);
+
+			return null;
 		}
 	}
 }

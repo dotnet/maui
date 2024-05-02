@@ -620,10 +620,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(item1);
 			shell.Items.Add(item2);
 
-			shell.GoToAsync("//rootlevelcontent2");
+			await shell.GoToAsync("//rootlevelcontent2");
 			Assert.Equal(shell.CurrentItem, item2);
 
-			shell.GoToAsync("//rootlevelcontent1");
+			await shell.GoToAsync("//rootlevelcontent1");
 			Assert.Equal(shell.CurrentItem, item1);
 		}
 
@@ -754,6 +754,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(bindingContext, menuItem.BindingContext);
 			Assert.Equal(bindingContext, menuItem2.BindingContext);
+		}
+
+		[Fact]
+		public void FlyoutMenuItemIsVisibleSynchronized()
+		{
+			Shell shell = new Shell();
+			ContentPage page = new ContentPage();
+			shell.Items.Add(CreateShellItem(page));
+
+			var menuItem = new MenuItem();
+			Shell.SetFlyoutItemIsVisible(menuItem, false);
+			var menuShellItem = new MenuShellItem(menuItem);
+			shell.Items.Add(menuShellItem);
+
+			Shell.SetFlyoutItemIsVisible(menuItem, true);
+			Assert.True(Shell.GetFlyoutItemIsVisible(menuShellItem), "If menuItem visibility changes, menuShellItem visibility should change as well");
+
+			Shell.SetFlyoutItemIsVisible(menuShellItem, false);
+			Assert.False(Shell.GetFlyoutItemIsVisible(menuItem), "If menuShellItem visibility changes, menuItem visibility should change as well");
 		}
 
 		[Fact]
@@ -1273,7 +1292,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				page = shell.CurrentPage;
 			};
 
-			shell.GoToAsync(new ShellNavigationState("//two/tabfour/"));
+			await shell.GoToAsync(new ShellNavigationState("//two/tabfour/"));
 			Assert.NotNull(page);
 			Assert.IsType<ShellTestPage>(page);
 			Assert.Equal((tabfour as IShellSectionController).PresentedPage, page);

@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS
 			[nameof(IMenuBarItem.Text)] = MapText,
+#endif
+#if MACCATALYST || IOS || WINDOWS
 			[nameof(IMenuBarItem.IsEnabled)] = MapIsEnabled,
 #endif
 		};

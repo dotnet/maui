@@ -434,70 +434,82 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SettingCoreFrameOnlyFiresEventOnce()
 		{
 			var sizeChangedCount = 0;
-			var propertyChanges = new List<string>();
+			var changingProperties = new List<string>();
+			var changedProperties = new List<string>();
 
 			var window = new TestWindow();
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
-			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+			window.PropertyChanging += (sender, e) => changingProperties.Add(e.PropertyName);
+			window.PropertyChanged += (sender, e) => changedProperties.Add(e.PropertyName);
 
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			Assert.Equal(1, sizeChangedCount);
-			Assert.Equal(new[] { "X", "Y", "Width", "Height" }, propertyChanges);
+			Assert.Equal(new[] { "X", "Y", "Width", "Height" }, changingProperties);
+			Assert.Equal(new[] { "X", "Y", "Width", "Height" }, changedProperties);
 		}
 
 		[Fact]
 		public void SettingSameCoreFrameDoesNothing()
 		{
 			var sizeChangedCount = 0;
-			var propertyChanges = new List<string>();
+			var changingProperties = new List<string>();
+			var changedProperties = new List<string>();
 
 			var window = new TestWindow();
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
-			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+			window.PropertyChanging += (sender, e) => changingProperties.Add(e.PropertyName);
+			window.PropertyChanged += (sender, e) => changedProperties.Add(e.PropertyName);
 
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			Assert.Equal(0, sizeChangedCount);
-			Assert.Empty(propertyChanges);
+			Assert.Empty(changingProperties);
+			Assert.Empty(changedProperties);
 		}
 
 		[Fact]
 		public void UpdatingSingleCoordinateOnlyFiresSinglePropertyAndFrameEvent()
 		{
 			var sizeChangedCount = 0;
-			var propertyChanges = new List<string>();
+			var changingProperties = new List<string>();
+			var changedProperties = new List<string>();
 
 			var window = new TestWindow();
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
-			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+			window.PropertyChanging += (sender, e) => changingProperties.Add(e.PropertyName);
+			window.PropertyChanged += (sender, e) => changedProperties.Add(e.PropertyName);
 
 			((IWindow)window).FrameChanged(new Rect(100, 250, 300, 400));
 
 			Assert.Equal(1, sizeChangedCount);
-			Assert.Equal(new[] { "Y" }, propertyChanges);
+			Assert.Equal(new[] { "Y" }, changingProperties);
+			Assert.Equal(new[] { "Y" }, changedProperties);
 		}
 
 		[Fact]
 		public void UpdatingSingleBoundOnlyFiresSingleProperty()
 		{
 			var sizeChangedCount = 0;
-			var propertyChanges = new List<string>();
+			var changingProperties = new List<string>();
+			var changedProperties = new List<string>();
 
 			var window = new TestWindow();
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
-			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+			window.PropertyChanging += (sender, e) => changingProperties.Add(e.PropertyName);
+			window.PropertyChanged += (sender, e) => changedProperties.Add(e.PropertyName);
 
 			((IWindow)window).FrameChanged(new Rect(100, 200, 350, 400));
 
 			Assert.Equal(1, sizeChangedCount);
-			Assert.Equal(new[] { "Width" }, propertyChanges);
+			Assert.Equal(new[] { "Width" }, changingProperties);
+			Assert.Equal(new[] { "Width" }, changedProperties);
 		}
 
 		[Fact]
@@ -626,26 +638,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(outH, coreWindow.MinimumHeight);
 		}
 
-		[Fact]
+		[Fact, Category(TestCategory.Memory)]
 		public async Task WindowDoesNotLeak()
 		{
 			var application = new Application();
-			WeakReference reference;
 
-			// Scope for window
+			WeakReference CreateReference()
 			{
 				var window = new Window { Page = new ContentPage() };
-				reference = new WeakReference(window);
+				var reference = new WeakReference(window);
 				application.OpenWindow(window);
 				((IWindow)window).Destroying();
+				return reference;
 			}
 
+			var reference = CreateReference();
+
 			// GC
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			Assert.False(reference.IsAlive, "Window should not be alive!");
+
+			GC.KeepAlive(application);
 		}
 
 		// NOTE: this test is here to show `ConditionalWeakTable _requestedWindows` was a bad idea

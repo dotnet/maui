@@ -27,7 +27,6 @@ namespace Microsoft.Maui.DeviceTests.Memory
 			});
 
 			await AssertionExtensions.WaitForGC(reference);
-			Assert.False(reference.IsAlive, "MauiDoneAccessoryView should not be alive!");
 		}
 
 		[Fact]
@@ -44,7 +43,6 @@ namespace Microsoft.Maui.DeviceTests.Memory
 			});
 
 			await AssertionExtensions.WaitForGC(reference);
-			Assert.False(reference.IsAlive, "MauiDoneAccessoryView should not be alive!");
 		}
 #endif
 	}

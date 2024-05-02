@@ -5,6 +5,8 @@
     <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
     <!-- Generate ReadyToRun (AOT) when building for Release -->
     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' and '$(Configuration)' == 'Release' and '$(OutputType)' == 'WinExe' ">true</PublishReadyToRun>
+    <!-- Use full RID graph: https://github.com/dotnet/docs/issues/36527 -->
+    <UseRidGraph Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">true</UseRidGraph>
   </PropertyGroup>
 
   <!-- The Windows App SDK does not support AnyCPU without a RID, so make sure we pick the "best" one we can -->

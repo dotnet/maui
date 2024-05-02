@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiAndroid]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void CarouselViewPositionFromVisibilityChangeTest()
 		{
 			RunningApp.WaitForElement(q => q.Marked("AppearButton"));

@@ -147,7 +147,7 @@ namespace Microsoft.Maui
 		};
 
 		ulong crc = ulong.MaxValue;
-		ulong length = 0;
+		ulong length;
 
 		public override void Initialize()
 		{

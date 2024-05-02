@@ -18,8 +18,8 @@
                 <Button Text="Pick video" Command="{Binding PickVideoCommand}" />
                 <Button Text="Capture video" Command="{Binding CaptureVideoCommand}" />
 
-                <Image Source="{Binding PhotoPath}" IsVisible="{Binding ShowPhoto}" HeightRequest="300"/>
-                <!--<MediaElement VerticalOptions="FillAndExpand" Source="{Binding VideoPath}" IsVisible="{Binding ShowVideo}" />-->
+                <Image Source="{Binding PhotoSource}" IsVisible="{Binding ShowPhoto}" HeightRequest="300"/>
+                <!--<MediaElement VerticalOptions="FillAndExpand" Source="{Binding VideoSource}" IsVisible="{Binding ShowVideo}" />-->
             </StackLayout>
         </ScrollView>
     </Grid>

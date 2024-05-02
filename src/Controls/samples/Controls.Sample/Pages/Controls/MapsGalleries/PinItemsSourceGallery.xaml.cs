@@ -104,7 +104,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 
 	public class Location : INotifyPropertyChanged
 	{
-		Position _position;
+		Position _position = default!;
 
 		public string Address { get; }
 		public string Description { get; }
@@ -128,7 +128,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 
 		#region INotifyPropertyChanged
 
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
 		#endregion
 	}

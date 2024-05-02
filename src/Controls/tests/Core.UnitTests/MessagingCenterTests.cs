@@ -262,27 +262,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(((TestSubcriber)wr.Target).Successful);  // Since it's still alive, the subscriber should still have received the message and updated the property
 		}
 
-		[Fact]
+		[Fact, Category(TestCategory.Memory)]
 		public async Task SubscriberCollectableAfterUnsubscribeEvenIfHeldByClosure()
 		{
-			WeakReference wr = null;
-
-			new Action(() =>
+			WeakReference CreateReference()
 			{
-				var subscriber = new TestSubcriber();
+				WeakReference wr = null;
 
-				wr = new WeakReference(subscriber);
+				new Action(() =>
+				{
+					var subscriber = new TestSubcriber();
 
-				MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => subscriber.SetSuccess());
-			})();
+					wr = new WeakReference(subscriber);
 
-			Assert.NotNull(wr.Target as TestSubcriber);
+					MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => subscriber.SetSuccess());
+				})();
 
-			MessagingCenter.Unsubscribe<TestPublisher>(wr.Target, "test");
+				Assert.NotNull(wr.Target as TestSubcriber);
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+				MessagingCenter.Unsubscribe<TestPublisher>(wr.Target, "test");
+
+				return wr;
+			}
+
+			var wr = CreateReference();
+
+			await TestHelpers.Collect();
 
 			Assert.False(wr.IsAlive); // The Action target and subscriber were the same object, so both could be collected
 		}

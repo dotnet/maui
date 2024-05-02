@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 
 		}
 
-		public View Content
+		public View? Content
 		{
 			get => Children.OfType<View>().LastOrDefault();
 			set
@@ -40,7 +40,7 @@ namespace Maui.Controls.Sample.Pages
 
 				if (e.Status == GestureStatus.Started)
 				{
-					startScale = Content.Scale;
+					startScale = Content!.Scale;
 					Content.AnchorX = Content.AnchorY = 0;
 				}
 				if (e.Status == GestureStatus.Running)
@@ -49,7 +49,7 @@ namespace Maui.Controls.Sample.Pages
 					_currentScale += (e.Scale - 1) * startScale;
 					_currentScale = Math.Max(1, _currentScale);
 
-					var renderedX = Content.X + xOffset;
+					var renderedX = Content!.X + xOffset;
 					var deltaX = renderedX / Width;
 					var deltaWidth = Width / (Content.Width * startScale);
 					var originX = (e.ScaleOrigin.X - deltaX) * deltaWidth;
@@ -69,8 +69,8 @@ namespace Maui.Controls.Sample.Pages
 				}
 				if (e.Status == GestureStatus.Completed)
 				{
-					xOffset = Content.TranslationX;
-					yOffset = Content.TranslationY;
+					xOffset = Content!.TranslationX;
+					yOffset = Content!.TranslationY;
 				}
 			};
 

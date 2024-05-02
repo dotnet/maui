@@ -2,6 +2,7 @@ parameters:
   platform: '' # [ android, ios, catalyst, windows ]
   path: '' # path to csproj
   device: '' # the xharness device to use
+  apiversion: '' # the iOS device api version to use
   cakeArgs: '' # additional cake args
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
@@ -9,8 +10,17 @@ parameters:
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
+  rebootAgent: true
 
 steps:
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
+        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      displayName: 'Clean bot'
+      continueOnError: true
+      timeoutInMinutes: 60
   - template: provision.yml
     parameters:
       ${{ if eq(parameters.platform, 'windows')}}:
@@ -19,6 +29,9 @@ steps:
         platform: macos
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
+      ${{ if eq(parameters.platform, 'ios')}}:
+        skipAndroidSdks: false
+        skipAndroidImages: true
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -45,7 +58,7 @@ steps:
 
     - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
       displayName: 'Install .NET (Local Workloads)'
-      retryCountOnTaskFailure: 3
+      retryCountOnTaskFailure: 2
       workingDirectory: ${{ parameters.checkoutDirectory }}
       env:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
@@ -55,10 +68,66 @@ steps:
     - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
       displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+  - pwsh: |
+      $platformName = 'Windows'
+      if ($IsMacOS) {
+        $platformName = 'Mac'
+      } elseif ($IsLinux) {
+        $platformName = 'Linux'
+      }
+      Write-Host "Platform.Name: ${platformName}"
+      Write-Host "##vso[task.setvariable variable=Platform.Name]${platformName}"
+    displayName: 'Set Platform.Name'
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+        if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
+      displayName: Delete Old Simulator Logs
+      condition: always()
+      continueOnError: true
+
+  - ${{ if eq(parameters.platform, 'windows')}}:
+    - pwsh: |
+        $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+        New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value "$(Build.ArtifactStagingDirectory)/crash-dumps"
+        New-ItemProperty -Path $errorPath -Name DumpType -PropertyType DWORD -Value 2
+      displayName: 'Set dump file location'
+      continueOnError: true
+      timeoutInMinutes: 5
+
+  - pwsh: |
+      ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
     workingDirectory: ${{ parameters.checkoutDirectory }}
-    retryCountOnTaskFailure: 2
+    condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))
+    retryCountOnTaskFailure: 1
+
+  - bash: |
+      # Execute the powershell script from a bash shell on Mac to avoid interference between powershell processes that lead to this error: The STDIO streams did not close within 10 seconds of the exit event from process '/usr/local/bin/pwsh'. This may indicate a child process inherited the STDIO streams and has not yet exited.
+      pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+    displayName: $(Agent.JobName)
+    workingDirectory: ${{ parameters.checkoutDirectory }}
+    condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
+    retryCountOnTaskFailure: 1
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        suffix=$(date +%Y%m%d%H%M%S)
+        zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
+        zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
+      displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
+
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
+        zip -9r "$(LogDirectory)/DiagnosticReports.zip" "$HOME/Library/Logs/DiagnosticReports/"
+      displayName: Zip Simulator Logs
+      condition: always()
+      continueOnError: true
 
   - task: PublishTestResults@2
     displayName: Publish the $(Agent.JobName) test results
@@ -74,7 +143,8 @@ steps:
     inputs:
       artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
-  # This must always be placed as the last step in the job
-  - template: agent-rebooter/mac.v1.yml@yaml-templates
-    parameters:
-      AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+  - ${{ if eq(parameters.rebootAgent, true) }}:
+    # This must always be placed as the last step in the job
+    - template: agent-rebooter/mac.v1.yml@yaml-templates
+      parameters:
+        AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}

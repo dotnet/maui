@@ -10,15 +10,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		readonly IEnumerable _itemsSource;
 		readonly BindableObject _container;
 		readonly ICollectionChangedNotifier _notifier;
+		readonly WeakNotifyCollectionChangedProxy _proxy = new();
+		readonly NotifyCollectionChangedEventHandler _collectionChanged;
 		bool _disposed;
+
+		~ObservableItemsSource() => _proxy.Unsubscribe();
 
 		public ObservableItemsSource(IEnumerable itemSource, BindableObject container, ICollectionChangedNotifier notifier)
 		{
-			_itemsSource = itemSource as IList ?? itemSource as IEnumerable;
+			_itemsSource = itemSource;
 			_container = container;
 			_notifier = notifier;
-
-			((INotifyCollectionChanged)itemSource).CollectionChanged += CollectionChanged;
+			_collectionChanged = CollectionChanged;
+			_proxy.Subscribe((INotifyCollectionChanged)itemSource, _collectionChanged);
 		}
 
 
@@ -145,7 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
-			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : IndexOf(args.NewItems[0]);
+			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
 			startIndex = AdjustPositionForHeader(startIndex);
 			var count = args.NewItems.Count;
 
@@ -186,7 +190,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Replace(NotifyCollectionChangedEventArgs args)
 		{
-			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : IndexOf(args.NewItems[0]);
+			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
 			startIndex = AdjustPositionForHeader(startIndex);
 			var newCount = args.NewItems.Count;
 
@@ -232,22 +236,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (count == index)
 					return item;
-				count++;
-			}
-
-			return -1;
-		}
-
-		internal int IndexOf(object item)
-		{
-			if (_itemsSource is IList list)
-				return list.IndexOf(item);
-
-			int count = 0;
-			foreach (var i in _itemsSource)
-			{
-				if (i == item)
-					return count;
 				count++;
 			}
 

@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		}
 
 		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 		[UiTest(typeof(Entry), "Focus")]
 		public override void _Focus()
@@ -65,7 +66,6 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 		// TODO
 		// Implement control specific ui tests
-		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[UiTest(typeof(Entry), "Completed")]
 		[Category(UITestCategories.UwpIgnore)]

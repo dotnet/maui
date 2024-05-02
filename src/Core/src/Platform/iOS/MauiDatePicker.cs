@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Platform
 	public class MauiDatePicker : NoCaretField
 	{
 #if !MACCATALYST
+		readonly UIDatePickerProxy _proxy = new();
+
 		public MauiDatePicker()
 		{
 			BorderStyle = UITextBorderStyle.RoundedRect;
@@ -34,7 +36,7 @@ namespace Microsoft.Maui.Platform
 
 			this.EditingDidBegin += OnStarted;
 			this.EditingDidEnd += OnEnded;
-			picker.ValueChanged += OnValueChanged;
+			picker.ValueChanged += _proxy.OnValueChanged;
 		}
 
 		static void OnDoneClicked(object obj)
@@ -42,9 +44,6 @@ namespace Microsoft.Maui.Platform
 			if (obj is MauiDatePicker mdp)
 				mdp.MauiDatePickerDelegate?.DoneClicked();
 		}
-
-		void OnValueChanged(object? sender, EventArgs e) =>
-			MauiDatePickerDelegate?.DatePickerValueChanged();
 
 		void OnEnded(object? sender, EventArgs e) =>
 			MauiDatePickerDelegate?.DatePickerEditingDidEnd();
@@ -54,11 +53,19 @@ namespace Microsoft.Maui.Platform
 
 		internal MauiDatePickerDelegate? MauiDatePickerDelegate
 		{
-			get;
-			set;
+			get => _proxy.MauiDatePickerDelegate;
+			set => _proxy.MauiDatePickerDelegate = value;
 		}
 
 		internal UIDatePicker? DatePickerDialog { get { return InputView as UIDatePicker; } }
+
+		class UIDatePickerProxy
+		{
+			internal MauiDatePickerDelegate? MauiDatePickerDelegate { get; set; }
+
+			public void OnValueChanged(object? sender, EventArgs e) =>
+				MauiDatePickerDelegate?.DatePickerValueChanged();
+		}
 #else
 		public MauiDatePicker()
 		{

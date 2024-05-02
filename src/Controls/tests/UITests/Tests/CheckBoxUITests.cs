@@ -1,17 +1,15 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
 	public class CheckBoxUITests : _ViewUITests
 	{
-		static readonly string CheckBox = "android.widget.CheckBox";
-		const string CheckBoxGallery = "* marked:'CheckBox Gallery'";
+		const string CheckBoxGallery = "CheckBox Gallery";
 
 		public CheckBoxUITests(TestDevice device)
 			: base(device)
 		{
-			PlatformViewType = CheckBox;
 		}
 
 		protected override void NavigateToGallery()
@@ -20,10 +18,11 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Category(UITestCategories.CheckBox)]
 		public override void _IsEnabled()
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
-				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
+			if (Device == TestDevice.Mac ||
+				Device == TestDevice.iOS)
 			{
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}

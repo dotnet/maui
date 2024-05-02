@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -16,6 +18,10 @@ namespace Microsoft.Maui.Resizetizer
 
 		[Required]
 		public string IntermediateOutputPath { get; set; }
+
+		public bool ThrowsErrorOnDuplicateOutput { get; set; } = true;
+
+		public string DuplicateOutputErrorMessage { get; set; }
 
 		public string InputsFile { get; set; }
 
@@ -30,7 +36,8 @@ namespace Microsoft.Maui.Resizetizer
 
 		public override System.Threading.Tasks.Task ExecuteAsync()
 		{
-			var images = ResizeImageInfo.Parse(Images);
+			var inputImages = ResizeImageInfo.Parse(Images);
+			var images = RemoveDuplicates(inputImages);
 
 			var dpis = DpiPath.GetDpis(PlatformType);
 
@@ -116,6 +123,40 @@ namespace Microsoft.Maui.Resizetizer
 			CopiedResources = copiedResources.ToArray();
 
 			return System.Threading.Tasks.Task.CompletedTask;
+		}
+
+		IEnumerable<ResizeImageInfo> RemoveDuplicates(IEnumerable<ResizeImageInfo> inputImages)
+		{
+			var imagesPairs = new Dictionary<string, ResizeImageInfo>();
+
+			var builder = new StringBuilder();
+			builder.Append(DuplicateOutputErrorMessage);
+
+			var hasDuplicates = false;
+			foreach (var image in inputImages)
+			{
+				if (imagesPairs.ContainsKey(image.OutputName))
+				{
+					if (hasDuplicates)
+						builder.Append(", ");
+
+					builder.Append($"{image.OutputName} ({image.ItemSpec})");
+
+					hasDuplicates = true;
+				}
+
+				imagesPairs[image.OutputName] = image;
+			}
+
+			if (hasDuplicates)
+			{
+				if (ThrowsErrorOnDuplicateOutput)
+					Log.LogError(builder.ToString());
+				else
+					Log.LogMessage(builder.ToString());
+			}
+
+			return imagesPairs.Values;
 		}
 
 		void ProcessAppIcon(ResizeImageInfo img, ConcurrentBag<ResizedImageInfo> resizedImages)

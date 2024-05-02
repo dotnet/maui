@@ -27,6 +27,12 @@ namespace WebViewAppShared
 			return await module.InvokeAsync<string>("showPrompt", message);
 		}
 
+		public async ValueTask UpdateControlDiv(string newValue)
+		{
+			var module = await moduleTask.Value;
+			await module.InvokeVoidAsync("updateControlDiv", newValue);
+		}
+
 		public async ValueTask DisposeAsync()
 		{
 			if (moduleTask.IsValueCreated)

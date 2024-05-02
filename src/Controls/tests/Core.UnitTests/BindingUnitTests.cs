@@ -2,11 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -2041,34 +2043,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Fact]
+		[Fact, Category(TestCategory.Memory)]
 		public async Task BindingUnsubscribesForDeadTarget()
 		{
-			var viewmodel = new TestViewModel();
+			var viewModel = new TestViewModel();
 
+			void CreateReference()
 			{
 				var button = new Button();
 				button.SetBinding(Button.TextProperty, "Foo");
-				button.BindingContext = viewmodel;
+				button.BindingContext = viewModel;
 			}
 
-			Assert.Equal(1, viewmodel.InvocationListSize());
+			CreateReference();
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			Assert.Equal(1, viewModel.InvocationListSize());
 
-			viewmodel.OnPropertyChanged("Foo");
+			await TestHelpers.Collect();
 
-			Assert.Equal(0, viewmodel.InvocationListSize());
+			viewModel.OnPropertyChanged("Foo");
+
+			Assert.Equal(0, viewModel.InvocationListSize());
+
+			// Ensure that the viewModel isn't collected during the test
+			GC.KeepAlive(viewModel);
 		}
 
-		[Fact]
+		[Fact, Category(TestCategory.Memory)]
 		public async Task BindingDoesNotStayAliveForDeadTarget()
 		{
 			var viewModel = new TestViewModel();
-			WeakReference bindingRef;
 
+			WeakReference CreateReference()
 			{
 				var binding = new Binding("Foo");
 
@@ -2076,16 +2082,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				button.SetBinding(Button.TextProperty, binding);
 				button.BindingContext = viewModel;
 
-				bindingRef = new WeakReference(binding);
+				return new(binding);
 			}
+
+			var bindingRef = CreateReference();
 
 			Assert.Equal(1, viewModel.InvocationListSize());
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
+
+			GC.KeepAlive(viewModel);
 		}
 
 		[Fact]
@@ -2307,6 +2315,49 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var label = new Label();
 			label.SetBinding(Label.TextColorProperty, new Binding());
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/16849
+		public void ValueFromHandlerDoesntClearTwoWayBinding()
+		{
+			var vm = new MockViewModel();
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "Text", BindingMode.TwoWay);
+			entry.SetValueFromRenderer(Entry.TextProperty, "foo");
+			Assert.Equal("foo", vm.Text);
+			vm.Text = "bar";
+			Assert.Equal("bar", entry.Text);
+			vm.Text = string.Empty;
+			Assert.Equal(string.Empty, entry.Text);
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/16849
+		public void ManualValueDoesntClearTwoWayBinding()
+		{
+			var vm = new MockViewModel();
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "Text", BindingMode.TwoWay);
+			entry.SetValue(Entry.TextProperty, "foo");
+			Assert.Equal("foo", vm.Text);
+			vm.Text = "bar";
+			Assert.Equal("bar", entry.Text);
+			vm.Text = string.Empty;
+			Assert.Equal(string.Empty, entry.Text);
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/17776
+		public void DoubleSetBinding()
+		{
+			var button = new Button { BackgroundColor = Colors.HotPink };
+
+			//shouldn't crash
+			button.BackgroundColor = Colors.Coral;
+			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
+			button.BackgroundColor = Colors.Coral;
+			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
 		}
 	}
 }

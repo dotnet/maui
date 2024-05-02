@@ -186,66 +186,66 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition)
+		internal void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
 		{
 			ICommand cmd = PointerEnteredCommand;
 			if (cmd?.CanExecute(PointerEnteredCommandParameter) == true)
 				cmd.Execute(PointerEnteredCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerEntered;
-			handler?.Invoke(sender, new PointerEventArgs(getPosition));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
 		}
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition)
+		internal void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
 		{
 			ICommand cmd = PointerExitedCommand;
 			if (cmd?.CanExecute(PointerExitedCommandParameter) == true)
 				cmd.Execute(PointerExitedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerExited;
-			handler?.Invoke(sender, new PointerEventArgs(getPosition));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
 		}
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition)
+		internal void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
 		{
 			ICommand cmd = PointerMovedCommand;
 			if (cmd?.CanExecute(PointerMovedCommandParameter) == true)
 				cmd.Execute(PointerMovedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerMoved;
-			handler?.Invoke(sender, new PointerEventArgs(getPosition));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
 		}
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerPressed(View sender, Func<IElement?, Point?>? getPosition)
+		internal void SendPointerPressed(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
 		{
 			ICommand cmd = PointerPressedCommand;
 			if (cmd?.CanExecute(PointerPressedCommandParameter) == true)
 				cmd.Execute(PointerPressedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerPressed;
-			handler?.Invoke(sender, new PointerEventArgs(getPosition));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
 		}
 
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerReleased(View sender, Func<IElement?, Point?>? getPosition)
+		internal void SendPointerReleased(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
 		{
 			ICommand cmd = PointerReleasedCommand;
 			if (cmd?.CanExecute(PointerReleasedCommandParameter) == true)
 				cmd.Execute(PointerReleasedCommandParameter);
 
 			EventHandler<PointerEventArgs>? handler = PointerReleased;
-			handler?.Invoke(sender, new PointerEventArgs(getPosition));
+			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
 		}
 
 		internal static void SetupForPointerOverVSM(

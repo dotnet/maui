@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			// IMPORTANT! Update ConstraintDesignTypeConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 
 			if (strValue != null && double.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out var size))

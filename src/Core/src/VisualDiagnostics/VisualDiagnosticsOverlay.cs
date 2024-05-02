@@ -186,7 +186,7 @@ namespace Microsoft.Maui
 			return base.Deinitialize();
 		}
 
-		IList<IScrollView> GetScrollViews()
+		List<IScrollView> GetScrollViews()
 		{
 			if (Window == null)
 				return new List<IScrollView>();
@@ -199,7 +199,7 @@ namespace Microsoft.Maui
 				.ToList();
 		}
 
-		IScrollView? GetParentScrollView(IVisualTreeElement element)
+		static IScrollView? GetParentScrollView(IVisualTreeElement element)
 		{
 			if (element == null)
 				return null;

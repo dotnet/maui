@@ -17,6 +17,8 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 					Children =
 					{
 	 					GalleryBuilder.NavButton("Basic SwipeView Gallery", () => new BasicSwipeGallery(), Navigation),
+						GalleryBuilder.NavButton("SwipeView without Layout Content Gallery", () => new SwipeViewNoLayoutGallery(), Navigation),
+						GalleryBuilder.NavButton("Custom control based on SwipeView Gallery", () => new CustomSwipeControlGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeView Threshold Gallery", () => new SwipeThresholdGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeView Events Gallery", () => new SwipeViewEventsGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeItems from Resource Gallery", () => new ResourceSwipeItemsGallery(), Navigation),

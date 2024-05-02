@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Converters
 
 				if (strValue.Equals("auto", StringComparison.OrdinalIgnoreCase))
 					return FlexBasis.Auto;
-				if (strValue.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(strValue.Substring(0, strValue.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
+				if (ParsePercentage(strValue, out float relflex))
 					return new FlexBasis(relflex / 100, isRelative: true);
 				if (float.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
 					return new FlexBasis(flex);
@@ -261,6 +261,24 @@ namespace Microsoft.Maui.Converters
 				return $"{(basis.Length * 100).ToString(CultureInfo.InvariantCulture)}%";
 
 			return $"{basis.Length.ToString(CultureInfo.InvariantCulture)}";
+		}
+
+		static bool ParsePercentage(string strValue, out float relflex)
+		{
+			if (!strValue.EndsWith("%", StringComparison.OrdinalIgnoreCase))
+			{
+				relflex = default;
+				return false;
+			}
+
+			var value =
+#if NETSTANDARD2_0 // sigh
+				strValue.Substring(0, strValue.Length - 1);
+#else
+				strValue.AsSpan(0, strValue.Length - 1);
+#endif
+
+			return float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out relflex);
 		}
 	}
 }

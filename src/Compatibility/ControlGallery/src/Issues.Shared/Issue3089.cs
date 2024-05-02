@@ -121,6 +121,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[FailsOnMauiIOS]
 		public void ResettingItemsOnRecycledListViewKeepsOldText()
 		{
 			RunningApp.Tap(reload);

@@ -2,3 +2,4 @@
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPath.get -> string!
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPath.set -> void
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPathProperty -> System.Windows.DependencyProperty!
+virtual Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!

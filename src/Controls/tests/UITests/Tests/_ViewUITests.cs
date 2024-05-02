@@ -1,34 +1,19 @@
 ﻿using Maui.Controls.Sample;
-using Microsoft.Maui.Appium;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	public abstract class _ViewUITests : UITestBase
+	public abstract class _ViewUITests : CoreGalleryBasePageTest
 	{
-		public string? PlatformViewType { get; protected set; }
-
 		public _ViewUITests(TestDevice device) : base(device) { }
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			NavigateToGallery();
-		}
-
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			App.NavigateBack();
-		}
-
-		protected abstract void NavigateToGallery();
 
 		[Test]
 		public virtual void _IsEnabled()
 		{
-			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsEnabled, PlatformViewType);
+			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsEnabled);
 			remote.GoTo();
 
 			var enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
@@ -41,30 +26,30 @@ namespace Microsoft.Maui.AppiumTests
 
 			remote.TapStateButton();
 
-			var isEnabled = remote.GetStateLabel().ReadText();
+			var isEnabled = remote.GetStateLabel().GetText();
 			Assert.AreEqual("True", isEnabled);
 
 			remote.TapStateButton();
 
-			var isDisabled = remote.GetStateLabel().ReadText();
+			var isDisabled = remote.GetStateLabel().GetText();
 			Assert.AreEqual("False", isDisabled);
 		}
 
 		[Test]
 		public virtual void _IsVisible()
 		{
-			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsVisible, PlatformViewType);
+			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsVisible);
 			remote.GoTo();
-
+			App.WaitForElement($"IsVisibleStateButton");
 			var viewPre = remote.GetViews();
 
-			Assert.AreEqual(1, viewPre.Length);
+			Assert.AreEqual(1, viewPre.Count);
 
 			remote.TapStateButton();
 
 			var viewPost = remote.GetViews();
 
-			Assert.AreEqual(0, viewPost.Length);
+			Assert.AreEqual(0, viewPost.Count);
 		}
 	}
 

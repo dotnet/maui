@@ -1,9 +1,14 @@
-﻿using System.Diagnostics;
+﻿using Android.Content;
 using Android.Text;
+using Android.Views;
+using Android.Views.InputMethods;
+using Android.Widget;
+using AndroidX.Core.View;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class KeyboardExtensions
+	public static partial class KeyboardExtensions
 	{
 		public static InputTypes ToInputType(this Keyboard self)
 		{

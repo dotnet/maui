@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Android.Content;
 using Android.OS;
+using Android.Views;
 using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.Platform
 		internal bool? IsPopping { get; private set; }
 		internal bool IsAnimated { get; set; } = true;
 		internal NavigationRequest? ActiveRequestedArgs { get; private set; }
+		internal NavigationRequest? OnResumeRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 
 		internal NavHostFragment NavHost =>
@@ -78,7 +80,7 @@ namespace Microsoft.Maui.Platform
 		 * */
 		void ApplyNavigationRequest(NavigationRequest args)
 		{
-			if (IsNavigating)
+			if (IsNavigating && OnResumeRequestedArgs is null)
 			{
 				// This should really never fire for the developer. Our xplat code should be handling waiting for navigation to
 				// complete before requesting another navigation from Core
@@ -92,6 +94,15 @@ namespace Microsoft.Maui.Platform
 			}
 
 			ActiveRequestedArgs = args;
+
+			if (_fragmentManager?.IsStateSaved == true)
+			{
+				OnResumeRequestedArgs = args;
+				return;
+			}
+
+			OnResumeRequestedArgs = null;
+
 			IReadOnlyList<IView> newPageStack = args.NavigationStack;
 			bool animated = args.Animated;
 			var navController = NavController;
@@ -279,6 +290,12 @@ namespace Microsoft.Maui.Platform
 			if (IsNavigating)
 				NavigationFinished(NavigationView);
 
+			if (_fragmentContainerView is not null)
+			{
+				_fragmentContainerView.ViewAttachedToWindow -= OnNavigationPlatformViewAttachedToWindow;
+				_fragmentContainerView.ChildViewAdded -= OnNavigationHostViewAdded;
+			}
+
 			_fragmentLifecycleCallbacks?.Disconnect();
 			_fragmentLifecycleCallbacks = null;
 
@@ -305,11 +322,52 @@ namespace Microsoft.Maui.Platform
 
 			if (_navHost == null)
 				throw new InvalidOperationException($"No NavHostFragment found");
+
+			if (_fragmentContainerView is not null)
+			{
+				_fragmentContainerView.ViewAttachedToWindow += OnNavigationPlatformViewAttachedToWindow;
+				_fragmentContainerView.ChildViewAdded += OnNavigationHostViewAdded;
+			}
 		}
 
+		void OnNavigationPlatformViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
+		{
+			// If the previous Navigation Host Fragment was destroyed then we need to add a new one
+			if (_fragmentManager.IsDestroyed(MauiContext.Context) &&
+				_fragmentContainerView is not null &&
+				_fragmentContainerView.Fragment is null)
+			{
+				var fragmentManager = MauiContext.GetFragmentManager();
+
+				if (fragmentManager.IsDestroyed(MauiContext.Context))
+					return;
+
+				var navHostFragment = new MauiNavHostFragment()
+				{
+					StackNavigationManager = this
+				};
+
+				// We can't call CheckForFragmentChange right away. The Fragment has to finish attaching
+				// before we can start interacting with the Navigation Host.
+				// OnNavigationHostViewAdded takes care of calling CheckForFragmentChange once the
+				// view has been added
+				fragmentManager
+					.BeginTransactionEx()
+					.AddEx(_fragmentContainerView.Id, navHostFragment)
+					.Commit();
+			}
+		}
+
+		void OnNavigationHostViewAdded(object? sender, ViewGroup.ChildViewAddedEventArgs e)
+		{
+			CheckForFragmentChange();
+		}
 
 		internal void CheckForFragmentChange()
 		{
+			if (_fragmentContainerView?.Fragment is null)
+				return;
+
 			var fragmentManager = MauiContext.GetFragmentManager();
 			var navHostFragment = _fragmentContainerView?.Fragment;
 
@@ -481,6 +539,12 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_stackNavigationManager?.VirtualView == null)
 					return;
+
+				if (_stackNavigationManager.OnResumeRequestedArgs is not null)
+				{
+					_stackNavigationManager.ApplyNavigationRequest(_stackNavigationManager.OnResumeRequestedArgs);
+					return;
+				}
 
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);

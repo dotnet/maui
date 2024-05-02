@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static PropertyMapper<ShellSection, ShellSectionHandler> Mapper =
 				new PropertyMapper<ShellSection, ShellSectionHandler>(ElementMapper)
 				{
+					[nameof(ShellSection.Title)] = MapTitle,
 					[nameof(ShellSection.CurrentItem)] = MapCurrentItem,
 				};
 
@@ -33,6 +34,12 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			_navigationManager = CreateNavigationManager();
 			return new WFrame();
+		}
+		public static void MapTitle(ShellSectionHandler handler, ShellSection item)
+		{
+			var shellItem = item.Parent as ShellItem;
+			var shellItemHandler = shellItem?.Handler as ShellItemHandler;
+			shellItemHandler?.UpdateTitle();
 		}
 
 		public static void MapCurrentItem(ShellSectionHandler handler, ShellSection item)

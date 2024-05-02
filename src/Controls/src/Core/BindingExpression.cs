@@ -12,7 +12,7 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	internal class BindingExpression
+	internal sealed class BindingExpression
 	{
 		internal const string PropertyNotFoundErrorMessage = "'{0}' property not found on '{1}', target property: '{2}.{3}'";
 		internal const string CannotConvertTypeErrorMessage = "'{0}' cannot be converted to type '{1}'";
@@ -591,7 +591,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		class BindingPair
+		private sealed class BindingPair
 		{
 			public BindingPair(BindingExpressionPart part, object source, bool isLast)
 			{
@@ -607,7 +607,7 @@ namespace Microsoft.Maui.Controls
 			public object Source { get; private set; }
 		}
 
-		internal class WeakPropertyChangedProxy : WeakEventProxy<INotifyPropertyChanged, PropertyChangedEventHandler>
+		internal sealed class WeakPropertyChangedProxy : WeakEventProxy<INotifyPropertyChanged, PropertyChangedEventHandler>
 		{
 			public WeakPropertyChangedProxy() { }
 
@@ -651,7 +651,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		class BindingExpressionPart
+		private sealed class BindingExpressionPart
 		{
 			readonly BindingExpression _expression;
 			readonly PropertyChangedEventHandler _changeHandler;

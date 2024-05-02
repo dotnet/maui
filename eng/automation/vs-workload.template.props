@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetName>Microsoft.NET.Sdk.Maui.Workload.@VSMAN_VERSION@</TargetName>
     <ManifestBuildVersion>@VS_COMPONENT_VERSION@</ManifestBuildVersion>
+    <EnableSideBySideManifests>true</EnableSideBySideManifests>
   </PropertyGroup>
   <ItemGroup>
     <!-- Shorten package names to avoid long path caching issues in Visual Studio -->

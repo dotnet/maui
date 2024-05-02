@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Maps
 		void Clicked(Location position);
 
 		/// <summary>
-		/// Moves the map so that it displays the specified MapSpan region.
+		/// Moves the map so that it displays the specified <see cref="MapSpan"/> region.
 		/// </summary>
 		void MoveToRegion(MapSpan region);
 	}
