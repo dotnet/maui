@@ -2,281 +2,240 @@
 #load "../cake/dotnet.cake"
 #load "./devices-shared.cake"
 
-const string dotnetVersion = "net8.0";
+// Argument handling
+var projectPath = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_PROJECT);
+var testDevice = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? "maccatalyst");
+var dotnetRoot = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
+var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-maccatalyst");
+var binlogArg = Argument("binlog", EnvironmentVariable("MAC_TEST_BINLOG") ?? "");
+var testApp = Argument("app", EnvironmentVariable("MAC_TEST_APP") ?? "");
+var testAppProjectPath = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? DEFAULT_APP_PROJECT);
+var testResultsPath = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
+var runtimeIdentifier = Argument("rid", EnvironmentVariable("MAC_RUNTIME_IDENTIFIER") ?? GetDefaultRuntimeIdentifier());
+var deviceCleanupEnabled = Argument("cleanup", true);
 
-// required
-FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_PROJECT);
-string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? "maccatalyst");
+// Directory setup
+var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg).FullPath;
 
-// optional
-var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
-var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-maccatalyst");
-var BINLOG_ARG = Argument("binlog", EnvironmentVariable("MAC_TEST_BINLOG") ?? "");
-DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
-var TEST_APP = Argument("app", EnvironmentVariable("MAC_TEST_APP") ?? "");
-FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? DEFAULT_APP_PROJECT);
-var TEST_RESULTS = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
+Information($"Project File: {projectPath}");
+Information($"Build Binary Log (binlog): {binlogDirectory}");
+Information($"Build Configuration: {configuration}");
+Information($"Build Runtime Identifier: {runtimeIdentifier}");
+Information($"Build Target Framework: {targetFramework}");
 
-// other
-string RUNTIME_IDENTIFIER = Argument("rid", EnvironmentVariable("MAC_RUNTIME_IDENTIFIER") ?? ((System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64) ? "maccatalyst-arm64" : "maccatalyst-x64"));
-string CONFIGURATION = Argument("configuration", "Release");
-bool DEVICE_CLEANUP = Argument("cleanup", true);
-
-Information("Project File: {0}", PROJECT);
-Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
-Information("Build Configuration: {0}", CONFIGURATION);
-Information("Build Runtime Identifier: {0}", RUNTIME_IDENTIFIER);
-Information("Build Target Framework: {0}", TARGET_FRAMEWORK);
-
-string DOTNET_TOOL_PATH = "/usr/local/share/dotnet/dotnet";
-
-var localDotnetiOS = GetBuildVariable("workloads", "local") == "local";
-if (localDotnetiOS)
-{
-	Information("Using local dotnet");
-	DOTNET_TOOL_PATH = $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet";
-}
-else
-{
-	Information("Using system dotnet");
-}
+var dotnetToolPath = GetDotnetToolPath();
 
 Setup(context =>
 {
-	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
-	Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
-	Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
-
-	Cleanup();
+	LogSetupInfo(dotnetToolPath);
+	PerformCleanupIfNeeded(deviceCleanupEnabled);
 });
 
 Teardown(context =>
 {
-	Cleanup();
+	PerformCleanupIfNeeded(deviceCleanupEnabled);
 });
-
-void Cleanup()
-{
-	if (!DEVICE_CLEANUP)
-		return;
-}
 
 Task("Cleanup");
 
 Task("Build")
-	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
+	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
-{
-	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-catalyst.binlog";
-
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
-		Configuration = CONFIGURATION,
-		Framework = TARGET_FRAMEWORK,
-		MSBuildSettings = new DotNetMSBuildSettings {
-			MaxCpuCount = 0
-		},
-		ToolPath = DOTNET_TOOL_PATH,
-		ArgumentCustomization = args => args
-			.Append("/p:BuildIpa=true")
-			.Append("/p:RuntimeIdentifier=" + RUNTIME_IDENTIFIER)
-			.Append("/bl:" + binlog)
+	{
+		ExecuteBuild(projectPath, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath);
 	});
-});
 
 Task("Test")
 	.IsDependentOn("Build")
 	.Does(() =>
-{
-	if (string.IsNullOrEmpty(TEST_APP)) {
-		if (string.IsNullOrEmpty(PROJECT.FullPath))
-			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER);
-		var apps = GetDirectories(binDir + "/*.app");
-		if (apps.Count() == 0)
-		{
-			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
-			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
-			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
-			}
-			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
-			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
-			}
-			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
-			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
-			}
-			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
-			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
-			}
-			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
-			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
-			}
-			Information("Looking for .app in arcade binDir {0}", binDir);
-			apps = GetDirectories(binDir + "/*.app");
-			if(apps.Count == 0)
-			{
-				throw new Exception("No app was found in the arcade bin directory.");
-			}
-		}
-		TEST_APP = apps.First().FullPath;
-	}
-	
-	if (string.IsNullOrEmpty(TEST_RESULTS)) {
-		TEST_RESULTS = TEST_APP + "-results";
-	}
-
-	Information("Test Device: {0}", TEST_DEVICE);
-	Information("Test App: {0}", TEST_APP);
-	Information("Test Results Directory: {0}", TEST_RESULTS);
-
-	if (!IsCIBuild())
-		CleanDirectories(TEST_RESULTS);
-	else
 	{
-		// Because we retry on CI we don't want to delete the previous failures
-		// We want to publish those files for reference
-		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
-
-		//SetDotNetEnvironmentVariables("/Users/runner/hostedtoolcache/dotnet");
-	}
-
-
-	var settings = new DotNetToolSettings {
-		DiagnosticOutput = true,
-		ToolPath = DOTNET_TOOL_PATH,
-		ArgumentCustomization = args => args.Append("run xharness apple test " +
-		$"--app=\"{TEST_APP}\" " +
-		$"--targets=\"{TEST_DEVICE}\" " +
-		$"--output-directory=\"{TEST_RESULTS}\" " +
-		$"--verbosity=\"Debug\" ")
-	};
-
-	bool testsFailed = true;
-	try {
-		DotNetTool("tool", settings);
-		testsFailed = false;
-	} finally {
-		// catalyst test result files are weirdly named, so fix it up
-		var resultsFile = GetFiles($"{TEST_RESULTS}/xunit-test-*.xml").FirstOrDefault();
-		if (FileExists(resultsFile)) {
-			CopyFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"));
-		}
-
-		if (testsFailed && IsCIBuild())
-		{
-			var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
-			EnsureDirectoryExists(failurePath);
-			// The tasks will retry the tests and overwrite the failed results each retry
-			// we want to retain the failed results for diagnostic purposes
-			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
-			
-			// We don't want these to upload
-			MoveFile($"{failurePath}/TestResults.xml", $"{failurePath}/Results.xml");
-		}
-	}
-
-	// this _may_ not be needed, but just in case
-	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
-	if (!string.IsNullOrEmpty(failed)) {
-		throw new Exception($"At least {failed} test(s) failed.");
-	}
-});
+		ExecuteTests(projectPath, testDevice, testResultsPath, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
+	});
 
 Task("uitest")
 	.IsDependentOn("uitest-build")
 	.Does(() =>
-{
-	SetupAppPackageNameAndResult();
-
-	Information("Test Device: {0}", TEST_DEVICE);
-	Information("Test App Project: {0}", TEST_APP_PROJECT);
-	Information("Test App: {0}", TEST_APP);
-	Information("Test Results Directory: {0}", TEST_RESULTS);
-
-	CleanDirectories(TEST_RESULTS);
-
-	Information("Run App project {0}",TEST_APP_PROJECT.FullPath);
-	DotNetBuild(TEST_APP_PROJECT.FullPath, new DotNetBuildSettings {
-			Configuration = CONFIGURATION,
-			ToolPath = DOTNET_TOOL_PATH,
-			ArgumentCustomization = args => args
-				.Append($"-f {TARGET_FRAMEWORK}")
-				.Append("-t:Run")
-				//.Append("/tl")
+	{
+		ExecuteUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
 	});
-
-	Information("Build UITests project {0}",PROJECT.FullPath);
-	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-mac.binlog";
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
-			Configuration = CONFIGURATION,
-			ToolPath = DOTNET_TOOL_PATH,
-			ArgumentCustomization = args => args
-				.Append("/p:ExtraDefineConstants=MACUITEST")
-				.Append("/bl:" + binlog)
-				//.Append("/tl")
-	});
-
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_mac.log");
-
-	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, pathDotnet: DOTNET_TOOL_PATH, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-catalyst");
-});
 
 Task("uitest-build")
 	.Does(() =>
-{
-	var name = System.IO.Path.GetFileNameWithoutExtension(DEFAULT_APP_PROJECT);
-	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-catalyst.binlog";
-
-	Information("app" + DEFAULT_APP_PROJECT);
-	DotNetBuild(DEFAULT_APP_PROJECT, new DotNetBuildSettings {
-		Configuration = CONFIGURATION,
-		Framework = TARGET_FRAMEWORK,
-		ToolPath = DOTNET_PATH,
-		ArgumentCustomization = args =>
-		{ 	
-			args
-			.Append("-t:restore,build")	
-			.Append("/bl:" + binlog)
-			.Append("/bl:" + binlog)
-			.Append("/tl");
-
-			return args;
-		}
-	});
-});
-
-
-void SetupAppPackageNameAndResult()
-{
-	if (string.IsNullOrEmpty(TEST_APP)) 
 	{
-		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
-			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = MakeAbsolute(TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER));
-		Information("BinDir: {0}", binDir);
-		var apps = GetDirectories(binDir + "/*.app");
-		if(apps.Count == 0)
+		BuildUITestApp(testAppProjectPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
+	});
+
+RunTarget(TARGET);
+
+
+void ExecuteBuild(string project, string binDir, string config, string rid, string tfm, string toolPath)
+{
+	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
+	var binlog = $"{binDir}/{projectName}-{config}-catalyst.binlog";
+	DotNetBuild(project, new DotNetBuildSettings
+	{
+		Configuration = config,
+		Framework = tfm,
+		MSBuildSettings = new DotNetMSBuildSettings
 		{
-			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
-			if(TEST_APP_PROJECT.FullPath.Contains("Controls.Sample.UITests"))
-			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.Sample.UITests/" + CONFIGURATION + "/" + TARGET_FRAMEWORK + "/" + RUNTIME_IDENTIFIER + "/"));
-			}
-			Information("Looking for .app in arcade binDir {0}", binDir);
-			apps = GetDirectories(binDir + "/*.app");
-		}
-		TEST_APP = apps.First().FullPath;
+			MaxCpuCount = 0
+		},
+		ToolPath = toolPath,
+		ArgumentCustomization = args => args
+			.Append("/p:BuildIpa=true")
+			.Append($"/p:RuntimeIdentifier={rid}")
+			.Append($"/bl:{binlog}")
+	});
+}
+
+
+void ExecuteTests(string project, string device, string resultsDir, string config, string tfm, string rid, string toolPath)
+{
+	CleanResults(resultsDir);
+
+	var testApp = GetTestApplications(project, device, config, tfm, rid).FirstOrDefault();
+
+	Information($"Testing App: {testApp}");
+	var settings = new DotNetToolSettings
+	{
+		DiagnosticOutput = true,
+		ToolPath = toolPath,
+		ArgumentCustomization = args => args.Append($"run xharness apple test --app=\"{testApp}\" --targets=\"{device}\" --output-directory=\"{resultsDir}\" --verbosity=\"Debug\" ")
+	};
+
+	bool testsFailed = true;
+	try
+	{
+		DotNetTool("tool", settings);
+		testsFailed = false;
 	}
-	if (string.IsNullOrEmpty(TEST_RESULTS)) {
-		TEST_RESULTS = TEST_APP + "-results";
+	finally
+	{
+		HandleTestResults(resultsDir, testsFailed);
+	}
+
+	Information("Testing completed.");
+}
+
+void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string toolPath)
+{
+	// Setup environment for UI tests
+	Information("Starting UI Tests...");
+	var testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
+
+	Information($"Testing Device: {device}");
+	Information($"Testing App Project: {app}");
+	Information($"Testing App: {testApp}");
+	Information($"Results Directory: {resultsDir}");
+
+	if (string.IsNullOrEmpty(testApp))
+	{
+		throw new Exception("UI Test application path not specified.");
+	}
+
+	Information("Build UITests project {0}", project);
+
+	var name = System.IO.Path.GetFileNameWithoutExtension(project);
+	var binlog = $"{binDir}/{name}-{config}-mac.binlog";
+	var appiumLog = $"{binDir}/appium_mac.log";
+	var resultsFileName = $"{name}-{config}-catalyst";
+
+	DotNetBuild(project, new DotNetBuildSettings
+	{
+		Configuration = config,
+		ToolPath = toolPath,
+		ArgumentCustomization = args => args
+			.Append("/p:ExtraDefineConstants=MACUITEST")
+			.Append("/bl:" + binlog)
+	});
+
+	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
+
+	Information("Run UITests project {0}", project);
+	RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
+	Information("UI Tests completed.");
+}
+
+void BuildUITestApp(string appProject, string binDir, string config, string tfm, string rid, string toolPath)
+{
+	Information($"Building UI Test app: {appProject}");
+	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
+	var binlog = $"{binDir}/{projectName}-{config}-catalyst.binlog";
+
+	DotNetBuild(appProject, new DotNetBuildSettings
+	{
+		Configuration = config,
+		Framework = tfm,
+		ToolPath = toolPath,
+		ArgumentCustomization = args => args
+			.Append("/t:Restore;Build")
+			.Append($"/bl:{binlog}")
+	});
+
+	Information("UI Test app build completed.");
+}
+
+IEnumerable<string> GetTestApplications(string project, string device, string config, string tfm, string rid)
+{ // Define common directory segments
+    const string binDirBase = "bin";
+    const string artifactsDir = "../../artifacts/bin/";
+    
+    // Map project types to specific subdirectories under artifacts
+    var projectMappings = new Dictionary<string, string>
+    {
+        ["Controls.DeviceTests"] = "Controls.DeviceTests",
+        ["Core.DeviceTests"] = "Core.DeviceTests",
+        ["Graphics.DeviceTests"] = "Graphics.DeviceTests",
+        ["MauiBlazorWebView.DeviceTests"] = "MauiBlazorWebView.DeviceTests",
+        ["Essentials.DeviceTests"] = "Essentials.DeviceTests",
+        ["Controls.Sample.UITests"] = "Controls.Sample.UITests"
+    };
+
+    // First try to find apps in the normal bin directory
+    var binDir = new DirectoryPath(project).Combine($"{binDirBase}/{config}/{tfm}/{rid}");
+    var apps = FindAppsInDirectory(binDir);
+    
+    // If no apps found, check in specific artifact directories
+    if (!apps.Any())
+    {
+        foreach (var entry in projectMappings)
+        {
+            if (project.Contains(entry.Key))
+            {
+                binDir = MakeAbsolute(new DirectoryPath($"{artifactsDir}{entry.Value}/{config}/{tfm}/{rid}/"));
+                apps = FindAppsInDirectory(binDir);
+                if (apps.Any()) break;
+            }
+        }
+
+        if (!apps.Any())
+        {
+            throw new Exception($"No app was found in the arcade {binDir} directory.");
+        }
+    }
+
+    return apps.Select(a => a.FullPath);
+}
+
+// Helper method to encapsulate the directory search logic
+IEnumerable<DirectoryPath> FindAppsInDirectory(DirectoryPath directory)
+{
+    Information($"Looking for .app in {directory}");
+    return GetDirectories($"{directory}/*.app");
+}
+
+// Helper methods
+void PerformCleanupIfNeeded(bool cleanupEnabled)
+{
+	if (cleanupEnabled)
+	{
+		// Add cleanup logic, possibly deleting temporary files, directories, etc.
+		Information("Cleaning up...");
 	}
 }
-RunTarget(TARGET);
+
+string GetDefaultRuntimeIdentifier()
+{
+	var architecture = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;
+	return architecture == System.Runtime.InteropServices.Architecture.Arm64 ? "maccatalyst-arm64" : "maccatalyst-x64";
+}
