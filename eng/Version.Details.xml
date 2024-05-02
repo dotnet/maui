@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-     <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="9.0.100-preview.4.24221.5" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="9.0.100-preview.5.24229.2" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>22ffa42d6c777ea9381459c83d4d9977744db2c8</Sha>
+      <Sha>d301a122c4f9d017cdc3a506f831e2edfc124ea7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.4.24218.7" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.4.24223.11" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b0118bebe385cb68f272a32ca6a5c5bb53c9b14f</Sha>
+      <Sha>d92ac1f892a7f9c00561db6541671f25f3972eed</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.5.271">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.5.272">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>74a90be5b3654173582b8ef455236de9b06508dd</Sha>
+      <Sha>78d42197bb95af5ab7c2976e4abef822e8711c58</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_17.2" Version="17.2.9539-net9-p5">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -31,9 +31,9 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.5.24223.2" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.4.24215.3" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>53288f87c588907e8ff01f129786820fe998573c</Sha>
+      <Sha>19c9523f5c2dd091b49959700723af795d6ad2b4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.5.24227.3">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
