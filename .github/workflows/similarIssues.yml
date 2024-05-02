@@ -3,10 +3,15 @@ name: GitGudSimilarIssues comments
 on:
   issues:
     types: [opened]
+  issue_comment:
+    types: [created]
 
 jobs:
   getSimilarIssues:
     runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'issues' && github.event.action == 'opened') ||
+      (github.event_name == 'issue_comment' && github.event.action == 'created' && startsWith(github.event.comment.body, '/similarissues'))
     outputs:
       message: ${{ steps.getBody.outputs.message }}
     steps:
