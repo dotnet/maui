@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -208,6 +208,22 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		private class TestData
+		{
+			public string Name { get; set; }
+		}
+
+		private class TestDataGroup : List<TestData>
+		{
+			public string Name { get; set; }
+
+			public TestDataGroup(string name, List<TestData> data)
+				 : base(data)
+			{
+				Name = name;
+			}
+		}
+
 		[Theory]
 		[MemberData(nameof(GenerateLayoutOptionsCombos))]
 		public async Task CollectionViewCanSizeToContent(CollectionViewSizingTestCase testCase)
@@ -356,7 +372,8 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-
+    
+    
 		[Fact(
 #if IOS || MACCATALYST
 		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/18517"
@@ -430,22 +447,6 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.NotNull(handler.PlatformView);
 			});
-		}
-
-		private class TestData
-		{
-			public string Name { get; set; }
-		}
-
-		private class TestDataGroup : List<TestData>
-		{
-			public string Name { get; set; }
-
-			public TestDataGroup(string name, List<TestData> data)
-				 : base(data)
-			{
-				Name = name;
-			}
 		}
 
 		public static IEnumerable<object[]> GenerateLayoutOptionsCombos()
