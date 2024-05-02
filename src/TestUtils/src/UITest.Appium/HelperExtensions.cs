@@ -359,6 +359,15 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Presses the enter key in the app.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void PressEnter(this IApp app)
+		{
+			app.CommandExecutor.Execute("pressEnter", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
 		/// Performs a left to right swipe gesture on the screen. 
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
