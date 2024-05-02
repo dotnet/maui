@@ -13,10 +13,8 @@ public class Issue19950 : _IssuesUITest
 	{ }
 
     [Test]
-	public void ToolbalItemShouldShowCorrectImage()
+	public void ToolbarItemShouldShowCorrectImage()
 	{
-		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 		try
 		{
 			_ = App.WaitForElement("GoToTest");

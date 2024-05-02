@@ -14,8 +14,6 @@ namespace Controls.AppiumTests.Tests.Issues
 		[Test]
 		public void ToolbarItemUpdateOnNavigation()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 			// 1. Swipe to second page.
 			App.WaitForElement("Page1");
 			App.SwipeRightToLeft("Page1");
