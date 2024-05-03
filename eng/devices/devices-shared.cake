@@ -42,43 +42,75 @@ IEnumerable<string> GetTestApplications(string project, string device, string co
 {
     const string binDirBase = "bin";
     const string artifactsDir = "../../artifacts/bin/";
+    bool isAndroid = tfm.Contains("android");
 
-    // First try to find apps in the normal bin directory
     var binDir = new DirectoryPath(project).Combine($"{binDirBase}/{config}/{tfm}/{rid}");
-    var apps = FindAppsInDirectory(binDir);
-    
-    // If no apps found, check in specific artifact directories
-    if (!apps.Any())
-    {
-        foreach (var entry in projectMappings)
-        {
-            if (project.Contains(entry.Key))
-            {
-                if(project.Contains("Compatibility"))
-                {
-                    //this is for the compatibility gallery
-                    rid = "iossimulator-x64";
-                }
-                binDir = MakeAbsolute(new DirectoryPath($"{artifactsDir}{entry.Value}/{config}/{tfm}/{rid}/"));
-                apps = FindAppsInDirectory(binDir);
-                if (apps.Any()) break;
-            }
-        }
+    IEnumerable<string> applications;
 
-        if (!apps.Any())
+    if (isAndroid)
+    {
+        applications = FindApksInDirectory(binDir);
+    }
+    else
+    {
+        applications = FindAppsInDirectory(binDir);
+    }
+
+    // If no applications found, check in specific artifact directories
+    if (!applications.Any())
+    {
+        applications = SearchInArtifacts(binDir, project, config, tfm, rid, isAndroid, artifactsDir);
+    }
+
+    if (!applications.Any())
+    {
+        throw new Exception($"No application was found in the specified directories.");
+    }
+
+    return applications;
+}
+
+IEnumerable<string> SearchInArtifacts(DirectoryPath originalBinDir, string project, string config, string tfm, string rid, bool isAndroid, string artifactsDir)
+{
+    foreach (var entry in projectMappings)
+    {
+        if (project.Contains(entry.Key))
         {
-            throw new Exception($"No app was found in the arcade {binDir} directory.");
+            var binDir = MakeAbsolute(new DirectoryPath($"{artifactsDir}{entry.Value}/{config}/{tfm}/{rid}"));
+            IEnumerable<string> applications;
+
+            if (isAndroid)
+            {
+                applications = FindApksInDirectory(binDir);
+            }
+            else
+            {
+                applications = FindAppsInDirectory(binDir);
+            }
+
+            if (applications.Any())
+            {
+                return applications;
+            }
         }
     }
 
-    return apps.Select(a => a.FullPath);
+    // Return empty if no applications found in any artifact directories
+    return Enumerable.Empty<string>();
 }
 
-IEnumerable<DirectoryPath> FindAppsInDirectory(DirectoryPath directory)
+IEnumerable<string> FindAppsInDirectory(DirectoryPath directory)
 {
     Information($"Looking for .app in {directory}");
-    return GetDirectories($"{directory}/*.app");
+    return GetDirectories($"{directory}/*.app").Select(dir => dir.FullPath);
 }
+
+IEnumerable<string> FindApksInDirectory(DirectoryPath directory)
+{
+    Information($"Looking for .apk files in {directory}");
+    return GetFiles($"{directory}/*-Signed.apk").Select(file => file.FullPath);
+}
+
 
 void FailRunOnOnlyInconclusiveTests(string testResultsFile)
 {

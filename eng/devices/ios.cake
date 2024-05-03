@@ -45,8 +45,6 @@ var dotnetToolPath = GetDotnetToolPath();
 
 Setup(context =>
 {
-	Information("Running Compatibility Gallery UI Tests");
-
 	LogSetupInfo(dotnetToolPath);
 	PerformCleanupIfNeeded(deviceCleanupEnabled);
 
@@ -106,7 +104,7 @@ RunTarget(TARGET);
 void ExecuteBuild(string project, string device, string binDir, string config, string rid, string tfm, string toolPath)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-	var binlog = $"{binDir}/{projectName}-{config}-catalyst.binlog";
+	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -235,7 +233,7 @@ void BuildUITestApp(string appProject, string device, string binDir, string conf
 {
 	Information($"Building UI Test app: {appProject}");
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
-	var binlog = $"{binDir}/{projectName}-{config}-catalyst.binlog";
+	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
 
 	DotNetBuild(appProject, new DotNetBuildSettings
 	{
