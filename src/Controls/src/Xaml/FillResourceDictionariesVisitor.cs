@@ -1,11 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+	[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 	class FillResourceDictionariesVisitor : IXamlNodeVisitor
 	{
 		public FillResourceDictionariesVisitor(HydrationContext context) => Context = context;
@@ -38,7 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return;
 
 			//Set RD to VE
-			if (typeof(ResourceDictionary).IsAssignableFrom(Context.Types[node]) && ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName propertyName))
+			if (typeof(ResourceDictionary).IsAssignableFrom(Context.Types[node]) && node.TryGetPropertyName(parentNode, out XmlName propertyName))
 			{
 				if ((propertyName.LocalName == "Resources" ||
 					 propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)) && value is ResourceDictionary)

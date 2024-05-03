@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Xml;
@@ -7,6 +8,10 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	internal static class ResourceDictionaryHelpers
 	{
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 		internal static void LoadFromSource(ResourceDictionary rd, string value, Type rootType, IXmlLineInfo lineInfo)
 		{
 			(value, var assembly) = ResourceDictionary.RDSourceTypeConverter.SplitUriAndAssembly(value, rootType.Assembly);

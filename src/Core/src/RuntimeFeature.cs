@@ -24,6 +24,7 @@ namespace Microsoft.Maui
 #if !NETSTANDARD
 		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
+		[FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
 #endif
 		internal static bool IsXamlRuntimeParsingSupported
 			=> AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported", out bool isSupported)
