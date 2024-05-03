@@ -1,6 +1,7 @@
 //This assumes that this alwasys running from a mac with global workloads
 const string DotnetToolPathDefault = "/usr/local/share/dotnet/dotnet";
 const string DotnetVersion = "net8.0";
+const string TestFramework = "net472";
 
 string TARGET = Argument("target", "Test");
 
@@ -28,9 +29,13 @@ if (string.Equals(TARGET, "cg-uitest", StringComparison.OrdinalIgnoreCase))
 void FailRunOnOnlyInconclusiveTests(string testResultsFile)
 {
     // When all tests are inconclusive the run does not fail, check if this is the case and fail the pipeline so we get notified
-    var totalTestCount = XmlPeek(testResultsFile, "/test-run/@total");
-    var inconclusiveTestCount = XmlPeek(testResultsFile, "/test-run/@inconclusive");
+    var totalTestCount = XmlPeek(testResultsFile, "/assemblies/assembly/@total");
+    var inconclusiveTestCount = XmlPeek(testResultsFile, "/assemblies/assembly/@inconclusive");
 
+    if (totalTestCount == null)
+    {
+        throw new Exception("Could not find total or inconclusive test count in test results.");
+    }
     if (totalTestCount.Equals(inconclusiveTestCount))
     {
         throw new Exception("All tests are marked inconclusive, no tests ran. There is probably something wrong with running the tests.");
@@ -55,10 +60,16 @@ void CleanResults(string resultsDir)
 
 void HandleTestResults(string resultsDir, bool testsFailed)
 {
+    Information($"Handling test results: {resultsDir}");
     // catalyst test result files are weirdly named, so fix it up
     var resultsFile = GetFiles($"{resultsDir}/xunit-test-*.xml").FirstOrDefault();
+    if (resultsFile == null)
+    {
+       throw new Exception("No test results found.");
+    }
     if (FileExists(resultsFile))
     {
+        Information($"Test results found on {resultsDir}.");
         CopyFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"));
     }
 
@@ -107,4 +118,15 @@ string GetDotnetToolPath()
     var toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
     Information(isLocalDotnet ? "Using local dotnet" : "Using system dotnet");
     return toolPath;
+}
+
+void ExecuteWithRetries(Func<int> action, int retries)
+{
+    Information($"Retrying {retries} times");
+	while (retries > 0)
+	{
+		if (action() == 0) break;
+		retries--;
+		System.Threading.Thread.Sleep(1000);
+	}
 }

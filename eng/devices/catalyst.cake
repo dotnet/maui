@@ -10,20 +10,21 @@ var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ??
 var binlogArg = Argument("binlog", EnvironmentVariable("MAC_TEST_BINLOG") ?? "");
 var testApp = Argument("app", EnvironmentVariable("MAC_TEST_APP") ?? "");
 var testAppProjectPath = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? DEFAULT_APP_PROJECT);
-var testResultsPath = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
+var testResultsPath = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? GetTestResultsDirectory().FullPath);
 var runtimeIdentifier = Argument("rid", EnvironmentVariable("MAC_RUNTIME_IDENTIFIER") ?? GetDefaultRuntimeIdentifier());
 var deviceCleanupEnabled = Argument("cleanup", true);
 
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg).FullPath;
+var dotnetToolPath = GetDotnetToolPath();
 
 Information($"Project File: {projectPath}");
 Information($"Build Binary Log (binlog): {binlogDirectory}");
 Information($"Build Configuration: {configuration}");
 Information($"Build Runtime Identifier: {runtimeIdentifier}");
 Information($"Build Target Framework: {targetFramework}");
-
-var dotnetToolPath = GetDotnetToolPath();
+Information($"Test Device: {testDevice}");
+Information($"Test Results Path: {testResultsPath}");
 
 Setup(context =>
 {
@@ -87,7 +88,6 @@ void ExecuteBuild(string project, string binDir, string config, string rid, stri
 			.Append($"/bl:{binlog}")
 	});
 }
-
 
 void ExecuteTests(string project, string device, string resultsDir, string config, string tfm, string rid, string toolPath)
 {
