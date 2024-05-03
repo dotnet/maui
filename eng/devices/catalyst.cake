@@ -171,56 +171,8 @@ void BuildUITestApp(string appProject, string binDir, string config, string tfm,
 	Information("UI Test app build completed.");
 }
 
-IEnumerable<string> GetTestApplications(string project, string device, string config, string tfm, string rid)
-{ // Define common directory segments
-    const string binDirBase = "bin";
-    const string artifactsDir = "../../artifacts/bin/";
-    
-    // Map project types to specific subdirectories under artifacts
-    var projectMappings = new Dictionary<string, string>
-    {
-        ["Controls.DeviceTests"] = "Controls.DeviceTests",
-        ["Core.DeviceTests"] = "Core.DeviceTests",
-        ["Graphics.DeviceTests"] = "Graphics.DeviceTests",
-        ["MauiBlazorWebView.DeviceTests"] = "MauiBlazorWebView.DeviceTests",
-        ["Essentials.DeviceTests"] = "Essentials.DeviceTests",
-        ["Controls.Sample.UITests"] = "Controls.Sample.UITests"
-    };
-
-    // First try to find apps in the normal bin directory
-    var binDir = new DirectoryPath(project).Combine($"{binDirBase}/{config}/{tfm}/{rid}");
-    var apps = FindAppsInDirectory(binDir);
-    
-    // If no apps found, check in specific artifact directories
-    if (!apps.Any())
-    {
-        foreach (var entry in projectMappings)
-        {
-            if (project.Contains(entry.Key))
-            {
-                binDir = MakeAbsolute(new DirectoryPath($"{artifactsDir}{entry.Value}/{config}/{tfm}/{rid}/"));
-                apps = FindAppsInDirectory(binDir);
-                if (apps.Any()) break;
-            }
-        }
-
-        if (!apps.Any())
-        {
-            throw new Exception($"No app was found in the arcade {binDir} directory.");
-        }
-    }
-
-    return apps.Select(a => a.FullPath);
-}
-
-// Helper method to encapsulate the directory search logic
-IEnumerable<DirectoryPath> FindAppsInDirectory(DirectoryPath directory)
-{
-    Information($"Looking for .app in {directory}");
-    return GetDirectories($"{directory}/*.app");
-}
-
 // Helper methods
+
 void PerformCleanupIfNeeded(bool cleanupEnabled)
 {
 	if (cleanupEnabled)

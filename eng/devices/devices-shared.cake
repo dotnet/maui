@@ -3,6 +3,18 @@ const string DotnetToolPathDefault = "/usr/local/share/dotnet/dotnet";
 const string DotnetVersion = "net8.0";
 const string TestFramework = "net472";
 
+// Map project types to specific subdirectories under artifacts
+var projectMappings = new Dictionary<string, string>
+{
+    ["Controls.DeviceTests"] = "Controls.DeviceTests",
+    ["Core.DeviceTests"] = "Core.DeviceTests",
+    ["Graphics.DeviceTests"] = "Graphics.DeviceTests",
+    ["MauiBlazorWebView.DeviceTests"] = "MauiBlazorWebView.DeviceTests",
+    ["Essentials.DeviceTests"] = "Essentials.DeviceTests",
+    ["Controls.Sample.UITests"] = "Controls.Sample.UITests",
+    ["Compatibility.ControlGallery.iOS"] = "Compatibility.ControlGallery.iOS",
+};
+
 string TARGET = Argument("target", "Test");
 
 string DEFAULT_PROJECT = "";
@@ -24,6 +36,48 @@ if (string.Equals(TARGET, "cg-uitest", StringComparison.OrdinalIgnoreCase))
 {
     DEFAULT_PROJECT = "../../src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj";
     DEFAULT_APP_PROJECT = "../../src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj";
+}
+
+IEnumerable<string> GetTestApplications(string project, string device, string config, string tfm, string rid)
+{
+    const string binDirBase = "bin";
+    const string artifactsDir = "../../artifacts/bin/";
+
+    // First try to find apps in the normal bin directory
+    var binDir = new DirectoryPath(project).Combine($"{binDirBase}/{config}/{tfm}/{rid}");
+    var apps = FindAppsInDirectory(binDir);
+    
+    // If no apps found, check in specific artifact directories
+    if (!apps.Any())
+    {
+        foreach (var entry in projectMappings)
+        {
+            if (project.Contains(entry.Key))
+            {
+                if(project.Contains("Compatibility"))
+                {
+                    //this is for the compatibility gallery
+                    rid = "iossimulator-x64";
+                }
+                binDir = MakeAbsolute(new DirectoryPath($"{artifactsDir}{entry.Value}/{config}/{tfm}/{rid}/"));
+                apps = FindAppsInDirectory(binDir);
+                if (apps.Any()) break;
+            }
+        }
+
+        if (!apps.Any())
+        {
+            throw new Exception($"No app was found in the arcade {binDir} directory.");
+        }
+    }
+
+    return apps.Select(a => a.FullPath);
+}
+
+IEnumerable<DirectoryPath> FindAppsInDirectory(DirectoryPath directory)
+{
+    Information($"Looking for .app in {directory}");
+    return GetDirectories($"{directory}/*.app");
 }
 
 void FailRunOnOnlyInconclusiveTests(string testResultsFile)
@@ -65,7 +119,7 @@ void HandleTestResults(string resultsDir, bool testsFailed)
     var resultsFile = GetFiles($"{resultsDir}/xunit-test-*.xml").FirstOrDefault();
     if (resultsFile == null)
     {
-       throw new Exception("No test results found.");
+        throw new Exception("No test results found.");
     }
     if (FileExists(resultsFile))
     {
@@ -101,6 +155,7 @@ DirectoryPath DetermineBinlogDirectory(string projectPath, string binlogArg)
     }
     else
     {
+        Warning("No project path or binlog directory specified, using current directory.");
         return null;
     }
 }
@@ -123,10 +178,10 @@ string GetDotnetToolPath()
 void ExecuteWithRetries(Func<int> action, int retries)
 {
     Information($"Retrying {retries} times");
-	while (retries > 0)
-	{
-		if (action() == 0) break;
-		retries--;
-		System.Threading.Thread.Sleep(1000);
-	}
+    while (retries > 0)
+    {
+        if (action() == 0) break;
+        retries--;
+        System.Threading.Thread.Sleep(1000);
+    }
 }
