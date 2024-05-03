@@ -117,6 +117,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void OnDetachedFromWindow()
 		{
 			ClearLayoutListener();
+			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			base.OnDetachedFromWindow();
 		}
 
