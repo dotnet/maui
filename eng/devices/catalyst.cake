@@ -32,10 +32,7 @@ Setup(context =>
 	PerformCleanupIfNeeded(deviceCleanupEnabled);
 });
 
-Teardown(context =>
-{
-	PerformCleanupIfNeeded(deviceCleanupEnabled);
-});
+Teardown(context => PerformCleanupIfNeeded(deviceCleanupEnabled));
 
 Task("Cleanup");
 
@@ -53,6 +50,12 @@ Task("Test")
 		ExecuteTests(projectPath, testDevice, testResultsPath, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
 	});
 
+Task("uitest-build")
+	.Does(() =>
+	{
+		BuildUITestApp(testAppProjectPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
+	});
+
 Task("uitest")
 	.IsDependentOn("uitest-build")
 	.Does(() =>
@@ -60,14 +63,7 @@ Task("uitest")
 		ExecuteUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
 	});
 
-Task("uitest-build")
-	.Does(() =>
-	{
-		BuildUITestApp(testAppProjectPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
-	});
-
 RunTarget(TARGET);
-
 
 void ExecuteBuild(string project, string binDir, string config, string rid, string tfm, string toolPath)
 {
