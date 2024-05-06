@@ -17,7 +17,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		public void TapHiddenButton()
 		{
-			App.Tap(LayeredHiddenButtonQuery);
+			App.Click(LayeredHiddenButtonQuery);
 		}
 	}
 }

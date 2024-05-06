@@ -31,7 +31,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		string? ChangeOpacityAndGetCurrentStatus()
 		{
-			App.Tap(buttonId);
+			App.Click(buttonId);
 
 			return GetCurrentOpacityStatus();
 		}

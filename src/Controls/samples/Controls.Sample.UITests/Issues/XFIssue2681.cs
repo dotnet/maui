@@ -9,61 +9,54 @@ namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.None, 2681, "[UWP] Label inside Listview gets stuck inside infinite loop",
 	PlatformAffected.UWP)]
-
-public class XFIssue2681 : NavigationPage
+public class XFIssue2681 : TestContentPage
 {
-	public XFIssue2681() : base(new TestPage())
+	const string NavigateToPage = "Click Me.";
+	protected override void Init()
 	{
+		Content = new Button() 
+		{ 
+			Text = NavigateToPage, 
+			AutomationId = "ClickMe", 
+			Command = new Command(async () => await this.Navigation.PushAsync(new FreezeMe())) 
+		};
 	}
 
-	public class TestPage : TestContentPage
+	public partial class FreezeMe : ContentPage
 	{
-		const string NavigateToPage = "Click Me.";
-		protected override void Init()
+		public List<int> Items { get; set; }
+
+		public FreezeMe()
 		{
-			Content = new Button()
+			this.BindingContext = this;
+			var lv = new ListView()
 			{
-				Text = NavigateToPage,
-				AutomationId = "ClickMe",
-				Command = new Command(async () => await this.Navigation.PushAsync(new FreezeMe()))
+				Margin = new Thickness(20, 5, 5, 5)
 			};
-		}
 
-		public partial class FreezeMe : ContentPage
-		{
-			public List<int> Items { get; set; }
-
-			public FreezeMe()
+			lv.ItemTemplate = new DataTemplate(() =>
 			{
-				this.BindingContext = this;
-				var lv = new ListView()
-				{
-					Margin = new Thickness(20, 5, 5, 5)
-				};
+				var label = new Label() { Text = "sassifrass" };
+				label.SetBinding(Label.TextProperty, ".");
+				label.SetBinding(Label.AutomationIdProperty, ".");
+				return new ViewCell() { View = label };
+			});
 
-				lv.ItemTemplate = new DataTemplate(() =>
-				{
-					var label = new Label() { Text = "sassifrass" };
-					label.SetBinding(Label.TextProperty, ".");
-					label.SetBinding(Label.AutomationIdProperty, ".");
-					return new ViewCell() { View = label };
-				});
+			lv.SetBinding(ListView.ItemsSourceProperty, "Items");
 
-				lv.SetBinding(ListView.ItemsSourceProperty, "Items");
-
-				this.Content = new ScrollView()
+			this.Content = new ScrollView()
+			{
+				Content = new StackLayout()
 				{
-					Content = new StackLayout()
-					{
-						Children =
+					Children =
 					{
 						new Label(){ Text = "If page is not frozen this test has passed" },
 						new StackLayout()
 						{
 							Orientation = StackOrientation.Horizontal,
-							Children =
+							Children = 
 							{
-								lv
+								lv 
 							}
 						},
 						new Button(){
@@ -75,15 +68,14 @@ public class XFIssue2681 : NavigationPage
 							})
 						}
 					}
-					}
-				};
+				}
+			};
 
-				this.Appearing += (s, e) =>
-				{
-					this.Items = new List<int> { 1, 2, 3 };
-					this.OnPropertyChanged("Items");
-				};
-			}
+			this.Appearing += (s, e) =>
+			{
+				this.Items = new List<int> { 1, 2, 3 };
+				this.OnPropertyChanged("Items");
+			};
 		}
 	}
 }

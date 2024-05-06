@@ -18,6 +18,12 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(KeyboardScrollingGallery);
 		}
 
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			this.Back();
+		}
+
 		[Test]
 		public void EntriesScrollingPageTest()
 		{

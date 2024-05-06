@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,11 +20,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			try
 			{
 				_ = App.WaitForElement("GoToTest");
-				App.Tap("GoToTest");
+				App.Click("GoToTest");
 				
 				_ = App.WaitForElement("entry");
-				App.Tap("entry");
-				App.Tap("button");
+				App.Click("entry");
+				App.Click("button");
 
 				// The test passes if no crash is observed
 				App.FindElement("editor");

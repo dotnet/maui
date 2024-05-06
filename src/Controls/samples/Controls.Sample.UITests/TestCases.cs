@@ -39,6 +39,7 @@ namespace Maui.Controls.Sample
 					return async () =>
 					{
 						var page = ActivatePage(type);
+						TrackOnInsights(page);
 						await Navigation.PushAsync(page);
 					};
 				}
@@ -48,21 +49,48 @@ namespace Maui.Controls.Sample
 					return async () =>
 					{
 						var page = ActivatePage(type);
+						TrackOnInsights(page);
 						await Navigation.PushModalAsync(page);
 					};
 				}
 
-				if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot ||
-					issueAttribute.NavigationBehavior == NavigationBehavior.Default)
+				if (issueAttribute.NavigationBehavior == NavigationBehavior.Default)
+				{
+					return async () =>
+					{
+						var page = ActivatePage(type);
+						TrackOnInsights(page);
+						if (page is ContentPage /*|| page is CarouselPage*/)
+						{
+							await Navigation.PushAsync(page);
+						}
+						else if (page is Shell)
+						{
+							Application.Current.MainPage = page;
+						}
+						else
+						{
+							await Navigation.PushModalAsync(page);
+						}
+					};
+				}
+
+				if (issueAttribute.NavigationBehavior == NavigationBehavior.SetApplicationRoot)
 				{
 					return () =>
 					{
 						var page = ActivatePage(type);
+						TrackOnInsights(page);
 						Application.Current.MainPage = page;
 					};
 				}
 
 				return navigationAction;
+			}
+
+			static void TrackOnInsights(Page page)
+			{
+
 			}
 
 			Page ActivatePage(Type type)
@@ -154,6 +182,7 @@ namespace Maui.Controls.Sample
 					 }).ToList();
 
 				VerifyNoDuplicates();
+
 				FilterIssues();
 			}
 
@@ -183,8 +212,6 @@ namespace Maui.Controls.Sample
 			public bool TryToNavigateTo(string name)
 			{
 				var issue = _issues.SingleOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
-				issue = _issues.SingleOrDefault(x => string.Equals(x.Description, name, StringComparison.OrdinalIgnoreCase));
-
 				if (issue == null)
 					return false;
 
@@ -192,11 +219,12 @@ namespace Maui.Controls.Sample
 				return true;
 			}
 
-			public void FilterIssues(string filter = null)
+			public async void FilterIssues(string filter = null)
 			{
 				filter = filter?.Trim();
 				_filter = filter;
 
+				await Task.Delay(10);
 				if (_filter != filter)
 				{
 					return;

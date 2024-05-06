@@ -55,14 +55,14 @@ namespace Microsoft.Maui.AppiumTests
 		public virtual void GoTo([CallerMemberName] string callerMemberName = "")
 		{
 			App.WaitForElement("TargetViewContainer");
-			App.Tap("TargetViewContainer");
+			App.Click("TargetViewContainer");
 			App.EnterText("TargetViewContainer", callerMemberName.Replace("_", "", StringComparison.OrdinalIgnoreCase) + "VisualElement");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 		}
 
 		public void TapView()
 		{
-			App.Tap(ViewQuery);
+			App.Click(ViewQuery);
 		}
 
 		public T? GetProperty<T>(BindableProperty formProperty)

@@ -14,17 +14,9 @@ namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 16321, "Alerts Open on top of current presented view", PlatformAffected.All)]
-	public class Issue16321NavPage : NavigationPage
-	{
-		public Issue16321NavPage() : base(new Issue16321())
-		{
-
-		}
-	}
-
 	public partial class Issue16321 : ContentPage
 	{
-		public Issue16321() : base()
+		public Issue16321()
 		{
 			InitializeComponent();
 		}
@@ -75,10 +67,10 @@ namespace Maui.Controls.Sample.Issues
 			this.RemoveLogicalChild(page);
 		}
 #else
-			async void OpenAlertWithNewUIWindow(System.Object sender, System.EventArgs e)
-			{
-				await this.DisplayAlert("hello", "message", "Cancel");
-			}
+		async void OpenAlertWithNewUIWindow(System.Object sender, System.EventArgs e)
+		{
+			await this.DisplayAlert("hello", "message", "Cancel");
+		}
 #endif
 	}
 }

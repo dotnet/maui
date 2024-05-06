@@ -20,6 +20,12 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(LayoutGallery);
 		}
 
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			this.Back();
+		}
+
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the start")]
@@ -30,7 +36,7 @@ namespace Microsoft.Maui.AppiumTests
 				App.WaitForElement("WaitForStubControl");
 
 				// 1. Tap a button to scroll to the start position.
-				App.Tap("Start");
+				App.Click("Start");
 				App.WaitForNoElement("the scrollto button");
 
 				// 2. Verify that the scroll has moved to the correct position.
@@ -52,7 +58,7 @@ namespace Microsoft.Maui.AppiumTests
 				App.WaitForElement("WaitForStubControl");
 
 				// 1. Tap a button to scroll to the center position.
-				App.Tap("Center");
+				App.Click("Center");
 				App.WaitForNoElement("the scrollto button");
 
 				// 2. Verify that the scroll has moved to the correct position.
@@ -77,7 +83,7 @@ namespace Microsoft.Maui.AppiumTests
 				App.WaitForElement("WaitForStubControl");
 
 				// 1. Tap a button to scroll to the end.
-				App.Tap("End");
+				App.Click("End");
 
 				// 2. Verify that the scroll has moved to the correct position.
 				App.WaitForNoElement("the scrollto button");
@@ -98,7 +104,7 @@ namespace Microsoft.Maui.AppiumTests
 				App.WaitForElement("WaitForStubControl");
 
 				// 1. Tap a button to scroll 100 px.
-				App.Tap("Scroll100");
+				App.Click("Scroll100");
 			}
 			else
 			{
@@ -116,11 +122,11 @@ namespace Microsoft.Maui.AppiumTests
 				App.WaitForElement("WaitForStubControl");
 
 				// 1. Tap a button to scroll 100 px.
-				App.Tap("Scroll100");
+				App.Click("Scroll100");
 				App.WaitForNoElement("completed");
 
 				// 2. Repeat.
-				App.Tap("Scroll100");
+				App.Click("Scroll100");
 				App.WaitForNoElement("completed");
 			}
 			else

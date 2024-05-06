@@ -24,7 +24,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				TestDevice.Android
 			});
 
-			App.Tap("Add");
+			App.Click("Add");
 
 			Assert.NotNull(App.WaitForElement("item: 1"));
 		}

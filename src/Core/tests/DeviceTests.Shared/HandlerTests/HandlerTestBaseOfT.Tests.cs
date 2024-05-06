@@ -264,7 +264,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotEqual(platformViewBounds, new Graphics.Rect());
 		}
 
-		[Theory(DisplayName = "Native View Bounding Box is not empty")]
+		[Theory(DisplayName = "Native View Bounding Box is not empty"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/9054"
+#endif
+		)]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
@@ -301,12 +305,6 @@ namespace Microsoft.Maui.DeviceTests
 			else if (size == 1 && view is ISwitch)
 			{
 				// https://github.com/dotnet/maui/issues/11020
-			}
-#endif
-#if WINDOWS
-			else if (view is IContentView)
-			{
-				// https://github.com/dotnet/maui/issues/20228
 			}
 #endif
 			else if (view is IProgress)

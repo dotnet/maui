@@ -3,19 +3,19 @@ using UITest.Core;
 
 namespace UITest.Appium
 {
-	public class AppiumCatalystTouchActions : ICommandExecutionGroup
+	public class AppiumCatalystPointerActions : ICommandExecutionGroup
 	{
-		const string DoubleTapCommand = "doubleTap";
+		const string DoubleClickCommand = "doubleClick";
 		const string DragAndDropCommand = "dragAndDrop";
 
 		readonly List<string> _commands = new()
 		{
-			DoubleTapCommand,
+			DoubleClickCommand,
 			DragAndDropCommand,
 		};
 		readonly AppiumApp _appiumApp;
 
-		public AppiumCatalystTouchActions(AppiumApp appiumApp)
+		public AppiumCatalystPointerActions(AppiumApp appiumApp)
 		{
 			_appiumApp = appiumApp;
 		}
@@ -29,13 +29,13 @@ namespace UITest.Appium
 		{
 			return commandName switch
 			{
-				DoubleTapCommand => DoubleTap(parameters),
+				DoubleClickCommand => DoubleClick(parameters),
 				DragAndDropCommand => DragAndDrop(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
 
-		CommandResponse DoubleTap(IDictionary<string, object> parameters)
+		CommandResponse DoubleClick(IDictionary<string, object> parameters)
 		{
 			var element = GetAppiumElement(parameters["element"]);
 

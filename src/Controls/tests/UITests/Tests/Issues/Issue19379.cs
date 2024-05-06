@@ -21,7 +21,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Update the CollectionView Header.
-			App.Tap("UpdateButton");
+			App.Click("UpdateButton");
 
 			// 2. Verify the result.
 			VerifyScreenshot();

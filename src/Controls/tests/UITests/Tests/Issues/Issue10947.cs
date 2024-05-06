@@ -22,13 +22,13 @@ public class Issue10947 : _IssuesUITest
         var footerEntry = App.WaitForElement(FooterEntry);
 		var footerLocation = headerEntry.GetRect();
 
-        App.Tap(HeaderEntry);
+        App.Click(HeaderEntry);
 
         var newHeaderEntry = App.WaitForElement(HeaderEntry);
 		var newHeaderLocation = headerEntry.GetRect();
         Assert.AreEqual(headerLocation, newHeaderLocation);
 
-        App.Tap(FooterEntry);
+        App.Click(FooterEntry);
 
         var newFooterEntry = App.WaitForElement(FooterEntry);
 		var newFooterLocation = headerEntry.GetRect();

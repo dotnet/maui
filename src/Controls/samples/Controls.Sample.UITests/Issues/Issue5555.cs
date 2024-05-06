@@ -6,64 +6,58 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 5555, "Memory leak when SwitchCell or EntryCell", PlatformAffected.iOS)]
-	public class Issue5555 : NavigationPage
+	public class Issue5555 : TestContentPage
 	{
-		public Issue5555() : base(new TestPage())
+		public static Label DestructorCount = new Label() { Text = "0" };
+		protected override void Init()
 		{
-		}
-
-		public class TestPage : TestContentPage
-		{
-			public static Label DestructorCount = new Label() { Text = "0" };
-			protected override void Init()
+			var instructions = new Label
 			{
-				var instructions = new Label
-				{
-					FontSize = 16,
-					Text = "Click 'Push page' twice"
-				};
+				FontSize = 16,
+				Text = "Click 'Push page' twice"
+			};
 
-				var result = new Label
-				{
-					Text = "Success",
-					AutomationId = "SuccessLabel",
-					IsVisible = false
-				};
+			var result = new Label
+			{
+				Text = "Success",
+				AutomationId = "SuccessLabel",
+				IsVisible = false
+			};
 
-				var list = new List<WeakReference>();
+			var list = new List<WeakReference>();
 
-				var checkButton = new Button
+			var checkButton = new Button
+			{
+				Text = "Check Result",
+				AutomationId = "CheckResult",
+				IsVisible = false,
+				Command = new Command(async () =>
 				{
-					Text = "Check Result",
-					AutomationId = "CheckResult",
-					IsVisible = false,
-					Command = new Command(async () =>
+					if (list.Count < 2)
 					{
-						if (list.Count < 2)
-						{
-							instructions.Text = "Click 'Push page' again";
-							return;
-						}
+						instructions.Text = "Click 'Push page' again";
+						return;
+					}
 
-						try
-						{
-							await GarbageCollectionHelper.WaitForGC(2500, list.ToArray());
-							result.Text = "Success";
-							result.IsVisible = true;
-							instructions.Text = "";
-						}
-						catch (Exception)
-						{
-							instructions.Text = "Failed";
-							result.IsVisible = false;
-							return;
-						}
-					})
-				};
+					try
+					{
+						await GarbageCollectionHelper.WaitForGC(2500, list.ToArray());
+						result.Text = "Success";
+						result.IsVisible = true;
+						instructions.Text = "";
+					}
+					catch (Exception)
+					{
+						instructions.Text = "Failed";
+						result.IsVisible = false;
+						return;
+					}
+				})
+			};
 
-				Content = new StackLayout
-				{
-					Children = {
+			Content = new StackLayout
+			{
+				Children = {
 					DestructorCount,
 					instructions,
 					result,
@@ -94,16 +88,16 @@ namespace Maui.Controls.Sample.Issues
 					},
 					checkButton
 				}
-				};
-			}
+			};
+		}
 
-			class LeakPage : ContentPage
+		class LeakPage : ContentPage
+		{
+			public LeakPage()
 			{
-				public LeakPage()
+				Content = new StackLayout
 				{
-					Content = new StackLayout
-					{
-						Children = {
+					Children = {
 					new Entry { Text = "LeakPage" },
 					new TableView
 					{
@@ -117,13 +111,12 @@ namespace Maui.Controls.Sample.Issues
 						}
 					}
 				}
-					};
-				}
+				};
+			}
 
-				~LeakPage()
-				{
-					System.Diagnostics.Debug.WriteLine("LeakPage Finalized");
-				}
+			~LeakPage()
+			{
+				System.Diagnostics.Debug.WriteLine("LeakPage Finalized");
 			}
 		}
 	}

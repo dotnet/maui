@@ -14,12 +14,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		public void ShadowsDontRespectControlShape()
+		public void Issue16094Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac });
-
-			App.WaitForElement("TestScrollView");
-			App.ScrollDown("TestScrollView", ScrollStrategy.Gesture);
 			App.WaitForElement("EditorControl");
 			VerifyScreenshot();
 		}

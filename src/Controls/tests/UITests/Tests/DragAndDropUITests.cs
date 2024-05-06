@@ -20,13 +20,19 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(DragAndDropGallery);
 		}
 
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			this.Back();
+		}
+
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DragEvents()
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropEvents");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
@@ -51,10 +57,10 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
 			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
+			App.Click("ResetButton");
 
 			App.WaitForElement("Red");
 			App.WaitForElement("Green");
@@ -81,7 +87,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropEventArgs");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
@@ -166,9 +172,9 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
-			App.Tap("ResetButton");
+			App.Click("ResetButton");
 
 			App.WaitForElement("Blue");
 			App.WaitForElement("Green");
@@ -200,9 +206,9 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
-			App.Tap("ResetButton");
+			App.Click("ResetButton");
 
 			App.WaitForElement("Blue");
 			App.WaitForElement("Green");
@@ -239,9 +245,9 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
-			App.Tap("ResetButton");
+			App.Click("ResetButton");
 
 			App.WaitForElement("Blue");
 			App.WaitForElement("Green");
