@@ -11,7 +11,8 @@ namespace UITest.Appium
 		public AppiumIOSApp(Uri remoteAddress, IConfig config)
 			: base(new IOSDriver(remoteAddress, GetOptions(config)), config)
 		{
-			_commandExecutor.AddCommandGroup(new AppiumIOSPointerActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSMouseActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSVirtualKeyboardActions(this));
 		}
 
