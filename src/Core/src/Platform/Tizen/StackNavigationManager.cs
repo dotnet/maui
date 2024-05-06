@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Platform
 			content.WidthSpecification = LayoutParamPolicies.MatchParent;
 			content.HeightSpecification = LayoutParamPolicies.MatchParent;
 
-			var naviPage = new NaviPage
+			naviPage = new NaviPage
 			{
 				Content = content,
 				WidthSpecification = LayoutParamPolicies.MatchParent,
