@@ -5,11 +5,11 @@ namespace UITest.Appium
 {
 	public class AppiumCatalystScrollActions : AppiumScrollActions
 	{
-        public AppiumCatalystScrollActions(AppiumApp app)
+		public AppiumCatalystScrollActions(AppiumApp app)
 			: base(app)
 		{
 		}
-        
+
 		protected override CommandResponse ScrollLeft(IDictionary<string, object> parameters)
 		{
 			parameters.TryGetValue("element", out var value);
@@ -98,110 +98,82 @@ namespace UITest.Appium
 
 		static void ScrollToLeft(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
-            var position = element is not null ? element.Location : System.Drawing.Point.Empty;
-            var size = element is not null ? element.Size : driver.Manage().Window.Size;
+			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
+			var size = element is not null ? element.Size : driver.Manage().Window.Size;
 
-            int x = (int)(position.X + (size.Width * 0.05));
+			int x = (int)(position.X + (size.Width * 0.05));
 			int y = position.Y + size.Height / 2;
 
 			int deltaX = (int)(position.X + (size.Width * swipePercentage));
 			int deltaY = y;
 
-			var parameters = new Dictionary<string, object>
-            {
-                { "x", x },
-                { "y", y },
-                { "deltaX", deltaX },
-                { "deltaY", deltaY },
-            };
-
-            if(element is not null)
-            {
-                parameters.Add("elementId", element.Id); 
-            }
-
-            driver.ExecuteScript("macos: scroll", parameters);
+			driver.ExecuteScript("macos: scroll", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y },
+				{ "deltaX", deltaX },
+				{ "deltaY", deltaY },
+			});
 		}
 
 		static void ScrollToDown(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
-            var position = element is not null ? element.Location : System.Drawing.Point.Empty;
-            var size = element is not null ? element.Size : driver.Manage().Window.Size;
+			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
+			var size = element is not null ? element.Size : driver.Manage().Window.Size;
 
-            int x = position.X + size.Width / 2;
+			int x = position.X + size.Width / 2;
 			int y = (int)(position.Y + (size.Height * swipePercentage));
 
 			int deltaX = x;
 			int deltaY = (int)(position.Y + (size.Height * 0.05));
 
-            var parameters = new Dictionary<string, object>
-            {
-                { "x", x },
-                { "y", y },
-                { "deltaX", deltaX },
-                { "deltaY", deltaY },
-            };
-
-            if(element is not null)
-            {
-                parameters.Add("elementId", element.Id); 
-            }
-
-            driver.ExecuteScript("macos: scroll", parameters); 
+			driver.ExecuteScript("macos: scroll", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y },
+				{ "deltaX", deltaX },
+				{ "deltaY", deltaY },
+			});
 		}
 
 		static void ScrollToRight(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
-            var position = element is not null ? element.Location : System.Drawing.Point.Empty;
-            var size = element is not null ? element.Size : driver.Manage().Window.Size;
+			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
+			var size = element is not null ? element.Size : driver.Manage().Window.Size;
 
-            int x = (int)(position.X + (size.Width * swipePercentage));
+			int x = (int)(position.X + (size.Width * swipePercentage));
 			int y = position.Y + size.Height / 2;
 
 			int deltaX = (int)(position.X + (size.Width * 0.05));
-			int endY = y;
+			int deltaY = y;
 
-			var parameters = new Dictionary<string, object>
-            {
-                { "x", x },
-                { "y", y },
-                { "deltaX", deltaX },
-                { "deltaY", endY },
-            };
-
-            if(element is not null)
-            {
-                parameters.Add("elementId", element.Id); 
-            }
-
-            driver.ExecuteScript("macos: scroll", parameters);
+			driver.ExecuteScript("macos: scroll", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y },
+				{ "deltaX", deltaX },
+				{ "deltaY", deltaY },
+			});
 		}
 
 		static void ScrollToUp(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
-            var position = element is not null ? element.Location : System.Drawing.Point.Empty;
-            var size = element is not null ? element.Size : driver.Manage().Window.Size;
+			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
+			var size = element is not null ? element.Size : driver.Manage().Window.Size;
 
-            int x = position.X + size.Width / 2;
+			int x = position.X + size.Width / 2;
 			int y = (int)(position.Y + (size.Height * 0.05));
 
 			int deltaX = x;
 			int deltaY = (int)(position.Y + (size.Height * swipePercentage));
 
-            var parameters = new Dictionary<string, object>
-            {
-                { "x", x },
-                { "y", y },
-                { "deltaX", deltaX },
-                { "deltaY", deltaY },
-            };
-
-            if(element is not null)
-            {
-                parameters.Add("elementId", element.Id); 
-            }
-
-            driver.ExecuteScript("macos: scroll", parameters);
+			driver.ExecuteScript("macos: scroll", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y },
+				{ "deltaX", deltaX },
+				{ "deltaY", deltaY },
+			});
 		}
 	}
 }
