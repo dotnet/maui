@@ -676,13 +676,6 @@ public static class KeyboardAutoManagerScroll
 			return;
 
 		var keyboardIntersect = CGRect.Intersect(KeyboardFrame, scrolledView.Frame);
-		nfloat movedContainerDistance = 0;
-
-		// if we are moving or have moved the containerview frame, we need to account for that
-		if (TopViewBeginOrigin != InvalidPoint && ContainerView is not null)
-		{
-			movedContainerDistance = TopViewBeginOrigin.Y - ContainerView.Frame.Y;
-		}
 
 		var frameInWindow = ContainerView!.ConvertRectToView(scrolledView.Frame, null);
 		keyboardIntersect = CGRect.Intersect(KeyboardFrame, frameInWindow);
@@ -710,7 +703,7 @@ public static class KeyboardAutoManagerScroll
 	{
 		while (view is not null)
 		{
-			if (view.ScrollEnabled)
+			if (view.ScrollEnabled && !IsHorizontalCollectionView(view))
 				return view;
 
 			view = view.FindResponder<UIScrollView>();
@@ -718,6 +711,9 @@ public static class KeyboardAutoManagerScroll
 
 		return null;
 	}
+
+	static bool IsHorizontalCollectionView(UIView collectionView)
+    => collectionView is UICollectionView { CollectionViewLayout: UICollectionViewFlowLayout { ScrollDirection: UICollectionViewScrollDirection.Horizontal }};
 
 	internal static nfloat FindKeyboardHeight()
 	{

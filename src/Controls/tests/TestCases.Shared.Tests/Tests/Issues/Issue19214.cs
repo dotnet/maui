@@ -1,6 +1,8 @@
 ﻿using System.Drawing;
 using NUnit.Framework;
+using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
 
@@ -87,8 +89,15 @@ public class Issue19214 : _IssuesUITest
 
     void ScrollScrollView (AppiumApp app, Rectangle rect, bool scrollsDown = true)
     {
-        var actions = new TouchAction(app.Driver);
         var newY = scrollsDown ? rect.Y - 1000 : rect.Y + 1000;
-        actions.LongPress(null, rect.Left - 5, rect.Y).MoveTo(null, rect.Left - 5, newY).Release().Perform();
+
+        OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+		var scrollSequence = new ActionSequence(touchDevice, 0);
+		scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, rect.Left - 5, rect.Y, TimeSpan.Zero));
+		scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+		scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500)));
+		scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, rect.Left - 5, newY, TimeSpan.FromMilliseconds(250)));
+		scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+		app.Driver.PerformActions([scrollSequence]);
     }
 }
