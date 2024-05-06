@@ -19,12 +19,6 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(CarouselViewGallery);
 		}
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
-		}
-
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewSetPosition()
@@ -59,11 +53,11 @@ namespace Microsoft.Maui.AppiumTests
 				CheckLabelValue("lblPosition", index);
 				CheckLabelValue("lblCurrentItem", index);
 
-				App.Click("btnNext");
+				App.Tap("btnNext");
 				CheckLabelValue("lblPosition", nextIndex);
 				CheckLabelValue("lblCurrentItem", nextIndex);
 				CheckLabelValue("lblSelected", nextIndex);
-				App.Click("btnPrev");
+				App.Tap("btnPrev");
 			}
 		}
 
