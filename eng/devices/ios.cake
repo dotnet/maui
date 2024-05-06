@@ -81,7 +81,7 @@ Task("Test")
 Task("uitest-build")
 	.Does(() =>
 	{
-		BuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
+		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
 
 	});
 
@@ -229,7 +229,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	Information("UI Tests completed.");
 }
 
-void BuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
+void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
 {
 	Information($"Building UI Test app: {appProject}");
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
