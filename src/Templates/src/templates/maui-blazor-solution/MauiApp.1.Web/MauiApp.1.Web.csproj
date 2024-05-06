@@ -27,7 +27,7 @@
   </ItemGroup>
   <!--#else -->
   <ItemGroup>
-	    <ProjectReference Include="..\MauiApp.1.Shared\MauiApp.1.Shared.csproj" />
+    <ProjectReference Include="..\MauiApp.1.Shared\MauiApp.1.Shared.csproj" />
   </ItemGroup>
   <!--#endif -->
 
