@@ -21,9 +21,8 @@ namespace Microsoft.Maui
 			content.HeightResizePolicy = ResizePolicyType.FillToParent;
 			content.WidthResizePolicy = ResizePolicyType.FillToParent;
 
-			if (s_modalStacks.ContainsKey(platformWindow))
+			if (s_modalStacks.TryGetValue(platformWindow, out var modalStack))
 			{
-				var modalStack = s_modalStacks[platformWindow];
 				modalStack.Clear();
 				modalStack.Push(content, true);
 			}
@@ -62,8 +61,8 @@ namespace Microsoft.Maui
 
 		public static NavigationStack? GetModalStack(this Window platformWindow)
 		{
-			if (s_modalStacks.ContainsKey(platformWindow))
-				return s_modalStacks[platformWindow];
+			if (s_modalStacks.TryGetValue(platformWindow, out var modalStack))
+				return modalStack;
 			return null;
 		}
 
@@ -103,14 +102,14 @@ namespace Microsoft.Maui
 
 		static void OnBackButtonPressed(Window platformWindow)
 		{
-			if (s_windowBackButtonPressedHandler.ContainsKey(platformWindow))
+			if (s_windowBackButtonPressedHandler.TryGetValue(platformWindow, out var pressedHandler))
 			{
-				if (s_windowBackButtonPressedHandler[platformWindow].Invoke())
+				if (pressedHandler.Invoke())
 					return;
 			}
 
-			if (s_windowCloseRequestHandler.ContainsKey(platformWindow))
-				s_windowCloseRequestHandler[platformWindow].Invoke();
+			if (s_windowCloseRequestHandler.TryGetValue(platformWindow, out var requestHandler))
+				requestHandler.Invoke();
 		}
 
 		internal static void UpdateX(this Window platformWindow, IWindow window) =>
