@@ -24,11 +24,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}, "Send Keys only works on Android which is why we are ignoring these other platforms");
 
 			App.WaitForElement("Entry1");
-			App.Tap("Entry1");
+			App.Click("Entry1");
 
 			await Task.Yield();
 
-			App.Tap("SendNext");
+			App.Click("SendNext");
 			await Task.Yield();
 
 			Assert.True(App.IsFocused("Entry2"));
@@ -45,11 +45,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}, "Send Keys only works on Android which is why we are ignoring these other platforms");
 
 			App.WaitForElement("EntryDone");
-			App.Tap("EntryDone");
+			App.Click("EntryDone");
 
 			await Task.Yield();
 			Assert.True(App.IsKeyboardShown());
-			App.Tap("SendDone");
+			App.Click("SendDone");
 			await Task.Yield();
 			Assert.False(App.IsKeyboardShown());
 		}

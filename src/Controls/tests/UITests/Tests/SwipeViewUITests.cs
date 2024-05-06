@@ -24,6 +24,12 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(ScrollViewGallery);
 		}
 
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			this.Back();
+		}
+
 		[Test]
 		[Category(UITestCategories.SwipeView)]
 		[Description("Swipe to right the SwipeView")]

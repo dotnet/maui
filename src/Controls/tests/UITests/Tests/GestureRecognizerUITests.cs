@@ -19,6 +19,12 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(GestureRecognizerGallery);
 		}
 
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			this.Back();
+		}
+
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void PointerGestureTest()
@@ -28,12 +34,12 @@ namespace Microsoft.Maui.AppiumTests
 
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "PointerGestureRecognizerEvents");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
 			App.WaitForElement("primaryLabel");
 			// using Tap in place of moving mouse for now
-			App.Tap("primaryLabel");
-			App.Tap("secondaryLabel");
+			App.Click("primaryLabel");
+			App.Click("secondaryLabel");
 
 			var secondaryLabelText = App.FindElement("secondaryLabel").GetText();
 			Assert.IsNotEmpty(secondaryLabelText);
@@ -45,10 +51,10 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DoubleTapGallery");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
 			App.WaitForElement("DoubleTapSurface");
-			App.DoubleTap("DoubleTapSurface");
+			App.DoubleClick("DoubleTapSurface");
 
 			var result = App.FindElement("DoubleTapResults").GetText();
 			Assert.AreEqual("Success", result);

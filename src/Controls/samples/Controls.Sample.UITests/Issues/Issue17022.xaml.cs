@@ -10,14 +10,6 @@ namespace Maui.Controls.Sample.Issues;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 17022, "UINavigationBar is Translucent", PlatformAffected.iOS)]
-public class Issue17022NavPage : NavigationPage
-{
-	public Issue17022NavPage() : base(new Issue17022())
-	{
-
-	}
-}
-
 public partial class Issue17022 : ContentPage
 {
 	public Issue17022()
@@ -105,7 +97,7 @@ public partial class Issue17022 : ContentPage
 		var detail = new NavigationPage(CreateMainPage(true, _notTopOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
-			Flyout = new ContentPage() { Title = "FlyoutPage" },
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
 		detail.BarBackgroundColor = Colors.Transparent;
@@ -119,7 +111,7 @@ public partial class Issue17022 : ContentPage
 		var detail = new NavigationPage(CreateMainPage(true, _notTopOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
-			Flyout = new ContentPage() { Title = "FlyoutPage" },
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
 		detail.BarBackgroundColor = Colors.Transparent;
@@ -131,7 +123,7 @@ public partial class Issue17022 : ContentPage
 		var detail = new NavigationPage(CreateMainPage(true, _notTopOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
-			Flyout = new ContentPage() { Title = "FlyoutPage" },
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
 		detail.On<iOS>().EnableTranslucentNavigationBar();
@@ -143,7 +135,7 @@ public partial class Issue17022 : ContentPage
 		var detail = new NavigationPage(CreateMainPage(true, _notTopOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
-			Flyout = new ContentPage() { Title = "FlyoutPage" },
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
 		detail.BarBackgroundColor = Colors.Transparent;
@@ -156,7 +148,7 @@ public partial class Issue17022 : ContentPage
 		var detail = new NavigationPage(CreateMainPage(false, _notTopOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
-			Flyout = new ContentPage() { Title = "FlyoutPage" },
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
 		await Navigation.PushModalAsync(flyoutPage);
@@ -167,7 +159,7 @@ public partial class Issue17022 : ContentPage
 		var detail = new NavigationPage(CreateMainPage(false, _notTopOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
-			Flyout = new ContentPage() { Title = "FlyoutPage" },
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
 		detail.BarBackgroundColor = Colors.Transparent;
@@ -179,7 +171,7 @@ public partial class Issue17022 : ContentPage
 		var detail = new NavigationPage(CreateMainPage(false, _notTopOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
-			Flyout = new ContentPage() { Title = "FlyoutPage" },
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
 		detail.On<iOS>().EnableTranslucentNavigationBar();
@@ -190,7 +182,7 @@ public partial class Issue17022 : ContentPage
 		var detail = new NavigationPage(CreateMainPage(false, _topOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
-			Flyout = new ContentPage() { Title = "FlyoutPage" },
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
 		detail.BarBackgroundColor = Colors.Transparent;
@@ -198,7 +190,7 @@ public partial class Issue17022 : ContentPage
 		await Navigation.PushModalAsync(flyoutPage);
 	}
 
-	async void SemiTransparentNavigationPageBackgroundColorPressed(System.Object sender, System.EventArgs e)
+		async void SemiTransparentNavigationPageBackgroundColorPressed(System.Object sender, System.EventArgs e)
 	{
 		var mainPage = CreateMainPage(false, _topOfScreenText);
 		var navPage = new NavigationPage(mainPage)
@@ -225,7 +217,7 @@ public partial class Issue17022 : ContentPage
 		var detail = new NavigationPage(CreateMainPage(false, _topOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
-			Flyout = new ContentPage() { Title = "FlyoutPage" },
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
 		detail.BarBackgroundColor = Color.FromRgba(100, 100, 100, 50);
@@ -238,7 +230,7 @@ public partial class Issue17022 : ContentPage
 		var detail = new NavigationPage(CreateMainPage(false, _topOfScreenText));
 		var flyoutPage = new FlyoutPage()
 		{
-			Flyout = new ContentPage() { Title = "FlyoutPage" },
+			Flyout = new ContentPage(){Title = "FlyoutPage"},
 			Detail = detail
 		};
 		detail.BarBackground = Color.FromRgba(100, 100, 100, 50);
@@ -246,11 +238,10 @@ public partial class Issue17022 : ContentPage
 		await Navigation.PushModalAsync(flyoutPage);
 	}
 
-	ContentPage CreateMainPage(bool useSafeArea, string expectedText)
+	ContentPage CreateMainPage (bool useSafeArea, string expectedText)
 	{
-		var mainPage = new ContentPage()
-		{
-			AutomationId = "PopupMainPage"
+		var mainPage = new ContentPage(){
+			AutomationId="PopupMainPage"
 		};
 		var grid = new Grid
 		{
@@ -262,13 +253,13 @@ public partial class Issue17022 : ContentPage
 			},
 		};
 
-		var button = new Button { Text = "Pop Page", AutomationId = "PopPageButton" };
+		var button = new Button { Text = "Pop Page", AutomationId="PopPageButton" };
 		button.Clicked += PopModalButtonClicked;
 
-		grid.Add(new BoxView { BackgroundColor = Colors.Green, AutomationId = "TopBoxView" }, 0, 0);
-		grid.Add(new Label { TextColor = Colors.Black, Margin = new Microsoft.Maui.Thickness(0, 60, 0, 0), HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center, Text = "Can you see me?" }, 0, 0);
-		grid.Add(new Label { Text = expectedText }, 0, 1);
-		grid.Add(button, 0, 2);
+		grid.Add (new BoxView { BackgroundColor = Colors.Green, AutomationId="TopBoxView" }, 0, 0 );
+		grid.Add (new Label { TextColor = Colors.Black, Margin= new Microsoft.Maui.Thickness(0,60,0,0), HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center, Text="Can you see me?" }, 0, 0 );
+		grid.Add (new Label { Text = expectedText }, 0, 1 );
+		grid.Add (button, 0, 2 );
 		grid.IgnoreSafeArea = true;
 
 		mainPage.Content = grid;
@@ -276,7 +267,7 @@ public partial class Issue17022 : ContentPage
 		return mainPage;
 	}
 
-	async void PopModalButtonClicked(System.Object sender, System.EventArgs e)
+	async void PopModalButtonClicked (System.Object sender, System.EventArgs e)
 	{
 		await Navigation.PopModalAsync();
 	}

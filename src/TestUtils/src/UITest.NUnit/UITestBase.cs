@@ -49,15 +49,8 @@ namespace UITest.Appium.NUnit
 
 		protected virtual void FixtureTeardown()
 		{
-			try
-			{
-				Reset();
-			}
-			catch (Exception e)
-			{
-				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
-			}
+			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureTeardown)} for {name}");
 		}
 
 		[TearDown]

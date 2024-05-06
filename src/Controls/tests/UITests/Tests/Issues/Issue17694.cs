@@ -25,7 +25,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("Spin");
 
 			// 1. Click button
-			App.Tap("Spin");
+			App.Click("Spin");
 
 			VerifyScreenshot();
 		}

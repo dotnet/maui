@@ -52,14 +52,16 @@ namespace Microsoft.Maui.Controls
 			if (!IsLoading)
 				return Task.FromResult(false);
 
-			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, new TaskCompletionSource<bool>(), null);
-			if (original is null)
+			var tcs = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
+			if (original == null)
 			{
 				_cancellationTokenSource.Cancel();
-				return Task.FromResult(false);
 			}
+			else
+				tcs = original;
 
-			return original.Task;
+			return tcs.Task;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromFile']/Docs/*" />

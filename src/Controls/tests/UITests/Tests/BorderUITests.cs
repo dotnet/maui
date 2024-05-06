@@ -19,6 +19,12 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(BorderGallery);
 		}
 
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			this.Back();
+		}
+
 		// TODO: Enable this as a test once fully working
 		//[Test]
 		//[Category(UITestCategories.Border)]
@@ -26,7 +32,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "BordersWithVariousShapes");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
 			App.WaitForElement("WaitForStubControl");
 

@@ -38,15 +38,5 @@ namespace Microsoft.Maui.Controls
 		{
 
 		}
-		
-		internal static void MapPrefersHomeIndicatorAutoHiddenProperty(ITabbedViewHandler handler, TabbedPage view)
-		{
-			view.CurrentPage.Handler.UpdateValue(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty));
-		}
-
-		internal static void MapPrefersPrefersStatusBarHiddenProperty(ITabbedViewHandler handler, TabbedPage view)
-		{
-			view.CurrentPage.Handler.UpdateValue(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty));
-		}
 	}
 }

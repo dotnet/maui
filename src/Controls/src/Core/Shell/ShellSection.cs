@@ -648,11 +648,8 @@ namespace Microsoft.Maui.Controls
 			if (previousPage != DisplayedPage)
 			{
 				previousPage?.SendDisappearing();
-				if (!Navigation.ModalStack.Any())
-				{
-					PresentedPageAppearing();
-					SendAppearanceChanged();
-				}
+				PresentedPageAppearing();
+				SendAppearanceChanged();
 			}
 		}
 

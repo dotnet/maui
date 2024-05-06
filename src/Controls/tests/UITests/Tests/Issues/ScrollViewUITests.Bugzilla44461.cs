@@ -32,7 +32,7 @@ namespace Microsoft.Maui.AppiumTests
 			var buttonId= $"{position}";
 			App.WaitForElement(buttonId);
 			var initialPosition = App.FindElement(buttonId).GetRect();
-			App.Tap(buttonId);
+			App.Click(buttonId);
 			var finalPosition = App.FindElement(buttonId).GetRect();
 			return (initialPosition, finalPosition);
 		}

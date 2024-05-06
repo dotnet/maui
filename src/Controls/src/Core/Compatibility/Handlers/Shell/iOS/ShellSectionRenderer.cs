@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Foundation;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
@@ -222,15 +221,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		}
 
 
-		public override void ViewDidAppear(bool animated)
-		{
-			base.ViewDidAppear(animated);
-			if (_context is ShellRenderer shellRenderer)
-			{
-				shellRenderer.ViewController.SetNeedsUpdateOfHomeIndicatorAutoHidden();
-				shellRenderer.ViewController.SetNeedsStatusBarAppearanceUpdate();
-			}
-		}
 
 		void IDisconnectable.Disconnect()
 		{

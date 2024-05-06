@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Networking
 		{
 			get
 			{
-				if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000, 0))
+				if (OperatingSystem.IsWindowsVersionAtLeast(11))
 				{
 					var profile = NetworkInformation.GetInternetConnectionProfile();
 					if (profile == null)

@@ -52,7 +52,7 @@ namespace Microsoft.Maui.AppiumTests
 			
 			App.WaitForElement(FirstItemMark);
 
-			App.Tap(ToggleButtonMark);
+			App.Click(ToggleButtonMark);
 
 			// Waiting until merge https://github.com/dotnet/maui/pull/19181
 			//App.ScrollDown(ScrollViewMark);

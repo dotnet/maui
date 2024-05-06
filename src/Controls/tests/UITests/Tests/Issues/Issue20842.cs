@@ -22,11 +22,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			App.WaitForElement(scrollUpButton);
 
-			App.Tap(scrollDownButton);
+			App.Click(scrollDownButton);
 			await Task.Delay(200);
-			App.Tap(scrollUpButton);
+			App.Click(scrollUpButton);
 			await Task.Delay(200);
-			App.Tap(scrollDownButton);
+			App.Click(scrollDownButton);
    			await Task.Delay(500);
 
 			VerifyScreenshot();

@@ -19,14 +19,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Press the 'On' button.
-			App.Tap("OnButton");
+			App.Click("OnButton");
 
 			// 2. The test fails if the 'On' button is still enabled or the 'Off' button is not enabled.
 			var status1 = App.FindElement("StatusLabel").GetText();
 			Assert.AreEqual("OnButton disabled OffButton enabled", status1);
 
 			// 3.Press the 'Off' button.
-			App.Tap("OffButton");
+			App.Click("OffButton");
 
 			// 4. The test fails if the 'Off' button is still enabled or the 'On' button is not enabled.
 			var status2 = App.FindElement("StatusLabel").GetText();

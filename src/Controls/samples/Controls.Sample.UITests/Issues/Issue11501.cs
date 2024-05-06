@@ -8,57 +8,49 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 11501, "Making Fragment Changes While App is Backgrounded Fails", PlatformAffected.Android)]
-
-	public class Issue11501 : NavigationPage
+	public class Issue11501 : TestContentPage
 	{
-		public Issue11501() : base(new TestPage())
+		Func<Task> _currentTest;
+		Page _mainPage;
+		List<Page> _modalStack;
+		Window _window;
+		public Issue11501()
 		{
+			Loaded += OnLoaded;
 		}
 
-
-		public class TestPage : TestContentPage
+		private void OnLoaded(object sender, EventArgs e)
 		{
-			Func<Task> _currentTest;
-			Page _mainPage;
-			List<Page> _modalStack;
-			Window _window;
-			public TestPage()
-			{
-				Loaded += OnLoaded;
-			}
+			_window = Window;
+			_mainPage = Application.Current.MainPage;
+			_modalStack = Navigation.ModalStack.ToList();
+		}
 
-			private void OnLoaded(object sender, EventArgs e)
+		private async void OnWindowActivated(object sender, EventArgs e)
+		{
+			DisconnectFromWindow();
+			if (_currentTest is not null)
 			{
-				_window = Window;
-				_mainPage = Application.Current.MainPage;
-				_modalStack = Navigation.ModalStack.ToList();
+				await Task.Yield();
+				await _currentTest();
+				_currentTest = null;
 			}
+		}
 
-			private async void OnWindowActivated(object sender, EventArgs e)
-			{
-				DisconnectFromWindow();
-				if (_currentTest is not null)
-				{
-					await Task.Yield();
-					await _currentTest();
-					_currentTest = null;
-				}
-			}
+		void ConnectToWindow()
+		{
+			_window.Stopped -= OnWindowActivated;
+			_window.Stopped += OnWindowActivated;
+		}
 
-			void ConnectToWindow()
-			{
-				_window.Stopped -= OnWindowActivated;
-				_window.Stopped += OnWindowActivated;
-			}
+		void DisconnectFromWindow()
+		{
+			_window.Stopped -= OnWindowActivated;
+		}
 
-			void DisconnectFromWindow()
-			{
-				_window.Stopped -= OnWindowActivated;
-			}
-
-			protected override void Init()
-			{
-				Content = new VerticalStackLayout()
+		protected override void Init()
+		{
+			Content = new VerticalStackLayout()
 			{
 				new Button()
 				{
@@ -159,14 +151,14 @@ namespace Maui.Controls.Sample.Issues
 					})
 				},
 			};
-			}
+		}
 
-			ContentPage CreateDestinationPage()
+		ContentPage CreateDestinationPage()
+		{
+			return new ContentPage()
 			{
-				return new ContentPage()
-				{
-					Title = "Test",
-					Content = new VerticalStackLayout()
+				Title = "Test",
+				Content = new VerticalStackLayout()
 				{
 					new Button()
 					{
@@ -185,8 +177,7 @@ namespace Maui.Controls.Sample.Issues
 						})
 					}
 				}
-				};
-			}
+			};
 		}
 	}
 }

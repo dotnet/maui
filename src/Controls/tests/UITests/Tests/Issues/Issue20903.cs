@@ -16,12 +16,12 @@ public class Issue20903 : _IssuesUITest
 	{
 		_ = App.WaitForElement("AddDoubleTapHandlerButton");
 
-		App.Tap("AddDoubleTapHandlerButton");
-		App.Tap("AddDoubleTapHandlerButton");
+		App.Click("AddDoubleTapHandlerButton");
+		App.Click("AddDoubleTapHandlerButton");
 
-		App.DoubleTap("MyLabel");
+		App.DoubleClick("MyLabel");
 		await Task.Delay(500);
-		App.DoubleTap("MyLabel");
+		App.DoubleClick("MyLabel");
 
 		// Wait for all event handler calls.
 		await Task.Delay(1000);

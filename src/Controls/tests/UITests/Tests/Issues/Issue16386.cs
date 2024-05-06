@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using OpenQA.Selenium;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,12 +20,12 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			this.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac,
-				TestDevice.Windows
+				TestDevice.iOS,
+				TestDevice.Windows,
 			});
 
-			App.WaitForElement("HardwareEnterKeyEntry");
-			App.Tap("HardwareEnterKeyEntry");
-			App.PressEnter();
+			App.Click("HardwareEnterKeyEntry");
+			App.SendKeys(66);
 			App.WaitForElement("Success");
 		}
 	}

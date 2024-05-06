@@ -4,7 +4,7 @@ using UITest.Appium;
 using UITest.Core;
 
 
-namespace Microsoft.Maui.AppiumTests.Issues
+namespace Maui.Controls.Sample.Issues
 {
 	public partial class Issue5354 : _IssuesUITest
 	{
@@ -16,14 +16,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsLayoutUpdate()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
-			  "This is a product bug.");
-
+  			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
+				"This is a product bug.");
+	
 			App.WaitForElement("CollectionView5354");
 			App.WaitForElement("Button5354");
-
-			for (int i = 0; i < 3; i++)
-			{
+			
+			for(int i = 0; i < 3; i++)
+			{			
 				var linearRect0 = App.WaitForElement("Image0").GetRect();
 				var linearRect1 = App.WaitForElement("Image1").GetRect();
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 				Assert.AreEqual(gridRect0.Y, gridRect1.Y);
 				Assert.AreEqual(gridRect0.Height, gridRect1.Height);
-
+				
 				App.Click("Button5354");
 			}
 		}

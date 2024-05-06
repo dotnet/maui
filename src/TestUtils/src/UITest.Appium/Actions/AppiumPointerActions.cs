@@ -3,37 +3,34 @@ using System.Drawing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
+using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using UITest.Core;
 
 namespace UITest.Appium
 {
-	public class AppiumTouchActions : ICommandExecutionGroup
+	public class AppiumPointerActions : ICommandExecutionGroup
 	{
-		const string TapCommand = "tap";
-		const string TapCoordinatesCommand = "tapCoordinates";
-		const string DoubleTapCommand = "doubleTap";
-		const string DoubleTapCoordinatesCommand = "doubleTapCoordinates";
-		const string TouchAndHoldCommand = "touchAndHold";
+		const string ClickCommand = "click";
+		const string DoubleClickCommand = "doubleClick";
 		const string DragAndDropCommand = "dragAndDrop";
 		const string ScrollToCommand = "scrollTo";
+		const string TapCoordinatesCommand = "tapCoordinates";
 		const string DragCoordinatesCommand = "dragCoordinates";
 
 		readonly AppiumApp _appiumApp;
 
 		readonly List<string> _commands = new()
 		{
-			TapCommand,
-			TapCoordinatesCommand,
-			DoubleTapCommand,
-			DoubleTapCoordinatesCommand,
-			TouchAndHoldCommand,
+			ClickCommand,
+			DoubleClickCommand,
 			DragAndDropCommand,
 			ScrollToCommand,
+			TapCoordinatesCommand,
 			DragCoordinatesCommand
 		};
 
-		public AppiumTouchActions(AppiumApp appiumApp)
+		public AppiumPointerActions(AppiumApp appiumApp)
 		{
 			_appiumApp = appiumApp;
 		}
@@ -47,19 +44,17 @@ namespace UITest.Appium
 		{
 			return commandName switch
 			{
-				TapCommand => Tap(parameters),
-				TapCoordinatesCommand => TapCoordinates(parameters),
-				DoubleTapCommand => DoubleTap(parameters),
-				DoubleTapCoordinatesCommand => DoubleTapCoordinates(parameters),
-				TouchAndHoldCommand => TouchAndHold(parameters),
+				ClickCommand => Click(parameters),
+				DoubleClickCommand => DoubleClick(parameters),
 				DragAndDropCommand => DragAndDrop(parameters),
 				ScrollToCommand => ScrollTo(parameters),
+				TapCoordinatesCommand => TapCoordinates(parameters),
 				DragCoordinatesCommand => DragCoordinates(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
 
-		CommandResponse Tap(IDictionary<string, object> parameters)
+		CommandResponse Click(IDictionary<string, object> parameters)
 		{
 			if (parameters.TryGetValue("element", out var val))
 			{
@@ -68,18 +63,18 @@ namespace UITest.Appium
 				{
 					return CommandResponse.FailedEmptyResponse;
 				}
-				return TapElement(element);
+				return ClickElement(element);
 			}
 			else if (parameters.TryGetValue("x", out var x) &&
 					 parameters.TryGetValue("y", out var y))
 			{
-				return TapCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
+				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
 			}
 
 			return CommandResponse.FailedEmptyResponse;
 		}
 
-		CommandResponse TapElement(AppiumElement element)
+		CommandResponse ClickElement(AppiumElement element)
 		{
 			try
 			{
@@ -102,12 +97,12 @@ namespace UITest.Appium
 
 				// All is not lost; we can figure out the location of the element in in the application window and Tap in that spot
 				PointF p = ElementToClickablePoint(element);
-				TapCoordinates(p.X, p.Y);
+				ClickCoordinates(p.X, p.Y);
 				return CommandResponse.SuccessEmptyResponse;
 			}
 		}
 
-		CommandResponse TapCoordinates(float x, float y)
+		CommandResponse ClickCoordinates(float x, float y)
 		{
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var sequence = new ActionSequence(touchDevice, 0);
@@ -119,7 +114,7 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		CommandResponse DoubleTap(IDictionary<string, object> parameters)
+		CommandResponse DoubleClick(IDictionary<string, object> parameters)
 		{
 			var element = GetAppiumElement(parameters["element"]);
 
@@ -137,38 +132,6 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		CommandResponse DoubleTapCoordinates(float x, float y)
-		{
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
-			var sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
-
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(250)));
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
-
-			return CommandResponse.SuccessEmptyResponse;
-		}
-
-		CommandResponse TouchAndHold(IDictionary<string, object> parameters)
-		{
-			var element = GetAppiumElement(parameters["element"]);
-
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
-			var longPress = new ActionSequence(touchDevice, 0);
-		
-			longPress.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(0)));
-			longPress.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			longPress.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(2000)));
-			longPress.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			_appiumApp.Driver.PerformActions(new List<ActionSequence> { longPress });
-
-			return CommandResponse.SuccessEmptyResponse;
-		}
-		
 		CommandResponse DragAndDrop(IDictionary<string, object> actionParams)
 		{
 			AppiumElement? sourceAppiumElement = GetAppiumElement(actionParams["sourceElement"]);
@@ -252,18 +215,7 @@ namespace UITest.Appium
 			if (parameters.TryGetValue("x", out var x) &&
 				parameters.TryGetValue("y", out var y))
 			{
-				return TapCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
-			}
-
-			return CommandResponse.FailedEmptyResponse;
-		}
-
-		CommandResponse DoubleTapCoordinates(IDictionary<string, object> parameters)
-		{
-			if (parameters.TryGetValue("x", out var x) &&
-				parameters.TryGetValue("y", out var y))
-			{
-				return DoubleTapCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
+				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
 			}
 
 			return CommandResponse.FailedEmptyResponse;

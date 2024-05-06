@@ -39,7 +39,7 @@ public class Issue19956: _IssuesUITest
 		scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 		app.Driver.PerformActions([scrollSequence]);
 
-        App.Tap("Entry12");
+        app.Click("Entry12");
         ValidateEntryPosition("Entry12", app, stickyHeaderRect);
         ValidateEntryPosition("Entry1", app, stickyHeaderRect);
         ValidateEntryPosition("Entry2", app, stickyHeaderRect);
@@ -68,12 +68,12 @@ public class Issue19956: _IssuesUITest
         if (app is null)
             return;
 
-        App.Tap("Entry5");
+        app.Click("Entry5");
         ScrollToBottom(app);
         CheckForBottomEntry(app);
         KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
 
-        App.Tap("Entry10");
+        app.Click("Entry10");
         ScrollToBottom(app);
         CheckForBottomEntry(app);
         KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
