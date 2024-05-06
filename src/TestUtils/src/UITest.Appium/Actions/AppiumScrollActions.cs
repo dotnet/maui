@@ -1,6 +1,5 @@
 ﻿using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using UITest.Core;
 
@@ -23,7 +22,7 @@ namespace UITest.Appium
 		const string ScrollRightCommand = "scrollRight";
 		const string ScrollUpCommand = "scrollUp";
 
-		readonly AppiumApp _appiumApp;
+		protected readonly AppiumApp _appiumApp;
 
 		readonly List<string> _commands = new()
 		{
@@ -55,7 +54,7 @@ namespace UITest.Appium
 			};
 		}
 
-		CommandResponse ScrollLeft(IDictionary<string, object> parameters)
+		protected virtual CommandResponse ScrollLeft(IDictionary<string, object> parameters)
 		{
 			parameters.TryGetValue("element", out var value);
 			var element = GetAppiumElement(value);
@@ -73,7 +72,7 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		CommandResponse ScrollDown(IDictionary<string, object> parameters)
+		protected virtual CommandResponse ScrollDown(IDictionary<string, object> parameters)
 		{
 			parameters.TryGetValue("element", out var value);
 			var element = GetAppiumElement(value);
@@ -91,7 +90,7 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		CommandResponse ScrollRight(IDictionary<string, object> parameters)
+		protected virtual CommandResponse ScrollRight(IDictionary<string, object> parameters)
 		{
 			parameters.TryGetValue("element", out var value);
 			var element = GetAppiumElement(value);
@@ -109,7 +108,7 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		CommandResponse ScrollUp(IDictionary<string, object> parameters)
+		protected virtual CommandResponse ScrollUp(IDictionary<string, object> parameters)
 		{
 			parameters.TryGetValue("element", out var value);
 			var element = GetAppiumElement(value);

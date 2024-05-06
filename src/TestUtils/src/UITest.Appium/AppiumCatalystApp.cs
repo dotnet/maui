@@ -11,6 +11,7 @@ namespace UITest.Appium
 			: base(new MacDriver(remoteAddress, GetOptions(config)), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumCatalystMouseActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystScrollActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystTouchActions(this));
 		}
 
