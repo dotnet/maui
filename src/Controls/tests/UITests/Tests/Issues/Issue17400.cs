@@ -20,7 +20,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				"Is a Windows issue; see https://github.com/dotnet/maui/issues/17400");
 
 			App.WaitForElement("UpdateBtn");
-			App.Click("UpdateBtn");
+			App.Tap("UpdateBtn");
 
 			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
