@@ -24,9 +24,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewSetPosition()
 		{
-			if (Device != TestDevice.Android)
+			if (Device == TestDevice.Windows)
 			{
-				Assert.Ignore("For now, running this test only on Android.");
+				Assert.Ignore("For now not running on windows");
 			}
 			else
 			{
@@ -41,9 +41,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewGoToNextCurrentItem()
 		{
-			if (Device != TestDevice.Android)
+			if (Device == TestDevice.Windows)
 			{
-				Assert.Ignore("For now, running this test only on Android.");
+				Assert.Ignore("For now not running on windows");
 			}
 			else
 			{
@@ -58,6 +58,31 @@ namespace Microsoft.Maui.TestCases.Tests
 				CheckLabelValue("lblPosition", nextIndex);
 				CheckLabelValue("lblCurrentItem", nextIndex);
 				CheckLabelValue("lblSelected", nextIndex);
+				App.Tap("btnPrev");
+			}
+		}
+
+		[Test]
+		[Category(UITestCategories.CarouselView)]
+		public void CarouselViewGoToPreviousCurrentItem()
+		{
+			if (Device == TestDevice.Windows)
+			{
+				Assert.Ignore("For now not running on windows");
+			}
+			else
+			{
+				int indexToTest = 3;
+				var index = indexToTest.ToString();
+				var previousIndex = (indexToTest + 1).ToString();
+
+				CheckLabelValue("lblPosition", index);
+				CheckLabelValue("lblCurrentItem", index);
+
+				App.Tap("btnNext");
+				CheckLabelValue("lblPosition", previousIndex);
+				CheckLabelValue("lblCurrentItem", previousIndex);
+				CheckLabelValue("lblSelected", previousIndex);
 				App.Tap("btnPrev");
 			}
 		}
