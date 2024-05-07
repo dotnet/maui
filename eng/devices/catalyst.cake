@@ -129,6 +129,16 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 		throw new Exception("UI Test application path not specified.");
 	}
 
+	// Launch the app so it can be found by the test runner
+	DotNetBuild(app, new DotNetBuildSettings
+	{
+		Configuration = config,
+		Framework = tfm,
+		ToolPath = toolPath,
+		ArgumentCustomization = args => args
+			.Append("/t:Run")
+	});
+
 	Information("Build UITests project {0}", project);
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
