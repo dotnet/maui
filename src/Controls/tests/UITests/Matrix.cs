@@ -2,10 +2,12 @@
 {
 	internal class Matrix : object
 	{
+#pragma warning disable CS0649
 		public double M00, M01, M02, M03;
 		public double M10, M11, M12, M13;
 		public double M20, M21, M22, M23;
 		public double M30, M31, M32, M33;
+#pragma warning restore
 
 		public override bool Equals(object? obj)
 		{

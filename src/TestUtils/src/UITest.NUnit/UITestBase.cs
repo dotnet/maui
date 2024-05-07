@@ -22,23 +22,57 @@ namespace UITest.Appium.NUnit
 	//#endif
 	public abstract class UITestBase : UITestContextBase
 	{
-		public UITestBase(TestDevice testDevice)
-			: base(testDevice)
+		public UITestBase(TestDevice testDevice, bool useBrowserStack)
+			: base(testDevice, useBrowserStack)
 		{
 		}
 
 		[SetUp]
-		public void RecordTestSetup()
+		public void TestSetup()
 		{
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Start");
+
+			// When running tests in isolation, we need to run the fixture setup steps for each test, navigating to the right UI
+			if (RunTestsInIsolation)
+			{
+				SetUpForFixtureTests();
+			}
 		}
 
 		[TearDown]
-		public void RecordTestTeardown()
+		public void TestTeardown()
 		{
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Stop");
+
+			// With BrowserStack, checking AppState isn't supported currently, producing the error below, so skip this on BrowserStack
+			// BrowserStack error: System.NotImplementedException : Unknown mobile command "queryAppState". Only shell,scrollBackTo,viewportScreenshot,deepLink,startLogsBroadcast,stopLogsBroadcast,acceptAlert,dismissAlert,batteryInfo,deviceInfo,changePermissions,getPermissions,performEditorAction,startScreenStreaming,stopScreenStreaming,getNotifications,listSms,type commands are supported
+			if (!_useBrowserStack)
+			{
+				if (App.AppState == ApplicationState.NotRunning)
+				{
+					Reset();
+					FixtureSetup();
+
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we can't capture any UI structures or any screenshots
+					Assert.Fail("The app was expected to be running still, investigate as possible crash");
+				}
+			}
+
+			var testOutcome = TestContext.CurrentContext.Result.Outcome;
+			if (testOutcome == ResultState.Error ||
+				testOutcome == ResultState.Failure)
+			{
+				SaveDeviceDiagnosticInfo();
+				SaveUIDiagnosticInfo();
+			}
+
+			if (RunTestsInIsolation)
+			{
+				TearDownDriver();
+			}
 		}
 
 		protected virtual void FixtureSetup()
@@ -60,9 +94,18 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		[TearDown]
-		public void UITestBaseTearDown()
+		[OneTimeSetUp]
+		public void OneTimeSetup()
 		{
+			if (!RunTestsInIsolation)
+			{
+				SetUpForFixtureTests();
+			}
+		}
+
+		void SetUpForFixtureTests()
+		{
+
 			try
 			{
 				if (App.AppState == ApplicationState.NotRunning)
@@ -89,39 +132,27 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		[OneTimeSetUp]
-		public void OneTimeSetup()
-		{
-			InitialSetup(UITestContextSetupFixture.ServerContext);
-			try
-			{
-				//SaveDiagnosticLogs("BeforeFixtureSetup");
-				FixtureSetup();
-			}
-			catch
-			{
-				SaveDeviceDiagnosticInfo();
-				SaveUIDiagnosticInfo();
-				throw;
-			}
-		}
-
 		[OneTimeTearDown]
 		public void OneTimeTearDown()
 		{
-			var outcome = TestContext.CurrentContext.Result.Outcome;
-
-			// We only care about setup failures as regular test failures will already do logging
-			if (outcome.Status == ResultState.SetUpFailure.Status &&
-				outcome.Site == ResultState.SetUpFailure.Site)
+			// When running tests in isolation, we can skip this. OneTimeSetup failures never happen and there's no need to
+			// call FixtureTeardown to navigate back in the UI since the app will be restarted for the next test.
+			if (!RunTestsInIsolation)
 			{
-				SaveDeviceDiagnosticInfo();
+				var outcome = TestContext.CurrentContext.Result.Outcome;
 
-				if (App.AppState != ApplicationState.NotRunning)
-					SaveUIDiagnosticInfo();
+				// We only care about setup failures as regular test failures will already do logging
+				if (outcome.Status == ResultState.SetUpFailure.Status &&
+					outcome.Site == ResultState.SetUpFailure.Site)
+				{
+					SaveDeviceDiagnosticInfo();
+
+					if (App.AppState != ApplicationState.NotRunning)
+						SaveUIDiagnosticInfo();
+				}
+
+				FixtureTeardown();
 			}
-
-			FixtureTeardown();
 		}
 
 		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null)

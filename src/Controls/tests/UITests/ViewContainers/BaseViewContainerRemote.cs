@@ -1,6 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
+#if !USE_BROWSERSTACK
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+#endif
 using UITest.Appium;
 using UITest.Core;
 
@@ -65,6 +67,7 @@ namespace Microsoft.Maui.AppiumTests
 			App.Tap(ViewQuery);
 		}
 
+#if !USE_BROWSERSTACK
 		public T? GetProperty<T>(BindableProperty formProperty)
 		{
 			T? returnValue = GetPropertyFromBindableProperty<T>(formProperty);
@@ -147,6 +150,7 @@ namespace Microsoft.Maui.AppiumTests
 
 			return false;
 		}
+#endif
 
 		static bool TryConvertBool<T>(object prop, out T? result)
 		{

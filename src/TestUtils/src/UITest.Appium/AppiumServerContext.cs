@@ -16,6 +16,14 @@ namespace UITest.Appium
 
 		public IUIClientContext CreateUIClientContext(IConfig config)
 		{
+			// When using BrowserStack, the client is configured a bit differently. For example, there's no server
+			// to start and the client context / driver are recreated for each test, so that each test is a separate
+			// session (BrowserStack expects this)
+			if (config.GetProperty<bool>("UseBrowserStack"))
+			{
+				return CreateUIClientContextBrowserStack(config);
+			}
+
 			lock (_serverLock)
 			{
 				if (_server == null || !_server.IsRunning)
@@ -60,6 +68,29 @@ namespace UITest.Appium
 						throw;
 					}
 				}
+			}
+		}
+
+		private IUIClientContext CreateUIClientContextBrowserStack(IConfig config)
+		{
+			var testDevice = config.GetProperty<TestDevice>("TestDevice");
+			var driverUri = new Uri($"http://localhost:{Port}/wd/hub");
+
+			while (true)
+			{
+				// TODO: Create these IApp instances should not be hardcoded types
+				IApp app = testDevice switch
+				{
+					TestDevice.Mac => new AppiumCatalystApp(driverUri, config),
+					TestDevice.Windows => new AppiumWindowsApp(driverUri, config),
+					TestDevice.Android => AppiumAndroidApp.CreateAndroidApp(driverUri, config),
+					TestDevice.iOS => new AppiumIOSApp(driverUri, config),
+					_ => throw new InvalidOperationException("Unknown test device"),
+				};
+
+				var newContext = new AppiumUIClientContext(app, config);
+				_contexts.Add(newContext);
+				return newContext;
 			}
 		}
 
