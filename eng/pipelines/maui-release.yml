@@ -47,6 +47,8 @@ parameters:
       name: Windows
       artifact: nuget
       binariesArtifact: pack-binaries
+      metadataArtifact: metadata
+      logsArtifact: logs
       docsArtifact: xml-docs
 
   - name: Skip1ESComplianceTasks
@@ -108,7 +110,7 @@ extends:
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.artifact }}
-                  targetPath: '(Build.ArtifactStagingDirectory)'
+                  targetPath: '(Build.ArtifactStagingDirectory)/nuget'
                 
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
@@ -120,6 +122,22 @@ extends:
                   artifactName: ${{ parameters.PackPlatform.docsArtifact }}
                   targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
 
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.metadataArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.metadataArtifact }}
+                  targetPath: '(Build.ArtifactStagingDirectory)/metadata'
+
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.logsArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.logsArtifact }}
+                  targetPath: '(Build.ArtifactStagingDirectory)/logs'
+            
+            variables:
+              - name: _buildScript
+                value: $(Build.SourcesDirectory)/build.cmd -ci
+              - name: _BuildConfig
+                value: Release
+            
             steps:
               - template: /eng/pipelines/common/pack.yml@self
                 parameters:
@@ -129,6 +147,12 @@ extends:
                   artifact: ${{ parameters.PackPlatform.artifact }}
                   artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
                   artifactsPath: '(Build.ArtifactStagingDirectory)'
+                  buildConfiguration: $(_BuildConfig)
+                  dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
+                  buildScript: $(_buildScript)
+                  repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
+                  repoLogPath: $(Build.Arcade.LogsPath)
+                  repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                   prepareSteps:
                     - template: /eng/pipelines/common/provision.yml@self
                       parameters:
