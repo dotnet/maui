@@ -55,7 +55,9 @@ namespace Maui.Controls.Sample.Issues
 					Position++;
 			});
 
+#if !WINDOWS
 			BindingContext = this;
+#endif
 		}
 	}
 }
