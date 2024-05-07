@@ -172,7 +172,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 	});
 }
 
-void ExecuteTests(string project, string device, string appPath, string appPackageName, string resultsPath, string config, string tfm, AdbToolSettings adbSettings, string toolPath, bool waitDevice, string instrumentation)
+void ExecuteTests(string project, string device, string appPath, string appPackageName, string resultsDir, string config, string tfm, AdbToolSettings adbSettings, string toolPath, bool waitDevice, string instrumentation)
 {
 	CleanResults(resultsDir);
 
@@ -191,7 +191,7 @@ void ExecuteTests(string project, string device, string appPath, string appPacka
 
 	Information("Test App: {0}", testApp);
 	Information("Test App Package Name: {0}", appPackageName);
-	Information("Test Results Directory: {0}", resultsPath);
+	Information("Test Results Directory: {0}", resultsDir);
 
 	if (waitDevice)
 	{
@@ -224,7 +224,7 @@ void ExecuteTests(string project, string device, string appPath, string appPacka
 			$"--package-name=\"{appPackageName}\" " +
 			$"--instrumentation=\"{instrumentation}\" " +
 			$"--device-arch=\"{deviceArch}\" " +
-			$"--output-directory=\"{resultsPath}\" " +
+			$"--output-directory=\"{resultsDir}\" " +
 			$"--verbosity=\"Debug\" ")
 	};
 

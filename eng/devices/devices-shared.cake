@@ -145,12 +145,12 @@ void CleanResults(string resultsDir)
     }
 }
 
-void HandleTestResults(string resultsDir, bool testsFailed, bool isCatalyst)
+void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix)
 {
     Information($"Handling test results: {resultsDir}");
 
-    // catalyst test result files are weirdly named, so fix it up
-    if(isCatalyst)
+    // catalyst and ios test result files are weirdly named, so fix it up
+    if(needsNameFix)
     {
         var resultsFile = GetFiles($"{resultsDir}/xunit-test-*.xml").FirstOrDefault();
         if (resultsFile == null)
@@ -159,11 +159,11 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool isCatalyst)
         }
         if (FileExists(resultsFile))
         {
-            Information($"Test results found on {resultsDir}.");
+            Information($"Test results found on {resultsDir}");
             CopyFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"));
         }
     }
-    
+
     if (testsFailed && IsCIBuild())
     {
         var failurePath = $"{resultsDir}/TestResultsFailures/{Guid.NewGuid()}";

@@ -183,7 +183,7 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 	}
 	finally
 	{
-		HandleTestResults(resultsDir, testsFailed, false);
+		HandleTestResults(resultsDir, testsFailed, true);
 	}
 	
 	Information("Testing completed.");
