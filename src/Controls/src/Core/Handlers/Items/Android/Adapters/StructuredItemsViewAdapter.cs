@@ -17,11 +17,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// I'm storing this here because in the children I'm using a weakreference and
 		// I don't want this action to get GC'd
 		Action<Size> _reportMeasure;
+		Func<Size?> _retrieveStaticSize;
 
 		protected internal StructuredItemsViewAdapter(TItemsView itemsView,
 			Func<View, Context, ItemContentView> createItemContentView = null) : base(itemsView, createItemContentView)
 		{
 			_reportMeasure = SetStaticSize;
+			_retrieveStaticSize = () => _size ?? null;
+
 			UpdateHasHeader();
 			UpdateHasFooter();
 		}
@@ -104,6 +107,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
 			{
 				templatedItemViewHolder.Bind(context, ItemsView, _reportMeasure, _size);
+
+				if (templatedItemViewHolder.ItemView is ItemContentView itemContentView)
+				{
+					itemContentView.RetrieveStaticSize = _retrieveStaticSize;
+				}
 			}
 			else
 			{

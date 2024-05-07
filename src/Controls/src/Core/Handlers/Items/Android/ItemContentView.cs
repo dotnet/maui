@@ -11,8 +11,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		Size? _pixelSize;
 		WeakReference _reportMeasure;
-		int _previousPixelWidth;
-		int _previousPixelHeight;
+		WeakReference _retrieveStaticSize;
+		int _previousPixelWidth = -1;
+		int _previousPixelHeight = -1;
 
 		Action<Size> ReportMeasure
 		{
@@ -29,6 +30,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void ClickOn() => CallOnClick();
 
 		AView PlatformView => Content?.ContainerView ?? Content?.PlatformView;
+
+		internal Func<Size?> RetrieveStaticSize 
+		{ 
+			get => _retrieveStaticSize?.Target as Func<Size?>;
+			set => _retrieveStaticSize = new WeakReference(value);
+		}
 
 		internal void RealizeContent(View view, ItemsView itemsView)
 		{
@@ -61,6 +68,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			Content = null;
 			_pixelSize = null;
+			_reportMeasure = null;
+			_previousPixelWidth = -1;
+			_previousPixelHeight = -1;
 		}
 
 		internal void HandleItemSizingStrategy(Action<Size> reportMeasure, Size? size)
@@ -95,17 +105,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
 			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 
+			// This checks to see if a static size has been set already on the adapter
+			// The problem is that HandleItemSizingStrategy(Action<Size> reportMeasure, Size? size) 
+			// is called during "Bind" and then measure is called on all visible cells after that
+			// the result of this is that every single cell does an individual measure opposed to just using
+			// the first cell to set the size.			
+			_pixelSize = _pixelSize ?? RetrieveStaticSize?.Invoke();
+
 			// If the measure changes significantly, we need to invalidate the pixel size
 			// This will happen if the user rotates the device or even just changes the height/width
 			// on the CollectionView itself. 
 			if (pixelWidth != 0 && _previousPixelWidth != pixelWidth)
 			{
-				_pixelSize = null;
+				// We only need to worry about clearing pixel size if we've
+				// already made a first pass
+				if (_previousPixelWidth != -1)
+				{
+					_pixelSize = null;
+				}
+
 				_previousPixelWidth = pixelWidth;
 			}
 
 			if (pixelHeight != 0 && _previousPixelHeight != pixelHeight)
 			{
+				// We only need to worry about clearing pixel size if we've
+				// already made a first pass
+				if (_previousPixelHeight != -1)
+				{
+					_pixelSize = null;
+				}
+
 				_pixelSize = null;
 				_previousPixelHeight = pixelHeight;
 			}
