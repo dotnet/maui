@@ -568,10 +568,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void InvalidateItemSize()
 		{
+			var itemHeight = GetItemHeight();
+			var itemWidth = GetItemWidth();
+
 			foreach (var item in ListViewBase.GetChildren<ItemContentControl>())
 			{
-				item.ItemHeight = GetItemHeight();
-				item.ItemWidth = GetItemWidth();
+				item.ItemHeight = itemHeight;
+				item.ItemWidth = itemWidth;
 
 				item.InvalidateMeasure();
 			}
