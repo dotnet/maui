@@ -123,46 +123,37 @@ namespace Microsoft.Maui.Controls.Platform
 				titleInsets.Left -= imageWidth / 2;
 				titleInsets.Right += imageWidth / 2;
 
-				// If the image is resized to take up too much of the button's space, we may want to leave the image centered and hide the title
-				var availableWidth = buttonWidth - imageWidth - spacing - (nfloat)padding.Left - (nfloat)padding.Right;
-				var availableHeight = buttonHeight - imageHeight - spacing - (nfloat)padding.Top - (nfloat)padding.Bottom;
-
-				var hideTitleDistance = nfloat.MaxValue / 2;
-
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
 					if (configuration is UIButtonConfiguration configLayout)
 					{
-						// if (availableHeight <= 0 && button.HeightRequest != -1)
-						// 	configLayout.Title = string.Empty;
-
 						configLayout.ImagePlacement = NSDirectionalRectEdge.Top;
 						platformButton.Configuration = configLayout;
 					}
-					else
+					else if (imageHeight > buttonHeight)
 					{
-						imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
-						imageInsets.Bottom += titleHeight / 2;
-
-						titleInsets.Top += imageHeight / 2;
-						titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
+						contentMode = UIViewContentMode.Top;
 					}
+
+					imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
+					imageInsets.Bottom += titleHeight / 2;
+					titleInsets.Top += imageHeight / 2;
+					titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
 					if (configuration is UIButtonConfiguration configLayout)
 					{
-						// if (availableHeight <= 0 && button.HeightRequest != -1)
-						// 	configLayout.Title = string.Empty;
-
 						configLayout.ImagePlacement = NSDirectionalRectEdge.Bottom;
 						platformButton.Configuration = configLayout;
 					}
-					else
+					else if (imageHeight > buttonHeight)
 					{
-						imageInsets.Top += titleHeight / 2;
-						imageInsets.Bottom -= (titleHeight / 2) + sharedSpacing;
+						contentMode = UIViewContentMode.Bottom;
 					}
+
+					imageInsets.Top += (titleHeight / 2) + sharedSpacing;
+					imageInsets.Bottom -= (titleHeight / 2) + sharedSpacing;
 
 					titleInsets.Top -= (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom += imageHeight / 2;
@@ -171,9 +162,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (configuration is UIButtonConfiguration configLayout)
 					{
-						// if (availableWidth <= 0)
-						// 	configLayout.Title = string.Empty;
-
 						if ((button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft)
 							configLayout.ImagePlacement = NSDirectionalRectEdge.Trailing;
 						else
@@ -181,11 +169,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 						platformButton.Configuration = configLayout;
 					}
-					else
+					else if (imageWidth > buttonWidth)
 					{
-						imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
-						imageInsets.Right += titleWidth / 2;
+						contentMode = UIViewContentMode.Left;
 					}
+
+					imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
+					imageInsets.Right += titleWidth / 2;
 
 					titleInsets.Left += imageWidth / 2;
 					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
@@ -194,9 +184,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (configuration is UIButtonConfiguration configLayout)
 					{
-						// if (availableWidth <= 0)
-						// 	configLayout.Title = string.Empty;
-
 						if ((button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft)
 							configLayout.ImagePlacement = NSDirectionalRectEdge.Leading;
 						else
@@ -204,11 +191,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 						platformButton.Configuration = configLayout;
 					}
-					else
+					else if (imageWidth > buttonWidth)
 					{
-						imageInsets.Left += titleWidth / 2;
-						imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
+						contentMode = UIViewContentMode.Right;
 					}
+
+					imageInsets.Left += (titleWidthMove / 2) + sharedSpacing;
+					imageInsets.Right -= (titleWidthMove / 2) + sharedSpacing;
 
 					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
 					titleInsets.Right += imageWidth / 2;
