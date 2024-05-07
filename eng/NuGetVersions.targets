@@ -175,8 +175,12 @@
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.Web"
-        Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)" />
-
+        Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebAssembly"
+        Version="$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)"
+    />
     <PackageReference
         Update="Microsoft.JSInterop"
         Version="$(MicrosoftJSInteropPackageVersion)"

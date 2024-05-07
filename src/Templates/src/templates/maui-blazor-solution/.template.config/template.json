@@ -133,6 +133,18 @@
       "replaces": "MS_EXT_LOG_DEBUG_VERSION",
       "defaultValue": "MS_EXT_LOG_DEBUG_VERSION_VALUE"
     },
+    "componentsWebVersion": {
+      "type": "parameter",
+      "dataType": "string",
+      "replaces": "MS_COMPONENTS_WEB_VERSION",
+      "defaultValue": "MS_COMPONENTS_WEB_VERSION_VALUE"
+    },
+    "componentsWebAssemblyVersion": {
+      "type": "parameter",
+      "dataType": "string",
+      "replaces": "MS_COMPONENTS_WEBASSEMBLY_VERSION",
+      "defaultValue": "MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE"
+    },
     "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
