@@ -174,6 +174,8 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 
 void ExecuteTests(string project, string device, string appPath, string appPackageName, string resultsPath, string config, string tfm, AdbToolSettings adbSettings, string toolPath, bool waitDevice, string instrumentation)
 {
+	CleanResults(resultsDir);
+
 	var testApp = GetTestApplications(project, device, config, tfm, "").FirstOrDefault();
 
 	if (string.IsNullOrEmpty(appPackageName))
@@ -235,24 +237,10 @@ void ExecuteTests(string project, string device, string appPath, string appPacka
 	finally
 	{
 
-		// if (testsFailed && IsCIBuild())
-		// {
-		// 	var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
-		// 	EnsureDirectoryExists(failurePath);
-		// 	// The tasks will retry the tests and overwrite the failed results each retry
-		// 	// we want to retain the failed results for diagnostic purposes
-		// 	CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
-
-		// 	// We don't want these to upload
-		// 	MoveFile($"{failurePath}/TestResults.xml", $"{failurePath}/Results.xml");
-		// }
+		HandleTestResults(resultsDir, testsFailed, false);
 	}
-
-	// var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
-	// if (!string.IsNullOrEmpty(failed))
-	// {
-	// 	throw new Exception($"At least {failed} test(s) failed.");
-	// }
+	
+	Information("Testing completed.");
 }
 
 void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
@@ -339,7 +327,7 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 	{
 		try
 		{
-			Information("Retry Count: {0}", retryCount);
+			Information("Retry UITests run Count: {0}", retryCount);
 			RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
 			break;
 		}

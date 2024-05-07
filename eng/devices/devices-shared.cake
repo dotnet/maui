@@ -1,4 +1,4 @@
-//This assumes that this alwasys running from a mac with global workloads
+//This assumes that this is always running from a mac with global workloads
 const string DotnetToolPathDefault = "/usr/local/share/dotnet/dotnet";
 const string DotnetVersion = "net8.0";
 const string TestFramework = "net472";
@@ -13,6 +13,7 @@ var projectMappings = new Dictionary<string, string>
     ["Essentials.DeviceTests"] = "Essentials.DeviceTests",
     ["Controls.Sample.UITests"] = "Controls.Sample.UITests",
     ["Compatibility.ControlGallery.iOS"] = "Compatibility.ControlGallery.iOS",
+    ["Compatibility.ControlGallery.Android"] = "Compatibility.ControlGallery.Android",
 };
 
 string TARGET = Argument("target", "Test");
@@ -144,21 +145,25 @@ void CleanResults(string resultsDir)
     }
 }
 
-void HandleTestResults(string resultsDir, bool testsFailed)
+void HandleTestResults(string resultsDir, bool testsFailed, bool isCatalyst)
 {
     Information($"Handling test results: {resultsDir}");
-    // catalyst test result files are weirdly named, so fix it up
-    var resultsFile = GetFiles($"{resultsDir}/xunit-test-*.xml").FirstOrDefault();
-    if (resultsFile == null)
-    {
-        throw new Exception("No test results found.");
-    }
-    if (FileExists(resultsFile))
-    {
-        Information($"Test results found on {resultsDir}.");
-        CopyFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"));
-    }
 
+    // catalyst test result files are weirdly named, so fix it up
+    if(isCatalyst)
+    {
+        var resultsFile = GetFiles($"{resultsDir}/xunit-test-*.xml").FirstOrDefault();
+        if (resultsFile == null)
+        {
+            throw new Exception("No test results found.");
+        }
+        if (FileExists(resultsFile))
+        {
+            Information($"Test results found on {resultsDir}.");
+            CopyFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"));
+        }
+    }
+    
     if (testsFailed && IsCIBuild())
     {
         var failurePath = $"{resultsDir}/TestResultsFailures/{Guid.NewGuid()}";
