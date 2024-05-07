@@ -10,10 +10,14 @@
       MaximumHeightRequest="150">
       <CarouselView.ItemTemplate>
         <DataTemplate x:DataType="local:Issue22035Model">
-          <VerticalStackLayout>
+          <Grid
+            RowDefinitions="*, Auto">
             <Image 
               Source="{Binding ImagePath}" />
-          </VerticalStackLayout>
+            <Label 
+              Grid.Row="1"
+              Text="{Binding Text}"/>
+          </Grid>
         </DataTemplate>
       </CarouselView.ItemTemplate>
     </CarouselView>

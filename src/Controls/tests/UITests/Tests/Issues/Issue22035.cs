@@ -13,7 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "[Android] CarouselView: VirtualView cannot be null here, when clearing and adding items on second navigation";
 
 		[Test]
-		public async Task CarouselViewVirtualViewNotNull()
+		public void CarouselViewVirtualViewNotNull()
 		{
 			App.WaitForElement("TestNavigateButton");
 
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// 2. Tap a Button to load items to the CarouselView.
 			App.Tap("TestLoadButton");
-			await Task.Delay(1000);
+			App.WaitForNoElement("Item 1");
 
 			// 3. Navigate back to repeat the process.
 			App.Back();
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.Tap("TestNavigateButton");
 
 			App.Tap("TestLoadButton");
-			await Task.Delay(1000);
+			App.WaitForNoElement("Item 1");
 
 			App.Back();
 
