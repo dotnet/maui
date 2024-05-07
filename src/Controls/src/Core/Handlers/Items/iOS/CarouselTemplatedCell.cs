@@ -44,5 +44,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			return false;
 		}
+
+		public override void PrepareForReuse()
+		{
+			
+		}
 	}
 }
