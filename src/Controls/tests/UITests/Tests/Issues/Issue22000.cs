@@ -14,8 +14,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void ResizeCarouselViewKeepsIndex()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac });
-
 			App.WaitForElement("WaitForStubControl");
 
 			for (int i = 0; i < 10; i++)
