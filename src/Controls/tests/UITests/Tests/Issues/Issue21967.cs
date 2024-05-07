@@ -25,5 +25,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
             Assert.Greater(largestSize.Width, mediumSize.Width);
             Assert.Greater(mediumSize.Width, smallSize.Width);
 		}
+
+        
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void CollectionViewFirstItemCorrectlySetsTheMeasure()
+		{
+			var itemSize = App.WaitForElement("Item1").GetRect();
+            Assert.Greater(200, itemSize.Height);
+		}
 	}
 }

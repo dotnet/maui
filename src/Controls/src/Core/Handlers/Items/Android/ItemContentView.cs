@@ -128,7 +128,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// If the measure changes significantly, we need to invalidate the pixel size
 				// This will happen if the user rotates the device or even just changes the height/width
 				// on the CollectionView itself. 
-				if (pixelWidth != 0 && _previousPixelWidth != pixelWidth)
+				// The Abs comparison I think is currently just a workaround for this
+				// https://github.com/dotnet/maui/issues/22271
+				// Once we fix 22271 I don't think we need this
+				// I'm also curious if we would still need this https://github.com/dotnet/maui/pull/21140
+				if (pixelWidth != 0 && Math.Abs(_previousPixelWidth - pixelWidth) > 1)
 				{
 					// We only need to worry about clearing pixel size if we've
 					// already made a first pass
@@ -138,7 +142,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 				}
 
-				if (pixelHeight != 0 && _previousPixelHeight != pixelHeight)
+
+				if (pixelHeight != 0 && Math.Abs(_previousPixelHeight - pixelHeight) > 1)
 				{
 					// We only need to worry about clearing pixel size if we've
 					// already made a first pass

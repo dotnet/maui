@@ -36,8 +36,8 @@
                 <DataTemplate>
                     <Grid BackgroundColor="LightGray">
                         <Label
-                            Text="{Binding .}"
-                            AutomationId="{Binding .}"
+                            Text="{Binding Text}"
+                            AutomationId="{Binding AutomationId}"
                             HorizontalOptions="Fill"
                             VerticalOptions="Fill"/>
                     </Grid>
