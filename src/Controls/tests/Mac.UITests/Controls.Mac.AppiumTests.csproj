@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.Maui.AppiumTests</RootNamespace>
-    <DefineConstants>$(DefineConstants);MACCATALYST</DefineConstants>
+    <DefineConstants>$(DefineConstants);MACCATALYST;MACUITEST</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>

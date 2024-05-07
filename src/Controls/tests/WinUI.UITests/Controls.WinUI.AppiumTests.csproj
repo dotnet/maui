@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.Maui.AppiumTests</RootNamespace>
-    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+    <DefineConstants>$(DefineConstants);WINDOWS;WINTEST</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
