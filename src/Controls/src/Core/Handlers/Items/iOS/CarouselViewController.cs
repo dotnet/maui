@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected readonly CarouselView Carousel;
 
 		CarouselViewLoopManager _carouselViewLoopManager;
-		bool _initialPositionSet;
+		internal bool InitialPositionSet;
 		bool _updatingScrollOffset;
 		List<View> _oldViews;
 		int _gotoPosition = -1;
@@ -126,14 +126,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			//we don't need to Subscribe because base calls CreateItemsViewSource
 			_carouselViewLoopManager?.SetItemsSource(LoopItemsSource);
 
-			if (_initialPositionSet && ItemsView is CarouselView carousel)
+			if (InitialPositionSet && ItemsView is CarouselView carousel)
 			{
 				carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 				carousel.SetValueFromRenderer(CarouselView.PositionProperty, 0);
 			}
-
-			_initialPositionSet = false;
-			UpdateInitialPosition();
 		}
 
 		protected override bool IsHorizontal => ItemsView?.ItemsLayout?.Orientation == ItemsLayoutOrientation.Horizontal;
@@ -417,13 +414,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (itemsCount == 0)
 				return;
 
-			if (!_initialPositionSet)
+			if (!InitialPositionSet)
 			{
 				if (ItemsView is not CarouselView carousel)
 					return;
 
-				System.Diagnostics.Debug.WriteLine($"UpdateInitialPosition");
-				_initialPositionSet = true;
+				InitialPositionSet = true;
 
 				int position = carousel.Position;
 				var currentItem = carousel.CurrentItem;
