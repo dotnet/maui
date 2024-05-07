@@ -40,9 +40,9 @@ namespace Maui.Controls.Sample.Issues
 			var currentWidth = TestCarouselView.WidthRequest;
 
 			if (currentWidth == 400)
-				TestCarouselView.WidthRequest = 800;
+				TestCarouselView.WidthRequest = 300;
 			else
-				TestCarouselView.WidthRequest = 400;
+				TestCarouselView.WidthRequest = 200;
 		}
 	}
 
