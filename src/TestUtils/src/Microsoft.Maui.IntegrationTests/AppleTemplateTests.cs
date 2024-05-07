@@ -55,7 +55,10 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 
 			if (!string.IsNullOrEmpty(trimMode))
+			{
 				buildProps.Add($"TrimMode={trimMode}");
+				buildProps.Add("TrimmerSingleWarn=false");
+			}
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");

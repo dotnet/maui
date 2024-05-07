@@ -65,8 +65,12 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			var buildProps = BuildProps;
 			if (!string.IsNullOrEmpty(trimMode))
-				BuildProps.Add($"TrimMode={trimMode}");
+			{
+				buildProps.Add($"TrimMode={trimMode}");
+				buildProps.Add("TrimmerSingleWarn=false");
+			}
 
 			AddInstrumentation(projectDir);
 
