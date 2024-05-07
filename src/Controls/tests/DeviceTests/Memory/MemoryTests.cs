@@ -84,6 +84,8 @@ public class MemoryTests : ControlsHandlerTestBase
 			handlerReference = new WeakReference(page.Handler);
 			platformViewReference = new WeakReference(page.Handler.PlatformView);
 
+			// Windows requires Loaded event to fire before unloading
+			await Task.Delay(500);
 			await navPage.Navigation.PopModalAsync();
 		});
 
