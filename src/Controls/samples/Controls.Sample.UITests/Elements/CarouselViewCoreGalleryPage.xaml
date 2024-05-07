@@ -82,9 +82,8 @@
                 CurrentItem="{Binding Selected}">
                 <CarouselView.ItemTemplate>
                     <DataTemplate>
-                        <Frame 
+                        <Border 
                             x:Name="frame"
-                            HasShadow="True" 
                             Padding="0" 
                             HeightRequest="100"
                             WidthRequest="200"
@@ -102,7 +101,7 @@
                                     HorizontalOptions="Center" 
                                     VerticalOptions="Center" />
                             </Grid>
-                        </Frame>
+                        </Border>
                     </DataTemplate>
                 </CarouselView.ItemTemplate>
             </CarouselView>
