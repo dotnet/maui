@@ -9,5 +9,9 @@
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.JSInterop
-@using MauiApp._1
 @using MauiApp._1.Shared
+@using MauiApp._1.Web
+@*#if (UseWebAssembly)
+@using MauiApp._1.Web.Client
+#endif*@
+@using MauiApp._1.Web.Components
