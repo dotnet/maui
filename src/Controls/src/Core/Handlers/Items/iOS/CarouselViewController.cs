@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected readonly CarouselView Carousel;
 
 		CarouselViewLoopManager _carouselViewLoopManager;
-		internal bool InitialPositionSet;
 		bool _updatingScrollOffset;
 		List<View> _oldViews;
 		int _gotoPosition = -1;
@@ -171,6 +170,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemIndex = GetIndexFromIndexPath(indexPath);
 			base.CacheCellAttributes(NSIndexPath.FromItemSection(itemIndex, 0), size);
 		}
+
+		internal bool InitialPositionSet { get; private set; }
 
 		internal void TearDown()
 		{
