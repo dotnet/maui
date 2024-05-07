@@ -9,8 +9,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class ItemContentView : ViewGroup
 	{
-		Size? _size;
-		Action<Size> _reportMeasure;
+		Size? _pixelSize;
+		WeakReference _reportMeasure;
+		int _previousPixelWidth;
+		int _previousPixelHeight;
+
+		Action<Size> ReportMeasure
+		{
+			get => _reportMeasure?.Target as Action<Size>;
+		}
 
 		protected IPlatformViewHandler Content;
 		internal IView View => Content?.VirtualView;
@@ -53,13 +60,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			Content = null;
-			_size = null;
+			_pixelSize = null;
 		}
 
 		internal void HandleItemSizingStrategy(Action<Size> reportMeasure, Size? size)
 		{
-			_reportMeasure = reportMeasure;
-			_size = size;
+			_reportMeasure = new WeakReference(reportMeasure);
+			_pixelSize = size;
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -83,39 +90,54 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			int pixelWidth = MeasureSpec.GetSize(widthMeasureSpec);
+			int pixelHeight = MeasureSpec.GetSize(heightMeasureSpec);
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+
+			// If the measure changes significantly, we need to invalidate the pixel size
+			// This will happen if the user rotates the device or even just changes the height/width
+			// on the CollectionView itself. 
+			if (pixelWidth != 0 && _previousPixelWidth != pixelWidth)
+			{
+				_pixelSize = null;
+				_previousPixelWidth = pixelWidth;
+			}
+
+			if (pixelHeight != 0 && _previousPixelHeight != pixelHeight)
+			{
+				_pixelSize = null;
+				_previousPixelHeight = pixelHeight;
+			}
+
 			// If we're using ItemSizingStrategy.MeasureFirstItem and now we have a set size, use that
 			// Even though we already know the size we still need to pass the measure through to the children.
-			if (_size is not null)
+			if (_pixelSize is not null)
 			{
-				var w = (int)_size.Value.Width;
-				var h = (int)_size.Value.Height;
+				var w = (int)this.FromPixels(_pixelSize.Value.Width);
+				var h = (int)this.FromPixels(_pixelSize.Value.Height);
 
 				// If the platform childs measure has been invalidated, it's going to still want to
 				// participate in the measure lifecycle in order to update its internal
 				// book keeping.
-				_ = View.Measure
-					(
+				_ = (View.Handler as IPlatformViewHandler)?.MeasureVirtualView(
 						MeasureSpec.MakeMeasureSpec(w, MeasureSpecMode.Exactly),
 						MeasureSpec.MakeMeasureSpec(h, MeasureSpecMode.Exactly)
 					);
 
-				SetMeasuredDimension(w, h);
+				SetMeasuredDimension((int)_pixelSize.Value.Width, (int)_pixelSize.Value.Height);
 				return;
 			}
 
-			int pixelWidth = MeasureSpec.GetSize(widthMeasureSpec);
-			int pixelHeight = MeasureSpec.GetSize(heightMeasureSpec);
-
-			var widthSpec = MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified
+			var width = widthMode == MeasureSpecMode.Unspecified
 				? double.PositiveInfinity
 				: this.FromPixels(pixelWidth);
 
-			var heightSpec = MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified
+			var height = heightMode == MeasureSpecMode.Unspecified
 				? double.PositiveInfinity
 				: this.FromPixels(pixelHeight);
 
-
-			var measure = View.Measure(widthSpec, heightSpec);
+			var measure = View.Measure(width, height);
 
 			if (pixelWidth == 0)
 			{
@@ -127,8 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				pixelHeight = (int)this.ToPixels(measure.Height);
 			}
 
-			_reportMeasure?.Invoke(new Size(pixelWidth, pixelHeight));
-			_reportMeasure = null; // Make sure we only report back the measure once
+			ReportMeasure?.Invoke(new Size(pixelWidth, pixelHeight));
 
 			SetMeasuredDimension(pixelWidth, pixelHeight);
 		}
