@@ -12,7 +12,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public void ResizeCarouselViewKeepsIndex()
+		public async Task ResizeCarouselViewKeepsIndex()
 		{
 			App.WaitForElement("WaitForStubControl");
 
@@ -20,6 +20,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			{
 				App.Click("UpdateSizeButton");
 			}
+
+			await Task.Delay(500);
 
 			VerifyScreenshot();
 		}
