@@ -34,6 +34,16 @@ namespace UITest.Appium
 			app.FindElement(element).Click();
 		}
 
+		public static void RightClick(this IApp app, string element)
+		{
+			var uiElement = app.FindElement(element);
+			uiElement.Command.Execute("click", new Dictionary<string, object>()
+			{
+				{ "element", uiElement },
+				{ "button", "right" }
+			});
+		}
+
 		public static string? GetText(this IUIElement element)
 		{
 			var response = element.Command.Execute("getText", new Dictionary<string, object>()
