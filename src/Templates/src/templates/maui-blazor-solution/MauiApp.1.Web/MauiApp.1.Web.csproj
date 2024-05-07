@@ -18,7 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MauiApp.1.Web.Client\MauiApp.1.Web.Client.csproj" Condition="'$(UseWebAssembly)' == 'True'" />
     <ProjectReference Include="..\MauiApp.1.Shared\MauiApp.1.Shared.csproj" Condition="'$(UseWebAssembly)' != 'True'" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" Condition="'$(UseWebAssembly)' == 'True'" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE" Condition="'$(UseWebAssembly)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCoreVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqliteVersion}" Condition="'$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True'" />

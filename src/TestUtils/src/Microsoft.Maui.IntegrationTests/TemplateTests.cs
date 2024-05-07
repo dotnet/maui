@@ -83,6 +83,10 @@ namespace Microsoft.Maui.IntegrationTests
 			const string templateShortName = "maui-blazor-web";
 
 			var solutionProjectDir = TestDirectory;
+
+			var webAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir) + ".Web");
+			var webAppProjectFile = Path.Combine(webAppProjectDir, $"{Path.GetFileName(webAppProjectDir)}.csproj");
+
 			var mauiAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir));
 			var mauiAppProjectFile = Path.Combine(mauiAppProjectDir, $"{Path.GetFileName(mauiAppProjectDir)}.csproj");
 
@@ -92,10 +96,16 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Unable to create template {templateShortName}. Check test output for errors.");
 
 			TestContext.WriteLine($"Solution directory: {solutionProjectDir} (exists? {Directory.Exists(solutionProjectDir)})");
+			TestContext.WriteLine($"Blazor Web app project directory: {webAppProjectDir} (exists? {Directory.Exists(webAppProjectDir)})");
+			TestContext.WriteLine($"Blazor Web app project file: {webAppProjectFile} (exists? {File.Exists(webAppProjectFile)})");
 			TestContext.WriteLine($"MAUI app project directory: {mauiAppProjectDir} (exists? {Directory.Exists(mauiAppProjectDir)})");
 			TestContext.WriteLine($"MAUI app project file: {mauiAppProjectFile} (exists? {File.Exists(mauiAppProjectFile)})");
 
 			EnableTizen(mauiAppProjectFile);
+
+			TestContext.WriteLine($"Building Blazor Web app: {webAppProjectFile}");
+			Assert.IsTrue(DotnetInternal.Build(webAppProjectFile, config, target: "", properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(webAppProjectFile)} failed to build. Check test output/attachments for errors.");
 
 			TestContext.WriteLine($"Building .NET MAUI app: {mauiAppProjectFile}");
 			Assert.IsTrue(DotnetInternal.Build(mauiAppProjectFile, config, target: "", properties: BuildProps, msbuildWarningsAsErrors: true),

@@ -145,7 +145,13 @@
       "replaces": "MS_COMPONENTS_WEBASSEMBLY_VERSION",
       "defaultValue": "MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE"
     },
-    "Framework": {
+    "componentsWebAssemblyServerVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION",
+        "defaultValue": "MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE"
+      },
+      "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
