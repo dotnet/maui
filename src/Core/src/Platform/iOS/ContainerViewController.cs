@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Platform
 
 		void SetView(IElement? view, bool forceRefresh = false)
 		{
-			if (_view?.GetTargetOrDefault() is IElement existingView && view == existingView && !forceRefresh)
+			if (CurrentView is IElement existingView && view == existingView && !forceRefresh)
 				return;
 
 			_view = view is null ? null : new(view);
