@@ -74,7 +74,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("Debug", "--android")]
 		[TestCase("Debug", "--ios")]
 		[TestCase("Debug", "--windows")]
-		[TestCase("Debug", "--maccatalyst")]
+		[TestCase("Debug", "--macos")]
 		public void BuildMultiProjectSinglePlatform(string config, string platformArg)
 		{
 			var projectDir = TestDirectory;
