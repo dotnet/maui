@@ -35,8 +35,8 @@ namespace Microsoft.Maui.AppiumTests
 			if (ciArtifactsDirectory != null)
 				ciArtifactsDirectory = Path.Combine(ciArtifactsDirectory, "Controls.Shared.AppiumTests");
 
-			string assemblyDirectory = Path.GetDirectoryName(System.AppDomain.CurrentDomain.BaseDirectory)!;
-			string projectRootDirectory = Path.GetFullPath(Path.Combine(assemblyDirectory, "..", "..", ".."));
+			string projectRootDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)!;
+
 			_visualRegressionTester = new VisualRegressionTester(testRootDirectory: projectRootDirectory,
 				visualComparer: new MagickNetVisualComparer(),
 				visualDiffGenerator: new MagickNetVisualDiffGenerator(),

@@ -37,7 +37,13 @@
     <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
     <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils\VisualTestUtils.csproj" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <Content Include="snapshots\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
   <ItemGroup>
     <Compile Include="..\Shared.UITests\**\*.cs" Exclude="..\Shared.UITests\obj\**;..\Shared.UITests\bin\**" LinkBase="Shared" Visible="false" />
   </ItemGroup>
