@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected nfloat ConstrainedDimension;
 
-		private WeakReference<DataTemplate> _currentTemplate;
+		WeakReference<DataTemplate> _currentTemplate;
 
 		public DataTemplate CurrentTemplate
 		{
@@ -32,10 +32,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal CGSize CurrentSize => _size.ToCGSize();
 
+		internal virtual bool ShouldUnbindCell  => true;
+
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		protected TemplatedCell(CGRect frame) : base(frame)
 		{
+			
 		}
 
 		WeakReference<IPlatformViewHandler> _handler;
@@ -66,6 +69,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void Unbind()
 		{
+			if(!ShouldUnbindCell)
+			{
+				return;
+			}
+
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.MeasureInvalidated -= MeasureInvalidated;
@@ -178,6 +186,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Same template
 				if (oldElement != null)
 				{
+					oldElement.MeasureInvalidated -= MeasureInvalidated;
 					oldElement.BindingContext = bindingContext;
 					oldElement.MeasureInvalidated += MeasureInvalidated;
 
