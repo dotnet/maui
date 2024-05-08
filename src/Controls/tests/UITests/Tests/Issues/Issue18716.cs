@@ -12,6 +12,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		public override string Issue => "Touch events are not working on WebView when a PDF is displayed";
 
+		/*
+  		There's an issue getting the mouse interactions to work with Appium.
 		[Test]
 		[Category(UITestCategories.WebView)]
 		public async Task CanScrollWebView()
@@ -23,6 +25,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("WaitForStubControl");
 			App.ScrollDown("WaitForStubControl", ScrollStrategy.Gesture, 0.75);
 			App.Screenshot("Scrolling has been done correctly.");
-		}
+		}*/
+  
 	}
 }
