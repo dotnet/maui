@@ -165,9 +165,9 @@ stages:
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.Android.AppiumTests.csproj
           app: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj
           iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
-          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.iOS.AppiumTests.csproj
-          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.WinUI.AppiumTests.csproj
-          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.Mac.AppiumTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/iOS.UITests/Controls.iOS.AppiumTests.csproj
+          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/WinUI.UITests/Controls.WinUI.AppiumTests.csproj
+          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/Mac.UITests/Controls.Mac.AppiumTests.csproj
           compatibilityAndroidApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj 
           compatibilityAndroidTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/Android.UITests/Compatibility.ControlGallery.Android.UITests.csproj
           compatibilityiOSApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj 
