@@ -3,7 +3,7 @@
 #load "./devices-shared.cake"
 
 // Argument handling
-string DEFAULT_MAC_PROJECT = "../../src/Controls/tests/Android.UITests/Controls.Mac.AppiumTests.csproj";
+string DEFAULT_MAC_PROJECT = "../../src/Controls/tests/Mac.UITests/Controls.Mac.AppiumTests.csproj";
 var projectPath = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_MAC_PROJECT);
 var testDevice = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? "maccatalyst");
 var dotnetRoot = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));

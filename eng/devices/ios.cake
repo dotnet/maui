@@ -6,7 +6,7 @@
 const string DefaultVersion = "17.2";
 
 // Required arguments
-string DEFAULT_IOS_PROJECT = "../../src/Controls/tests/Android.UITests/Controls.iOS.AppiumTests.csproj";
+string DEFAULT_IOS_PROJECT = "../../src/Controls/tests/iOS.UITests/Controls.iOS.AppiumTests.csproj";
 var projectPath = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? DEFAULT_IOS_PROJECT);
 var testDevice = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? $"ios-simulator-64_{DefaultVersion}");
 var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-ios");
