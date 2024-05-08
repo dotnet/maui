@@ -1,11 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <SingleProject>true</SingleProject>
     <IsTestProject>true</IsTestProject>
+    <RootNamespace>Microsoft.Maui.AppiumTests</RootNamespace>
+    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,13 +26,6 @@
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.7" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.3" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
