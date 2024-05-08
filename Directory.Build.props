@@ -7,7 +7,7 @@
     <DebugSymbols>true</DebugSymbols>
     <LangVersion>Latest</LangVersion>
     <IsShipping>true</IsShipping>
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
     <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
     <MauiSrcDirectory>$(MSBuildThisFileDirectory)src/</MauiSrcDirectory>
   </PropertyGroup>
