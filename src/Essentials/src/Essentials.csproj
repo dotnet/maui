@@ -20,6 +20,10 @@
   </PropertyGroup>
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui" Key="$(MicrosoftPublicKey)"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Graphics\src\Graphics\Graphics.csproj" />
   </ItemGroup>
   <ItemGroup>
