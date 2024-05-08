@@ -91,6 +91,16 @@
                     Source="cog.png"
                     CornerRadius="10"
                     BackgroundColor="Purple"/>
+                <ImageButton  
+                    Aspect="AspectFit" 
+                    Source="cog.png"
+                    BackgroundColor="Purple"
+                    CornerRadius="{Binding Source={x:Reference CornerRadiusSlider}, Path=Value}" />
+                <Slider 
+                    x:Name="CornerRadiusSlider"
+                    Minimum="0"
+                    Maximum="60"
+                    Value="10"/>
                 <Label
                     Text="Custom Size"
                     Style="{StaticResource Headline}"/>

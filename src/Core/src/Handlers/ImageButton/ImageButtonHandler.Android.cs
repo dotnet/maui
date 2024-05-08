@@ -56,9 +56,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			handler.PlatformView.UpdateCornerRadius(buttonStroke);
-
-			// Invalidate the RippleDrawable Mask.
-			handler.UpdateValue(nameof(IImageButton.Background));
 		}
 
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)
