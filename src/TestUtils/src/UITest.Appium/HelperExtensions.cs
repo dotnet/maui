@@ -34,6 +34,16 @@ namespace UITest.Appium
 			app.FindElement(element).Click();
 		}
 
+		public static void RightClick(this IApp app, string element)
+		{
+			var uiElement = app.FindElement(element);
+			uiElement.Command.Execute("click", new Dictionary<string, object>()
+			{
+				{ "element", uiElement },
+				{ "button", "right" }
+			});
+		}
+
 		public static string? GetText(this IUIElement element)
 		{
 			var response = element.Command.Execute("getText", new Dictionary<string, object>()
@@ -356,6 +366,15 @@ namespace UITest.Appium
 		public static void PressVolumeDown(this IApp app)
 		{
 			app.CommandExecutor.Execute("pressVolumeDown", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Presses the enter key in the app.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void PressEnter(this IApp app)
+		{
+			app.CommandExecutor.Execute("pressEnter", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>

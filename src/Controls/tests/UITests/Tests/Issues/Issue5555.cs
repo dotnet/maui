@@ -10,7 +10,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public Issue5555(TestDevice device) : base(device)
 		{
 		}
-
+		
 		[Test]
 		[Category(UITestCategories.TableView)]
 		public void TableViewMemoryLeakWhenUsingSwitchCellOrEntryCell()

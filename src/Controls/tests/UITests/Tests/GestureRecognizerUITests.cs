@@ -19,12 +19,6 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(GestureRecognizerGallery);
 		}
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
-		}
-
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void PointerGestureTest()

@@ -12,7 +12,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>Microsoft.AspNetCore.Components.WebView.Maui</PackageId>
     <PackageTags>$(DefaultPackageTags);blazor;webview;aspnet</PackageTags>
-    <PackageIconFile>$(MauiRootDirectory)Assets\aspnet-icon.png</PackageIconFile>
+    <PackageIconFullPath>$(MauiRootDirectory)Assets\aspnet-icon.png</PackageIconFullPath>
     <Description>Build .NET Multi-platform App UI (.NET MAUI) apps with Blazor web UI in the BlazorWebView control.</Description>
   </PropertyGroup>
 
