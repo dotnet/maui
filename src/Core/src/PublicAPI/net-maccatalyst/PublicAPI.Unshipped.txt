@@ -174,3 +174,6 @@ virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplicatio
 *REMOVED*override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
+virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IStackNavigationView! virtualView, UIKit.UINavigationController! navigationController) -> void
+virtual Microsoft.Maui.Platform.StackNavigationManager.Disconnect(Microsoft.Maui.IStackNavigationView! virtualView, UIKit.UINavigationController! navigationController) -> void
+virtual Microsoft.Maui.Platform.StackNavigationManager.RequestNavigation(Microsoft.Maui.NavigationRequest! request) -> void

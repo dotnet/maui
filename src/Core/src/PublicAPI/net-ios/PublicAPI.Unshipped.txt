@@ -174,3 +174,6 @@ Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double h
 Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IStackNavigationView! virtualView, UIKit.UINavigationController! navigationController) -> void
+virtual Microsoft.Maui.Platform.StackNavigationManager.Disconnect(Microsoft.Maui.IStackNavigationView! virtualView, UIKit.UINavigationController! navigationController) -> void
+virtual Microsoft.Maui.Platform.StackNavigationManager.RequestNavigation(Microsoft.Maui.NavigationRequest! request) -> void
