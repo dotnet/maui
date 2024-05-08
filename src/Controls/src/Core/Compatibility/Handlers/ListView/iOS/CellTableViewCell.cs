@@ -33,27 +33,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get => _cell?.GetTargetOrDefault();
 			set
 			{
-				if (_cell is null)
-				{
-					_cell = new(value);
-				}
-				else
+				if (_cell is not null)
 				{
 					if (_cell.TryGetTarget(out var cell) && cell == value)
 						return;
 
-					if (cell != null)
+					if (cell is not null)
 					{
 						cell.PropertyChanged -= HandlePropertyChanged;
 						BeginInvokeOnMainThread(cell.SendDisappearing);
 					}
-					_cell = new(value);
 				}
 
-				if (value != null)
+				if (value is not null)
 				{
+					_cell = new(value);
 					value.PropertyChanged += HandlePropertyChanged;
 					BeginInvokeOnMainThread(value.SendAppearing);
+				}
+				else
+				{
+					_cell = null;
 				}
 			}
 		}

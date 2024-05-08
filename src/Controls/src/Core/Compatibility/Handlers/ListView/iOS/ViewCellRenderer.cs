@@ -60,11 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				get => _viewCell?.GetTargetOrDefault();
 				set
 				{
-					if (_viewCell is null)
-					{
-						_viewCell = new(value);
-					}
-					else
+					if (_viewCell is not null)
 					{
 						if (_viewCell.TryGetTarget(out var viewCell) && viewCell == value)
 							return;
@@ -192,14 +188,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					oldCell.View.MeasureInvalidated -= OnMeasureInvalidated;
 				}
 
-				_viewCell = new(cell);
-
 				if (cell is null)
 				{
+					_viewCell = null;
 					_rendererRef = null;
 					ContentView.ClearSubviews();
 					return;
 				}
+
+				_viewCell = new(cell);
 
 				cell.PropertyChanged += ViewCellPropertyChanged;
 				BeginInvokeOnMainThread(cell.SendAppearing);
