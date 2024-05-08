@@ -239,11 +239,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Appium", "src\TestUt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.NUnit", "src\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj", "{A307B624-48D4-494E-A70D-5B3CDF6620CF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.UnitTests", "src\Controls\tests\SourceGen.UnitTests\SourceGen.UnitTests.csproj", "{BC7F7C82-694F-4B97-86FC-273FB3FACA25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.UnitTests", "src\Controls\tests\SourceGen.UnitTests\SourceGen.UnitTests.csproj", "{06747B55-91DB-47F5-B7A2-56526C28A0D3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{054C5BAC-3671-4F76-B32E-47CF4E64BB39}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compatibility.Core.UnitTests", "src\Compatibility\Core\tests\Compatibility.UnitTests\Compatibility.Core.UnitTests.csproj", "{1D950CD3-6778-4729-B6D9-446088093F34}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AppiumTests", "AppiumTests", "{FA29F3AE-9121-48CD-A95C-22E9F548E3C0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Shared.AppiumTests", "src\Controls\tests\Shared.UITests\Controls.Shared.AppiumTests.csproj", "{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Android.AppiumTests", "src\Controls\tests\Android.UITests\Controls.Android.AppiumTests.csproj", "{7042E8FF-472F-4CB5-8AAE-DAD87BA32207}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.iOS.AppiumTests", "src\Controls\tests\iOS.UITests\Controls.iOS.AppiumTests.csproj", "{5DDA6439-CDE0-4BFE-8BF9-77962BC69ACA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Mac.AppiumTests", "src\Controls\tests\Mac.UITests\Controls.Mac.AppiumTests.csproj", "{6E1ADE49-680E-4CA3-8FEA-6450802F8250}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.WinUI.AppiumTests", "src\Controls\tests\WinUI.UITests\Controls.WinUI.AppiumTests.csproj", "{A3E22F99-F380-4005-8483-3ACA6C104220}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -618,6 +630,26 @@ Global
 		{1D950CD3-6778-4729-B6D9-446088093F34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D950CD3-6778-4729-B6D9-446088093F34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D950CD3-6778-4729-B6D9-446088093F34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7042E8FF-472F-4CB5-8AAE-DAD87BA32207}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7042E8FF-472F-4CB5-8AAE-DAD87BA32207}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7042E8FF-472F-4CB5-8AAE-DAD87BA32207}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7042E8FF-472F-4CB5-8AAE-DAD87BA32207}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DDA6439-CDE0-4BFE-8BF9-77962BC69ACA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DDA6439-CDE0-4BFE-8BF9-77962BC69ACA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DDA6439-CDE0-4BFE-8BF9-77962BC69ACA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DDA6439-CDE0-4BFE-8BF9-77962BC69ACA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E1ADE49-680E-4CA3-8FEA-6450802F8250}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E1ADE49-680E-4CA3-8FEA-6450802F8250}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E1ADE49-680E-4CA3-8FEA-6450802F8250}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E1ADE49-680E-4CA3-8FEA-6450802F8250}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3E22F99-F380-4005-8483-3ACA6C104220}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3E22F99-F380-4005-8483-3ACA6C104220}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3E22F99-F380-4005-8483-3ACA6C104220}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3E22F99-F380-4005-8483-3ACA6C104220}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -731,6 +763,12 @@ Global
 		{06747B55-91DB-47F5-B7A2-56526C28A0D3} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{054C5BAC-3671-4F76-B32E-47CF4E64BB39} = {0AF0E771-4E09-4F05-B187-B43A2B9F62B0}
 		{1D950CD3-6778-4729-B6D9-446088093F34} = {054C5BAC-3671-4F76-B32E-47CF4E64BB39}
+		{FA29F3AE-9121-48CD-A95C-22E9F548E3C0} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
+		{C450F8F4-C40F-4C15-978F-F43BA7DEA29D} = {FA29F3AE-9121-48CD-A95C-22E9F548E3C0}
+		{7042E8FF-472F-4CB5-8AAE-DAD87BA32207} = {FA29F3AE-9121-48CD-A95C-22E9F548E3C0}
+		{5DDA6439-CDE0-4BFE-8BF9-77962BC69ACA} = {FA29F3AE-9121-48CD-A95C-22E9F548E3C0}
+		{6E1ADE49-680E-4CA3-8FEA-6450802F8250} = {FA29F3AE-9121-48CD-A95C-22E9F548E3C0}
+		{A3E22F99-F380-4005-8483-3ACA6C104220} = {FA29F3AE-9121-48CD-A95C-22E9F548E3C0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
