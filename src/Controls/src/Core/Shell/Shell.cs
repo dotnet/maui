@@ -340,23 +340,8 @@ namespace Microsoft.Maui.Controls
 
 		DataTemplate IShellController.GetFlyoutItemDataTemplate(BindableObject bo)
 		{
-			BindableProperty bp = null;
-			string textBinding;
-			string iconBinding;
+			BindableProperty bp = bo is IMenuItemController ? MenuItemTemplateProperty : ItemTemplateProperty;
 			var bindableObjectWithTemplate = GetBindableObjectWithFlyoutItemTemplate(bo);
-
-			if (bo is IMenuItemController)
-			{
-				bp = MenuItemTemplateProperty;
-				textBinding = "Text";
-				iconBinding = "Icon";
-			}
-			else
-			{
-				bp = ItemTemplateProperty;
-				textBinding = "Title";
-				iconBinding = "FlyoutIcon";
-			}
 
 			if (bindableObjectWithTemplate.IsSet(bp))
 			{
@@ -368,7 +353,7 @@ namespace Microsoft.Maui.Controls
 				return (DataTemplate)GetValue(bp);
 			}
 
-			return BaseShellItem.CreateDefaultFlyoutItemCell(textBinding, iconBinding);
+			return BaseShellItem.CreateDefaultFlyoutItemCell(bo);
 		}
 
 		event EventHandler IShellController.StructureChanged
@@ -827,10 +812,12 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			if (args.NewHandler == null)
+#pragma warning disable CS0618 // Type or member is obsolete
 				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
 
 			if (args.NewHandler != null && args.OldHandler == null)
 				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)

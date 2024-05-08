@@ -6,7 +6,7 @@
 #tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
 
 const string defaultVersion = "16.4";
-const string dotnetVersion = "net8.0";
+const string dotnetVersion = "net9.0";
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? DEFAULT_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? $"ios-simulator-64_{defaultVersion}"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
@@ -45,6 +45,7 @@ Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
+Information("Runtime Variant: {0}", RUNTIME_VARIANT);
 
 string DOTNET_TOOL_PATH = "/usr/local/share/dotnet/dotnet";
 
@@ -129,6 +130,8 @@ Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
 {
+	SetDotNetEnvironmentVariables();
+	
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
 	
@@ -159,8 +162,17 @@ Task("Build")
 Task("uitest-build")
 	.Does(() =>
 {
+	SetDotNetEnvironmentVariables();
+
 	var name = System.IO.Path.GetFileNameWithoutExtension(DEFAULT_APP_PROJECT);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
+
+	if (USE_NATIVE_AOT && CONFIGURATION.Equals("Debug", StringComparison.OrdinalIgnoreCase))
+	{
+		var errMsg = $"Error: Running UI tests with NativeAOT is only supported in Release configuration";
+		Error(errMsg);
+		throw new Exception(errMsg);
+	}
 
 	Information("app" +DEFAULT_APP_PROJECT);
 	DotNetBuild(DEFAULT_APP_PROJECT, new DotNetBuildSettings {
@@ -171,14 +183,10 @@ Task("uitest-build")
 		{ 	
 			args
 			.Append("/p:BuildIpa=true")
+			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 			.Append("/bl:" + binlog)
-			.Append("/tl");
-			
-			// if we building for a device
-			if(TEST_DEVICE.ToLower().Contains("device"))
-			{
-				args.Append("/p:RuntimeIdentifier=ios-arm64");
-			}
+			.Append("/tl")
+			.Append($"/p:RuntimeIdentifier={DOTNET_PLATFORM}");
 
 			return args;
 		}
@@ -189,6 +197,8 @@ Task("Test")
 	.IsDependentOn("Build")
 	.Does(() =>
 {
+	SetDotNetEnvironmentVariables();
+
 	if (string.IsNullOrEmpty(TEST_APP)) {
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
@@ -305,6 +315,7 @@ Task("uitest")
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=IOSUITEST")
+				.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 				.Append("/bl:" + binlog)
 				.Append("/tl")
 			

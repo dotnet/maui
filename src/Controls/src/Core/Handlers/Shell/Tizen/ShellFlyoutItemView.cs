@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls.Internals;
 using GColors = Microsoft.Maui.Graphics.Colors;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.Platform
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
 			};
-			icon.SetBinding(Image.SourceProperty, new Binding("Icon"));
+			icon.SetBinding(Image.SourceProperty, TypedBinding.ForSingleNestingLevel("Icon", static (BaseShellItem item) => item.Icon));
 
 			var label = new Label
 			{
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.Controls.Platform
 				FontSize = 16,
 				VerticalTextAlignment = TextAlignment.Center,
 			};
-			label.SetBinding(Label.TextProperty, new Binding("Title"));
+			label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel("Title", static (BaseShellItem item) => item.Title));
 
 			_grid = new Grid
 			{

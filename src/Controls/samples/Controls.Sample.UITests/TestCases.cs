@@ -62,9 +62,7 @@ namespace Maui.Controls.Sample
 						TrackOnInsights(page);
 						if (page is ContentPage /*|| page is CarouselPage*/)
 						{
-
 							await Navigation.PushAsync(page);
-
 						}
 						else if (page is Shell)
 						{
@@ -150,7 +148,8 @@ namespace Maui.Controls.Sample
 				var duplicates = new HashSet<string>();
 				_issues.ForEach(im =>
 				{
-					if (duplicates.Contains(im.Name, StringComparer.OrdinalIgnoreCase) && !IsExempt(im.Name))
+					if (im.IssueTracker != IssueTracker.None &&
+					duplicates.Contains(im.Name, StringComparer.OrdinalIgnoreCase) && !IsExempt(im.Name))
 					{
 						throw new NotSupportedException("Please provide unique tracker + issue number combo: "
 							+ im.IssueTracker.ToString() + im.IssueNumber.ToString() + im.IssueTestNumber.ToString());
@@ -168,6 +167,10 @@ namespace Maui.Controls.Sample
 
 				var assembly = typeof(TestCases).Assembly;
 
+#if NATIVE_AOT
+				// Issues tests are disabled with NativeAOT (see https://github.com/dotnet/maui/issues/20553)
+				_issues = new();
+#else
 				_issues =
 					(from type in assembly.GetTypes()
 					 let attribute = type.GetCustomAttribute<IssueAttribute>()
@@ -181,6 +184,7 @@ namespace Maui.Controls.Sample
 						 Description = attribute.Description,
 						 Action = ActivatePageAndNavigate(attribute, type)
 					 }).ToList();
+#endif
 
 				VerifyNoDuplicates();
 

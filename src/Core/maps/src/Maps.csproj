@@ -10,6 +10,12 @@
     <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+  </PropertyGroup>
+
   <PropertyGroup>
     <Description>.NET MAUI Maps provides a map control for .NET MAUI apps. This only contains the core types. If you want the Map control, please install the Microsoft.Maui.Controls.Maps package.</Description>
   </PropertyGroup>

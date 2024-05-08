@@ -444,15 +444,6 @@ namespace Microsoft.Maui.Controls
 			SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
 		}
 
-		static void BindToTemplatedParent(BindableObject bindableObject, params BindableProperty[] properties)
-		{
-			foreach (var property in properties)
-			{
-				bindableObject.SetBinding(property, new Binding(property.PropertyName,
-					source: RelativeBindingSource.TemplatedParent));
-			}
-		}
-
 		static View BuildDefaultTemplate()
 		{
 			Border border = new Border()
@@ -460,21 +451,41 @@ namespace Microsoft.Maui.Controls
 				Padding = 6
 			};
 
-			BindToTemplatedParent(border, BackgroundColorProperty, HorizontalOptionsProperty,
-				MarginProperty, OpacityProperty, RotationProperty, ScaleProperty, ScaleXProperty, ScaleYProperty,
-				TranslationYProperty, TranslationXProperty, VerticalOptionsProperty);
+			void BindToTemplatedParent<TProperty>(
+				BindableProperty property,
+				Func<RadioButton, TProperty> getter,
+				string radioButtonPropertyName = null,
+				IValueConverter converter = null)
+			{
+				border.SetBinding(property, TypedBinding.ForSingleNestingLevel(radioButtonPropertyName ?? property.PropertyName,
+					getter, source: RelativeBindingSource.TemplatedParent, converter: converter));
+			}
 
-			border.SetBinding(Border.StrokeProperty,
-				new Binding(BorderColorProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			BindToTemplatedParent(BackgroundColorProperty, static (RadioButton rb) => rb.BackgroundColor);
+			BindToTemplatedParent(HorizontalOptionsProperty, static (RadioButton rb) => rb.HorizontalOptions);
+			BindToTemplatedParent(MarginProperty, static (RadioButton rb) => rb.Margin);
+			BindToTemplatedParent(OpacityProperty, static (RadioButton rb) => rb.Opacity);
+			BindToTemplatedParent(RotationProperty, static (RadioButton rb) => rb.Rotation);
+			BindToTemplatedParent(ScaleProperty, static (RadioButton rb) => rb.Scale);
+			BindToTemplatedParent(ScaleXProperty, static (RadioButton rb) => rb.ScaleX);
+			BindToTemplatedParent(ScaleYProperty, static (RadioButton rb) => rb.ScaleY);
+			BindToTemplatedParent(TranslationYProperty, static (RadioButton rb) => rb.TranslationY);
+			BindToTemplatedParent(TranslationXProperty, static (RadioButton rb) => rb.TranslationX);
+			BindToTemplatedParent(VerticalOptionsProperty, static (RadioButton rb) => rb.VerticalOptions);
 
-			border.SetBinding(Border.StrokeShapeProperty,
-				new Binding(CornerRadiusProperty.PropertyName, converter: new CornerRadiusToShape(),
-							source: RelativeBindingSource.TemplatedParent));
-
-			border.SetBinding(Border.StrokeThicknessProperty,
-				new Binding(BorderWidthProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			BindToTemplatedParent(
+				Border.StrokeProperty,
+				static (RadioButton rb) => rb.BorderColor,
+				radioButtonPropertyName: nameof(RadioButton.BorderColor));
+			BindToTemplatedParent(
+				Border.StrokeShapeProperty,
+				static (RadioButton rb) => rb.CornerRadius,
+				radioButtonPropertyName: nameof(RadioButton.CornerRadius),
+				converter: new CornerRadiusToShape());
+			BindToTemplatedParent(
+				Border.StrokeThicknessProperty,
+				static (RadioButton rb) => rb.BorderWidth,
+				radioButtonPropertyName: nameof(RadioButton.BorderWidth));
 
 			var grid = new Grid
 			{
@@ -573,9 +584,20 @@ namespace Microsoft.Maui.Controls
 					out checkMarkFillVisualStateDark);
 			}
 
-			contentPresenter.SetBinding(MarginProperty, new Binding("Padding", source: RelativeBindingSource.TemplatedParent));
-			contentPresenter.SetBinding(BackgroundColorProperty, new Binding(BackgroundColorProperty.PropertyName,
-				source: RelativeBindingSource.TemplatedParent));
+			contentPresenter.SetBinding(
+				MarginProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(RadioButton.Padding),
+					static (RadioButton radio) => radio.Padding,
+					mode: BindingMode.OneWay,
+					source: RelativeBindingSource.TemplatedParent));
+			contentPresenter.SetBinding(
+				BackgroundColorProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(RadioButton.BackgroundColor),
+					static (RadioButton radio) => radio.BackgroundColor,
+					mode: BindingMode.OneWay,
+					source: RelativeBindingSource.TemplatedParent));
 
 			grid.Add(normalEllipse);
 			grid.Add(checkMark);

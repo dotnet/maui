@@ -5,6 +5,7 @@ trigger:
     - release/*
     - net7.0
     - net8.0
+    - net9.0
     - loc
   tags:
     include:
@@ -30,6 +31,7 @@ pr:
     - release/*
     - net7.0
     - net8.0
+    - net9.0
   paths:
     include:
     - '*'
@@ -65,28 +67,22 @@ parameters:
     type: boolean
     default: false
 
-  - name: RunCompliance
-    type: boolean
-    default: false
-
   - name: BuildConfigurations
     type: object
     default:
       - Debug
       - Release
+
   - name: BuildPlatforms
     type: object
     default:
       - name: Windows
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
-        bootsAndroid: $(Android.Msi)
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
-        bootsAndroid: $(Android.Pkg)
-        bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: build-macos
  
   - name: PackPlatforms
@@ -95,13 +91,10 @@ parameters:
       - name: Windows
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
-        bootsAndroid: $(Android.Msi)
         artifact: nuget
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
-        bootsAndroid: $(Android.Pkg)
-        bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: nuget-macos
 
   - name: RunTemplatePlatforms
@@ -127,8 +120,8 @@ parameters:
     default:
       - name: default
         tfm: default
-      - name: net8
-        tfm: net8.0
+      - name: net9
+        tfm: net9.0
 
 resources:
   repositories:
@@ -212,11 +205,18 @@ stages:
             - template: common/pack.yml
               parameters:
                 platform: ${{ PackPlatform.name }}
-                poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
+                artifactsPath: '(Build.ArtifactStagingDirectory)'
                 artifactBinaries: 'pack-binaries'
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                prepareSteps:
+                  - template: common/provision.yml
+                    parameters:
+                      checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                      skipAndroidImages: true
 
   - stage: samples_net
     displayName: Test .NET MAUI Samples
@@ -264,6 +264,11 @@ stages:
                 testRunner: VSTest
                 testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
                 testRunTitle: ${{ BuildPlatform.name }} sample build tests
+            - task: PublishBuildArtifacts@1
+              condition: always()
+              displayName: publish artifacts
+              inputs:
+                ArtifactName: build_net_${{ BuildPlatform.name }}_samples
 
   - stage: templates_net
     displayName: Test Templates
@@ -278,23 +283,3 @@ stages:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
     - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
     - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
-    - ${{ if or(eq(variables['Build.Reason'], 'Schedule'), parameters.RunCompliance) }}:
-      - template: security/full/v1.yml@yaml-templates
-        parameters:
-          stageDependsOn: 'pack_net'
-          complianceEnabled: true
-          complianceTimeoutInMinutes: 480
-          scanArtifacts: ['pack-binaries']
-          antiMalwareEnabled: true
-          binSkimEnabled: true
-          #binSkimTargetGlob: '$(Build.ArtifactStagingDirectory)\binaries-to-scan\pack-binaries\src\Controls\src\Nuget\bin\Release\net8.0\*.dll'
-          sourceGdnSuppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
-          tsaConfigFile: '$(Build.SourcesDirectory)\eng\automation\guardian\tsaoptions-v2.json'
-          policheckExclusionFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\PoliCheck.Exclusions.xml' 
-          policheckGdnSuppressionFilesFolder: '$(System.DefaultWorkingDirectory)\eng\automation\guardian'
-          credScanEnabled: true
-          credScanSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\CredScanSuppressions.json'
-          enableCodeInspector: true
-          apiScanEnabled: true
-          apiScanSoftwareName: 'MAUI'
-          apiScanSoftwareVersionNum: 8.0

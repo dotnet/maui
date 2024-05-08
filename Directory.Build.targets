@@ -14,8 +14,8 @@
 
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
-    <SupportedOSPlatformVersion>11.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>11.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>12.2</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>12.2</TargetPlatformMinVersion>
     <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
@@ -26,14 +26,14 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
-    <SupportedOSPlatformVersion>13.1</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>13.1</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
     <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
-    <SupportedOSPlatformVersion>10.14</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>10.14</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>12.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>12.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True'">
     <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
@@ -70,7 +70,7 @@
 
   <!-- Until we get a new enough dotnet -->
   <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.27" TargetingPackVersion="10.0.19041.27" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.31" TargetingPackVersion="10.0.19041.31" />
   </ItemGroup>
 
   <!--

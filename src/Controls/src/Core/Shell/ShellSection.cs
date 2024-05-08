@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellSection']/Docs/*" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
+	[TypeConverter(typeof(ShellSectionTypeConverter))]
 	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation
 	{
 		#region PropertyKeys
@@ -291,9 +293,27 @@ namespace Microsoft.Maui.Controls
 
 			shellSection.Items.Add(shellContent);
 
-			shellSection.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: shellContent));
-			shellSection.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellContent));
-			shellSection.SetBinding(FlyoutIconProperty, new Binding(nameof(FlyoutIcon), BindingMode.OneWay, source: shellContent));
+			shellSection.SetBinding(
+				TitleProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(BaseShellItem.Title),
+					static (BaseShellItem item) => item.Title,
+					mode: BindingMode.OneWay,
+					source: shellContent));
+			shellSection.SetBinding(
+				IconProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(BaseShellItem.Icon),
+					static (BaseShellItem item) => item.Icon,
+					mode: BindingMode.OneWay,
+					source: shellContent));
+			shellSection.SetBinding(
+				FlyoutIconProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(BaseShellItem.FlyoutIcon),
+					static (BaseShellItem item) => item.FlyoutIcon,
+					mode: BindingMode.OneWay,
+					source: shellContent));
 
 			return shellSection;
 		}
@@ -1239,5 +1259,20 @@ namespace Microsoft.Maui.Controls
 		}
 #nullable disable
 
+		private sealed class ShellSectionTypeConverter : TypeConverter
+		{
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => false;
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo cultureInfo, object value, Type destinationType) => throw new NotSupportedException();
+
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(ShellContent) || sourceType == typeof(TemplatedPage);
+			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+				=> value switch
+				{
+					ShellContent shellContent => (ShellSection)shellContent,
+					TemplatedPage page => (ShellSection)page,
+					_ => throw new NotSupportedException(),
+				};
+		}
 	}
 }

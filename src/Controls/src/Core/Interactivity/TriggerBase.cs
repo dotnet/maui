@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -11,16 +10,12 @@ namespace Microsoft.Maui.Controls
 	{
 		bool _isSealed;
 
-		//each trigger is different
-		static int count = 1;
-
 		internal TriggerBase(Type targetType)
 		{
 			TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
 
 			EnterActions = new SealedList<TriggerAction>();
 			ExitActions = new SealedList<TriggerAction>();
-			Specificity = new SetterSpecificity(0, 100 + (count++), 0, 0, 0, 0, 0, 0);
 		}
 
 		internal TriggerBase(Condition condition, Type targetType) : this(targetType)
@@ -59,9 +54,6 @@ namespace Microsoft.Maui.Controls
 		//Setters and Condition are used by Trigger, DataTrigger and MultiTrigger
 		internal IList<Setter> Setters { get; }
 
-		//FIXME: add specificity as ctor argument
-		internal SetterSpecificity Specificity { get; }
-
 		void IAttachedObject.AttachTo(BindableObject bindable)
 		{
 			IsSealed = true;
@@ -83,13 +75,23 @@ namespace Microsoft.Maui.Controls
 		internal virtual void OnAttachedTo(BindableObject bindable)
 		{
 			if (Condition != null)
+			{
+				var triggerIndex = ++bindable._triggerCount;
+				var manualSpecificity = (ushort)(SetterSpecificity.ManualTriggerBaseline + triggerIndex);
+				var specificity = new SetterSpecificity(0, manualSpecificity, 0, 0, 0, 0, 0, 0);
+
+				bindable._triggerSpecificity[this] = specificity;
 				Condition.SetUp(bindable);
+			}
 		}
 
 		internal virtual void OnDetachingFrom(BindableObject bindable)
 		{
 			if (Condition != null)
+			{
 				Condition.TearDown(bindable);
+				bindable._triggerSpecificity.Remove(this);
+			}
 		}
 
 		internal virtual void OnSeal()
@@ -104,17 +106,23 @@ namespace Microsoft.Maui.Controls
 
 		void OnConditionChanged(BindableObject bindable, bool oldValue, bool newValue)
 		{
+			if (!bindable._triggerSpecificity.TryGetValue(this, out var specificity))
+			{
+				// this should never happen
+				return;
+			}
+			
 			if (newValue)
 			{
 				foreach (TriggerAction action in EnterActions)
 					action.DoInvoke(bindable);
 				foreach (Setter setter in Setters)
-					setter.Apply(bindable, Specificity);
+					setter.Apply(bindable, specificity);
 			}
 			else
 			{
 				foreach (Setter setter in Setters)
-					setter.UnApply(bindable, Specificity);
+					setter.UnApply(bindable, specificity);
 				foreach (TriggerAction action in ExitActions)
 					action.DoInvoke(bindable);
 			}

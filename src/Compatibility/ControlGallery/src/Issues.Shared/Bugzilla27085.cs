@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(Compatibility.UITests.UITestCategories.Bugzilla)]
+	[Category(Compatibility.UITests.UITestCategories.TableView)]
 #endif
 	[Issue(IssueTracker.Bugzilla, 27085, "EntryCell has no possibility to hide keyboard on iOS")]
 	public class Bugzilla27085 : TestContentPage // or TestFlyoutPage, etc ...

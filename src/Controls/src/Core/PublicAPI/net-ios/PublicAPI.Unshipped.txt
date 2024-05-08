@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
 Microsoft.Maui.Controls.PlatformDragEventArgs
@@ -73,14 +74,12 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
-static Microsoft.Maui.Controls.Toolbar.MapBackButtonVisible(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapBarBackground(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapBarTextColor(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapIconColor(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapIsVisible(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapTitleIcon(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapTitleView(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
+override Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.LoadView() -> void
+Microsoft.Maui.Controls.TimeChangedEventArgs
+Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
+Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -159,7 +158,6 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
-~static Microsoft.Maui.Controls.NavigationPage.MapToolbar(Microsoft.Maui.IElementHandler handler, Microsoft.Maui.IToolbarElement element) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
 ~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -261,3 +259,8 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
+~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
+~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
+~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
+*REMOVED*~Microsoft.Maui.Controls.ResourceDictionary.SetAndLoadSource(System.Uri value, string resourcePath, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo) -> void

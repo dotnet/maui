@@ -4,7 +4,7 @@
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">net47;</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.1</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998;4014</NoWarn>
+    <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998</NoWarn>
   </PropertyGroup>
 
 

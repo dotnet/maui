@@ -13,13 +13,18 @@ namespace Microsoft.Maui.Converters
 	public class EasingTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-			=> sourceType == typeof(string);
+			=> sourceType == typeof(string) || sourceType == typeof(Func<double, double>);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> destinationType == typeof(string);
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			if (value is Func<double, double> fn)
+			{
+				return (Easing)fn;
+			}
+
 			var strValue = value?.ToString();
 
 			if (string.IsNullOrWhiteSpace(strValue))

@@ -151,7 +151,7 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
         - name: blazorwebview
           desc: BlazorWebView
-          androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
+          androidApiLevelsExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
           windowsPackageId: 'Microsoft.Maui.MauiBlazorWebView.DeviceTests'
           android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj

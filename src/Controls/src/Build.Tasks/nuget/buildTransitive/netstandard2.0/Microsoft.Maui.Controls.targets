@@ -146,11 +146,15 @@
 		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
 		Outputs="$(IntermediateOutputPath)XamlC.stamp"
 		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != ''">
-	    <PropertyGroup>
-		<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
-		<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
-		<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
-	    </PropertyGroup>
+		<PropertyGroup>
+			<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
+			<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
+			<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
+
+			<MauiStrictXamlCompilation Condition="'$(MauiStrictXamlCompilation)' == '' and '$(PublishAot)' == 'true'">true</MauiStrictXamlCompilation>
+			<_MauiXamlCNoWarn>$(NoWarn)</_MauiXamlCNoWarn>
+			<_MauiXamlCNoWarn Condition="'$(MauiStrictXamlCompilation)' != 'true'">$(_MauiXamlCNoWarn);XC0022;XC0023</_MauiXamlCNoWarn>
+		</PropertyGroup>
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
@@ -164,7 +168,7 @@
 
       WarningLevel = "$(WarningLevel)"
       TreatWarningsAsErrors = "$(TreatWarningsAsErrors)"
-      NoWarn = "$(NoWarn)"
+      NoWarn = "$(_MauiXamlCNoWarn)"
       WarningsAsErrors = "$(WarningsAsErrors)"
       WarningsNotAsErrors = "$(WarningsNotAsErrors)" />
       
@@ -204,6 +208,38 @@
     </PropertyGroup>
     <Error Code="XF005"  Condition="$(TargetFrameworkVersionWithoutV) &lt; $(MinTargetFrameworkVersionForMaui)"
            Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Microsoft.Maui ($(MinTargetFrameworkVersionForMaui)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
+  </Target>
+
+  <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink;_GenerateRuntimeConfigurationFilesInputCache">
+    <PropertyGroup>
+      <MauiXamlRuntimeParsingSupport Condition="'$(MauiXamlRuntimeParsingSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiXamlRuntimeParsingSupport>
+      <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
+      <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == '' and '$(PublishAot)' == 'true'">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
+      <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiQueryPropertyAttributeSupport>
+      <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
+    </PropertyGroup>
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported"
+                                      Condition="'$(MauiXamlRuntimeParsingSupport)' != ''"
+                                      Value="$(MauiXamlRuntimeParsingSupport)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
+                                      Condition="'$(MauiEnableIVisualAssemblyScanning)' != ''"
+                                      Value="$(MauiEnableIVisualAssemblyScanning)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported"
+                                      Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' != ''"
+                                      Value="$(MauiShellSearchResultsRendererDisplayMemberNameSupported)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported"
+                                      Condition="'$(MauiQueryPropertyAttributeSupport)' != ''"
+                                      Value="$(MauiQueryPropertyAttributeSupport)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported"
+                                      Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
+                                      Value="$(MauiImplicitCastOperatorsUsageViaReflectionSupport)"
+                                      Trim="true" />
+    </ItemGroup>
   </Target>
 
 </Project>

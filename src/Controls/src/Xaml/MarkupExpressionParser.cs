@@ -32,6 +32,7 @@
 //
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Microsoft.Maui.Controls.Xaml
@@ -46,6 +47,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			public object value;
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 		public object ParseExpression(ref string expression, IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)
@@ -120,6 +122,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			return true;
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 		protected Property ParseProperty(IServiceProvider serviceProvider, ref string remaining)
 		{
 			object value = null;
@@ -148,6 +151,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			return new Property { last = next == '}', name = name, strValue = str_value, value = value };
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 		Property ParsePropertyExpression(string prop, IServiceProvider serviceProvider, ref string remaining)
 		{
 			bool last;

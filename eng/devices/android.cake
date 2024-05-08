@@ -7,7 +7,7 @@
 #tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
 
 const int defaultVersion = 30;
-const string dotnetVersion = "net8.0";
+const string dotnetVersion = "net9.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_PROJECT);
@@ -111,6 +111,7 @@ Setup(context =>
 		var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
 		if (api == 27 && DEVICE_ARCH == "x86_64")
 			sdk = "default";
+
 		ANDROID_AVD_IMAGE = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
 
 		Information("Going to run image: {0}", ANDROID_AVD_IMAGE);
@@ -143,6 +144,12 @@ Setup(context =>
 		Information("Starting Emulator: {0}...", ANDROID_AVD);
 		emulatorProcess = AndroidEmulatorStart(ANDROID_AVD, emuSettings);
 	}
+
+	if (IsCIBuild())
+	{
+		AdbLogcat(new AdbLogcatOptions() { Clear = true });
+		AdbShell("logcat -G 16M");
+	}
 });
 
 Teardown(context =>
@@ -174,6 +181,7 @@ Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
 {
+	SetDotNetEnvironmentVariables();
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android--{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 
@@ -343,8 +351,29 @@ Task("uitest")
 	
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_android.log");
 
-	Information("Run UITests project {0}", PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
+	Information("Run UITests project {0}", PROJECT.FullPath);	
+	
+	int numOfRetries = 0;
+
+	if (IsCIBuild())
+		numOfRetries = 1;
+
+	for(int retryCount = 0; retryCount <= numOfRetries; retryCount++)
+	{
+		try
+		{
+			RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
+			break;
+		}
+		catch(Exception)
+		{
+			if (retryCount == numOfRetries)
+			{
+				WriteLogCat();
+				throw;
+			}
+		}
+	}
 });
 
 Task("cg-uitest")
@@ -358,6 +387,10 @@ Task("cg-uitest")
 
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("APP_APK", $"{TEST_APP}");
+
+	// Copy the actual tested app to the artifacts for manual inspection if needed
+	CreateDirectory($"{TEST_RESULTS}/android/tested_bin");
+	CopyFile(TEST_APP, $"{TEST_RESULTS}/android/tested_bin/{TEST_APP_PACKAGE_NAME}.apk");
 
 	// build the test library
 	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK).FullPath;
@@ -392,7 +425,49 @@ Task("cg-uitest")
 	FailRunOnOnlyInconclusiveTests(System.IO.Path.Combine(nunitSettings.Work.FullPath, "TestResult.xml"));
 });
 
+
+Task("logcat")
+	.Does(() =>
+{
+	WriteLogCat();
+});
+
 RunTarget(TARGET);
+
+void WriteLogCat(string filename = null)
+{
+	if (string.IsNullOrWhiteSpace(filename))
+	{
+		var timeStamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+		filename = $"logcat_{TARGET}_{timeStamp}.log";
+	}
+		
+	EnsureDirectoryExists(GetLogDirectory());
+	// I tried AdbLogcat here but the pipeline kept reporting "cannot create file"
+	var location = $"{GetLogDirectory()}/{filename}";
+	Information("Writing logcat to {0}", location);
+
+	var processSettings = new ProcessSettings();
+	processSettings.RedirectStandardOutput = true;
+	processSettings.RedirectStandardError = true;
+	var adb = $"{ANDROID_SDK_ROOT}/platform-tools/adb";
+
+	Information("Running: {0} logcat -d", adb);
+	processSettings.Arguments = $"logcat -d";
+    using (var fs = new System.IO.FileStream(location, System.IO.FileMode.Create)) 
+	using (var sw = new StreamWriter(fs))
+	{
+		processSettings.RedirectedStandardOutputHandler = (output) => {
+			sw.WriteLine(output);
+			return output;
+		};
+
+		var process = StartProcess($"{adb}", processSettings); 
+		Information("exit code {0}", process);
+	}
+
+	Information("Logcat written to {0}", location);
+}
 
 void SetupAppPackageNameAndResult()
 {

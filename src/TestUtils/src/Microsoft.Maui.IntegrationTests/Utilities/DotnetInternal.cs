@@ -46,9 +46,9 @@ namespace Microsoft.Maui.IntegrationTests
 			return buildArgs;
 		}
 
-		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false)
+		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false, string runtimeIdentifier = "")
 		{
-			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath);
+			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, false);
 
 			if (msbuildWarningsAsErrors)
 			{
@@ -107,9 +107,6 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
-			//Workaround: https://github.com/dotnet/linker/issues/3012
-			pinfo.EnvironmentVariables["DOTNET_gcServer"] = "0";
-
 			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;
 
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);

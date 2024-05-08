@@ -17,6 +17,7 @@
     <PackageReference Include="Svg.Model" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="ShimSkiaSharp" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Fizzler" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="ExCSS" GeneratePathProperty="true" PrivateAssets="all" />
     <!-- build task dependencies -->
     <PackageReference Include="System.Memory" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Buffers" GeneratePathProperty="true" PrivateAssets="all" />
@@ -43,6 +44,7 @@
     <_ResizetizerFiles Include="$(PkgShimSkiaSharp)\lib\netstandard2.0\ShimSkiaSharp.dll" />
     <_ResizetizerFiles Include="$(PkgSvg_Skia)\lib\netstandard2.0\Svg.Skia.dll" />
     <_ResizetizerFiles Include="$(PkgFizzler)\lib\netstandard2.0\Fizzler.dll" />
+    <_ResizetizerFiles Include="$(PkgExCSS)\lib\netstandard2.0\ExCSS.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_IO_UnmanagedMemoryStream)\lib\netstandard1.3\System.IO.UnmanagedMemoryStream.dll" />
     <_ResizetizerFiles Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" />
     <_ResizetizerFiles Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.pdb" />

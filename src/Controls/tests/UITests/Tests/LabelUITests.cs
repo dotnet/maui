@@ -24,6 +24,7 @@ public class LabelUITests : _ViewUITests
 	}
 
 	[Test]
+	[Category(UITestCategories.Label)]
 	public void SpanTapped()
 	{
 		if (Device == TestDevice.Mac)

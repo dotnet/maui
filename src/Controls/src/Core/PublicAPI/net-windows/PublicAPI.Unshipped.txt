@@ -52,6 +52,7 @@ Microsoft.Maui.Controls.InputView.FontSize.get -> double
 Microsoft.Maui.Controls.InputView.FontSize.set -> void
 Microsoft.Maui.Controls.InputView.SelectionLength.get -> int
 Microsoft.Maui.Controls.InputView.SelectionLength.set -> void
+override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Controls.Handlers.ShellItemHandler.MapTitle(Microsoft.Maui.Controls.Handlers.ShellItemHandler! handler, Microsoft.Maui.Controls.ShellItem! item) -> void
 static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.MapTitle(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler, Microsoft.Maui.Controls.ShellSection! item) -> void
@@ -67,6 +68,11 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+Microsoft.Maui.Controls.TimeChangedEventArgs
+Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
+Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -207,7 +213,6 @@ Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> Microsoft.UI.Xaml
 ~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.get -> bool
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.CursorPosition.get -> int
@@ -220,7 +225,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.CursorPosition.get -> int
@@ -233,7 +237,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.set -> void
-
 *REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.CursorPosition.get -> int
@@ -246,3 +249,8 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
+~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
+~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
+~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
+*REMOVED*~Microsoft.Maui.Controls.ResourceDictionary.SetAndLoadSource(System.Uri value, string resourcePath, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo) -> void

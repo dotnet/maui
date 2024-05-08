@@ -167,7 +167,6 @@ namespace Microsoft.Maui.Controls.Hosting
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
 			// initialize compatibility DependencyService
 			DependencyService.SetToInitialized();
-			DependencyService.Register<Xaml.ResourcesLoader>();
 			DependencyService.Register<Xaml.ValueConverterProvider>();
 			DependencyService.Register<PlatformSizeService>();
 

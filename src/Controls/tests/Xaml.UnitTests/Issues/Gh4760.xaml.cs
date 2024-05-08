@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		  ProvideValue(serviceProvider);
 	}
 
+	[AcceptEmptyServiceProvider]
 	public class Gh4760MultiplyExtension : Gh4760Base<double>
 	{
 		public double Base { get; set; }

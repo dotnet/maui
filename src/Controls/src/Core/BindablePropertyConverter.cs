@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -23,6 +24,11 @@ namespace Microsoft.Maui.Controls
 
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
+			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
+			{
+				throw new InvalidOperationException(RuntimeFeature.XamlRuntimeParsingNotSupportedErrorMessage);
+			}
+
 			if (string.IsNullOrWhiteSpace(value))
 				return null;
 			if (serviceProvider == null)
@@ -75,6 +81,11 @@ namespace Microsoft.Maui.Controls
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
+			{
+				throw new InvalidOperationException(RuntimeFeature.XamlRuntimeParsingNotSupportedErrorMessage);
+			}
+
 			var strValue = value?.ToString();
 
 			if (string.IsNullOrWhiteSpace(strValue))
@@ -90,15 +101,20 @@ namespace Microsoft.Maui.Controls
 				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning($"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
 				return null;
 			}
-			Type type = Type.GetType("Microsoft.Maui.Controls." + parts[0]);
+			Type type = GetControlType(parts[0]);
 			return ConvertFrom(type, parts[1], null);
+
+			[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+			static Type GetControlType(string typeName)
+				=> Type.GetType("Microsoft.Maui.Controls." + typeName);
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 		BindableProperty ConvertFrom(Type type, string propertyName, IXmlLineInfo lineinfo)
 		{
 			string name = propertyName + "Property";
-			FieldInfo bpinfo = type.GetField(fi => fi.Name == name && fi.IsStatic && fi.IsPublic && fi.FieldType == typeof(BindableProperty));
-			if (bpinfo == null)
+			FieldInfo bpinfo = type.GetField(name, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+			if (bpinfo == null || bpinfo.FieldType != typeof(BindableProperty))
 				throw new XamlParseException($"Can't resolve {name} on {type.Name}", lineinfo);
 			var bp = bpinfo.GetValue(null) as BindableProperty;
 			var isObsolete = bpinfo.GetCustomAttribute<ObsoleteAttribute>() != null;

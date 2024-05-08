@@ -114,6 +114,18 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		public static bool IsPackagedApp => _isPackagedAppLazy.Value;
 
+		static readonly Lazy<string> platformGetFullAppPackageFilePath = new Lazy<string>(() =>
+		{
+			return IsPackagedApp
+				? Package.Current.InstalledLocation.Path
+				: AppContext.BaseDirectory;
+		});
+
+		/// <summary>
+		/// Gets full application path.
+		/// </summary>
+		public static string PlatformGetFullAppPackageFilePath => platformGetFullAppPackageFilePath.Value;
+
 		/// <summary>
 		/// Converts a <see cref="PackageVersion"/> object to a <see cref="Version"/> object.
 		/// </summary>

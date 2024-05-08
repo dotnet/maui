@@ -271,6 +271,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								LoggingHelper.LogMessage(Low, e.StackTrace);
 								continue;
 							}
+							if (initComp.HasCustomAttributes)
+							{
+								var suppressMessageAttribute = initComp.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute");
+								if (suppressMessageAttribute != null)
+								{
+									LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Removing UnconditionalSuppressMessageAttribute from InitializeComponent()");
+									initComp.CustomAttributes.Remove(suppressMessageAttribute);
+								}
+							}
 							if (Type != null)
 								InitCompForType = initComp;
 
@@ -365,6 +374,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				rootnode.Accept(new SetNamescopesAndRegisterNamesVisitor(visitorContext), null);
 				rootnode.Accept(new SetFieldVisitor(visitorContext), null);
 				rootnode.Accept(new SetResourcesVisitor(visitorContext), null);
+				rootnode.Accept(new SimplifyTypeExtensionVisitor(), null);
 				rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
 
 				il.Emit(Ret);

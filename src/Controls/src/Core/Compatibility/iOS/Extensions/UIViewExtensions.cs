@@ -5,6 +5,8 @@ using System.Linq;
 using static System.String;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using System.Diagnostics.CodeAnalysis;
+
 #if __MOBILE__
 using ObjCRuntime;
 using UIKit;
@@ -48,6 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			return new SizeRequest(request, minimum);
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 		public static void SetBinding(this UIView view, string propertyName, BindingBase bindingBase,
 			string updateSourceEventName = null)
 		{
