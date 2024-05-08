@@ -40,5 +40,10 @@ public partial class Issue21967 : ContentPage
                 cv.WidthRequest = 200;
             }
         };
+
+        buttonFullSize.Clicked += (_, _) =>
+        {
+            cv.WidthRequest = Microsoft.Maui.Primitives.Dimension.Unset;
+        };
     }
 }

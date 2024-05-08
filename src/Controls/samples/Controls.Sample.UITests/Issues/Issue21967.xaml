@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue21967"
              Title="Issue21967">
      <Grid
-        RowDefinitions="Auto,Auto,*"
+        RowDefinitions="Auto,Auto,Auto,*"
         RowSpacing="8"
         Margin="8">
  
@@ -13,6 +13,14 @@
  
         <Button
             Grid.Row="1"
+            Text="Set to Full Size"
+            AutomationId="FullSize"
+            x:Name="buttonFullSize"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"/>
+ 
+        <Button
+            Grid.Row="2"
             Text="Resize"
             AutomationId="Resize"
             x:Name="button"
@@ -20,7 +28,7 @@
             VerticalOptions="Center"/>
  
         <CollectionView
-            Grid.Row="2"
+            Grid.Row="3"
             x:Name="cv"
             ItemSizingStrategy="MeasureFirstItem">
  
