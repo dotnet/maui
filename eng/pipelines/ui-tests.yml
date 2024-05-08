@@ -161,20 +161,17 @@ stages:
       projects:
         - name: controls
           desc: Controls
-          androidApiLevelsExclude: [ 25 ] # Ignore for now API25 since the runs's are not stable
-          iosVersionsExclude: [ '12.4' ]  # Ignore iOS 12.4 while we can't make it work on CI
-          # new Appium UI tests
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.Android.AppiumTests.csproj
           app: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj
-          androidTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.Android.AppiumTests.csproj
-          iosTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/iOS.UITests/Controls.iOS.AppiumTests.csproj
-          winuiTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/WinUI.UITests/Controls.WinUI.AppiumTests.csproj
-          macTestProject: $(System.DefaultWorkingDirectory)/src/Controls/tests/Mac.UITests/Controls.Mac.AppiumTests.csproj
-          # compatibility Xamarin.UI tests
+          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
+          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.iOS.AppiumTests.csproj
+          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.WinUI.AppiumTests.csproj
+          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/Android.UITests/Controls.Mac.AppiumTests.csproj
           compatibilityAndroidApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj 
           compatibilityAndroidTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/Android.UITests/Compatibility.ControlGallery.Android.UITests.csproj
           compatibilityiOSApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj 
           compatibilityiOSTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj
-          # compatibility Appium UI tests
           legacyAndroidApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj 
           legacyAndroidTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/Android.Appium.UITests/ControlGallery.Android.Appium.UITests.csproj
           legacyiOSApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj 

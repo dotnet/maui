@@ -29,7 +29,7 @@ if (string.Equals(TARGET, "uitest", StringComparison.OrdinalIgnoreCase))
 
 if (string.Equals(TARGET, "uitest-build", StringComparison.OrdinalIgnoreCase))
 {
-    DEFAULT_PROJECT = "../../src/Controls/tests/UITests/Controls.AppiumTests.csproj";
+    DEFAULT_PROJECT = "../../src/Controls/tests/Shared.UITests/Controls.Shared.AppiumTests.csproj";
     DEFAULT_APP_PROJECT = "../../src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
 }
 
