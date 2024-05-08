@@ -705,15 +705,15 @@ namespace Microsoft.Maui.Controls.Platform
 			var view = Element as View;
 			IList<IGestureRecognizer>? gestures = view?.GestureRecognizers;
 
-			if (_container == null || gestures == null)
+			if (_container is null || gestures is null)
+			{
 				return;
+			}
 
 			ClearContainerEventHandlers();
 			UpdateDragAndDropGestureRecognizers();
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
-			IList<TapGestureRecognizer>? childGestures =
-				children?.GetChildGesturesFor<TapGestureRecognizer>().ToList();
 
 			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1)
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
