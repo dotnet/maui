@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
 			// Use UIButton.Configuration for iOS 15+
-			if (OperatingSystem.IsIOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && handler.PlatformView.Configuration is not null)
 			{
 				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
 				if (button?.TextColor != null && handler.PlatformView != null)

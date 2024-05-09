@@ -1,7 +1,6 @@
 using System;
 using Foundation;
 using UIKit;
-using Foundation;
 
 namespace Microsoft.Maui.Platform
 {
@@ -29,11 +28,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateText(this UIButton platformButton, IText button)
 		{
-			platformButton.SetTitle(button.Text, UIControlState.Normal);
 			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config)
 			{
 				config.Title = button.Text;
 				platformButton.Configuration = config;
+			}
+			else
+			{
+				platformButton.SetTitle(button.Text, UIControlState.Normal);
 			}
 
 			UpdateCharacterSpacing(platformButton, button);
@@ -46,11 +48,19 @@ namespace Microsoft.Maui.Platform
 
 			var color = button.TextColor.ToPlatform();
 
-			platformButton.SetTitleColor(color, UIControlState.Normal);
-			platformButton.SetTitleColor(color, UIControlState.Highlighted);
-			platformButton.SetTitleColor(color, UIControlState.Disabled);
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config)
+			{
+				// config.BaseForegroundColor = color;
+				// platformButton.Configuration = config;
+			}
+			else
+			{
+				platformButton.SetTitleColor(color, UIControlState.Normal);
+				platformButton.SetTitleColor(color, UIControlState.Highlighted);
+				platformButton.SetTitleColor(color, UIControlState.Disabled);
 
-			platformButton.TintColor = color;
+				platformButton.TintColor = color;
+			}
 		}
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)
@@ -86,8 +96,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFont(this UIButton platformButton, ITextStyle textStyle, IFontManager fontManager)
 		{
-			platformButton.TitleLabel?.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
-
 			// If iOS 15+, update the configuration with the new font
 			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config && textStyle is IText text)
 			{
@@ -97,9 +105,13 @@ namespace Microsoft.Maui.Platform
 				var newAttributedText = attributedText.WithFont(fontManager.GetFont(textStyle.Font, textStyle.Font.Size));
 
 				// TODO: this should get saved from the configuration but is not currently so we will use teh SetAttributedTitle for now.
-				platformButton.SetAttributedTitle(newAttributedText, UIControlState.Normal);
+				// platformButton.SetAttributedTitle(newAttributedText, UIControlState.Normal);
 				config.AttributedTitle = newAttributedText;
 				platformButton.Configuration = config;
+			}
+			else
+			{
+				platformButton.TitleLabel?.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
 			}
 		}
 
@@ -146,19 +158,49 @@ namespace Microsoft.Maui.Platform
 		{
 			// Any text update requires that we update any attributed string formatting
 			var uiFontAttribute = fontManager.GetFont(textStyle.Font, UIFont.ButtonFontSize);
-			var attributedString = new NSMutableAttributedString(new NSAttributedString(platformButton.CurrentTitle!));
+
+			// object? configuration = OperatingSystem.IsIOSVersionAtLeast(15) ? platformButton.Configuration : null;
+			// if (!(platformButton.CurrentTitle is not null || (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config && config.Title is not null)))
+			// {
+			// 	return;
+			// }
+
+			NSMutableAttributedString? attributedString = null;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config && config.Title is not null)
+			{
+				attributedString = new NSMutableAttributedString(new NSAttributedString(config.Title));
+			}
+			else if (platformButton.CurrentTitle is not null)
+			{
+				attributedString = new NSMutableAttributedString(new NSAttributedString(platformButton.CurrentTitle));
+			}
+
+			if (attributedString is null)
+			{
+				return;
+			}
 
 			// Update font family & size
 			attributedString.AddAttribute(UIStringAttributeKey.Font, uiFontAttribute, new NSRange(0, attributedString.Length));
 
 			//Update UpdateCharacterSpacing
-			attributedString = attributedString.WithCharacterSpacing(textStyle.CharacterSpacing);
+			if (textStyle.CharacterSpacing != 0)
+				attributedString = attributedString.WithCharacterSpacing(textStyle.CharacterSpacing);
 
 			//Update Text Color
 			if (textStyle.TextColor != null)
 				attributedString = attributedString?.WithTextColor(textStyle.TextColor);
 
-			platformButton.SetAttributedTitle(attributedString, UIControlState.Normal);
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config1)
+			{
+				config1.AttributedTitle = attributedString;
+				platformButton.Configuration = config1;
+			}
+			else
+			{
+				platformButton.SetAttributedTitle(attributedString, UIControlState.Normal);
+			}
 		}
 	}
 }
