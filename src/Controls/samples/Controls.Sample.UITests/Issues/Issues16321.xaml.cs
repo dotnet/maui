@@ -106,7 +106,7 @@ namespace Maui.Controls.Sample.Issues
 #else
 		async void OpenActionSheetWithNewUIWindow(System.Object sender, System.EventArgs e)
 		{
-			await page.DisplayActionSheet("hello", "message", "Cancel", "Option 1", "Option 2");
+			await this.DisplayActionSheet("hello", "message", "Cancel", "Option 1", "Option 2");
 		}
 
 		async void OpenAlertWithNewUIWindow(System.Object sender, System.EventArgs e)
