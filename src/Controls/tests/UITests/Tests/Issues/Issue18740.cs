@@ -25,7 +25,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			{
 				// Navigate to the specific View test
 				App.WaitForElement("WaitForStubControl");
-				App.Click($"{view}Button");
+				App.Tap($"{view}Button");
 
 				// 1.Make sure keyboard starts out closed.	
 				App.WaitForElement("WaitForStubControl");
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 				// 2. Focus the Entry.
 				App.EnterText($"Test{view}", "test");
-				App.Click($"Test{view}");
+				App.Tap($"Test{view}");
 
 				// 3. Verify that the virtual keyboard appears.
 				Assert.IsTrue(App.IsKeyboardShown());
