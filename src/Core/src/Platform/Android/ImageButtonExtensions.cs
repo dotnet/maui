@@ -57,16 +57,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateButtonStroke(this ShapeableImageView platformView, IButtonStroke button)
 		{
-			if (platformView.UpdateMauiRippleDrawableStroke(button))
-			{
-				// The "MAUI" background was updated, so we need to remove the platform view shape.
-				platformView.ShapeAppearanceModel =
-					platformView.ShapeAppearanceModel
-						.ToBuilder()
-						.SetAllCornerSizes(0)
-						.Build();
-			}
-			else
+			if (!platformView.UpdateMauiRippleDrawableStroke(button))
 			{
 				// Fall back to the default mechanism. This may be due to the fact that the background
 				// is not a "MAUI" background, so we need to update the stroke on the button itself.
@@ -90,7 +81,22 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
 		{
-			platformView.UpdateMauiRippleDrawableBackground(button);
+			platformView.UpdateMauiRippleDrawableBackground(button,
+				beforeSet: () =>
+				{
+					// We have a background, so we need to remove the things that were set on the
+					// platform view as they are now in the drawable.
+
+					platformView.StrokeColor = null;
+
+					platformView.StrokeWidth = 0;
+
+					platformView.ShapeAppearanceModel =
+						platformView.ShapeAppearanceModel
+							.ToBuilder()
+							.SetAllCornerSizes(0)
+							.Build();
+				});
 		}
 	}
 }
