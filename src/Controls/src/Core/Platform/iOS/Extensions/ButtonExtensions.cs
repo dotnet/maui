@@ -358,7 +358,16 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateText(this UIButton platformButton, Button button)
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
-			platformButton.SetTitle(text, UIControlState.Normal);
+
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config)
+			{
+				config.Title = text;
+				platformButton.Configuration = config;
+			}
+			else
+			{
+				platformButton.SetTitle(text, UIControlState.Normal);
+			}
 
 			// Content layout depends on whether or not the text is empty; changing the text means
 			// we may need to update the content layout
