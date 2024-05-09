@@ -6,7 +6,7 @@
 
 const int DefaultApiLevel = 30;
 
-string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/Android.UITests/Controls.Android.AppiumTests.csproj";
+string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/UITests.Android/Controls.Android.AppiumTests.csproj";
 var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
 var testDevice = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{DefaultApiLevel}");
 var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-android");

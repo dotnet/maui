@@ -247,15 +247,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compatibility.Core.UnitTest
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AppiumTests", "AppiumTests", "{FA29F3AE-9121-48CD-A95C-22E9F548E3C0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Shared.AppiumTests", "src\Controls\tests\Shared.UITests\Controls.Shared.AppiumTests.csproj", "{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Shared.AppiumTests", "src\Controls\tests\UITests.Shared\Controls.Shared.AppiumTests.csproj", "{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Android.AppiumTests", "src\Controls\tests\Android.UITests\Controls.Android.AppiumTests.csproj", "{7042E8FF-472F-4CB5-8AAE-DAD87BA32207}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Android.AppiumTests", "src\Controls\tests\UITests.Android\Controls.Android.AppiumTests.csproj", "{7042E8FF-472F-4CB5-8AAE-DAD87BA32207}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.iOS.AppiumTests", "src\Controls\tests\iOS.UITests\Controls.iOS.AppiumTests.csproj", "{5DDA6439-CDE0-4BFE-8BF9-77962BC69ACA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.iOS.AppiumTests", "src\Controls\tests\UITests.iOS\Controls.iOS.AppiumTests.csproj", "{5DDA6439-CDE0-4BFE-8BF9-77962BC69ACA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Mac.AppiumTests", "src\Controls\tests\Mac.UITests\Controls.Mac.AppiumTests.csproj", "{6E1ADE49-680E-4CA3-8FEA-6450802F8250}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Mac.AppiumTests", "src\Controls\tests\UITests.Mac\Controls.Mac.AppiumTests.csproj", "{6E1ADE49-680E-4CA3-8FEA-6450802F8250}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.WinUI.AppiumTests", "src\Controls\tests\WinUI.UITests\Controls.WinUI.AppiumTests.csproj", "{A3E22F99-F380-4005-8483-3ACA6C104220}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.WinUI.AppiumTests", "src\Controls\tests\UITests.WinUI\Controls.WinUI.AppiumTests.csproj", "{A3E22F99-F380-4005-8483-3ACA6C104220}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
