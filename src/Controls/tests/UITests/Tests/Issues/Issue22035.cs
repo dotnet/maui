@@ -18,7 +18,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
 				"This test is failing, likely due to product issue. More information: https://github.com/dotnet/maui/issues/22287");
 
-			App.WaitForElement("TestNavigateButton");
+			App.WaitForElement("TestNavigateButton", timeout: TimeSpan.FromSeconds(2));
 
 			// 1. Click a button to navigate to the CarouselView Page.
 			App.Tap("TestNavigateButton");
