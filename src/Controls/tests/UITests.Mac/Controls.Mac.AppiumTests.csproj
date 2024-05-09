@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Shared.UITests\**\*.cs" Exclude="..\Shared.UITests\obj\**;..\Shared.UITests\bin\**" LinkBase="Shared" Visible="false" />
+    <Compile Include="..\UITests.Shared\**\*.cs" Exclude="..\UITests.Shared\obj\**;..\UITests.Shared\bin\**" LinkBase="Shared" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
