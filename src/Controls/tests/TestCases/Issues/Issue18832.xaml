@@ -5,8 +5,8 @@
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
     <VerticalStackLayout>
         <Label Text="Button: "/>
-        <Button AutomationId="button" Text="Hello, World!" CharacterSpacing="10" FontSize="30"/>
+        <Button AutomationId="button" Text="Hello, World!" CharacterSpacing="10" FontSize="30" FontFamily="OpenSansRegular" TextColor="DarkBlue"/>
         <Label Text="Label: "/>
-        <Label AutomationId="label" Text="Hello, World!" CharacterSpacing="10" FontSize="30"/>
+        <Label AutomationId="label" Text="Hello, World!" CharacterSpacing="10" FontSize="30" FontFamily="OpenSansRegular"/>
     </VerticalStackLayout>
 </ContentPage>
