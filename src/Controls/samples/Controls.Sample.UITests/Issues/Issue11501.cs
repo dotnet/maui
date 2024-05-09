@@ -8,49 +8,57 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 11501, "Making Fragment Changes While App is Backgrounded Fails", PlatformAffected.Android)]
-	public class Issue11501 : TestContentPage
+
+	public class Issue11501 : NavigationPage
 	{
-		Func<Task> _currentTest;
-		Page _mainPage;
-		List<Page> _modalStack;
-		Window _window;
-		public Issue11501()
+		public Issue11501() : base(new TestPage())
 		{
-			Loaded += OnLoaded;
 		}
 
-		private void OnLoaded(object sender, EventArgs e)
-		{
-			_window = Window;
-			_mainPage = Application.Current.MainPage;
-			_modalStack = Navigation.ModalStack.ToList();
-		}
 
-		private async void OnWindowActivated(object sender, EventArgs e)
+		public class TestPage : TestContentPage
 		{
-			DisconnectFromWindow();
-			if (_currentTest is not null)
+			Func<Task> _currentTest;
+			Page _mainPage;
+			List<Page> _modalStack;
+			Window _window;
+			public TestPage()
 			{
-				await Task.Yield();
-				await _currentTest();
-				_currentTest = null;
+				Loaded += OnLoaded;
 			}
-		}
 
-		void ConnectToWindow()
-		{
-			_window.Stopped -= OnWindowActivated;
-			_window.Stopped += OnWindowActivated;
-		}
+			private void OnLoaded(object sender, EventArgs e)
+			{
+				_window = Window;
+				_mainPage = Application.Current.MainPage;
+				_modalStack = Navigation.ModalStack.ToList();
+			}
 
-		void DisconnectFromWindow()
-		{
-			_window.Stopped -= OnWindowActivated;
-		}
+			private async void OnWindowActivated(object sender, EventArgs e)
+			{
+				DisconnectFromWindow();
+				if (_currentTest is not null)
+				{
+					await Task.Yield();
+					await _currentTest();
+					_currentTest = null;
+				}
+			}
 
-		protected override void Init()
-		{
-			Content = new VerticalStackLayout()
+			void ConnectToWindow()
+			{
+				_window.Stopped -= OnWindowActivated;
+				_window.Stopped += OnWindowActivated;
+			}
+
+			void DisconnectFromWindow()
+			{
+				_window.Stopped -= OnWindowActivated;
+			}
+
+			protected override void Init()
+			{
+				Content = new VerticalStackLayout()
 			{
 				new Button()
 				{
@@ -151,14 +159,14 @@ namespace Maui.Controls.Sample.Issues
 					})
 				},
 			};
-		}
+			}
 
-		ContentPage CreateDestinationPage()
-		{
-			return new ContentPage()
+			ContentPage CreateDestinationPage()
 			{
-				Title = "Test",
-				Content = new VerticalStackLayout()
+				return new ContentPage()
+				{
+					Title = "Test",
+					Content = new VerticalStackLayout()
 				{
 					new Button()
 					{
@@ -177,7 +185,8 @@ namespace Maui.Controls.Sample.Issues
 						})
 					}
 				}
-			};
+				};
+			}
 		}
 	}
 }

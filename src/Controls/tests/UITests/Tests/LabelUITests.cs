@@ -41,7 +41,7 @@ public class LabelUITests : _ViewUITests
 		// TODO: This will probably fail on desktops because the tap is in screen coordinates and the
 		//       view seems to either be in window or parent coordinates.
 		var r = remote.GetView().GetRect();
-		App.Click(r.X + (r.Height * 3), r.CenterY()); // 3 "heights" in from the left
+		App.TapCoordinates(r.X + (r.Height * 3), r.CenterY()); // 3 "heights" in from the left
 
 		var textAfterClick = remote.GetEventLabel().GetText();
 		Assert.AreEqual("Event: SpanTapped (fired 1)", textAfterClick);

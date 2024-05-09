@@ -106,6 +106,8 @@ Use ‘main’ for bug fixes that don’t require API changes. For new features 
 
 ### Device Test Projects
 
+[Writing Device Tests](https://github.com/dotnet/maui/wiki/DeviceTests)
+
 These are tests that will run on an actual device
 
  ```
@@ -129,6 +131,8 @@ These are tests that will run on an actual device
 - *MauiBlazorWebView.DeviceTests*: Visual Runner for BlazorWebView tests. 
 
 ### UI Test Projects
+
+[Writing UI Tests](https://github.com/dotnet/maui/wiki/UITests)
 
 These are tests used for exercising the UI through accessibility layers to simulate user interactions
 

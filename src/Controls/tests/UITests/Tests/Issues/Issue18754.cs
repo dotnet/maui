@@ -20,13 +20,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Attempt to enter any text into the editor below.
-			App.Click("ReadOnlyEditor");
+			App.Tap("ReadOnlyEditor");
 
 			// 2. The test fails if the editor displays the input.
 			Assert.IsFalse(App.IsKeyboardShown());
 
 			// 3. Attempt to edit the text in the editor below.
-			App.Click("FilledReadOnlyEditor");
+			App.Tap("FilledReadOnlyEditor");
 
 			// 4. The test fails if the editor displays the input.
 			Assert.IsFalse(App.IsKeyboardShown());

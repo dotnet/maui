@@ -22,7 +22,7 @@ namespace Microsoft.Maui.AppiumTests
 				"This test is failing, likely due to product issue");
 
 			// 1. Tap the button.
-			App.Click("TestButtonId");
+			App.Tap("TestButtonId");
 
 			// 2. Verify does not cause an exception.
 			App.WaitForElement("Success");

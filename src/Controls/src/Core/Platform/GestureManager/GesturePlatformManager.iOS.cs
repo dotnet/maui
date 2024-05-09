@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool? _defaultAccessibilityRespondsToUserInteraction;
 
 		double _previousScale = 1.0;
-		UITouchEventArgs? _shouldReceiveTouch;
+		ShouldReceiveTouchProxy? _proxy;
 		DragAndDropDelegate? _dragAndDropDelegate;
 
 		public GesturePlatformManager(IViewHandler handler)
@@ -340,19 +340,19 @@ namespace Microsoft.Maui.Controls.Platform
 						switch (r.State)
 						{
 							case UIGestureRecognizerState.Began:
-								if (r.NumberOfTouches != panRecognizer.TouchPoints)
+								if (r.NumberOfTouches != ((PanGestureRecognizer)panGestureRecognizer).TouchPoints)
 									return;
 								panGestureRecognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case UIGestureRecognizerState.Changed:
-								if (r.NumberOfTouches != panRecognizer.TouchPoints)
+								if (r.NumberOfTouches != ((PanGestureRecognizer)panGestureRecognizer).TouchPoints)
 								{
 									r.State = UIGestureRecognizerState.Ended;
 									panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
 									PanGestureRecognizer.CurrentId.Increment();
 									return;
 								}
-								var translationInView = r.TranslationInView(PlatformView);
+								var translationInView = r.TranslationInView(eventTracker?.PlatformView);
 								panGestureRecognizer.SendPan(view, translationInView.X, translationInView.Y, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case UIGestureRecognizerState.Cancelled:
@@ -361,7 +361,7 @@ namespace Microsoft.Maui.Controls.Platform
 								PanGestureRecognizer.CurrentId.Increment();
 								break;
 							case UIGestureRecognizerState.Ended:
-								if (r.NumberOfTouches != panRecognizer.TouchPoints)
+								if (r.NumberOfTouches != ((PanGestureRecognizer)panGestureRecognizer).TouchPoints)
 								{
 									panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
 									PanGestureRecognizer.CurrentId.Increment();
@@ -564,12 +564,6 @@ namespace Microsoft.Maui.Controls.Platform
 			if (ElementGestureRecognizers == null)
 				return;
 
-			if (_shouldReceiveTouch == null)
-			{
-				// Cache this so we don't create a new UITouchEventArgs instance for every recognizer
-				_shouldReceiveTouch = ShouldReceiveTouch;
-			}
-
 			UIDragInteraction? uIDragInteraction = null;
 			UIDropInteraction? uIDropInteraction = null;
 
@@ -669,7 +663,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (nativeRecognizer != null && PlatformView != null)
 					{
-						nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
+						_proxy ??= new ShouldReceiveTouchProxy(this);
+						nativeRecognizer.ShouldReceiveTouch = _proxy.ShouldReceiveTouch;
 						PlatformView.AddGestureRecognizer(nativeRecognizer);
 
 					}
@@ -738,37 +733,47 @@ namespace Microsoft.Maui.Controls.Platform
 				LoadRecognizers();
 		}
 
-		bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
+		class ShouldReceiveTouchProxy
 		{
-			var platformView = PlatformView;
-			var virtualView = _handler?.VirtualView;
+			readonly WeakReference<GesturePlatformManager> _manager;
 
-			if (virtualView == null || platformView == null)
+			public ShouldReceiveTouchProxy(GesturePlatformManager manager) => _manager = new(manager);
+
+			public bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 			{
+				if (!_manager.TryGetTarget(out var manager))
+					return false;
+
+				var platformView = manager.PlatformView;
+				var virtualView = manager._handler?.VirtualView;
+
+				if (virtualView == null || platformView == null)
+				{
+					return false;
+				}
+
+				if (virtualView.InputTransparent)
+				{
+					return false;
+				}
+
+				if (touch.View == platformView)
+				{
+					return true;
+				}
+
+				// If the touch is coming from the UIView our handler is wrapping (e.g., if it's  
+				// wrapping a UIView which already has a gesture recognizer), then we should let it through
+				// (This goes for children of that control as well)
+
+				if (touch.View.IsDescendantOfView(platformView) &&
+					(touch.View.GestureRecognizers?.Length > 0 || platformView.GestureRecognizers?.Length > 0))
+				{
+					return true;
+				}
+
 				return false;
 			}
-
-			if (virtualView.InputTransparent)
-			{
-				return false;
-			}
-
-			if (touch.View == platformView)
-			{
-				return true;
-			}
-
-			// If the touch is coming from the UIView our handler is wrapping (e.g., if it's  
-			// wrapping a UIView which already has a gesture recognizer), then we should let it through
-			// (This goes for children of that control as well)
-
-			if (touch.View.IsDescendantOfView(platformView) &&
-				(touch.View.GestureRecognizers?.Length > 0 || platformView.GestureRecognizers?.Length > 0))
-			{
-				return true;
-			}
-
-			return false;
 		}
 
 		void GestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
