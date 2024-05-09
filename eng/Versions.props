@@ -1,5 +1,31 @@
 <Project>
   <PropertyGroup>
+    <!-- The .NET product branding version -->
+    <ProductVersion>8.0.40</ProductVersion>
+    <MajorVersion>8</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>40</PatchVersion>
+    <SdkBandVersion>8.0.100</SdkBandVersion>
+    <PreReleaseVersionLabel>ci.net8</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>
+    </PreReleaseVersionIteration>
+    <!-- Enable to remove prerelease label. -->
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+    <WorkloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PreReleaseVersionIteration)' == ''">-$(PreReleaseVersionLabel)</WorkloadVersionSuffix>
+    <WorkloadVersionSuffix Condition="'$(WorkloadVersionSuffix)' == '' and '$(DotNetFinalVersionKind)' != 'release'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</WorkloadVersionSuffix>
+    <SdkBandVersionForWorkload_FromRuntimeVersions>$(SdkBandVersion)$(WorkloadVersionSuffix)</SdkBandVersionForWorkload_FromRuntimeVersions>
+    <!-- set to false for release branches -->
+    <WorkloadsTestPreviousVersions Condition="'$(WorkloadsTestPreviousVersions)' == ''">true</WorkloadsTestPreviousVersions>
+    <!-- Set assembly version to align with major and minor version,
+         as for the patches and revisions should be manually updated per assembly if it is serviced. 
+         TODO: This should be $(MajorVersion) on net9.0 -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <!-- Opt-out repo features -->
+    <UsingToolIbcOptimization>false</UsingToolIbcOptimization>
+    <UsingToolXliff>false</UsingToolXliff>
+  </PropertyGroup>
+  <PropertyGroup>
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>7.0.101</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
@@ -78,22 +104,32 @@
     <_HarfBuzzSharpVersion>7.3.0</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.e2c5c86249621857107c779af0f79b4d06613766.655</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.114</MicrosoftTemplateEngineTasksVersion>
-    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>9.0.0-prerelease.24208.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
-    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>9.0.0-prerelease.24208.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
-    <MicrosoftDotNetXHarnessCLIVersion>9.0.0-prerelease.24208.1</MicrosoftDotNetXHarnessCLIVersion>
+    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>9.0.0-prerelease.24256.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
+    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>9.0.0-prerelease.24256.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
+    <MicrosoftDotNetXHarnessCLIVersion>9.0.0-prerelease.24256.1</MicrosoftDotNetXHarnessCLIVersion>
     <TizenUIExtensionsVersion>0.9.2</TizenUIExtensionsVersion>
     <SvgSkiaPackageVersion>1.0.0.16</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.3.0</FizzlerPackageVersion>
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <ExCSSPackageVersion>4.2.3</ExCSSPackageVersion>
-    <MicrosoftDotNetBuildTasksFeedVersion>8.0.0-beta.24113.2</MicrosoftDotNetBuildTasksFeedVersion>
+    <MicrosoftDotNetBuildTasksFeedVersion>9.0.0-beta.24257.1</MicrosoftDotNetBuildTasksFeedVersion>
   </PropertyGroup>
   <PropertyGroup>
     <MicrosoftNETTestSdkPackageVersion>17.6.0</MicrosoftNETTestSdkPackageVersion>
     <XunitPackageVersion>2.5.1</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.4.5</XunitRunnerVisualStudioPackageVersion>
-    <NSubstitutePackageVersion>4.3.0</NSubstitutePackageVersion>
-    <CoverletCollectorPackageVersion>3.2.0</CoverletCollectorPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.5.1</XunitRunnerVisualStudioPackageVersion>
+    <XunitAssertPackageVersion>2.5.1</XunitAssertPackageVersion>
+    <XUnitAnalyzersPackageVersion>1.3.0</XUnitAnalyzersPackageVersion>
+    <NSubstitutePackageVersion>5.1.0</NSubstitutePackageVersion>
+    <CoverletCollectorPackageVersion>6.0.0</CoverletCollectorPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- arcade -->
+    <!-- xunit -->
+    <XUnitVersion>$(XunitPackageVersion)</XUnitVersion>
+    <XUnitAnalyzersVersion>$(XUnitAnalyzersPackageVersion)</XUnitAnalyzersVersion>
+    <XUnitRunnerConsoleVersion>$(XunitPackageVersion)</XUnitRunnerConsoleVersion>
+    <XUnitRunnerVisualStudioVersion>$(XunitRunnerVisualStudioPackageVersion)</XUnitRunnerVisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup>
     <VersionBand Condition=" '$(VersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(MicrosoftDotnetSdkInternalPackageVersion), `^\d+\.\d+\.\d`))00</VersionBand>

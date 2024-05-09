@@ -88,9 +88,7 @@ namespace Microsoft.Maui.Resizetizer
 				}
 				catch (Exception ex)
 				{
-					LogWarning("MAUI0000", ex.ToString());
-
-					throw;
+					LogCodedError("MAUI0000", $"There was an exception processing the image '{img.Filename}': {ex}");
 				}
 			});
 
@@ -118,6 +116,8 @@ namespace Microsoft.Maui.Resizetizer
 				attr.Add("_ResizetizerDpiScale", img.Dpi.Scale.ToString("0.0", CultureInfo.InvariantCulture));
 
 				copiedResources.Add(new TaskItem(itemSpec, attr));
+				// force the date time so we never update an image if its not changed.
+				File.SetLastWriteTimeUtc (itemSpec, DateTime.UtcNow);
 			}
 
 			CopiedResources = copiedResources.ToArray();

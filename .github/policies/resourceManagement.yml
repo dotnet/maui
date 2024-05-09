@@ -463,13 +463,13 @@ configuration:
       then:
       - addReply:
           reply: >-
-            Thanks for the issue report @${issueAuthor}! This issue appears to be a problem with Visual Studio, so we ask that you use the VS feedback tool to report the issue. That way it will get to the routed to the team that owns this experience in VS.
+            Thanks for the issue report @${issueAuthor}! This issue appears to be a problem with Visual Studio (Code), so we ask that you use the VS feedback tool to report the issue. That way it will get to the routed to the team that owns this experience in VS (Code).
 
 
-            If you encounter a problem with Visual Studio, we want to know about it so that we can diagnose and fix it. By using the Report a Problem tool, you can collect detailed information about the problem, and send it to Microsoft with just a few button clicks.
+            If you encounter a problem with Visual Studio or the .NET MAUI VS Code Extension, we want to know about it so that we can diagnose and fix it. By using the Report a Problem tool, you can collect detailed information about the problem, and send it to Microsoft with just a few button clicks.
 
 
-            1. Go to the [Visual Studio for Windows feedback tool](https://docs.microsoft.com/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022) or [Visual Studio for Mac feedback tool](https://learn.microsoft.com/en-us/visualstudio/mac/report-a-problem?view=vsmac-2022) to report the issue
+            1. Go to the [Visual Studio for Windows feedback tool](https://learn.microsoft.com/visualstudio/ide/how-to-report-a-problem-with-visual-studio) or [.NET MAUI VS Code Extension repository](https://github.com/microsoft/vscode-dotnettools/issues) to report the issue
 
             2. Close this bug, and consider adding a link to the VS Feedback issue so that others can follow its activity there.
       description: Ask user to use VS Feedback for VS issues
@@ -581,13 +581,48 @@ configuration:
       description: Remove 's/try-latest-version' when new reply from author comes in
     - if:
       - payloadType: Issues
-      - activitySenderHasPermission:
-          permission: Write
       - isAction:
           action: Opened
+      - or:
+        - isActivitySender:
+            user: PureWeen
+            issueAuthor: False
+        - isActivitySender:
+            user: mattleibow
+            issueAuthor: False
+        - isActivitySender:
+            user: rmarinho
+            issueAuthor: False
+        - isActivitySender:
+            user: jsuarezruiz
+            issueAuthor: False
+        - isActivitySender:
+            user: Redth
+            issueAuthor: False
+        - isActivitySender:
+            user: StephaneDelcroix
+            issueAuthor: False
+        - isActivitySender:
+            user: samhouts
+            issueAuthor: False
+        - isActivitySender:
+            user: jamesmontemagno
+            issueAuthor: False
+        - isActivitySender:
+            user: jonathanpeppers
+            issueAuthor: False
+        - isActivitySender:
+            user: rachelkang
+            issueAuthor: False
+        - isActivitySender:
+            user: Eilon
+            issueAuthor: False
+        - isActivitySender:
+            user: jfversluis
+            issueAuthor: False
       then:
       - addLabel:
           label: s/triaged
-      description: Add 's/triaged' label to issues opened by the core team, we assume these issues do not need triaging
+      description: Add 's/triaged' label to issues opened by the (core) team, we assume these issues do not need triaging
 onFailure: 
 onSuccess: 

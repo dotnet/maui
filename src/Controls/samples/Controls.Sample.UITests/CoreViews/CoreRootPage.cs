@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample
 				{
 					if (!string.IsNullOrEmpty(searchBar.Text))
 					{
-						await corePageView.PushPage(searchBar.Text);
+						await corePageView.NavigateToTest(searchBar.Text);
 					}
 					else
 					{

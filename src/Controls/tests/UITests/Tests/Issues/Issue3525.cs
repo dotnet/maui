@@ -32,11 +32,11 @@ public class Issue3525 : _IssuesUITest
 		var lineCenterOffset = lineHeight / 2;
 		var y = location.Y;
 
-		App.Click(location.X + 10, y + lineCenterOffset);
+		App.TapCoordinates(location.X + 10, y + lineCenterOffset);
 
-		App.Click(location.X + 10, y + (lineHeight * 2) + lineCenterOffset);
+		App.TapCoordinates(location.X + 10, y + (lineHeight * 2) + lineCenterOffset);
 
-		App.Click(location.X + 10, y + (lineHeight * 4) + lineCenterOffset);
+		App.TapCoordinates(location.X + 10, y + (lineHeight * 4) + lineCenterOffset);
 
 		App.WaitForTextToBePresentInElement(kClickCountAutomationId, $"{kClickCount}{1}");
 	}
