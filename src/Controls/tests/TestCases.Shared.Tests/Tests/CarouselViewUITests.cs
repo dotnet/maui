@@ -87,6 +87,30 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+		[Test]
+		[Category(UITestCategories.CarouselView)]
+		public void CarouselViewKeepPositionChangingOrientation()
+		{
+			if (Device == TestDevice.Mac || Device == TestDevice.Windows)
+			{
+				Assert.Ignore("For now not running on Desktop");
+			}
+			else
+			{
+				int indexToTest = 3;
+				var index = indexToTest.ToString();
+
+				CheckLabelValue("lblPosition", index);
+				CheckLabelValue("lblCurrentItem", index);
+
+				App.SetOrientationLandscape();
+				App.SetOrientationPortrait();
+
+				CheckLabelValue("lblPosition", index);
+				CheckLabelValue("lblCurrentItem", index);
+			}
+		}
+		
 		void CheckLabelValue(string labelAutomationId, string value)
 		{
 			var result = App.FindElement(labelAutomationId).GetText();
