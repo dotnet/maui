@@ -98,18 +98,14 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// Only add spacing if both elements are visible
-			if (_textBlock.Visibility == UI.Xaml.Visibility.Visible &&
-				_image.Visibility == UI.Xaml.Visibility.Visible)
+			// Only add spacing if we have room
+			if (_isHorizontalLayout && measuredWidth < availableSize.Width)
 			{
-				if (_isHorizontalLayout)
-				{
-					measuredWidth += _spacing;
-				}
-				else // Vertical
-				{
-					measuredHeight += _spacing;
-				}
+				measuredWidth += _spacing;
+			}
+			else if (measuredHeight < availableSize.Height) // Vertical
+			{
+				measuredHeight += _spacing;
 			}
 
 			if (!double.IsInfinity(availableSize.Width) &&
