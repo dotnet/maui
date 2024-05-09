@@ -27,9 +27,8 @@ namespace Maui.Controls.Sample.Issues
 
 		void UpdateImageButtonBackground()
 		{
-			Random rnd = new Random();
-			Color startColor = Color.FromRgba(rnd.Next(256), rnd.Next(256), rnd.Next(256), 255);
-			Color endColor = Color.FromRgba(rnd.Next(256), rnd.Next(256), rnd.Next(256), 255);
+			Color startColor = Colors.GreenYellow;
+			Color endColor = Colors.Yellow;
 
 			BackgroundImageButton.Background = new LinearGradientBrush
 			{
