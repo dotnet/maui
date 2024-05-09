@@ -37,22 +37,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			UICollectionViewCell cell;
 
+			var actualIndexPath = indexPath;
+
+
 			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
 			{
-				var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
-				cell = cellAndCorrectedIndex.cell;
-				var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
-
-				if (cell is DefaultCell defaultCell)
-					UpdateDefaultCell(defaultCell, correctedIndexPath);
-
-				if (cell is TemplatedCell templatedCell)
-					UpdateTemplatedCell(templatedCell, correctedIndexPath);
+				actualIndexPath = NSIndexPath.FromRowSection(_carouselViewLoopManager.GetCorrectedIndexFromIndexPath(indexPath), 0);
 			}
-			else
-			{
-				cell = base.GetCell(collectionView, indexPath);
-			}
+
+			cell = base.GetCell(collectionView, actualIndexPath);
 
 			var element = (cell as TemplatedCell)?.PlatformHandler?.VirtualView as VisualElement;
 
@@ -558,12 +551,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			GC.SuppressFinalize(this);
 		}
 
-		public (UICollectionViewCell cell, int correctedIndex) GetCellAndCorrectIndex(UICollectionView collectionView, NSIndexPath indexPath, string reuseId)
-		{
-			var cell = collectionView.DequeueReusableCell(reuseId, indexPath) as UICollectionViewCell;
-			var correctedIndex = GetCorrectedIndexFromIndexPath(indexPath);
-			return (cell, correctedIndex);
-		}
+		//public (UICollectionViewCell cell, int correctedIndex) GetCellAnCorrectIndex(UICollectionView collectionView, NSIndexPath indexPath, string reuseId)
+		//{
+		//	var cell = collectionView.DequeueReusableCell(reuseId, indexPath) as UICollectionViewCell;
+		//	var correctedIndex = GetCorrectedIndexFromIndexPath(indexPath);
+		//	return (cell, correctedIndex);
+		//}
 
 		public int GetCorrectedIndexFromIndexPath(NSIndexPath indexPath)
 		{

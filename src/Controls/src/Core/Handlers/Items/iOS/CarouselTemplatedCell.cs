@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		//On CarouselView we want the cells to keep the binding context 
 		//since the previous and next are generated on the fly we don't want to lose the binding context
-		internal override bool ShouldUnbindCell => false;
+		//internal override bool ShouldUnbindCell => false;
 		CGSize _constraint;
 
 		[Export("initWithFrame:")]

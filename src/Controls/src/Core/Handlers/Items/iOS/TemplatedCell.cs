@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal CGSize CurrentSize => _size.ToCGSize();
 
-		internal virtual bool ShouldUnbindCell  => true;
+		//internal virtual bool ShouldUnbindCell  => true;
 
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -69,10 +69,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void Unbind()
 		{
-			if(!ShouldUnbindCell)
-			{
-				return;
-			}
+			//if(!ShouldUnbindCell)
+			//{
+			//	return;
+			//}
 
 			if (PlatformHandler?.VirtualView is View view)
 			{
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Same template
 				if (oldElement != null)
 				{
-					oldElement.MeasureInvalidated -= MeasureInvalidated;
+					//oldElement.MeasureInvalidated -= MeasureInvalidated;
 					oldElement.BindingContext = bindingContext;
 					oldElement.MeasureInvalidated += MeasureInvalidated;
 
