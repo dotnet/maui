@@ -1,0 +1,44 @@
+<Project>
+  <PropertyGroup>
+    <!--
+      Windows arm/arm64 jobs don't have MSIs to sign. Keep it simple: allow not finding any matches
+      here and rely on overall signing validation.
+    -->
+    <AllowEmptySignList Condition="'$(SignFinalPackages)' != 'true'">true</AllowEmptySignList>
+    <UseDotNetCertificate>true</UseDotNetCertificate>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
+    <FileExtensionSignInfo Update=".zip" CertificateName="None" />
+    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
+  </ItemGroup>
+
+  <!-- <ItemGroup>
+    <!--
+      Replace the default items to sign with the specific set we want.
+    -->
+    <ItemsToSign Remove="@(ItemsToSign)" />
+    <ItemsToSignPostBuild Remove="@(ItemsToSignPostBuild)" />
+
+    <!-- apphost and comhost template files are not signed, by design. -->
+    <FileSignInfo Include="apphost.exe;comhost.dll" CertificateName="None" />
+
+    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
+    <FileExtensionSignInfo Include=".pkg" CertificateName="8003" />
+    <FileExtensionSignInfo Include=".deb;.rpm" CertificateName="LinuxSign" />
+  </ItemGroup>
+
+  <!-- This repo signs everything, including installers, either right before doing the PushToAzureDevOpsArtifacts,
+       or in post-build. Populate what will get signed the same in both cases -->
+  <ItemGroup Condition="'$(PrepareArtifacts)' == 'true'">
+    <ItemsToSignWithPaths Include="$(DownloadDirectory)**/*.msi" />
+    <ItemsToSignWithPaths Include="$(DownloadDirectory)**/*.exe" />
+    <ItemsToSignWithPaths Include="$(DownloadDirectory)**/*.nupkg" />
+    <ItemsToSignWithPaths Include="$(DownloadDirectory)**/*.zip" />
+
+    <ItemsToSignWithoutPaths Include="@(ItemsToSignWithPaths->'%(Filename)%(Extension)')" />
+    <ItemsToSignPostBuild Include="@(ItemsToSignWithoutPaths->Distinct())" Condition="'$(PostBuildSign)' == 'true'" />
+    <ItemsToSign Include="@(ItemsToSignWithPaths->Distinct())" Condition="'$(PostBuildSign)' != 'true'" />
+  </ItemGroup> -->
+</Project>   

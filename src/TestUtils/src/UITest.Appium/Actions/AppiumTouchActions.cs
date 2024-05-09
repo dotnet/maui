@@ -68,6 +68,16 @@ namespace UITest.Appium
 				{
 					return CommandResponse.FailedEmptyResponse;
 				}
+
+				if (parameters.TryGetValue("button", out var button) && button != null)
+				{
+					var buttonName = button.ToString();
+					if (!string.IsNullOrEmpty(buttonName) &&
+						buttonName.Equals("right", StringComparison.OrdinalIgnoreCase))
+					{
+						return RightClick(element.Id);
+					}
+				}
 				return TapElement(element);
 			}
 			else if (parameters.TryGetValue("x", out var x) &&
@@ -119,8 +129,31 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		CommandResponse DoubleTap(IDictionary<string, object> parameters)
+		
+		CommandResponse RightClick(string elementId)
 		{
+			// "ActionSequence" and "Actions" is not supported for right click on Windows
+			if (_appiumApp.GetTestDevice() == TestDevice.Windows)
+			{
+				_appiumApp.Driver.ExecuteScript("windows: click", new Dictionary<string, object>
+				{
+					{ "elementId", elementId },
+					{ "button", "right" },
+				});
+			}
+			else if (_appiumApp.GetTestDevice() == TestDevice.Mac)
+			{
+				_appiumApp.Driver.ExecuteScript("macos: rightClick", new Dictionary<string, object>
+				{
+					{ "elementId", elementId }
+				});
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+        CommandResponse DoubleTap(IDictionary<string, object> parameters)
+        {
 			var element = GetAppiumElement(parameters["element"]);
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
