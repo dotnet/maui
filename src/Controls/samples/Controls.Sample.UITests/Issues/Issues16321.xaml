@@ -6,6 +6,8 @@
     <VerticalStackLayout>
       <Label Text="After clicking each button you should see an alert"></Label>
       <Button Text="Open Alert With Modals" AutomationId="OpenAlertWithModals" Clicked="OpenAlertWithModals"></Button>
+      <Button Text="Open Action Sheet With Modals" AutomationId="OpenActionSheetWithModals" Clicked="OpenActionSheetWithModals"></Button>
       <Button Text="Open Alert With New UIWindow" AutomationId="OpenAlertWithNewUIWindow" Clicked="OpenAlertWithNewUIWindow"></Button>
+      <Button Text="Open Action Sheet With New UIWindow" AutomationId="OpenActionSheetWithNewUIWindow" Clicked="OpenActionSheetWithNewUIWindow"></Button>
     </VerticalStackLayout>
   </ContentPage>
