@@ -99,13 +99,13 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Only add spacing if we have room
-			if (_isHorizontalLayout && measuredWidth < availableSize.Width)
+			if (_isHorizontalLayout)
 			{
-				measuredWidth += _spacing;
+				measuredWidth = Math.Min(measuredWidth + _spacing, availableSize.Width);
 			}
-			else if (measuredHeight < availableSize.Height) // Vertical
+			else // Vertical
 			{
-				measuredHeight += _spacing;
+				measuredHeight = Math.Min(measuredHeight + _spacing, availableSize.Height);
 			}
 
 			if (!double.IsInfinity(availableSize.Width) &&
