@@ -63,6 +63,14 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>70898a0cb031ec1be6b01d9a5223a576669db4f6</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0-preview.5.24255.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>70898a0cb031ec1be6b01d9a5223a576669db4f6</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0-preview.5.24255.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>70898a0cb031ec1be6b01d9a5223a576669db4f6</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="9.0.0-preview.5.24255.2">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>70898a0cb031ec1be6b01d9a5223a576669db4f6</Sha>

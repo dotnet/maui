@@ -47,6 +47,8 @@
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>9.0.0-preview.5.24255.2</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>9.0.0-preview.5.24255.2</MicrosoftAspNetCoreComponentsPackageVersion>
     <MicrosoftAspNetCoreComponentsWebPackageVersion>9.0.0-preview.5.24255.2</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>9.0.0-preview.5.24255.2</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>9.0.0-preview.5.24255.2</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>9.0.0-preview.5.24255.2</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>9.0.0-preview.5.24255.2</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>9.0.0-preview.5.24255.2</MicrosoftJSInteropPackageVersion>
