@@ -156,5 +156,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new Image { Source = path };
 			Assert.IsType<FileImageSource>(image.Source);
 		}
+
+		[Fact]
+		public async Task CancelCompletes()
+		{
+			var imageSource = new StreamImageSource
+			{
+				Stream = _ => Task.FromResult<Stream>(new MemoryStream())
+			};
+			await ((IStreamImageSource)imageSource).GetStreamAsync();
+			await imageSource.Cancel(); // This should complete!
+		}
 	}
 }
