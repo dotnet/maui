@@ -1,4 +1,6 @@
+#if ANDROID || IOS
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,21 +16,21 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.Button)]
 		public void AppDoesntFreezeWhenRotatingDevice()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
-            try
-            {
-                App.SetOrientationPortrait();
-			    var portraitRect = App.WaitForElement("outerScrollView").GetRect();
-                App.SetOrientationLandscape();
-			    var landscapeRect = App.WaitForElement("outerScrollView").GetRect();
+			try
+			{
+				App.SetOrientationPortrait();
+				var portraitRect = App.WaitForElement("outerScrollView").GetRect();
+				App.SetOrientationLandscape();
+				var landscapeRect = App.WaitForElement("outerScrollView").GetRect();
 
-                Assert.Greater(landscapeRect.Width, portraitRect.Width);
+				ClassicAssert.Greater(landscapeRect.Width, portraitRect.Width);
 
-            }
-            finally
-            {
-                App.SetOrientationPortrait();
-            }
+			}
+			finally
+			{
+				App.SetOrientationPortrait();
+			}
 		}
 	}
 }
+#endif
