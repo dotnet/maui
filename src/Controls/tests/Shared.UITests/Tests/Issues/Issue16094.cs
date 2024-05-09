@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +17,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Category(UITestCategories.Editor)]
 		public void ShadowsDontRespectControlShape()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac });
-
 			App.WaitForElement("TestScrollView");
 			App.ScrollDown("TestScrollView", ScrollStrategy.Gesture);
 			App.WaitForElement("EditorControl");
@@ -25,3 +24,4 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 	}
 }
+#endif

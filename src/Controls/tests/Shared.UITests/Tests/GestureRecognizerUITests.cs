@@ -56,4 +56,3 @@ namespace Microsoft.Maui.AppiumTests
 		}
 	}
 }
-

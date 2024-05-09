@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,8 +21,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void Bugzilla41415Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },
-				"This test is failing, likely due to product issue");
+			// This test is failing, likely due to product issue
 
 			App.WaitForElement(ButtonId);
 			App.Tap(ButtonId);
@@ -37,3 +37,4 @@ namespace Microsoft.Maui.AppiumTests
 		}
 	}
 }
+#endif

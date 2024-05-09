@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿#if !WINDOWS
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -17,7 +17,6 @@ public class Issue21609 : _IssuesUITest
 	{
 		// This test is currently not passing on windows
 		// the 3rd size doesn't match the first one
-		this.IgnoreIfPlatform(TestDevice.Windows);
 
 		App.WaitForElement("ChangeCarouselViewDimensions");
 		var imageInitial = App.WaitForElement("DotnetBot").GetRect();
@@ -30,3 +29,4 @@ public class Issue21609 : _IssuesUITest
 		ClassicAssert.AreNotEqual(imageInitial, imageAfterSizeChange);
 	}
 }
+#endif
