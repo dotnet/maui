@@ -106,6 +106,8 @@ Use ‘main’ for bug fixes that don’t require API changes. For new features 
 
 ### Device Test Projects
 
+[Writing Device Tests](https://github.com/dotnet/maui/wiki/DeviceTests)
+
 These are tests that will run on an actual device
 
  ```
@@ -129,6 +131,8 @@ These are tests that will run on an actual device
 - *MauiBlazorWebView.DeviceTests*: Visual Runner for BlazorWebView tests. 
 
 ### UI Test Projects
+
+[Writing UI Tests](https://github.com/dotnet/maui/wiki/UITests)
 
 These are tests used for exercising the UI through accessibility layers to simulate user interactions
 
@@ -301,6 +305,57 @@ dotnet build src\DotNet\DotNet.csproj
 dotnet cake --target=VS
 ```
 
+## Debugging MSBuild Tasks using VS/VSCode
+
+One thing that is very useful is the ability to debug your Tasks while
+they are being run on a build process. This is possible thanks to the
+`MSBUILDDEBUGONSTART` environment variable. When set to `2` this will
+force MSBuild to wait for a debugger connection before continuing.
+You will see the following prompt.
+
+```dotnetcli
+Waiting for debugger to attach (dotnet PID 13001).  Press enter to continue...
+```
+
+You can then use VS or VSCode to attach to this process and debug you tasks.
+You can start your test app with the `dotnet-local` script (so it uses your maui build)
+
+### [MacOS](#tab/macos)
+
+```dotnetcli
+MSBUILDDEBUGONSTART=2 ~/<some maui checkout>/dotnet-local.sh build -m:1
+```
+
+### [Linux](#tab/linux)
+
+```dotnetcli
+MSBUILDDEBUGONSTART=2 ~/<some maui checkout>/dotnet-local.sh build -m:1
+```
+
+### [Windows](#tab/windows)
+
+```dotnetcli
+set MSBUILDDEBUGONSTART=2
+~/<some maui checkout>/dotnet-local.cmd build -m:1
+```
+
+---
+
+Note: the `-m:1` is important as it restricts MSBuild to 1 node.
+
+Once MSBuild starts it will print the following
+
+```dotnetcli
+Waiting for debugger to attach (dotnet PID xxxx).  Press enter to continue...
+```
+
+You need to copy the PID value so we can use this in the IDE. For Visual Studio you can use the `Attach to Process` menu option, while you have the Microsoft.Maui.sln solution open. For VSCode open the workspace then use the `Attach to Process` Run and Debug option. You will be prompted for the PID and it will then connect.
+
+Once connected go back to your command prompt and press ENTER so that the MSBuild process can continue.
+
+You will be able to set breakpoints in Tasks (but not Targets) and step through code from this point on.
+
+If you want to test in-tree in VSCode the `Build Platform Sample` command will ask you if you want to debug MSBuild tasks and fill in the `MSBUILDDEBUGONSTART` for you. The PID text will appear in the `Terminal` window in VSCode. You can then use the `Attach to Process` Run and Debug option to attach to the process.
 
 ## Stats
 

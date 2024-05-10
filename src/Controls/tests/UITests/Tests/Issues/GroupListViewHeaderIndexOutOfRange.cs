@@ -17,7 +17,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void GroupListViewHeaderIndexOutOfRangeTest()
 		{
 			App.WaitForElement(ButtonId);
-			App.Click(ButtonId);
+			App.Tap(ButtonId);
 			App.WaitForElement(ButtonId);
 		}
 	}

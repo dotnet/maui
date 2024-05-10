@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Media;
 using Xunit;
@@ -7,8 +8,8 @@ namespace Tests
 	public class TextToSpeech_Tests
 	{
 		[Fact]
-		public void TextToSpeech_Speak_Fail_On_NetStandard() =>
-			 Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => TextToSpeech.SpeakAsync("Xamarin Essentials!"));
+		public async Task TextToSpeech_Speak_Fail_On_NetStandard() =>
+			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => TextToSpeech.SpeakAsync("Xamarin Essentials!"));
 
 		[Fact]
 		public void TextToSpeech_Slit_Text()
