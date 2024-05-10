@@ -9,7 +9,7 @@ using Android.OS;
 
 namespace Microsoft.Maui.ApplicationModel
 {
-	[Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, Exported = true)]
+	[Activity(ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, Exported = false)]
 	class IntermediateActivity : Activity
 	{
 		const string launchedExtra = "launched";
