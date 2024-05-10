@@ -52,10 +52,12 @@ namespace Microsoft.Maui
 					{
 						foreach (var ws in activeWindowScenes)
 						{
-							if (ws.WindowingBehaviors is not null && !ws.WindowingBehaviors.Closable)
-							{
-								window = ws.KeyWindow;
-								break;
+							if (OperatingSystem.IsIOSVersionAtLeast(16, 0) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 0)) {
+								if (ws.WindowingBehaviors is not null && !ws.WindowingBehaviors.Closable)
+								{
+									window = ws.KeyWindow;
+									break;
+								}
 							}
 						}
 					}

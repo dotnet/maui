@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Foundation;
 using LinkPresentation;
@@ -17,12 +18,12 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			var items = new List<NSObject>();
 			if (!string.IsNullOrWhiteSpace(request.Text))
 			{
-				items.Add(GetShareItem(new NSString(request.Text), request.Title));
+				items.Add(ToItemSource(new NSString(request.Text), request.Title));
 			}
 
 			if (!string.IsNullOrWhiteSpace(request.Uri))
 			{
-				items.Add(GetShareItem(NSUrl.FromString(request.Uri), request.Title));
+				items.Add(ToItemSource(NSUrl.FromString(request.Uri), request.Title));
 			}
 
 			var activityController = new UIActivityViewController(items.ToArray(), null)
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			foreach (var file in request.Files)
 			{
 				var fileUrl = NSUrl.FromFilename(file.FullPath);
-				items.Add(GetShareItem(fileUrl, request.Title));
+				items.Add(ToItemSource(fileUrl, request.Title));
 			}
 
 			var activityController = new UIActivityViewController(items.ToArray(), null)
@@ -82,16 +83,20 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			await vc.PresentViewControllerAsync(activityController, true);
 			await src.Task;
 		}
-
-		NSObject GetShareItem(NSString obj, string title)
-			=> new ShareActivityItemSource(obj, string.IsNullOrWhiteSpace(title) ? obj : title);
-
-		NSObject GetShareItem(NSObject obj, string title)
-			=> string.IsNullOrWhiteSpace(title)
-				? obj
-				: new ShareActivityItemSource(obj, title);
+		static NSObject ToItemSource (NSObject obj, string title)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(13)) {
+				if (obj is NSString strObj)
+				{
+					return new ShareActivityItemSource(obj, string.IsNullOrWhiteSpace(title) ? strObj : title);
+				}
+				return string.IsNullOrWhiteSpace(title) ? obj : new ShareActivityItemSource(obj, title);
+			}
+			return obj;
+		}
 	}
 
+	[SupportedOSPlatform ("ios13.0")]
 	class ShareActivityItemSource : UIActivityItemSource
 	{
 		readonly NSObject item;

@@ -222,27 +222,46 @@ namespace Microsoft.Maui.Platform
 		internal static UIImage? GetClearButtonTintImage(UIImage image, UIColor color)
 		{
 			var size = image.Size;
+			UIImage? tintedImage = null;
 
-			UIGraphics.BeginImageContextWithOptions(size, false, UIScreen.MainScreen.Scale);
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				var scale = UIScreen.MainScreen.Scale;
+				var imageSize = new CGSize(scale * size.Width, scale * size.Height);
+				using var renderer = new UIGraphicsImageRenderer(imageSize);
+				tintedImage = renderer.CreateImage((UIGraphicsImageRendererContext ctx) => {
+					var cgcontext = ctx.CGContext;
+					cgcontext.DrawImage(new CGRect(0, 0, imageSize.Width, imageSize.Height), image.CGImage);
+					PaintButtonRect(cgcontext, image, color);
+				});
+			} else {
+				UIGraphics.BeginImageContextWithOptions(size, false, UIScreen.MainScreen.Scale);
 
-			if (UIGraphics.GetCurrentContext() == null)
-				return null;
+				if (UIGraphics.GetCurrentContext() is null)
+					return null;
 
-			var context = UIGraphics.GetCurrentContext();
+				var context = UIGraphics.GetCurrentContext();
 
-			image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
-			context?.SetFillColor(color.CGColor);
-			context?.SetBlendMode(CGBlendMode.SourceIn);
-			context?.SetAlpha(1.0f);
+				image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
+				PaintButtonRect(context, image, color);
+				tintedImage = UIGraphics.GetImageFromCurrentImageContext();
 
-			var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
-			context?.FillRect(rect);
-
-			var tintedImage = UIGraphics.GetImageFromCurrentImageContext();
-
-			UIGraphics.EndImageContext();
+				UIGraphics.EndImageContext();
+			}
 
 			return tintedImage;
+		}
+
+		static void PaintButtonRect(CGContext? context, UIImage image, UIColor color)
+		{
+				image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
+				context?.SetFillColor(color.CGColor);
+				context?.SetBlendMode(CGBlendMode.SourceIn);
+				context?.SetAlpha(1.0f);
+
+				var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
+				context?.FillRect(rect);
+
 		}
 	}
 }

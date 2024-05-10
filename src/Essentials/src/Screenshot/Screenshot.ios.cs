@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Media
 		public Task<IScreenshotResult> CaptureAsync()
 		{
 			var currentWindow = WindowStateManager.Default.GetCurrentUIWindow();
-			if (currentWindow == null)
+			if (currentWindow is null)
 				throw new InvalidOperationException("Unable to find current window.");
 
 			return CaptureAsync(currentWindow);
@@ -31,66 +31,104 @@ namespace Microsoft.Maui.Media
 		{
 			_ = window ?? throw new ArgumentNullException(nameof(window));
 
-			// NOTE: We rely on the window frame having been set to the correct size when this method is invoked.
-			UIGraphics.BeginImageContextWithOptions(window.Bounds.Size, false, window.Screen.Scale);
-			var ctx = UIGraphics.GetCurrentContext();
-
-			// ctx will be null if the width/height of the view is zero
-			if (ctx is not null && !TryRender(window, out _))
+			if (!OperatingSystem.IsIOSVersionAtLeast(17))
 			{
-				// TODO: test/handle this case
+				// NOTE: We rely on the window frame having been set to the correct size when this method is invoked.
+				UIGraphics.BeginImageContextWithOptions(window.Bounds.Size, false, window.Screen.Scale);
+				var ctx = UIGraphics.GetCurrentContext();
+
+				// ctx will be null if the width/height of the view is zero
+				if (ctx is not null && !TryRender(window, out _))
+				{
+					// TODO: test/handle this case
+				}
+
+				var image = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
+
+				var result = new ScreenshotResult(image);
+
+				return Task.FromResult<IScreenshotResult>(result);
 			}
 
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			var result = new ScreenshotResult(image);
-
-			return Task.FromResult<IScreenshotResult>(result);
+			using var renderer = new UIGraphicsImageRenderer (window.Bounds.Size);
+			var resultImage = renderer.CreateImage ((UIGraphicsImageRendererContext imageContext) => {
+				if (!TryRender (window, out _))
+				{
+					// TODO: test/handle this case
+				}
+			});
+			var screenshotResult = new ScreenshotResult(resultImage);
+			return Task.FromResult<IScreenshotResult>(screenshotResult);
 		}
 
 		public Task<IScreenshotResult?> CaptureAsync(UIView view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
-			// NOTE: We rely on the view frame having been set to the correct size when this method is invoked.
-			UIGraphics.BeginImageContextWithOptions(view.Bounds.Size, false, view.Window.Screen.Scale);
-			var ctx = UIGraphics.GetCurrentContext();
-
-			// ctx will be null if the width/height of the view is zero
-			if (ctx is not null && !TryRender(view, out _))
+			if (!OperatingSystem.IsIOSVersionAtLeast(17))
 			{
-				// TODO: test/handle this case
+				// NOTE: We rely on the view frame having been set to the correct size when this method is invoked.
+				UIGraphics.BeginImageContextWithOptions(view.Bounds.Size, false, view.Window.Screen.Scale);
+				var ctx = UIGraphics.GetCurrentContext();
+
+				// ctx will be null if the width/height of the view is zero
+				if (ctx is not null && !TryRender(view, out _))
+				{
+					// TODO: test/handle this case
+				}
+
+				var image = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
+
+				var result = image is null ? null : new ScreenshotResult(image);
+
+				return Task.FromResult<IScreenshotResult?>(result);
 			}
 
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			var result = image is null ? null : new ScreenshotResult(image);
-
-			return Task.FromResult<IScreenshotResult?>(result);
+			using var renderer = new UIGraphicsImageRenderer (view.Bounds.Size);
+			var resultImage = renderer.CreateImage ((UIGraphicsImageRendererContext imageContext) => {
+				if (!TryRender(view, out _)) {
+					// TODO: test/handle this case
+				}
+			});
+			var screenshotResult = new ScreenshotResult(resultImage);
+			return Task.FromResult<IScreenshotResult?>(screenshotResult);
 		}
 
 		public Task<IScreenshotResult?> CaptureAsync(CALayer layer, bool skipChildren)
 		{
 			_ = layer ?? throw new ArgumentNullException(nameof(layer));
 
-			// NOTE: We rely on the layer frame having been set to the correct size when this method is invoked.
-			UIGraphics.BeginImageContextWithOptions(layer.Bounds.Size, false, layer.RasterizationScale);
-			var ctx = UIGraphics.GetCurrentContext();
-
-			// ctx will be null if the width/height of the view is zero
-			if (ctx is not null && !TryRender(layer, ctx, skipChildren, out _))
+			if (!OperatingSystem.IsIOSVersionAtLeast(17))
 			{
-				// TODO: test/handle this case
+				// NOTE: We rely on the layer frame having been set to the correct size when this method is invoked.
+				UIGraphics.BeginImageContextWithOptions(layer.Bounds.Size, false, layer.RasterizationScale);
+				var ctx = UIGraphics.GetCurrentContext();
+
+				// ctx will be null if the width/height of the view is zero
+				if (ctx is not null && !TryRender(layer, ctx, skipChildren, out _))
+				{
+					// TODO: test/handle this case
+				}
+
+				var image = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
+
+				var result = image is null ? null : new ScreenshotResult(image);
+
+				return Task.FromResult<IScreenshotResult?>(result);
 			}
 
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			var result = image is null ? null : new ScreenshotResult(image);
-
-			return Task.FromResult<IScreenshotResult?>(result);
+			using var renderer = new UIGraphicsImageRenderer(layer.Bounds.Size);
+			var resultImage = renderer.CreateImage((UIGraphicsImageRendererContext imageContext) => {
+				if (!TryRender(layer, imageContext.CGContext, skipChildren, out _))
+				{
+					// TODO: test/handle this case
+				}
+			});
+			var screenshotResult = new ScreenshotResult(resultImage);
+			return Task.FromResult<IScreenshotResult?>(screenshotResult);
 		}
 
 		static bool TryRender(UIView view, out Exception? error)

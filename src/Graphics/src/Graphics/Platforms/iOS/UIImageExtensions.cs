@@ -1,5 +1,6 @@
 using System;
 using CoreGraphics;
+using SceneKit;
 using UIKit;
 
 namespace Microsoft.Maui.Graphics.Platform

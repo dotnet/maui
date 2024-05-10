@@ -14,12 +14,19 @@ namespace Microsoft.Maui.Authentication
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options)
 		{
-			if (OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13))
-				throw new FeatureNotSupportedException();
+			// why, you might ask, is this going through a private method that does the implementation and
+			// not in this method? The answer is that this the amount of work that gets done is apparently
+			// complicated enough to confuse the compiler and trigger *many* CA1416 errors. Factoring like this
+			// fixes those errors.
+			if ((OperatingSystem.IsIOSVersionAtLeast(13, 0)) || (OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)))
+				return await AuthenticateAsyncImpl(options);
+			throw new FeatureNotEnabledException();
+		}
 
-			if (OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
-				throw new FeatureNotSupportedException();
-
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst13.1")]
+		async Task<WebAuthenticatorResult> AuthenticateAsyncImpl(AppleSignInAuthenticator.Options options)
+		{
 			var provider = new ASAuthorizationAppleIdProvider();
 			var req = provider.CreateRequest();
 
