@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,12 +17,22 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
 
-			_ = App.WaitForElement("entry");
-			App.Click("entry");
-			App.Click("button");
+			try
+			{
+				_ = App.WaitForElement("GoToTest");
+				App.Tap("GoToTest");
+				
+				_ = App.WaitForElement("entry");
+				App.Tap("entry");
+				App.Tap("button");
 
-			// The test passes if no crash is observed
-			App.FindElement("editor");
+				// The test passes if no crash is observed
+				App.FindElement("editor");
+			}
+			finally
+			{
+				Reset();
+			}
 		}
 	}
 }
