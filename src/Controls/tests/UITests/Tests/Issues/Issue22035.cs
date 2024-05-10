@@ -19,13 +19,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
 				"This test is failing, likely due to product issue. More information: https://github.com/dotnet/maui/issues/22287");
 
-			for (int i = 0; i > 2; i++)
+			for (int i = 0; i < 2; i++)
 			{
 				App.WaitForElement("TestNavigateButton");
 				App.Tap("TestNavigateButton");
 				App.WaitForElement("TestLoadButton");
 				App.Tap("TestLoadButton");
-				App.WaitForElement("Item 1");
+				App.WaitForElement("Item1");
 				App.Back();
 			}
 

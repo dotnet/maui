@@ -19,9 +19,12 @@
           <Grid
             RowDefinitions="*, Auto">
             <Image 
-              Source="{Binding ImagePath}" />
+              Source="{Binding ImagePath}"
+              AutomationId="{Binding AutomationId}" />
             <Label 
               Grid.Row="1"
+              HorizontalOptions="Center"
+              AutomationId="{Binding AutomationId}"
               Text="{Binding Text}"/>
           </Grid>
         </DataTemplate>
