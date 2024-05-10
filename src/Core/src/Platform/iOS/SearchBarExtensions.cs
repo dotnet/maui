@@ -10,9 +10,25 @@ namespace Microsoft.Maui.Platform
 		internal static UITextField? GetSearchTextField(this UISearchBar searchBar)
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				return searchBar.SearchTextField;
-			else
-				return searchBar.GetSearchTextField();
+			}
+
+			// Search Subviews up to two levels deep
+			// https://stackoverflow.com/a/58056700
+			foreach (var child in searchBar.Subviews)
+			{
+				if (child is UITextField childTextField)
+					return childTextField;
+
+				foreach (var grandChild in child.Subviews)
+				{
+					if (grandChild is UITextField grandChildTextField)
+						return grandChildTextField;
+				}
+			}
+
+			return null;
 		}
 
 		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)

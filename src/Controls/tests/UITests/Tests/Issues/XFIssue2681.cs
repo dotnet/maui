@@ -15,12 +15,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "[UWP] Label inside Listview gets stuck inside infinite loop";
 
 		[Test]
+		[Category(UITestCategories.ListView)]
 		public void ListViewDoesntFreezeApp()
 		{
 			App.WaitForElement(NavigateToPage);
-			App.Click(NavigateToPage);
+			App.Tap(NavigateToPage);
 			App.WaitForElement("3");
-			App.Click("GoBack");
+			App.Tap("GoBack");
 		}
 	}
 }

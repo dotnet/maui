@@ -34,31 +34,14 @@ namespace Microsoft.Maui.AppiumTests
 			}
 		}
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			try
-			{
-				this.Back();
-				App.Click("GoBackToGalleriesButton");
-			}
-			catch (Exception e)
-			{
-				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
-			}
-		}
-
 		public abstract string Issue { get; }
 
 		private void NavigateToIssue(string issue)
 		{
-			App.NavigateToIssues();
-
-			App.EnterText("SearchBarGo", issue);
-
-			App.WaitForElement("SearchButton");
-			App.Click("SearchButton");
+			App.WaitForElement("GoToTestButton", issue);
+			App.EnterText("SearchBar", issue);
+			App.WaitForElement("GoToTestButton");
+			App.Tap("GoToTestButton");
 		}
 	}
 }

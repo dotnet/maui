@@ -145,6 +145,14 @@
                     TextColor="HotPink"
                     Text="Button"/>
                 <Label
+                    Text="Actual Image"
+                    Style="{StaticResource Headline}"/>
+                <Grid>
+                    <Image
+                        Background="Black" Source="settings.png" 
+                        HorizontalOptions="Center" VerticalOptions="Center" />
+                </Grid>
+                <Label
                     Text="Image Source"
                     Style="{StaticResource Headline}"/>
                 <Button

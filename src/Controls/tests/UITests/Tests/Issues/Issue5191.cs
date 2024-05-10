@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Controls.AppiumTests.Tests.Issues
+namespace Microsoft.Maui.AppiumTests.Issues
 {
 	public class Issue5191 : _IssuesUITest
 	{
@@ -12,6 +12,7 @@ namespace Controls.AppiumTests.Tests.Issues
 		public override string Issue => "PanGesture notify Completed event moving outside View limits";
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
 		public void Issue5191Test()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },

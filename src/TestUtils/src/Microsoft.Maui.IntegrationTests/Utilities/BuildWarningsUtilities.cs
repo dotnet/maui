@@ -288,7 +288,7 @@ namespace Microsoft.Maui.IntegrationTests
 						Code = "IL2070",
 						Messages = new List<string>
 						{
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetBindableProperty(Type,String,IXmlLineInfo,Boolean): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicFields', 'DynamicallyAccessedMemberTypes.NonPublicFields' in call to 'System.Type.GetFields(BindingFlags)'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetBindableProperty(Type,String,IXmlLineInfo,Boolean)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
+							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetBindableProperty(Type,String,IXmlLineInfo): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicFields', 'DynamicallyAccessedMemberTypes.NonPublicFields' in call to 'System.Type.GetField(String,BindingFlags)'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetBindableProperty(Type,String,IXmlLineInfo)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
 							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetAllRuntimeMethods(Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.Interfaces' in call to 'System.Type.GetInterfaces()'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetAllRuntimeMethods(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
 						}
 					},

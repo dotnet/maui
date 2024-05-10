@@ -13,19 +13,20 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Button Command CanExecute can disable the control";
 
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void CommandCanExecuteDisableButton()
 		{
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Press the 'On' button.
-			App.Click("OnButton");
+			App.Tap("OnButton");
 
 			// 2. The test fails if the 'On' button is still enabled or the 'Off' button is not enabled.
 			var status1 = App.FindElement("StatusLabel").GetText();
 			Assert.AreEqual("OnButton disabled OffButton enabled", status1);
 
 			// 3.Press the 'Off' button.
-			App.Click("OffButton");
+			App.Tap("OffButton");
 
 			// 4. The test fails if the 'Off' button is still enabled or the 'On' button is not enabled.
 			var status2 = App.FindElement("StatusLabel").GetText();

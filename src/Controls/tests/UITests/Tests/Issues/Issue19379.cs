@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Not able to update CollectionView header";
 
 		[Test]
+		[Category(UITestCategories.CollectionView)]
 		public void UpdateCollectionViewHeaderTest()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Update the CollectionView Header.
-			App.Click("UpdateButton");
+			App.Tap("UpdateButton");
 
 			// 2. Verify the result.
 			VerifyScreenshot();

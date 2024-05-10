@@ -13,8 +13,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Shadows don't respect control shape";
 
 		[Test]
-		public void Issue16094Test()
+		[Category(UITestCategories.Editor)]
+		public void ShadowsDontRespectControlShape()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac });
+
+			App.WaitForElement("TestScrollView");
+			App.ScrollDown("TestScrollView", ScrollStrategy.Gesture);
 			App.WaitForElement("EditorControl");
 			VerifyScreenshot();
 		}

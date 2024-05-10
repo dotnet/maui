@@ -13,7 +13,21 @@ This page contains steps to build and run the .NET MAUI repository from source. 
    ### Mac
    - Install VS Code and dependencies
       - Follow [these steps](https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?view=net-maui-8.0&tabs=visual-studio-code), installing VS Code, MAUI extension, .NET8, Xcode, OpenJDK, and Android SDK
+      - Install Mono from [Mono Project](https://www.mono-project.com)
       - For Xcode, you can install from the [App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) or [Apple Developer portal](https://developer.apple.com/download/more/?name=Xcode)
+      - As of 26 March 2024, Xcode 15.3 is not yet supported. Check [this issue](https://github.com/dotnet/maui/issues/21057) for updates
+      - Edit your `.zprofile` file to ensure that the following environment variables are set/modified (you may need to adjust the version of OpenJDK):
+      ```shell
+      export JAVA_HOME=/Library/Java/JavaVirtualMachines/microsoft-11.jdk/Contents/Home
+      export ANDROID_HOME=~/Library/Android/sdk
+      export ANDROID_SDK_ROOT=~/Library/Android/sdk
+      export PATH="$PATH:~/.dotnet/tools"
+      export PATH="$PATH:$ANDROID_HOME/platform-tools"
+      export PATH="$PATH:$ANDROID_HOME/tools"
+      export PATH="$PATH:$ANDROID_HOME/tools/bin"
+      export PATH="$PATH:$ANDROID_HOME/tools/emulator" 
+      ```
+      - In VSCode do `command--shift-P` then type `code path` and select the option `Shell Command: Install 'code' in PATH`
       
 ## Building the Build Tasks
 Before opening the solution in Visual Studio / VS Code you **MUST** build the build tasks.
@@ -59,9 +73,13 @@ Before opening the solution in Visual Studio / VS Code you **MUST** build the bu
 *NOTE*: IntelliSense takes a decent amount of time to fully process your solution. It will eventually work through all the necessary tasks. If you are having IntelliSense issues, usually unloading/reloading the `maui.core` and `maui.controls` projects will resolve. 
 
 ## What branch should I use?
-- main
 
-Always use main no matter what you are working on or where you are hoping your change will get applied. We make sure that main always works against the current stable releases of Visual Studio and the .NET MAUI SDK. Even if you are working on features that will only be released with a future version of .NET. `main` is the only relevant branch for current development.
+As a general rule:
+- [main](https://github.com/dotnet/maui/tree/main)
+
+Use ‘main’ for bug fixes that don’t require API changes. For new features and changes to public APIs, you must use the branch of the next .NET version.
+
+- [net9.0](https://github.com/dotnet/maui/tree/net9.0)
 
 ## Repository projects
 
@@ -88,6 +106,8 @@ Always use main no matter what you are working on or where you are hoping your c
 
 ### Device Test Projects
 
+[Writing Device Tests](https://github.com/dotnet/maui/wiki/DeviceTests)
+
 These are tests that will run on an actual device
 
  ```
@@ -112,12 +132,16 @@ These are tests that will run on an actual device
 
 ### UI Test Projects
 
+[Writing UI Tests](https://github.com/dotnet/maui/wiki/UITests)
+
 These are tests used for exercising the UI through accessibility layers to simulate user interactions
 
 ```
 ├──  Controls
+│    ├── samples
+│    │   ├── Controls.Sample.UITests
 │    ├── tests
-│    │   ├── UITests
+│    │   ├── Controls.AppiumTests
 ```
 
 ### Unit Test Projects
@@ -136,6 +160,21 @@ These are tests that will not run on a device. This is useful for testing device
 │   │   ├── Essentials.UnitTests
 ```
 
+### Reproducing an Issue/Debugging .NET MAUI Code
+Open the .NET MAUI workspace in VSCode.
+In VSCode, select the device that you will be testing on. Using the command palette (ctrl-shift-P/command-shift-P) type `pick device` and
+you will be presented with a set of choices for your target device (Android, iOS, etc). Select one.
+There is a sample project in `src/Controls/samples/Controls.Sample.Sandbox`. This is an empty project
+into which you can add your code to reproduce an issue and also set breakpoints in .NET MAUI source code.
+Let VSCode know this is the project you want to select by going to the command palette (ctrl-shift-P/command-shift-P)
+and typing `pick startup` and select ".NET MAUI: Pick Startup Project" and select the Sandbox project.
+
+ Before using the command palette for the first time, you may have to wait a minute
+for intellisense and other tasks to complete before using the command palette. If the project hasn't
+'settled' yet, you will see an error "Pick Startup Project has resulted in an error."
+
+*Note:* When you are committing your PR, do not include your changes to the Sandbox project.
+
 ### Integration Tests
 
 The Integration test project under `src/TestUtils/src/Microsoft.Maui.IntegrationTests` contains tests which build and/or run MAUI templates or other projects.
@@ -145,6 +184,8 @@ These tests can be ran using the test explorer in VS, or from command line with 
 ```bash
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
 ```
+
+You can find detailed information about testing in the [Wiki](https://github.com/dotnet/maui/wiki/Testing).
 
 ### Additional Cake Commands
 
@@ -264,6 +305,57 @@ dotnet build src\DotNet\DotNet.csproj
 dotnet cake --target=VS
 ```
 
+## Debugging MSBuild Tasks using VS/VSCode
+
+One thing that is very useful is the ability to debug your Tasks while
+they are being run on a build process. This is possible thanks to the
+`MSBUILDDEBUGONSTART` environment variable. When set to `2` this will
+force MSBuild to wait for a debugger connection before continuing.
+You will see the following prompt.
+
+```dotnetcli
+Waiting for debugger to attach (dotnet PID 13001).  Press enter to continue...
+```
+
+You can then use VS or VSCode to attach to this process and debug you tasks.
+You can start your test app with the `dotnet-local` script (so it uses your maui build)
+
+### [MacOS](#tab/macos)
+
+```dotnetcli
+MSBUILDDEBUGONSTART=2 ~/<some maui checkout>/dotnet-local.sh build -m:1
+```
+
+### [Linux](#tab/linux)
+
+```dotnetcli
+MSBUILDDEBUGONSTART=2 ~/<some maui checkout>/dotnet-local.sh build -m:1
+```
+
+### [Windows](#tab/windows)
+
+```dotnetcli
+set MSBUILDDEBUGONSTART=2
+~/<some maui checkout>/dotnet-local.cmd build -m:1
+```
+
+---
+
+Note: the `-m:1` is important as it restricts MSBuild to 1 node.
+
+Once MSBuild starts it will print the following
+
+```dotnetcli
+Waiting for debugger to attach (dotnet PID xxxx).  Press enter to continue...
+```
+
+You need to copy the PID value so we can use this in the IDE. For Visual Studio you can use the `Attach to Process` menu option, while you have the Microsoft.Maui.sln solution open. For VSCode open the workspace then use the `Attach to Process` Run and Debug option. You will be prompted for the PID and it will then connect.
+
+Once connected go back to your command prompt and press ENTER so that the MSBuild process can continue.
+
+You will be able to set breakpoints in Tasks (but not Targets) and step through code from this point on.
+
+If you want to test in-tree in VSCode the `Build Platform Sample` command will ask you if you want to debug MSBuild tasks and fill in the `MSBUILDDEBUGONSTART` for you. The PID text will appear in the `Terminal` window in VSCode. You can then use the `Attach to Process` Run and Debug option to attach to the process.
 
 ## Stats
 

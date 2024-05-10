@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using OpenQA.Selenium;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,17 +13,18 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Process the hardware enter key as \"Done\"";
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void HittingEnterKeySendsDone()
 		{
 			this.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac,
-				TestDevice.iOS,
-				TestDevice.Windows,
+				TestDevice.Windows
 			});
 
-			App.Click("HardwareEnterKeyEntry");
-			App.SendKeys(66);
+			App.WaitForElement("HardwareEnterKeyEntry");
+			App.Tap("HardwareEnterKeyEntry");
+			App.PressEnter();
 			App.WaitForElement("Success");
 		}
 	}

@@ -1,8 +1,19 @@
 <Project>
 
-  <Import Condition="'$(SampleProject)' == 'true' or '$(CI)' != 'true' " Project="eng\Versions.dev.targets" />
-  <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true'" Project="eng\Git.Build.targets" />
-  <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Versions.targets" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+
+  <ItemGroup>
+    <!-- Upgrade xunit's transitive NETStandard.Library dependency to avoid .NET Standard 1.x dependencies. -->
+    <!-- <PackageReference Include="NETStandard.Library"
+                      IsImplicitlyDefined="false"
+                      PrivateAssets="all"
+                      ExcludeAssets="runtime"
+                      VersionOverride="2.0.3"
+                      Condition="'$(TargetFrameworkIdentifier)' != '.NETStandard' and
+                                 $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" /> -->
+  </ItemGroup>
+
+  <Import Condition="'$(SampleProject)' != 'true'" Project="eng\Versions.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\NuGetVersions.targets" />
@@ -70,7 +81,7 @@
 
   <!-- Until we get a new enough dotnet -->
   <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.27" TargetingPackVersion="10.0.19041.27" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.31" TargetingPackVersion="10.0.19041.31" />
   </ItemGroup>
 
   <!--
@@ -81,7 +92,6 @@
   <!-- NuGet package information -->
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
     <PackageTags Condition="'$(PackageTags)' == ''">$(DefaultPackageTags)</PackageTags>
-    <PackageIcon>$([System.IO.Path]::GetFileName('$(PackageIconFile)'))</PackageIcon>
     <GenerateNuspecDependsOn>
       _MauiPackReadmeFile;
       $(GenerateNuspecDependsOn);
@@ -93,9 +103,6 @@
           Pack="true" />
     <None Include="$(PackageThirdPartyNoticesFile)"
           PackagePath="$([System.IO.Path]::GetFileName('$(PackageThirdPartyNoticesFile)'))"
-          Pack="true" />
-    <None Include="$(PackageIconFile)"
-          PackagePath="$([System.IO.Path]::GetFileName('$(PackageIconFile)'))"
           Pack="true" />
   </ItemGroup>
   <Target Name="_MauiPackReadmeFile" Condition="'$(IsPackable)' == 'true' and '$(PackageReadmeFile)' == ''">

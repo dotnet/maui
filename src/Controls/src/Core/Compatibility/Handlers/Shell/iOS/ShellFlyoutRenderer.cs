@@ -44,6 +44,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		UIViewController IShellFlyoutRenderer.ViewController => this;
 
+		public override bool PrefersHomeIndicatorAutoHidden => Detail.PrefersHomeIndicatorAutoHidden;
+
+		public override bool PrefersStatusBarHidden() => Detail.PrefersStatusBarHidden();
+
+		public override UIStatusBarAnimation PreferredStatusBarUpdateAnimation => Detail.PreferredStatusBarUpdateAnimation;
+
 		void IShellFlyoutRenderer.AttachFlyout(IShellContext context, UIViewController content)
 		{
 			Context = context;

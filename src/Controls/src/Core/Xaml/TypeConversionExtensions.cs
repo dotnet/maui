@@ -161,19 +161,6 @@ namespace Microsoft.Maui.Controls.Xaml
 					return null;
 				}
 
-				if (converter != null)
-				{
-					try
-					{
-						return converter.ConvertFromInvariantString(str);
-					}
-					catch (Exception e)
-					{
-						exception = new XamlParseException("Type conversion failed", serviceProvider, e);
-						return null;
-					}
-				}
-
 				var ignoreCase = (serviceProvider?.GetService(typeof(IConverterOptions)) as IConverterOptions)?.IgnoreCase ?? false;
 
 				//If the type is nullable, as the value is not null, it's safe to assume we want the built-in conversion
