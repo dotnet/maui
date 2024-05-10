@@ -101,10 +101,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void TearDownOldElement(CarouselView oldElement)
 		{
-			if (ItemsView != null)
+			if (ItemsView is not null)
 				ItemsView.Scrolled -= CarouselViewScrolled;
 
 			ClearLayoutListener();
+			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			base.TearDownOldElement(oldElement);
 		}
 
@@ -117,7 +118,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void OnDetachedFromWindow()
 		{
 			ClearLayoutListener();
-			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			base.OnDetachedFromWindow();
 		}
 

@@ -16,14 +16,15 @@ namespace Maui.Controls.Sample.Issues
 
 	public partial class Issue22035Page1 : ContentPage
 	{
+		Issue22035Page2 _Issue22035Page2 = new Issue22035Page2();
 		public Issue22035Page1()
 		{
 			InitializeComponent();
 		}
 
-		void OnNavigateClicked(object sender, EventArgs e)
+		async void OnNavigateClicked(object sender, EventArgs e)
 		{
-			Navigation.PushAsync(new Issue22035Page2());
+			await Navigation.PushAsync(_Issue22035Page2);
 		}
 	}
 }
