@@ -297,7 +297,19 @@ namespace Microsoft.Maui.Controls.Internals
 			Registered = new Registrar<IRegisterable>();
 		}
 
-		internal static Dictionary<string, Type> Effects { get; } = new(StringComparer.Ordinal);
+		internal struct EffectType
+		{
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+			public readonly Type Type;
+
+			public EffectType(
+				[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type type)
+			{
+				Type = type;
+			}
+		}
+
+		internal static Dictionary<string, EffectType> Effects { get; } = new(StringComparer.Ordinal);
 
 		internal static Dictionary<string, IList<StylePropertyAttribute>> StyleProperties => LazyStyleProperties.Value;
 
@@ -394,9 +406,12 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		public static void RegisterEffect(string resolutionName, string id, Type effectType)
+		public static void RegisterEffect(
+			string resolutionName,
+			string id,
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type effectType)
 		{
-			Effects[resolutionName + "." + id] = effectType;
+			Effects[resolutionName + "." + id] = new(effectType);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][1]/Docs/*" />
