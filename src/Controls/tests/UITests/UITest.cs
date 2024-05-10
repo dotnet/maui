@@ -73,10 +73,16 @@ namespace Microsoft.Maui.AppiumTests
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
-					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\..\\..\\samples\\Controls.Sample.UITests");
+					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.Sample.UITests");
 					var appProjectPath = Path.Combine(appProjectFolder, "Controls.Sample.UITests.csproj");
 					var windowsExe = "Controls.Sample.UITests.exe";
-					var windowsExePath = Path.Combine(appProjectFolder, $"bin\\{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
+					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
+					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win10-x64\\{windowsExe}");
+
+					if (!File.Exists(windowsExePath) && File.Exists(windowsExePath19041))
+					{
+						windowsExePath = windowsExePath19041;
+					}
 
 					var appPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINDOWS_APP_PATH"))
 					   ? windowsExePath
