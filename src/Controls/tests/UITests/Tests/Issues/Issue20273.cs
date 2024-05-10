@@ -13,12 +13,13 @@ public class Issue20273 : _IssuesUITest
 	{ }
 
     [Test]
-	public void PreviouslySelectedItemShouldBeReselected()
+	public async Task PreviouslySelectedItemShouldBeReselected()
 	{
 		var firstItem = App.WaitForElement("FirstItem");
 		firstItem.Click();
 		App.WaitForElement("FirstItem");
 		firstItem.Click();
+		await Task.Delay(250);
 		var numberOfNavigations = App.WaitForElement("numberOfNavigations").GetText();
 
 		Assert.AreEqual(int.Parse(numberOfNavigations!), 2);
