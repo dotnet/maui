@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Controls.Toolbar.NavigationController.get -> UIKit.UINavigationController!
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
@@ -85,7 +86,6 @@ static Microsoft.Maui.Controls.Toolbar.MapBackButtonVisible(Microsoft.Maui.Handl
 static Microsoft.Maui.Controls.Toolbar.MapBarBackground(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.Toolbar.MapBarTextColor(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.Toolbar.MapIconColor(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
-static Microsoft.Maui.Controls.Toolbar.MapIsVisible(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.Toolbar.MapTitleIcon(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.Toolbar.MapTitleView(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.Toolbar.MapToolbarItems(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void

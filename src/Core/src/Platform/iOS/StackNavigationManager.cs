@@ -57,13 +57,13 @@ public class StackNavigationManager
 
 		if (isInitialNavigation || currentNavStack.Count < incomingNavStack.Count && incomingNavStack.Count - currentNavStack.Count == 1)
 		{
-			NavigationController!.PushViewController(incomingNavStack[incomingNavStack.Count - 1].ToUIViewController(MauiContext), request.Animated);
 			NavigationStack = new List<IView>(request.NavigationStack);
-			NavigationView?.NavigationFinished(NavigationStack);
+			NavigationController!.PushViewController(incomingNavStack[incomingNavStack.Count - 1].ToUIViewController(MauiContext), request.Animated);
+			//NavigationView?.NavigationFinished(NavigationStack);
 			return;
 		}
 
-		if (currentNavStack.Count > incomingNavStack.Count)
+		if (currentNavStack.Count > incomingNavStack.Count && currentNavStack.Count - incomingNavStack.Count == 1)
 		{
 			var currentTop = currentNavStack[currentNavStack.Count - 1];
 			var incomingTop = incomingNavStack[incomingNavStack.Count - 1];
@@ -71,10 +71,9 @@ public class StackNavigationManager
 			if (currentTop != incomingTop && currentNavStack.Count - incomingNavStack.Count == 1)
 			{
 				var topViewController = NavigationController!.TopViewController; // currentTop.ToUIViewController(MauiContext);
+				NavigationStack = new List<IView>(request.NavigationStack);
 				topViewController.NavigationController?.PopViewController(request.Animated);
 				//NavigationController!.PopViewController(request.Animated);
-				NavigationStack = new List<IView>(request.NavigationStack);
-				NavigationView?.NavigationFinished(NavigationStack);
 				return;
 			}
 
@@ -82,9 +81,9 @@ public class StackNavigationManager
 		}
 
 		// The incoming and current stacks are the same length, so just sync the stacks
-		SyncNativeStackWithNewStack(request);
 		NavigationStack = new List<IView>(request.NavigationStack);
-		NavigationView?.NavigationFinished(NavigationStack);
+		SyncNativeStackWithNewStack(request);
+		//NavigationView?.NavigationFinished(NavigationStack);
 		return;
 	}
 
@@ -123,6 +122,8 @@ public class StackNavigationManager
 			//containerViewController.View!.AddSubview(viewController.View!);
 			//containerViewController.AddChildViewController(viewController);
 			//viewController.DidMoveToParentViewController(containerViewController);
+
+			
 
 			newStack.Add(viewController);
 		}

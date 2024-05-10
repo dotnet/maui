@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using UIKit;
 
@@ -18,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var titleView = toolbar.TitleView;
 
 			// UpdateLeftBarButtonItem() ?
-			navigationBar.UpdateBackButtonTitle(toolbar);
+			//navigationBar.UpdateBackButtonTitle(toolbar);
 
 			ClearTitleViewContainer(toolbar);
 			if (titleIcon == null || titleIcon.IsEmpty && titleView == null)
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			NavigationTitleAreaContainer titleViewContainer = new NavigationTitleAreaContainer((View)titleView, toolbar.NavigationController.NavigationBar);
 
-			UpdateTitleImage(toolbar, titleViewContainer, titleIcon);
+			UpdateTitleImage(titleViewContainer, titleIcon);
 			toolbar.NavigationController.NavigationItem.TitleView = titleViewContainer;
 		}
 
@@ -317,7 +316,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal static void UpdateToolbarItems(this UINavigationBar navigationBar, Toolbar toolbar)
 		{
-			if (toolbar.NavigationController == null)
+			if (toolbar.NavigationController == null || toolbar.NavigationController.TopViewController == null)
 			{
 				return;
 			}
@@ -375,7 +374,13 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new NullReferenceException("NavigationController is null.");
 			}
 
-			var navigationItem = toolbar.NavigationController.TopViewController.NavigationItem;
+			var navigationItem = toolbar.NavigationController.TopViewController?.NavigationItem;
+
+			if (navigationItem == null)
+			{
+				return;
+			}
+
 			if (navigationItem.HidesBackButton == !toolbar.BackButtonVisible)
 			{
 				return;
@@ -413,7 +418,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static void ClearTitleViewContainer(Toolbar toolbar)
 		{
-			var navigationItem = toolbar.NavigationController?.TopViewController.NavigationItem;
+			var navigationItem = toolbar.NavigationController?.TopViewController?.NavigationItem;
 			if (navigationItem == null)
 			{
 				return;
@@ -426,7 +431,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static void UpdateTitleImage(Toolbar toolbar, NavigationTitleAreaContainer titleViewContainer, ImageSource titleIcon)
+		static void UpdateTitleImage(NavigationTitleAreaContainer titleViewContainer, ImageSource titleIcon)
 		{
 			if (titleIcon.IsEmpty)
 			{

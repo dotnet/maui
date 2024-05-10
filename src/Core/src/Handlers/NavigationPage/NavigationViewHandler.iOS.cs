@@ -12,9 +12,9 @@ public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, U
 	   [PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName] = NavigationPage.MapIsNavigationBarTranslucent,
 	 */
 
-	internal StackNavigationManager? StackNavigationManager { get; private set; }
+	public StackNavigationManager? StackNavigationManager { get; private set; }
 
-	internal NavigationManager? NavigationManager => MauiContext?.GetNavigationManager();
+	public NavigationManager? NavigationManager => MauiContext?.GetNavigationManager();
 
 	public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 
@@ -33,7 +33,7 @@ public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, U
 
 		NavigationManager?.SetNavigationController(_platformNavigationController);
 
-		return _platformNavigationController.View; // TODO: maybe returning .View is not the best idea? Maybe we should return the NavigationController? Investigate.
+		return _platformNavigationController.View;
 	}
 
 	protected override void ConnectHandler(UIView platformView)

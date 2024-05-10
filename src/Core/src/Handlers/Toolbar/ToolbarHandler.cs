@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Handlers
 			   new PropertyMapper<IToolbar, IToolbarHandler>(ElementMapper)
 			   {
 				   [nameof(IToolbar.Title)] = MapTitle,
+#if IOS || MACCATALYST
+					[nameof(IToolbar.IsVisible)] = MapIsVisible,
+#endif
 			   };
 
 		public static CommandMapper<IToolbar, IToolbarHandler> CommandMapper = new();

@@ -13,27 +13,17 @@ namespace Microsoft.Maui.Controls
 	{
 		NavigationManager? NavigationManager => Handler?.MauiContext?.GetNavigationManager();
 
-		internal UINavigationController? NavigationController => NavigationManager?.NavigationController;
-
-		public static void MapIsVisible(IToolbarHandler handler, Toolbar toolbar)
-		{
-			if (toolbar.NavigationController == null)
-			{
-				throw new NullReferenceException("NavigationController is null.");
-			}
-
-			toolbar.NavigationController.UpdateNavigationBarVisibility(toolbar.IsVisible, true); // TODO: maybe this needs to go through the ViewController (top one?)
-		}
+		public UINavigationController NavigationController => NavigationManager?.NavigationController ?? throw new NullReferenceException("Could not obtain NavigationController.");
 
 		public static void MapBackButtonVisible(IToolbarHandler handler, Toolbar toolbar)
 		{
 			handler.PlatformView.UpdateBackButtonVisibility(toolbar);
-			handler.PlatformView.UpdateTitleArea(toolbar);
 		}
 
 		public static void MapBackButtonTitle(IToolbarHandler handler, Toolbar toolbar)
 		{
-			handler.PlatformView.UpdateTitleArea(toolbar);
+			//handler.PlatformView.UpdateTitleArea(toolbar);
+			handler.PlatformView.UpdateBackButtonTitle(toolbar);
 		}
 
 		public static void MapTitleIcon(IToolbarHandler handler, Toolbar toolbar)

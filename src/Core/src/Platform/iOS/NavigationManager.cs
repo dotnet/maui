@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Platform
 {
-	public class NavigationManager
+	public class NavigationManager // TODO: null out properties via dispose
 	{
 		IMauiContext MauiContext { get; }
 
