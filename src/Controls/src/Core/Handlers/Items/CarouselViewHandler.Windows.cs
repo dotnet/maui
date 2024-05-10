@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		ScrollViewer _scrollViewer;
 		WScrollBarVisibility? _horizontalScrollBarVisibilityWithoutLoop;
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
-		Size _currentSize;
+		Size _currentSize; 
+		bool _isCarouselViewReady;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
@@ -548,10 +549,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_currentSize = newSize;
 
-				UpdateItemsSource();
-				UpdateSnapPointsType();
-				UpdateSnapPointsAlignment();
-				UpdateCarouselViewInitialPosition();
+				if (_isCarouselViewReady)
+					InvalidateItemSize();
+				else
+					InitialSetup();
+
+				_isCarouselViewReady = true;
+			}
+		}
+
+		void InitialSetup()
+		{
+			UpdateItemsSource();
+			UpdateSnapPointsType();
+			UpdateSnapPointsAlignment();
+			UpdateCarouselViewInitialPosition();
+		}
+
+		void InvalidateItemSize()
+		{
+			var itemHeight = GetItemHeight();
+			var itemWidth = GetItemWidth();
+
+			foreach (var item in ListViewBase.GetChildren<ItemContentControl>())
+			{
+				item.ItemHeight = itemHeight;
+				item.ItemWidth = itemWidth;
+
+				item.InvalidateMeasure();
 			}
 		}
 	}

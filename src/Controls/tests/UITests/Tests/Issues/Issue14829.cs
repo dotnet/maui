@@ -14,7 +14,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		[Test]
 		[Category(UITestCategories.ActionSheet)]
-		public void Issue14829Test()
+		public void DisplayActionSheetStillNotWorkingOnWindows()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.iOS }, "Only affects Windows.");
 

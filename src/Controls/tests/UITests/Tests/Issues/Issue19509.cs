@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +18,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Click a button to update the text
-			App.Click("button");
-			
+			App.Tap("button");
+		
 			await Task.Yield();
 
 			// 2. Verify that the Entry TextColor is correct (Green).

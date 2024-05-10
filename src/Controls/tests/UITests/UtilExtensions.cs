@@ -42,20 +42,9 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				app.EnterText("SearchBar", text);
 			}
-			app.Click(goToTestButtonId);
+			app.Tap(goToTestButtonId);
 
 			app.WaitForNoElement(goToTestButtonId, "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(1));
-		}
-
-		public static void NavigateToIssues(this IApp app)
-		{
-			app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
-
-			app.WaitForElement("SearchBar");
-			app.ClearText("SearchBar");
-
-			app.Click(goToTestButtonId);
-			app.WaitForElement("TestCasesIssueList");
 		}
 
 		public static int CenterX(this Rectangle rect)
