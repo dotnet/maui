@@ -95,7 +95,10 @@ namespace Microsoft.Maui.Platform
 			attributedString.AddAttribute(UIStringAttributeKey.Font, uiFontAttribute, new NSRange(0, attributedString.Length));
 
 			//Update UpdateCharacterSpacing
+			if (textStyle.CharacterSpacing != 0)
+			{
 			attributedString = attributedString.WithCharacterSpacing(textStyle.CharacterSpacing);
+			}
 
 			//Update Text Color
 			if (textStyle.TextColor != null)
