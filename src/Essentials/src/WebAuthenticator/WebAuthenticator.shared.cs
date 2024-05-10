@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Authentication
 		/// </summary>
 		/// <param name="webAuthenticatorOptions">A <see cref="WebAuthenticatorOptions"/> instance containing additional configuration for this authentication call.</param>
 		/// <returns>A <see cref="WebAuthenticatorResult"/> object with the results of this operation.</returns>
-		/// <exception cref="TaskCanceledException">Windows: Thrown when the user canceled the authentication flow.</exception>
+		/// <exception cref="TaskCanceledException">Thrown when the user canceled the authentication flow.</exception>
 		/// <exception cref="HttpRequestException">Windows: Thrown when a HTTP Request error occured.</exception>
 		/// <exception cref="Exception">Windows: Thrown when a unexpected HTTP response was received.</exception>
 		/// <exception cref="FeatureNotSupportedException">iOS/macOS: Thrown when iOS version is less than 13 is used or macOS less than 13.1 is used.</exception>

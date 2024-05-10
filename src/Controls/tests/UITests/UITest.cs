@@ -36,7 +36,9 @@ namespace Microsoft.Maui.AppiumTests
 				ciArtifactsDirectory = Path.Combine(ciArtifactsDirectory, "Controls.AppiumTests");
 
 			string assemblyDirectory = Path.GetDirectoryName(System.AppDomain.CurrentDomain.BaseDirectory)!;
-			string projectRootDirectory = Path.GetFullPath(Path.Combine(assemblyDirectory, "..", "..", ".."));
+			string repoRootDirectory = Path.GetFullPath(Path.Combine(assemblyDirectory, "..", "..", "..", "..", ".."));
+			string projectRootDirectory = Path.GetFullPath(Path.Combine(repoRootDirectory, "src", "Controls", "tests", "UITests"));
+
 			_visualRegressionTester = new VisualRegressionTester(testRootDirectory: projectRootDirectory,
 				visualComparer: new MagickNetVisualComparer(),
 				visualDiffGenerator: new MagickNetVisualDiffGenerator(),
@@ -61,13 +63,13 @@ namespace Microsoft.Maui.AppiumTests
 			switch (_testDevice)
 			{
 				case TestDevice.Android:
-					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_SKIN") ?? "");
+					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_SKIN") ?? "Nexus 5X");
 					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.iOS:
-					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone X");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "17.0");
+					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "17.2");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:

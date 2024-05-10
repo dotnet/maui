@@ -128,9 +128,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var oldItemViewAdapter = ItemsViewAdapter;
 
+			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			if (oldItemViewAdapter != null && _initialized)
 			{
-				UnsubscribeCollectionItemsSourceChanged(oldItemViewAdapter);
 				ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, 0);
 				ItemsView.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 			}

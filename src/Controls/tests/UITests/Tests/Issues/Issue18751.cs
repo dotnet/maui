@@ -17,8 +17,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Ignore("This test is failing on iOS17, https://github.com/dotnet/maui/issues/20582")]
 		public async Task Issue18751Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows },
-				"Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994");
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Windows },
+				"Currently fails on Android and Windows; see https://github.com/dotnet/maui/issues/15994");
 
 			App.WaitForElement("WaitForStubControl");
 

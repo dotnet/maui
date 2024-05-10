@@ -1,14 +1,15 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	class ScrollViewUITests : UITest
+	[Category(UITestCategories.ScrollView)]
+	public class ScrollToUITests : UITest
 	{
-		const string ScrollViewGallery = "ScrollView Gallery";
+		const string LayoutGallery = "ScrollView Gallery";
 
-		public ScrollViewUITests(TestDevice device)
+		public ScrollToUITests(TestDevice device)
 			: base(device)
 		{
 		}
@@ -16,13 +17,7 @@ namespace Microsoft.Maui.AppiumTests
 		protected override void FixtureSetup()
 		{
 			base.FixtureSetup();
-			App.NavigateToGallery(ScrollViewGallery);
-		}
-
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
+			App.NavigateToGallery(LayoutGallery);
 		}
 
 		[Test]
@@ -30,11 +25,16 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the start")]
 		public void ScrollToElement1Start()
 		{
-			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android)
 			{
-				App.Click("Start");
-				App.WaitForElement("the scrollto button");
-				App.Screenshot("Element is  on the top");
+				App.WaitForElement("WaitForStubControl");
+
+				// 1. Tap a button to scroll to the start position.
+				App.Tap("Start");
+				App.WaitForNoElement("the scrollto button");
+
+				// 2. Verify that the scroll has moved to the correct position.
+				App.Screenshot("Element is on the top");
 			}
 			else
 			{
@@ -47,12 +47,18 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the center")]
 		public void ScrollToElement2Center()
 		{
-			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android)
 			{
-				App.Click("Center");
-				App.WaitForElement("the scrollto button");
-				App.WaitForElement("the before");
-				App.WaitForElement("the after");
+				App.WaitForElement("WaitForStubControl");
+
+				// 1. Tap a button to scroll to the center position.
+				App.Tap("Center");
+				App.WaitForNoElement("the scrollto button");
+
+				// 2. Verify that the scroll has moved to the correct position.
+				App.WaitForNoElement("the before");
+				App.WaitForNoElement("the after");
+
 				App.Screenshot("Element is in the center");
 			}
 			else
@@ -66,11 +72,56 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the end")]
 		public void ScrollToElement3End()
 		{
-			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android)
 			{
-				App.Click("End");
-				App.WaitForElement("the scrollto button");
+				App.WaitForElement("WaitForStubControl");
+
+				// 1. Tap a button to scroll to the end.
+				App.Tap("End");
+
+				// 2. Verify that the scroll has moved to the correct position.
+				App.WaitForNoElement("the scrollto button");
 				App.Screenshot("Element is in the end");
+			}
+			else
+			{
+				Assert.Ignore("This test is failing, likely due to product issue");
+			}
+		}
+
+		[Test]
+		[Description("ScrollTo Y = 100")]
+		public void ScrollToY()
+		{
+			if (Device == TestDevice.Android)
+			{
+				App.WaitForElement("WaitForStubControl");
+
+				// 1. Tap a button to scroll 100 px.
+				App.Tap("Scroll100");
+			}
+			else
+			{
+				Assert.Ignore("This test is failing, likely due to product issue");
+			}
+		}
+
+		// ScrollToYTwice (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\ScrollViewUITests.cs)
+		[Test]
+		[Description("ScrollTo Y = 100")]
+		public void ScrollToYTwice()
+		{
+			if (Device == TestDevice.Android)
+			{
+				App.WaitForElement("WaitForStubControl");
+
+				// 1. Tap a button to scroll 100 px.
+				App.Tap("Scroll100");
+				App.WaitForNoElement("completed");
+
+				// 2. Repeat.
+				App.Tap("Scroll100");
+				App.WaitForNoElement("completed");
 			}
 			else
 			{

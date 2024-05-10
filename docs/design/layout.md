@@ -36,7 +36,7 @@ For example, given this layout...
 
 ```
 <VerticalStackLayout WidthRequest="400">
-    <Label Text="Hello" WidthTRequest="100" HorizontalOptions="Fill"/>
+    <Label Text="Hello" WidthRequest="100" HorizontalOptions="Fill"/>
 </VerticalStackLayout>
 ```
 

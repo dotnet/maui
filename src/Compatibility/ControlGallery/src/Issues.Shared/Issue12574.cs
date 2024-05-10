@@ -123,7 +123,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
-		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void RemoveItemsQuickly()
 		{
 			RunningApp.WaitForElement("0 item");

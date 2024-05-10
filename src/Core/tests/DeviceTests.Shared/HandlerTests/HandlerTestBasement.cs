@@ -19,7 +19,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public class HandlerTestBasement : TestBase, IDisposable
+	public class HandlerTestBasement : TestBase, IAsyncDisposable
 	{
 		MauiApp _mauiApp;
 		IServiceProvider _servicesProvider;
@@ -305,9 +305,13 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		public void Dispose()
+		public async ValueTask DisposeAsync()
 		{
-			((IDisposable)_mauiApp)?.Dispose();
+			if (_mauiApp != null)
+			{
+				await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+			}
+
 			_mauiApp = null;
 			_servicesProvider = null;
 			_mauiContext = null;

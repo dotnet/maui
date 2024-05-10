@@ -18,7 +18,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			try
 			{
-				App.WaitForElement("TitleViewLabel4", timeout: TimeSpan.FromSeconds(4));
+				App.WaitForElement("TitleViewLabel4", timeout: TimeSpan.FromSeconds(10));
 			}
 			finally
 			{

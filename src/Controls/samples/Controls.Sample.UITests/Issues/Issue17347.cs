@@ -4,26 +4,40 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 17347, "Setting a new TitleView on an already created page crashes iOS", PlatformAffected.iOS)]
-	public class Issue17347 : TestContentPage
+	public class Issue17347 : NavigationPage
 	{
-		protected override void Init()
+		public Issue17347() : base(new MainPage())
 		{
-			var navPage = new NavigationPage(new MainPage());
-			NavigatedTo += Issue16499_NavigatedTo;
+		}
 
-			async void Issue16499_NavigatedTo(object sender, NavigatedToEventArgs e)
+		public class MainPage : ContentPage
+		{
+			public MainPage()
 			{
-				NavigatedTo -= Issue16499_NavigatedTo;
+				var navPage = new NavigationPage(new TestPage());
+				var label = new Label() { Text = "NavigatedTo Has Not Fired" };
+				Content = new VerticalStackLayout()
+				{
+					label
+				};
 
-				await Navigation.PushModalAsync(navPage);
-				await navPage.Navigation.PushAsync(new MainPage());
-				await navPage.Navigation.PushAsync(new MainPage());
-				await navPage.Navigation.PopAsync();
-				await navPage.Navigation.PopAsync();
+				NavigatedTo += Issue16499_NavigatedTo;
+
+				async void Issue16499_NavigatedTo(object sender, NavigatedToEventArgs e)
+				{
+					label.Text = "Navigated to Has Fired";
+					NavigatedTo -= Issue16499_NavigatedTo;
+
+					await Navigation.PushModalAsync(navPage);
+					await navPage.Navigation.PushAsync(new TestPage());
+					await navPage.Navigation.PushAsync(new TestPage());
+					await navPage.Navigation.PopAsync();
+					await navPage.Navigation.PopAsync();
+				}
 			}
 		}
 
-		public partial class MainPage : ContentPage
+		public partial class TestPage : ContentPage
 		{
 			Label TopView;
 			static int i = 0;

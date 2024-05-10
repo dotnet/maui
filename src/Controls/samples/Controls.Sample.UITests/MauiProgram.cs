@@ -11,10 +11,14 @@ namespace Maui.Controls.Sample
 		public static MauiApp CreateMauiApp() =>
 			MauiApp
 				.CreateBuilder()
-#if IOS || ANDROID
+	#if IOS || ANDROID
 				.UseMauiMaps()
-#endif
+	#endif
 				.UseMauiApp<App>()
+				.ConfigureFonts(fonts =>
+				{
+					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+				})
 				.Build();
 	}
 

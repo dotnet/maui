@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui20818">
+    <ContentPage.Resources>
+        <Style x:Key="A" TargetType="Label" />
+        <Style x:Key="B" TargetType="{x:Type Label}" />
+    </ContentPage.Resources>
+
+    <Label>
+        <Label.Triggers>
+            <Trigger x:Name="TriggerC" TargetType="Label" Property="BackgroundColor" Value="Red" />
+            <DataTrigger x:Name="TriggerD" TargetType="Label" />
+            <MultiTrigger x:Name="TriggerE" TargetType="Label" />
+        </Label.Triggers>
+    </Label>
+
+    <Label>
+        <Label.Triggers>
+            <Trigger x:Name="TriggerF" TargetType="{x:Type Label}" Property="BackgroundColor" Value="Red" />
+            <DataTrigger x:Name="TriggerG" TargetType="{x:Type Label}" />
+            <MultiTrigger x:Name="TriggerH" TargetType="{x:Type Label}" />
+        </Label.Triggers>
+    </Label>
+</ContentPage>

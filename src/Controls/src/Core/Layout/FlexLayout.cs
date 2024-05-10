@@ -479,7 +479,7 @@ namespace Microsoft.Maui.Controls
 
 		internal bool InMeasureMode { get; set; }
 
-		void AddFlexItem(IView child)
+		void AddFlexItem(int index, IView child)
 		{
 			if (_root == null)
 				return;
@@ -518,7 +518,7 @@ namespace Microsoft.Maui.Controls
 				};
 			}
 
-			_root.InsertAt(Children.IndexOf(child), item);
+			_root.InsertAt(index, item);
 			SetFlexItem(child, item);
 		}
 
@@ -546,14 +546,8 @@ namespace Microsoft.Maui.Controls
 			return new FlexLayoutManager(this);
 		}
 
-		public Graphics.Rect GetFlexFrame(IView view)
-		{
-			return view switch
-			{
-				BindableObject bo => ((Flex.Item)bo.GetValue(FlexItemProperty)).GetFrame(),
-				_ => _viewInfo[view].FlexItem.GetFrame(),
-			};
-		}
+		public Graphics.Rect GetFlexFrame(IView view) =>
+			GetFlexItem(view).GetFrame();
 
 		void EnsureFlexItemPropertiesUpdated()
 		{
@@ -601,8 +595,10 @@ namespace Microsoft.Maui.Controls
 		void PopulateLayout()
 		{
 			InitLayoutProperties(_root = new Flex.Item());
-			foreach (var child in Children)
-				AddFlexItem(child);
+			for (var i = 0; i < Children.Count; i++)
+			{
+				AddFlexItem(i, Children[i]);
+			}
 		}
 
 		void ClearLayout()
@@ -623,21 +619,21 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnAdd(int index, IView view)
 		{
+			AddFlexItem(index, view);
 			base.OnAdd(index, view);
-			AddFlexItem(view);
 		}
 
 		protected override void OnInsert(int index, IView view)
 		{
+			AddFlexItem(index, view);
 			base.OnInsert(index, view);
-			AddFlexItem(view);
 		}
 
 		protected override void OnUpdate(int index, IView view, IView oldView)
 		{
-			base.OnUpdate(index, view, oldView);
 			RemoveFlexItem(oldView);
-			AddFlexItem(view);
+			AddFlexItem(index, view);
+			base.OnUpdate(index, view, oldView);
 		}
 
 		protected override void OnRemove(int index, IView view)

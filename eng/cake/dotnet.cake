@@ -9,6 +9,9 @@ var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
+string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
+
+var arcadeBin = MakeAbsolute(new DirectoryPath("./artifacts/bin/"));
 
 string TestTFM = Argument("testtfm", "");
 var useNuget = Argument("usenuget", true);
@@ -68,9 +71,6 @@ Task("dotnet-local-workloads")
         if (!localDotnet) 
             return;
         
-        //Workaround: https://github.com/dotnet/linker/issues/3012
-        SetEnvironmentVariable("DOTNET_gcServer", "0");
-
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
@@ -141,11 +141,11 @@ Task("android-aar")
 
 Task("dotnet-build")
     .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
     .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
             RunMSBuildWithDotNet("./Microsoft.Maui.sln");
@@ -182,6 +182,7 @@ Task("dotnet-legacy-controlgallery-ios")
     .Does(() =>
     {
         var properties = new Dictionary<string, string>();
+        properties.Add("RuntimeIdentifier","iossimulator-x64");
         RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj", properties, binlogPrefix: "controlgallery-ios-");
     });
 
@@ -221,6 +222,7 @@ Task("dotnet-test")
             "**/Controls.Core.UnitTests.csproj",
             "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
+            "**/SourceGen.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
@@ -232,6 +234,10 @@ Task("dotnet-test")
 
         foreach (var test in tests)
         {
+            if (!IsRunningOnWindows() && (test.Contains("Compatibility.Core.UnitTests") || test.Contains("Controls.Core.Design.UnitTests"))) 
+            {
+                continue;
+            }
             foreach (var project in GetFiles(test))
             {
                 try
@@ -498,15 +504,6 @@ Task("VS")
         StartVisualStudioForDotNet();
     }); 
 
-// Keeping this for users that are already using this.
-Task("VS-NET6")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
-    .IsDependentOn("Clean")
-    .IsDependentOn("VS")
-    .Does(() =>
-    {
-       Warning("!!!!Please switch to using the `VS` target.!!!!");
-    });
 
 bool RunPackTarget()
 {
@@ -552,15 +549,12 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
         envVariables.Add("MSBuildDebugEngine", "1");
 
     return envVariables;
-
 }
 
 void SetDotNetEnvironmentVariables()
 {
     var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
     
-    //Workaround: https://github.com/dotnet/linker/issues/3012
-    SetEnvironmentVariable("DOTNET_gcServer", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
@@ -731,6 +725,16 @@ void RunTestWithLocalDotNet(string csproj)
 
 void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "")
 {
+    if (string.IsNullOrWhiteSpace(filter))
+    {
+        filter = testFilter;
+    }
+
+    if (!string.IsNullOrWhiteSpace(filter))
+    {
+        Information("Run Tests With Filter {0}", filter);	
+    }
+
     string binlog;
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);

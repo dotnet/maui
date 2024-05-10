@@ -33,20 +33,6 @@ namespace Microsoft.Maui.AppiumTests
 			}
 		}
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			try
-			{
-				this.Back();
-			}
-			catch (Exception e)
-			{
-				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
-			}
-		}
-
 		protected abstract void NavigateToGallery();
 	}
 }

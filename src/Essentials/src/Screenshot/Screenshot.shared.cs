@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Media
 		/// Opens a <see cref="Stream"/> to the corresponding screenshot file on the filesystem.
 		/// </summary>
 		/// <param name="format">The image format used to read this screenshot.</param>
-		/// <param name="quality">The quality used to read this screenshot.</param>
+		/// <param name="quality">The quality used to read this screenshot. Quality only applies when <see cref="ScreenshotFormat.Jpeg"/> is used.</param>
 		/// <returns>A <see cref="Stream"/> containing the screenshot file data.</returns>
 		Task<Stream> OpenReadAsync(ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100);
 
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="destination">The destination <see cref="Stream"/> to copy the screenshot file data to.</param>
 		/// <param name="format">The image format used to copy this screenshot.</param>
-		/// <param name="quality">The quality used to copy this screenshot.</param>
+		/// <param name="quality">The quality used to copy this screenshot. Quality only applies when <see cref="ScreenshotFormat.Jpeg"/> is used.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		Task CopyToAsync(Stream destination, ScreenshotFormat format = ScreenshotFormat.Png, int quality = 100);
 	}

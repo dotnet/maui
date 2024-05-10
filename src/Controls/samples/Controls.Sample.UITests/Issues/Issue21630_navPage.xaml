@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21630_navPage"
+             Title="Issue21630_navPage"
+             Shell.BackgroundColor="Green">
+
+    <NavigationPage.TitleView>
+        <HorizontalStackLayout Spacing="40">
+            <Entry BackgroundColor="Yellow" Text="Input Entry" AutomationId="NavBarEntryNavigationPage" x:Name="NavBarEntryNav"/>
+        </HorizontalStackLayout>
+    </NavigationPage.TitleView>
+
+    <Shell.TitleView>
+        <HorizontalStackLayout Spacing="40">
+            <Entry BackgroundColor="Yellow" Text="Input Entry" AutomationId="NavBarEntryShellPage" x:Name="NavBarEntryShell"/>
+        </HorizontalStackLayout>
+    </Shell.TitleView>
+
+    <CollectionView
+        SelectionMode="None"
+        BackgroundColor="white"
+        Margin="10.0">
+
+        <CollectionView.ItemsSource>
+            <x:Array Type="{x:Type x:String}">
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+                <x:String>asdf</x:String>
+            </x:Array>
+        </CollectionView.ItemsSource>
+
+        <CollectionView.ItemsLayout>
+            <LinearItemsLayout
+                Orientation="Vertical"
+                ItemSpacing="15"/>
+        </CollectionView.ItemsLayout>
+
+        <CollectionView.Header>
+            <VerticalStackLayout Spacing="20" Padding="10,20">
+                <Entry BackgroundColor="Yellow" Text="Input Entry" AutomationId="HeaderEntry"/>
+                <Button Text="Focus NavBarEntryNav" Clicked="FocusNavBarEntryNav" AutomationId="FocusButtonNavigationPage"/>
+                <Button Text="Focus NavBarEntryShell" Clicked="FocusNavBarEntryShell" AutomationId="FocusButtonShellPage"/>
+                <Button Text="Restore MainPage" Clicked="RestoreMainPage" AutomationId="RestoreMainPageButton"/>
+            </VerticalStackLayout>
+        </CollectionView.Header>
+
+        <CollectionView.Footer>
+            <ContentView HeightRequest="100"></ContentView>
+        </CollectionView.Footer>
+
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+                <Border
+                    StrokeThickness="0.6">
+                    <Label
+                        Text="{Binding}"
+                        FontSize="20"/>
+                </Border>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+
+    </CollectionView>
+</ContentPage>

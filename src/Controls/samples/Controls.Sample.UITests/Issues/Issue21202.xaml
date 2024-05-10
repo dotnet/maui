@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Maui.Controls.Sample.Issues.Issue21202"
+			 Title="Issue 21202">
+    <VerticalStackLayout
+        Padding="12"
+        Grid.Column="1">
+        <Label
+            AutomationId="WaitForStubControl"
+            Text="1. Font image source should not be stretched on button with height requested."/>
+        <Button
+            FontSize="18"
+            HeightRequest="60"
+            HorizontalOptions="Fill"
+            Text="Button with height request set"
+            TextTransform="Uppercase"
+            FontFamily="OpenSansRegular">
+            <Button.ImageSource>
+                <FontImageSource Glyph="A" Color="Black" FontFamily="OpenSansRegular"/>
+            </Button.ImageSource>
+        </Button>
+        <Label
+            Text="2. Font image source should not be stretched on button without height requested."/>
+        <Button
+            FontSize="18"
+            HorizontalOptions="Fill"
+            Text="Button without height request"
+            TextTransform="Uppercase"
+            FontFamily="OpenSansRegular">
+            <Button.ImageSource>
+                <FontImageSource Glyph="A" Color="Black" FontFamily="OpenSansRegular"/>
+            </Button.ImageSource>
+        </Button>
+        <Label
+            Text="3. Button without height request should resize to font image source size."/>
+        <Button
+            FontSize="18"
+            HorizontalOptions="Fill"
+            Text="Button without height request, resize to font image"
+            TextTransform="Uppercase"
+            FontFamily="OpenSansRegular">
+            <Button.ImageSource>
+                <FontImageSource Glyph="A" Size="60" Color="Black" FontFamily="OpenSansRegular"/>
+            </Button.ImageSource>
+        </Button>
+    </VerticalStackLayout>
+</ContentPage>

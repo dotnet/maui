@@ -4,6 +4,7 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using Android.Runtime;
 using Java.Interop;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.ControlGallery;
@@ -28,6 +29,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Android
 		DataScheme = "http", DataHost = App.AppName, DataPathPrefix = "/gallery/"
 		)
 	]
+	[Register("com.microsoft.mauicompatibilitygallery.MainActivity")]
 	public partial class Activity1 : MauiAppCompatActivity
 	{
 		App App => Microsoft.Maui.Controls.Application.Current as App;

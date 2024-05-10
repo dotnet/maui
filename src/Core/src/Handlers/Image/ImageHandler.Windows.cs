@@ -49,7 +49,10 @@ namespace Microsoft.Maui.Handlers
 
 		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
-			UpdateValue(nameof(IImage.IsAnimationPlaying));
+			// Because this resolves from a task we should validate that the
+			// handler hasn't been disconnected
+			if (this.IsConnected())
+				UpdateValue(nameof(IImage.IsAnimationPlaying));
 		}
 
 		partial class ImageImageSourcePartSetter

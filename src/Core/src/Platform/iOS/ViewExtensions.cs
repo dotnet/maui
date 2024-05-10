@@ -250,12 +250,11 @@ namespace Microsoft.Maui.Platform
 			if (view == null || view.Frame.IsEmpty)
 				return;
 
-			var layer = view.Layer;
-
-			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
+			var sublayers = view.Layer?.Sublayers;
+			if (sublayers is null || sublayers.Length == 0)
 				return;
 
-			foreach (var sublayer in layer.Sublayers)
+			foreach (var sublayer in sublayers)
 			{
 				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != view.Bounds)
 				{

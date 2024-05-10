@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -318,7 +319,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
-			_changeHandlers = _changeHandlers ?? new List<Action<object, ResourcesChangedEventArgs>>(2);
+			_changeHandlers ??= new List<Action<object, ResourcesChangedEventArgs>>(2);
 			_changeHandlers.Add(onchanged);
 		}
 
@@ -645,7 +646,7 @@ namespace Microsoft.Maui.Controls
 			if (values == null)
 				return;
 			if (_changeHandlers != null)
-				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers)
+				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
 					handler(this, new ResourcesChangedEventArgs(values));
 			if (_dynamicResources == null)
 				return;

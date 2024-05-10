@@ -3,36 +3,37 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 x:Class="Maui.Controls.Sample.Issues.Issue18242"
 			 Title="Issue 18242">
-	<VerticalStackLayout
-		Padding="12">
-		<Label
+    <VerticalStackLayout
+		Padding="12"
+        Grid.Column="0">
+        <Label
 			AutomationId="WaitForStubControl"
 			Text="1. The image must adapt to the size of the Button and be in the position determined by the ContentLayout property."/>
-		<Label 
+        <Label 
 			Text="Button with Height"/>
-		<Button
+        <Button
 			HeightRequest="50"
 			ImageSource="dotnet_bot.png"
 			ContentLayout="Left,10"
 			Text="Button"/>
-		<Label 
+        <Label 
 			Text="Button without Height"/>
-		<Button
+        <Button
 			ImageSource="dotnet_bot.png"
 			ContentLayout="Left,10"
 			Text="Button"/>
-		<Label 
+        <Label 
 			Text="2. The image must adapt to the size of the ImageButton."/>
-		<Label 
+        <Label 
 			Text="ImageButton with Height"/>
-		<ImageButton 
+        <ImageButton 
 			HeightRequest="30" 
 			WidthRequest="50" 
 			Source="dotnet_bot.png"/>
-		<Label 
-		   Text="ImageButton without Height"/>
-		<ImageButton 
-		   WidthRequest="50" 
-		   Source="dotnet_bot.png"/>
-	</VerticalStackLayout>
+        <Label 
+		    Text="ImageButton without Height"/>
+        <ImageButton 
+		    WidthRequest="50" 
+		    Source="dotnet_bot.png"/>
+    </VerticalStackLayout>
 </ContentPage>

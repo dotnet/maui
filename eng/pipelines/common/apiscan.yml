@@ -1,6 +1,6 @@
 parameters:
-  poolName: VSEngSS-MicroBuild2022-1ES
-  vmImage: ''
+  poolName: MAUI-1ESPT
+  vmImage: '1ESPT-Windows2022'
   os: windows
   softwareName: 'MAUI'
   softwareVersion: 8.0
@@ -21,3 +21,5 @@ stages:
       tsaConfigFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\tsaoptions-v2.json'
       apiScanSoftwareName: ${{ parameters.softwareName }}
       apiScanSoftwareVersionNum: ${{ parameters.softwareVersion }}
+      apiScanAuthConnectionString: 'runAs=App;AppId=$(ApiScanClientId)'
+

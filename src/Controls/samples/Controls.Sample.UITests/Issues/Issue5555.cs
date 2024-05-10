@@ -6,58 +6,64 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 5555, "Memory leak when SwitchCell or EntryCell", PlatformAffected.iOS)]
-	public class Issue5555 : TestContentPage
+	public class Issue5555 : NavigationPage
 	{
-		public static Label DestructorCount = new Label() { Text = "0" };
-		protected override void Init()
+		public Issue5555() : base(new TestPage())
 		{
-			var instructions = new Label
-			{
-				FontSize = 16,
-				Text = "Click 'Push page' twice"
-			};
+		}
 
-			var result = new Label
+		public class TestPage : TestContentPage
+		{
+			public static Label DestructorCount = new Label() { Text = "0" };
+			protected override void Init()
 			{
-				Text = "Success",
-				AutomationId = "SuccessLabel",
-				IsVisible = false
-			};
-
-			var list = new List<WeakReference>();
-
-			var checkButton = new Button
-			{
-				Text = "Check Result",
-				AutomationId = "CheckResult",
-				IsVisible = false,
-				Command = new Command(async () =>
+				var instructions = new Label
 				{
-					if (list.Count < 2)
-					{
-						instructions.Text = "Click 'Push page' again";
-						return;
-					}
+					FontSize = 16,
+					Text = "Click 'Push page' twice"
+				};
 
-					try
-					{
-						await GarbageCollectionHelper.WaitForGC(2500, list.ToArray());
-						result.Text = "Success";
-						result.IsVisible = true;
-						instructions.Text = "";
-					}
-					catch (Exception)
-					{
-						instructions.Text = "Failed";
-						result.IsVisible = false;
-						return;
-					}
-				})
-			};
+				var result = new Label
+				{
+					Text = "Success",
+					AutomationId = "SuccessLabel",
+					IsVisible = false
+				};
 
-			Content = new StackLayout
-			{
-				Children = {
+				var list = new List<WeakReference>();
+
+				var checkButton = new Button
+				{
+					Text = "Check Result",
+					AutomationId = "CheckResult",
+					IsVisible = false,
+					Command = new Command(async () =>
+					{
+						if (list.Count < 2)
+						{
+							instructions.Text = "Click 'Push page' again";
+							return;
+						}
+
+						try
+						{
+							await GarbageCollectionHelper.WaitForGC(2500, list.ToArray());
+							result.Text = "Success";
+							result.IsVisible = true;
+							instructions.Text = "";
+						}
+						catch (Exception)
+						{
+							instructions.Text = "Failed";
+							result.IsVisible = false;
+							return;
+						}
+					})
+				};
+
+				Content = new StackLayout
+				{
+					Children = {
 					DestructorCount,
 					instructions,
 					result,
@@ -88,16 +94,16 @@ namespace Maui.Controls.Sample.Issues
 					},
 					checkButton
 				}
-			};
-		}
+				};
+			}
 
-		class LeakPage : ContentPage
-		{
-			public LeakPage()
+			class LeakPage : ContentPage
 			{
-				Content = new StackLayout
+				public LeakPage()
 				{
-					Children = {
+					Content = new StackLayout
+					{
+						Children = {
 					new Entry { Text = "LeakPage" },
 					new TableView
 					{
@@ -111,12 +117,13 @@ namespace Maui.Controls.Sample.Issues
 						}
 					}
 				}
-				};
-			}
+					};
+				}
 
-			~LeakPage()
-			{
-				System.Diagnostics.Debug.WriteLine("LeakPage Finalized");
+				~LeakPage()
+				{
+					System.Diagnostics.Debug.WriteLine("LeakPage Finalized");
+				}
 			}
 		}
 	}

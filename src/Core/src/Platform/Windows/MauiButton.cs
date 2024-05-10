@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Platform
 			Grid.SetColumn(_image, 0);
 			Grid.SetColumn(_textBlock, 1);
 
-			ColumnDefinitions[0].Width = UI.Xaml.GridLength.Auto;
+			ColumnDefinitions[0].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Auto);
 			ColumnDefinitions[1].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
 		}
 
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Platform
 			Grid.SetColumn(_textBlock, 0);
 
 			ColumnDefinitions[0].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
-			ColumnDefinitions[1].Width = UI.Xaml.GridLength.Auto;
+			ColumnDefinitions[1].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Auto);
 		}
 
 		public void LayoutImageTop(double spacing)
@@ -91,6 +91,9 @@ namespace Microsoft.Maui.Platform
 
 			Grid.SetRow(_image, 0);
 			Grid.SetRow(_textBlock, 1);
+
+			RowDefinitions[0].Height = new UI.Xaml.GridLength(0, UI.Xaml.GridUnitType.Auto);
+			RowDefinitions[1].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
 		}
 
 		public void LayoutImageBottom(double spacing)
@@ -99,6 +102,9 @@ namespace Microsoft.Maui.Platform
 
 			Grid.SetRow(_image, 1);
 			Grid.SetRow(_textBlock, 0);
+
+			RowDefinitions[0].Height = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star);
+			RowDefinitions[1].Height = new UI.Xaml.GridLength(0, UI.Xaml.GridUnitType.Auto);
 		}
 
 		double AdjustSpacing(double spacing)

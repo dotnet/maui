@@ -82,7 +82,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST && __SHELL__
 
 		[Test]
-		[FailsOnMauiAndroid]
 		public void Issue9088SwipeViewConfictWithShellMenuSwipeInFromLeft()
 		{
 			RunningApp.WaitForElement(x => x.Marked(SwipeViewId));
