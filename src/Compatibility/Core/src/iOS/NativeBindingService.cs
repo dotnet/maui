@@ -8,7 +8,6 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
-	[Preserve(AllMembers = true)]
 	class NativeBindingService : INativeBindingService
 	{
 		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
