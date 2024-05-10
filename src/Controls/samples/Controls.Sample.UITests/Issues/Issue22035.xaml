@@ -8,7 +8,6 @@
     Padding="30,0"
     VerticalOptions="Center">
     <Label 
-      AutomationId="WaitForStubControl"
       Text="Navigate to the page with the CarouselView several times. If the CarouselView always loads items without exceptions, the test passes."/>
     <Button
       x:Name="NavigateBtn"

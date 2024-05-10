@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
+	[Category(UITestCategories.CarouselView)]
 	public class Issue22035 : _IssuesUITest
 	{
 		public Issue22035(TestDevice device) : base(device)
@@ -18,26 +19,15 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
 				"This test is failing, likely due to product issue. More information: https://github.com/dotnet/maui/issues/22287");
 
-			App.WaitForElement("WaitForStubControl");
-
-			// 1. Click a button to navigate to the CarouselView Page.
-			App.Tap("TestNavigateButton");
-
-			// 2. Tap a Button to load items to the CarouselView.
-			App.WaitForElement("TestLoadButton");
-			App.Tap("TestLoadButton");
-			App.WaitForElement("Item 1");
-
-			// 3. Navigate back to repeat the process.
-			App.Back();
-
-			App.Tap("TestNavigateButton");
-
-			App.WaitForElement("TestLoadButton");
-			App.Tap("TestLoadButton");
-			App.WaitForElement("Item 1");
-
-			App.Back();
+			for (int i = 0; i > 2; i++)
+			{
+				App.WaitForElement("TestNavigateButton");
+				App.Tap("TestNavigateButton");
+				App.WaitForElement("TestLoadButton");
+				App.Tap("TestLoadButton");
+				App.WaitForElement("Item 1");
+				App.Back();
+			}
 
 			// Without exceptions, the test has passed.
 		}
