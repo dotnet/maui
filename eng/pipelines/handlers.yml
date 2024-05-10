@@ -199,6 +199,11 @@ stages:
             demands:
               - macOS.Name -equals Ventura
               - macOS.Architecture -equals x64
+          variables:
+            - name: _buildScript
+              value: $(Build.SourcesDirectory)/build.cmd -ci
+            - name: _BuildConfig
+              value: Release
           steps:
             - template: common/pack.yml
               parameters:
@@ -207,6 +212,12 @@ stages:
                 artifact:  ${{ PackPlatform.artifact }}
                 artifactsPath: '(Build.ArtifactStagingDirectory)'
                 artifactBinaries: 'pack-binaries'
+                buildConfiguration: $(_BuildConfig)
+                dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
+                buildScript: $(_buildScript)
+                repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
+                repoLogPath: $(Build.Arcade.LogsPath)
+                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                 prepareSteps:
                   - template: common/provision.yml

@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(item1);
 			shell.Items.Add(item2);
 
-			Assert.ThrowsAnyAsync<Exception>(async () => await shell.GoToAsync($"domestic"));
+			await Assert.ThrowsAnyAsync<Exception>(async () => await shell.GoToAsync($"domestic"));
 		}
 
 
@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(item2);
 
 			Routing.RegisterRoute("catdetails", typeof(ContentPage));
-			Assert.ThrowsAnyAsync<Exception>(async () => await shell.GoToAsync($"cats/catdetails?name=domestic"));
+			await Assert.ThrowsAnyAsync<Exception>(async () => await shell.GoToAsync($"cats/catdetails?name=domestic"));
 
 			// once relative routing with a stack is fixed then we can remove the above exception check and add below back in
 			// await shell.GoToAsync($"cats/catdetails?name=domestic")

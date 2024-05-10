@@ -19,12 +19,6 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(SliderGallery);
 		}
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
-		}
-
 		[Test]
 		[Category(UITestCategories.Slider)]
 		[Description("Set different slider values")]
