@@ -32,7 +32,16 @@ steps:
         skipProvisioning: false
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
- 
+      
+  - task: Bash@3
+    displayName: Install Xamarin Components via boots
+    inputs:
+      targetType: 'inline'
+      script: |
+        dotnet tool install -g boots
+        boots --stable Xamarin.Android
+        boots --stable Xamarin.iOS
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
