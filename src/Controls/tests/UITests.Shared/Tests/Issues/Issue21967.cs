@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using OpenQA.Selenium;
 using UITest.Appium;
 using UITest.Core;
@@ -23,8 +24,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.Tap("Resize");
 			var smallSize = App.WaitForElement("Item1").GetRect();
 
-            Assert.Greater(largestSize.Width, mediumSize.Width);
-            Assert.Greater(mediumSize.Width, smallSize.Width);
+            ClassicAssert.Greater(largestSize.Width, mediumSize.Width);
+			ClassicAssert.Greater(mediumSize.Width, smallSize.Width);
 		}
         
 		[Test]
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void CollectionViewFirstItemCorrectlySetsTheMeasure()
 		{
 			var itemSize = App.WaitForElement("Item1").GetRect();
-            Assert.Greater(200, itemSize.Height);
+			ClassicAssert.Greater(200, itemSize.Height);
 		}
         
 		[Test]
@@ -52,8 +53,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				App.SetOrientationPortrait();
 				var itemSizePortrait2 = App.WaitForElement("Item1").GetRect();
 
-				Assert.Greater(itemSizeLandscape.Width, itemSizePortrait.Width);
-				Assert.AreEqual(itemSizePortrait2.Width, itemSizePortrait.Width);
+				ClassicAssert.Greater(itemSizeLandscape.Width, itemSizePortrait.Width);
+				ClassicAssert.AreEqual(itemSizePortrait2.Width, itemSizePortrait.Width);
 			}
 			finally
 			{
