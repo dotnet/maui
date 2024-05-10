@@ -20,9 +20,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			var button = new UIButton(UIButtonType.System);
 
+			var useConfiguration = true;
+
 			// Starting with iOS 15, we can use the button.Configuration and assign future UIButton.Configuration.ContentInsets here instead of the deprecated UIButton.ContentEdgeInsets.
-			// It is important to note that the configuration will change any set style changes so we will do this right after creating the button.
-			if (OperatingSystem.IsIOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && useConfiguration)
 			{
 				var config = UIButtonConfiguration.PlainButtonConfiguration;
 				button.Configuration = config;

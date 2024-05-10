@@ -48,12 +48,7 @@ namespace Microsoft.Maui.Platform
 
 			var color = button.TextColor.ToPlatform();
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration config)
-			{
-				// config.BaseForegroundColor = color;
-				// platformButton.Configuration = config;
-			}
-			else
+			if (!(OperatingSystem.IsIOSVersionAtLeast(15) && platformButton.Configuration is UIButtonConfiguration))
 			{
 				platformButton.SetTitleColor(color, UIControlState.Normal);
 				platformButton.SetTitleColor(color, UIControlState.Highlighted);
