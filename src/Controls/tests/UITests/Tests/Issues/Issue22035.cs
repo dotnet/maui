@@ -24,6 +24,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.Tap("TestNavigateButton");
 
 			// 2. Tap a Button to load items to the CarouselView.
+			App.WaitForElement("TestLoadButton");
 			App.Tap("TestLoadButton");
 			App.WaitForNoElement("Item 1");
 
@@ -32,6 +33,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			App.Tap("TestNavigateButton");
 
+			App.WaitForElement("TestLoadButton");
 			App.Tap("TestLoadButton");
 			App.WaitForNoElement("Item 1");
 
