@@ -17,7 +17,10 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		public bool Inherited { get; set; } = false;
 
 
-		public StylePropertyAttribute(string cssPropertyName, Type targetType, string bindablePropertyName)
+		public StylePropertyAttribute(
+			string cssPropertyName, 
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)] Type targetType,
+			string bindablePropertyName)
 		{
 			CssPropertyName = cssPropertyName;
 			BindablePropertyName = bindablePropertyName;
