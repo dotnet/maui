@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
+    
+  <PropertyGroup>
+    <TargetFrameworks>$(_MauiDotNetTfm)</TargetFrameworks>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <GenerateMSBuildEditorConfigFile>False</GenerateMSBuildEditorConfigFile>
+    <RootNamespace>UITests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="snapshots\android\" />
+    <Folder Include="snapshots\ios\" />
+    <Folder Include="snapshots\windows\" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <DefineConstants>$(DefineConstants);IOS;IOSUITEST</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <DefineConstants>$(DefineConstants);WINDOWS;WINTEST</DefineConstants>
+  </PropertyGroup>
+  
+</Project>

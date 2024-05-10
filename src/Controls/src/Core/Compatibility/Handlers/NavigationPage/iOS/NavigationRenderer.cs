@@ -499,6 +499,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateHideNavigationBarSeparator();
 			}
+			else if (e.PropertyName == PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
+			{
+				UpdateHomeIndicatorAutoHidden();
+			}
+			else if (e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
+			{
+				UpdateStatusBarHidden();
+			}
 		}
 
 		void ValidateNavbarExists(Page newCurrentPage)
@@ -507,6 +515,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			//we will need to relayout. This is because Current is updated async of the layout happening
 			if (_hasNavigationBar != NavigationPage.GetHasNavigationBar(newCurrentPage))
 				View.InvalidateMeasure(Element);
+		}
+
+		void UpdateHomeIndicatorAutoHidden()
+		{
+			if (Element == null)
+				return;
+
+			SetNeedsUpdateOfHomeIndicatorAutoHidden();
+		}
+
+		void UpdateStatusBarHidden()
+		{
+			if (Element == null)
+				return;
+
+			SetNeedsStatusBarAppearanceUpdate();
 		}
 
 		void UpdateHideNavigationBarSeparator()
@@ -1483,6 +1507,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				View.SetNeedsLayout();
 				ParentViewController?.View.SetNeedsLayout();
+				SetNeedsStatusBarAppearanceUpdate();
 			}
 
 			void TrackerOnCollectionChanged(object sender, EventArgs eventArgs)

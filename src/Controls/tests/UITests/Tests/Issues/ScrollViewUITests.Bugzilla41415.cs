@@ -24,12 +24,12 @@ namespace Microsoft.Maui.AppiumTests
 				"This test is failing, likely due to product issue");
 
 			App.WaitForElement(ButtonId);
-			App.Click(ButtonId);
+			App.Tap(ButtonId);
 			App.WaitForNoElement("x: 100");
 			App.WaitForNoElement("y: 100");
 			App.WaitForNoElement("z: True", timeout: TimeSpan.FromSeconds(25));
 			App.WaitForNoElement("a: True");
-			App.Click(ButtonId);
+			App.Tap(ButtonId);
 			App.WaitForNoElement("x: 200");
 			App.WaitForNoElement("y: 100");
 			App.WaitForNoElement("z: True", timeout: TimeSpan.FromSeconds(25));

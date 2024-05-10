@@ -34,7 +34,7 @@ namespace Microsoft.Maui.AppiumTests
 			else
 				app.EnterText("TargetView", "KeyboardScrollingEntriesPage");
 
-			app.Click("GoButton");
+			App.Tap("GoButton");
 
 			// Entries 6 - 14 hit a group of interesting areas on scrolling
 			// depending on the type of iOS device.
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		static void ClickText(IApp app, string marked, bool isEditor, out bool didReachEndofPage)
 		{
-			app.Click(marked);
+			app.Tap(marked);
 			didReachEndofPage = CheckIfViewAboveKeyboard(app, marked, isEditor);
 			if (didReachEndofPage)
 				HideKeyboard(app, (app as AppiumApp)?.Driver, isEditor);
@@ -128,10 +128,10 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			app.WaitForElement("TargetView");
 			app.EnterText("TargetView", "KeyboardScrollingEntryNextEditorPage");
-			app.Click("GoButton");
+			app.Tap("GoButton");
 
 			app.WaitForElement("Entry1");
-			app.Click("Entry1");
+			app.Tap("Entry1");
 			CheckIfViewAboveKeyboard(app, "Entry1", false);
 			NextiOSKeyboardPress((app as AppiumApp)?.Driver);
 
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				var entry = $"Entry{i}";
 				app.WaitForElement(entry);
-				app.Click(entry);
+				app.Tap(entry);
 				CheckIfViewAboveKeyboard(app, entry, false);
 				HideKeyboard(app, (app as AppiumApp)?.Driver, false);
 			}

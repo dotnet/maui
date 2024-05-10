@@ -17,7 +17,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			_ = App.WaitForElement("TapHere");
 
-			App.Click("TapHere");
+			App.Tap("TapHere");
 
 			App.WaitForElement("TapAccepted");
 			App.WaitForElement("Success");

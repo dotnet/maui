@@ -11,17 +11,14 @@
   <PropertyGroup>
     <CoreCompileDependsOn>
       SetVersions;
-      VersionInfoReport;
       $(CoreCompileDependsOn);
     </CoreCompileDependsOn>
     <GenerateNuspecDependsOn>
       SetVersions;
-      VersionInfoReport;
       $(GenerateNuspecDependsOn);
     </GenerateNuspecDependsOn>
     <GetPackageVersionDependsOn>
       SetVersions;
-      VersionInfoReport;
       $(GetPackageVersionDependsOn);
     </GetPackageVersionDependsOn>
     <SetVersionsBefore>
@@ -29,40 +26,23 @@
       $(SetVersionsBefore);
     </SetVersionsBefore>
     <SetVersionsDependsOn>
-      GitInfo;
-      GitVersion;
       $(SetVersionsDependsOn);
     </SetVersionsDependsOn>
-    <SetGitInfoPropsBefore>
-      GitInfo;
-      GitVersion;
-    </SetGitInfoPropsBefore>
   </PropertyGroup>
 
-  <Target Name="SetGitInfoProps" BeforeTargets="$(SetGitInfoPropsBefore)">
-    <PropertyGroup>
-      <GitDefaultBranch>main</GitDefaultBranch>
-      <GitIgnoreBranchVersion>true</GitIgnoreBranchVersion>
-      <GitIgnoreTagVersion>true</GitIgnoreTagVersion>
-    </PropertyGroup>
-  </Target>
   <Target Name="SetVersions" BeforeTargets="$(SetVersionsBefore)" DependsOnTargets="$(SetVersionsDependsOn)" Returns="$(Version)">
     <PropertyGroup>
       <SemVerLabel>$([System.Text.RegularExpressions.Regex]::Match($(GitTag), $(RegexTag)))</SemVerLabel>
-      <GitDefaultBranch>main</GitDefaultBranch>
-      <GitIgnoreBranchVersion>true</GitIgnoreBranchVersion>
-      <GitIgnoreTagVersion>true</GitIgnoreTagVersion>
       <GitSemVerLabel Condition=" '$(GitTag)' != '' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(GitTag)', $(RegexTag))) ">$(SemVerLabel)</GitSemVerLabel> 
       <GitSemVerLabel  Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</GitSemVerLabel>
-      <GitSemVerDashLabel Condition="'$(GitSemVerLabel)' != ''" >-$(GitSemVerLabel)</GitSemVerDashLabel>
+      <GitSemVerDashLabel Condition="'$(PreReleaseVersionLabel)' != ''" >-$(PreReleaseVersionLabel)</GitSemVerDashLabel>
     </PropertyGroup>
     <ItemGroup>
-      <VersionMetadata Condition="'$(GitSemVerDashLabel)' == '' and '$(GitCommits)' != ''" Include="$(GitCommits)" />
-
+     
       <VersionMetadata Condition="$(CI) and '$(BUILD_REASON)' == 'PullRequest'"
                        Include="pr.$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)"/>
 
-      <VersionMetadata Condition="'$(GitCommit)' != ''"  Include="sha.$(GitCommit)"/>
+      <VersionMetadata Condition="'$(SourceLinkId)' != ''"  Include="sha.$(SourceLinkId)"/>
 
       <VersionMetadata Condition="$(CI)"
                        Include="azdo.$(BUILD_BUILDID)"/>
@@ -71,49 +51,23 @@
     <PropertyGroup>
       <VersionMetadataLabel>@(VersionMetadata -> '%(Identity)', '-')</VersionMetadataLabel>
       <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
-      <Version>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)</Version>
-      <PackageReferenceVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</PackageReferenceVersion>
-      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)$(GitSemVerDashLabel).$(BUILDVERSION)</PackageReferenceVersion>
-      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</PackageReferenceVersion>
-      <VSComponentVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)</VSComponentVersion>
-      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION)</VSComponentVersion>
-      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch).0</VSComponentVersion>
+      <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion)</Version>
+      <PackageReferenceVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(GitSemVerDashLabel)</PackageReferenceVersion>
+      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(MajorVersion).$(MinorVersion).$(PatchVersion)$(GitSemVerDashLabel).$(BUILDVERSION)</PackageReferenceVersion>
+      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageReferenceVersion>
+      <VSComponentVersion>$(MajorVersion).$(MinorVersion).$(GitBaseVersionPatch)</VSComponentVersion>
+      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).$(BUILDVERSION)</VSComponentVersion>
+      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).0</VSComponentVersion>
       <PackageVersion>$(PackageReferenceVersion)$(VersionMetadataPlusLabel)</PackageVersion>
     </PropertyGroup>
 
     <PropertyGroup>
       <InformationalVersion>$(PackageVersion)</InformationalVersion>
-      <FileVersion>$(Version).$(GitCommits)</FileVersion>
-      <AssemblyVersion>1.0.0.0</AssemblyVersion> <!-- THIS SHALL REMAIN 1.0.0.0 -->
+      <FileVersion>$(Version).0</FileVersion>
     </PropertyGroup>
-
-    <ItemGroup>
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
-        <_Parameter1>Version</_Parameter1>
-        <_Parameter2>1.0.0.0</_Parameter2> <!-- THIS SHALL REMAIN 1.0.0.0 -->
-      </AssemblyAttribute>
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
-        <_Parameter1>PackageVersion</_Parameter1>
-        <_Parameter2>$(PackageVersion)</_Parameter2>
-      </AssemblyAttribute>
-    </ItemGroup>
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
     <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
-  </Target>
-
-  <Target Name="VersionInfoReport" DependsOnTargets="SetVersions">
-   <ItemGroup>
-    <Message Importance="$(GitInfoReportImportance)" Text="Version Info:
-  AssemblyVersion:        $(AssemblyVersion)
-  FileVersion:            $(FileVersion)
-  InformationalVersion:   $(InformationalVersion)
-  PackageVersion:         $(PackageVersion)
-  Version:        $(Version)
-  VersionPrefix:  $(VersionPrefix)
-  VersionSuffix:  $(VersionSuffix)
-"/>
-   </ItemGroup>
   </Target>
 
 </Project>

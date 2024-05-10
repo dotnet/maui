@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Views;
@@ -22,12 +22,67 @@ using Xunit;
 using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AView = Android.Views.View;
+using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		[Fact(DisplayName = "No crash going back using 'Shell.Current.GoToAsync(\"..\")'")]
+		public async Task GoingBackUsingGoToAsyncMethod()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+
+			var page2Content = new Label { Text = "Test" };
+			var page2 = new ContentPage { Content = page2Content };
+
+			var pointerGestureRecognizer = new PointerGestureRecognizer();
+			pointerGestureRecognizer.PointerPressed += (sender, args) =>
+			{
+				Console.WriteLine("Page Content pressed");
+			};
+
+			page2Content.GestureRecognizers.Add(pointerGestureRecognizer);
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Route = "Item2",
+							Content = page2
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page1);
+				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("..");
+
+				await shell.GoToAsync("//Item1");
+				await shell.GoToAsync("//Item2");
+				await shell.Navigation.PopAsync();
+
+				await shell.GoToAsync("//Item1");
+				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("..");
+			});
+		}
+
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]

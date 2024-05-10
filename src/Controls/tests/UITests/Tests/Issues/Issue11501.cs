@@ -23,13 +23,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			try
 			{
 				App.WaitForElement(scenario);
-				App.Click(scenario);
+				App.Tap(scenario);
 				App.WaitForElement("BackgroundMe");
 				App.BackgroundApp();
 				App.WaitForNoElement("BackgroundMe");
 				App.ForegroundApp();
 				App.WaitForElement("Restore");
-				App.Click("Restore");
+				App.Tap("Restore");
 			}
 			catch
 			{

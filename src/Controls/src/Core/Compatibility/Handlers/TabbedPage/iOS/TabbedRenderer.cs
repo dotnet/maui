@@ -88,6 +88,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateBarTextColor();
 			UpdateSelectedTabColors();
 			UpdateBarTranslucent();
+			UpdatePageSpecifics();
 		}
 
 		public UIViewController ViewController
@@ -209,6 +210,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (controller == null)
 					return;
 
+				SetNeedsUpdateOfHomeIndicatorAutoHidden();
+				SetNeedsStatusBarAppearanceUpdate();
 				SelectedViewController = controller;
 			}
 			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
@@ -223,8 +226,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateCurrentPagePreferredStatusBarUpdateAnimation();
 			else if (e.PropertyName == TabbedPage.SelectedTabColorProperty.PropertyName || e.PropertyName == TabbedPage.UnselectedTabColorProperty.PropertyName)
 				UpdateSelectedTabColors();
-			else if (e.PropertyName == PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
-				UpdatePrefersHomeIndicatorAutoHiddenOnPages();
+			else if (e.PropertyName == PrefersHomeIndicatorAutoHiddenProperty.PropertyName || e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
+				UpdatePageSpecifics();
 			else if (e.PropertyName == TabbedPageConfiguration.TranslucencyModeProperty.PropertyName)
 				UpdateBarTranslucent();
 
@@ -265,13 +268,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		void UpdatePrefersHomeIndicatorAutoHiddenOnPages()
+		void UpdatePageSpecifics()
 		{
-			bool isHomeIndicatorHidden = Tabbed.OnThisPlatform().PrefersHomeIndicatorAutoHidden();
-			for (var i = 0; i < ViewControllers.Length; i++)
-			{
-				Tabbed.GetPageByIndex(i).OnThisPlatform().SetPrefersHomeIndicatorAutoHidden(isHomeIndicatorHidden);
-			}
+			ChildViewControllerForHomeIndicatorAutoHidden.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			ChildViewControllerForStatusBarHidden().SetNeedsStatusBarAppearanceUpdate();
 		}
 
 		void Reset()
