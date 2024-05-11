@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Platform
 		public ContentPanel()
 		{
 			_borderPath = new Path();
-			EnsureBorderPath();
+			EnsureBorderPath(containsCheck: false);
 
 			SizeChanged += ContentPanelSizeChanged;
 		}
@@ -72,9 +72,18 @@ namespace Microsoft.Maui.Platform
 			UpdateClip(_borderStroke?.Shape, width, height);
 		}
 
-		internal void EnsureBorderPath()
+		internal void EnsureBorderPath(bool containsCheck = true)
 		{
-			if (!Children.Contains(_borderPath))
+			if (containsCheck)
+			{
+				var children = Children;
+
+				if (!children.Contains(_borderPath))
+				{
+					children.Add(_borderPath);
+				}
+			}
+			else
 			{
 				Children.Add(_borderPath);
 			}
@@ -140,8 +149,12 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (!Children.Contains(_content))
-				Children.Add(_content);
+			var children = Children;
+
+			if (!children.Contains(_content))
+			{
+				children.Add(_content);
+			}
 		}
 
 		void UpdateClip(IShape? borderShape, double width, double height)
