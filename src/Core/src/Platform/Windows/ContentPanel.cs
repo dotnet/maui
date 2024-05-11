@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateBackground(Paint? background)
 		{
-			if (_borderPath == null)
+			if (_borderPath is null)
 			{
 				return;
 			}
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Platform
 
 		void AddContent(FrameworkElement? content)
 		{
-			if (content == null)
+			if (content is null)
 			{
 				return;
 			}
