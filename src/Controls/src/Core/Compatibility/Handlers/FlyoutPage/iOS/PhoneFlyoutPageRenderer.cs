@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -663,14 +664,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								targetFrame.X = (nfloat)Math.Min(_flyoutController.View.Frame.Width, Math.Max(0, motion));
 
 							targetFrame.X = targetFrame.X * directionModifier;
-							if (_applyShadow)
-							{
-								var flyoutWidth = _flyoutController.View.Frame.Width;
-								var openProgress = !IsRTL
-									? targetFrame.X / flyoutWidth
-									: ((float)Element.Bounds.Width - targetFrame.Right) / flyoutWidth;
-								ApplyDetailShadow((nfloat)openProgress);
-							}
+
+							ApplyShadow(targetFrame);
 
 							detailView.Frame = targetFrame;
 						}
@@ -695,13 +690,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								targetFrame.X = (float)Element.Bounds.Width - (flyoutWidth + targetFrame.X);
 							}
 
-							if (_applyShadow)
-							{
-								var openProgress = !IsRTL
-									? (targetFrame.X + flyoutWidth) / flyoutWidth
-									: ((float)Element.Bounds.Width - targetFrame.X) / flyoutWidth;
-								ApplyDetailShadow((nfloat)openProgress);
-							}
+							ApplyShadow(targetFrame);
 
 							flyoutView.Frame = targetFrame;
 						}
@@ -760,6 +749,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_panGesture.ShouldReceiveTouch = shouldReceive;
 			_panGesture.MaximumNumberOfTouches = 2;
 			View.AddGestureRecognizer(_panGesture);
+		}
+
+		void ApplyShadow(CGRect targetFrame)
+		{
+			if (!_applyShadow)
+				return;
+
+			var flyoutWidth = _flyoutController.View.Frame.Width;
+			nfloat openProgress;
+
+			if (!FlyoutOverlapsDetailsInPopoverMode)
+			{
+				openProgress = !IsRTL
+					? targetFrame.X / flyoutWidth
+					: ((float)Element.Bounds.Width - targetFrame.Right) / flyoutWidth;
+			}
+			else
+			{
+				openProgress = !IsRTL
+					? (targetFrame.X + flyoutWidth) / flyoutWidth
+					: ((float)Element.Bounds.Width - targetFrame.X) / flyoutWidth;
+			}
+
+			ApplyDetailShadow(openProgress);
 		}
 
 		static bool IsSwipeView(UIView view)
