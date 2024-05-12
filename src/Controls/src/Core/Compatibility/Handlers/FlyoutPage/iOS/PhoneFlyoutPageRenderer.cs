@@ -694,7 +694,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 							if (_applyShadow)
 							{
-								var openProgress = targetFrame.X / flyoutWidth;
+								var openProgress = !IsRTL
+									? (targetFrame.X + flyoutWidth) / flyoutWidth
+									: ((float)Element.Bounds.Width - targetFrame.X) / flyoutWidth;
 								ApplyDetailShadow((nfloat)openProgress);
 							}
 
