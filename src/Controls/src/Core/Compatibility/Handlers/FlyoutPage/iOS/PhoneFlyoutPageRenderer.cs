@@ -665,7 +665,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							targetFrame.X = targetFrame.X * directionModifier;
 							if (_applyShadow)
 							{
-								var openProgress = targetFrame.X / _flyoutController.View.Frame.Width;
+								var flyoutWidth = _flyoutController.View.Frame.Width;
+								var openProgress = !IsRTL
+									? targetFrame.X / flyoutWidth
+									: ((float)Element.Bounds.Width - targetFrame.Right) / flyoutWidth;
 								ApplyDetailShadow((nfloat)openProgress);
 							}
 
