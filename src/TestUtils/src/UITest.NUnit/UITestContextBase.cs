@@ -43,7 +43,7 @@ namespace UITest.Appium.NUnit
 			InitialSetup(context, false);
 		}
 
-		public void Reset()
+		public virtual void Reset()
 		{
 			if (_context == null)
 			{

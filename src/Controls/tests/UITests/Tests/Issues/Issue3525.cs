@@ -17,13 +17,12 @@ public class Issue3525 : _IssuesUITest
 	public override string Issue => "Finicky tap gesture recognition on Spans";
 
 	[Test]
+	[Category(UITestCategories.Label)]
 	public void SpanRegionClicking()
 	{
-		if (Device == TestDevice.Mac ||
-			Device == TestDevice.iOS ||
-			Device == TestDevice.Windows)
+		if (Device == TestDevice.Mac)
 		{
-			Assert.Ignore("This test is failing on iOS/Mac Catalyst/Windows because the feature is not yet implemented: https://github.com/dotnet/maui/issues/4734");
+			Assert.Ignore("Click (x, y) pointer type mouse is not implemented.");
 		}
 
 		var label = App.WaitForElement(kLabelTestAutomationId);
@@ -33,11 +32,11 @@ public class Issue3525 : _IssuesUITest
 		var lineCenterOffset = lineHeight / 2;
 		var y = location.Y;
 
-		App.Click(location.X + 10, y + lineCenterOffset);
+		App.TapCoordinates(location.X + 10, y + lineCenterOffset);
 
-		App.Click(location.X + 10, y + (lineHeight * 2) + lineCenterOffset);
+		App.TapCoordinates(location.X + 10, y + (lineHeight * 2) + lineCenterOffset);
 
-		App.Click(location.X + 10, y + (lineHeight * 4) + lineCenterOffset);
+		App.TapCoordinates(location.X + 10, y + (lineHeight * 4) + lineCenterOffset);
 
 		App.WaitForTextToBePresentInElement(kClickCountAutomationId, $"{kClickCount}{1}");
 	}

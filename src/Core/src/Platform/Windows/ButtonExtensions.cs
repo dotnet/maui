@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -159,39 +160,37 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformButton.GetContent<WImage>() is WImage nativeImage)
 			{
-				nativeImage.Source = nativeImageSource;
+				// Stretch to fill
+				nativeImage.Stretch = UI.Xaml.Media.Stretch.Uniform;
 
-				if (nativeImageSource is not null)
+				// If we're a CanvasImageSource (font image source), we need to explicitly set the image height
+				// to the desired size of the font, otherwise it will be stretched to the available space
+				if (nativeImageSource is CanvasImageSource canvas)
 				{
-					// set the base size if we can
-					{
-						var imageSourceSize = nativeImageSource.GetImageSourceSize(platformButton);
-						nativeImage.Width = imageSourceSize.Width;
-						nativeImage.Height = imageSourceSize.Height;
-					}
+					var size = canvas.GetImageSourceSize(platformButton);
+					nativeImage.Width = size.Width;
+					nativeImage.Height = size.Height;
+					nativeImage.MaxHeight = double.PositiveInfinity;
+				}
 
-					// BitmapImage is a special case that has an event when the image is loaded
-					// when this happens, we want to resize the button
-					if (nativeImageSource is BitmapImage bitmapImage)
+				// Ensure that we only scale images down and never up
+				if (nativeImageSource is BitmapImage bitmapImage)
+				{
+					// This will fire after `nativeImageSource.Source` is set
+					bitmapImage.ImageOpened += OnImageOpened;
+					void OnImageOpened(object sender, RoutedEventArgs e)
 					{
-						bitmapImage.ImageOpened += OnImageOpened;
+						bitmapImage.ImageOpened -= OnImageOpened;
 
-						void OnImageOpened(object sender, RoutedEventArgs e)
+						var actualImageSource = sender as BitmapImage;
+						if (actualImageSource is not null)
 						{
-							bitmapImage.ImageOpened -= OnImageOpened;
-
-							// Check if the image that just loaded is still the current image
-							var actualImageSource = sender as BitmapImage;
-
-							if (actualImageSource is not null && nativeImage.Source == actualImageSource)
-								nativeImage.Height = nativeImage.Width = Primitives.Dimension.Unset;
-
-							if (platformButton.Parent is FrameworkElement frameworkElement)
-								frameworkElement.InvalidateMeasure();
-						};
+							nativeImage.MaxHeight = nativeImageSource.GetImageSourceSize(platformButton).Height;
+						}
 					}
 				}
 
+				nativeImage.Source = nativeImageSource;
 				nativeImage.Visibility = nativeImageSource == null
 					? UI.Xaml.Visibility.Collapsed
 					: UI.Xaml.Visibility.Visible;

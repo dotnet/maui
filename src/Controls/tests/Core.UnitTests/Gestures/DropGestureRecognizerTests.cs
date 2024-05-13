@@ -80,11 +80,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		[Theory]
 		[InlineData(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
-		public void DateTextPackageCorrectlySetsOnCompatibleTarget(Type fieldType, string result)
+		public async Task DateTextPackageCorrectlySetsOnCompatibleTarget(Type fieldType, string result)
 		{
 			var date = DateTime.Parse(result);
 			result = date.ToString();
-			TextPackageCorrectlySetsOnCompatibleTarget(fieldType, result);
+			await TextPackageCorrectlySetsOnCompatibleTarget(fieldType, result);
 		}
 
 		[Fact]

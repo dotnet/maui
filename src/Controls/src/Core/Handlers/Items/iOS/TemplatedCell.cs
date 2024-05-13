@@ -18,7 +18,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected nfloat ConstrainedDimension;
 
-		public DataTemplate CurrentTemplate { get; private set; }
+		private WeakReference<DataTemplate> _currentTemplate;
+
+		public DataTemplate CurrentTemplate
+		{
+			get => _currentTemplate is not null && _currentTemplate.TryGetTarget(out var target) ? target : null;
+			private set => _currentTemplate = value is null ? null : new(value);
+		}
 
 		// Keep track of the cell size so we can verify whether a measure invalidation 
 		// actually changed the size of the cell
@@ -56,6 +62,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ConstrainedSize = default;
 			ConstrainedDimension = default;
+		}
+
+		internal void Unbind()
+		{
+			if (PlatformHandler?.VirtualView is View view)
+			{
+				view.MeasureInvalidated -= MeasureInvalidated;
+				view.BindingContext = null;
+			}
 		}
 
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
@@ -116,6 +131,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_size = rectangle.Size;
 		}
 
+		public override void PrepareForReuse()
+		{
+			Unbind();
+			base.PrepareForReuse();
+		}
+
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
 			var oldElement = PlatformHandler?.VirtualView as View;
@@ -157,18 +178,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Same template
 				if (oldElement != null)
 				{
-					if (oldElement.BindingContext == null || !(oldElement.BindingContext.Equals(bindingContext)))
-					{
-						// If the data is different, update it
+					oldElement.BindingContext = bindingContext;
+					oldElement.MeasureInvalidated += MeasureInvalidated;
 
-						// Unhook the MeasureInvalidated handler, otherwise it'll fire for every invalidation during the 
-						// BindingContext change
-						oldElement.MeasureInvalidated -= MeasureInvalidated;
-						oldElement.BindingContext = bindingContext;
-						oldElement.MeasureInvalidated += MeasureInvalidated;
-
-						UpdateCellSize();
-					}
+					UpdateCellSize();
 				}
 			}
 
@@ -296,7 +309,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateSelectionColor()
 		{
-			if (PlatformHandler.VirtualView is not View view)
+			if (PlatformHandler?.VirtualView is not View view)
 			{
 				return;
 			}
@@ -306,6 +319,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateSelectionColor(View view)
 		{
+			if (SelectedBackgroundView is null)
+			{
+				return;
+			}
+			
 			// Prevents the use of default color when there are VisualStateManager with Selected state setting the background color
 			// First we check whether the cell has the default selected background color; if it does, then we should check
 			// to see if the cell content is the VSM to set a selected color
