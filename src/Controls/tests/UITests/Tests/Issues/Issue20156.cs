@@ -15,7 +15,7 @@ public class Issue20156 : _IssuesUITest
     [Test]
 	public void BorderShouldHaveNoThickness()
 	{
-		_ = App.WaitForElement("border");
+		_ = App.WaitForElement("WaitForStubControl");
 
 		// The test passes if there's no gap between the borders
 		VerifyScreenshot();

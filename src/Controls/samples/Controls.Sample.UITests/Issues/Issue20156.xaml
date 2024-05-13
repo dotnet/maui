@@ -11,12 +11,19 @@
         <Border StrokeThickness="0"
             BackgroundColor="Blue"
             HeightRequest="100"
-            StrokeShape="RoundRectangle 0"
-            AutomationId="border"/>
+            StrokeShape="RoundRectangle 0"/>
 
         <Border StrokeThickness="0"
             BackgroundColor="Blue"
             HeightRequest="100"
             StrokeShape="RoundRectangle 0"/>
+
+        <Border StrokeThickness="0"
+            BackgroundColor="Blue"
+            HeightRequest="100"
+            StrokeShape="RoundRectangle 0"/>
+
+        <Button Text="WaitForStubControl" AutomationId="WaitForStubControl"/>
+
     </VerticalStackLayout>
 </ContentPage>
