@@ -36,7 +36,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-     
+
       <VersionMetadata Condition="$(CI) and '$(BUILD_REASON)' == 'PullRequest'"
                        Include="pr.$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)"/>
 
@@ -53,7 +53,7 @@
     </PropertyGroup>
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
-    <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
+    <!-- <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/> -->
   </Target>
 
 </Project>
