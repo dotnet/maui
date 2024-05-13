@@ -20,30 +20,11 @@ public class Issue19831 : _IssuesUITest
 	{
 		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
 
-		var rect = App.WaitForElement("Item1").GetRect();
-	
-		PerformLongPress(rect);
+		_ = App.WaitForElement("Item1");
+		App.LongPress("Item1");
 		App.Click("button");
 
 		// The test passes if the action mode menu is not visible
 		VerifyScreenshot();
-	}
-
-	void PerformLongPress(Rectangle rect)
-	{
-		if (App is not AppiumApp app)
-			return;
-
-		int xPos = rect.CenterX();
-		int yPos = rect.CenterY();
-		OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
-		var longPress = new ActionSequence(touchDevice, 0);
-
-		longPress.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, xPos, yPos, TimeSpan.Zero));
-		longPress.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-		longPress.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, xPos, yPos, TimeSpan.FromMilliseconds(2000)));
-		longPress.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-
-		app.Driver.PerformActions(new List<ActionSequence> { longPress });
 	}
 }
