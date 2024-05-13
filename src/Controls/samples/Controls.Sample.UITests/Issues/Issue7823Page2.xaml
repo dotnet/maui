@@ -7,11 +7,6 @@
             Text="Test"
             Clicked="OnToolbarItemClicked"/>
     </ContentPage.ToolbarItems>
-    <Grid>
-        <Label
-            AutomationId="SecondPageLoaded"
-            HorizontalOptions="Center"
-            VerticalOptions="Center"
-            Text="Issue 7823" />
+    <Grid x:Name="grid">
     </Grid>
 </ContentPage>
