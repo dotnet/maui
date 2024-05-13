@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 #if __ANDROID__
 		static IApp InitializeAndroidApp()
 		{
-			var envApkPath = Environment.GetEnvironmentVariable("APP_APK");
+			var envApkPath = Environment.GetEnvironmentVariable("ANDROID_APP");
 
 
 			var fullApkPath = string.IsNullOrEmpty(envApkPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath)
