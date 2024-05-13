@@ -18,8 +18,9 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 
 		public StylePropertyAttribute(
-			string cssPropertyName, 
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)] Type targetType,
+			string cssPropertyName,
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)]
+			Type targetType,
 			string bindablePropertyName)
 		{
 			CssPropertyName = cssPropertyName;
