@@ -9,6 +9,8 @@ var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
+string officialBuildId = Argument("officialbuildid", "22240513.1");
+
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
 var arcadeBin = MakeAbsolute(new DirectoryPath("./artifacts/bin/"));
@@ -277,7 +279,8 @@ Task("dotnet-pack-maui")
 
         RunMSBuildWithDotNet(sln, target: "Pack", properties: new Dictionary<string, string>
         {
-            { "SymbolPackageFormat", "snupkg" }
+            { "SymbolPackageFormat", "snupkg" },
+            { "OfficialBuildId", officialBuildId }
         });
     });
 
