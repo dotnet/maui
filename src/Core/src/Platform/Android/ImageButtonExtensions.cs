@@ -1,6 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Android.Graphics.Drawables;
-using Android.Widget;
 using Google.Android.Material.ImageView;
 using Google.Android.Material.Shape;
 
@@ -23,35 +21,32 @@ namespace Microsoft.Maui.Platform
 
 		public static async void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
-			platformButton.SetContentPadding(imageButton);
+			var padding = platformButton.Context!.ToPixels(imageButton.Padding);
 
-			// see: https://github.com/material-components/material-components-android/issues/2063
+			// The simple operation we are trying to do.
+			platformButton.SetContentPadding((int)padding.Left, (int)padding.Top, (int)padding.Right, (int)padding.Bottom);
+
+			// Because there is only a single padding property, we need to reset the padding to 0 otherwise we
+			// probably will get a double padding. Trust me. I've seen it happen. It's not pretty.
+			platformButton.SetPadding(0, 0, 0, 0);
+
+			// The padding has a few issues, but setting and then resetting after some calculations
+			// are done seems to work. This is a workaround for the following issue:
+			// https://github.com/material-components/material-components-android/issues/2063
 			await Task.Yield();
-			platformButton.SetContentPadding(imageButton);
-		}
 
-		internal static void SetContentPadding(this ShapeableImageView platformButton, IImageButton imageButton)
-		{
-			var imageView = platformButton as ImageView;
+			// We must re-set all the paddings because the first time was not hard enough.
+			platformButton.SetContentPadding((int)padding.Left, (int)padding.Top, (int)padding.Right, (int)padding.Bottom);
+			platformButton.SetPadding(0, 0, 0, 0);
 
-			if (imageView is not null)
+			// Just like before, the bugs are not done. This needs to trigger a re-calculation of
+			// the shape appearance mode to avoid clipping issues.
+			if (platformButton.Drawable is not null)
 			{
-				var bitmapDrawable = imageView.Drawable as BitmapDrawable;
-
-				// Without ImageSource we do not apply Padding, although since there is no content
-				// there are no differences.
-				if (bitmapDrawable is null)
-					return;
-
-				var backgroundBounds = bitmapDrawable.Bounds;
-
-				var padding = imageButton.Padding;
-
-				bitmapDrawable.SetBounds(
-					backgroundBounds.Left + (int)platformButton.Context.ToPixels(padding.Left),
-					backgroundBounds.Top + (int)platformButton.Context.ToPixels(padding.Top),
-					backgroundBounds.Right - (int)platformButton.Context.ToPixels(padding.Right),
-					backgroundBounds.Bottom - (int)platformButton.Context.ToPixels(padding.Bottom));
+				platformButton.ShapeAppearanceModel =
+					platformButton.ShapeAppearanceModel
+						.ToBuilder()
+						.Build();
 			}
 		}
 
