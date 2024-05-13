@@ -27,7 +27,7 @@ variables:
 
 parameters:
   - name: pushMauiPackagesToMaestro
-    default: true
+    default: false
 
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
