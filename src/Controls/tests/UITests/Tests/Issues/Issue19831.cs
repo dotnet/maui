@@ -1,6 +1,7 @@
-﻿using NUnit.Framework;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Appium.MultiTouch;
+﻿using System.Drawing;
+using NUnit.Framework;
+using OpenQA.Selenium.Appium.Interactions;
+using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,16 +21,29 @@ public class Issue19831 : _IssuesUITest
 		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
 
 		var rect = App.WaitForElement("Item1").GetRect();
-		var app = App as AppiumApp;
-
-		if (app is null)
-			return;
-
-		var actions = new TouchAction(app.Driver);
-		actions.Press(rect.CenterX(), rect.CenterY()).Wait(2000).Release().Perform();
-		app.Click("button");
+	
+		PerformLongPress(rect);
+		App.Click("button");
 
 		// The test passes if the action mode menu is not visible
 		VerifyScreenshot();
+	}
+
+	void PerformLongPress(Rectangle rect)
+	{
+		if (App is not AppiumApp app)
+			return;
+
+		int xPos = rect.CenterX();
+		int yPos = rect.CenterY();
+		OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+		var longPress = new ActionSequence(touchDevice, 0);
+
+		longPress.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, xPos, yPos, TimeSpan.Zero));
+		longPress.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+		longPress.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, xPos, yPos, TimeSpan.FromMilliseconds(2000)));
+		longPress.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+
+		app.Driver.PerformActions(new List<ActionSequence> { longPress });
 	}
 }
