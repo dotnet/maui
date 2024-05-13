@@ -67,6 +67,7 @@ namespace Microsoft.Maui.Platform
 		{
 			double measuredHeight = 0;
 			double measuredWidth = 0;
+			double spacing = 0.0;
 
 			// Always measure the image first, and use the remaining space for the text
 			if (_image.Source != null &&
@@ -80,9 +81,12 @@ namespace Microsoft.Maui.Platform
 			if (!string.IsNullOrEmpty(_textBlock.Text) &&
 				_textBlock.Visibility == UI.Xaml.Visibility.Visible)
 			{
+				// Only add spacing if we have valid text
+				spacing = _spacing;
+
 				if (_isHorizontalLayout)
 				{
-					var availableWidth = Math.Max(0, availableSize.Width - measuredWidth - _spacing);
+					var availableWidth = Math.Max(0, availableSize.Width - measuredWidth - spacing);
 					_textBlock.Measure(new WSize(availableWidth, availableSize.Height));
 
 					measuredWidth += _textBlock.DesiredSize.Width;
@@ -90,7 +94,7 @@ namespace Microsoft.Maui.Platform
 				}
 				else // Vertical
 				{
-					var availableHeight = Math.Max(0, availableSize.Height - measuredHeight - _spacing);
+					var availableHeight = Math.Max(0, availableSize.Height - measuredHeight - spacing);
 					_textBlock.Measure(new WSize(availableSize.Width, availableHeight));
 
 					measuredWidth = Math.Max(measuredWidth, _textBlock.DesiredSize.Width);
@@ -101,11 +105,11 @@ namespace Microsoft.Maui.Platform
 			// Only add spacing if we have room
 			if (_isHorizontalLayout)
 			{
-				measuredWidth = Math.Min(measuredWidth + _spacing, availableSize.Width);
+				measuredWidth = Math.Min(measuredWidth + spacing, availableSize.Width);
 			}
 			else // Vertical
 			{
-				measuredHeight = Math.Min(measuredHeight + _spacing, availableSize.Height);
+				measuredHeight = Math.Min(measuredHeight + spacing, availableSize.Height);
 			}
 
 			if (!double.IsInfinity(availableSize.Width) &&
@@ -141,9 +145,15 @@ namespace Microsoft.Maui.Platform
 			var x = 0.0;
 			var y = 0.0;
 
+			var spacing = _spacing;
+			if (string.IsNullOrEmpty(_textBlock.Text))
+			{
+				spacing = 0;
+			}
+
 			if (_image.Visibility == UI.Xaml.Visibility.Visible)
 			{
-				var (newX, newY) = ArrangePrimaryElement(_image, x, y, finalSize);
+				var (newX, newY) = ArrangePrimaryElement(_image, x, y, spacing, finalSize);
 				x = newX;
 				y = newY;
 			}
@@ -163,7 +173,7 @@ namespace Microsoft.Maui.Platform
 			if (!string.IsNullOrEmpty(_textBlock.Text) &&
 				_textBlock.Visibility == UI.Xaml.Visibility.Visible)
 			{
-				var (newX, newY) = ArrangePrimaryElement(_textBlock, x, y, finalSize);
+				var (newX, newY) = ArrangePrimaryElement(_textBlock, x, y, _spacing, finalSize);
 				x = newX;
 				y = newY;
 			}
@@ -181,9 +191,10 @@ namespace Microsoft.Maui.Platform
 		/// <param name="element"></param>
 		/// <param name="x"></param>
 		/// <param name="y"></param>
+		/// <param name="spacing"></param>
 		/// <param name="finalSize"></param>
 		/// <returns></returns>
-		private (double newX, double newY) ArrangePrimaryElement(FrameworkElement element, double x, double y, WSize finalSize)
+		private (double newX, double newY) ArrangePrimaryElement(FrameworkElement element, double x, double y, double spacing, WSize finalSize)
 		{
 			if (_isHorizontalLayout)
 			{
@@ -192,7 +203,7 @@ namespace Microsoft.Maui.Platform
 				element.Arrange(new WRect(0, centeredY,
 					element.DesiredSize.Width, element.DesiredSize.Height));
 
-				return (x + element.DesiredSize.Width + _spacing, 0);
+				return (x + element.DesiredSize.Width + spacing, 0);
 			}
 			else // Vertical
 			{
@@ -201,7 +212,7 @@ namespace Microsoft.Maui.Platform
 				element.Arrange(new WRect(centeredX, 0,
 					element.DesiredSize.Width, element.DesiredSize.Height));
 
-				return (0, y + element.DesiredSize.Height + _spacing);
+				return (0, y + element.DesiredSize.Height + spacing);
 			}
 		}
 
