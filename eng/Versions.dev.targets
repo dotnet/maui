@@ -1,9 +1,0 @@
-<!-- This file is an alternative to Versions.targets, when building locally and not for CI -->
-<Project>
-  <Target Name="SetVersions">
-    <PropertyGroup>
-      <PackageReferenceVersion>$(PackageVersion)</PackageReferenceVersion>
-      <VSComponentVersion>$(PackageVersion)</VSComponentVersion>
-    </PropertyGroup>
-  </Target>
-</Project>

@@ -147,9 +147,16 @@ namespace Microsoft.Maui
 				throw new ArgumentNullException(nameof(enumerable));
 			}
 
-			if (enumerable is IList<T> list)
+			if (enumerable is List<T> list)
 			{
-				return list.IndexOf(predicate);
+				var listPredicate = new Predicate<T>(predicate);
+				return list.FindIndex(listPredicate);
+			}
+
+			if (enumerable is T[] array)
+			{
+				var arrayPredicate = new Predicate<T>(predicate);
+				return Array.FindIndex(array, arrayPredicate);
 			}
 
 			var i = 0;
