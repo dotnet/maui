@@ -1,10 +1,10 @@
 <Project>
   <PropertyGroup>
     <!-- The .NET product branding version -->
-    <ProductVersion>8.0.40</ProductVersion>
+    <ProductVersion>8.0.60</ProductVersion>
     <MajorVersion>8</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>40</PatchVersion>
+    <PatchVersion>60</PatchVersion>
     <SdkBandVersion>8.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>ci.net8</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>
