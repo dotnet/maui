@@ -79,7 +79,8 @@ parameters:
   type: string
 
 - name: officialBuildId
-  value: $(BUILD.BUILDNUMBER)
+  type: string
+  default: $(BUILD.BUILDNUMBER)
 
 steps:
 
