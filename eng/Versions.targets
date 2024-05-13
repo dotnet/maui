@@ -49,7 +49,7 @@
     <PropertyGroup>
       <PackageReferenceVersion>$(PackageVersion)</PackageReferenceVersion>
       <VSComponentVersion Condition="$(CI) and '$(PreReleaseVersionLabel)' != ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).$(BUILDVERSION)</VSComponentVersion>
-      <VSComponentVersion Condition="$(CI) and '$(PreReleaseVersionLabels)' == ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).0</VSComponentVersion>
+      <VSComponentVersion Condition="$(CI) and '$(PreReleaseVersionLabel)' == ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).0</VSComponentVersion>
     </PropertyGroup>
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
