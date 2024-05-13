@@ -6,9 +6,6 @@
     <MinorVersion>0</MinorVersion>
     <PatchVersion>40</PatchVersion>
     <SdkBandVersion>8.0.100</SdkBandVersion>
-    <PreReleaseVersionLabel>ci.net8</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>
-    </PreReleaseVersionIteration>
     <!-- Enable to remove prerelease label. -->
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
