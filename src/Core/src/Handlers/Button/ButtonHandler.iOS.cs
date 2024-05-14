@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Handlers
 			if (OperatingSystem.IsIOSVersionAtLeast(15) && useConfiguration)
 			{
 				var config = UIButtonConfiguration.PlainButtonConfiguration;
+				// config.Background.BackgroundColor = UIColor.Black;
+				// config.BaseBackgroundColor = UIColor.Black;
 				button.Configuration = config;
 			}
 
@@ -49,14 +51,12 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-#if MACCATALYST
 		//TODO: make this public on NET8
 		internal static void MapBackground(IButtonHandler handler, IButton button)
 		{
 			//If this is a Mac optimized interface
-			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
+			if (OperatingSystem.IsIOSVersionAtLeast(15) && handler.PlatformView?.Configuration is UIButtonConfiguration config)
 			{
-				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
 				if (button?.Background is Paint paint)
 				{
 					if (paint is SolidPaint solidPaint)
@@ -64,21 +64,28 @@ namespace Microsoft.Maui.Handlers
 						Color backgroundColor = solidPaint.Color;
 
 						if (backgroundColor == null)
+						{
 							config.BaseBackgroundColor = ColorExtensions.BackgroundColor;
+							config.Background.BackgroundColor = ColorExtensions.BackgroundColor;
+						}
 						else
-							config.BaseBackgroundColor = backgroundColor.ToPlatform();
-
+						{
+							config.BaseBackgroundColor = UIColor.Blue;
+							config.Background.BackgroundColor = UIColor.Blue;
+						}
 					}
 				}
 				if (handler.PlatformView != null)
+				{
 					handler.PlatformView.Configuration = config;
+					handler.PlatformView.SetNeedsUpdateConfiguration();
+				}
 			}
 			else
 			{
 				handler.PlatformView?.UpdateBackground(button);
 			}
 		}
-#endif
 
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{

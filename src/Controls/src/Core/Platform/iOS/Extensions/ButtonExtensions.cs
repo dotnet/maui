@@ -14,15 +14,20 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		static CGRect GetTitleBoundingRect(this UIButton platformButton, Thickness padding)
 		{
-			if (platformButton.CurrentAttributedTitle != null ||
-					   platformButton.CurrentTitle != null)
+			object configuration = OperatingSystem.IsIOSVersionAtLeast(15) ? platformButton.Configuration : null;
+
+			if ((configuration is not UIButtonConfiguration && (platformButton.CurrentAttributedTitle is not null || platformButton.CurrentTitle is not null))
+				|| (configuration is UIButtonConfiguration config && (config.Title is not null || config.AttributedTitle is not null)))
 			{
-				var title =
+				var title = configuration is not UIButtonConfiguration ?
 					   platformButton.CurrentAttributedTitle ??
-					   new NSAttributedString(platformButton.CurrentTitle, new UIStringAttributes { Font = platformButton.TitleLabel.Font });
+					   new NSAttributedString(platformButton.CurrentTitle, new UIStringAttributes { Font = platformButton.TitleLabel.Font })
+					   : (configuration as UIButtonConfiguration)?.AttributedTitle ?? new NSAttributedString(platformButton.Configuration.Title, new UIStringAttributes { Font = platformButton.TitleLabel.Font });
 
 				// Use the available height when calculating the bounding rect
 				var lineHeight = platformButton.TitleLabel.Font.LineHeight;
+				
+				// TODO platformButton.Bounds.Size.Height is zero when using configuration?
 				var availableHeight = platformButton.Bounds.Size.Height;
 
 				// If the line break mode is one of the truncation modes, limit the height to the line height
@@ -92,11 +97,13 @@ namespace Microsoft.Maui.Controls.Platform
 			// This makes the behavior consistent with android
 			var contentMode = UIViewContentMode.Center;
 
+			var isRightToLeft = (button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft;
+
 			var padding = button.Padding;
 			if (padding.IsNaN)
 				padding = ButtonHandler.DefaultPadding;
 
-			if (image != null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
+			if (image != null && (configuration is not UIButtonConfiguration && !string.IsNullOrEmpty(platformButton.CurrentTitle) || (configuration is UIButtonConfiguration config_1 && !string.IsNullOrEmpty(config_1?.Title))))
 			{
 				// TODO: Do not use the title label as it is not yet updated and
 				//       if we move the image, then we technically have more
@@ -169,7 +176,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (configuration is UIButtonConfiguration configLayout)
 					{
-						if ((button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft)
+						if (isRightToLeft)
 							configLayout.ImagePlacement = NSDirectionalRectEdge.Trailing;
 						else
 							configLayout.ImagePlacement = NSDirectionalRectEdge.Leading;
@@ -192,7 +199,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (configuration is UIButtonConfiguration configLayout)
 					{
-						if ((button.Parent as VisualElement)?.FlowDirection == FlowDirection.RightToLeft)
+						if (isRightToLeft)
 							configLayout.ImagePlacement = NSDirectionalRectEdge.Leading;
 						else
 							configLayout.ImagePlacement = NSDirectionalRectEdge.Trailing;
@@ -256,15 +263,17 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 #pragma warning restore CA1416, CA1422
 
-			var titleRectHeight = platformButton.GetTitleBoundingRect(padding).Height;
+			// TODO does not account for the title in the Configuration?
+			// var configTitle = platformButton.Configuration.Title;
+			if (image is not null && (configuration is not UIButtonConfiguration && !string.IsNullOrEmpty(platformButton.CurrentTitle) || (configuration is UIButtonConfiguration config7 && !string.IsNullOrEmpty(config7?.Title))))
+			{
+				var titleRectHeight = platformButton.GetTitleBoundingRect(padding).Height;
 
-			var buttonContentHeight = 
+				var buttonContentHeight = 
 				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
 				+ (nfloat)padding.Top
 				+ (nfloat)padding.Bottom;
 
-			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
-			{
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
 					buttonContentHeight += spacing;
@@ -277,7 +286,6 @@ namespace Microsoft.Maui.Controls.Platform
 				if (configuration is not UIButtonConfiguration && buttonContentHeight - button.Height > 1 && button.HeightRequest == -1)
 				{
 					var contentInsets = platformButton.ContentEdgeInsets;
-
 					var additionalVerticalSpace = (buttonContentHeight - button.Height) / 2;
 
 					platformButton.ContentEdgeInsets = new UIEdgeInsets(
@@ -290,6 +298,21 @@ namespace Microsoft.Maui.Controls.Platform
 					platformButton.Superview?.LayoutIfNeeded();
 				}
 #pragma warning restore CA1416, CA1422
+				if (configuration is UIButtonConfiguration config8 && buttonContentHeight - button.Height > 1 && button.HeightRequest == -1)
+				{
+					var contentInsets = config8.ContentInsets;
+					var additionalVerticalSpace = (buttonContentHeight - button.Height) / 2;
+
+					// config8.ContentInsets = new NSDirectionalEdgeInsets (
+					// 	(float)additionalVerticalSpace + (float)padding.Top,
+					// 	(float)contentInsets.Leading,
+					// 	(float)additionalVerticalSpace + (float)padding.Bottom,
+					// 	(float)contentInsets.Trailing);
+					// platformButton.Configuration = config8;
+
+					// platformButton.Superview?.SetNeedsLayout();
+					// platformButton.Superview?.LayoutIfNeeded();
+				}
 			}
 		}
 
