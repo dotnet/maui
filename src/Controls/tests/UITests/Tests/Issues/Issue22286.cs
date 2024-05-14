@@ -13,7 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "The iOS keyboard is not fully retracted and requires an extra click on the Done button";
 
 		[Test]
-		public void UpdateToolbarItemAfterNavigate()
+		public async Task ClosedKeyboardNoToolbarVisible()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
 
@@ -22,6 +22,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.EnterText("TestEditor2", "abc");
 
 			App.DismissKeyboard();
+
+			await Task.Delay(500);
 
 			VerifyScreenshot();
 		}
