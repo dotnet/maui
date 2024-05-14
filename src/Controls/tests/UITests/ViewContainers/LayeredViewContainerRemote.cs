@@ -10,6 +10,11 @@ namespace Microsoft.Maui.AppiumTests
 		{
 		}
 
+		public LayeredViewContainerRemote(IUIClientContext? testContext, string formsType)
+			: base(testContext, formsType)
+		{
+		}
+
 		public IUIElement GetLayeredLabel()
 		{
 			return App.FindElement(LayeredLabelQuery);

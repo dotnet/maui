@@ -403,20 +403,25 @@ namespace Maui.Controls.Sample
 		public enum ImageButton
 		{
 			Source,
-			Aspect,
+			Image,
 			IsOpaque,
 			IsLoading,
-			AspectFill,
-			AspectFit,
-			Fill,
+			Aspect,
+			Aspect_AspectFill,
+			Aspect_AspectFit,
+			Aspect_Fill,
+			Aspect_Center,
 			BorderColor,
 			CornerRadius,
 			BorderWidth,
+			BorderColor_WithBackground,
+			CornerRadius_WithBackground,
+			BorderWidth_WithBackground,
 			Clicked,
 			Command,
-			Image,
 			Pressed,
-			Padding
+			Padding,
+			Padding_Add
 		}
 
 		public enum ImageSource

@@ -23,8 +23,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Category(UITestCategories.Button)]
 		public void Clicked()
 		{
-			var remote = new EventViewContainerRemote(UITestContext, Test.Button.Clicked);
-			remote.GoTo();
+			var remote = GoToEventRemote();
 
 			var textBeforeClick = remote.GetEventLabel().GetText();
 			Assert.AreEqual("Event: Clicked (none)", textBeforeClick);
