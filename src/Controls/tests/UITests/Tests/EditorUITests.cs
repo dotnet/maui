@@ -19,7 +19,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		public override void _IsEnabled()
+		public override void IsEnabled()
 		{
 			if (Device == TestDevice.Mac ||
 				Device == TestDevice.iOS)
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.AppiumTests
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}
 
-			base._IsEnabled();
+			base.IsEnabled();
 		}
 	}
 }

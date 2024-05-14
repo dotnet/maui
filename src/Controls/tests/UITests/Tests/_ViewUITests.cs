@@ -12,7 +12,7 @@ namespace Microsoft.Maui.AppiumTests
 		public _ViewUITests(TestDevice device) : base(device) { }
 
 		[Test]
-		public virtual void _IsEnabled()
+		public virtual void IsEnabled()
 		{
 			var remote = GoToStateRemote();
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public virtual void _IsVisible()
+		public virtual void IsVisible()
 		{
 			var remote = GoToStateRemote();
 
