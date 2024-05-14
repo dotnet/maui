@@ -71,6 +71,14 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>3307bf66ac87308d157ce9f9fa10bb56c1ebf602</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0-preview.5.24263.8">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>3307bf66ac87308d157ce9f9fa10bb56c1ebf602</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0-preview.5.24263.8">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>3307bf66ac87308d157ce9f9fa10bb56c1ebf602</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Metadata" Version="9.0.0-preview.5.24263.8">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>3307bf66ac87308d157ce9f9fa10bb56c1ebf602</Sha>
