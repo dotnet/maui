@@ -2,11 +2,11 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 public static class AccessExpressionBuilder
 {
-    public static string Build(string previousExpression, IPathPart nextPart)
+    public static string ExtendExpression(string previousExpression, IPathPart nextPart)
         => nextPart switch
         {
             Cast { TargetType: var targetType } => $"({previousExpression} as {CastTargetName(targetType)})",
-            ConditionalAccess conditionalAccess => Build(previousExpression: $"{previousExpression}?", conditionalAccess.Part),
+            ConditionalAccess conditionalAccess => ExtendExpression(previousExpression: $"{previousExpression}?", conditionalAccess.Part),
             IndexAccess { Index: int numericIndex } => $"{previousExpression}[{numericIndex}]",
             IndexAccess { Index: string stringIndex } => $"{previousExpression}[\"{stringIndex}\"]",
             MemberAccess memberAccess => $"{previousExpression}.{memberAccess.MemberName}",

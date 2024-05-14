@@ -50,7 +50,7 @@ public class AccessExpressionBuilderTests
 
         foreach (var part in path)
         {
-            expression = AccessExpressionBuilder.Build(expression, part);
+            expression = AccessExpressionBuilder.ExtendExpression(expression, part);
         }
 
         return expression;

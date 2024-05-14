@@ -291,7 +291,7 @@ public sealed class BindingCodeWriter
 			foreach (var part in binding.Path)
 			{
 				var previousExpression = nextExpression;
-				nextExpression = AccessExpressionBuilder.Build(previousExpression, MaybeWrapInConditionalAccess(part, forceConditonalAccessToNextPart));
+				nextExpression = AccessExpressionBuilder.ExtendExpression(previousExpression, MaybeWrapInConditionalAccess(part, forceConditonalAccessToNextPart));
 				var isNullableReferenceType = part is MemberAccess memberAccess && !memberAccess.IsValueType;
 				forceConditonalAccessToNextPart = part is Cast;
 
