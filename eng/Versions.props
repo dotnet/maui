@@ -4,10 +4,9 @@
     <ProductVersion>8.0.40</ProductVersion>
     <MajorVersion>8</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>40</PatchVersion>
+    <PatchVersion>60</PatchVersion>
     <SdkBandVersion>8.0.100</SdkBandVersion>
     <!-- Enable to remove prerelease label. -->
-    <DotNetUseShippingVersion>true</DotNetUseShippingVersion>
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
     <WorkloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PreReleaseVersionIteration)' == ''">-$(PreReleaseVersionLabel)</WorkloadVersionSuffix>
