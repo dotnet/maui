@@ -86,6 +86,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (image != null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
+#pragma warning disable CA1422 // Validate platform compatibility
+				Console.WriteLine ($"Starting ContentEdge: {platformButton.ContentEdgeInsets}");
+#pragma warning restore CA1422 // Validate platform compatibility
+
 				// TODO: Do not use the title label as it is not yet updated and
 				//       if we move the image, then we technically have more
 				//       space and will require a new layout pass.
@@ -199,6 +203,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				platformButton.ImageEdgeInsets = imageInsets;
 				platformButton.TitleEdgeInsets = titleInsets;
+				Console.WriteLine ("Insets changed");
 				platformButton.Superview?.SetNeedsLayout();
 				return;
 			}
@@ -231,6 +236,9 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 
+				Console.WriteLine ($"buttonContentHeight: {buttonContentHeight}");
+				Console.WriteLine ($"button.Height: {button.Height}");
+
 #pragma warning disable CA1416, CA1422
 				// If the button's content is larger than the button, we need to adjust the ContentEdgeInsets.
 				// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel
@@ -246,8 +254,12 @@ namespace Microsoft.Maui.Controls.Platform
 						(nfloat)(additionalVerticalSpace + (nfloat)padding.Bottom),
 						contentInsets.Right);
 
+					Console.WriteLine ("ContentEdge changed");
+					Console.WriteLine ($"Old ContentEdge: {contentInsets}");
+					Console.WriteLine ($"New ContentEdge: {platformButton.ContentEdgeInsets}\n\n");
+
 					platformButton.Superview?.SetNeedsLayout();
-					platformButton.Superview?.LayoutIfNeeded();
+					// platformButton.Superview?.LayoutIfNeeded();
 				}
 #pragma warning restore CA1416, CA1422
 			}
