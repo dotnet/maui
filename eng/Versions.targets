@@ -1,12 +1,7 @@
 <Project>
  <PropertyGroup>
     <NightlyTag>nightly</NightlyTag>
-    <RegexTag>[a-z]+\.[0-9]</RegexTag>
  </PropertyGroup>
- <PropertyGroup>
-    <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</GitBranch>
-    <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' == '' and '$(BUILD_SOURCEBRANCHNAME)' != ''">$(BUILD_SOURCEBRANCHNAME)</GitBranch>
-  </PropertyGroup>
 
   <PropertyGroup>
     <CoreCompileDependsOn>
@@ -53,7 +48,7 @@
     </PropertyGroup>
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
-    <!-- <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/> -->
+    <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
   </Target>
 
 </Project>

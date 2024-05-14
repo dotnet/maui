@@ -277,16 +277,16 @@ Task("dotnet-pack-maui")
         if (!IsRunningOnWindows())
             sln = "./Microsoft.Maui.Packages-mac.slnf";
  
-        var props =  new Dictionary<string, string>
+        if(string.IsNullOrEmpty(officialBuildId))
+        {
+            officialBuildId = DateTime.UtcNow.ToString("yyyyMMdd.1");
+        }
+
+        RunMSBuildWithDotNet(sln, target: "Pack", properties: new Dictionary<string, string>
         {
             { "SymbolPackageFormat", "snupkg" },
-        };
-
-        if(!string.IsNullOrEmpty(officialBuildId))
-        {
-            props.Add("OfficialBuildId", officialBuildId);  
-        }
-        RunMSBuildWithDotNet(sln, target: "Pack", properties: props);
+            { "OfficialBuildId", officialBuildId },
+        });
     });
 
 Task("dotnet-pack-additional")
