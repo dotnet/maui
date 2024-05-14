@@ -19,7 +19,8 @@ public class BindingCodeWriterTests
                 new ConditionalAccess(new MemberAccess("B")),
                 new ConditionalAccess(new MemberAccess("C")),
             ]),
-            SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
+            SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
+            NullableContextEnabled: true));
 
         var code = codeWriter.GenerateCode();
         AssertExtensions.CodeIsEqual(
@@ -140,7 +141,8 @@ public class BindingCodeWriterTests
                 new ConditionalAccess(new MemberAccess("B")),
                 new ConditionalAccess(new MemberAccess("C")),
             ]),
-            SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
+            SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
+            NullableContextEnabled: true));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -210,7 +212,8 @@ public class BindingCodeWriterTests
                 new MemberAccess("B"),
                 new MemberAccess("C"),
             ]),
-            SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
+            SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
+            NullableContextEnabled: true));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -276,7 +279,8 @@ public class BindingCodeWriterTests
                 new MemberAccess("B"),
                 new MemberAccess("C"),
             ]),
-            SetterOptions: new(IsWritable: false)));
+            SetterOptions: new(IsWritable: false),
+            NullableContextEnabled: true));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -339,7 +343,8 @@ public class BindingCodeWriterTests
                 new ConditionalAccess(new IndexAccess("Indexer", "Abc")),
                 new IndexAccess("Item", 0),
             ]),
-            SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
+            SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
+            NullableContextEnabled: true));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -417,7 +422,8 @@ public class BindingCodeWriterTests
                 new Cast(new TypeDescription("Z", IsValueType: true, IsNullable: true, IsGenericParameter: false)),
                 new ConditionalAccess(new MemberAccess("D")),
             ]),
-            SetterOptions: new(IsWritable: true, AcceptsNullValue: false)));
+            SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
+            NullableContextEnabled: true));
 
         var code = codeBuilder.ToString();
 

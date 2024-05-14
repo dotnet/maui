@@ -18,7 +18,8 @@ public sealed record SetBindingInvocationDescription(
 	TypeDescription SourceType,
 	TypeDescription PropertyType,
 	EquatableArray<IPathPart> Path,
-	SetterOptions SetterOptions);
+	SetterOptions SetterOptions,
+	bool NullableContextEnabled);
 
 public sealed record SourceCodeLocation(string FilePath, TextSpan TextSpan, LinePositionSpan LineSpan)
 {
@@ -54,23 +55,28 @@ public sealed record TypeDescription(
 
 public sealed record SetterOptions(bool IsWritable, bool AcceptsNullValue = false);
 
-public sealed record MemberAccess(string MemberName) : IPathPart
+public sealed record MemberAccess(string MemberName, bool IsValueType = false) : IPathPart
 {
-	public string? PropertyName => MemberName;
+	public string PropertyName => MemberName;
 
 	public bool Equals(IPathPart other)
 	{
-		return other is MemberAccess memberAccess && MemberName == memberAccess.MemberName;
+		return other is MemberAccess memberAccess
+			&& MemberName == memberAccess.MemberName
+			&& IsValueType == memberAccess.IsValueType;
 	}
 }
 
-public sealed record IndexAccess(string DefaultMemberName, object Index) : IPathPart
+public sealed record IndexAccess(string DefaultMemberName, object Index, bool IsValueType = false) : IPathPart
 {
 	public string? PropertyName => $"{DefaultMemberName}[{Index}]";
 
 	public bool Equals(IPathPart other)
 	{
-		return other is IndexAccess indexAccess && DefaultMemberName == indexAccess.DefaultMemberName && Index.Equals(indexAccess.Index);
+		return other is IndexAccess indexAccess
+			&& DefaultMemberName == indexAccess.DefaultMemberName
+			&& Index.Equals(indexAccess.Index)
+			&& IsValueType == indexAccess.IsValueType;
 	}
 }
 

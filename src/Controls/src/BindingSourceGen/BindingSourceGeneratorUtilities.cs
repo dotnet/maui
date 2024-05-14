@@ -4,6 +4,12 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 internal static class BindingGenerationUtilities
 {
+
+    internal static bool IsNullableValueType(ITypeSymbol typeInfo) =>
+        typeInfo is INamedTypeSymbol namedTypeSymbol
+            && namedTypeSymbol.IsGenericType
+            && namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T;
+            
     internal static bool IsTypeNullable(ITypeSymbol typeInfo, bool enabledNullable)
     {
         if (!enabledNullable && typeInfo.IsReferenceType)
@@ -16,9 +22,7 @@ internal static class BindingGenerationUtilities
             return true;
         }
 
-        return typeInfo is INamedTypeSymbol namedTypeSymbol
-            && namedTypeSymbol.IsGenericType
-            && namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T;
+        return IsNullableValueType(typeInfo);
     }
 
     internal static TypeDescription CreateTypeNameFromITypeSymbol(ITypeSymbol typeSymbol, bool enabledNullable)

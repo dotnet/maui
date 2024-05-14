@@ -76,6 +76,11 @@ public sealed class BindingCodeWriter
 
 	public void AddBinding(SetBindingInvocationDescription binding)
 	{
+		if (!binding.NullableContextEnabled)
+		{
+			var referenceTypesConditionalAccessTransformer = new ReferenceTypesConditionalAccessTransformer();
+			binding = referenceTypesConditionalAccessTransformer.Transform(binding);
+		}
 		_bindings.Add(binding);
 	}
 
@@ -184,7 +189,7 @@ public sealed class BindingCodeWriter
 			Indent();
 
 			Append("handlers: ");
-			AppendHandlersArray(binding.SourceType, binding.Path);
+			AppendHandlersArray(binding);
 			AppendLine(")");
 
 			Unindent();
@@ -234,7 +239,7 @@ public sealed class BindingCodeWriter
 				AppendLine('}');
 			}
 
-			var setter = Setter.From(binding.SourceType, binding.Path, sourceVariableName, assignedValueExpression);
+			var setter = Setter.From(binding.Path, sourceVariableName, assignedValueExpression);
 			if (setter.PatternMatchingExpressions.Length > 0)
 			{
 				Append("if (");
@@ -274,19 +279,20 @@ public sealed class BindingCodeWriter
 			}
 		}
 
-		private void AppendHandlersArray(TypeDescription sourceType, EquatableArray<IPathPart> path)
+		private void AppendHandlersArray(SetBindingInvocationDescription binding)
 		{
-			AppendLine($"new Tuple<Func<{sourceType}, object?>, string>[]");
+			AppendLine($"new Tuple<Func<{binding.SourceType}, object?>, string>[]");
 			AppendLine('{');
 
 			Indent();
 
 			string nextExpression = "source";
 			bool forceConditonalAccessToNextPart = false;
-			foreach (var part in path)
+			foreach (var part in binding.Path)
 			{
 				var previousExpression = nextExpression;
 				nextExpression = AccessExpressionBuilder.Build(previousExpression, MaybeWrapInConditionalAccess(part, forceConditonalAccessToNextPart));
+				var isNullableReferenceType = part is MemberAccess memberAccess && !memberAccess.IsValueType;
 				forceConditonalAccessToNextPart = part is Cast;
 
 				// Some parts don't have a property name, so we can't generate a handler for them (for example casts)

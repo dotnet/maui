@@ -3,24 +3,15 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 public sealed record Setter(string[] PatternMatchingExpressions, string AssignmentStatement)
 {
     public static Setter From(
-        TypeDescription sourceTypeDescription,
-        EquatableArray<IPathPart> path,
+        IEnumerable<IPathPart> path,
         string sourceVariableName = "source",
         string assignedValueExpression = "value")
     {
         var builder = new SetterBuilder(sourceVariableName, assignedValueExpression);
 
-        if (path.Length > 0)
+        foreach (var part in path)
         {
-            if (sourceTypeDescription.IsNullable)
-            {
-                builder.AddIsExpression("{}");
-            }
-
-            foreach (var part in path)
-            {
-                builder.AddPart(part);
-            }
+            builder.AddPart(part);
         }
 
         return builder.Build();
@@ -28,7 +19,6 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
     private sealed class SetterBuilder
     {
-        private readonly string _sourceVariableName;
         private readonly string _assignedValueExpression;
 
         private string _expression;
@@ -38,9 +28,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
         public SetterBuilder(string sourceVariableName, string assignedValueExpression)
         {
-            _sourceVariableName = sourceVariableName;
             _assignedValueExpression = assignedValueExpression;
-
             _expression = sourceVariableName;
         }
 

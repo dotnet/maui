@@ -101,7 +101,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			SourceType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
 			PropertyType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaTypeInfo.Type, enabledNullable),
 			Path: new EquatableArray<IPathPart>([.. parts]),
-			SetterOptions: DeriveSetterOptions(lambdaBody, context.SemanticModel, enabledNullable));
+			SetterOptions: DeriveSetterOptions(lambdaBody, context.SemanticModel, enabledNullable),
+			NullableContextEnabled: enabledNullable);
 		return new BindingDiagnosticsWrapper(binding, new EquatableArray<DiagnosticInfo>([.. diagnostics]));
 	}
 
