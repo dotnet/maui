@@ -35,7 +35,6 @@ namespace Microsoft.Maui.AppiumTests
 			remote.GoTo(test.ToString());
 
 			App.WaitForElement($"{test}VisualElement");
-			Thread.Sleep(1000); // android has some button animations that need to finish
 
 			VerifyScreenshot();
 		}

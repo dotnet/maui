@@ -146,13 +146,13 @@ internal class ImageButtonUITests : _ViewUITests
 		var remote = GoToEventRemote();
 
 		var textBeforeClick = remote.GetEventLabel().GetText();
-		Assert.AreEqual("Event: Clicked (none)", textBeforeClick);
+		Assert.AreEqual("Event: Command (none)", textBeforeClick);
 
 		// Click ImageButton
 		remote.TapView();
 
 		var textAfterClick = remote.GetEventLabel().GetText();
-		Assert.AreEqual("Event: Clicked (fired 1)", textAfterClick);
+		Assert.AreEqual("Event: Command (fired 1)", textAfterClick);
 	}
 
 	[Test]

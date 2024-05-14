@@ -163,6 +163,13 @@ namespace Microsoft.Maui.AppiumTests
 
 			name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
+			// Currently Android is the OS with the ripple animations, but Windows may also have some animations
+			// that need to finish before taking a screenshot.
+			if (_testDevice == TestDevice.Android)
+			{
+				Thread.Sleep(350);
+			}
+
 			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
 
 			var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
