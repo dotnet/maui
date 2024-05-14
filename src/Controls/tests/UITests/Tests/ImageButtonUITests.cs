@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests;
 
-[Category(UITestCategories.Image)]
+[Category(UITestCategories.ImageButton)]
 internal class ImageButtonUITests : _ViewUITests
 {
 	const string ImageButtonGallery = "Image Button Gallery";
@@ -21,7 +21,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void Aspect()
 	{
 		var remote = GoToStateRemote();
@@ -41,7 +40,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void Aspect_AspectFill()
 	{
 		GoToRemote();
@@ -49,7 +47,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void Aspect_AspectFit()
 	{
 		GoToRemote();
@@ -57,7 +54,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void Aspect_Fill()
 	{
 		GoToRemote();
@@ -65,7 +61,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void Aspect_Center()
 	{
 		GoToRemote();
@@ -73,7 +68,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void BorderColor()
 	{
 		GoToRemote();
@@ -81,7 +75,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void CornerRadius()
 	{
 		GoToRemote();
@@ -89,7 +82,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void BorderWidth()
 	{
 		GoToRemote();
@@ -97,7 +89,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void BorderColor_WithBackground()
 	{
 		GoToRemote();
@@ -105,7 +96,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void CornerRadius_WithBackground()
 	{
 		GoToRemote();
@@ -113,7 +103,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void BorderWidth_WithBackground()
 	{
 		GoToRemote();
@@ -121,7 +110,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void Clicked()
 	{
 		var remote = GoToEventRemote();
@@ -138,7 +126,6 @@ internal class ImageButtonUITests : _ViewUITests
 
 	// TODO: TouchAndHoldView is missing
 	//[Test]
-	//[Category(UITestCategories.ImageButton)]
 	//public void Pressed()
 	//{
 	//	var remote = GoToEventRemote();
@@ -154,7 +141,6 @@ internal class ImageButtonUITests : _ViewUITests
 	//}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void Command()
 	{
 		var remote = GoToEventRemote();
@@ -170,7 +156,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void Padding()
 	{
 		var remote = GoToStateRemote();
@@ -184,7 +169,6 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void Padding_Add()
 	{
 		var remote = GoToStateRemote();
