@@ -150,9 +150,10 @@ namespace Microsoft.Maui.Handlers
 			IEditor? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 			MauiTextView? PlatformView => _platformView is not null && _platformView.TryGetTarget(out var p) ? p : null;
 
+#if !MACCATALYST
 			NSObject? _keyboardObserverWillShow;
 			NSObject? _keyboardObserverWillHide;
-
+#endif
 			public void Connect(IEditor virtualView, MauiTextView platformView)
 			{
 				_virtualView = new(virtualView);
@@ -182,6 +183,7 @@ namespace Microsoft.Maui.Handlers
 				if (_set)
 					platformView.SelectionChanged -= OnSelectionChanged;
 
+#if !MACCATALYST
 				if(_keyboardObserverWillShow is not null)
 				{
 					NSNotificationCenter.DefaultCenter.RemoveObserver(_keyboardObserverWillShow);
@@ -193,7 +195,7 @@ namespace Microsoft.Maui.Handlers
 					NSNotificationCenter.DefaultCenter.RemoveObserver(_keyboardObserverWillHide);
 					_keyboardObserverWillHide?.Dispose();
 				}
-
+#endif
 				_set = false;
 			}
 
@@ -245,6 +247,7 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
+#if !MACCATALYST
 			void OnKeyboardShown(object? sender, UIKeyboardEventArgs args)
 			{
 				UIView? inputAccessoryView = PlatformView?.InputAccessoryView;
@@ -260,6 +263,7 @@ namespace Microsoft.Maui.Handlers
 				if(inputAccessoryView is not null)
 					inputAccessoryView.Hidden = true;
 			}
+#endif
 		}
 	}
 }
