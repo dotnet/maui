@@ -4,7 +4,7 @@
     "projects": [
       "src\\BlazorWebView\\samples\\MauiRazorClassLibrarySample\\MauiRazorClassLibrarySample.csproj",
       "src\\Controls\\samples\\Controls.Sample.Sandbox\\Maui.Controls.Sample.Sandbox.csproj",
-      "src\\Controls\\tests\\TestCases.App\\Controls.TestCases.App.csproj",
+      "src\\Controls\\samples\\TestCases.App\\Controls.TestCases.App.csproj",
       "src\\Controls\\samples\\Controls.Sample\\Maui.Controls.Sample.csproj"
     ]
   }

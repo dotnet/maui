@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample
 	{
 		public CoreRootPage(Microsoft.Maui.Controls.Page rootPage)
 		{
-			Title = "Core Gallery";
+			Title = "Controls TestCases";
 
 			var corePageView = new CorePageView(rootPage);
 

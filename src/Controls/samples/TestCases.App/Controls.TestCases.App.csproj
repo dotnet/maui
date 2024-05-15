@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationTitle>Controls UITests</ApplicationTitle>
+    <ApplicationTitle>Controls TestCases</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.uitests</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>

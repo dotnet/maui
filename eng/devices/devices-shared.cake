@@ -24,13 +24,13 @@ string DEFAULT_APP_PROJECT = "";
 if (string.Equals(TARGET, "uitest", StringComparison.OrdinalIgnoreCase))
 {
     DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases.App/Controls.TestCases.App.csproj";
+    DEFAULT_APP_PROJECT = "../../src/Controls/samples/TestCases.App/Controls.TestCases.App.csproj";
 }
 
 if (string.Equals(TARGET, "uitest-build", StringComparison.OrdinalIgnoreCase))
 {
     DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases.App/Controls.TestCases.App.csproj";
+    DEFAULT_APP_PROJECT = "../../src/Controls/samples/TestCases.App/Controls.TestCases.App.csproj";
 }
 
 if (string.Equals(TARGET, "cg-uitest", StringComparison.OrdinalIgnoreCase))
