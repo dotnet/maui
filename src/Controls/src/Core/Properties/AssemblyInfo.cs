@@ -150,13 +150,6 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("-maui-spacing", typeof(StackBase), nameof(StackBase.SpacingProperty))]
 [assembly: StyleProperty("-maui-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
 
-// TODO ezhart 2021-07-16 When we fix #1634, we'll need to enable this so the CSS applies 
-//[assembly: StyleProperty("-maui-spacing", typeof(StackLayout), nameof(StackLayout.SpacingProperty))]
-
-// TODO ezhart 2021-07-16 When we create the new composed StackLayout, we'll need to ensure we have this enabled 
-//[assembly: StyleProperty("-maui-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
-
-
 [assembly: StyleProperty("-maui-visual", typeof(VisualElement), nameof(VisualElement.VisualProperty))]
 [assembly: StyleProperty("-maui-vertical-text-alignment", typeof(Label), nameof(TextAlignmentElement.VerticalTextAlignmentProperty))]
 [assembly: StyleProperty("-maui-thumb-color", typeof(Switch), nameof(Switch.ThumbColorProperty))]
