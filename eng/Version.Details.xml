@@ -35,57 +35,57 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>19c9523f5c2dd091b49959700723af795d6ad2b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authentication.Facebook" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Authentication.Facebook" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Components" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="9.0.0-preview.5.24264.4">
+    <Dependency Name="Microsoft.JSInterop" Version="9.0.0-preview.5.24264.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7fcc5cc8c262dc1ad3b61f83926c093ab08a7c4f</Sha>
+      <Sha>e95ce8ad14c0bc522611a973b4b28ea219690961</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Tasks" Version="7.0.100-preview.2.22102.8">
       <Uri>https://github.com/dotnet/templating</Uri>
