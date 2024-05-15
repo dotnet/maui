@@ -245,7 +245,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.IntegrationT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests.InternalsHiddenAssembly", "src\Controls\tests\Xaml.UnitTests.InternalsHiddenAssembly\Controls.Xaml.UnitTests.InternalsHiddenAssembly.csproj", "{FB39FACE-BAF2-4F97-A249-E45BA63D77FE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.App", "src\Controls\samples\TestCases.App\Controls.TestCases.App.csproj", "{F39F75DC-671B-4649-8005-1929797B3217}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.App", "src\Controls\tests\TestCases\Controls.TestCases.App.csproj", "{F39F75DC-671B-4649-8005-1929797B3217}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Core", "src\TestUtils\src\UITest.Core\UITest.Core.csproj", "{352C2381-1DEC-4487-819D-340D1EA98FBE}"
 EndProject
