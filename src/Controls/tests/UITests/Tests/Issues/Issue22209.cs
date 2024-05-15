@@ -28,10 +28,16 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			if (app.Driver is not WindowsDriver windowsDriver)
 				return;
 
+			OpenQA.Selenium.IWindow window = windowsDriver.Manage().Window;
+			int x = window.Position.X;
+			int y = window.Position.Y;
+
 			Random rnd = new Random();
+		
 			for (int i = 0; i < 10; i++)
 			{
-				windowsDriver.Manage().Window.Size = new Size(rnd.Next(500, 5000), rnd.Next(500, 5000));
+				window.Position = new Point(x, y);
+				window.Size = new Size(rnd.Next(500, 5000), rnd.Next(500, 5000));
 			}
 
 			App.WaitForElement("WaitForStubControl");
