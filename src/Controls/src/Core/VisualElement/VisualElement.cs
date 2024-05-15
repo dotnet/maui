@@ -1942,6 +1942,18 @@ namespace Microsoft.Maui.Controls
 			return value;
 		}
 
+		private protected override void UpdateHandlerValue(string property)
+		{
+			// The Height and Width Property aren't really meant to propagate back down to the handler
+			// These properties are only set with the platform code updates the VisualElement.Frame property
+			// indicating what the actual width and height are.
+			// WidthRequest and HeightRequest are the properties that we use to propagate changes down to the Handler.
+			if (this.Batched && (property == HeightProperty.PropertyName || property == WidthProperty.PropertyName))
+				return;
+
+			base.UpdateHandlerValue(property);
+		}
+
 		/// <inheritdoc/>
 		double IView.Width
 		{
