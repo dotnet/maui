@@ -9,6 +9,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -229,10 +230,13 @@ namespace Microsoft.Maui.Controls
 			{
 				SetPropertyChanged(XProperty, nameof(X), x, frame.X);
 				SetPropertyChanged(YProperty, nameof(Y), y, frame.Y);
-				SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width);
-				SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height);
 
-				SizeChanged?.Invoke(this, EventArgs.Empty);
+				if (width != frame.Width || height != frame.Height)
+				{
+					SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width);
+					SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height);
+					SizeChanged?.Invoke(this, EventArgs.Empty);
+				}
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
