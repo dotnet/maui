@@ -188,7 +188,8 @@ steps:
     inputs:
       Contents: |
         ${{ parameters.checkoutDirectory }}/artifacts/log/**
-        ${{ parameters.checkoutDirectory }}/artifacts/logs/**
+        ${{ parameters.checkoutDirectory }}/artifacts/logs/**/*
+        ${{ parameters.checkoutDirectory }}/artifacts/logs/*.*
       TargetFolder: ${{ parameters.artifactsPath }}/logs
       flattenFolders: true
   
