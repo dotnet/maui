@@ -500,7 +500,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((IWindow)window).FrameChanged(new Rect(100, 250, 300, 400));
 
-			Assert.Equal(1, sizeChangedCount);
+			Assert.Equal(0, sizeChangedCount);
 			Assert.Equal(new[] { "Y" }, changingProperties);
 			Assert.Equal(new[] { "Y" }, changedProperties);
 		}
