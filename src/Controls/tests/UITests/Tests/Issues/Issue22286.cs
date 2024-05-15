@@ -18,17 +18,15 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
 
 			App.WaitForElement("TestEditor1");
-			App.Tap("TestEditor2");
-			App.EnterText("TestEditor2", "abc");
+			App.Tap("TestEditor1");
 
-			await Task.Yield();
-			Assert.True(App.IsKeyboardShown());
+			App.Tap("TestEditor2");
 
 			if (App.IsKeyboardShown())
 				App.DismissKeyboard();
 
 			await Task.Yield();
-			Assert.False(App.IsKeyboardShown());
+			VerifyScreenshot();
 		}
 	}
 }
