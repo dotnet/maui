@@ -254,14 +254,13 @@ namespace Microsoft.Maui.Platform
 
 		static void PaintButtonRect(CGContext? context, UIImage image, UIColor color)
 		{
-				image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
-				context?.SetFillColor(color.CGColor);
-				context?.SetBlendMode(CGBlendMode.SourceIn);
-				context?.SetAlpha(1.0f);
+			image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
+			context?.SetFillColor(color.CGColor);
+			context?.SetBlendMode(CGBlendMode.SourceIn);
+			context?.SetAlpha(1.0f);
 
-				var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
-				context?.FillRect(rect);
-
+			var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
+			context?.FillRect(rect);
 		}
 	}
 }

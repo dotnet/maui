@@ -187,17 +187,17 @@ namespace Microsoft.Maui.Platform
 				return image;
 			}
 			else {
-			UIGraphics.BeginImageContextWithOptions(new CGSize(DefaultSize, DefaultSize), false, 0);
-			var context = UIGraphics.GetCurrentContext();
-			context.SaveState();
+				UIGraphics.BeginImageContextWithOptions(new CGSize(DefaultSize, DefaultSize), false, 0);
+				var context = UIGraphics.GetCurrentContext();
+				context.SaveState();
 
-			RenderCheckMark(context, check);
+				RenderCheckMark(context, check);
 
-			context.RestoreState();
-			var img = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+				context.RestoreState();
+				var img = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
 
-			return img;
+				return img;
 			}
 		}
 
@@ -251,21 +251,21 @@ namespace Microsoft.Maui.Platform
 
 		static void RenderCheckMark(CGContext context)
 		{
-				context.SaveState();
+			context.SaveState();
 
-				var vPadding = LineWidth / 2;
-				var hPadding = LineWidth / 2;
-				var diameter = DefaultSize - LineWidth;
+			var vPadding = LineWidth / 2;
+			var hPadding = LineWidth / 2;
+			var diameter = DefaultSize - LineWidth;
 
-				var checkPath = CreateCheckPath();
+			var checkPath = CreateCheckPath();
 
-				context.TranslateCTM(hPadding + (nfloat)(0.05 * diameter), vPadding + (nfloat)(0.1 * diameter));
-				context.ScaleCTM(diameter, diameter);
-				DrawCheckMark(checkPath);
-				UIColor.White.SetStroke();
-				checkPath.Stroke();
+			context.TranslateCTM(hPadding + (nfloat)(0.05 * diameter), vPadding + (nfloat)(0.1 * diameter));
+			context.ScaleCTM(diameter, diameter);
+			DrawCheckMark(checkPath);
+			UIColor.White.SetStroke();
+			checkPath.Stroke();
 
-				context.RestoreState();
+			context.RestoreState();
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
