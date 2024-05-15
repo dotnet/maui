@@ -25,12 +25,12 @@
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
     <ProjectReference Condition="'$(IncludeCompatibilityProjects)' == 'true'" Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
-    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
-    <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
+    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\Foldable\src\Controls.Foldable.csproj" />
     <ProjectReference Include="..\..\..\Graphics\src\Graphics\Graphics.csproj" />
   </ItemGroup>
 
@@ -52,7 +52,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Compile Include="..\..\tests\CustomAttributes\*.cs" />
+    <Compile Include="..\CustomAttributes\*.cs" />
     <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
   </ItemGroup>
 
