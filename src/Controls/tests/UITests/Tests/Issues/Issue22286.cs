@@ -21,11 +21,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.Tap("TestEditor2");
 			App.EnterText("TestEditor2", "abc");
 
-			App.DismissKeyboard();
+			await Task.Yield();
+			Assert.True(App.IsKeyboardShown());
 
-			await Task.Delay(500);
+			if (App.IsKeyboardShown())
+				App.DismissKeyboard();
 
-			VerifyScreenshot();
+			await Task.Yield();
+			Assert.False(App.IsKeyboardShown());
 		}
 	}
 }
