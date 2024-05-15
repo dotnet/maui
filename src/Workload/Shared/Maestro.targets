@@ -19,7 +19,7 @@
     <Error Condition="Exists($(AssetManifestPath))" Text="The manifest file '$(AssetManifestPath)' already exists." />
 
     <ItemGroup>
-      <ItemsToPush Include="$(RootManifestOutputPath)*.nupkg" />
+      <ItemsToPush Include="$(RootManifestOutputPath)**\*.nupkg" />
     </ItemGroup>
 
     <Error Condition="'@(ItemsToPush)' == ''" Text="No packages to push." />
