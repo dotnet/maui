@@ -13,7 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "The iOS keyboard is not fully retracted and requires an extra click on the Done button";
 
 		[Test]
-		public async Task ClosedKeyboardNoToolbarVisible()
+		public void ClosedKeyboardNoToolbarVisible()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
 
@@ -25,8 +25,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			if (App.IsKeyboardShown())
 				App.DismissKeyboard();
 
-			await Task.Yield();
-			VerifyScreenshot();
+			App.Screenshot("Closing the keyboard also hide the custom Done Button in the InputAccessoryView.");
 		}
 	}
 }
