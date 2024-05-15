@@ -9,7 +9,7 @@ const string defaultVersion = "10.0.19041.0";
 const string dotnetVersion = "net8.0";
 
 // required
-string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/UITests.WinUI/Controls.WinUI.AppiumTests.csproj";
+string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";
 FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_WINDOWS_PROJECT);
 // Used for Windows to differentiate between packaged and unpackaged
 string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE") ?? $"");
