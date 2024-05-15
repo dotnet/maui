@@ -1944,11 +1944,11 @@ namespace Microsoft.Maui.Controls
 
 		private protected override void UpdateHandlerValue(string property)
 		{
-			// The Height and Width properties aren't really meant to propagate back down to the handler.
-			// These properties are only set when the platform code updates the VisualElement.Frame property
-			// during an arrange pass, indicating what the actual width and height of the platform element are.
-			// WidthRequest and HeightRequest are the properties that we use to propagate changes down to the handler.
-			// These will still propagate down to the handler via the `OnRequestChanged` method.
+			// The HeightProperty and WidthProperty are not designed to propagate back to the handler.
+			// Instead, we use WidthRequestProperty and HeightRequestProperty to propagate changes to the handler.
+			// HeightProperty and WidthProperty are readonly and only update when the VisualElement.Frame property is set
+			// during an arrange pass, which indicates the actual width and height of the platform element.
+			// Changes to WidthRequestProperty and HeightRequestProperty will propagate to the handler via the `OnRequestChanged` method.
 			if (this.Batched && (property == HeightProperty.PropertyName || property == WidthProperty.PropertyName))
 				return;
 

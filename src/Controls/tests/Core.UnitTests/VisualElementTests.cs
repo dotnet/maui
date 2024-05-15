@@ -296,12 +296,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void WidthAndHeightRequestPropagateToHandler()
 		{
-			bool mapperCalled = false;
+			int heightMapperCalled = 0;
+			int widthMapperCalled = 0;
 
 			var mapper = new PropertyMapper<IView, ViewHandler>(ViewHandler.ViewMapper)
 			{
-				[nameof(IView.Height)] = (_,_) => mapperCalled = true,
-				[nameof(IView.Width)] = (_,_) => mapperCalled = true,
+				[nameof(IView.Height)] = (_,_) => heightMapperCalled++,
+				[nameof(IView.Width)] = (_,_) => widthMapperCalled++,
 			};
 
 			var mauiApp1 = MauiApp.CreateBuilder()
@@ -312,13 +313,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var element = new BasicVisualElement();
 			var platformView = element.ToPlatform(new MauiContext(mauiApp1.Services));
 
-			mapperCalled = false;
+			heightMapperCalled = 0;
+			widthMapperCalled = 0;
 			element.WidthRequest = 99;
-			Assert.True(mapperCalled);
+			Assert.Equal(1, heightMapperCalled);
+			Assert.Equal(1, widthMapperCalled);
 
-			mapperCalled = false;
 			element.HeightRequest = 99;
-			Assert.True(mapperCalled);
+			Assert.Equal(2, heightMapperCalled);
+			Assert.Equal(2, widthMapperCalled);
 		}
 	}
 }
