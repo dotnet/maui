@@ -144,6 +144,17 @@ These are tests used for exercising the UI through accessibility layers to simul
 - *Controls.TestCases.App*: .NET MAUI Sample used for the automated UI tests
 - *Controls.TestCases.Shared.Tests*: .NET MAUI library used to define the UI tests
 
+Each platform has a specific UI tests library project where it is possible to add specific tests per platform.
+
+```
+├──  Controls
+│    ├── tests
+│    │   ├── Controls.TestCases.Android.Tests
+│    │   ├── Controls.TestCases.iOS.Tests
+│    │   ├── Controls.TestCases.Mac.Tests
+│    │   ├── Controls.TestCases.WinUI.Tests
+```
+
 ### Unit Test Projects
 
 These are tests that will not run on a device. This is useful for testing device independent logic.
