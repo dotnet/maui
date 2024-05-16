@@ -1,10 +1,10 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="9.0.100-preview.5.24253.16">
+    <Dependency Name="VS.Tools.Net.Core.SDK.Resolver" Version="9.0.100-preview.5.24253.16">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>fa261b952d702c6bd604728fcbdb58ac071a22b1</Sha>
+      <Sha>1741345c6399ae203d8f259fb12fb873dac5129d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.5.24265.1">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.5.24265.1" CoherentParentDependency="VS.Tools.Net.Core.SDK.Resolver">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9d0142f768aa54f7a00161beb289c74167b70ed1</Sha>
     </Dependency>
