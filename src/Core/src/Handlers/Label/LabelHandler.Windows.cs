@@ -43,7 +43,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOpacity(ILabelHandler handler, ILabel label)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 			handler.PlatformView.UpdateOpacity(label);
 			handler.ToPlatform().UpdateOpacity(label);
 		}
