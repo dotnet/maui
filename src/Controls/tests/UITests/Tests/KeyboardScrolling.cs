@@ -70,7 +70,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		// will return a bool showing if the view is visible
-		static bool CheckIfViewAboveKeyboard(IApp app, string marked, bool isEditor)
+		internal static bool CheckIfViewAboveKeyboard(IApp app, string marked, bool isEditor)
 		{
 			var views = app.WaitForElement(marked);
 
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.AppiumTests
 
 			var testApp = app as AppiumApp;
 			var keyboardPositionNullable = FindiOSKeyboardLocation(testApp?.Driver);
-			Assert.NotNull(keyboardPositionNullable);
+			Assert.NotNull(keyboardPositionNullable, "Could not find the keyboard location.");
 
 			var keyboardPosition = (System.Drawing.Point)keyboardPositionNullable!;
 			if (isEditor)
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.AppiumTests
 				keyboardPosition.Y -= defaultSizeAccessoryView;
 
 			}
-			Assert.Less(rect.CenterY(), keyboardPosition.Y);
+			Assert.Less(rect.CenterY(), keyboardPosition.Y, "The view is not above the keyboard.");
 
 			return true;
 		}

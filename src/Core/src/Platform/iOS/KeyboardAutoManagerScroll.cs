@@ -391,6 +391,8 @@ public static class KeyboardAutoManagerScroll
 			bottomBoundary = Math.Min(bottomBoundary, superScrollViewRect.Value.Bottom - TextViewDistanceFromBottom);
 		}
 
+		bool forceSetContentInsets = false;
+
 		// scenario where we go into an editor with the "Next" keyboard button,
 		// but the cursor location on the editor is scrolled below the visible section
 		if (View is UITextView && cursorRect.Y >= viewRectInWindow.GetMaxY())
@@ -413,8 +415,11 @@ public static class KeyboardAutoManagerScroll
 				move = 0;
 		}
 
-		else if (cursorRect.Y >= topBoundary && cursorRect.Y < bottomBoundary)
-			return;
+		else if (cursorRect.Y >= topBoundary && cursorRect.Y < bottomBoundary){
+			// Even if we do not scroll, we still need to adjust the bottom inset so we can scroll
+			// to the bottom of the scrollview with the keyboard up.
+			forceSetContentInsets = true;
+		}
 
 		else if (cursorRect.Y > bottomBoundary)
 			move = cursorRect.Y - (nfloat)bottomBoundary;
@@ -588,25 +593,13 @@ public static class KeyboardAutoManagerScroll
 			move += innerScrollValue;
 
 			// ContentInset logic
-			if (ScrolledView is not null)
+			if (forceSetContentInsets && superScrollView is not null)
 			{
-				var bottomInset = kbSize.Height;
-				var bottomScrollIndicatorInset = bottomInset - TextViewDistanceFromBottom;
-
-				bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
-				bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
-
-				if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
-				{
-					bottomInset -= ScrolledView.SafeAreaInsets.Bottom;
-					bottomScrollIndicatorInset -= ScrolledView.SafeAreaInsets.Bottom;
-				}
-
-				var movedInsets = ScrolledView.ContentInset;
-				movedInsets.Bottom = bottomInset;
-
-				if (LastScrollView.ContentInset != movedInsets)
-					UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(ScrolledView, movedInsets, bottomScrollIndicatorInset), () => { });
+				ApplyContentInset (superScrollView, LastScrollView);
+			}
+			else
+			{
+				ApplyContentInset (ScrolledView, LastScrollView);
 			}
 		}
 
@@ -622,6 +615,11 @@ public static class KeyboardAutoManagerScroll
 				rect.Y = rootViewOrigin.Y;
 
 				UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
+
+				// this is the scenario where there is a scrollview, but the whole scrollview is below
+				// where the keyboard will be. We need to scroll the ContainerView and add ContentInsets to the scrollview.
+				if (LastScrollView is not null)
+					ApplyContentInset(LastScrollView, LastScrollView);
 			}
 		}
 
@@ -672,11 +670,40 @@ public static class KeyboardAutoManagerScroll
 			ContainerView.Frame = rect;
 	}
 
+	static void ApplyContentInset(UIScrollView? scrolledView, UIScrollView? lastScrollView)
+	{
+		if (scrolledView is null || lastScrollView is null || ContainerView is null)
+			return;
+
+		var keyboardIntersect = CGRect.Intersect(KeyboardFrame, scrolledView.Frame);
+
+		var frameInWindow = ContainerView!.ConvertRectToView(scrolledView.Frame, null);
+		keyboardIntersect = CGRect.Intersect(KeyboardFrame, frameInWindow);
+
+		var bottomInset = keyboardIntersect.Height;
+		var bottomScrollIndicatorInset = bottomInset;
+
+		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
+		bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
+
+		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+		{
+			bottomInset -= scrolledView.SafeAreaInsets.Bottom;
+			bottomScrollIndicatorInset -= scrolledView.SafeAreaInsets.Bottom;
+		}
+
+		var movedInsets = scrolledView.ContentInset;
+		movedInsets.Bottom = bottomInset;
+
+		if (lastScrollView.ContentInset != movedInsets)
+			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(scrolledView, movedInsets, bottomScrollIndicatorInset), () => { });
+	}
+
 	static UIScrollView? FindParentScroll(UIScrollView? view)
 	{
 		while (view is not null)
 		{
-			if (view.ScrollEnabled)
+			if (view.ScrollEnabled && !IsHorizontalCollectionView(view))
 				return view;
 
 			view = view.FindResponder<UIScrollView>();
@@ -684,6 +711,9 @@ public static class KeyboardAutoManagerScroll
 
 		return null;
 	}
+
+	static bool IsHorizontalCollectionView(UIView collectionView)
+    => collectionView is UICollectionView { CollectionViewLayout: UICollectionViewFlowLayout { ScrollDirection: UICollectionViewScrollDirection.Horizontal }};
 
 	internal static nfloat FindKeyboardHeight()
 	{
