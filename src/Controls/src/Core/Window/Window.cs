@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		int _batchFrameUpdate = 0;
-
+		bool disableHandlerUpdate;
 		void IWindow.FrameChanged(Rect frame)
 		{
 			var x = X;
@@ -233,8 +233,10 @@ namespace Microsoft.Maui.Controls
 
 				if (width != frame.Width || height != frame.Height)
 				{
-					SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width, false);
-					SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height, false);
+					disableHandlerUpdate = true;
+					SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width);
+					SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height);
+					disableHandlerUpdate = false;
 					SizeChanged?.Invoke(this, EventArgs.Empty);
 				}
 			}
@@ -290,6 +292,14 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == nameof(Page))
 				Handler?.UpdateValue(nameof(IWindow.Content));
+		}
+
+		private protected override void UpdateHandlerValue(string property)
+		{
+			if (disableHandlerUpdate)
+				return;
+
+			base.UpdateHandlerValue(property);
 		}
 
 		/// <inheritdoc/>
