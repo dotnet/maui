@@ -1,18 +1,6 @@
 <Project>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-
-  <ItemGroup>
-    <!-- Upgrade xunit's transitive NETStandard.Library dependency to avoid .NET Standard 1.x dependencies. -->
-    <!-- <PackageReference Include="NETStandard.Library"
-                      IsImplicitlyDefined="false"
-                      PrivateAssets="all"
-                      ExcludeAssets="runtime"
-                      VersionOverride="2.0.3"
-                      Condition="'$(TargetFrameworkIdentifier)' != '.NETStandard' and
-                                 $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" /> -->
-  </ItemGroup>
-
+  <Import Condition="'$(SampleProject)' != 'true'" Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Condition="'$(SampleProject)' != 'true'" Project="eng\Versions.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
