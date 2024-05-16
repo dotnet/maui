@@ -31,8 +31,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			SetRealCell(item, cell);
 
-			WireUpForceUpdateSizeRequested(item, cell, tv);
-
 			UpdateBackground(cell, item);
 
 			SetAccessibility(cell, item);

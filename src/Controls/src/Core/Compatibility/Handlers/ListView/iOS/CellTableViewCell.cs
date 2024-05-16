@@ -10,17 +10,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	public class CellTableViewCell : UITableViewCell, INativeElementView
 	{
 		WeakReference<Cell> _cell;
-		readonly WeakEventManager _weakEventManager = new();
 
-		// NOTE: internal callers can use InternalPropertyChanged
-		[Obsolete("To be removed in a future release.")]
 		public Action<object, PropertyChangedEventArgs> PropertyChanged;
-
-		internal event Action<object, PropertyChangedEventArgs> InternalPropertyChanged
-		{
-			add => _weakEventManager.AddEventHandler(value);
-			remove => _weakEventManager.RemoveEventHandler(value);
-		}
 
 		bool _disposed;
 
@@ -40,7 +31,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (cell is not null)
 					{
-						cell.PropertyChanged -= HandlePropertyChanged;
 						BeginInvokeOnMainThread(cell.SendDisappearing);
 					}
 				}
@@ -48,7 +38,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (value is not null)
 				{
 					_cell = new(value);
-					value.PropertyChanged += HandlePropertyChanged;
 					BeginInvokeOnMainThread(value.SendAppearing);
 				}
 				else
@@ -60,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public Element Element => Cell;
 
-		public void HandlePropertyChanged(object sender, PropertyChangedEventArgs e) => _weakEventManager.HandleEvent(sender, e, nameof(InternalPropertyChanged));
+		public void HandlePropertyChanged(object sender, PropertyChangedEventArgs e) => PropertyChanged?.Invoke(sender, e);
 
 		internal static UITableViewCell GetPlatformCell(UITableView tableView, Cell cell, bool recycleCells = false, string templateId = "")
 		{

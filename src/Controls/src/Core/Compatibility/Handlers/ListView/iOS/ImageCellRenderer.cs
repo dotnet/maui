@@ -20,8 +20,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var imageCell = (ImageCell)item;
 
-			WireUpForceUpdateSizeRequested(item, result, tv);
-
 			SetImage(imageCell, result);
 
 			return result;
