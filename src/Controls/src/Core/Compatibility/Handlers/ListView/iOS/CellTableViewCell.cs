@@ -116,7 +116,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (Cell is Cell cell)
 				{
-					cell.PropertyChanged -= HandlePropertyChanged;
 					CellRenderer.SetRealCell(cell, null);
 				}
 				_cell = null;
