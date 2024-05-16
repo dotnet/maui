@@ -32,9 +32,9 @@ namespace Maui.Controls.Sample.Issues
 			77
 		};
 
-		ObservableCollection<ObservableCollection<int>> _carouselGrids = new();
+		ObservableCollection<ObservableCollection<string>> _carouselGrids = new();
 
-		public ObservableCollection<ObservableCollection<int>> CarouselGrids
+		public ObservableCollection<ObservableCollection<string>> CarouselGrids
 		{ 
 			get => _carouselGrids; 
 			set
@@ -53,7 +53,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			foreach (var card in _carouselCards)
 			{
-				_carouselGrids.Add(new ObservableCollection<int>(Enumerable.Range(1, card)));
+				_carouselGrids.Add(new ObservableCollection<string>(Enumerable.Range(1, card).Select(x=> $"Item{x}")));
 			}
 		}
 	}

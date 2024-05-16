@@ -64,8 +64,7 @@
           </DataTemplate>
         </CarouselView.ItemTemplate>
       </CarouselView>
-      <IndicatorView 
-        AutomationId="WaitForStubControl"
+      <IndicatorView
         Grid.Row="1" 
         HorizontalOptions="Center" 
         IndicatorSize="22" 

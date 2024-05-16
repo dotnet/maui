@@ -2,7 +2,7 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue9075 : _IssuesUITest
 {
@@ -12,13 +12,13 @@ public class Issue9075 : _IssuesUITest
 		: base(device)
 	{ }
 
+	#if WINDOWS
 	[Test]
 	[Category(UITestCategories.Layout)]
+	#endif
 	public void FlexLayoutCycleException()
 	{
-		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac });
-	
-		App.WaitForElement("WaitForStubControl");
+		App.WaitForElement("Item2");
 
 		// Without exceptions, the test has passed.
 	}
