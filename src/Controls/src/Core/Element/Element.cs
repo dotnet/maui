@@ -567,15 +567,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Method that is called when a bound property is changed.</summary>
 		/// <param name="propertyName">The name of the bound property that changed.</param>
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
-			OnPropertyChanged(propertyName, true);
-
-		internal void OnPropertyChanged([CallerMemberName] string propertyName = null, bool propagateToHandler = true)
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (propagateToHandler)
-				UpdateHandlerValue(propertyName);
+			UpdateHandlerValue(propertyName);
 
 			if (_effects?.Count > 0)
 			{
