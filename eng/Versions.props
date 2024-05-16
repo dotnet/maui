@@ -120,10 +120,11 @@
   </PropertyGroup>
   <PropertyGroup>
     <MicrosoftNETTestSdkPackageVersion>17.6.0</MicrosoftNETTestSdkPackageVersion>
-    <XunitPackageVersion>2.5.1</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.5.1</XunitRunnerVisualStudioPackageVersion>
-    <XunitAssertPackageVersion>2.5.1</XunitAssertPackageVersion>
-    <XUnitAnalyzersPackageVersion>1.3.0</XUnitAnalyzersPackageVersion>
+    <XunitPackageVersion>2.8.0</XunitPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.8.0</XunitRunnerVisualStudioPackageVersion>
+    <XunitAssertPackageVersion>2.8.0</XunitAssertPackageVersion>
+    <XUnitAnalyzersPackageVersion>1.13.0</XUnitAnalyzersPackageVersion>
+    <XunitAbstractionsPackageVersion>2.0.3</XunitAbstractionsPackageVersion>
     <NSubstitutePackageVersion>5.1.0</NSubstitutePackageVersion>
     <CoverletCollectorPackageVersion>6.0.0</CoverletCollectorPackageVersion>
   </PropertyGroup>

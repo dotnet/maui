@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls.CustomAttributes
 {
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 	{
 		Github,
 		Bugzilla,
+		ManualTest,
 		None
 	}
 
@@ -46,9 +48,19 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 		)]
 	public class IssueAttribute : Attribute
 	{
-		bool _modal;
 
 		public IssueAttribute(IssueTracker issueTracker, int issueNumber, string description,
+			NavigationBehavior navigationBehavior = NavigationBehavior.Default, int issueTestNumber = 0)
+		{
+			IssueTracker = issueTracker;
+			IssueNumber = issueNumber.ToString();
+			Description = description;
+			PlatformsAffected = PlatformAffected.Default;
+			NavigationBehavior = navigationBehavior;
+			IssueTestNumber = issueTestNumber;
+		}
+
+		public IssueAttribute(IssueTracker issueTracker, string issueNumber, string description,
 			NavigationBehavior navigationBehavior = NavigationBehavior.Default, int issueTestNumber = 0)
 		{
 			IssueTracker = issueTracker;
@@ -64,6 +76,18 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 			int issueTestNumber = 0)
 		{
 			IssueTracker = issueTracker;
+			IssueNumber = issueNumber.ToString();
+			Description = description;
+			PlatformsAffected = platformsAffected;
+			NavigationBehavior = navigationBehavior;
+			IssueTestNumber = issueTestNumber;
+		}
+
+		public IssueAttribute(IssueTracker issueTracker, string issueNumber, string description,
+			PlatformAffected platformsAffected, NavigationBehavior navigationBehavior = NavigationBehavior.Default,
+			int issueTestNumber = 0)
+		{
+			IssueTracker = issueTracker;
 			IssueNumber = issueNumber;
 			Description = description;
 			PlatformsAffected = platformsAffected;
@@ -73,7 +97,7 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 
 		public IssueTracker IssueTracker { get; }
 
-		public int IssueNumber { get; }
+		public string IssueNumber { get; }
 
 		public int IssueTestNumber { get; }
 
@@ -242,6 +266,7 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 			IsEnabled,
 			Navigation,
 			InputTransparent,
+			NotInputTransparent,
 			Layout,
 			X,
 			Y,
@@ -646,6 +671,7 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 			VerticalTextAlignmentEnd,
 			MaxLines,
 			HtmlTextType,
+			BrokenHtmlTextType,
 			HtmlTextTypeMultipleLines,
 			HtmlTextLabelProperties,
 			TextTypeToggle,
@@ -861,6 +887,7 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 		{
 			ToStringOverride,
 			Spans,
+			SpanTapped,
 			PropertyChanged
 		}
 
@@ -879,6 +906,71 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 			PeekAreaInsets,
 			Position,
 			IsBounceEnabled
+		}
+
+		public enum ImageLoading
+		{
+			FromBundleSvg,
+			FromBundlePng,
+			FromBundleJpg,
+			FromBundleGif,
+		}
+
+		public enum InputTransparency
+		{
+			Default,
+			IsFalse,
+			IsTrue,
+			TransLayoutOverlay,
+			TransLayoutOverlayWithButton,
+			CascadeTransLayoutOverlay,
+			CascadeTransLayoutOverlayWithButton,
+		}
+
+		public static class InputTransparencyMatrix
+		{
+			// this is both for color diff and cols
+			const bool truee = true;
+
+			public static readonly IReadOnlyDictionary<(bool RT, bool RC, bool NT, bool NC, bool T), (bool Clickable, bool PassThru)> States =
+				new Dictionary<(bool, bool, bool, bool, bool), (bool, bool)>
+				{
+					[(truee, truee, truee, truee, truee)] = (false, truee),
+					[(truee, truee, truee, truee, false)] = (false, truee),
+					[(truee, truee, truee, false, truee)] = (false, truee),
+					[(truee, truee, truee, false, false)] = (false, truee),
+					[(truee, truee, false, truee, truee)] = (false, truee),
+					[(truee, truee, false, truee, false)] = (false, truee),
+					[(truee, truee, false, false, truee)] = (false, truee),
+					[(truee, truee, false, false, false)] = (false, truee),
+					[(truee, false, truee, truee, truee)] = (false, truee),
+					[(truee, false, truee, truee, false)] = (false, truee),
+					[(truee, false, truee, false, truee)] = (false, truee),
+					[(truee, false, truee, false, false)] = (truee, false),
+					[(truee, false, false, truee, truee)] = (false, false),
+					[(truee, false, false, truee, false)] = (truee, false),
+					[(truee, false, false, false, truee)] = (false, false),
+					[(truee, false, false, false, false)] = (truee, false),
+					[(false, truee, truee, truee, truee)] = (false, false),
+					[(false, truee, truee, truee, false)] = (false, false),
+					[(false, truee, truee, false, truee)] = (false, false),
+					[(false, truee, truee, false, false)] = (truee, false),
+					[(false, truee, false, truee, truee)] = (false, false),
+					[(false, truee, false, truee, false)] = (truee, false),
+					[(false, truee, false, false, truee)] = (false, false),
+					[(false, truee, false, false, false)] = (truee, false),
+					[(false, false, truee, truee, truee)] = (false, false),
+					[(false, false, truee, truee, false)] = (false, false),
+					[(false, false, truee, false, truee)] = (false, false),
+					[(false, false, truee, false, false)] = (truee, false),
+					[(false, false, false, truee, truee)] = (false, false),
+					[(false, false, false, truee, false)] = (truee, false),
+					[(false, false, false, false, truee)] = (false, false),
+					[(false, false, false, false, false)] = (truee, false),
+				};
+
+			public static string GetKey(bool rootTrans, bool rootCascade, bool nestedTrans, bool nestedCascade, bool trans, bool isClickable, bool isPassThru) =>
+				$"Root{(rootTrans ? "Trans" : "")}{(rootCascade ? "Cascade" : "")}Nested{(nestedTrans ? "Trans" : "")}{(nestedCascade ? "Cascade" : "")}Control{(trans ? "Trans" : "")}Is{(isClickable ? "" : "Not")}ClickableIs{(isPassThru ? "" : "Not")}PassThru";
 		}
 	}
 }

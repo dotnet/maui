@@ -6,7 +6,8 @@
 const string DefaultVersion = "17.2";
 
 // Required arguments
-var projectPath = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? DEFAULT_PROJECT);
+string DEFAULT_IOS_PROJECT = "../../src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj";
+var projectPath = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? DEFAULT_IOS_PROJECT);
 var testDevice = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? $"ios-simulator-64_{DefaultVersion}");
 var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-ios");
 var binlogArg = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
