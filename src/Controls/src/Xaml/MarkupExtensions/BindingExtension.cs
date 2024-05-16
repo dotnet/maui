@@ -21,15 +21,14 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
-			Type bindingXDataType = null;
-			if ((serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
-				&& (serviceProvider.GetService(typeof(IXamlDataTypeProvider)) is IXamlDataTypeProvider dataTypeProvider)
-				&& dataTypeProvider.BindingDataType != null)
-			{
-				typeResolver.TryResolve(dataTypeProvider.BindingDataType, out bindingXDataType);
-			}
-
-			if (TypedBinding == null)
+			if (TypedBinding is null) {
+				Type bindingXDataType = null;
+				if ((serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
+					&& (serviceProvider.GetService(typeof(IXamlDataTypeProvider)) is IXamlDataTypeProvider dataTypeProvider)
+					&& dataTypeProvider.BindingDataType != null)
+				{
+					typeResolver.TryResolve(dataTypeProvider.BindingDataType, out bindingXDataType);
+				}
 				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
 				{
 					UpdateSourceEventName = UpdateSourceEventName,
@@ -37,6 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					TargetNullValue = TargetNullValue,
 					DataType = bindingXDataType,
 				};
+			}
 
 			TypedBinding.Mode = Mode;
 			TypedBinding.Converter = Converter;
