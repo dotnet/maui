@@ -570,7 +570,7 @@ namespace Microsoft.Maui.Controls
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
 			OnPropertyChanged(propertyName, true);
 
-		internal void OnPropertyChanged(string propertyName = null, bool propagateToHandler = true)
+		internal void OnPropertyChanged([CallerMemberName] string propertyName = null, bool propagateToHandler = true)
 		{
 			base.OnPropertyChanged(propertyName);
 
