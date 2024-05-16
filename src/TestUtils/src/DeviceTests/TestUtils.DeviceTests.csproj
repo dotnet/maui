@@ -7,7 +7,7 @@
     <RootNamespace>Microsoft.Maui.TestUtils.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests</AssemblyName>
     <Nullable>enable</Nullable>
-    <ExcludeMicrosoftNetTestSdk>false</ExcludeMicrosoftNetTestSdk>
+    <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
   </PropertyGroup>
 
   <ItemGroup>
