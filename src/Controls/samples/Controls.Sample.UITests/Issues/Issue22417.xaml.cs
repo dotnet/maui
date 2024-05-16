@@ -43,6 +43,8 @@ namespace Maui.Controls.Sample.Issues
 		void OnAddButtonClicked(object sender, System.EventArgs e)
 		{
 			Items.Add(new Issue22417Model($"Item {_index}", $"CarouselView item {_index}"));
+			TestCarousel.ScrollTo(_index);
+			_index++;
 		}
 
 		public class Issue22417Model
