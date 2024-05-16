@@ -64,11 +64,11 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ImageButtonCoreGalleryPage(), "Image Button Gallery"),
 			new GalleryPageFactory(() => new ImageCoreGalleryPage(), "Image Gallery"),
 			new GalleryPageFactory(() => new KeyboardScrollingGridGallery(), "Keyboard Scrolling Gallery - Grid with Star Row"),
-      		new GalleryPageFactory(() => new KeyboardScrollingNonScrollingPageLargeTitlesGallery(), "Keyboard Scrolling Gallery - NonScrolling Page / Large Titles"),
-     		new GalleryPageFactory(() => new KeyboardScrollingNonScrollingPageSmallTitlesGallery(), "Keyboard Scrolling Gallery - NonScrolling Page / Small Titles"),
+			new GalleryPageFactory(() => new KeyboardScrollingNonScrollingPageLargeTitlesGallery(), "Keyboard Scrolling Gallery - NonScrolling Page / Large Titles"),
+			new GalleryPageFactory(() => new KeyboardScrollingNonScrollingPageSmallTitlesGallery(), "Keyboard Scrolling Gallery - NonScrolling Page / Small Titles"),
 		  	new GalleryPageFactory(() => new KeyboardScrollingScrollingPageLargeTitlesGallery(), "Keyboard Scrolling Gallery - Scrolling Page / Large Titles"),
 			new GalleryPageFactory(() => new KeyboardScrollingScrollingPageSmallTitlesGallery(), "Keyboard Scrolling Gallery - Scrolling Page / Small Titles"),
-      		new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
+			new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 			new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
 			new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
 			new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "Progress Bar Gallery"),
@@ -152,18 +152,33 @@ namespace Maui.Controls.Sample
 		}
 
 		readonly Dictionary<string, GalleryPageFactory> _titleToPage;
-		public async Task<bool> PushPage(string pageTitle)
+		public Task<bool> NavigateToGalleryPage(string pageTitle)
 		{
 			if (_titleToPage.TryGetValue(pageTitle.ToLowerInvariant(), out GalleryPageFactory pageFactory))
 			{
 				var page = pageFactory.Realize();
+				this.Window.Page = page;
+				return Task.FromResult(true);
+			}
 
-				await PushPage(page);
+			return Task.FromResult(false);
+		}
+
+		public async Task<bool> NavigateToTest(string pageTitle)
+		{
+			var testCaseScreen = new TestCases.TestCaseScreen();
+			if (testCaseScreen.TryToNavigateTo(pageTitle))
+			{
+				return true;
+			}
+			else if (await NavigateToGalleryPage(pageTitle))
+			{
 				return true;
 			}
 
 			return false;
 		}
+
 
 		public void FilterPages(string filter)
 		{

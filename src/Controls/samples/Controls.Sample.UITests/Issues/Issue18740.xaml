@@ -2,34 +2,33 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue18740">
-    <ContentPage.Resources>
-        <ResourceDictionary>
 
-            <Style TargetType="Button">
-                <Setter Property="Margin" Value="12" />
-            </Style>
-            
-        </ResourceDictionary>
-    </ContentPage.Resources>
-    <StackLayout>
-        <Label 
-            AutomationId="WaitForStubControl"
-            Text="1. Make sure keyboard starts out closed."/>
-        <Label 
-            Text="2. Focus the control."/>
-        <Label 
-            Text="3. Verify that the virtual keyboard appears."/>
-        <Button 
-            AutomationId="EntryButton"
-            Text="Entry"
-            Clicked="OnEntryButtonClicked"/>
-        <Button 
-            AutomationId="EditorButton"
-            Text="Editor"
-            Clicked="OnEditorButtonClicked"/>
-        <Button 
-            AutomationId="SearchBarButton"
-            Text="SearchBar"
-            Clicked="OnSearchBarButtonClicked"/>
-    </StackLayout>
+  <ContentPage.Resources>
+    <ResourceDictionary>
+
+      <Style TargetType="Button">
+        <Setter Property="Margin" Value="12" />
+      </Style>
+
+    </ResourceDictionary>
+  </ContentPage.Resources>
+  <StackLayout>
+    <Label 
+          AutomationId="WaitForStubControl"
+          Text="1. Make sure keyboard starts out closed."/>
+    <Label Text="2. Focus the control."/>
+    <Label Text="3. Verify that the virtual keyboard appears."/>
+    <Button 
+          AutomationId="EntryButton"
+          Text="Entry"
+          Clicked="OnEntryButtonClicked"/>
+    <Button 
+          AutomationId="EditorButton"
+          Text="Editor"
+          Clicked="OnEditorButtonClicked"/>
+    <Button 
+          AutomationId="SearchBarButton"
+          Text="SearchBar"
+          Clicked="OnSearchBarButtonClicked"/>
+  </StackLayout>
 </ContentPage>

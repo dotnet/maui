@@ -9,7 +9,11 @@ var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
+string officialBuildId = Argument("officialbuildid", "");
+
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
+
+var arcadeBin = MakeAbsolute(new DirectoryPath("./artifacts/bin/"));
 
 string TestTFM = Argument("testtfm", "");
 var useNuget = Argument("usenuget", true);
@@ -147,11 +151,11 @@ Task("android-aar")
 
 Task("dotnet-build")
     .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
     .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
             RunMSBuildWithDotNet("./Microsoft.Maui.sln");
@@ -206,6 +210,7 @@ Task("dotnet-legacy-controlgallery-ios")
     .Does(() =>
     {
         var properties = new Dictionary<string, string>();
+        properties.Add("RuntimeIdentifier","iossimulator-x64");
         RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj", properties, binlogPrefix: "controlgallery-ios-");
     });
 
@@ -245,6 +250,7 @@ Task("dotnet-test")
             "**/Controls.Core.UnitTests.csproj",
         //    "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
+            "**/SourceGen.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
@@ -256,6 +262,10 @@ Task("dotnet-test")
 
         foreach (var test in tests)
         {
+            if (!IsRunningOnWindows() && (test.Contains("Compatibility.Core.UnitTests") || test.Contains("Controls.Core.Design.UnitTests"))) 
+            {
+                continue;
+            }
             foreach (var project in GetFiles(test))
             {
                 try
@@ -293,10 +303,16 @@ Task("dotnet-pack-maui")
         var sln = "./Microsoft.Maui.Packages.slnf";
         if (!IsRunningOnWindows())
             sln = "./Microsoft.Maui.Packages-mac.slnf";
+ 
+        if(string.IsNullOrEmpty(officialBuildId))
+        {
+            officialBuildId = DateTime.UtcNow.ToString("yyyyMMdd.1");
+        }
 
         RunMSBuildWithDotNet(sln, target: "Pack", properties: new Dictionary<string, string>
         {
-            { "SymbolPackageFormat", "snupkg" }
+            { "SymbolPackageFormat", "snupkg" },
+            { "OfficialBuildId", officialBuildId },
         });
     });
 
@@ -523,6 +539,7 @@ Task("VS")
         StartVisualStudioForDotNet();
     }); 
 
+
 bool RunPackTarget()
 {
     // Is the user running the pack target explicitly?
@@ -567,7 +584,6 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
         envVariables.Add("MSBuildDebugEngine", "1");
 
     return envVariables;
-
 }
 
 void SetDotNetEnvironmentVariables(string dotnetDir = null)

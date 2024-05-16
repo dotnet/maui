@@ -11,29 +11,20 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Alerts Open on top of current presented view";
 
 		[Test]
+		[TestCase("OpenAlertWithModals")]
+		[TestCase("OpenAlertWithNewUIWindow")]
+		[TestCase("OpenActionSheetWithNewUIWindow")]
+		[TestCase("OpenActionSheetWithModals")]
 		[Category(UITestCategories.DisplayAlert)]
-		public void OpenAlertWithModals()
+		public void OpenAlertWithModals(string testCase)
 		{
 			this.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac, TestDevice.Windows, TestDevice.Android
 			});
 
-			App.WaitForElement("OpenAlertWithModals").Click();
-			App.WaitForElement("Cancel").Click();
-		}
-
-		[Test]
-		[Category(UITestCategories.DisplayAlert)]
-		public void OpenAlertWithNewUIWindow()
-		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac, TestDevice.Windows, TestDevice.Android
-			});
-
-			App.WaitForElement("OpenAlertWithNewUIWindow").Click();
-			App.WaitForElement("Cancel").Click();
+			App.WaitForElement(testCase).Tap();
+			App.WaitForElement("Cancel").Tap();
 		}
 	}
 }
