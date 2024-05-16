@@ -233,8 +233,8 @@ namespace Microsoft.Maui.Controls
 
 				if (width != frame.Width || height != frame.Height)
 				{
-					SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width);
-					SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height);
+					SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width, false);
+					SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height, false);
 					SizeChanged?.Invoke(this, EventArgs.Empty);
 				}
 			}
@@ -250,12 +250,12 @@ namespace Microsoft.Maui.Controls
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			void SetPropertyChanged(BindableProperty property, string name, double oldValue, double newValue)
+			void SetPropertyChanged(BindableProperty property, string name, double oldValue, double newValue, bool shouldPropagateToHandler = true)
 			{
 				if (oldValue == newValue)
 					return;
 
-				OnPropertyChanged(name);
+				OnPropertyChanged(name, shouldPropagateToHandler);
 				property.PropertyChanged?.Invoke(this, oldValue, newValue);
 			}
 		}
