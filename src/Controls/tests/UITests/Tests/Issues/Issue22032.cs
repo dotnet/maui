@@ -12,11 +12,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		public void SelectedTabIconShouldChangeColor()
+		public async Task SelectedTabIconShouldChangeColor()
 		{
 			App.WaitForElement("button");
 
 			App.Click("button");
+
+			await Task.Delay(500);
 
 			// The test passes if tab1 icon is green and tab2 red
 			VerifyScreenshot();
