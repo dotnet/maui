@@ -576,7 +576,7 @@ namespace Microsoft.Maui.Controls
 
 			if (propagateToHandler)
 			{
-				Handler?.UpdateValue(propertyName);
+				UpdateHandlerValue(propertyName);
 			}
 
 			if (_effects?.Count > 0)
@@ -589,6 +589,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		private protected virtual void UpdateHandlerValue(string property) =>
+			Handler?.UpdateValue(property);
 
 		internal IEnumerable<Element> Descendants() =>
 			Descendants<Element>();

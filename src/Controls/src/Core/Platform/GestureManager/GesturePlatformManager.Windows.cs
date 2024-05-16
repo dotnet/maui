@@ -6,7 +6,6 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -22,6 +21,8 @@ namespace Microsoft.Maui.Controls.Platform
 		FrameworkElement? _container;
 		FrameworkElement? _control;
 		VisualElement? _element;
+
+		SubscriptionFlags _subscriptionFlags = SubscriptionFlags.None;
 
 		bool _isDisposed;
 		bool _isPanning;
@@ -310,24 +311,61 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_container != null)
 			{
-				_container.DragStarting -= HandleDragStarting;
-				_container.DropCompleted -= HandleDropCompleted;
-				_container.DragOver -= HandleDragOver;
-				_container.Drop -= HandleDrop;
-				_container.Tapped -= OnTap;
-				_container.DoubleTapped -= OnTap;
-				_container.ManipulationDelta -= OnManipulationDelta;
-				_container.ManipulationStarted -= OnManipulationStarted;
-				_container.ManipulationCompleted -= OnManipulationCompleted;
-				_container.PointerPressed -= OnPointerPressed;
-				_container.PointerExited -= OnPointerExited;
-				_container.PointerReleased -= OnPointerReleased;
-				_container.PointerCanceled -= OnPointerCanceled;
-				_container.PointerEntered -= OnPgrPointerEntered;
-				_container.PointerExited -= OnPgrPointerExited;
-				_container.PointerMoved -= OnPgrPointerMoved;
-				_container.PointerPressed -= OnPgrPointerPressed;
-				_container.PointerReleased -= OnPgrPointerReleased;
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerDragEventsSubscribed) != 0)
+				{
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerDragEventsSubscribed;
+
+					_container.DragStarting -= HandleDragStarting;
+					_container.DropCompleted -= HandleDropCompleted;
+				}
+
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerDropEventsSubscribed) != 0)
+				{
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerDropEventsSubscribed;
+
+					_container.DragOver -= HandleDragOver;
+					_container.Drop -= HandleDrop;
+					_container.DragLeave -= HandleDragLeave;
+				}
+
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerTapAndRightTabEventSubscribed) != 0)
+				{
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
+
+					_container.Tapped -= OnTap;
+					_container.RightTapped -= OnTap;
+				}
+
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerDoubleTapEventSubscribed) != 0)
+				{
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerDoubleTapEventSubscribed;
+
+					_container.DoubleTapped -= OnTap;
+				}
+
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerPgrPointerEventsSubscribed) != 0)
+				{
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
+
+					_container.PointerEntered -= OnPgrPointerEntered;
+					_container.PointerExited -= OnPgrPointerExited;
+					_container.PointerMoved -= OnPgrPointerMoved;
+					_container.PointerPressed -= OnPgrPointerPressed;
+					_container.PointerReleased -= OnPgrPointerReleased;
+				}
+
+				if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
+				{
+					_subscriptionFlags &= ~SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed;
+
+					_container.ManipulationDelta -= OnManipulationDelta;
+					_container.ManipulationStarted -= OnManipulationStarted;
+					_container.ManipulationCompleted -= OnManipulationCompleted;
+					_container.PointerPressed -= OnPointerPressed;
+					_container.PointerExited -= OnPointerExited;
+					_container.PointerReleased -= OnPointerReleased;
+					_container.PointerCanceled -= OnPointerCanceled;
+				}
 			}
 		}
 
@@ -688,12 +726,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (canDrag)
 			{
+				_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
+
 				_container.DragStarting += HandleDragStarting;
 				_container.DropCompleted += HandleDropCompleted;
 			}
 
 			if (allowDrop)
 			{
+				_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
+				
 				_container.DragOver += HandleDragOver;
 				_container.Drop += HandleDrop;
 				_container.DragLeave += HandleDragLeave;
@@ -718,6 +760,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1)
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
+				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
+				
 				_container.Tapped += OnTap;
 				_container.RightTapped += OnTap;
 			}
@@ -732,6 +776,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2)
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
 			{
+				_subscriptionFlags |= SubscriptionFlags.ContainerDoubleTapEventSubscribed;
+
 				_container.DoubleTapped += OnTap;
 			}
 			else
@@ -742,6 +788,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
+			_subscriptionFlags |= SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
 			_container.PointerEntered += OnPgrPointerEntered;
 			_container.PointerExited += OnPgrPointerExited;
 			_container.PointerMoved += OnPgrPointerMoved;
@@ -769,6 +816,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			_subscriptionFlags |= SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed;
 			_container.ManipulationMode = ManipulationModes.Scale | ManipulationModes.TranslateX | ManipulationModes.TranslateY;
 			_container.ManipulationDelta += OnManipulationDelta;
 			_container.ManipulationStarted += OnManipulationStarted;
@@ -795,6 +843,18 @@ namespace Microsoft.Maui.Controls.Platform
 			var package = e.DataView.Properties[_doNotUsePropertyString] as DataPackage;
 
 			return new DragEventArgs(package!, (relativeTo) => GetPosition(relativeTo, e), platformArgs);
+		}
+
+		[Flags]
+		enum SubscriptionFlags : byte
+		{
+			None = 0,
+			ContainerDragEventsSubscribed = 1,
+			ContainerDropEventsSubscribed = 1 << 1,
+			ContainerPgrPointerEventsSubscribed = 1 << 2,
+			ContainerManipulationAndPointerEventsSubscribed = 1 << 3,
+			ContainerTapAndRightTabEventSubscribed = 1 << 4,
+			ContainerDoubleTapEventSubscribed = 1 << 5
 		}
 	}
 }
