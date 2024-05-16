@@ -59,6 +59,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return blazorAndroidWebView;
 		}
 
+		private const string AndroidFireAndForgetAsyncSwitch = "BlazorWebView.AndroidFireAndForgetAsync";
+
+		private static bool IsAndroidFireAndForgetAsyncEnabled =>
+			AppContext.TryGetSwitch(AndroidFireAndForgetAsyncSwitch, out var enabled) && enabled;
+
 		protected override void DisconnectHandler(AWebView platformView)
 		{
 			platformView.StopLoading();
@@ -67,11 +72,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				// Dispose this component's contents and block on completion so that user-written disposal logic and
 				// Blazor disposal logic will complete.
-				_webviewManager?
+
+				// Fire and forget...
+				var disposalTask = _webviewManager?
 					.DisposeAsync()
-					.AsTask()
-					.GetAwaiter()
-					.GetResult();
+					.AsTask()!;
+
+				if (IsAndroidFireAndForgetAsyncEnabled)
+				{
+					disposalTask.FireAndForget();
+				}
+				else
+				{
+					disposalTask
+						.GetAwaiter()
+						.GetResult();
+				}
 
 				_webviewManager = null;
 			}
