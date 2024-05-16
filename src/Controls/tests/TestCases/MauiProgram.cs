@@ -18,6 +18,7 @@ namespace Maui.Controls.Sample
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+					fonts.AddFont("fa_solid.ttf", "FontAwesome");
 				})
 				.Build();
 	}
