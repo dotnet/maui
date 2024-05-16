@@ -158,9 +158,9 @@ namespace Microsoft.Maui.Controls
 
 			// Once we have better logic inside core to handle backbutton visiblity this
 			// code should all go away.
-			// Windows currently doesn't have logic in core to handle back button visibility		
+			// Windows currently doesn't have logic in core to handle back button visibility
 			// Android just handles it as part of core which means you get cool animations
-			// that we don't want to interrupt here.	
+			// that we don't want to interrupt here.
 			// Once it's all built into core we can remove this code and simplify visibility logic
 			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
 			{
@@ -273,7 +273,16 @@ namespace Microsoft.Maui.Controls
 
 		Color GetBarTextColor() => _currentNavigationPage?.BarTextColor;
 		Color GetIconColor() => (_currentPage != null) ? NavigationPage.GetIconColor(_currentPage) : null;
-		string GetTitle() => GetTitleView() != null ? String.Empty : _currentPage?.Title;
+
+		string GetTitle()
+		{
+			if (GetTitleView() != null)
+			{
+				return string.Empty;
+			}
+
+			return _currentNavigationPage?.CurrentPage?.Title;
+		}
 
 		VisualElement GetTitleView()
 		{
