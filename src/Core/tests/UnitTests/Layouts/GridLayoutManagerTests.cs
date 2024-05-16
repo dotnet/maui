@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -90,6 +91,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		static GridLength GridLengthFromString(string gridLength)
 		{
+			CultureInfo usCulture = new CultureInfo("en-US"); // Ensure we're using a period as the decimal separator
+
 			gridLength = gridLength.Trim();
 
 			if (gridLength.EndsWith("*"))
@@ -101,7 +104,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 					return GridLength.Star;
 				}
 
-				return new GridLength(double.Parse(gridLength), GridUnitType.Star);
+				return new GridLength(double.Parse(gridLength, usCulture), GridUnitType.Star);
 			}
 
 			if (gridLength.ToLowerInvariant() == "auto")
