@@ -419,6 +419,10 @@ namespace Microsoft.Maui.Handlers
 				handler.HasContainer = view.NeedsContainer();
 
 			handler.UpdateValue(nameof(IView.Visibility));
+   
+   			#if WINDOWS
+			handler.UpdateValue(nameof(IView.Opacity));
+   			#endif
 		}
 
 		/// <summary>
