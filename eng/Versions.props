@@ -1,12 +1,13 @@
 <Project>
   <PropertyGroup>
     <!-- The .NET product branding version -->
-    <ProductVersion>8.0.60</ProductVersion>
-    <MajorVersion>8</MajorVersion>
+    <ProductVersion>9.0.0</ProductVersion>
+    <MajorVersion>9</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>60</PatchVersion>
-    <SdkBandVersion>8.0.100</SdkBandVersion>
-    <PreReleaseVersionLabel>ci.net8</PreReleaseVersionLabel>
+    <PatchVersion>0</PatchVersion>
+    <SdkBandVersion>9.0.100</SdkBandVersion>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>5</PreReleaseVersionIteration>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <!-- Enable to remove prerelease label and produce stable package versions. -->
@@ -27,7 +28,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
-    <MicrosoftMauiPreviousDotNetReleasedVersion>8.0.21</MicrosoftMauiPreviousDotNetReleasedVersion>
+    <MicrosoftMauiPreviousDotNetReleasedVersion>8.0.40</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
     <MicrosoftDotnetSdkInternalPackageVersion>9.0.100-preview.5.24229.2</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
