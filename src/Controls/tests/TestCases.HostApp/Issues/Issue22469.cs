@@ -14,11 +14,11 @@ public class Issue22469 : TestContentPage
 	protected override void Init()
 	{
 		var label = new Label { Text = kClickCount, AutomationId = kClickCountAutomationId, FontSize = 14 };
-		var layout = new VerticalStackLayout();
+		var layout = new Grid() { WidthRequest = 335};
 
 		var formattedString = new FormattedString();
 		formattedString.Spans.Add(new Span { Text = "A culture of continuous learning isn't something you can ignore. 76% of employees are more inclined to stay when their workplace offers learning and development 🤔 Here's a few ways you can foster this:🧠 Create channels to encourage knowledge sharing between team members👏 Provide learning opportunities like job shadowing and rotation for hands-on experiences💬 Integrate routine feedback as a celebrated part of the workflow💻 Encourage your teams to dive into digital learning and live events Take a look at some more methods you can adopt from this recent article in Forbes 👇 🔗 ", 
-			TextColor = Colors.Red, FontFamily = "OpenSansRegular"});
+			TextColor = Colors.Red, FontFamily = "OpenSansRegular", FontSize = 14});
 		var span = new Span { Text = "Just a long link to https://learn.microsoft.com/en-us/dotnet/maui/get-started/first-app?view=net-maui-8.0", FontFamily = "OpenSansRegular", TextDecorations = TextDecorations.Underline, TextColor = Colors.Green};
 		int clickCount = 0;
 		span.GestureRecognizers.Add(new TapGestureRecognizer
@@ -31,7 +31,15 @@ public class Issue22469 : TestContentPage
 		});
 		formattedString.Spans.Add(span);
 
-		layout.Children.Add(new Label { AutomationId = kLabelTestAutomationId, FormattedText = formattedString , Margin = new(16,0), FontSize = 14});
+		// Combination of spans, fotnfamily + fontsize and width 335 throws exception on iOS before Issue22469 fixed
+		var topLabel = new Label
+		{
+			AutomationId = kLabelTestAutomationId, FormattedText = formattedString, FontSize = 14
+		};
+
+		Grid.SetRow(topLabel,0);
+		Grid.SetRow(label, 1);
+		layout.Children.Add(topLabel);
 		layout.Children.Add(label);
 
 		Title = "Label Demo - Code";
