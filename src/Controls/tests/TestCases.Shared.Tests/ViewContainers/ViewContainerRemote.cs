@@ -1,6 +1,6 @@
 ﻿using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests
+namespace Microsoft.Maui.TestCases.Tests
 {
 	internal sealed class ViewContainerRemote : BaseViewContainerRemote
 	{

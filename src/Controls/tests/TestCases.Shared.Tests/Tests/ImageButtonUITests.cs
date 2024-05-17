@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests;
+namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.ImageButton)]
 internal class ImageButtonUITests : _ViewUITests
@@ -115,13 +115,13 @@ internal class ImageButtonUITests : _ViewUITests
 		var remote = GoToEventRemote();
 
 		var textBeforeClick = remote.GetEventLabel().GetText();
-		Assert.AreEqual("Event: Clicked (none)", textBeforeClick);
+		Assert.That(textBeforeClick, Is.EqualTo("Event: Clicked (none)"));
 
 		// Click ImageButton
 		remote.TapView();
 
 		var textAfterClick = remote.GetEventLabel().GetText();
-		Assert.AreEqual("Event: Clicked (fired 1)", textAfterClick);
+		Assert.That(textAfterClick, Is.EqualTo("Event: Clicked (fired 1)"));
 	}
 
 	// TODO: TouchAndHoldView is missing
@@ -131,13 +131,13 @@ internal class ImageButtonUITests : _ViewUITests
 	//	var remote = GoToEventRemote();
 
 	//	var textBeforeClick = remote.GetEventLabel().GetText();
-	//	Assert.AreEqual("Event: Pressed (none)", textBeforeClick);
+	//	Assert.That(textBeforeClick, Is.EqualTo("Event: Pressed (none)"));
 
 	//	// Press ImageButton
 	//	remote.TouchAndHoldView();
 
 	//	var textAfterClick = remote.GetEventLabel().GetText();
-	//	Assert.AreEqual("Event: Pressed (fired 1)", textAfterClick);
+	//	Assert.That(textAfterClick, Is.EqualTo("Event: Pressed (fired 1)"));
 	//}
 
 	[Test]
@@ -146,13 +146,13 @@ internal class ImageButtonUITests : _ViewUITests
 		var remote = GoToEventRemote();
 
 		var textBeforeClick = remote.GetEventLabel().GetText();
-		Assert.AreEqual("Event: Command (none)", textBeforeClick);
+		Assert.That(textBeforeClick, Is.EqualTo("Event: Command (none)"));
 
 		// Click ImageButton
 		remote.TapView();
 
 		var textAfterClick = remote.GetEventLabel().GetText();
-		Assert.AreEqual("Event: Command (fired 1)", textAfterClick);
+		Assert.That(textAfterClick, Is.EqualTo("Event: Command (fired 1)"));
 	}
 
 	[Test]
