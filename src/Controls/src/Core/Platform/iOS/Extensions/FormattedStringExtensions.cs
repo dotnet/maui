@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						var spanBoundingRect = layoutManager.GetBoundingRect(
 							new(startGlyphRange.Location, endGlyphRange.Location - startGlyphRange.Location + 1),
-							container);
+							textContainer);
 						spanRects.Add(spanBoundingRect);
 					}
 					// Span starts on current line and ends on next lines
@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						var spanBoundingRect = layoutManager.GetBoundingRect(
 							new(startGlyphRange.Location, NSMaxRange(lineGlyphRange) - startGlyphRange.Location),
-							container);
+							textContainer);
 						spanRects.Add(spanBoundingRect);
 					}
 					// Span starts on previous lines and ends on current line
@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						var spanBoundingRect = layoutManager.GetBoundingRect(
 							new(lineGlyphRange.Location, endGlyphRange.Location - lineGlyphRange.Location),
-							container);
+							textContainer);
 						spanRects.Add(spanBoundingRect);
 					}
 
