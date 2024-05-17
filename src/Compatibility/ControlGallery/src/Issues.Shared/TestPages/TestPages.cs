@@ -204,8 +204,8 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 			string cellName = "";
 			if (typeIssueAttribute.IssueTracker.ToString() != "None" &&
-				typeIssueAttribute.IssueNumber != 1461 &&
-				typeIssueAttribute.IssueNumber != 342)
+				typeIssueAttribute.IssueNumber != "1461" &&
+				typeIssueAttribute.IssueNumber != "342")
 			{
 				cellName = typeIssueAttribute.DisplayName;
 			}
