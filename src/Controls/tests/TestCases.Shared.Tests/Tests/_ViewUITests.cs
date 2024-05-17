@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Maui.Controls.Sample;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
