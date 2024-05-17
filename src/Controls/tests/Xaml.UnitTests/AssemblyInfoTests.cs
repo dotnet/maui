@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
 			Version actual = testAssembly.GetName().Version;
-			Assert.AreEqual(1, actual.Major, actual.ToString());
+			Assert.AreEqual(9, actual.Major, actual.ToString());
 			Assert.AreEqual(0, actual.Minor, actual.ToString());
 			Assert.AreEqual(0, actual.Build, actual.ToString());
 			Assert.AreEqual(0, actual.Revision, actual.ToString());
