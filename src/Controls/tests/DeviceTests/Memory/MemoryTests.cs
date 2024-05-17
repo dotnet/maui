@@ -63,6 +63,35 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 	}
 
+	[Fact("Page Does Not Leak")]
+	public async Task PageDoesNotLeak()
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference handlerReference = null;
+		WeakReference platformViewReference = null;
+
+		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			var page = new ContentPage { Content = new Label() };
+			
+			await navPage.Navigation.PushModalAsync(page);
+
+			viewReference = new WeakReference(page);
+			handlerReference = new WeakReference(page.Handler);
+			platformViewReference = new WeakReference(page.Handler.PlatformView);
+
+			// Windows requires Loaded event to fire before unloading
+			await Task.Delay(500);
+			await navPage.Navigation.PopModalAsync();
+		});
+
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+	}
+
 	[Theory("Handler Does Not Leak")]
 	[InlineData(typeof(ActivityIndicator))]
 	[InlineData(typeof(Border))]

@@ -47,10 +47,17 @@ namespace UITest.Appium.NUnit
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetup)} for {name}");
 		}
 
-		protected virtual void FixtureTeardown()
+		protected virtual void FixtureOneTimeTearDown()
 		{
-			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureTeardown)} for {name}");
+			try
+			{
+				Reset();
+			}
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+			}
 		}
 
 		[TearDown]
@@ -58,7 +65,7 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				if (App.AppState == ApplicationState.NotRunning)
+				if (App.AppState != ApplicationState.Running)
 				{
 					SaveDeviceDiagnosticInfo();
 
@@ -110,37 +117,45 @@ namespace UITest.Appium.NUnit
 			{
 				SaveDeviceDiagnosticInfo();
 
-				if (App.AppState != ApplicationState.NotRunning)
+				if (App.AppState == ApplicationState.Running)
 					SaveUIDiagnosticInfo();
 			}
 
-			FixtureTeardown();
+			FixtureOneTimeTearDown();
 		}
 
 		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null)
 		{
-			var types = App.GetLogTypes().ToArray();
-			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
-
-			foreach (var logType in new[] { "logcat" })
+			try
 			{
-				if (!types.Contains(logType, StringComparer.InvariantCultureIgnoreCase))
-					continue;
+				var types = App.GetLogTypes().ToArray();
+				TestContext.Progress.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
 
-				var logsPath = GetGeneratedFilePath($"AppLogs-{logType}.log", note);
-				if (logsPath is not null)
+				foreach (var logType in new[] { "logcat" })
 				{
-					var entries = App.GetLogEntries(logType);
-					File.WriteAllLines(logsPath, entries);
+					if (!types.Contains(logType, StringComparer.InvariantCultureIgnoreCase))
+						continue;
 
-					AddTestAttachment(logsPath, Path.GetFileName(logsPath));
+					var logsPath = GetGeneratedFilePath($"AppLogs-{logType}.log", note);
+					if (logsPath is not null)
+					{
+						var entries = App.GetLogEntries(logType);
+						File.WriteAllLines(logsPath, entries);
+
+						AddTestAttachment(logsPath, Path.GetFileName(logsPath));
+					}
 				}
+			}
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The SaveDeviceDiagnosticInfo threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
 			}
 		}
 
 		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
 		{
-			if (App.AppState == ApplicationState.NotRunning)
+			if (App.AppState != ApplicationState.Running)
 				return false;
 
 			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
