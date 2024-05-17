@@ -421,7 +421,12 @@ public static class Test
 		Command,
 		Pressed,
 		Padding,
-		Padding_Add
+		Padding_Add,
+
+		// do not use, rather use Aspect_* instead
+		AspectFill,
+		AspectFit,
+		Fill,
 	}
 
 	public enum ImageSource
