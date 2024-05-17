@@ -222,12 +222,33 @@ namespace Microsoft.Maui.Controls
 			{
 				SizeChanged?.Invoke(this, EventArgs.Empty);
 			}
+
+
+			// If for some reason during the PropertyChanged event on X,Y,Width,Height
+			// the user has changed these values. Then we need to propagate them back to the handler
+			UpdateHandler(X != frame.X, nameof(X));
+			UpdateHandler(Y != frame.Y, nameof(Y));
+			UpdateHandler(Width != frame.Width, nameof(Width));
+			UpdateHandler(Height != frame.Height, nameof(Height));
+
+
+			void UpdateHandler(bool condition, string property)
+			{
+				if (Handler is null || !condition)
+				{
+					return;
+				}
+
+				Handler.UpdateValue(property);
+			}
 		}
 
 		private protected override void UpdateHandlerValue(string property)
 		{
-			if (_batchFrameUpdate > 0)
+			if (_batchFrameUpdate > 0 && (property == nameof(X) || property == nameof(Y) || property == nameof(Width) || property == nameof(Height)))
+			{
 				return;
+			}
 
 			base.UpdateHandlerValue(property);
 		}
