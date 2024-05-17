@@ -100,19 +100,14 @@ public interface IPathPart : IEquatable<IPathPart>
 	public string? PropertyName { get; }
 }
 
-internal sealed record Result<T>(T? Value, EquatableArray<DiagnosticInfo> Diagnostics)
+internal sealed record Result<T>(T? OptionalValue, EquatableArray<DiagnosticInfo> Diagnostics)
 {
 	public bool HasDiagnostics => Diagnostics.Length > 0;
 
-	public T GetValue => Value ?? throw new InvalidOperationException("Result does not contain a value.");
+	public T Value => OptionalValue ?? throw new InvalidOperationException("Result does not contain a value.");
 
 	public static Result<T> Success(T value)
 	{
-		if (value == null)
-		{
-			throw new ArgumentNullException(nameof(value), "Success value cannot be null.");
-		}
-
 		return new Result<T>(value, new EquatableArray<DiagnosticInfo>(Array.Empty<DiagnosticInfo>()));
 	}
 

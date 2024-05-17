@@ -22,7 +22,7 @@ internal static class BindingGenerationUtilities
     private static bool IsNullableReferenceType(ITypeSymbol typeInfo) =>
         typeInfo.IsReferenceType && typeInfo.NullableAnnotation == NullableAnnotation.Annotated;
 
-    internal static TypeDescription CreateTypeDescriptionFromITypeSymbol(ITypeSymbol typeSymbol, bool enabledNullable)
+    internal static TypeDescription CreateTypeDescription(ITypeSymbol typeSymbol, bool enabledNullable)
     {
         var isNullable = IsTypeNullable(typeSymbol, enabledNullable);
         return new TypeDescription(

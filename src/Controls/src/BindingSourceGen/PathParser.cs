@@ -44,9 +44,9 @@ internal class PathParser
         var typeInfo = Context.SemanticModel.GetTypeInfo(memberAccess).Type;
         var isReferenceType = typeInfo?.IsReferenceType ?? false;
         IPathPart part = new MemberAccess(member, !isReferenceType);
-        result.GetValue.Add(part);
+        result.Value.Add(part);
 
-        return Result<List<IPathPart>>.Success(result.GetValue);
+        return Result<List<IPathPart>>.Success(result.Value);
     }
 
     private Result<List<IPathPart>> HandleElementAccessExpression(ElementAccessExpressionSyntax elementAccess)
@@ -65,9 +65,9 @@ internal class PathParser
         {
             return elementAccessResult;
         }
-        result.GetValue.AddRange(elementAccessResult.GetValue);
+        result.Value.AddRange(elementAccessResult.Value);
 
-        return Result<List<IPathPart>>.Success(result.GetValue);
+        return Result<List<IPathPart>>.Success(result.Value);
     }
 
     private Result<List<IPathPart>> HandleConditionalAccessExpression(ConditionalAccessExpressionSyntax conditionalAccess)
@@ -84,9 +84,9 @@ internal class PathParser
             return whenNotNullResult;
         }
 
-        expressionResult.GetValue.AddRange(whenNotNullResult.GetValue);
+        expressionResult.Value.AddRange(whenNotNullResult.Value);
 
-        return Result<List<IPathPart>>.Success(expressionResult.GetValue);
+        return Result<List<IPathPart>>.Success(expressionResult.Value);
     }
 
     private Result<List<IPathPart>> HandleMemberBindingExpression(MemberBindingExpressionSyntax memberBinding)
@@ -111,9 +111,9 @@ internal class PathParser
             return elementAccessResult;
         }
 
-        elementAccessResult.GetValue[0] = new ConditionalAccess(elementAccessResult.GetValue[0]);
+        elementAccessResult.Value[0] = new ConditionalAccess(elementAccessResult.Value[0]);
 
-        return Result<List<IPathPart>>.Success(elementAccessResult.GetValue);
+        return Result<List<IPathPart>>.Success(elementAccessResult.Value);
     }
 
     private Result<List<IPathPart>> HandleBinaryExpression(BinaryExpressionSyntax asExpression)
@@ -131,9 +131,9 @@ internal class PathParser
             return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(castTo.GetLocation()));
         };
 
-        leftResult.GetValue.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(typeInfo, EnabledNullable)));
+        leftResult.Value.Add(new Cast(BindingGenerationUtilities.CreateTypeDescription(typeInfo, EnabledNullable)));
 
-        return Result<List<IPathPart>>.Success(leftResult.GetValue);
+        return Result<List<IPathPart>>.Success(leftResult.Value);
     }
 
     private Result<List<IPathPart>> HandleCastExpression(CastExpressionSyntax castExpression)
@@ -150,9 +150,9 @@ internal class PathParser
             return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(castExpression.GetLocation()));
         };
 
-        result.GetValue.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(typeInfo, EnabledNullable)));
+        result.Value.Add(new Cast(BindingGenerationUtilities.CreateTypeDescription(typeInfo, EnabledNullable)));
 
-        return Result<List<IPathPart>>.Success(result.GetValue);
+        return Result<List<IPathPart>>.Success(result.Value);
     }
 
     private Result<List<IPathPart>> HandleDefaultCase()

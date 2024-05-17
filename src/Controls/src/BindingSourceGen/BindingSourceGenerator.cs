@@ -26,7 +26,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		var bindings = bindingsWithDiagnostics
 			.Where(static binding => !binding.HasDiagnostics)
-			.Select(static (binding, t) => binding.GetValue)
+			.Select(static (binding, t) => binding.Value)
 			.WithTrackingName(TrackingNames.Bindings)
 			.Collect();
 
@@ -80,26 +80,26 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<SetBindingInvocationDescription>.Failure(lambdaResult.Diagnostics);
 		}
 
-		var lambdaBodyResult = ExtractLambdaBody(lambdaResult.GetValue);
+		var lambdaBodyResult = ExtractLambdaBody(lambdaResult.Value);
 		if (lambdaBodyResult.HasDiagnostics)
 		{
 			return Result<SetBindingInvocationDescription>.Failure(lambdaBodyResult.Diagnostics);
 		}
 
-		var lambdaSymbolResult = GetLambdaSymbol(lambdaResult.GetValue, context.SemanticModel);
+		var lambdaSymbolResult = GetLambdaSymbol(lambdaResult.Value, context.SemanticModel);
 		if (lambdaSymbolResult.HasDiagnostics)
 		{
 			return Result<SetBindingInvocationDescription>.Failure(lambdaSymbolResult.Diagnostics);
 		}
 
-		var lambdaTypeInfo = context.SemanticModel.GetTypeInfo(lambdaBodyResult.GetValue, t);
+		var lambdaTypeInfo = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t);
 		if (lambdaTypeInfo.Type == null)
 		{
-			return Result<SetBindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(lambdaBodyResult.GetValue.GetLocation()));
+			return Result<SetBindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(lambdaBodyResult.Value.GetLocation()));
 		}
 
 		var pathParser = new PathParser(context, enabledNullable);
-		var pathParseResult = pathParser.ParsePath(lambdaBodyResult.GetValue);
+		var pathParseResult = pathParser.ParsePath(lambdaBodyResult.Value);
 		if (pathParseResult.HasDiagnostics)
 		{
 			return Result<SetBindingInvocationDescription>.Failure(pathParseResult.Diagnostics);
@@ -107,10 +107,10 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		var binding = new SetBindingInvocationDescription(
 			Location: sourceCodeLocation.ToInterceptorLocation(),
-			SourceType: BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(lambdaSymbolResult.GetValue.Parameters[0].Type, enabledNullable),
-			PropertyType: BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(lambdaTypeInfo.Type, enabledNullable),
-			Path: new EquatableArray<IPathPart>([.. pathParseResult.GetValue]),
-			SetterOptions: DeriveSetterOptions(lambdaBodyResult.GetValue, context.SemanticModel, enabledNullable),
+			SourceType: BindingGenerationUtilities.CreateTypeDescription(lambdaSymbolResult.Value.Parameters[0].Type, enabledNullable),
+			PropertyType: BindingGenerationUtilities.CreateTypeDescription(lambdaTypeInfo.Type, enabledNullable),
+			Path: new EquatableArray<IPathPart>([.. pathParseResult.Value]),
+			SetterOptions: DeriveSetterOptions(lambdaBodyResult.Value, context.SemanticModel, enabledNullable),
 			NullableContextEnabled: enabledNullable);
 		return Result<SetBindingInvocationDescription>.Success(binding);
 	}
