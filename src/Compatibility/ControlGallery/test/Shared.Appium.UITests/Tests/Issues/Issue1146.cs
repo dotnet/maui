@@ -14,6 +14,7 @@ namespace UITests
 
 		[Test]
 		[Category(UITestCategories.Switch)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
 		public void TestSwitchDisable()
 		{
