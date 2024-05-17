@@ -27,28 +27,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -56,8 +34,7 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
@@ -98,17 +75,10 @@ public class IntegrationTests
                         };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
     }
 
     [Fact]
@@ -150,28 +120,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -179,8 +127,7 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
@@ -229,17 +176,10 @@ public class IntegrationTests
                         };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
     }
 
     [Fact]
@@ -282,28 +222,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -311,8 +229,7 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
@@ -363,17 +280,10 @@ public class IntegrationTests
                         };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
     }
 
     public static IEnumerable<object[]> GenerateSimpleBindingWhenNullableDisabledAndPropertyNullableData =>
@@ -519,28 +429,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -548,8 +436,7 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
@@ -598,17 +485,10 @@ public class IntegrationTests
                         };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
     }
 
     [Fact]
@@ -665,28 +545,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -694,8 +552,7 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
@@ -745,17 +602,10 @@ public class IntegrationTests
                         };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
     }
 
     [Theory]
@@ -812,28 +662,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -841,8 +669,7 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
@@ -899,17 +726,10 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
     }
 
     [Fact]
@@ -964,28 +784,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -993,8 +791,7 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
@@ -1047,17 +844,10 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
     }
 
     [Fact]
@@ -1103,28 +893,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -1132,8 +900,7 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 7)]
@@ -1178,17 +945,10 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
     }
 
     [Fact]
@@ -1238,28 +998,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -1267,8 +1005,7 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
@@ -1323,16 +1060,9 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
     }
 }

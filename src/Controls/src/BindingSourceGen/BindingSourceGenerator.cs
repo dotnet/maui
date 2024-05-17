@@ -33,14 +33,12 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		context.RegisterSourceOutput(bindings, (spc, bindings) =>
 		{
-			var codeWriter = new BindingCodeWriter();
+			spc.AddSource("GeneratedBindableObjectExtensionsCommon.g.cs", BindingCodeWriter.GenerateCommonCode());
 
-			foreach (var binding in bindings)
+			for (int i = 0; i < bindings.Length; i++)
 			{
-				codeWriter.AddBinding(binding);
+				spc.AddSource($"GeneratedBindableObjectExtensions{i+1}.g.cs", BindingCodeWriter.GenerateBinding(bindings[i], i + 1));
 			}
-
-			spc.AddSource("GeneratedBindableObjectExtensions.g.cs", codeWriter.GenerateCode());
 		});
 	}
 

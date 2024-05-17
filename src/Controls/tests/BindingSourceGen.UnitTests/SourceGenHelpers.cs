@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.BindingSourceGen;
 
 
 internal record CodeGeneratorResult(
-    string GeneratedCode,
+    Dictionary<string, string> GeneratedFiles,
     ImmutableArray<Diagnostic> SourceCompilationDiagnostics,
     ImmutableArray<Diagnostic> SourceGeneratorDiagnostics,
     ImmutableArray<Diagnostic> GeneratedCodeCompilationDiagnostics,
@@ -47,7 +47,7 @@ internal static class SourceGenHelpers
             : null;
 
         return new CodeGeneratorResult(
-            GeneratedCode: generatedCode,
+            GeneratedFiles: result.GeneratedSources.ToDictionary(source => source.HintName, source => source.SourceText.ToString()),
             SourceCompilationDiagnostics: inputCompilation.GetDiagnostics(),
             SourceGeneratorDiagnostics: result.Diagnostics,
             GeneratedCodeCompilationDiagnostics: generatedCodeDiagnostic,
