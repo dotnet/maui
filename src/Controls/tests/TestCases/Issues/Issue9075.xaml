@@ -49,6 +49,7 @@
                           StrokeThickness="2">
                           <Label 
                             Text="{Binding}" 
+                            AutomationId="{Binding}" 
                             TextColor="Red" 
                             FontSize="12" 
                             FontAttributes="Bold"      
