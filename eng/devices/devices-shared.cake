@@ -12,8 +12,8 @@ var projectMappings = new Dictionary<string, string>
     ["MauiBlazorWebView.DeviceTests"] = "MauiBlazorWebView.DeviceTests",
     ["Essentials.DeviceTests"] = "Essentials.DeviceTests",
     ["Controls.TestCases.App"] = "Controls.TestCases.App",
-    ["Compatibility.ControlGallery.iOS"] = "Compatibility.ControlGallery.iOS",
-    ["Compatibility.ControlGallery.Android"] = "Compatibility.ControlGallery.Android",
+    ["Compatibility.TestCases.iOS.App"] = "Compatibility.TestCases.iOS.App",
+    ["Compatibility.TestCases.Android.App"] = "Compatibility.TestCases.Android.App",
 };
 
 string TARGET = Argument("target", "Test");
@@ -35,8 +35,8 @@ if (string.Equals(TARGET, "uitest-build", StringComparison.OrdinalIgnoreCase))
 
 if (string.Equals(TARGET, "cg-uitest", StringComparison.OrdinalIgnoreCase))
 {
-    DEFAULT_PROJECT = "../../src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj";
+    DEFAULT_PROJECT = "../../src/Compatibility/ControlGallery/test/TestCases.iOS.Tests/Compatibility.TestCases.iOS.Tests.csproj";
+    DEFAULT_APP_PROJECT = "../../src/Compatibility/ControlGallery/src/TestCases.iOS/Compatibility.TestCases.iOS.App.csproj";
 }
 
 IEnumerable<string> GetTestApplications(string project, string device, string config, string tfm, string rid)

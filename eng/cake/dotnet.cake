@@ -185,14 +185,14 @@ Task("dotnet-legacy-controlgallery-ios")
     {
         var properties = new Dictionary<string, string>();
         properties.Add("RuntimeIdentifier","iossimulator-x64");
-        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj", properties, binlogPrefix: "controlgallery-ios-");
+        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/test/TestCases.iOS/Compatibility.TestCases.iOS.App.csproj", properties, binlogPrefix: "controlgallery-ios-");
     });
 
 Task("dotnet-legacy-controlgallery-android")
     .Does(() =>
     {
         var properties = new Dictionary<string, string>();
-        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj", properties, binlogPrefix: "controlgallery-android-");
+        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/test/TestCases.Android/Compatibility.TestCases.Android.App.csproj", properties, binlogPrefix: "controlgallery-android-");
     });
 
 Task("dotnet-integration-build")

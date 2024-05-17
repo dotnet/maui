@@ -112,9 +112,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Profil
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ControlGallery", "ControlGallery", "{FA181CD5-95AF-46B7-95D2-852F2398833C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Core", "src\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj", "{772E2531-2270-429A-9AFB-4AA0104AEF27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.Shared.App", "src\Compatibility\ControlGallery\test\TestCases.Shared\Compatibility.TestCases.Shared.App.csproj", "{772E2531-2270-429A-9AFB-4AA0104AEF27}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.ControlGallery.Issues.Shared", "src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.shproj", "{AE2513CB-4E5E-4E5C-8237-88954D4C9433}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.TestCases.Issues.Shared", "src\Compatibility\ControlGallery\test\TestCases.Issues.Shared\Compatibility.TestCases.Issues.Shared.shproj", "{AE2513CB-4E5E-4E5C-8237-88954D4C9433}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.AppLinks", "src\Compatibility\Android.AppLinks\src\Compatibility.Android.AppLinks.csproj", "{742AB9F4-B2A3-464F-9584-7D07E28D0716}"
 EndProject
@@ -124,19 +124,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Maps.iOS", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Maps", "Maps", "{05D8C6AD-A954-4A36-A8EE-4148A6FB88C9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FF1F68E5-3474-4456-B67B-08526E51934E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DDBA9144-36FC-429E-99E1-2A64825434C1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Android", "src\Compatibility\ControlGallery\src\Android\Compatibility.ControlGallery.Android.csproj", "{BB933AF2-9498-4C4E-9F76-AF66A550BED3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.Android.App", "src\Compatibility\ControlGallery\test\TestCases.Android\Compatibility.TestCases.Android.App.csproj", "{BB933AF2-9498-4C4E-9F76-AF66A550BED3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.iOS", "src\Compatibility\ControlGallery\src\iOS\Compatibility.ControlGallery.iOS.csproj", "{C7131F14-274F-4B55-ACA9-E81731AD012F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.iOS.App", "src\Compatibility\ControlGallery\test\TestCases.iOS\Compatibility.TestCases.iOS.App.csproj", "{C7131F14-274F-4B55-ACA9-E81731AD012F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Android.UITests", "src\Compatibility\ControlGallery\test\Android.UITests\Compatibility.ControlGallery.Android.UITests.csproj", "{A34EBE01-25BF-4E69-A2DC-2288DC625541}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.iOS.UITests", "src\Compatibility\ControlGallery\test\iOS.UITests\Compatibility.ControlGallery.iOS.UITests.csproj", "{EADD8100-B3AE-4A31-92C4-267A64A1C6EB}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.UITests.Shared", "src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.Shared.shproj", "{E175485B-3C8C-47D7-8DD5-F7FED627EB25}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.UITests.Shared", "src\Compatibility\ControlGallery\test\UITests.Shared\Compatibility.UITests.Shared.shproj", "{E175485B-3C8C-47D7-8DD5-F7FED627EB25}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{95BF8553-3D9D-4831-ACDD-A3E697BC08A6}"
 EndProject
@@ -154,7 +152,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView.Wpf", "src\BlazorWebView\src\Wpf\Microsoft.AspNetCore.Components.WebView.Wpf.csproj", "{7032668B-F5F4-450B-B007-14A46E9AE234}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.WinUI", "src\Compatibility\ControlGallery\src\WinUI\Compatibility.ControlGallery.WinUI.csproj", "{7F8688A8-748E-4A04-826D-24F4535BF839}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.WinUI.App", "src\Compatibility\ControlGallery\test\TestCases.WinUI\Compatibility.TestCases.WinUI.App.csproj", "{7F8688A8-748E-4A04-826D-24F4535BF839}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinUI.UITests", "src\Compatibility\ControlGallery\test\WinUI.UITests\WinUI.UITests.csproj", "{0A39A74B-6F7A-4D41-84F2-B0CCDCE899DF}"
 EndProject
@@ -253,11 +251,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Appium", "src\TestUt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.NUnit", "src\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj", "{8050448A-E08F-4972-9B47-16042A5DFE82}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.Android.Appium.UITests", "src\Compatibility\ControlGallery\test\Android.Appium.UITests\ControlGallery.Android.Appium.UITests.csproj", "{F748974F-A8E4-4659-801C-804B739D6326}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.Android.Tests", "src\Compatibility\ControlGallery\test\TestCases.Android.Tests\Compatibility.TestCases.Android.Tests.csproj", "{F748974F-A8E4-4659-801C-804B739D6326}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.iOS.Appium.UITests", "src\Compatibility\ControlGallery\test\iOS.Appium.UITests\ControlGallery.iOS.Appium.UITests.csproj", "{5923B35B-EA24-4B86-A384-9DAF9F2AFD56}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.iOS.Tests", "src\Compatibility\ControlGallery\test\TestCases.iOS.Tests\Compatibility.TestCases.iOS.Tests.csproj", "{5923B35B-EA24-4B86-A384-9DAF9F2AFD56}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlGallery.Shared.Appium.UITests", "src\Compatibility\ControlGallery\test\Shared.Appium.UITests\ControlGallery.Shared.Appium.UITests.csproj", "{07D8D4B5-C89D-4BE3-A14A-17668358587C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.Shared.Tests", "src\Compatibility\ControlGallery\test\TestCases.Shared.Tests\Compatibility.TestCases.Shared.Tests.csproj", "{07D8D4B5-C89D-4BE3-A14A-17668358587C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6730CE13-8567-4DC8-B2AF-B12C39818825}"
 EndProject
@@ -751,16 +749,15 @@ Global
 		{F7B6C73A-6019-4EAE-9258-E08C0C57829F} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{75DB635C-0035-46E7-9A33-857D38082503} = {E1082E26-D700-4127-9329-66D673FD2D55}
 		{FA181CD5-95AF-46B7-95D2-852F2398833C} = {123AA89E-1638-4E0E-B828-B8F9F9F906A2}
-		{772E2531-2270-429A-9AFB-4AA0104AEF27} = {FF1F68E5-3474-4456-B67B-08526E51934E}
-		{AE2513CB-4E5E-4E5C-8237-88954D4C9433} = {FF1F68E5-3474-4456-B67B-08526E51934E}
+		{772E2531-2270-429A-9AFB-4AA0104AEF27} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
+		{AE2513CB-4E5E-4E5C-8237-88954D4C9433} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 		{742AB9F4-B2A3-464F-9584-7D07E28D0716} = {446EB407-57EB-441D-9ADB-1A006CBF672A}
 		{B2859A87-D1C2-4F34-B2C7-C19317CD5872} = {05D8C6AD-A954-4A36-A8EE-4148A6FB88C9}
 		{ABA078C4-F9BB-4924-8B2B-10FE0D2F5491} = {05D8C6AD-A954-4A36-A8EE-4148A6FB88C9}
 		{05D8C6AD-A954-4A36-A8EE-4148A6FB88C9} = {123AA89E-1638-4E0E-B828-B8F9F9F906A2}
-		{FF1F68E5-3474-4456-B67B-08526E51934E} = {FA181CD5-95AF-46B7-95D2-852F2398833C}
 		{DDBA9144-36FC-429E-99E1-2A64825434C1} = {FA181CD5-95AF-46B7-95D2-852F2398833C}
-		{BB933AF2-9498-4C4E-9F76-AF66A550BED3} = {FF1F68E5-3474-4456-B67B-08526E51934E}
-		{C7131F14-274F-4B55-ACA9-E81731AD012F} = {FF1F68E5-3474-4456-B67B-08526E51934E}
+		{BB933AF2-9498-4C4E-9F76-AF66A550BED3} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
+		{C7131F14-274F-4B55-ACA9-E81731AD012F} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 		{A34EBE01-25BF-4E69-A2DC-2288DC625541} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 		{EADD8100-B3AE-4A31-92C4-267A64A1C6EB} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 		{E175485B-3C8C-47D7-8DD5-F7FED627EB25} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
@@ -772,7 +769,7 @@ Global
 		{ED7F28E0-D0AF-417D-983D-3D874EEE8554} = {1614D1A4-5C3D-4D5B-8C89-426E37A564EF}
 		{D8BF12AC-AFCF-496B-BD34-2A52F7488066} = {ED7F28E0-D0AF-417D-983D-3D874EEE8554}
 		{7032668B-F5F4-450B-B007-14A46E9AE234} = {ED7F28E0-D0AF-417D-983D-3D874EEE8554}
-		{7F8688A8-748E-4A04-826D-24F4535BF839} = {FF1F68E5-3474-4456-B67B-08526E51934E}
+		{7F8688A8-748E-4A04-826D-24F4535BF839} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 		{0A39A74B-6F7A-4D41-84F2-B0CCDCE899DF} = {DDBA9144-36FC-429E-99E1-2A64825434C1}
 		{F28E8899-98D2-4915-8D48-D101D4837AB9} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{C8B3C3B3-1CDA-41A2-BF20-A7FE33D6BB36} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
@@ -833,14 +830,8 @@ Global
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{772e2531-2270-429a-9afb-4aa0104aef27}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\test\TestCases.Issues.Shared\Compatibility.TestCases.Issues.Shared.projitems*{772e2531-2270-429a-9afb-4aa0104aef27}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\test\TestCases.Issues.Shared\Compatibility.TestCases.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
+		src\Compatibility\ControlGallery\test\UITests.Shared\Compatibility.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

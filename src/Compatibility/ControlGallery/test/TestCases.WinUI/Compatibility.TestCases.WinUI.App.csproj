@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core.csproj" />
+    <ProjectReference Include="..\TestCases.Shared\Compatibility.TestCases.Shared.App.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />

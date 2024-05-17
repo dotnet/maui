@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Shared.Appium.UITests\**\*.cs" LinkBase="Shared" Visible="false" />
+    <Compile Include="..\TestCases.Shared.Tests\**\*.cs" LinkBase="Shared" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>

@@ -41,7 +41,6 @@
     <Copy SourceFiles="@(_XamarinUITestFiles)" DestinationFolder="$(SolutionDir)packages\Xamarin.UITest.AnyVersion\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
 
-  <Import Project="..\..\src\UITests.Shared\Compatibility.UITests.projitems" Label="Shared" />
-  <Import Project="..\..\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\src\TestCases.Issues.Shared\Compatibility.TestCases.Issues.Shared.projitems.projitems" Label="Shared" />
 
 </Project>

@@ -191,23 +191,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compatibility", "Compatibil
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ControlGallery", "ControlGallery", "{DA908446-C6A1-473C-BF5C-83E600F5C69E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9B37E707-EE0B-480E-AEB9-0176784879BE}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CBC63DBF-892C-4F03-890E-D48F25509CC6}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.ControlGallery.Issues.Shared", "src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.shproj", "{AE2513CB-4E5E-4E5C-8237-88954D4C9433}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.TestCases.Issues.Shared", "src\Compatibility\ControlGallery\test\TestCases.Issues.Shared\Compatibility.TestCases.Issues.Shared.shproj", "{AE2513CB-4E5E-4E5C-8237-88954D4C9433}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Core", "src\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj", "{7A28BAB3-4396-415F-8473-2700027E57A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.Shared.App", "src\Compatibility\ControlGallery\test\TestCases.Shared\Compatibility.TestCases.Shared.App.csproj", "{7A28BAB3-4396-415F-8473-2700027E57A7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Android", "src\Compatibility\ControlGallery\src\Android\Compatibility.ControlGallery.Android.csproj", "{36664529-91C2-49A5-BFDA-7D663FB19BC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.Android.App", "src\Compatibility\ControlGallery\test\TestCases.Android\Compatibility.TestCases.Android.App.csproj", "{36664529-91C2-49A5-BFDA-7D663FB19BC5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.iOS", "src\Compatibility\ControlGallery\src\iOS\Compatibility.ControlGallery.iOS.csproj", "{137B044D-31C4-4CF2-AB66-97C516AB8393}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.iOS.App", "src\Compatibility\ControlGallery\test\TestCases.iOS\Compatibility.TestCases.iOS.App.csproj", "{137B044D-31C4-4CF2-AB66-97C516AB8393}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.UITests.Shared", "src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.Shared.shproj", "{E175485B-3C8C-47D7-8DD5-F7FED627EB25}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.UITests.Shared", "src\Compatibility\ControlGallery\test\UITests.Shared\Compatibility.UITests.Shared.shproj", "{E175485B-3C8C-47D7-8DD5-F7FED627EB25}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Android.UITests", "src\Compatibility\ControlGallery\test\Android.UITests\Compatibility.ControlGallery.Android.UITests.csproj", "{2E41CBBF-999A-40F1-BF65-EA68585CA070}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.Android.Tests", "src\Compatibility\ControlGallery\test\TestCases.Android.Tests\Compatibility.TestCases.Android.Tests.csproj", "{2E41CBBF-999A-40F1-BF65-EA68585CA070}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.iOS.UITests", "src\Compatibility\ControlGallery\test\iOS.UITests\Compatibility.ControlGallery.iOS.UITests.csproj", "{306C0B6E-B797-40A0-994C-4F923E91F31B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.TestCases.iOS.Tests", "src\Compatibility\ControlGallery\test\TestCases.iOS.Tests\Compatibility.TestCases.iOS.Tests.csproj", "{306C0B6E-B797-40A0-994C-4F923E91F31B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Core", "src\TestUtils\src\UITest.Core\UITest.Core.csproj", "{401CA2F5-EAD1-4414-AE8F-42444BF458EB}"
 EndProject
@@ -644,12 +642,11 @@ Global
 		{07C26A25-08C2-4C52-9574-1C33EC8E7919} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{A6976D43-B3A4-47AF-89D9-FA388B56B52B} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{DA908446-C6A1-473C-BF5C-83E600F5C69E} = {0AF0E771-4E09-4F05-B187-B43A2B9F62B0}
-		{9B37E707-EE0B-480E-AEB9-0176784879BE} = {DA908446-C6A1-473C-BF5C-83E600F5C69E}
 		{CBC63DBF-892C-4F03-890E-D48F25509CC6} = {DA908446-C6A1-473C-BF5C-83E600F5C69E}
-		{AE2513CB-4E5E-4E5C-8237-88954D4C9433} = {9B37E707-EE0B-480E-AEB9-0176784879BE}
-		{7A28BAB3-4396-415F-8473-2700027E57A7} = {9B37E707-EE0B-480E-AEB9-0176784879BE}
-		{36664529-91C2-49A5-BFDA-7D663FB19BC5} = {9B37E707-EE0B-480E-AEB9-0176784879BE}
-		{137B044D-31C4-4CF2-AB66-97C516AB8393} = {9B37E707-EE0B-480E-AEB9-0176784879BE}
+		{AE2513CB-4E5E-4E5C-8237-88954D4C9433} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
+		{7A28BAB3-4396-415F-8473-2700027E57A7} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
+		{36664529-91C2-49A5-BFDA-7D663FB19BC5} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
+		{137B044D-31C4-4CF2-AB66-97C516AB8393} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
 		{E175485B-3C8C-47D7-8DD5-F7FED627EB25} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
 		{2E41CBBF-999A-40F1-BF65-EA68585CA070} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
 		{306C0B6E-B797-40A0-994C-4F923E91F31B} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
@@ -670,8 +667,8 @@ Global
 		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{2e41cbbf-999a-40f1-bf65-ea68585ca070}*SharedItemsImports = 5
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{306c0b6e-b797-40a0-994c-4f923e91f31b}*SharedItemsImports = 5
 		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{306c0b6e-b797-40a0-994c-4f923e91f31b}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{7a28bab3-4396-415f-8473-2700027e57a7}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
+		src\Compatibility\ControlGallery\test\TestCases.Issues.Shared\Compatibility.TestCases.Issues.Shared.projitems*{7a28bab3-4396-415f-8473-2700027e57a7}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\test\TestCases.Issues.Shared\Compatibility.TestCases.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
+		src\Compatibility\ControlGallery\test\UITests.Shared\Compatibility.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal
