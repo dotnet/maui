@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -22,13 +21,11 @@ namespace Microsoft.Maui.Controls
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		[UnconditionalSuppressMessage("TrimAnalysis", "IL2026:RequiresUnreferencedCodeMessage",
+			Justification = "The converter is only used when parsing XAML at runtime. The developer will receive a warning " +
+				"saying that parsing XAML at runtime may not work as expected when trimming.")]
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
-			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
-			{
-				throw new InvalidOperationException(RuntimeFeature.XamlRuntimeParsingNotSupportedErrorMessage);
-			}
-
 			if (string.IsNullOrWhiteSpace(value))
 				return null;
 			if (serviceProvider == null)
@@ -79,13 +76,11 @@ namespace Microsoft.Maui.Controls
 			throw new XamlParseException($"Can't resolve {value}. Syntax is [[prefix:]Type.]PropertyName.", lineinfo);
 		}
 
+		[UnconditionalSuppressMessage("TrimAnalysis", "IL2026:RequiresUnreferencedCodeMessage",
+			Justification = "The converter is only used when parsing XAML at runtime. The developer will receive a warning " +
+				"saying that parsing XAML at runtime may not work as expected when trimming.")]
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
-			{
-				throw new InvalidOperationException(RuntimeFeature.XamlRuntimeParsingNotSupportedErrorMessage);
-			}
-
 			var strValue = value?.ToString();
 
 			if (string.IsNullOrWhiteSpace(strValue))
