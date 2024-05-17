@@ -298,7 +298,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 
 			string log = Build(projectFile, additionalArgs: "-p:MauiXamlCValidateOnly=True", shouldSucceed: false);
-			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XFC0000: Cannot resolve type \"http://schemas.microsoft.com/dotnet/2021/maui:NotARealThing\".", log);
+			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XC0000: Cannot resolve type \"http://schemas.microsoft.com/dotnet/2021/maui:NotARealThing\".", log);
 		}
 
 		/// <summary>
