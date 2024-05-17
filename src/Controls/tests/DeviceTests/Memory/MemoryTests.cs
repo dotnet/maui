@@ -50,6 +50,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
 				handlers.AddHandler<Switch, SwitchHandler>();
 				handlers.AddHandler<TableView, TableViewRenderer>();
+				handlers.AddHandler<TextCell, TextCellRenderer>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<Toolbar, ToolbarHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
@@ -60,6 +61,35 @@ public class MemoryTests : ControlsHandlerTestBase
 #endif
 			});
 		});
+	}
+
+	[Fact("Page Does Not Leak")]
+	public async Task PageDoesNotLeak()
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference handlerReference = null;
+		WeakReference platformViewReference = null;
+
+		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			var page = new ContentPage { Content = new Label() };
+			
+			await navPage.Navigation.PushModalAsync(page);
+
+			viewReference = new WeakReference(page);
+			handlerReference = new WeakReference(page.Handler);
+			platformViewReference = new WeakReference(page.Handler.PlatformView);
+
+			// Windows requires Loaded event to fire before unloading
+			await Task.Delay(500);
+			await navPage.Navigation.PopModalAsync();
+		});
+
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
 
 	[Theory("Handler Does Not Leak")]
@@ -78,6 +108,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
 	[InlineData(typeof(Label))]
+	[InlineData(typeof(ListView))]
 	[InlineData(typeof(Picker))]
 	[InlineData(typeof(Polygon))]
 	[InlineData(typeof(Polyline))]
@@ -97,6 +128,10 @@ public class MemoryTests : ControlsHandlerTestBase
 		SetupBuilder();
 
 #if ANDROID
+		// TODO: fixing upstream at https://github.com/xamarin/xamarin-android/pull/8900
+		if (type == typeof(ListView))
+			return;
+
 		// NOTE: skip certain controls on older Android devices
 		if (type == typeof (DatePicker) && !OperatingSystem.IsAndroidVersionAtLeast(30))
 				return;
@@ -122,6 +157,16 @@ public class MemoryTests : ControlsHandlerTestBase
 			if (view is ContentView content)
 			{
 				content.Content = new Label();
+			}
+			else if (view is ListView listView)
+			{
+				listView.ItemTemplate = new DataTemplate(() =>
+				{
+					var cell = new TextCell();
+					cell.SetBinding(TextCell.TextProperty, ".");
+					return cell;
+				});
+				listView.ItemsSource = observable;
 			}
 			else if (view is ItemsView items)
 			{
