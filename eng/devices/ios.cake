@@ -220,6 +220,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
 			.Append("/p:ExtraDefineConstants=IOSUITEST")
+			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 			.Append("/bl:" + binlog)
 	});
 
@@ -235,6 +236,15 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 	Information($"Building UI Test app: {appProject}");
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
 	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
+
+
+	if (USE_NATIVE_AOT && config.Equals("Debug", StringComparison.OrdinalIgnoreCase))
+	{
+		var errMsg = $"Error: Running UI tests with NativeAOT is only supported in Release configuration";
+		Error(errMsg);
+		throw new Exception(errMsg);
+	}
+
 
 	DotNetBuild(appProject, new DotNetBuildSettings
 	{
