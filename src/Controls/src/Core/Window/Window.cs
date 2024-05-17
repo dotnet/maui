@@ -252,12 +252,12 @@ namespace Microsoft.Maui.Controls
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			void SetPropertyChanged(BindableProperty property, string name, double oldValue, double newValue, bool shouldPropagateToHandler = true)
+			void SetPropertyChanged(BindableProperty property, string name, double oldValue, double newValue)
 			{
 				if (oldValue == newValue)
 					return;
 
-				OnPropertyChanged(name, shouldPropagateToHandler);
+				OnPropertyChanged(name);
 				property.PropertyChanged?.Invoke(this, oldValue, newValue);
 			}
 		}
