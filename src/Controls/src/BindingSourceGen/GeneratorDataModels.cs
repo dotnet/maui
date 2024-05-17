@@ -8,11 +8,6 @@ public class TrackingNames
 	public const string BindingsWithDiagnostics = nameof(BindingsWithDiagnostics);
 	public const string Bindings = nameof(Bindings);
 }
-
-public sealed record BindingDiagnosticsWrapper(
-	SetBindingInvocationDescription? Binding,
-	EquatableArray<DiagnosticInfo> Diagnostics);
-
 public sealed record SetBindingInvocationDescription(
 	InterceptorLocation Location,
 	TypeDescription SourceType,
@@ -103,4 +98,31 @@ public sealed record Cast(TypeDescription TargetType) : IPathPart
 public interface IPathPart : IEquatable<IPathPart>
 {
 	public string? PropertyName { get; }
+}
+
+internal sealed record Result<T>(T? Value, EquatableArray<DiagnosticInfo> Diagnostics)
+{
+	public bool HasDiagnostics => Diagnostics.Length > 0;
+
+	public T GetValue => Value ?? throw new InvalidOperationException("Result does not contain a value.");
+
+	public static Result<T> Success(T value)
+	{
+		if (value == null)
+		{
+			throw new ArgumentNullException(nameof(value), "Success value cannot be null.");
+		}
+
+		return new Result<T>(value, new EquatableArray<DiagnosticInfo>(Array.Empty<DiagnosticInfo>()));
+	}
+
+	public static Result<T> Failure(EquatableArray<DiagnosticInfo> diagnostics)
+	{
+		return new Result<T>(default, diagnostics);
+	}
+
+	public static Result<T> Failure(DiagnosticInfo diagnostic)
+	{
+		return new Result<T>(default, new EquatableArray<DiagnosticInfo>(new[] { diagnostic }));
+	}
 }

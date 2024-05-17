@@ -15,11 +15,11 @@ internal class PathParser
     private GeneratorSyntaxContext Context { get; }
     private bool EnabledNullable { get; }
 
-    internal (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) ParsePath(CSharpSyntaxNode? expressionSyntax)
+    internal Result<List<IPathPart>> ParsePath(CSharpSyntaxNode? expressionSyntax)
     {
         return expressionSyntax switch
         {
-            IdentifierNameSyntax _ => ([], new List<IPathPart>()),
+            IdentifierNameSyntax _ => Result<List<IPathPart>>.Success(new List<IPathPart>()),
             MemberAccessExpressionSyntax memberAccess => HandleMemberAccessExpression(memberAccess),
             ElementAccessExpressionSyntax elementAccess => HandleElementAccessExpression(elementAccess),
             ElementBindingExpressionSyntax elementBinding => HandleElementBindingExpression(elementBinding),
@@ -32,61 +32,64 @@ internal class PathParser
         };
     }
 
-    private (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) HandleMemberAccessExpression(MemberAccessExpressionSyntax memberAccess)
+    private Result<List<IPathPart>> HandleMemberAccessExpression(MemberAccessExpressionSyntax memberAccess)
     {
-        var (diagnostics, parts) = ParsePath(memberAccess.Expression);
-        if (diagnostics.Length > 0)
+        var result = ParsePath(memberAccess.Expression);
+        if (result.HasDiagnostics)
         {
-            return (diagnostics, parts);
+            return result;
         }
 
         var member = memberAccess.Name.Identifier.Text;
         var typeInfo = Context.SemanticModel.GetTypeInfo(memberAccess).Type;
         var isReferenceType = typeInfo?.IsReferenceType ?? false;
         IPathPart part = new MemberAccess(member, !isReferenceType);
-        parts.Add(part);
-        return (diagnostics, parts);
+        result.GetValue.Add(part);
+
+        return Result<List<IPathPart>>.Success(result.GetValue);
     }
 
-    private (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) HandleElementAccessExpression(ElementAccessExpressionSyntax elementAccess)
+    private Result<List<IPathPart>> HandleElementAccessExpression(ElementAccessExpressionSyntax elementAccess)
     {
-        var (diagnostics, parts) = ParsePath(elementAccess.Expression);
-        if (diagnostics.Length > 0)
+        var result = ParsePath(elementAccess.Expression);
+        if (result.HasDiagnostics)
         {
-            return (diagnostics, parts);
+            return result;
         }
 
         var elementAccessSymbol = Context.SemanticModel.GetSymbolInfo(elementAccess).Symbol;
         var elementType = Context.SemanticModel.GetTypeInfo(elementAccess).Type;
 
-        var (elementAccessDiagnostics, elementAccessParts) = CreateIndexAccess(elementAccessSymbol, elementType, elementAccess.ArgumentList.Arguments, elementAccess.GetLocation());
-        if (elementAccessDiagnostics.Length > 0)
+        var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, elementAccess.ArgumentList.Arguments, elementAccess.GetLocation());
+        if (elementAccessResult.HasDiagnostics)
         {
-            return (elementAccessDiagnostics, elementAccessParts);
+            return elementAccessResult;
         }
-        parts.AddRange(elementAccessParts);
-        return (diagnostics, parts);
+        result.GetValue.AddRange(elementAccessResult.GetValue);
+
+        return Result<List<IPathPart>>.Success(result.GetValue);
     }
 
-    private (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) HandleConditionalAccessExpression(ConditionalAccessExpressionSyntax conditionalAccess)
+    private Result<List<IPathPart>> HandleConditionalAccessExpression(ConditionalAccessExpressionSyntax conditionalAccess)
     {
-        var (diagnostics, parts) = ParsePath(conditionalAccess.Expression);
-        if (diagnostics.Length > 0)
+        var expressionResult = ParsePath(conditionalAccess.Expression);
+        if (expressionResult.HasDiagnostics)
         {
-            return (diagnostics, parts);
+            return expressionResult;
         }
 
-        var (diagnosticNotNull, partsNotNull) = ParsePath(conditionalAccess.WhenNotNull);
-        if (diagnosticNotNull.Length > 0)
+        var whenNotNullResult = ParsePath(conditionalAccess.WhenNotNull);
+        if (whenNotNullResult.HasDiagnostics)
         {
-            return (diagnosticNotNull, partsNotNull);
+            return whenNotNullResult;
         }
 
-        parts.AddRange(partsNotNull);
-        return (diagnostics, parts);
+        expressionResult.GetValue.AddRange(whenNotNullResult.GetValue);
+
+        return Result<List<IPathPart>>.Success(expressionResult.GetValue);
     }
 
-    private (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) HandleMemberBindingExpression(MemberBindingExpressionSyntax memberBinding)
+    private Result<List<IPathPart>> HandleMemberBindingExpression(MemberBindingExpressionSyntax memberBinding)
     {
         var member = memberBinding.Name.Identifier.Text;
         var typeInfo = Context.SemanticModel.GetTypeInfo(memberBinding).Type;
@@ -94,85 +97,88 @@ internal class PathParser
         IPathPart part = new MemberAccess(member, !isReferenceType);
         part = new ConditionalAccess(part);
 
-        return ([], new List<IPathPart>([part]));
+        return Result<List<IPathPart>>.Success(new List<IPathPart>([part]));
     }
 
-    private (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) HandleElementBindingExpression(ElementBindingExpressionSyntax elementBinding)
+    private Result<List<IPathPart>> HandleElementBindingExpression(ElementBindingExpressionSyntax elementBinding)
     {
         var elementAccessSymbol = Context.SemanticModel.GetSymbolInfo(elementBinding).Symbol;
         var elementType = Context.SemanticModel.GetTypeInfo(elementBinding).Type;
 
-        var (elementAccessDiagnostics, elementAccessParts) = CreateIndexAccess(elementAccessSymbol, elementType, elementBinding.ArgumentList.Arguments, elementBinding.GetLocation());
-        if (elementAccessDiagnostics.Length > 0)
+        var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, elementBinding.ArgumentList.Arguments, elementBinding.GetLocation());
+        if (elementAccessResult.HasDiagnostics)
         {
-            return (elementAccessDiagnostics, elementAccessParts);
+            return elementAccessResult;
         }
 
-        elementAccessParts[0] = new ConditionalAccess(elementAccessParts[0]);
-        return (elementAccessDiagnostics, elementAccessParts);
+        elementAccessResult.GetValue[0] = new ConditionalAccess(elementAccessResult.GetValue[0]);
+
+        return Result<List<IPathPart>>.Success(elementAccessResult.GetValue);
     }
 
-    private (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) HandleBinaryExpression(BinaryExpressionSyntax asExpression)
+    private Result<List<IPathPart>> HandleBinaryExpression(BinaryExpressionSyntax asExpression)
     {
-        var (diagnostics, parts) = ParsePath(asExpression.Left);
-        if (diagnostics.Length > 0)
+        var leftResult = ParsePath(asExpression.Left);
+        if (leftResult.HasDiagnostics)
         {
-            return (diagnostics, parts);
+            return leftResult;
         }
 
         var castTo = asExpression.Right;
         var typeInfo = Context.SemanticModel.GetTypeInfo(castTo).Type;
         if (typeInfo == null)
         {
-            return (new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation())]), new List<IPathPart>());
+            return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(castTo.GetLocation()));
         };
 
-        parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(typeInfo, EnabledNullable)));
-        return (diagnostics, parts);
+        leftResult.GetValue.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(typeInfo, EnabledNullable)));
+
+        return Result<List<IPathPart>>.Success(leftResult.GetValue);
     }
 
-    private (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) HandleCastExpression(CastExpressionSyntax castExpression)
+    private Result<List<IPathPart>> HandleCastExpression(CastExpressionSyntax castExpression)
     {
-        var (diagnostics, parts) = ParsePath(castExpression.Expression);
-        if (diagnostics.Length > 0)
+        var result = ParsePath(castExpression.Expression);
+        if (result.HasDiagnostics)
         {
-            return (diagnostics, parts);
+            return result;
         }
 
         var typeInfo = Context.SemanticModel.GetTypeInfo(castExpression.Type).Type;
         if (typeInfo == null)
         {
-            return (new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation())]), new List<IPathPart>());
+            return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(castExpression.GetLocation()));
         };
 
-        parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(typeInfo, EnabledNullable)));
-        return (diagnostics, parts);
+        result.GetValue.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(typeInfo, EnabledNullable)));
+
+        return Result<List<IPathPart>>.Success(result.GetValue);
     }
 
-    private (EquatableArray<DiagnosticInfo> diagnostics, List<IPathPart> parts) HandleDefaultCase()
+    private Result<List<IPathPart>> HandleDefaultCase()
     {
-        return (new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation())]), new List<IPathPart>());
+        return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation()));
     }
 
-    private (EquatableArray<DiagnosticInfo>, List<IPathPart>) CreateIndexAccess(ISymbol? elementAccessSymbol, ITypeSymbol? typeSymbol, SeparatedSyntaxList<ArgumentSyntax> argumentList, Location location)
+    private Result<List<IPathPart>> CreateIndexAccess(ISymbol? elementAccessSymbol, ITypeSymbol? typeSymbol, SeparatedSyntaxList<ArgumentSyntax> argumentList, Location location)
     {
         if (argumentList.Count != 1)
         {
-            return (new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation())]), []);
+            return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(location));
         }
 
         var indexExpression = argumentList[0].Expression;
         object? indexValue = Context.SemanticModel.GetConstantValue(indexExpression).Value;
         if (indexValue is null)
         {
-            return (new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation())]), []);
+            return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(indexExpression.GetLocation()));
         }
 
         var name = GetIndexerName(elementAccessSymbol);
         var isReferenceType = typeSymbol?.IsReferenceType ?? false;
         IPathPart part = new IndexAccess(name, indexValue, !isReferenceType);
 
-        return ([], [part]);
+        return Result<List<IPathPart>>.Success(new List<IPathPart>([part]));
     }
 
     private string GetIndexerName(ISymbol? elementAccessSymbol)
