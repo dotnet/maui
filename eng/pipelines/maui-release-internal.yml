@@ -23,8 +23,37 @@ trigger:
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
+  - group: DotNetBuilds storage account read tokens
+  - group: AzureDevOps-Artifact-Feeds-Pats
+  - name: _InternalRuntimeDownloadArgs
+    value: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal
+           /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+  # needed for darc (dependency flow) publishing
+  - name: _BuildConfig
+    value: Release
+  - name: Build.Arcade.ArtifactsPath
+    value: $(Build.SourcesDirectory)/artifacts/
+  - name: Build.Arcade.LogsPath
+    value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
+  - name: Build.Arcade.TestResultsPath
+    value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
+  - name: _PublishArgs
+    value: >-
+          /p:DotNetPublishUsingPipelines=true
+  - name: _OfficialBuildIdArgs
+    value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+  # needed for signing
+  - name: _SignType
+    value: real
+  - name: _SignArgs
+    value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:Sign=$(_Sign)
+  - name: _Sign
+    value: true
 
 parameters:
+  - name: pushMauiPackagesToMaestro
+    default: true
+
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
@@ -33,8 +62,8 @@ parameters:
   - name: VM_IMAGE_HOST
     type: object
     default:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2022
+      name: NetCore1ESPool-Internal
+      image: 1es-windows-2022
       os: windows
 
   - name: PackPlatform
@@ -42,6 +71,11 @@ parameters:
     default:
       name: Windows
       artifact: nuget
+      binariesArtifact: pack-binaries
+      metadataArtifact: metadata
+      logsArtifact: logs
+      docsArtifact: xml-docs
+      artifactsPath: '$(Build.ArtifactStagingDirectory)'
 
   - name: Skip1ESComplianceTasks
     default: false
@@ -65,8 +99,7 @@ extends:
       codeql:
         runSourceLanguagesInSourceAnalysis: true
       policheck:
-        enabled: false
-        justification: Built in task does not support multi-language scanning
+        enabled: true
       spotBugs:
         enabled: false
         justification: 'Failing with "Could not successfully find the java tool launcher"'
@@ -76,29 +109,112 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
-      - stage: pack_net
-        displayName: Pack .NET MAUI
-        dependsOn: []
-        jobs:
+    - stage: pack_net
+      displayName: Pack .NET MAUI
+      dependsOn: []
+      jobs:
+      - template: /eng/common/templates-official/jobs/jobs.yml@self
+        parameters:
+          helixRepo: dotnet/maui
+          pool: ${{ parameters.VM_IMAGE_HOST }}
+          enablePublishUsingPipelines: true
+          enablePublishBuildAssets: true
+          enableTelemetry: true
+          enableSourceIndex: false
+          # Publish build logs
+          enablePublishBuildArtifacts: true
+          # Publish test logs
+          enablePublishTestResults: false
+          workspace:
+            clean: all
+          jobs:
           - job: pack_net_${{ parameters.PackPlatform.name }}
-            workspace:
-              clean: all
             displayName: ${{ parameters.PackPlatform.name }}
             timeoutInMinutes: 240
            
-            pool: ${{ parameters.VM_IMAGE_HOST }}
-              
             templateContext:
-              outputs:
+               outputs:
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.artifact }}
-                  targetPath: '(Build.ArtifactStagingDirectory)'
+                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/nuget'
+                
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
+                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
+
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.docsArtifact }}
+                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
+
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.metadataArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.metadataArtifact }}
+                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/metadata'
+
+                - output: pipelineArtifact
+                  displayName: 'Publish the ${{ parameters.PackPlatform.logsArtifact }} artifacts'
+                  artifactName: ${{ parameters.PackPlatform.logsArtifact }}
+                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/logs'
+        
+            variables:
+              - name: _buildScript
+                value: $(Build.SourcesDirectory)/build.cmd -ci
+              - name: _BuildConfig
+                value: Release
+                
+            preSteps:
+              - checkout: self
+                fetchDepth: 1
+                clean: true
 
             steps:
               - template: /eng/pipelines/common/pack.yml@self
                 parameters:
+                  publishArtifacts: false
                   platform: ${{ parameters.PackPlatform.name }}
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                  artifact:  ${{ parameters.PackPlatform.artifact }}
-                  artifactsPath: '(Build.ArtifactStagingDirectory)'
+                  artifact: ${{ parameters.PackPlatform.artifact }}
+                  artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
+                  artifactsPath: ${{ parameters.PackPlatform.artifactsPath }}
+                  buildConfiguration: $(_BuildConfig)
+                  dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
+                  buildScript: $(_buildScript)
+                  repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
+                  repoLogPath: $(Build.Arcade.LogsPath)
+                  repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                  # prepareSteps:
+                  #   - template: /eng/pipelines/common/provision.yml@self
+                  #     parameters:
+                  #       checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+                  #       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  #       gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                  #       skipAndroidImages: true
+
+              # - task: DotNetCoreCLI@2
+              #   displayName: Generate and publish BAR manifest
+              #   inputs:
+              #     projects: $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
+              #     arguments: >-
+              #       -t:PushManifestToBuildAssetRegistry
+              #       -p:BuildAssetRegistryToken=$(MaestroAccessToken)
+              #       -p:OutputPath=$(Build.StagingDirectory)\nuget\
+              #       -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
+              #   condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))
+              
+              # - powershell: |
+              #     $versionEndpoint = 'https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc-version?api-version=2019-01-16'
+              #     $darcVersion = $(Invoke-WebRequest -Uri $versionEndpoint -UseBasicParsing).Content
+              #     $arcadeServicesSource = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+              #     & dotnet tool update microsoft.dotnet.darc --version "$darcVersion" --add-source "$arcadeServicesSource" --tool-path $(Agent.ToolsDirectory)\darc -v n
+              #     & $(Agent.ToolsDirectory)\darc\darc add-build-to-channel --default-channels --id $(BARBuildId) --publishing-infra-version 3 --skip-assets-publishing --password $(MaestroAccessToken) --azdev-pat $(publishing-dnceng-devdiv-code-r-build-re)
+
+      # Publish and validation steps. Only run in official builds
+    - template: /eng/common/templates-official/post-build/post-build.yml@self
+      parameters:
+        publishingInfraVersion: 3
+        validateDependsOn:
+          - pack_net
+        enableSourceLinkValidation: true

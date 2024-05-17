@@ -1,5 +1,40 @@
 <Project>
-  <Import Project="eng\Versions.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
+
+  <PropertyGroup> 
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <LangVersion>Latest</LangVersion>
+    <IsShipping>true</IsShipping>
+    <SignAssembly>false</SignAssembly>
+    <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
+    <MauiSrcDirectory>$(MSBuildThisFileDirectory)src/</MauiSrcDirectory>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <Copyright>$(CopyrightNetFoundation)</Copyright>
+    <Company>Microsoft</Company>
+    <Product>Microsoft .NET MAUI</Product>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>Microsoft</Authors>
+    <NeutralLanguage>en</NeutralLanguage>
+    <RepositoryUrl>https://github.com/dotnet/maui.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/dotnet/maui</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageOutputPath>$(MauiRootDirectory)artifacts</PackageOutputPath>
+    <LicenseFile>$(MauiRootDirectory)LICENSE.TXT</LicenseFile>
+    <PackageIconFullPath>$(MauiRootDirectory)Assets\icon.png</PackageIconFullPath>
+    <PackageThirdPartyNoticesFile>$(MauiRootDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
+    <DefaultPackageTags>dotnet-maui;dotnet;maui;cross-platform;ios;android;macos;maccatalyst;windows;winui;tizen</DefaultPackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+  </PropertyGroup>
 
   <PropertyGroup>
     <_MauiDotNetVersionMajor Condition="'$(_MauiDotNetVersionMajor)' == ''">8</_MauiDotNetVersionMajor>
@@ -127,8 +162,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
-    <MauiSrcDirectory>$(MSBuildThisFileDirectory)src/</MauiSrcDirectory>
     <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
     <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
     <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
@@ -140,44 +173,13 @@
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).buildtasks\</_MauiBuildTasksLocation>
     <_MauiAOTProfileLocation>$(MauiSrcDirectory)Controls\src\Build.Tasks\nuget\buildTransitive\netstandard2.0\</_MauiAOTProfileLocation>
-    <StrongNamerKeyFile>$(MauiRootDirectory)eng/microsoft.maui.controls.snk</StrongNamerKeyFile>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DebugType>portable</DebugType>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
+    <StrongNamerKeyFile>$(MauiRootDirectory)eng/microsoft.maui.controls.snk</StrongNamerKeyFile>  
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <Company>Microsoft</Company>
-    <Product>Microsoft MAUI</Product>
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
     <ProduceReferenceAssemblyInOutDir>True</ProduceReferenceAssemblyInOutDir>
     <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
   </PropertyGroup>
-  <PropertyGroup>
-    <GitDefaultBranch>main</GitDefaultBranch>
-  </PropertyGroup>
-  <PropertyGroup>
-    <!-- NuGet package information -->
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Authors>Microsoft</Authors>
-    <NeutralLanguage>en</NeutralLanguage>
-    <RepositoryUrl>https://github.com/dotnet/maui.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/dotnet/maui</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageVersion>$(DotNetVersionBand)-dev</PackageVersion>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
-    <LicenseFile>$(MSBuildThisFileDirectory)LICENSE.TXT</LicenseFile>
-    <PackageIconFile>$(MSBuildThisFileDirectory)Assets\icon.png</PackageIconFile>
-    <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
-    <DefaultPackageTags>dotnet-maui;dotnet;maui;cross-platform;ios;android;macos;maccatalyst;windows;winui;tizen</DefaultPackageTags>
-    <ContinuousIntegrationBuild Condition=" '$(CI)' == 'true' ">true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-  <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->
-  <Target Name="GitVersion" />
-  <Target Name="GitInfo" />
-  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
+
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
   <ItemGroup Condition="'$(MSBuildVersion)' != '' AND '$(MSBuildVersion)' &lt; '16.7.0'  ">
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.7.0" PrivateAssets="all" />
