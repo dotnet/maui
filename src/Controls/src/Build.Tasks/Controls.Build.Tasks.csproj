@@ -47,8 +47,8 @@
 		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(PkgSystem_CodeDom)\lib\netstandard2.0\System.CodeDom.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
-		<None Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
-		<None Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(ArtifactsBinDir)Controls.SourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(ArtifactsBinDir)Controls.SourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Remove="$(OutputPath)*.xml" />
 		<None Include="nuget\**" PackagePath="" Pack="true" Exclude="nuget\**\*.aotprofile.txt" />
 	</ItemGroup>
