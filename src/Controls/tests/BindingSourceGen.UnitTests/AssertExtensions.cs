@@ -16,6 +16,8 @@ internal static class AssertExtensions
         {
             Assert.Equal(expectedLine, actualLine);
         }
+
+        Assert.Equal(expectedLines.Count(), actualLines.Count());
     }
 
     internal static void BindingsAreEqual(SetBindingInvocationDescription expectedBinding, CodeGeneratorResult codeGeneratorResult)
