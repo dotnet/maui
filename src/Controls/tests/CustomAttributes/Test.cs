@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Maui.Controls.Sample;
+namespace Microsoft.Maui.Controls.CustomAttributes;
 
 public static class Test
 {
