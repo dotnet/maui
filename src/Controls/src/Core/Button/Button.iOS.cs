@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button
 	{
-		internal CGSize _originalImageSize = CGSize.Empty;
+		CGSize _originalImageSize = CGSize.Empty;
 
 		protected override Size ArrangeOverride(Rect bounds)
 		{
