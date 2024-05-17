@@ -98,8 +98,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		var binding = new SetBindingInvocationDescription(
 			Location: sourceCodeLocation.ToInterceptorLocation(),
-			SourceType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
-			PropertyType: BindingGenerationUtilities.CreateTypeNameFromITypeSymbol(lambdaTypeInfo.Type, enabledNullable),
+			SourceType: BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(lambdaSymbol.Parameters[0].Type, enabledNullable),
+			PropertyType: BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(lambdaTypeInfo.Type, enabledNullable),
 			Path: new EquatableArray<IPathPart>([.. parts]),
 			SetterOptions: DeriveSetterOptions(lambdaBody, context.SemanticModel, enabledNullable),
 			NullableContextEnabled: enabledNullable);

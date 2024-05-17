@@ -127,7 +127,7 @@ internal class PathParser
             return (new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation())]), new List<IPathPart>());
         };
 
-        parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionForAsCast(typeInfo)));
+        parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(typeInfo, EnabledNullable)));
         return (diagnostics, parts);
     }
 
@@ -145,7 +145,7 @@ internal class PathParser
             return (new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation())]), new List<IPathPart>());
         };
 
-        parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionForExplicitCast(typeInfo, EnabledNullable)));
+        parts.Add(new Cast(BindingGenerationUtilities.CreateTypeDescriptionFromITypeSymbol(typeInfo, EnabledNullable)));
         return (diagnostics, parts);
     }
 
