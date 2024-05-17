@@ -200,27 +200,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		int _batchFrameUpdate = 0;
-		bool disableHandlerUpdate;
+
 		void IWindow.FrameChanged(Rect frame)
 		{
-			var x = X;
-			var y = Y;
-			var width = Width;
-			var height = Height;
-			if (new Rect(x, y, width, height) == frame)
+			if (new Rect(X, Y, Width, Height) == frame)
 				return;
 
 			_batchFrameUpdate++;
 
-			SetPropertyChanging(XProperty, nameof(X), x, frame.X);
-			SetPropertyChanging(YProperty, nameof(Y), y, frame.Y);
-			SetPropertyChanging(WidthProperty, nameof(Width), width, frame.Width);
-			SetPropertyChanging(HeightProperty, nameof(Height), height, frame.Height);
-
-			SetValueCore(XProperty, frame.X, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
-			SetValueCore(YProperty, frame.Y, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
-			SetValueCore(WidthProperty, frame.Width, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
-			SetValueCore(HeightProperty, frame.Height, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
+			X = frame.X;
+			Y = frame.Y;
+			Width = frame.Width;
+			Height = frame.Height;
 
 			_batchFrameUpdate--;
 			if (_batchFrameUpdate < 0)
@@ -228,39 +219,18 @@ namespace Microsoft.Maui.Controls
 
 			if (_batchFrameUpdate == 0)
 			{
-				SetPropertyChanged(XProperty, nameof(X), x, frame.X);
-				SetPropertyChanged(YProperty, nameof(Y), y, frame.Y);
-
-				if (width != frame.Width || height != frame.Height)
-				{
-					disableHandlerUpdate = true;
-					SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width);
-					SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height);
-					disableHandlerUpdate = false;
-					SizeChanged?.Invoke(this, EventArgs.Empty);
-				}
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			void SetPropertyChanging(BindableProperty property, string name, double oldValue, double newValue)
-			{
-				if (oldValue == newValue)
-					return;
-
-				property.PropertyChanging?.Invoke(this, oldValue, newValue);
-				OnPropertyChanging(name);
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			void SetPropertyChanged(BindableProperty property, string name, double oldValue, double newValue)
-			{
-				if (oldValue == newValue)
-					return;
-
-				OnPropertyChanged(name);
-				property.PropertyChanged?.Invoke(this, oldValue, newValue);
+				SizeChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
+
+		private protected override void UpdateHandlerValue(string property)
+		{
+			if (_batchFrameUpdate > 0)
+				return;
+
+			base.UpdateHandlerValue(property);
+		}
+
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
 		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
@@ -292,14 +262,6 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == nameof(Page))
 				Handler?.UpdateValue(nameof(IWindow.Content));
-		}
-
-		private protected override void UpdateHandlerValue(string property)
-		{
-			if (disableHandlerUpdate)
-				return;
-
-			base.UpdateHandlerValue(property);
 		}
 
 		/// <inheritdoc/>
