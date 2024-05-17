@@ -207,6 +207,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_batchFrameUpdate++;
+			bool shouldTriggerSizeChanged = (Width != frame.Width) || (Height != frame.Height);
 
 			X = frame.X;
 			Y = frame.Y;
@@ -217,7 +218,7 @@ namespace Microsoft.Maui.Controls
 			if (_batchFrameUpdate < 0)
 				_batchFrameUpdate = 0;
 
-			if (_batchFrameUpdate == 0)
+			if (_batchFrameUpdate == 0 && shouldTriggerSizeChanged)
 			{
 				SizeChanged?.Invoke(this, EventArgs.Empty);
 			}
