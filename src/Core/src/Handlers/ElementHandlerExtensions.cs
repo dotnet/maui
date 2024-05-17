@@ -96,7 +96,7 @@ namespace Microsoft.Maui
 			return true;
 		}
 
-		internal static bool IsConnected(this IElementHandler handler) =>
+		public static bool IsConnected(this IElementHandler handler) =>
 			handler.PlatformView is not null;
 
 	}
