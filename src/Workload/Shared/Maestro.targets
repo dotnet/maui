@@ -8,17 +8,26 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" PrivateAssets="all" />
   </ItemGroup>
 
-  <UsingTask TaskName="GenerateBuildManifest" AssemblyFile="$(_MicrosoftDotNetBuildTasksFeedTaskDir)Microsoft.DotNet.Build.Tasks.Feed.dll" />
-
+  <!-- https://github.com/dotnet/arcade/blob/efc3da96e5ac110513e92ebd9ef87c73f44d8540/Documentation/DependencyFlowOnboardingWithoutArcade.md -->
   <Target Name="PushManifestToBuildAssetRegistry" >
+    <PropertyGroup>
+      <ArtifactsLogDir>$(RootManifestOutputPath)</ArtifactsLogDir>
+      <AssetManifestFileName>Assets.xml</AssetManifestFileName>
+      <AssetManifestPath>$(ArtifactsLogDir)AssetManifest\$(AssetManifestFileName)</AssetManifestPath>
+    </PropertyGroup>
+
+    <Error Condition="Exists($(AssetManifestPath))" Text="The manifest file '$(AssetManifestPath)' already exists." />
+
     <ItemGroup>
-      <BuildArtifacts Include="$(RootManifestOutputPath)**\*.nupkg" />
+      <ItemsToPush Include="$(RootManifestOutputPath)**\*.nupkg" />
     </ItemGroup>
 
-    <Error Condition="'@(BuildArtifacts)' == ''" Text="No packages to create manifest from." />
+    <Error Condition="'@(ItemsToPush)' == ''" Text="No packages to push." />
+
+    <Message Text="Publishing %(ItemsToPush.Identity)" Importance="normal" />
 
     <ItemGroup>
-      <ManifestBuildData Include="InitialAssetsLocation=https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json" />
+      <ManifestBuildData Include="InitialAssetsLocation=" />
       <ManifestBuildData Include="AzureDevOpsBuildId=$(BUILD_BUILDID)" />
       <ManifestBuildData Include="AzureDevOpsBuildDefinitionId=$(SYSTEM_DEFINITIONID)" />
       <ManifestBuildData Include="AzureDevOpsProject=$(SYSTEM_TEAMPROJECT)" />
@@ -27,14 +36,14 @@
       <ManifestBuildData Include="AzureDevOpsBranch=$(BUILD_SOURCEBRANCH)" />
     </ItemGroup>
 
-    <GenerateBuildManifest
-        Artifacts="@(BuildArtifacts)"
-        OutputPath="$(RootManifestOutputPath)bar-manifests\AssetManifest.xml"
-        BuildId="$(BUILD_BUILDNUMBER)"
-        BuildData="@(ManifestBuildData)"
-        RepoUri="$(BUILD_REPOSITORY_URI)"
-        RepoBranch="$(BUILD_SOURCEBRANCH)"
-        RepoCommit="$(BUILD_SOURCEVERSION)"
+    <PushToAzureDevOpsArtifacts
+        ItemsToPush="@(ItemsToPush)"
+        ManifestBuildData="@(ManifestBuildData)"
+        ManifestRepoUri="$(BUILD_REPOSITORY_NAME)"
+        ManifestBranch="$(BUILD_SOURCEBRANCH)"
+        ManifestBuildId="$(BUILD_BUILDNUMBER)"
+        ManifestCommit="$(BUILD_SOURCEVERSION)"
+        AssetManifestPath="$(AssetManifestPath)"
         PublishingVersion="3" />
 
     <MSBuild
@@ -45,7 +54,7 @@
 
     <MSBuild
         Projects="$(PkgMicrosoft_DotNet_Arcade_Sdk)\tools\SdkTasks\PublishBuildAssets.proj"
-        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(_MauiDotNetVersion);ManifestsPath=$(RootManifestOutputPath)bar-manifests;MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com"
+        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(_MauiDotNetVersion);ManifestsPath=$(ArtifactsLogDir)AssetManifest;MaestroApiEndpoint=https://maestro.dot.net"
     />
   </Target>
 
