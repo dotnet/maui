@@ -273,6 +273,7 @@ namespace Microsoft.Maui.Controls
 			// don't run more than once per 16 milliseconds
 			await Task.Delay(TimeSpan.FromMilliseconds(16));
 			ForceUpdateSizeRequested?.Invoke(this, null);
+			Handler.Invoke("ForceUpdateSizeRequested", null);
 
 			_nextCallToForceUpdateSizeQueued = false;
 		}
