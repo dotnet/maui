@@ -191,7 +191,7 @@ Task("dotnet-samples")
                 Error(errMsg);
                 throw new Exception(errMsg);
             }
-            projectsToBuild = "./src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
+            projectsToBuild = "./src/Controls/tests/TestCases/Controls.TestCases.App.csproj";
             properties["_UseNativeAot"] = "true";
         }
         else
