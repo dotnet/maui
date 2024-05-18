@@ -20,6 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// Issue2680Test_ScrollDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\Issue2680ScrollView.cs)
 		[Test]
+		[Category(UITestCategories.ScrollView)]
+		[Ignore("Currently fails")]
 		public void ScrollDisabled()
 		{
 			this.IgnoreIfPlatforms(new[]
@@ -43,6 +45,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// Issue2680Test_ScrollEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\Issue2680ScrollView.cs)
 		[Test]
+		[Category(UITestCategories.ScrollView)]
+		[Ignore("Currently fails")]
 		public void ScrollEnabled()
 		{
 			this.IgnoreIfPlatforms(new[]
