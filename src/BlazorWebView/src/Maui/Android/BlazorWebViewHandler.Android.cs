@@ -70,20 +70,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			if (_webviewManager != null)
 			{
-				// Dispose this component's contents and block on completion so that user-written disposal logic and
-				// Blazor disposal logic will complete.
+				// Dispose this component's contents so that user-written disposal logic and Blazor disposal logic will complete.
 
-				// Fire and forget...
+				// Start the disposal...
 				var disposalTask = _webviewManager?
 					.DisposeAsync()
 					.AsTask()!;
 
 				if (IsAndroidFireAndForgetAsyncEnabled)
 				{
+					// If the app is configured to fire-and-forget via an AppContext Switch, we'll do that.
 					disposalTask.FireAndForget();
 				}
 				else
 				{
+					// Otherwise by default, we'll synchronously wait for the disposal to complete. This can cause
+					// a deadlock, but is the original behavior.
 					disposalTask
 						.GetAwaiter()
 						.GetResult();
