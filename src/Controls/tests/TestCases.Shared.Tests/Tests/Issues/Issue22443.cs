@@ -18,7 +18,6 @@ public class Issue22443 : _IssuesUITest
 		App.WaitForElement("button");
 		App.Click("button");
 		App.WaitForElement("button");
-		App.Back();
 
 		//The test passes if no exception is thrown
 	}
