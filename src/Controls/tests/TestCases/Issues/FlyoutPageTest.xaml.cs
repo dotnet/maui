@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues
@@ -12,7 +13,7 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 
-		public async void ToggleFlyout_Clicked(object sender, EventArgs e)
+		public void ToggleFlyout_Clicked(object sender, EventArgs e)
 		{
 			IsPresented = !IsPresented;
 		}
