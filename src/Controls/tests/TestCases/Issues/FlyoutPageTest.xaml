@@ -13,7 +13,8 @@
         <ContentPage Title="The Detail">
           <StackLayout>
             <Label Text="This is the detail" />
-            <Button Text="Toggle the Flyout" AutomationId="ToggleFlyout" Clicked="ToggleFlyout_Clicked" />
+            <Button Text="Open the Flyout to begin testing" AutomationId="OpenFlyout" Clicked="OpenFlyout_Clicked" />
+            <Button Text="Change Flyout behaviour" AutomationId="ToggleBehaviour" Clicked="ToggleBehaviour_Clicked" />
           </StackLayout>
         </ContentPage>
       </x:Arguments>

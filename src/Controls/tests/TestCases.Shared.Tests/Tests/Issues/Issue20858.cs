@@ -17,8 +17,8 @@ public class Issue20858 : _IssuesUITest
 	public void NoExceptionShouldBeThrown()
 	{
 		App.SetOrientationPortrait();
-		App.WaitForElement("ToggleFlyout");
-		App.Tap("ToggleFlyout");
+		App.WaitForElement("OpenFlyout");
+		App.Tap("OpenFlyout");
 		App.SetOrientationLandscape();
 
 		//The test passes if no exception is thrown
