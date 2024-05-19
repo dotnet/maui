@@ -21,9 +21,6 @@ namespace Microsoft.Maui.Controls
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
-		[UnconditionalSuppressMessage("TrimAnalysis", "IL2026:RequiresUnreferencedCodeMessage",
-			Justification = "The converter is only used when parsing XAML at runtime. The developer will receive a warning " +
-				"saying that parsing XAML at runtime may not work as expected when trimming.")]
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
 			if (string.IsNullOrWhiteSpace(value))
@@ -76,9 +73,6 @@ namespace Microsoft.Maui.Controls
 			throw new XamlParseException($"Can't resolve {value}. Syntax is [[prefix:]Type.]PropertyName.", lineinfo);
 		}
 
-		[UnconditionalSuppressMessage("TrimAnalysis", "IL2026:RequiresUnreferencedCodeMessage",
-			Justification = "The converter is only used when parsing XAML at runtime. The developer will receive a warning " +
-				"saying that parsing XAML at runtime may not work as expected when trimming.")]
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -98,17 +92,12 @@ namespace Microsoft.Maui.Controls
 			}
 			Type type = GetControlType(parts[0]);
 			return ConvertFrom(type, parts[1], null);
-
-			[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
-			static Type GetControlType(string typeName)
-				=> Type.GetType("Microsoft.Maui.Controls." + typeName);
 		}
 
-		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 		BindableProperty ConvertFrom(Type type, string propertyName, IXmlLineInfo lineinfo)
 		{
-			string name = propertyName + "Property";
-			FieldInfo bpinfo = type.GetField(name, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+			var name = propertyName + "Property";
+			FieldInfo bpinfo = GetPropertyField(type, name);
 			if (bpinfo == null || bpinfo.FieldType != typeof(BindableProperty))
 				throw new XamlParseException($"Can't resolve {name} on {type.Name}", lineinfo);
 			var bp = bpinfo.GetValue(null) as BindableProperty;
@@ -117,6 +106,18 @@ namespace Microsoft.Maui.Controls
 				throw new XamlParseException($"The PropertyName of {type.Name}.{name} is not {propertyName}", lineinfo);
 			return bp;
 		}
+
+		[UnconditionalSuppressMessage("TrimAnalysis", "IL2026:RequiresUnreferencedCode",
+			Justification = "The converter is only used when parsing XAML at runtime. The developer will receive a warning " +
+				"saying that parsing XAML at runtime may not work as expected when trimming.")]
+		static Type GetControlType(string typeName)
+			=> Type.GetType("Microsoft.Maui.Controls." + typeName);
+
+		[UnconditionalSuppressMessage("TrimAnalysis", "IL2070:UnrecognizedReflectionPattern",
+			Justification = "The converter is only used when parsing XAML at runtime. The developer will receive a warning " +
+				"saying that parsing XAML at runtime may not work as expected when trimming.")]
+		static FieldInfo GetPropertyField(Type type, string fieldName)
+			=> type.GetField(fieldName, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
 		Type FindTypeForVisualState(IProvideParentValues parentValueProvider, IXmlLineInfo lineInfo)
 		{
