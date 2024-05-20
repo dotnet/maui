@@ -4,13 +4,13 @@
       <Uri>https://github.com/dotnet/installer</Uri>
       <Sha>1741345c6399ae203d8f259fb12fb873dac5129d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.5.24265.1" CoherentParentDependency="VS.Tools.Net.Core.SDK.Resolver">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.5.24256.1" CoherentParentDependency="VS.Tools.Net.Core.SDK.Resolver">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>9d0142f768aa54f7a00161beb289c74167b70ed1</Sha>
+      <Sha>84b33395057737db3ea342a5151feb6b90c1b6f6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.5.283">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.5.292">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>9cbf665c0626d6d6330751a66f9326f211670cbd</Sha>
+      <Sha>14b70ac32b2a9efefae127795e96ef73124c8557</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_17.2" Version="17.2.9574-net9-p5">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -31,9 +31,9 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.5.24263.1" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.5.24223.2" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>52bdf74cb9197b39fd4fa0f722f7558d718efab6</Sha>
+      <Sha>53288f87c588907e8ff01f129786820fe998573c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.5.24265.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
