@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CarouselView Loop=True default freezes iOS app";
 
-		/*	
+		/*
 		readonly string _carouselAutomationId = "carouselView";
 		readonly string _btnRemoveAutomationId = "btnRemove";
 		readonly string _btnRemoveAllAutomationId = "btnRemoveAll";
@@ -22,14 +22,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		[Ignore("Currently fails")]
+		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488")]
 		public void Issue12574Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },	
-				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488");
-
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
-				"iOS specific Test");
-
 			App.WaitForNoElement("0 item");
 
 			var rect = App.FindElement(_carouselAutomationId).GetRect();
@@ -56,14 +51,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		[Ignore("Currently fails")]
+		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488")]
 		public void RemoveItemsQuickly()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },
-				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488");
-
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },	
-				"iOS specific Test");
-
 			App.WaitForNoElement("0 item");
 			App.Click(_btnRemoveAllAutomationId);
 

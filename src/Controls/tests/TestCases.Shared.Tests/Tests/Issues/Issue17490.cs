@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,12 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		//[Category(UITestCategories.Window)]
 		//public void AppDoesntCrashWhenOpeningWinUIWindowParentedToCurrentWindow()
 		//{
-		//	this.IgnoreIfPlatforms(new[]
-		//	{
-		//		TestDevice.Mac, TestDevice.iOS, TestDevice.Android
-		//	});
-
 		//	App.WaitForElement("SuccessLabel");
 		//}
 	}
 }
+#endif

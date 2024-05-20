@@ -16,10 +16,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// EmptyViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue9196.xaml.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void EmptyViewShouldNotCrash()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 			App.WaitForNoElement("Success");
 		}
 	}

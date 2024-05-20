@@ -26,9 +26,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void AddingItemToUnviewedCollectionViewShouldNotCrash()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
-				"Click does not find Tab elements");
-
 			App.WaitForElement(Add1);
 			App.Click(Add1);
 			App.Click(Tab2);
@@ -42,9 +39,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
-				"Click does not find Tab elements");
-
 			App.WaitForElement(Add2);
 			App.Click(Add2);
 			App.Click(Tab3);

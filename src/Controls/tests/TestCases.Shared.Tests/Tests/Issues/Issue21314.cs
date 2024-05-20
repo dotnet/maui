@@ -1,3 +1,4 @@
+#if IOS
 using Maui.Controls.Sample;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
@@ -16,10 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         [Test]
         public void ImageShouldBePortrait()
         {
-            this.IgnoreIfPlatforms (new TestDevice[] { TestDevice.Android, TestDevice.Windows });
-
             var image = App.WaitForElement ("theImage").GetRect();
 			ClassicAssert.Greater(image.Height, image.Width);
         }
     }
 }
+#endif

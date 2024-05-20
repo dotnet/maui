@@ -18,10 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// CollectionViewShouldSourceShouldUpdateWhileInvisible (src\Compatibility\ControlGallery\src\Issues.Shared\Issue13126.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnWindows]
 		public void DynamicallyLoadCollectionView()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows });
-
 			App.WaitForNoElement(Success);
 		}
 	}

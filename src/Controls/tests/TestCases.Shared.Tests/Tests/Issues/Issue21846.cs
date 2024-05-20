@@ -14,10 +14,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnAndroid]
+		[FailsOnWindows]
 		public void WebViewNoCrashPopup()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Windows]);
-
 			App.WaitForElement("OpenModalButton");
 			App.Click("OpenModalButton");
 

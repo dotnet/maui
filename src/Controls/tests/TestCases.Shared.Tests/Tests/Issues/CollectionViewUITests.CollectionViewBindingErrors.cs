@@ -16,10 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// CollectionViewBindingErrorsShouldBeZero (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBindingErrors.xaml.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void NoBindingErrors()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
-
 			App.WaitForElement("WaitForStubControl");
 			App.WaitForNoElement("Binding Errors: 0");
 		}
