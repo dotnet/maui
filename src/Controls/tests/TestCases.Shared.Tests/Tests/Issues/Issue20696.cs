@@ -12,26 +12,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
+		#if IOS
 		[Test]
+		#endif
 		public void FlyoutHeaderShouldBeResized()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
+			_ = App.WaitForElement("GoToTest");
+			App.Tap("GoToTest");
+			
+			_ = App.WaitForElement("button");
+			App.Tap("button");
 
-			try
-			{
-				_ = App.WaitForElement("GoToTest");
-				App.Click("GoToTest");
-				
-				_ = App.WaitForElement("button");
-				App.Click("button");
-
-				//The test passes if the second button is visible in the flyout header
-				_ = App.WaitForElement("TestButton2");
-			}
-			finally
-			{
-				Reset();
-			}
+			//The test passes if the second button is visible in the flyout header
+			_ = App.WaitForElement("TestButton2");
 		}
 	}
 }
