@@ -30,7 +30,7 @@ namespace UITests
 		{
 			string? ciArtifactsDirectory = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
 			if (ciArtifactsDirectory != null)
-				ciArtifactsDirectory = Path.Combine(ciArtifactsDirectory, "Controls.AppiumTests");
+				ciArtifactsDirectory = Path.Combine(ciArtifactsDirectory, "Controls.TestCases.Shared.Tests");
 
 			string assemblyDirectory = Path.GetDirectoryName(System.AppDomain.CurrentDomain.BaseDirectory)!;
 			string projectRootDirectory = Path.GetFullPath(Path.Combine(assemblyDirectory, "..", "..", ".."));

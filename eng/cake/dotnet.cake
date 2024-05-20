@@ -9,6 +9,8 @@ var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
+string officialBuildId = Argument("officialbuildid", "");
+
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
 var arcadeBin = MakeAbsolute(new DirectoryPath("./artifacts/bin/"));
@@ -274,10 +276,16 @@ Task("dotnet-pack-maui")
         var sln = "./Microsoft.Maui.Packages.slnf";
         if (!IsRunningOnWindows())
             sln = "./Microsoft.Maui.Packages-mac.slnf";
+ 
+        if(string.IsNullOrEmpty(officialBuildId))
+        {
+            officialBuildId = DateTime.UtcNow.ToString("yyyyMMdd.1");
+        }
 
         RunMSBuildWithDotNet(sln, target: "Pack", properties: new Dictionary<string, string>
         {
-            { "SymbolPackageFormat", "snupkg" }
+            { "SymbolPackageFormat", "snupkg" },
+            { "OfficialBuildId", officialBuildId },
         });
     });
 

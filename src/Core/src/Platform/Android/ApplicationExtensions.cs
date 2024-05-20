@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 				throw new InvalidOperationException(
 					$"This window is already associated with an active Activity ({oldActivity.GetType()}). " + 
 					$"Please override CreateWindow on {application.GetType()} "  + 
-					$"to add support for multiple activities https://aka.ms/maui-docs-create-window"  + 
+					$"to add support for multiple activities https://aka.ms/maui-docs-create-window "  + 
 					$"or set the LaunchMode to SingleTop on {activity.GetType()}.");
 			}
 

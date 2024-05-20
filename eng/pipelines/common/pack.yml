@@ -25,7 +25,7 @@ parameters:
 
 - name: artifactsPath
   type: string
-  default: (Build.ArtifactStagingDirectory)
+  default: $(Build.ArtifactStagingDirectory)
 
 - name: nugetFolder
   type: string
@@ -77,6 +77,10 @@ parameters:
 
 - name: repoTestResultsPath
   type: string
+
+- name: officialBuildId
+  type: string
+  default: $(BUILD.BUILDNUMBER)
 
 steps:
 
@@ -184,7 +188,8 @@ steps:
     inputs:
       Contents: |
         ${{ parameters.checkoutDirectory }}/artifacts/log/**
-        ${{ parameters.checkoutDirectory }}/artifacts/logs/**
+        ${{ parameters.checkoutDirectory }}/artifacts/logs/**/*
+        ${{ parameters.checkoutDirectory }}/artifacts/logs/*.*
       TargetFolder: ${{ parameters.artifactsPath }}/logs
       flattenFolders: true
   

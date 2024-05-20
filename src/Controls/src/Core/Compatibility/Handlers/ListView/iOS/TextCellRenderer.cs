@@ -24,20 +24,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!(reusableCell is CellTableViewCell tvc))
 				tvc = new CellTableViewCell(UITableViewCellStyle.Subtitle, item.GetType().FullName);
 			else
-				tvc.PropertyChanged -= HandleCellPropertyChanged;
+				CellPropertyChanged -= HandleCellPropertyChanged;
 
 			SetRealCell(item, tvc);
 
 			tvc.Cell = textCell;
-			tvc.PropertyChanged = HandleCellPropertyChanged;
+			CellPropertyChanged += HandleCellPropertyChanged;
 
 #pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel', DetailTextLabel is unsupported on: 'ios' 14.0 and later
 			tvc.TextLabel.Text = textCell.Text;
 			tvc.DetailTextLabel.Text = textCell.Detail;
 			tvc.TextLabel.TextColor = (textCell.TextColor ?? DefaultTextColor).ToPlatform();
 			tvc.DetailTextLabel.TextColor = (textCell.DetailColor ?? DefaultDetailColor).ToPlatform();
-
-			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
 			UpdateIsEnabled(tvc, textCell);
 #pragma warning restore CA1416, CA1422

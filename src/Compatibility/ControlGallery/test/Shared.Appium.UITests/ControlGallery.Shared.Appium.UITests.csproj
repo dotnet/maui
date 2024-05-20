@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
     
   <PropertyGroup>
     <TargetFrameworks>$(_MauiDotNetTfm)</TargetFrameworks>
