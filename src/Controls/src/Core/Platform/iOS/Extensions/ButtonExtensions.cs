@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ButtonExtensions
 	{
-		internal static CGRect GetTitleBoundingRect(this UIButton platformButton, Thickness padding)
+		internal static CGRect GetTitleBoundingRect(this UIButton platformButton, double widthConstraint, double heightConstraint)
 		{
 			if (platformButton.CurrentAttributedTitle != null ||
 					   platformButton.CurrentTitle != null)
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// Use the available height when calculating the bounding rect
 				var lineHeight = platformButton.TitleLabel.Font.LineHeight;
-				var availableHeight = platformButton.Bounds.Size.Height;
+				var availableHeight = heightConstraint;
 
 				// If the line break mode is one of the truncation modes, limit the height to the line height
 				if (platformButton.TitleLabel.LineBreakMode == UILineBreakMode.HeadTruncation ||
@@ -34,15 +34,14 @@ namespace Microsoft.Maui.Controls.Platform
 					availableHeight = lineHeight;
 				}
 
-				var availableSize = new CGSize(platformButton.Bounds.Size.Width, availableHeight);
+				var availableSize = new CGSize(widthConstraint, availableHeight);
 
 				var boundingRect = title.GetBoundingRect(
 					availableSize,
-					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading | NSStringDrawingOptions.UsesDeviceMetrics,
+					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
 					null);
 
-				// NSStringDrawingOptions.UsesDeviceMetrics can split at characters instead of words but ignore the height. Pass the height constraint back in.
-				return new CGRect(boundingRect.Location, new CGSize(boundingRect.Width, availableHeight));
+				return boundingRect;
 			}
 
 			return CGRect.Empty;

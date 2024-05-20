@@ -175,7 +175,7 @@
                     ContentLayout="Right" TextColor="White" Background="Black" 
                     ImageSource="settings.png" Text="settings" />
                 <Label
-                    Text="Click To Change Positionng"
+                    Text="Click To Change Positioning"
                     Style="{StaticResource Headline}"/>
                 <Button 
                     x:Name="positionChange" ContentLayout="Top" TextColor="White" Background="Black" 
