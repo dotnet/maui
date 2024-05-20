@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Platform
 
 			if (thumbImageSource == null)
 			{
-				nativeSlider.ThumbImageSource = null;
+				MauiSlider.ThumbImageSource = null;
 
 				var thumb = nativeSlider.GetFirstDescendant<Thumb>();
 
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Platform
 					};
 				}
 
-				nativeSlider.ThumbImageSource = nativeThumbImageSource?.Value;
+				MauiSlider.ThumbImageSource = nativeThumbImageSource?.Value;
 			}
 		}
 	}

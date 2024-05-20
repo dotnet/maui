@@ -323,7 +323,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return;
 			}
-			
+
 			// Prevents the use of default color when there are VisualStateManager with Selected state setting the background color
 			// First we check whether the cell has the default selected background color; if it does, then we should check
 			// to see if the cell content is the VSM to set a selected color

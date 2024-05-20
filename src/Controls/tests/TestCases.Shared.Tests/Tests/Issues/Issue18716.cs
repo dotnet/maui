@@ -26,6 +26,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollDown("WaitForStubControl", ScrollStrategy.Gesture, 0.75);
 			App.Screenshot("Scrolling has been done correctly.");
 		}*/
-  
+
 	}
 }

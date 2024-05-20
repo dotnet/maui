@@ -12,7 +12,7 @@ public class Issue20156 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
+	[Test]
 	public void BorderShouldHaveNoThickness()
 	{
 		_ = App.WaitForElement("WaitForStubControl");

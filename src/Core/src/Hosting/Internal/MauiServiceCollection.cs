@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public int Count => _descriptors.Count;
 
-		public bool IsReadOnly => false;
+		public static bool IsReadOnly => false;
 
 		public ServiceDescriptor this[int index]
 		{

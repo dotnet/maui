@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 				using var cgImageSource = imageData.GetPlatformImageSource();
 				if (cgImageSource is null)
 					throw new InvalidOperationException("Unable to load image file.");
-				
+
 				var image = cgImageSource.GetPlatformImage();
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
@@ -51,7 +51,7 @@ namespace Microsoft.Maui
 			var pathToImageCache = Path.Combine(CacheDirectory, filename);
 
 			NSData? imageData;
-			
+
 			if (imageSource.CachingEnabled && IsImageCached(pathToImageCache))
 			{
 				imageData = GetCachedImage(pathToImageCache);

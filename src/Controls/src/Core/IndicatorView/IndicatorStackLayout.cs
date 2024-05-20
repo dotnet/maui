@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls
 					Stroke = Colors.Transparent
 				}
 			});
-			
+
 			BindableLayout.SetItemsSource(this, _indicatorView.ItemsSource);
 			BindableLayout.SetItemTemplate(this, indicatorTemplate);
 		}

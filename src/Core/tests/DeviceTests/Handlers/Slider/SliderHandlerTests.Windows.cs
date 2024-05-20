@@ -118,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-        UI.Xaml.Controls.Slider GetNativeSlider(SliderHandler sliderHandler) =>
+		UI.Xaml.Controls.Slider GetNativeSlider(SliderHandler sliderHandler) =>
 			sliderHandler.PlatformView;
 
 		double GetNativeProgress(SliderHandler sliderHandler) =>
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.DeviceTests
 						return solidThumb.Color.ToColor();
 					}
 				}
-				
+
 				return null;
 			});
 

@@ -81,7 +81,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
 		{
 			var page = new ContentPage { Content = new Label() };
-			
+
 			await navPage.Navigation.PushModalAsync(page);
 
 			viewReference = new WeakReference(page);

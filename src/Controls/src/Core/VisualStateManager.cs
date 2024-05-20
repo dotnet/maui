@@ -320,14 +320,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<VisualElement> _visualElement;
-		internal VisualElement VisualElement {
-			get {
+		internal VisualElement VisualElement
+		{
+			get
+			{
 				if (_visualElement == null)
 					return null;
 				_visualElement.TryGetTarget(out var ve);
 				return ve;
-			} 
-			set {
+			}
+			set
+			{
 				_visualElement = new WeakReference<VisualElement>(value);
 			}
 		}
@@ -391,14 +394,17 @@ namespace Microsoft.Maui.Controls
 		public VisualState CurrentState { get; internal set; }
 
 		WeakReference<VisualElement> _visualElement;
-		internal VisualElement VisualElement {
-			get {
+		internal VisualElement VisualElement
+		{
+			get
+			{
 				if (_visualElement == null)
 					return null;
 				_visualElement.TryGetTarget(out var ve);
 				return ve;
-			} 
-			set {
+			}
+			set
+			{
 				_visualElement = new WeakReference<VisualElement>(value);
 			}
 		}

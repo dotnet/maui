@@ -80,7 +80,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(60, desiredSize.Height, 0.5d);
 				});
 		}
-		
+
 		[Fact]
 		public async Task EditorMeasureUpdatesWhenChangingWidth()
 		{

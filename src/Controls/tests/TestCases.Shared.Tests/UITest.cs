@@ -9,7 +9,7 @@ using VisualTestUtils.MagickNet;
 namespace Microsoft.Maui.TestCases.Tests
 {
 #if ANDROID
-		[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.Android)]
 #elif IOSUITEST
 		[TestFixture(TestDevice.iOS)]
 #elif MACUITEST

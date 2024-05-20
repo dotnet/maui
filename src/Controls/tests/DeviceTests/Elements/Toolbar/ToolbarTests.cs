@@ -39,8 +39,8 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
-					#if IOS || MACCATALYST
-                    handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#if IOS || MACCATALYST
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 #else
                     handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 #endif

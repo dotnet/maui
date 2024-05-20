@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		public void Issue21513Test()
 		{
-			this.IgnoreIfPlatforms(new [] { TestDevice.Mac, TestDevice.iOS });
+			this.IgnoreIfPlatforms(new[] { TestDevice.Mac, TestDevice.iOS });
 
 			App.WaitForElement("WaitForStubControl");
 

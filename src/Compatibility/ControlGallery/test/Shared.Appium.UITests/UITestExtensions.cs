@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System.Drawing;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
-using System.Drawing;
 
 namespace UITests
 {

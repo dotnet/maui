@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Issues
 
 			BindingContext = this;
 		}
-		
+
 		async void OnButtonClicked(object sender, System.EventArgs e)
 		{
 			if (TestWebView is IElement visualElement)

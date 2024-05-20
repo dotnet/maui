@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample.Issues
 				Padding = new Thickness(30, 0),
 				Orientation = StackOrientation.Horizontal,
 				Spacing = 30,
-				Children = 
+				Children =
 				{
 					button1,
 					button2,
