@@ -15,6 +15,67 @@ namespace Microsoft.Maui.Controls
 	{
 		CGSize _originalImageSize = CGSize.Empty;
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			var result = base.MeasureOverride(widthConstraint, heightConstraint);
+
+			var button = this;
+			var platformButton = Handler?.PlatformView as UIButton;
+
+			if (button is null || platformButton is null)
+			{
+				return result;
+			}
+
+			var image = platformButton.CurrentImage;
+
+			// Save the original image size
+			if (image is not null && _originalImageSize == CGSize.Empty)
+			{
+				_originalImageSize = image.Size;
+			}
+
+			var layout = button.ContentLayout;
+			var spacing = (nfloat)layout.Spacing;
+
+			var padding = button.Padding;
+			if (padding.IsNaN)
+				padding = ButtonHandler.DefaultPadding;
+
+			// TODO Issue when using a LineBreakMode - WordWrap
+			// There is no height or width set on the platformButton.Bounds during the measure stage.. Need to pass in something though
+			var titleRect = platformButton.GetTitleBoundingRect(widthConstraint, heightConstraint);
+
+			var buttonContentHeight =
+				(nfloat)Math.Max(titleRect.Height, image?.Size.Height ?? 0)
+				+ (nfloat)padding.Top
+				+ (nfloat)padding.Bottom;
+
+			var buttonContentWidth =
+				(nfloat)Math.Max(titleRect.Width, image?.Size.Width ?? 0)
+				+ (nfloat)padding.Left
+				+ (nfloat)padding.Right;
+
+			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
+			{
+				if (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
+				{
+					buttonContentHeight += spacing;
+					buttonContentHeight += (nfloat)Math.Min(titleRect.Height, image.Size.Height);
+				}
+
+				if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
+				{
+					buttonContentWidth += spacing;
+					buttonContentWidth += (nfloat)Math.Min(titleRect.Width, image.Size.Width);
+				}
+			}
+
+			return new Size(Math.Max(result.Width, buttonContentWidth), Math.Max(result.Height, buttonContentHeight));
+		}
+
 		protected override Size ArrangeOverride(Rect bounds)
 		{
 			var result = base.ArrangeOverride(bounds);
@@ -54,14 +115,8 @@ namespace Microsoft.Maui.Controls
 
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
-				// Save the original image size the first time before resizing
-				if (_originalImageSize == CGSize.Empty)
-				{
-					_originalImageSize = platformButton.CurrentImage.Size;
-				}
-
 				// Resize the image if necessary and then update the image variable
-				if (ResizeImageIfNecessary(platformButton, button, image, spacing, padding, bounds, _originalImageSize))
+				if (ResizeImageIfNecessary(platformButton, button, image, spacing, padding, result, _originalImageSize))
 				{
 					image = platformButton.CurrentImage;
 				}
@@ -69,7 +124,7 @@ namespace Microsoft.Maui.Controls
 				// TODO: Do not use the title label as it is not yet updated and
 				//       if we move the image, then we technically have more
 				//       space and will require a new layout pass.
-				var titleRect = platformButton.GetTitleBoundingRect(padding);
+				var titleRect = platformButton.GetTitleBoundingRect(platformButton.Bounds.Width, platformButton.Bounds.Height);
 				var titleWidth = titleRect.Width;
 				var titleHeight = titleRect.Height;
 				var imageWidth = image.Size.Width;
@@ -148,7 +203,7 @@ namespace Microsoft.Maui.Controls
 			// If we just have an image, we can still resize it here
 			else if (image is not null)
 			{
-				ResizeImageIfNecessary(platformButton, button, image, 0, padding, bounds, _originalImageSize);
+				ResizeImageIfNecessary(platformButton, button, image, 0, padding, result, _originalImageSize);
 			}
 
 			platformButton.ImageView.ContentMode = contentMode;
@@ -174,10 +229,11 @@ namespace Microsoft.Maui.Controls
 				platformButton.TitleEdgeInsets = titleInsets;
 				platformButton.Superview?.SetNeedsLayout();
 				platformButton.Superview?.LayoutIfNeeded();
+				return result;
 			}
 #pragma warning restore CA1416, CA1422
 
-			var titleRectHeight = platformButton.GetTitleBoundingRect(padding).Height;
+			var titleRectHeight = platformButton.GetTitleBoundingRect(platformButton.Bounds.Width, platformButton.Bounds.Height).Height;
 
 			var buttonContentHeight =
 				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
@@ -206,7 +262,7 @@ namespace Microsoft.Maui.Controls
 
 #pragma warning disable CA1416, CA1422
 
-				var maxButtonHeight = Math.Min(buttonContentHeight, bounds.Height);
+				var maxButtonHeight = Math.Min(buttonContentHeight, result.Height);
 
 				// If the button's content is larger than the button, we need to adjust the ContentEdgeInsets.
 				// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel
@@ -231,7 +287,7 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding, Rect bounds, CGSize originalImageSize)
+		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding, Size bounds, CGSize originalImageSize)
 		{
 			var currentImageWidth = image.Size.Width;
 			var currentImageHeight = image.Size.Height;
@@ -242,7 +298,7 @@ namespace Microsoft.Maui.Controls
 			// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel.
 			var buffer = 0.1;
 
-			if (bounds != Rect.Zero && (!double.IsNaN(bounds.Height) || !double.IsNaN(bounds.Width)))
+			if (bounds != Size.Zero && (!double.IsNaN(bounds.Height) || !double.IsNaN(bounds.Width)))
 			{
 				var contentWidth = (nfloat)bounds.Width - (nfloat)padding.Left - (nfloat)padding.Right;
 
