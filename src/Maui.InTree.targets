@@ -30,4 +30,15 @@
 
   </ImportGroup>
 
+  <Target Name="VerifyMauiBuildTasksBuilt" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
+    <Error Condition="!Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') or !Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')"
+           Text="We have detected that the required MSBuild tasks are not yet built or they are out of date. (Expand to see more info) 
+You will need to exit Visual Studio and wait for it to completely close. 
+After the process has ended, run the build command on the CLI with the .NET MAUI repository as the working directory:
+    dotnet build Microsoft.Maui.BuildTasks.slnf
+You can also start Visual Studio using the cake script:
+    dotnet cake --target VS --workloads global
+For best results, each time you rebase, merge from main or checkout a different branch, rebuild the build tasks." />
+  </Target>
+
 </Project>

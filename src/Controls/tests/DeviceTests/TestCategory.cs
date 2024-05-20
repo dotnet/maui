@@ -24,8 +24,11 @@
 		public const string Image = "Image";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
+		public const string Lifecycle = nameof(Lifecycle);
 		public const string ListView = "ListView";
 		public const string MenuFlyout = nameof(MenuFlyout);
+		public const string Mapper = nameof(Mapper);
+		public const string Memory = nameof(Memory);
 		public const string Modal = "Modal";
 		public const string NavigationPage = "NavigationPage";
 		public const string Page = "Page";
@@ -47,5 +50,7 @@
 		public const string VisualElementTree = "VisualElementTree";
 		public const string WebView = "WebView";
 		public const string Window = "Window";
+		public const string WindowOverlay = "WindowOverlay";
+		public const string Xaml = nameof(Xaml);
 	}
 }

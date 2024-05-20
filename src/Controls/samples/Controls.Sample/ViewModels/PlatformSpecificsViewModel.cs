@@ -60,6 +60,9 @@ namespace Maui.Controls.Sample.ViewModels
 				new SectionModel(typeof(iOSFlyoutPage), "FlyoutPage Shadow",
 					"This platform-specific controls whether the detail page of a FlyoutPage has shadow applied to it, when revealing the flyout page."),
 
+				new SectionModel(typeof(iOSDragAndDropRequestFullSize), "Drag and Drop Gesture Recognizer Platform-Specific",
+					"This iOS platform-specific controls whether to request full-sized drag shadows and the UIDropProposal types."),
+
 				new SectionModel(typeof(iOSHideHomeIndicatorPage), "Hide Home Indicator",
 					"This iOS platform-specific sets the visibility of the home indicator on a Page."),
 
@@ -122,6 +125,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 				new SectionModel(typeof(WindowsCollapseWidthAdjusterPage), "FlyoutPage Navigation Bar",
 					"This WinUI platform-specific is used to collapse the navigation bar on a FlyoutPage."),
+
+				new SectionModel(typeof(WindowsDragAndDropCustomization), "Drag and Drop Gesture Recognizer Platform-Specific",
+					"This WinUI platform-specific displays drag and drop customization such as custom drag gylph and text."),
 
 				new SectionModel(typeof(WindowsListViewPage), "ListView Selection Mode",
 					"This WinUI platform-specific controls whether items in a ListView can respond to tap gestures, and hence whether the native ListView fires the ItemClick or Tapped event."),

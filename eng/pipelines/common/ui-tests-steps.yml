@@ -10,14 +10,19 @@ parameters:
   configuration : "Release"
 
 steps:
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      displayName: 'Clean bot'
+      continueOnError: true
+      timeoutInMinutes: 60
 
   - template: provision.yml
     parameters:
-      ${{ if eq(parameters.platform, 'windows') }}:
-        skipProvisioning: true
-      ${{ if ne(parameters.platform, 'windows') }}:
-        skipProvisioning: false
-      skipXcode: false
+      skipProvisioning:  ${{ eq(parameters.platform, 'windows') }}
+      skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
+      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - task: PowerShell@2
@@ -31,13 +36,57 @@ steps:
     displayName: "Modify defaults"
     continueOnError: true
 
-  - task: NodeTool@0
+  # AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
+  - task: ScreenResolutionUtility@1
+    condition: eq('${{ parameters.platform }}' , 'windows')
     inputs:
-      versionSpec: "20.3.1"
+      displaySettings: 'specific'
+      width: '1920'
+      height: '1080'
+    displayName: "Set screen resolution"
+
+  - task: UseNode@1
+    inputs:
+      version: "20.3.1"
     displayName: "Install node"
+    
+  - bash: |
+      echo "##[group]Running ls -al $(npm root -g)"
+      ls -al $(npm root -g)
+      echo "##[endgroup]"
+
+      echo "##[group]Running ls -al $(npm root -g)/appium"
+      ls -al $(npm root -g)/appium
+      echo "##[endgroup]"
+
+      echo "##[group]Running ls -al $(npm root -g)/.appium-????????"
+      ls -al $(npm root -g)/.appium-????????
+      echo "##[endgroup]"
+
+      echo "##[group]Running ls -al $(npm root -g)/appium-doctor"
+      ls -al $(npm root -g)/appium-doctor
+      echo "##[endgroup]"
+
+      echo "##[group]Running ls -al $(npm root -g)/.appium-doctor-????????"
+      ls -al $(npm root -g)/.appium-doctor-????????
+      echo "##[endgroup]"
+
+      echo "##[group]Running ps aux"
+      ps aux
+      echo "##[endgroup]"
+    displayName: "Debugging output"
+    continueOnError: true
+    condition: startsWith(variables['Agent.Name'], 'XAMBOT')
+
+  # Clean up any leftover cached folders of appium and appium-doctor node modules
+  - bash: |
+      rm -rf $(npm root -g)/.appium-????????
+      rm -rf $(npm root -g)/.appium-doctor-????????
+    displayName: "Delete temp .appium-???????? and .appium-doctor-???????? folders"
+    continueOnError: true
 
   - pwsh: ./eng/scripts/appium-install.ps1
-    displayName: "Install Appium"
+    displayName: "Install Appium (Drivers)"
     continueOnError: false
     retryCountOnTaskFailure: 1
 
@@ -57,10 +106,26 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
     displayName: 'Build the samples'
 
+  - bash: |
+      if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+      if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
+    displayName: Delete Old Simulator Logs
+    condition: ${{ eq(parameters.platform, 'ios') }}
+    continueOnError: true
+
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
     displayName: $(Agent.JobName)
-    retryCountOnTaskFailure: 2
-  
+    ${{ if ne(parameters.platform, 'android')}}:
+      retryCountOnTaskFailure: 1
+
+  - bash: |
+      suffix=$(date +%Y%m%d%H%M%S)
+      zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
+      zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
+    displayName: Zip Simulator Logs
+    condition: ${{ eq(parameters.platform, 'ios') }}
+    continueOnError: true
+
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results
     condition: always()

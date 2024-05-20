@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
+using System.Text;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel;
@@ -27,8 +27,6 @@ namespace Microsoft.Maui.Platform
 			SetupPlatformEvents();
 		}
 
-		WebView2? _internalWebView;
-
 		// Arbitrary local host name for virtual folder mapping
 		const string LocalHostName = "appdir";
 		const string LocalScheme = $"https://{LocalHostName}/";
@@ -42,78 +40,42 @@ namespace Microsoft.Maui.Platform
 			}";
 
 		// Allow for packaged/unpackaged app support
-		string ApplicationPath => AppInfoUtils.IsPackagedApp
+		static string ApplicationPath => AppInfoUtils.IsPackagedApp
 			? Package.Current.InstalledLocation.Path
 			: AppContext.BaseDirectory;
 
 		public async void LoadHtml(string? html, string? baseUrl)
-		{
+		{       
 			var mapBaseDirectory = false;
-
 			if (string.IsNullOrEmpty(baseUrl))
 			{
 				baseUrl = LocalScheme;
 				mapBaseDirectory = true;
 			}
 
-			// Generate a base tag for the document
-			var baseTag = $"<base href=\"{baseUrl}\"></base>";
+			await EnsureCoreWebView2Async();
 
-			string htmlWithBaseTag;
+			if (mapBaseDirectory)
+		    {
+		    	CoreWebView2.SetVirtualHostNameToFolderMapping(
+		    		LocalHostName,
+		    		ApplicationPath,
+		    		Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+		    }
 
-			// Set up an internal WebView we can use to load and parse the original HTML string
-			// Make _internalWebView a field instead of local variable to avoid garbage collection
-			_internalWebView = new WebView2();
+			// Insert script to set the base tag
+			var script = GetBaseTagInsertionScript(baseUrl);
+			var htmlWithScript = $"{script}\n{html}";
 
-			// TODO: For now, the CoreWebView2 won't be created without either setting Source or
-			// calling EnsureCoreWebView2Async().
-			await _internalWebView.EnsureCoreWebView2Async();
-
-			// When the 'navigation' to the original HTML string is done, we can modify it to include our <base> tag
-			_internalWebView.NavigationCompleted += async (sender, args) =>
-			{
-				// Generate a version of the <base> script with the correct <base> tag
-				var script = BaseInsertionScript.Replace("baseTag", baseTag, StringComparison.Ordinal);
-
-				// Run it and retrieve the updated HTML from our WebView
-				await sender.ExecuteScriptAsync(script);
-				htmlWithBaseTag = await sender.ExecuteScriptAsync("document.documentElement.outerHTML;");
-
-				htmlWithBaseTag = Regex.Unescape(htmlWithBaseTag);
-				htmlWithBaseTag = htmlWithBaseTag.Remove(0, 1);
-				htmlWithBaseTag = htmlWithBaseTag.Remove(htmlWithBaseTag.Length - 1, 1);
-
-				await EnsureCoreWebView2Async();
-
-				if (mapBaseDirectory)
-				{
-					CoreWebView2.SetVirtualHostNameToFolderMapping(
-						LocalHostName,
-						ApplicationPath,
-						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
-				}
-
-				// Set the HTML for the 'real' WebView to the updated HTML
-				NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
-
-				// Free up memory after we're done with _internalWebView
-				if (_internalWebView.IsValid())
-				{
-					_internalWebView.Close();
-					_internalWebView = null;
-				}
-			};
-
-			// Kick off the initial navigation
-			if (_internalWebView.IsValid())
-				_internalWebView.NavigateToString(html);
+			NavigateToString(htmlWithScript);
 		}
 
 		public async void LoadUrl(string? url)
 		{
 			Uri uri = new Uri(url ?? string.Empty, UriKind.RelativeOrAbsolute);
 
-			if (!uri.IsAbsoluteUri)
+			if (!uri.IsAbsoluteUri ||
+				IsUriWithLocalScheme(uri.AbsoluteUri))
 			{
 				await EnsureCoreWebView2Async();
 
@@ -122,7 +84,8 @@ namespace Microsoft.Maui.Platform
 					ApplicationPath,
 					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
 
-				uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
+				if (!uri.IsAbsoluteUri)
+					uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
 			}
 
 			if (_handler?.TryGetTarget(out var handler) ?? false)
@@ -143,7 +106,8 @@ namespace Microsoft.Maui.Platform
 			NavigationStarting += (sender, args) =>
 			{
 				// Auto map local virtual app dir host, e.g. if navigating back to local site from a link to an external site
-				if (args?.Uri?.ToLowerInvariant().StartsWith(LocalScheme.TrimEnd('/').ToLowerInvariant()) == true)
+				if (IsUriWithLocalScheme(args?.Uri) ||
+					IsWebView2DataUriWithBaseUrl(args?.Uri))
 				{
 					CoreWebView2.SetVirtualHostNameToFolderMapping(
 						LocalHostName,
@@ -156,6 +120,40 @@ namespace Microsoft.Maui.Platform
 					CoreWebView2.ClearVirtualHostNameToFolderMapping(LocalHostName);
 				}
 			};
+		}
+
+		static bool IsUriWithLocalScheme(string? uri)
+		{
+			return uri?
+				.StartsWith(
+					LocalScheme.TrimEnd('/'),
+					StringComparison.OrdinalIgnoreCase) == true;
+		}
+
+		static bool IsWebView2DataUriWithBaseUrl(string? uri)
+		{
+			// WebView2 sends the web page with inserted base tag as data URI
+			const string dataUriBase64 = "data:text/html;charset=utf-8;base64,";
+			if (uri == null ||
+				uri.StartsWith(
+					dataUriBase64,
+					StringComparison.OrdinalIgnoreCase) == false)
+				return false;
+
+			string decodedHtml = Encoding.UTF8.GetString(
+				Convert.FromBase64String(
+					uri.Substring(dataUriBase64.Length)));
+
+			var localSchemeScript = GetBaseTagInsertionScript(LocalScheme);
+			return decodedHtml.Contains(
+				localSchemeScript,
+				StringComparison.OrdinalIgnoreCase);
+		}
+
+		static string GetBaseTagInsertionScript(string baseUrl)
+		{
+			var baseTag = $"<base href=\"{baseUrl}\"></base>";
+			return $"<script>{BaseInsertionScript.Replace("baseTag", baseTag, StringComparison.Ordinal)}</script>";
 		}
 	}
 }

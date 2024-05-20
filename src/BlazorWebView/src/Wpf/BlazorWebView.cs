@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 			else
 			{
-				appRootDir = Environment.CurrentDirectory;
+				appRootDir = AppContext.BaseDirectory;
 			}
 			var hostPageFullPath = Path.GetFullPath(Path.Combine(appRootDir, HostPage));
 			var contentRootDirFullPath = Path.GetDirectoryName(hostPageFullPath)!;
@@ -348,6 +348,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				// instead and aren't copied to the bin dir
 				return new NullFileProvider();
 			}
+		}
+
+		/// <summary>
+		/// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
+		/// </summary>
+		/// <param name="workItem">The action to call.</param>
+		/// <returns>Returns a <see cref="Task"/> representing <c>true</c> if the <paramref name="workItem"/> was called, or <c>false</c> if it was not called because Blazor is not currently running.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
+		public virtual async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
+		{
+			ArgumentNullException.ThrowIfNull(workItem);
+			if (_webviewManager is null)
+			{
+				return false;
+			}
+
+			return await _webviewManager.TryDispatchAsync(workItem);
 		}
 
 		private void CheckDisposed()

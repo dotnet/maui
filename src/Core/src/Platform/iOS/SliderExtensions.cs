@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
 using UIKit;
 
@@ -31,10 +32,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMaximumTrackColor(this UISlider uiSlider, ISlider slider)
 		{
 			if (slider.MaximumTrackColor != null)
-			{
-				if (uiSlider.TraitCollection.UserInterfaceIdiom != UIUserInterfaceIdiom.Mac)
-					uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
-			}
+				uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
 		}
 
 		public static void UpdateThumbColor(this UISlider uiSlider, ISlider slider)
@@ -50,7 +48,8 @@ namespace Microsoft.Maui.Platform
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
-				var result = await service.GetImageAsync(thumbImageSource);
+				var scale = uiSlider.GetDisplayDensity();
+				var result = await service.GetImageAsync(thumbImageSource, scale);
 				var thumbImage = result?.Value;
 
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);

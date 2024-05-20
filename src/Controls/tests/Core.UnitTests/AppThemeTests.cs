@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Text = "Green on Light, Red on Dark"
 			};
+			app.LoadPage(new ContentPage {Content = label});
 
 			label.SetAppThemeColor(Label.TextColorProperty, Colors.Green, Colors.Red);
 			Assert.Equal(Colors.Green, label.TextColor);
@@ -46,10 +47,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ThemeChangeUsingSetAppTheme()
 		{
+
 			var label = new Label
 			{
 				Text = "Green on Light, Red on Dark"
 			};
+
+			app.LoadPage(new ContentPage {Content = label});
 
 			label.SetAppTheme(Label.TextColorProperty, Colors.Green, Colors.Red);
 			Assert.Equal(Colors.Green, label.TextColor);
@@ -66,6 +70,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Text = "Green on Light, Red on Dark"
 			};
+			app.LoadPage(new ContentPage {Content = label});
 
 			label.SetBinding(Label.TextColorProperty, new AppThemeBinding { Light = Colors.Green, Dark = Colors.Red });
 			Assert.Equal(Colors.Green, label.TextColor);
@@ -82,6 +87,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Text = "Green on Light, Red on Dark"
 			};
+			app.LoadPage(new ContentPage {Content = label});
 
 			label.SetAppThemeColor(Label.TextColorProperty, Colors.Green, Colors.Red);
 			Assert.Equal(Colors.Green, label.TextColor);
@@ -225,6 +231,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Text = "Green on Light, Red on Dark"
 			};
+			app.LoadPage(new ContentPage {Content = label});
 
 			label.SetAppThemeColor(Label.TextColorProperty, Colors.Green, Colors.Red);
 
@@ -235,6 +242,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			SetAppTheme(AppTheme.Dark);
 
 			Assert.Equal(Colors.Red, label.TextColor);
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/17478
+		public void BindingConversion()
+		{
+			var border = new Border();
+			border.SetAppTheme(Border.StrokeProperty, Colors.Red, Colors.Black);
 		}
 	}
 }

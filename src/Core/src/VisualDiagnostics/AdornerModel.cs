@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 {
 	internal class AdornerModel
 	{
-		Rect boundingBox = new Rect();
+		Rect boundingBox;
 		List<Rect> marginZones = new List<Rect>();
 
 		public Rect BoundingBox => boundingBox;

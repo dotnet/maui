@@ -22,19 +22,19 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ItemSizeGalleries
 			Lots.Clicked += LotsOfMessages;
 		}
 
-		void AppendRandomChatMessage(object sender, EventArgs e)
+		void AppendRandomChatMessage(object? sender, EventArgs e)
 		{
 			_vm.ChatMessages.Add(GenerateRandomMessage());
 		}
 
-		void LotsOfMessages(object sender, EventArgs e)
+		void LotsOfMessages(object? sender, EventArgs e)
 		{
 			var newVm = new ChatExampleViewModel(GenerateMessages(1000));
 			_vm = newVm;
 			BindingContext = _vm;
 		}
 
-		void ClearMessages(object sender, EventArgs e)
+		void ClearMessages(object? sender, EventArgs e)
 		{
 			_vm.ChatMessages.Clear();
 		}
@@ -95,8 +95,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ItemSizeGalleries
 
 	class ChatTemplateSelector : DataTemplateSelector
 	{
-		public DataTemplate LocalTemplate { get; set; }
-		public DataTemplate RemoteTemplate { get; set; }
+		public DataTemplate? LocalTemplate { get; set; }
+		public DataTemplate? RemoteTemplate { get; set; }
 
 		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 		{
@@ -104,10 +104,10 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ItemSizeGalleries
 			{
 				if (message.IsLocal)
 				{
-					return LocalTemplate;
+					return LocalTemplate!;
 				}
 
-				return RemoteTemplate;
+				return RemoteTemplate!;
 			}
 
 			throw new ArgumentOutOfRangeException();

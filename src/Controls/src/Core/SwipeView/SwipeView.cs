@@ -2,24 +2,33 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController, ISwipeView
+	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController, ISwipeView, IVisualTreeElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;
 
 		readonly List<ISwipeItem> _swipeItems = new List<ISwipeItem>();
 
-		private protected override IList<Element> LogicalChildrenInternalBackingStore
-			=> new CastingList<Element, ISwipeItem>(_swipeItems);
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public SwipeView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SwipeView>>(() => new PlatformConfigurationRegistry<SwipeView>(this));
+
+			// This just disables any of the legacy layout code from running
+			DisableLayout = true;
+
+			// SwipeItems is an Element so it participates in the Visual Hierarchy.
+			// This is why we add each set of items to the logical children of swipeview
+			AddLogicalChild(RightItems);
+			AddLogicalChild(LeftItems);
+			AddLogicalChild(TopItems);
+			AddLogicalChild(BottomItems);
 		}
 
 		/// <summary>Bindable property for <see cref="Threshold"/>.</summary>
@@ -87,41 +96,69 @@ namespace Microsoft.Maui.Controls
 			set => ((ISwipeView)this).IsOpen = value;
 		}
 
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
+		{
+			List<Maui.IVisualTreeElement> elements = new List<IVisualTreeElement>();
+
+			// I realize we are adding these all via AddLogicalChild but the base Compatibility.Layout
+			// Implements IVisualTreeElement.GetVisualChildren() and ruins that so we need to explicitly
+			// implement IVTE so we can collect up all the logical children for IVTE
+			// This is required for hot reload and live visual tree to work as well
+
+			elements.Add(LeftItems);
+			elements.Add(RightItems);
+			elements.Add(TopItems);
+			elements.Add(BottomItems);
+
+			foreach (var item in InternalChildren)
+			{
+				if (item is IVisualTreeElement vte)
+				{
+					elements.Add(vte);
+				}
+			}
+
+			return elements;
+		}
+
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+			SetInheritedBindingContext(LeftItems, BindingContext);
+			SetInheritedBindingContext(RightItems, BindingContext);
+			SetInheritedBindingContext(TopItems, BindingContext);
+			SetInheritedBindingContext(BottomItems, BindingContext);
+		}
+
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is not SwipeView swipeView)
 				return;
 
-			swipeView.UpdateSwipeItemsParent((SwipeItems)newValue);
-
 			if (oldValue is SwipeItems oldItems)
 			{
 				oldItems.CollectionChanged -= SwipeItemsCollectionChanged;
 				oldItems.PropertyChanged -= SwipeItemsPropertyChanged;
+				swipeView.RemoveLogicalChild(oldItems);
 			}
 
 			if (newValue is SwipeItems newItems)
 			{
 				newItems.CollectionChanged += SwipeItemsCollectionChanged;
 				newItems.PropertyChanged += SwipeItemsPropertyChanged;
+				swipeView.AddLogicalChild(newItems);
 			}
 
 			void SwipeItemsPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (sender is SwipeItems swipeItems)
 					SendChange(swipeItems);
-
-				if (sender is IEnumerable<ISwipeItem> enumerable)
-					SendChange(new SwipeItems(enumerable));
 			}
 
 			void SwipeItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 			{
 				if (sender is SwipeItems swipeItems)
 					SendChange(swipeItems);
-
-				if (sender is IEnumerable<ISwipeItem> enumerable)
-					SendChange(new SwipeItems(enumerable));
 			}
 
 			void SendChange(SwipeItems swipeItems)
@@ -172,48 +209,18 @@ namespace Microsoft.Maui.Controls
 
 		void ISwipeViewController.SendSwipeEnded(SwipeEndedEventArgs args) => SwipeEnded?.Invoke(this, args);
 
-		protected override void OnBindingContextChanged()
-		{
-			base.OnBindingContextChanged();
-
-			object bc = BindingContext;
-
-			if (LeftItems != null)
-				SetInheritedBindingContext(LeftItems, bc);
-
-			if (RightItems != null)
-				SetInheritedBindingContext(RightItems, bc);
-
-			if (TopItems != null)
-				SetInheritedBindingContext(TopItems, bc);
-
-			if (BottomItems != null)
-				SetInheritedBindingContext(BottomItems, bc);
-		}
-
 		SwipeItems SwipeItemsDefaultValueCreator() => new SwipeItems();
 
 		static object SwipeItemsDefaultValueCreator(BindableObject bindable)
 		{
-			return ((SwipeView)bindable).SwipeItemsDefaultValueCreator();
+			var swipeView = ((SwipeView)bindable);
+			return swipeView.SwipeItemsDefaultValueCreator();
 		}
 
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, SwipeView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
-		}
-
-		void UpdateSwipeItemsParent(SwipeItems swipeItems)
-		{
-			if (swipeItems.Parent == null)
-				swipeItems.Parent = this;
-
-			foreach (var item in swipeItems)
-			{
-				if (item is Element swipeItem && swipeItem.Parent == null)
-					swipeItem.Parent = swipeItems;
-			}
 		}
 
 #nullable enable
@@ -241,7 +248,6 @@ namespace Microsoft.Maui.Controls
 				if (_isOpen != value)
 				{
 					_isOpen = value;
-					UpdateLogicalChildren();
 					Handler?.UpdateValue(nameof(ISwipeView.IsOpen));
 				}
 			}
@@ -403,46 +409,6 @@ namespace Microsoft.Maui.Controls
 		void ISwipeView.RequestClose(SwipeViewCloseRequest swipeCloseRequest)
 		{
 			Handler?.Invoke(nameof(ISwipeView.RequestClose), swipeCloseRequest);
-		}
-
-		void UpdateLogicalChildren()
-		{
-			if (!_isOpen)
-			{
-				ClearLogicalChildren();
-				return;
-			}
-
-			var swipeItems = GetSwipeItemsByDirection(_swipeDirection);
-
-			if (swipeItems is null)
-				return;
-
-			foreach (var swipeItem in swipeItems)
-				AddLogicalChild((Element)swipeItem);
-		}
-
-		SwipeItems? GetSwipeItemsByDirection(SwipeDirection? swipeDirection)
-		{
-			SwipeItems? swipeItems = null;
-
-			switch (swipeDirection)
-			{
-				case SwipeDirection.Left:
-					swipeItems = RightItems;
-					break;
-				case SwipeDirection.Right:
-					swipeItems = LeftItems;
-					break;
-				case SwipeDirection.Up:
-					swipeItems = BottomItems;
-					break;
-				case SwipeDirection.Down:
-					swipeItems = TopItems;
-					break;
-			}
-
-			return swipeItems;
 		}
 
 		class HandlerSwipeItems : List<Maui.ISwipeItem>, ISwipeItems

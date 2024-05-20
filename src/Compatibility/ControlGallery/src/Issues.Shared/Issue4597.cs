@@ -176,7 +176,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if !WINDOWS
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
-		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Image), true);
@@ -194,7 +193,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
-		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void ButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Button), true);
@@ -212,7 +210,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
-		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void ImageButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(ImageButton), true);
@@ -229,7 +226,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
-		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void ImageCellFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			ImageCellTest(true);
@@ -290,7 +286,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				if (result[0].Rect.Height > 1)
 					return result;
 
-				return new Xamarin.UITest.Queries.AppResult[0];
+				return Array.Empty<Xamarin.UITest.Queries.AppResult>();
 			}, 10, 4000);
 
 			Assert.AreEqual(1, images.Length);

@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Platform
 		bool NavigatingCanceled(string? url) =>
 			!_handler.TryGetTarget(out var handler) || handler.NavigatingCanceled(url);
 
-		string GetValidUrl(string? url)
+		static string GetValidUrl(string? url)
 		{
 			if (string.IsNullOrEmpty(url))
 				return string.Empty;

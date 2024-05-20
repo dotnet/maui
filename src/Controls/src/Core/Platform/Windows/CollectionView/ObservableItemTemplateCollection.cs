@@ -16,10 +16,13 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly double _itemHeight;
 		readonly double _itemWidth;
 		readonly Thickness _itemSpacing;
-		readonly INotifyCollectionChanged _notifyCollectionChanged;
+		readonly NotifyCollectionChangedEventHandler _collectionChanged;
+		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
 		bool _innerCollectionChange = false;
 		bool _observeChanges = true;
+
+		~ObservableItemTemplateCollection() => _proxy.Unsubscribe();
 
 		public ObservableItemTemplateCollection(IList itemsSource, DataTemplate itemTemplate, BindableObject container,
 			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null, IMauiContext mauiContext = null)
@@ -28,8 +31,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				throw new ArgumentException($"{nameof(itemsSource)} must implement {nameof(INotifyCollectionChanged)}");
 			}
-
-			_notifyCollectionChanged = notifyCollectionChanged;
 
 			_itemsSource = itemsSource;
 			_itemTemplate = itemTemplate;
@@ -52,7 +53,8 @@ namespace Microsoft.Maui.Controls.Platform
 				Add(new ItemTemplateContext(itemTemplate, itemsSource[n], container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
 			}
 
-			_notifyCollectionChanged.CollectionChanged += InnerCollectionChanged;
+			_collectionChanged = InnerCollectionChanged;
+			_proxy.Subscribe(notifyCollectionChanged, _collectionChanged);
 
 			CollectionChanged += TemplateCollectionChanged;
 		}
@@ -60,7 +62,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public void CleanUp()
 		{
 			CollectionChanged -= TemplateCollectionChanged;
-			_notifyCollectionChanged.CollectionChanged -= InnerCollectionChanged;
+			_proxy.Unsubscribe();
 		}
 
 		void TemplateCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)

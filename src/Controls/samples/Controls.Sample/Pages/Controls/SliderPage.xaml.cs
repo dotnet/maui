@@ -5,7 +5,7 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class SliderPage
 	{
-		ImageSource _imageSource;
+		ImageSource? _imageSource;
 
 		public SliderPage()
 		{

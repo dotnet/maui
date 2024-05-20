@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Foundation;
-using Microsoft.Maui.Platform;
-using UIKit;
+﻿using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -28,6 +23,11 @@ namespace Microsoft.Maui.Handlers
 						uIMenuBuilder);
 		}
 
+		public static void MapIsEnabled(IMenuBarItemHandler handler, IMenuBarItem view)
+		{
+			handler.PlatformView.UpdateIsEnabled(view);
+		}
+
 		public void Add(IMenuElement view)
 		{
 			Rebuild();
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Handlers
 			Rebuild();
 		}
 
-		void Rebuild()
+		static void Rebuild()
 		{
 			MenuBarHandler.Rebuild();
 		}

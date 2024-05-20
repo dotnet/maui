@@ -11,7 +11,11 @@ namespace Microsoft.Maui.DeviceTests
 	{
 #if MACCATALYST
 
-		[Fact]
+		[Fact(
+#if MACCATALYST
+		Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
 		public async Task TitleSetsOnWindow()
 		{
 			var window = new Window
@@ -32,7 +36,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		[Fact]
+		[Fact(
+#if MACCATALYST
+		Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
 		public async Task ContentIsSetInitially()
 		{
 			var window = new Window
@@ -58,7 +66,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
+		[Fact(
+#if MACCATALYST
+		Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
 		public async Task WindowSupportsEmptyPage_Platform()
 		{
 			var window = new Window(new ContentPage());

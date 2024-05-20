@@ -39,68 +39,87 @@ namespace Microsoft.Maui
 
 			var applicationContext = rootContext.MakeApplicationScope(this);
 
-			Services = applicationContext.Services;
+			_services = applicationContext.Services;
 
-			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
+			_services.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
 
-			Application = Services.GetRequiredService<IApplication>();
+			_application = _services.GetRequiredService<IApplication>();
 
-			this.SetApplicationHandler(Application, applicationContext);
+			this.SetApplicationHandler(_application, applicationContext);
 
-			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreate>(del => del(this));
+			_services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreate>(del => del(this));
 
 			base.OnCreate();
 		}
 
 		public override void OnLowMemory()
 		{
-			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationLowMemory>(del => del(this));
+			_services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationLowMemory>(del => del(this));
 
 			base.OnLowMemory();
 		}
 
 		public override void OnTrimMemory(TrimMemory level)
 		{
-			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationTrimMemory>(del => del(this, level));
+			_services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationTrimMemory>(del => del(this, level));
 
 			base.OnTrimMemory(level);
 		}
 
 		public override void OnConfigurationChanged(Configuration newConfig)
 		{
-			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationConfigurationChanged>(del => del(this, newConfig));
+			_services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationConfigurationChanged>(del => del(this, newConfig));
 
 			base.OnConfigurationChanged(newConfig);
 		}
 
 		public static MauiApplication Current { get; private set; } = null!;
 
-		public IServiceProvider Services { get; protected set; } = null!;
+		IServiceProvider? _services;
 
-		public IApplication Application { get; protected set; } = null!;
+		IApplication? _application;
+
+		// TODO: we should investigate throwing an exception or changing the public API
+		IServiceProvider IPlatformApplication.Services => _services!;
+
+		IApplication IPlatformApplication.Application => _application!;
+
+		[Obsolete("Use the IPlatformApplication.Current.Services instead.")]
+		public IServiceProvider Services
+		{
+			get => _services!;
+			protected set => _services = value;
+		}
+
+		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
+		public IApplication Application
+		{
+			get => _application!;
+			protected set => _application = value;
+		}
 
 		public class ActivityLifecycleCallbacks : Java.Lang.Object, IActivityLifecycleCallbacks
 		{
 			public void OnActivityCreated(Activity activity, Bundle? savedInstanceState) =>
-				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnCreate>(del => del(activity, savedInstanceState));
+				IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnCreate>(del => del(activity, savedInstanceState));
 
 			public void OnActivityStarted(Activity activity) =>
-				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnStart>(del => del(activity));
+				IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnStart>(del => del(activity));
 
 			public void OnActivityResumed(Activity activity) =>
-				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnResume>(del => del(activity));
+				IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnResume>(del => del(activity));
 
 			public void OnActivityPaused(Activity activity) =>
-				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnPause>(del => del(activity));
+				IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnPause>(del => del(activity));
 
 			public void OnActivityStopped(Activity activity) =>
-				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnStop>(del => del(activity));
+				IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnStop>(del => del(activity));
 
 			public void OnActivitySaveInstanceState(Activity activity, Bundle outState) =>
-				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnSaveInstanceState>(del => del(activity, outState));
+				IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnSaveInstanceState>(del => del(activity, outState));
 
 			public void OnActivityDestroyed(Activity activity) =>
-				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnDestroy>(del => del(activity));
+				IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnDestroy>(del => del(activity));
 		}
 	}
 }

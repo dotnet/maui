@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -318,7 +319,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
-			_changeHandlers = _changeHandlers ?? new List<Action<object, ResourcesChangedEventArgs>>(2);
+			_changeHandlers ??= new List<Action<object, ResourcesChangedEventArgs>>(2);
 			_changeHandlers.Add(onchanged);
 		}
 
@@ -555,7 +556,7 @@ namespace Microsoft.Maui.Controls
 				OnDescendantRemoved(element);
 		}
 
-		/// <summary>Raises the <see cref="ParentSet"/> event. Implement this method in order to add behavior when the element is added to a parent.</summary>
+		/// <summary>Raises the (internal) <c>ParentSet</c> event. Implement this method in order to add behavior when the element is added to a parent.</summary>
 		/// <remarks>Implementors must call the base method.</remarks>
 		protected virtual void OnParentSet()
 		{
@@ -570,7 +571,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
-			Handler?.UpdateValue(propertyName);
+			UpdateHandlerValue(propertyName);
 
 			if (_effects?.Count > 0)
 			{
@@ -581,6 +582,9 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+
+		private protected virtual void UpdateHandlerValue(string property) =>
+			Handler?.UpdateValue(property);
 
 		internal IEnumerable<Element> Descendants() =>
 			Descendants<Element>();
@@ -645,7 +649,7 @@ namespace Microsoft.Maui.Controls
 			if (values == null)
 				return;
 			if (_changeHandlers != null)
-				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers)
+				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
 					handler(this, new ResourcesChangedEventArgs(values));
 			if (_dynamicResources == null)
 				return;
@@ -928,7 +932,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Registers the specified <paramref name="effect"/> to this element.
+		/// </summary>
+		/// <param name="effect">The effect to be registered.</param>
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			if (effect is RoutingEffect re && re.Inner != null)

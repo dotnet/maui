@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Platform
 
 		class UIDatePickerProxy
 		{
-			internal MauiDatePickerDelegate? MauiDatePickerDelegate { get; set;	}
+			internal MauiDatePickerDelegate? MauiDatePickerDelegate { get; set; }
 
 			public void OnValueChanged(object? sender, EventArgs e) =>
 				MauiDatePickerDelegate?.DatePickerValueChanged();

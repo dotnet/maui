@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
@@ -18,7 +19,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public class HandlerTestBasement : TestBase, IDisposable
+	public class HandlerTestBasement : TestBase, IAsyncDisposable
 	{
 		MauiApp _mauiApp;
 		IServiceProvider _servicesProvider;
@@ -38,6 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 			var appBuilder = MauiApp.CreateBuilder();
 
 			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
+			appBuilder.Services.AddKeyedSingleton<IDispatcher>(typeof(IApplication), (svc, key) => TestDispatcher.Current);
 			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
 			appBuilder.Services.AddSingleton<IApplication>((_) => new CoreApplicationStub());
 
@@ -165,22 +167,32 @@ namespace Microsoft.Maui.DeviceTests
 			return handler;
 		}
 
-		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType)
+		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType) =>
+			CreateHandler(view, handlerType, MauiContext);
+
+		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType, IMauiContext mauiContext)
 		{
 			if (view.Handler is IPlatformViewHandler t)
 				return t;
 
 			var handler = (IPlatformViewHandler)Activator.CreateInstance(handlerType);
-			InitializeViewHandler(view, handler, MauiContext);
+			InitializeViewHandler(view, handler, mauiContext);
 			return handler;
 
 		}
 
-		protected Task ValidateHasColor(IView view, Color color, Type handlerType, Action action = null, string updatePropertyValue = null, double? tolerance = null)
+		protected Task ValidateHasColor(
+			IView view,
+			Color color,
+			Type handlerType,
+			Action action = null,
+			string updatePropertyValue = null,
+			double? tolerance = null)
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = CreateHandler(view, handlerType);
+				var mauiContext = view?.Handler?.MauiContext ?? MauiContext;
+				var handler = CreateHandler(view, handlerType, mauiContext);
 				var plaformView = handler.ToPlatform();
 				action?.Invoke();
 				if (!string.IsNullOrEmpty(updatePropertyValue))
@@ -188,7 +200,7 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(updatePropertyValue);
 				}
 
-				await plaformView.AssertContainsColor(color, MauiContext, tolerance: tolerance);
+				await plaformView.AssertContainsColor(color, mauiContext, tolerance: tolerance);
 			});
 		}
 
@@ -271,9 +283,35 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		public void Dispose()
+		protected Task AssertColorsAtPoints(IView view, Type handlerType, Color[] colors, Point[] points)
 		{
-			((IDisposable)_mauiApp)?.Dispose();
+			return InvokeOnMainThreadAsync(async () =>
+			{
+				var plaformView = CreateHandler(view, handlerType).ToPlatform();
+				await plaformView.AssertColorsAtPointsAsync(colors, points, MauiContext);
+			});
+		}
+
+		protected Task<ImageAnalysis.RawBitmap> GetRawBitmap(Controls.VisualElement view, Type handlerType)
+		{
+			return InvokeOnMainThreadAsync<RawBitmap>(async () =>
+			{
+				var platformView = CreateHandler(view, handlerType).ToPlatform();
+#if WINDOWS
+				return await platformView.AttachAndRun<RawBitmap>(async (window) => await view.AsRawBitmapAsync(), MauiContext);
+#else
+				return await platformView.AttachAndRun<RawBitmap>(async () => await view.AsRawBitmapAsync());
+#endif
+			});
+		}
+
+		public async ValueTask DisposeAsync()
+		{
+			if (_mauiApp != null)
+			{
+				await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+			}
+
 			_mauiApp = null;
 			_servicesProvider = null;
 			_mauiContext = null;

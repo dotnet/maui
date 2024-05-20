@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnSwipeViewTransitionModeChanged(object sender, EventArgs e)
 		{
-			SwipeTransitionMode transitionMode = (SwipeTransitionMode)(sender as EnumPicker).SelectedItem;
+			SwipeTransitionMode transitionMode = (SwipeTransitionMode)(sender as EnumPicker)!.SelectedItem;
 			swipeView.On<iOS>().SetSwipeTransitionMode(transitionMode);
 		}
 

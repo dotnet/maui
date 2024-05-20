@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTime(this Entry platformTimePicker, ITimePicker timePicker)
 		{
-			// Xamarin using DateTime formatting (https://developer.xamarin.com/api/property/Xamarin.Forms.TimePicker.Format/)
+			// .NET MAUI using DateTime formatting (https://learn.microsoft.com//dotnet/api/microsoft.maui.controls.timepicker.format)
 			platformTimePicker.Text = new DateTime(timePicker.Time.Ticks).ToString(timePicker.Format ?? s_defaultFormat);
 		}
 

@@ -14,7 +14,7 @@ Appium relies on different implementations called `drivers` for each platform th
 
 ### The sample project
 
-The project that is used for UI Tests is located here: `src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.csproj`
+The project that is used for UI Tests is located here: `src\Controls\tests\TestCases\Controls.TestCases.App.csproj`
 
 There are two types of tests you can add, Issue and Gallery.
 
@@ -26,24 +26,21 @@ You will need to create some kind of UI to test against, which will go in the Co
 
 Then in the Controls.AppiumTests project add a new class that derives from `_IssuesUITest` and add your test.
 
-You can use the example for the sample project [here](https://github.com/dotnet/maui/blob/main/src/Controls/samples/Controls.Sample.UITests/Issues/RefreshViewPage.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/tree/main/src/Controls/tests/UITests/Tests/Issues/RefreshViewTests.cs).
-
-
-
+You can use the example for the sample project [here](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases/Issues/RefreshViewPage.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/tree/main/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/RefreshViewTests.cs).
 
 ### Adding a GalleryPage
 
 Gallery tests are to make it easier to run the same set of tests on controls, if you are creating a new control you would want to add a new gallery page.
 
-We have some base classes you can derive from to make setting this up easier: [CoreGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/samples/Controls.Sample.UITests/CoreViews/CoreGalleryPage.cs) and [ContentViewGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/samples/Controls.Sample.UITests/Elements/ContentViewGalleryPage.cs)
+We have some base classes you can derive from to make setting this up easier: [CoreGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases/CoreViews/CoreGalleryPage.cs) and [ContentViewGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases/Elements/ContentViewGalleryPage.cs)
 
 All controls you intend to interact with need to set the 'AutomationId' property as this will be what you use to query for the element.
 
-Once you have created your GalleryPage, add it to [CorePageView](https://github.com/dotnet/maui/blob/5419846b1f20bdab1b5ce1dff40287edc5c38f12/src/Controls/samples/Controls.Sample.UITests/CoreViews/CorePageView.cs#L45C41-L45C41) so that it will show up on the main page at launch.
+Once you have created your GalleryPage, add it to [CorePageView](https://github.com/dotnet/maui/blob/5419846b1f20bdab1b5ce1dff40287edc5c38f12/src/Controls/tests/TestCases/CoreViews/CorePageView.cs#L45C41-L45C41) so that it will show up on the main page at launch.
 
 ### Adding the test
 
-The project that hosts the tests is located here: `src\Controls\tests\UITests\Controls.AppiumTests.csproj`
+The project that hosts the tests is located here: `src\Controls\tests\TestCases.Shared.Tests\Controls.TestCases.Shared.Tests.csproj`
 
 This project is using [NUnit](https://nunit.org/)
 
@@ -81,13 +78,7 @@ Assert.IsTrue(text.StartsWith("Logging in", StringComparison.CurrentCulture));
 ```
 
 ## Running tests
-
 Please see the [wiki](https://github.com/dotnet/maui/wiki/UITests) for setting up/running tests.
-
-
-## Adding new functionality
-
-We are implementing the IApp interface from Xamarin UITests, the implementation of which is [here](https://github.com/dotnet/maui/blob/main/src/TestUtils/src/TestUtils.Appium.UITests/AppiumUITestApp.cs).
 
 ## Known Issues
 - iOS doesn't support nested accessibility elements which will make some elements unreachable

@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
-			Label target = null;
+			Label? target = null;
 
 			for (int n = 0; n < 10; n++)
 			{
@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample.Pages
 				}
 			}
 
-			CurrentZIndex.Text = $"Z-Index of Label 5: {target.ZIndex}";
+			CurrentZIndex.Text = $"Z-Index of Label 5: {target!.ZIndex}";
 			ZIndexStepper.Value = target.ZIndex;
 			ZIndexStepper.ValueChanged += (sender, args) =>
 			{

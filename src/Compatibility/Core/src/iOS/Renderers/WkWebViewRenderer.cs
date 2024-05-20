@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 			}
 
-			_initialCookiesLoaded = _initialCookiesLoaded ?? new NSHttpCookie[0];
+			_initialCookiesLoaded = _initialCookiesLoaded ?? Array.Empty<NSHttpCookie>();
 
 			List<NSHttpCookie> existingCookies = new List<NSHttpCookie>();
 			string domain = CreateUriForCookies(url).Host;

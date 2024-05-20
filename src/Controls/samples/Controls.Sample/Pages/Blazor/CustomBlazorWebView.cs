@@ -64,7 +64,7 @@ namespace Maui.Controls.Sample.Pages.Blazor
 				=> new InMemoryFileInfo(_fileContentsMap, Path.Combine(_contentRootDir, subpath));
 
 			public IChangeToken Watch(string filter)
-				=> null;
+				=> null!;
 
 			private sealed class InMemoryFileInfo : IFileInfo
 			{
@@ -76,7 +76,9 @@ namespace Maui.Controls.Sample.Pages.Blazor
 				{
 					_fileContentsMap = fileContentsMap;
 					_filePath = filePath;
-					Exists = fileContentsMap.TryGetValue(_filePath.Replace('\\', '/'), out _contents);
+					string? contents;
+					Exists = fileContentsMap.TryGetValue(_filePath.Replace('\\', '/'), out contents);
+					_contents = contents!;
 					Length = Exists ? _contents.Length : -1;
 
 					Name = Path.GetFileName(filePath);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
 
@@ -27,17 +28,21 @@ namespace Microsoft.Maui.Platform
 		IImageSourceServiceProvider? _imageSourceServiceProvider;
 #endif
 
-		readonly WeakReference<IImageSourcePartSetter> _handler;
+		readonly IImageSourcePartSetter _setter;
 
 		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
 
-		[Obsolete("Use ImageSourcePartLoader(IImageSourcePartSetter handler) instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use ImageSourcePartLoader(IImageSourcePartSetter setter) instead.", true)]
 		public ImageSourcePartLoader(IElementHandler handler, Func<IImageSourcePart?> imageSourcePart, Action<PlatformImage?> setImage)
 			: this((IImageSourcePartSetter)handler)
 		{
 		}
 
-		public ImageSourcePartLoader(IImageSourcePartSetter handler) => _handler = new(handler);
+		public ImageSourcePartLoader(IImageSourcePartSetter setter) =>
+			_setter = setter;
+
+		internal IImageSourcePartSetter Setter => _setter;
 
 		public void Reset()
 		{
@@ -46,30 +51,36 @@ namespace Microsoft.Maui.Platform
 
 		public async Task UpdateImageSourceAsync()
 		{
-			if (!_handler.TryGetTarget(out var handler) || handler.PlatformView is not PlatformView platformView)
+			if (Setter.Handler is not IElementHandler handler || handler.PlatformView is not PlatformView platformView)
 			{
 				return;
 			}
 
-			var token = this.SourceManager.BeginLoad();
-			var imageSource = handler.VirtualView as IImageSourcePart;
+			var token = SourceManager.BeginLoad();
+			var imageSource = Setter.ImageSourcePart;
 
 			if (imageSource?.Source is not null)
 			{
 #if IOS || ANDROID || WINDOWS || TIZEN
 				_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
+#endif
 
-				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, handler.SetImageSource, token)
+#if IOS || WINDOWS
+				var scale = handler.MauiContext?.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
+				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token)
 					.ConfigureAwait(false);
 
 				SourceManager.CompleteLoad(result);
+#elif ANDROID || TIZEN
+				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token)
+					.ConfigureAwait(false);
 #else
 				await Task.CompletedTask;
 #endif
 			}
 			else
 			{
-				handler.SetImageSource(null);
+				Setter.SetImageSource(null);
 			}
 		}
 	}

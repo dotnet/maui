@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 
 		public ObservableCollection<CollectionViewGalleryTestItem> Items { get; }
 
-		public DemoFilteredItemSource(int count = 50, Func<string, CollectionViewGalleryTestItem, bool> filter = null)
+		public DemoFilteredItemSource(int count = 50, Func<string, CollectionViewGalleryTestItem, bool>? filter = null)
 		{
 			_source = new List<CollectionViewGalleryTestItem>();
 
@@ -66,7 +66,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		bool ItemMatches(string filter, CollectionViewGalleryTestItem item)
 		{
 			filter = filter ?? "";
-			return item.Caption.Contains(filter, StringComparison.OrdinalIgnoreCase);
+			return item.Caption!.Contains(filter, StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }

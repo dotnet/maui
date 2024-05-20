@@ -2,16 +2,12 @@
 <ContentPage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Controls.Sample.Converters"
     x:Class="Maui.Controls.Sample.Pages.InputTransparentPage">
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <Style TargetType="Label">
-            </Style>
-            <Style TargetType="Button">
-                <!-- <Setter Property="Padding" Value="14,10" /> -->
-                <!-- <Setter Property="WidthRequest" Value="200"/> -->
-            </Style>
+            <local:NegativeConverter x:Key="NegativeConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -65,11 +61,15 @@
 
                 <Grid Margin="10" HeightRequest="100" BackgroundColor="LightBlue">
 
+                    <Button Text="Bottom Button" IsVisible="{Binding InputTransparent, Source={Reference testButton}}" Clicked="ClickSuccess" HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Button Text="Bottom Button" IsVisible="{Binding InputTransparent, Source={Reference testButton}, Converter={StaticResource NegativeConverter}}" Clicked="ClickFail" HorizontalOptions="Center" VerticalOptions="Center" />
+
                     <Grid x:Name="rootLayout">
                         <Grid x:Name="nestedLayout">
                             <Button x:Name="testButton" Text="Test Button" Clicked="ClickSuccess" HorizontalOptions="Center" VerticalOptions="Center" />
                         </Grid>
                     </Grid>
+
                 </Grid>
 
                 <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,2" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="6" Margin="10,0,10,0">

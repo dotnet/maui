@@ -8,18 +8,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Xaml" />
-    <PackageReference Include="xunit" Version="2.5.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.5.33428.366" />
     <ProjectReference Include="..\..\src\Core.Design\Controls.Core.Design.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BoundsDesignTypeConverterTests.cs" />
+    <Compile Include="ButtonContentDesignTypeConverterTests.cs" />
     <Compile Include="ColorDesignTypeConverterTests.cs" />
+    <Compile Include="ConstraintDesignTypeConverterTests.cs" />
+    <Compile Include="CornerRadiusDesignTypeConverterTests.cs" />
     <Compile Include="DesignTypeConverterTests.cs" />
     <Compile Include="GridLengthCollectionDesignTypeConverterTests.cs" />
     <Compile Include="GridLengthDesignTypeConverterTests.cs" />
+    <Compile Include="ImageSourceDesignTypeConverterTests.cs" />
+    <Compile Include="PointTypeDesignConverterTests.cs" />
+    <Compile Include="RectTypeDesignConverterTests.cs" />
+    <Compile Include="ThicknessTypeDesignConverterTests.cs" />
+    <Compile Include="VisibilityDesignTypeConverterTests.cs" />
   </ItemGroup>
 </Project>

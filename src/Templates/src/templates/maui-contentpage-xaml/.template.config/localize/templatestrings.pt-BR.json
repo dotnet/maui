@@ -1,6 +1,7 @@
 {
   "author": "Microsoft",
   "name": "ContentPage do .NET MAUI (XAML)",
+  "description": "A page for displaying content using XAML.",
   "postActions/openInEditor/description": "Abre NewPage1.xaml no editor.",
   "symbols/namespace/description": "namespace do código gerado"
 }

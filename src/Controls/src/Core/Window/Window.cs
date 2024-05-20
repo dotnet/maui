@@ -71,15 +71,7 @@ namespace Microsoft.Maui.Controls
 		internal Toolbar? Toolbar
 		{
 			get => _toolbar;
-			set
-			{
-				if (_toolbar == value)
-					return;
-
-				_toolbar?.Handler?.DisconnectHandler();
-				_toolbar = value;
-				Handler?.UpdateValue(nameof(IToolbarElement.Toolbar));
-			}
+			set => ToolbarElement.SetValue(ref _toolbar, value, Handler);
 		}
 
 		public event EventHandler? SizeChanged;
@@ -685,6 +677,31 @@ namespace Microsoft.Maui.Controls
 			public NavigationImpl(Window owner)
 			{
 				_owner = owner;
+			}
+
+			protected override void OnInsertPageBefore(Page page, Page before)
+			{
+				throw new InvalidOperationException("InsertPageBefore is not supported, please use a NavigationPage.");
+			}
+
+			protected override Task OnPushAsync(Page page, bool animated)
+			{
+				throw new InvalidOperationException("PushAsync is not supported, please use a NavigationPage.");
+			}
+
+			protected override Task<Page> OnPopAsync(bool animated)
+			{
+				throw new InvalidOperationException("PopAsync is not supported, please use a NavigationPage.");
+			}
+
+			protected override Task OnPopToRootAsync(bool animated)
+			{
+				throw new InvalidOperationException("PopToRootAsync is not supported, please use a NavigationPage.");
+			}
+
+			protected override void OnRemovePage(Page page)
+			{
+				throw new InvalidOperationException("RemovePage is not supported, please use a NavigationPage.");
 			}
 
 			protected override IReadOnlyList<Page> GetModalStack()

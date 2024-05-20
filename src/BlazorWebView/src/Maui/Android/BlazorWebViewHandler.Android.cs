@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Android.Webkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -58,19 +59,37 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return blazorAndroidWebView;
 		}
 
+		private const string AndroidFireAndForgetAsyncSwitch = "BlazorWebView.AndroidFireAndForgetAsync";
+
+		private static bool IsAndroidFireAndForgetAsyncEnabled =>
+			AppContext.TryGetSwitch(AndroidFireAndForgetAsyncSwitch, out var enabled) && enabled;
+
 		protected override void DisconnectHandler(AWebView platformView)
 		{
 			platformView.StopLoading();
 
 			if (_webviewManager != null)
 			{
-				// Dispose this component's contents and block on completion so that user-written disposal logic and
-				// Blazor disposal logic will complete.
-				_webviewManager?
+				// Dispose this component's contents so that user-written disposal logic and Blazor disposal logic will complete.
+
+				// Start the disposal...
+				var disposalTask = _webviewManager?
 					.DisposeAsync()
-					.AsTask()
-					.GetAwaiter()
-					.GetResult();
+					.AsTask()!;
+
+				if (IsAndroidFireAndForgetAsyncEnabled)
+				{
+					// If the app is configured to fire-and-forget via an AppContext Switch, we'll do that.
+					disposalTask.FireAndForget();
+				}
+				else
+				{
+					// Otherwise by default, we'll synchronously wait for the disposal to complete. This can cause
+					// a deadlock, but is the original behavior.
+					disposalTask
+						.GetAwaiter()
+						.GetResult();
+				}
 
 				_webviewManager = null;
 			}
@@ -141,6 +160,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			return new AndroidMauiAssetFileProvider(Context.Assets, contentRootDir);
+		}
+
+		/// <summary>
+		/// Calls the specified <paramref name="workItem"/> asynchronously and passes in the scoped services available to Razor components.
+		/// </summary>
+		/// <param name="workItem">The action to call.</param>
+		/// <returns>Returns a <see cref="Task"/> representing <c>true</c> if the <paramref name="workItem"/> was called, or <c>false</c> if it was not called because Blazor is not currently running.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
+		public virtual async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
+		{
+			ArgumentNullException.ThrowIfNull(workItem);
+			if (_webviewManager is null)
+			{
+				return false;
+			}
+
+			return await _webviewManager.TryDispatchAsync(workItem);
 		}
 	}
 }

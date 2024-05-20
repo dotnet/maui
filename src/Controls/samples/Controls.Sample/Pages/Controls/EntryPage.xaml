@@ -2,6 +2,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.EntryPage"
+    xmlns:controls="clr-namespace:Maui.Controls.Sample.Pages"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
     Title="Entry">
@@ -40,6 +41,8 @@
     <views:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout Padding="12">
+                <Button Margin="5" x:Name="ShowSoftInputAsyncButton" Clicked="ShowSoftInputAsyncButton_Clicked" Text="Show Soft Input for Placeholder Button" />
+                <Button Margin="5" x:Name="HideSoftInputAsyncButton" Clicked="HideSoftInputAsyncButton_Clicked" Text="Hide Soft Input" />
                 <Label
                     Text="Basic"
                     Style="{StaticResource Headline}" />
@@ -66,6 +69,7 @@
                     Text="With Placeholder"
                     Style="{StaticResource Headline}" />
                 <Entry 
+                    x:Name="PlaceholderEntryItem"
                     Placeholder="Placeholder"/>
                 <Label
                     Text="Using PlaceholderColor"
@@ -143,6 +147,17 @@
                     IsSpellCheckEnabled="False"
                     IsTextPredictionEnabled="False"/>
                 <Label
+                    Text="ReturnType (Search)"
+                    Style="{StaticResource Headline}" />
+                <Entry
+                    ReturnType="Search" />
+                <Label
+                    Text="Update the ReturnType just typing"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    x:Name="ReturnTypeEntry"
+                    TextChanged="OnReturnTypeEntryTextChanged"/>
+                <Label
                     Text="Return Command"
                     Style="{StaticResource Headline}" />
                 <Entry 
@@ -169,6 +184,19 @@
                 <Entry 
                     Text="BackgroundColor"
                     BackgroundColor="Orange"/>
+                <Label
+                   Text="BackgroundColor"
+                   Style="{StaticResource Headline}" />
+                <Entry 
+                    x:Name="BackgroundColorEntry"/>
+                <Button
+                    x:Name="UpdateBackgroundColorButton"
+                    Text="Update Background Color"
+                    Clicked="OnUpdateBackgroundColorButtonClicked"/>
+                <Button
+                    x:Name="ClearBackgroundColorButton"
+                    Text="Clear Background Color"
+                    Clicked="OnClearBackgroundColorButtonClicked"/>
                 <Label
                     Text="Background"
                     Style="{StaticResource Headline}" />
@@ -202,6 +230,10 @@
                 <Entry 
                     Style="{StaticResource EntryVisualStatesStyle}" />
                 <Label
+                    Text="Custom Entry (Transparent)"
+                    Style="{StaticResource Headline}" />
+                <controls:TransparentEntry />
+                <Label
                     Text="Keyboard Numeric"
                     Style="{StaticResource Headline}" />
                 <Entry 
@@ -222,9 +254,9 @@
                     HeightRequest="100"/>
                 <HorizontalStackLayout>
                     <Label
-                    x:Name="lblCursor"
-                    Text="CursorPosition = 4"
-                    Style="{StaticResource Headline}" />
+                        x:Name="lblCursor"
+                        Text="CursorPosition = 4"
+                        Style="{StaticResource Headline}" />
                     <Slider x:Name="sldCursorPosition" ValueChanged="OnSlideCursorPositionValueChanged" WidthRequest="100"/>
                 </HorizontalStackLayout>
                 <Entry

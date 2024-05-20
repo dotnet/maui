@@ -60,6 +60,7 @@
         </CleanDependsOn>
 
         <_ResizetizerInputsFile>$(IntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
+        <_ResizetizerOutputsFile>$(IntermediateOutputPath)mauiimage.outputs</_ResizetizerOutputsFile>
         <_ResizetizerStampFile>$(IntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
         <_MauiFontInputsFile>$(IntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
         <_MauiFontStampFile>$(IntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
@@ -86,6 +87,16 @@
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
         <_ResizetizerDefaultInvalidFilenamesErrorMessage>One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: </_ResizetizerDefaultInvalidFilenamesErrorMessage>
+        <_ResizetizerDefaultDuplicateFilenamesErrorMessage>One or more duplicate file names were detected.  All image output filenames must be unique: </_ResizetizerDefaultDuplicateFilenamesErrorMessage>
+        <_ResizetizerThrowsErrorOnInvalidFilename>true</_ResizetizerThrowsErrorOnInvalidFilename>
+        <_ResizetizerThrowsErrorOnInvalidFilename Condition="'$(ResizetizerErrorOnInvalidFilename)' == 'false'">false</_ResizetizerThrowsErrorOnInvalidFilename>
+        <_ResizetizerThrowsErrorOnDuplicateOutputFilename>true</_ResizetizerThrowsErrorOnDuplicateOutputFilename>
+        <_ResizetizerThrowsErrorOnDuplicateOutputFilename Condition="'$(ResizetizerErrorOnDuplicateOutputFilename)' == 'false'">false</_ResizetizerThrowsErrorOnDuplicateOutputFilename>
+
+        <EnableMauiAssetProcessing Condition=" '$(EnableMauiAssetProcessing)' == '' ">true</EnableMauiAssetProcessing>
+        <EnableMauiSplashScreenProcessing Condition=" '$(EnableMauiSplashScreenProcessing)' == '' ">true</EnableMauiSplashScreenProcessing>
+        <EnableMauiFontProcessing Condition=" '$(EnableMauiFontProcessing)' == '' ">true</EnableMauiFontProcessing>
+        <EnableMauiImageProcessing Condition=" '$(EnableMauiImageProcessing)' == '' ">true</EnableMauiImageProcessing>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -105,6 +116,7 @@
             $(ResizetizeDependsOnTargets);
             ResizetizeCollectItems;
             ProcessMauiSplashScreens;
+            _ReadResizetizeImagesOutputs;
         </ResizetizeDependsOnTargets>
         <ProcessMauiFontsDependsOnTargets>
             $(ProcessMauiFontsDependsOnTargets);
@@ -246,25 +258,35 @@
         <CallTarget Targets="GetMauiItems" Condition="'$(ResizetizerIncludeSelfProject)' == 'True'">
             <Output
                 TaskParameter="TargetOutputs"
-                ItemName="ImportedMauiItem" />
+                ItemName="_ImportedMauiItem" />
         </CallTarget>
 
-        <!-- Invoke the GetMauiItems target on all project references -->
-        <!-- This will accumulate images into our MauiImage group -->
-        <!--<MSBuild Targets="GetMauiItems" Projects="@(_MSBuildProjectReferenceExistent)">-->
+        <!-- Invoke the GetMauiItems target on all project references. This will accumulate images into our MauiImage group -->
+        <ItemGroup>
+            <!-- Filter out the items missing the OriginalProjectReferenceItemSpec because this is essential -->
+            <_ResizetizeCollectItemsProjectWithOIS Include="@(_ResolvedProjectReferencePaths->HasMetadata('OriginalProjectReferenceItemSpec'))" />
+            <!-- Convert the Identity from the final assembly path to the ProjectReference -->
+            <_ResizetizeCollectItemsProjectWithItemSpec Include="@(_ResizetizeCollectItemsProjectWithOIS->'%(OriginalProjectReferenceItemSpec)')" />
+            <!-- Add the resolved references if and only if they have NearestTargetFramework defined -->
+            <_ResizetizeCollectItemsProject Include="@(_ResizetizeCollectItemsProjectWithItemSpec->HasMetadata('NearestTargetFramework'))" />
+            <!-- If any resolved paths were missing OriginalProjectReferenceItemSpec or NearestTargetFramework, fall back to the 
+                 previous functionality with using the ProjectReference items and the CURRENT project's TargetFramework -->
+            <_ResizetizeCollectItemsProject Include="@(ProjectReference)" Exclude="@(_ResizetizeCollectItemsProject)" NearestTargetFramework="$(TargetFramework)" />
+        </ItemGroup>
         <MSBuild
             Targets="GetMauiItems"
-            Projects="@(ProjectReference)"
+            Projects="%(_ResizetizeCollectItemsProject.Identity)"
             BuildInParallel="true"
-            Properties="TargetFramework=$(TargetFramework)"
+            Properties="TargetFramework=%(_ResizetizeCollectItemsProject.NearestTargetFramework)"
             SkipNonexistentProjects="true"
             SkipNonexistentTargets="true">
             <Output
                 TaskParameter="TargetOutputs"
-                ItemName="ImportedMauiItem" />
+                ItemName="_ImportedMauiItem" />
         </MSBuild>
 
         <ItemGroup>
+            <ImportedMauiItem Include="@(_ImportedMauiItem)" />
             <MauiImage
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiImage'" />
@@ -334,43 +356,59 @@
         </ItemGroup>
     </Target>
 
-    <Target Name="ProcessMauiAssets">
-        <PropertyGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
-            <_MauiAssetItemMetadata>TargetPath</_MauiAssetItemMetadata>
-        </PropertyGroup>
-        <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
-            <!-- Windows does not recognize %(LogicalName), so we must copy it to %(Link) -->
-            <MauiAsset Update="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
+    <Target Name="ProcessMauiAssets"
+        Condition="'$(EnableMauiAssetProcessing)' == 'true'">
+        <ItemGroup>
+            <!--
+                The GetMauiAssetPath task uses the Link metadata or the ItemSpec, so make
+                sure all LogicalName items also have a Link value for this task.
+            -->
+            <_MauiAssetWithLinkMetadata Include="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
+            <_MauiAssetWithLinkMetadata Include="@(MauiAsset)" Condition="'%(MauiAsset.Link)' != '' Or '%(MauiAsset.LogicalName)' == ''" />
         </ItemGroup>
-        <PropertyGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
-            <_MauiAssetItemMetadata>TizenTpkFileName</_MauiAssetItemMetadata>
+        <!-- pick the destination property to assign the final path -->
+        <PropertyGroup>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">Link</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsiOSApp)' == 'True'">Link</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">TargetPath</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsTizenApp)' == 'True'">TizenTpkFileName</_MauiAssetItemMetadata>
         </PropertyGroup>
-      <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
-        <MauiAsset Update="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
-      </ItemGroup>
         <GetMauiAssetPath
             ProjectDirectory="$(MSBuildProjectDirectory)"
             ItemMetadata="$(_MauiAssetItemMetadata)"
-            Input="@(MauiAsset)">
-            <Output ItemName="AndroidAsset"          TaskParameter="Output" Condition="'$(_ResizetizerIsAndroidApp)' == 'True'" />
-            <Output ItemName="Content"               TaskParameter="Output" Condition="'$(_ResizetizerIsiOSApp)' == 'True'" />
-            <Output ItemName="ContentWithTargetPath" TaskParameter="Output" Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
-            <Output ItemName="TizenResource" TaskParameter="Output" Condition="'$(_ResizetizerIsTizenApp)' == 'True'" />
+            Input="@(_MauiAssetWithLinkMetadata)">
+            <Output ItemName="_MauiAssetItemWithMetadata" TaskParameter="Output" />
         </GetMauiAssetPath>
+        <!-- add the processed assets to the correct itme groups and add any additional properties -->
+        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+            <AndroidAsset Include="@(_MauiAssetItemWithMetadata)" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
+            <Content Include="@(_MauiAssetItemWithMetadata)" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+            <ContentWithTargetPath Include="@(_MauiAssetItemWithMetadata)" CopyToPublishDirectory="PreserveNewest" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
+            <TizenResource Include="@(_MauiAssetItemWithMetadata)" />
+        </ItemGroup>
     </Target>
 
     <Target Name="ProcessMauiSplashScreens"
+        Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
         Outputs="$(_MauiSplashStampFile)">
 
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
             <_MauiHasSplashScreens Condition="'@(MauiSplashScreen->Count())' != '0'">true</_MauiHasSplashScreens>
+            <_MauiShouldGenerateSplashScreen Condition="'$(_MauiHasSplashScreens)' == 'true'">true</_MauiShouldGenerateSplashScreen>
+            <_MauiShouldGenerateSplashScreen Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' != 'true' and '$(EnableBlankMauiSplashScreen)' == 'true'">true</_MauiShouldGenerateSplashScreen>
         </PropertyGroup>
 
         <DetectInvalidResourceOutputFilenamesTask
             Condition="'$(_MauiHasSplashScreens)' == 'true'"
-            Items="@(MauiSplashScreen->Distinct())"
+            Items="@(MauiSplashScreen)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)"
         />
 
@@ -395,7 +433,7 @@
         </ItemGroup>
 
         <!-- iOS, but not Catalyst -->
-        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
             <!-- Add a Link attribute in the form of '<filename>_<inputshash>.<extension>' -->
           <_MauiSplashScreenWithHashesInFilename
               Include="@(_MauiSplashScreenWithHashes->HasMetadata('Link'))"
@@ -407,22 +445,22 @@
               Link="%(Filename)_%(InputsFileHash)%(Extension)" />
         </ItemGroup>
         <GenerateSplashStoryboard
-            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'"
+            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             MauiSplashScreen="@(_MauiSplashScreenWithHashesInFilename)"
             InputsFile="$(_MauiSplashInputsFile)"
         />
-        <PropertyGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+        <PropertyGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'">
             <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
             <_MauiIntermediatePList>$(_MauiIntermediateSplashScreen)MauiInfo.plist</_MauiIntermediatePList>
         </PropertyGroup>
         <CreatePartialInfoPlistTask
-            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'"
+            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             PlistName="MauiInfo.plist"
             Storyboard="$(_MauiIntermediateStoryboard)"
         />
-        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <_MauiSplashStoryboard Include="$(_MauiIntermediateStoryboard)" />
             <_MauiSplashPList Include="$(_MauiIntermediatePList)" />
@@ -448,6 +486,7 @@
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <ContentWithTargetPath Include="@(_MauiSplashAssets)">
                 <TargetPath>%(_MauiSplashAssets.Filename)%(_MauiSplashAssets.Extension)</TargetPath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
         </ItemGroup>
 
@@ -476,6 +515,7 @@
     </Target>
 
     <Target Name="ProcessMauiFonts"
+        Condition="'$(EnableMauiFontProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
         Outputs="$(_MauiFontStampFile)"
         AfterTargets="$(ProcessMauiFontsAfterTargets)"
@@ -533,6 +573,7 @@
 
             <ContentWithTargetPath Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
                 <TargetPath>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</TargetPath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
 
         </ItemGroup>
@@ -562,24 +603,38 @@
         </ItemGroup>
     </Target>
 
+    <Target Name="_ReadResizetizeImagesOutputs">
+        <ReadLinesFromFile File="$(_ResizetizerOutputsFile)" Condition="Exists ('$(_ResizetizerOutputsFile)')">
+            <Output TaskParameter="Lines" ItemName="_ResizetizerOutputs" />
+        </ReadLinesFromFile>
+    </Target>
+
     <Target Name="ResizetizeImages"
+        Condition="'$(EnableMauiImageProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);@(MauiImage)"
-        Outputs="$(_ResizetizerStampFile)"
+        Outputs="$(_ResizetizerStampFile);@(_ResizetizerOutputs)"
         AfterTargets="$(ResizetizeAfterTargets)"
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
+        <ItemGroup>
+            <_MauiImageToProcess Include="@(MauiImage)" Exclude="$(DefaultItemExcludes)" />
+        </ItemGroup>
+
         <DetectInvalidResourceOutputFilenamesTask
-            Items="@(MauiImage->Distinct())"
+            Items="@(_MauiImageToProcess)"
+            ThrowsError="$(_ResizetizerThrowsErrorOnInvalidFilename)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
         </DetectInvalidResourceOutputFilenamesTask>
 
         <!-- Resize the images -->
         <ResizetizeImages
+            ThrowsErrorOnDuplicateOutput="$(_ResizetizerThrowsErrorOnDuplicateOutputFilename)"
+            DuplicateOutputErrorMessage="$(_ResizetizerDefaultDuplicateFilenamesErrorMessage)"
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"
-            Images="@(MauiImage->Distinct())">
+            Images="@(_MauiImageToProcess)">
               <Output TaskParameter="CopiedResources" ItemName="_CopiedResources" />
         </ResizetizeImages>
 
@@ -635,6 +690,7 @@
         <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <ContentWithTargetPath Include="@(_ResizetizerCollectedImages)">
                 <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
 
             <FileWrites Include="@(_ResizetizerCollectedImages)" />
@@ -672,10 +728,17 @@
 
         <!-- Touch/create our stamp file for outputs -->
         <Touch Files="$(_ResizetizerStampFile)" AlwaysCreate="True" />
+        <WriteLinesToFile
+            File="$(_ResizetizerOutputsFile)"
+            Lines="@(_ResizetizerCollectedImages->'%(Identity)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true"
+        />
 
         <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
         <ItemGroup>
             <FileWrites Include="$(_ResizetizerStampFile)" />
+            <FileWrites Include="$(_ResizetizerOutputsFile)" />
         </ItemGroup>
     </Target>
 

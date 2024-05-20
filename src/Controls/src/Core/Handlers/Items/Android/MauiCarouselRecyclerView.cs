@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _disposed;
 
 		List<View> _oldViews;
-		CarouselViewwOnGlobalLayoutListener _carouselViewLayoutListener;
+		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
 
 		protected CarouselView Carousel => ItemsView as CarouselView;
 
@@ -101,11 +101,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void TearDownOldElement(CarouselView oldElement)
 		{
-			if (ItemsView != null)
+			if (ItemsView is not null)
 				ItemsView.Scrolled -= CarouselViewScrolled;
 
 			ClearLayoutListener();
+			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			base.TearDownOldElement(oldElement);
+		}
+
+		protected override void OnAttachedToWindow()
+		{
+			AddLayoutListener();
+			base.OnAttachedToWindow();
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			ClearLayoutListener();
+			base.OnDetachedFromWindow();
 		}
 
 		public override void UpdateAdapter()
@@ -116,9 +129,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var oldItemViewAdapter = ItemsViewAdapter;
 
-			if (oldItemViewAdapter != null)
+			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
+			if (oldItemViewAdapter != null && _initialized)
 			{
-				UnsubscribeCollectionItemsSourceChanged(oldItemViewAdapter);
 				ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, 0);
 				ItemsView.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 			}
@@ -467,6 +480,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_gotoPosition = currentItemPosition;
 				ItemsView.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
 			}
+
+			_gotoPosition = -1;
 		}
 
 		void IMauiCarouselRecyclerView.UpdateFromPosition()
@@ -511,17 +526,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void AddLayoutListener()
 		{
-			if (_carouselViewLayoutListener != null)
+			if (_carouselViewLayoutListener is not null)
 				return;
 
-			_carouselViewLayoutListener = new CarouselViewwOnGlobalLayoutListener();
-			_carouselViewLayoutListener.LayoutReady += LayoutReady;
-
+			_carouselViewLayoutListener = new CarouselViewOnGlobalLayoutListener(this);
 			ViewTreeObserver.AddOnGlobalLayoutListener(_carouselViewLayoutListener);
 		}
 
-		void LayoutReady(object sender, EventArgs e)
+		void LayoutReady()
 		{
+			if (ItemsView is null)
+				return;
+
 			if (!_initialized)
 			{
 				ItemsView.Scrolled += CarouselViewScrolled;
@@ -544,7 +560,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			ViewTreeObserver?.RemoveOnGlobalLayoutListener(_carouselViewLayoutListener);
-			_carouselViewLayoutListener.LayoutReady -= LayoutReady;
 			_carouselViewLayoutListener = null;
 		}
 
@@ -592,14 +607,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
-	}
 
-	class CarouselViewwOnGlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
-	{
-		public EventHandler<EventArgs> LayoutReady;
-		public void OnGlobalLayout()
+		class CarouselViewOnGlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
 		{
-			LayoutReady?.Invoke(this, new EventArgs());
+			readonly WeakReference<MauiCarouselRecyclerView> _recyclerView;
+
+			public CarouselViewOnGlobalLayoutListener(MauiCarouselRecyclerView recyclerView)
+			{
+				_recyclerView = new(recyclerView);
+			}
+
+			public void OnGlobalLayout()
+			{
+				if (_recyclerView.TryGetTarget(out var recyclerView) &&
+					recyclerView.IsAlive())
+				{
+					recyclerView.LayoutReady();
+				}
+			}
 		}
 	}
 }

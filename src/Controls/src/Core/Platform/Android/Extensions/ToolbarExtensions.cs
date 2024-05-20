@@ -84,10 +84,9 @@ namespace Microsoft.Maui.Controls.Platform
 					nativeToolbar.Context ??
 					toolbar.Handler?.MauiContext?.Context;
 
-				nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!)
-				{
-					Progress = 1
-				};
+				nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!);
+				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+					iconDrawable.Progress = 1;
 
 				var backButtonTitle = toolbar.BackButtonTitle;
 				ImageSource image = toolbar.TitleIcon;
@@ -110,6 +109,9 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
+					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+						iconDrawable.Progress = 0;
+
 					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
 				}
 			}
@@ -147,17 +149,21 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			var navIconColor = toolbar.IconColor;
-			if (navIconColor != null && nativeToolbar.NavigationIcon != null)
+			if (navIconColor is null)
+				return;
+
+			var platformColor = navIconColor.ToPlatform();
+			if (nativeToolbar.NavigationIcon is Drawable navigationIcon)
 			{
-				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable dad)
+				if (navigationIcon is DrawerArrowDrawable dad)
 					dad.Color = AGraphics.Color.White;
 
-				nativeToolbar.NavigationIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
+				navigationIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
 			}
 
-			if (navIconColor != null && nativeToolbar.OverflowIcon != null)
+			if (nativeToolbar.OverflowIcon is Drawable overflowIcon)
 			{
-				nativeToolbar.OverflowIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
+				overflowIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
 			}
 		}
 
@@ -370,6 +376,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 						menuItem.SetIcon(iconDrawable);
 					}
+				}
+				else
+				{
+					menuItem.SetIcon(null);
 				}
 			});
 		}

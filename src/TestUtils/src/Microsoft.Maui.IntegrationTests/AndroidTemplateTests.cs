@@ -47,14 +47,14 @@ namespace Microsoft.Maui.IntegrationTests
 
 
 		[Test]
-		[TestCase("maui", "net6.0", "Debug")]
-		[TestCase("maui", "net6.0", "Release")]
-		[TestCase("maui", "net7.0", "Debug")]
-		[TestCase("maui", "net7.0", "Release")]
-		[TestCase("maui-blazor", "net6.0", "Debug")]
-		[TestCase("maui-blazor", "net6.0", "Release")]
-		[TestCase("maui-blazor", "net7.0", "Debug")]
-		[TestCase("maui-blazor", "net7.0", "Release")]
+		[TestCase("maui", DotNetPrevious, "Debug")]
+		[TestCase("maui", DotNetPrevious, "Release")]
+		[TestCase("maui", DotNetCurrent, "Debug")]
+		[TestCase("maui", DotNetCurrent, "Release")]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug")]
+		[TestCase("maui-blazor", DotNetPrevious, "Release")]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
+		[TestCase("maui-blazor", DotNetCurrent, "Release")]
 		public void RunOnAndroid(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;

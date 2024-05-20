@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.ViewModels.Base
 {
 	public abstract class BaseGalleryViewModel : BaseViewModel
 	{
-		string _filterValue;
+		string? _filterValue;
 
 		public BaseGalleryViewModel()
 		{
@@ -19,9 +19,9 @@ namespace Maui.Controls.Sample.ViewModels.Base
 			Filter();
 		}
 
-		public IReadOnlyList<SectionModel> Items { get; }
+		public IReadOnlyList<SectionModel>? Items { get; }
 
-		public string FilterValue
+		public string? FilterValue
 		{
 			get { return _filterValue; }
 			set
@@ -38,7 +38,7 @@ namespace Maui.Controls.Sample.ViewModels.Base
 		void Filter()
 		{
 			FilterValue ??= string.Empty;
-			FilteredItems = string.IsNullOrEmpty(FilterValue) ? Items : Items.Where(item => item.Title.IndexOf(FilterValue, StringComparison.InvariantCultureIgnoreCase) >= 0);
+			FilteredItems = string.IsNullOrEmpty(FilterValue) ? Items! : Items!.Where(item => item.Title.IndexOf(FilterValue, StringComparison.InvariantCultureIgnoreCase) >= 0);
 			OnPropertyChanged(nameof(FilteredItems));
 		}
 	}

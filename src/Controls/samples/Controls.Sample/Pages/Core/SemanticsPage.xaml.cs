@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private async void PopButton_Clicked(object sender, System.EventArgs e)
+		private async void PopButton_Clicked(object? sender, System.EventArgs e)
 		{
 			if (Navigation.ModalStack.Count > 0)
 				await Navigation.PopModalAsync();
@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Pages
 				await Navigation.PopAsync();
 		}
 
-		private async void PushButton_Clicked(object sender, System.EventArgs e)
+		private async void PushButton_Clicked(object? sender, System.EventArgs e)
 		{
 			await Navigation.PushAsync(new SemanticsPage());
 		}

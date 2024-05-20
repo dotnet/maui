@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.Maui.Controls.Xaml.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -35,11 +36,24 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			var bp = targetProperty as BindableProperty;
 			var pi = targetProperty as PropertyInfo;
+
 			Type valueType = value.GetType();
 			var propertyType = bp?.ReturnType ?? pi?.PropertyType;
 			if (propertyType is null || propertyType.IsAssignableFrom(valueType))
 				return value;
-			var implicit_op = valueType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType)
+
+			MethodInfo implicit_op;
+
+			//OnPlatform might need double cast
+			if (valueType.IsGenericType && valueType.Name == "OnPlatform`1")
+			{
+				var onPlatType = valueType.GetGenericArguments()[0];
+				implicit_op = valueType.GetImplicitConversionOperator(fromType: valueType, toType: onPlatType);
+				value = implicit_op.Invoke(value, new[] { value });
+				valueType = value.GetType();
+			}
+
+			implicit_op = valueType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType)
 							?? propertyType.GetImplicitConversionOperator(fromType: valueType, toType: propertyType);
 			if (implicit_op != null)
 				return implicit_op.Invoke(value, new[] { value });

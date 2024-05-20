@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls
 			{
 				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView) { Spacing = DefaultPadding };
 			}
-			else if (indicatorView.IndicatorLayout == null)
+			else if (indicatorView.IndicatorLayout is not null)
 			{
 				(indicatorView.IndicatorLayout as IndicatorStackLayout)?.Remove();
 				indicatorView.IndicatorLayout = null;
@@ -192,5 +192,11 @@ namespace Microsoft.Maui.Controls
 		Paint IIndicatorView.SelectedIndicatorColor => SelectedIndicatorColor?.AsPaint();
 		IShape IIndicatorView.IndicatorsShape => IndicatorsShape == IndicatorShape.Square ? new Shapes.Rectangle() : new Shapes.Ellipse();
 		Maui.ILayout ITemplatedIndicatorView.IndicatorsLayoutOverride => (IndicatorTemplate != null) ? IndicatorLayout as Maui.ILayout : null;
+
+		int IIndicatorView.Position
+		{
+			get => Position;
+			set => SetValue(PositionProperty, value, SetterSpecificity.FromHandler);
+		}
 	}
 }

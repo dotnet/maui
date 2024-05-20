@@ -8,6 +8,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapAspect(IImageHandler handler, IImage image) { }
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) { }
 		public static void MapSource(IImageHandler handler, IImage image) { }
-		void IImageSourcePartSetter.SetImageSource(object? obj) => throw new NotImplementedException();
+
+		partial class ImageImageSourcePartSetter
+		{
+			public override void SetImageSource(object? platformImage) { }
+		}
 	}
 }

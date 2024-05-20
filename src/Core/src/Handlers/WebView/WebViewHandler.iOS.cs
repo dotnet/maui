@@ -432,14 +432,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		string GetCookieString(List<Cookie> existingCookies)
+		static string GetCookieString(List<Cookie> existingCookies)
 		{
 			StringBuilder cookieBuilder = new StringBuilder();
 			foreach (Cookie jCookie in existingCookies)
 			{
 				cookieBuilder.Append("document.cookie = '");
 				cookieBuilder.Append(jCookie.Name);
-				cookieBuilder.Append("=");
+				cookieBuilder.Append('=');
 
 				if (jCookie.Expired)
 				{
@@ -475,7 +475,7 @@ namespace Microsoft.Maui.Handlers
 			return cookieBuilder.ToString();
 		}
 
-		Uri? CreateUriForCookies(string url)
+		static Uri? CreateUriForCookies(string url)
 		{
 			if (url == null)
 				return null;

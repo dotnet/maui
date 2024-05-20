@@ -9,9 +9,9 @@ using AListView = Android.Widget.ListView;
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 
-	internal class GroupedListViewAdapter : ListViewAdapter, ISectionIndexer
+	internal sealed class GroupedListViewAdapter : ListViewAdapter, ISectionIndexer
 	{
-		class SectionData
+		private sealed class SectionData
 		{
 			public int Index { get; set; }
 			public int Length { get; set; }

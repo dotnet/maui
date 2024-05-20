@@ -4,11 +4,6 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
 using Compatibility = Microsoft.Maui.Controls.Compatibility;
 
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.Android")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI")]
-[assembly: InternalsVisibleTo("Compatibility.ControlGallery.WinUI")]
-
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
@@ -152,14 +147,8 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("-maui-min-track-color", typeof(Slider), nameof(Slider.MinimumTrackColorProperty))]
 [assembly: StyleProperty("-maui-max-track-color", typeof(Slider), nameof(Slider.MaximumTrackColorProperty))]
 [assembly: StyleProperty("-maui-thumb-color", typeof(Slider), nameof(Slider.ThumbColorProperty))]
-[assembly: StyleProperty("-maui-spacing", typeof(StackLayout), nameof(StackLayout.SpacingProperty))]
+[assembly: StyleProperty("-maui-spacing", typeof(StackBase), nameof(StackBase.SpacingProperty))]
 [assembly: StyleProperty("-maui-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
-
-// TODO ezhart 2021-07-16 When we fix #1634, we'll need to enable this so the CSS applies 
-//[assembly: StyleProperty("-maui-spacing", typeof(StackLayout), nameof(StackLayout.SpacingProperty))]
-
-// TODO ezhart 2021-07-16 When we create the new composed StackLayout, we'll need to ensure we have this enabled 
-//[assembly: StyleProperty("-maui-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
 
 [assembly: StyleProperty("-maui-visual", typeof(VisualElement), nameof(VisualElement.VisualProperty))]
 [assembly: StyleProperty("-maui-vertical-text-alignment", typeof(Label), nameof(TextAlignmentElement.VerticalTextAlignmentProperty))]

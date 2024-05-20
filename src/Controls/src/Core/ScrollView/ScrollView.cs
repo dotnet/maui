@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -31,6 +31,19 @@ namespace Microsoft.Maui.Controls
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
+
+		ScrollToRequestedEventArgs _pendingScrollToRequested;
+
+		private protected override void OnHandlerChangedCore()
+		{
+			base.OnHandlerChangedCore();
+
+			if (Handler is not null && _pendingScrollToRequested is not null)
+			{
+				OnScrollToRequested(_pendingScrollToRequested);
+				_pendingScrollToRequested = null;
+			}
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='GetScrollPositionForElement']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -96,19 +109,19 @@ namespace Microsoft.Maui.Controls
 		#endregion IScrollViewController
 
 		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
-		public static readonly BindableProperty OrientationProperty = BindableProperty.Create("Orientation", typeof(ScrollOrientation), typeof(ScrollView), ScrollOrientation.Vertical);
+		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(ScrollOrientation), typeof(ScrollView), ScrollOrientation.Vertical);
 
-		static readonly BindablePropertyKey ScrollXPropertyKey = BindableProperty.CreateReadOnly("ScrollX", typeof(double), typeof(ScrollView), 0d);
+		static readonly BindablePropertyKey ScrollXPropertyKey = BindableProperty.CreateReadOnly(nameof(ScrollX), typeof(double), typeof(ScrollView), 0d);
 
 		/// <summary>Bindable property for <see cref="ScrollX"/>.</summary>
 		public static readonly BindableProperty ScrollXProperty = ScrollXPropertyKey.BindableProperty;
 
-		static readonly BindablePropertyKey ScrollYPropertyKey = BindableProperty.CreateReadOnly("ScrollY", typeof(double), typeof(ScrollView), 0d);
+		static readonly BindablePropertyKey ScrollYPropertyKey = BindableProperty.CreateReadOnly(nameof(ScrollY), typeof(double), typeof(ScrollView), 0d);
 
 		/// <summary>Bindable property for <see cref="ScrollY"/>.</summary>
 		public static readonly BindableProperty ScrollYProperty = ScrollYPropertyKey.BindableProperty;
 
-		static readonly BindablePropertyKey ContentSizePropertyKey = BindableProperty.CreateReadOnly("ContentSize", typeof(Size), typeof(ScrollView), default(Size));
+		static readonly BindablePropertyKey ContentSizePropertyKey = BindableProperty.CreateReadOnly(nameof(ContentSize), typeof(Size), typeof(ScrollView), default(Size));
 
 		/// <summary>Bindable property for <see cref="ContentSize"/>.</summary>
 		public static readonly BindableProperty ContentSizeProperty = ContentSizePropertyKey.BindableProperty;
@@ -243,13 +256,13 @@ namespace Microsoft.Maui.Controls
 				return Task.FromResult(false);
 
 			if (!Enum.IsDefined(typeof(ScrollToPosition), position))
-				throw new ArgumentException("position is not a valid ScrollToPosition", "position");
+				throw new ArgumentException("position is not a valid ScrollToPosition", nameof(position));
 
 			if (element == null)
-				throw new ArgumentNullException("element");
+				throw new ArgumentNullException(nameof(element));
 
 			if (!CheckElementBelongsToScrollViewer(element))
-				throw new ArgumentException("element does not belong to this ScrollView", "element");
+				throw new ArgumentException("element does not belong to this ScrollView", nameof(element));
 
 			var args = new ScrollToRequestedEventArgs(element, position, animated);
 			OnScrollToRequested(args);
@@ -373,7 +386,10 @@ namespace Microsoft.Maui.Controls
 			CheckTaskCompletionSource();
 			ScrollToRequested?.Invoke(this, e);
 
-			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
+			if (Handler is null)
+				_pendingScrollToRequested = e;
+			else
+				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
 		}
 
 		ScrollToRequestedEventArgs ConvertRequestMode(ScrollToRequestedEventArgs args)
@@ -425,8 +441,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
-			return DesiredSize;
+			return this.ComputeDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
