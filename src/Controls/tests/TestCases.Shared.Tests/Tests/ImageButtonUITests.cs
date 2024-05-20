@@ -174,7 +174,7 @@ internal class ImageButtonUITests : _ViewUITests
 		VerifyScreenshot("ImageButtonUITests_Padding_Add_Initial");
 
 		remote.TapStateButton();
-		VerifyScreenshot("ImageButtonUITests_Padding_Add_Removed");
+		VerifyScreenshot("ImageButtonUITests_Padding_Add_Added");
 
 		remote.TapStateButton();
 		VerifyScreenshot("ImageButtonUITests_Padding_Add_Initial");
