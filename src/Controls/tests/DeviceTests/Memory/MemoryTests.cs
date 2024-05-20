@@ -30,6 +30,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
+				handlers.AddHandler<EntryCell, EntryCellRenderer>();
 				handlers.AddHandler<Editor, EditorHandler>();
 				handlers.AddHandler<Frame, FrameRenderer>();
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
@@ -41,6 +42,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
 				handlers.AddHandler<ImageButton, ImageButtonHandler>();
+				handlers.AddHandler<ImageCell, ImageCellRenderer>();
 				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
@@ -49,11 +51,13 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Stepper, StepperHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
 				handlers.AddHandler<Switch, SwitchHandler>();
+				handlers.AddHandler<SwitchCell, SwitchCellRenderer>();
 				handlers.AddHandler<TableView, TableViewRenderer>();
 				handlers.AddHandler<TextCell, TextCellRenderer>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<Toolbar, ToolbarHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
+				handlers.AddHandler<ViewCell, ViewCellRenderer>();
 #if IOS || MACCATALYST
 				handlers.AddHandler<NavigationPage, NavigationRenderer>();
 #else
@@ -231,6 +235,49 @@ public class MemoryTests : ControlsHandlerTestBase
 						handlerReference = new WeakReference(view.Handler);
 
 						return view;
+					}),
+					ItemsSource = observable
+				}
+			});
+
+			await navPage.Navigation.PopAsync();
+		});
+
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
+	}
+
+	[Theory("Cells Do Not Leak")]
+	[InlineData(typeof(TextCell))]
+	[InlineData(typeof(EntryCell))]
+	[InlineData(typeof(ImageCell))]
+	[InlineData(typeof(SwitchCell))]
+	[InlineData(typeof(ViewCell))]
+	public async Task CellsDoNotLeak(Type type)
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference handlerReference = null;
+
+		var observable = new ObservableCollection<int> { 1 };
+		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			await navPage.Navigation.PushAsync(new ContentPage
+			{
+				Content = new ListView
+				{
+					ItemTemplate = new DataTemplate(() =>
+					{
+						var cell = (Cell)Activator.CreateInstance(type);
+						if (cell is ViewCell viewCell)
+						{
+							viewCell.View = new Label();
+						}
+						viewReference = new WeakReference(cell);
+						handlerReference = new WeakReference(cell.Handler);
+						return cell;
 					}),
 					ItemsSource = observable
 				}

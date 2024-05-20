@@ -7,6 +7,7 @@
 
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
+    <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
   </PropertyGroup>
 
   <ItemGroup>
