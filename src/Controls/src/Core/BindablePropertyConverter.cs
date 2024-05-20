@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 			return bp;
 		}
 
-		[UnconditionalSuppressMessage("TrimAnalysis", "IL2026:RequiresUnreferencedCode",
+		[UnconditionalSuppressMessage("TrimAnalysis", "IL2057:TypeGetType",
 			Justification = "The converter is only used when parsing XAML at runtime. The developer will receive a warning " +
 				"saying that parsing XAML at runtime may not work as expected when trimming.")]
 		static Type GetControlType(string typeName)
