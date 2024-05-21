@@ -377,6 +377,10 @@ namespace Microsoft.Maui.Controls.Platform
 						menuItem.SetIcon(iconDrawable);
 					}
 				}
+				else
+				{
+					menuItem.SetIcon(null);
+				}
 			});
 		}
 

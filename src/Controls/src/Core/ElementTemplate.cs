@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 			: this()
 		{
 			if (type == null)
-				throw new ArgumentNullException("type");
+				throw new ArgumentNullException(nameof(type));
 
 			_canRecycle = true;
 			_type = type;
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 			LoadTemplate = () => Activator.CreateInstance(type);
 		}
 
-		internal ElementTemplate(Func<object> loadTemplate) : this() => LoadTemplate = loadTemplate ?? throw new ArgumentNullException("loadTemplate");
+		internal ElementTemplate(Func<object> loadTemplate) : this() => LoadTemplate = loadTemplate ?? throw new ArgumentNullException(nameof(loadTemplate));
 
 		public Func<object> LoadTemplate { get; set; }
 

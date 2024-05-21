@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue20842"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             Background="White">
+    <ContentPage.Resources>
+        <DataTemplate x:Key="validPersonTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.4*" />
+                    <ColumnDefinition Width="0.3*" />
+                    <ColumnDefinition Width="0.3*" />
+                </Grid.ColumnDefinitions>
+                <Label Text="{Binding Name}"
+                       TextColor="Green"
+                       FontAttributes="Bold" />
+                <Label Grid.Column="1"
+                       Text="{Binding DateOfBirth, StringFormat='{0:d}'}"
+                       TextColor="Green" />
+                <Label Grid.Column="2"
+                       Text="{Binding Location}"
+                       TextColor="Green"
+                       HorizontalTextAlignment="End" />
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="invalidPersonTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.4*" />
+                    <ColumnDefinition Width="0.3*" />
+                    <ColumnDefinition Width="0.3*" />
+                </Grid.ColumnDefinitions>
+                <Label Text="{Binding Name}"
+                       TextColor="Red"
+                       FontAttributes="Bold" />
+                <Label Grid.Column="1"
+                       Text="{Binding DateOfBirth, StringFormat='{0:d}'}"
+                       TextColor="Red" />
+                <Label Grid.Column="2"
+                       Text="{Binding Location}"
+                       TextColor="Red"
+                       HorizontalTextAlignment="End" />
+            </Grid>
+        </DataTemplate>
+        <local:PersonDataTemplateSelector x:Key="personDataTemplateSelector"
+                                          ValidTemplate="{StaticResource validPersonTemplate}"
+                                          InvalidTemplate="{StaticResource invalidPersonTemplate}" />
+    </ContentPage.Resources>
+    
+    <VerticalStackLayout>
+        <CollectionView
+            x:Name="PersonList"
+            HeightRequest="400"
+            ItemTemplate="{StaticResource personDataTemplateSelector}"/>
+
+        <Button
+            Text="Scroll To Top"
+            Clicked="ScrollToTopButton_Clicked"
+            x:Name="ScrollUpButton"
+            AutomationId="ScrollUpButton"/>
+        
+        <Button
+            Text="Scroll To Bottom"
+            Clicked="ScrollToBottomButton_Clicked"
+            x:Name="ScrollDownButton"
+            AutomationId="ScrollDownButton"/>
+    </VerticalStackLayout>
+</ContentPage>
