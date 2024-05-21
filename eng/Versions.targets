@@ -25,7 +25,11 @@
     </SetVersionsDependsOn>
   </PropertyGroup>
 
-  <Target Name="SetVersions" BeforeTargets="$(SetVersionsBefore)" DependsOnTargets="$(SetVersionsDependsOn)" Returns="$(Version)">
+  <Target Name="SetVersions"
+          BeforeTargets="$(SetVersionsBefore)"
+          DependsOnTargets="$(SetVersionsDependsOn)"
+          Returns="$(Version)">
+
     <PropertyGroup>
       <PreReleaseVersionLabel Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</PreReleaseVersionLabel>
     </PropertyGroup>
@@ -47,8 +51,13 @@
       <VSComponentVersion Condition="'$(PreReleaseVersionLabel)' == ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).0</VSComponentVersion>
     </PropertyGroup>
 
-    <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
-    <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
+    <PropertyGroup>
+      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(IsTestProject)' == 'true'">false</_SkipUpdateBuildNumber>
+    </PropertyGroup>
+
+    <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule' and '$(_SkipUpdateBuildNumber)' != 'false'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
+    <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)' and '$(_SkipUpdateBuildNumber)' != 'false'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
+
   </Target>
 
 </Project>
