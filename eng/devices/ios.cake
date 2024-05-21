@@ -199,7 +199,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 
 	if(USE_NATIVE_AOT)
 	{
-		rid = 'ios-arm64';
+		rid = "ios-arm64";
 		testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
 	}
 	else
