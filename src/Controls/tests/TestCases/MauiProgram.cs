@@ -1,4 +1,5 @@
 ﻿using System;
+using Maui.Controls.Sample.Issues;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
@@ -8,18 +9,31 @@ namespace Maui.Controls.Sample
 {
 	public static class MauiProgram
 	{
-		public static MauiApp CreateMauiApp() =>
-			MauiApp
-				.CreateBuilder()
-	#if IOS || ANDROID
-				.UseMauiMaps()
-	#endif
-				.UseMauiApp<App>()
+		public static MauiApp CreateMauiApp()
+		{
+			var appBuilder = MauiApp.CreateBuilder();
+
+#if IOS || ANDROID
+			appBuilder.UseMauiMaps();
+#endif
+			appBuilder.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-				})
-				.Build();
+				});
+
+			Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(DecimalEntry), (handler, view) =>
+			{
+				if (view is DecimalEntry)
+				{
+#if ANDROID
+					handler.PlatformView.KeyListener = new Platform.NumericKeyListener(handler.PlatformView.InputType);
+#endif
+				}
+			});
+
+			return appBuilder.Build();
+		}
 	}
 
 	class App : Application
