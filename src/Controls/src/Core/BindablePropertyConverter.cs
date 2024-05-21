@@ -101,11 +101,16 @@ namespace Microsoft.Maui.Controls
 			if (bpinfo == null || bpinfo.FieldType != typeof(BindableProperty))
 				throw new XamlParseException($"Can't resolve {name} on {type.Name}", lineinfo);
 			var bp = bpinfo.GetValue(null) as BindableProperty;
-			var isObsolete = bpinfo.GetCustomAttribute<ObsoleteAttribute>() != null;
+			var isObsolete = GetObsoleteAttribute(bpinfo) != null;
 			if (bp.PropertyName != propertyName && !isObsolete)
 				throw new XamlParseException($"The PropertyName of {type.Name}.{name} is not {propertyName}", lineinfo);
 			return bp;
 		}
+
+		[UnconditionalSuppressMessage("TrimAnalysis", "IL2045:AttributeRemoval",
+			Justification = "ObsoleteAttribute instances are removed by the trimmer in production builds.")]
+		static ObsoleteAttribute GetObsoleteAttribute(FieldInfo fieldInfo)
+			=> fieldInfo.GetCustomAttribute<ObsoleteAttribute>();
 
 		[UnconditionalSuppressMessage("TrimAnalysis", "IL2057:TypeGetType",
 			Justification = "The converter is only used when parsing XAML at runtime. The developer will receive a warning " +
