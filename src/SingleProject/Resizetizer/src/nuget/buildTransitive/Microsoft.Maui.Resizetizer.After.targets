@@ -168,11 +168,6 @@
             $(ResizetizeAfterTargets);
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
-
-        <ProcessMauiFontsAfterTargets>
-            $(ProcessMauiFontsAfterTargets);
-            ResizetizeCollectItems;
-        </ProcessMauiFontsAfterTargets>
     </PropertyGroup>
 
     <!-- Windows App SDK -->
