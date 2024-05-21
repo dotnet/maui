@@ -245,6 +245,19 @@
                 <Button
                     Text="End"
                     HorizontalOptions="End" />
+                 <Label
+                    Text="Slide to change the Border Width:"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    ImageSource="settings.png"
+                    HorizontalOptions="Center"
+                    BackgroundColor="Green"
+                    BorderWidth="{Binding Source={x:Reference BorderWidthSlider}, Path=Value}" />
+                <Slider
+                    x:Name="BorderWidthSlider"
+                    Minimum="0"
+                    Maximum="50"
+                    Value ="0"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
