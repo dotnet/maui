@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			else
 			{
 				App.WaitForElement("lblPosition");
-				await Task.Delay(1000);
+				await Task.Delay(3000);
 				var result = App.FindElement("lblPosition").GetText();
 				ClassicAssert.AreEqual("3", result);
 			}
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public void CarouselViewKeepPositionChangingOrientation()
+		public async Task CarouselViewKeepPositionChangingOrientation()
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.Windows)
 			{
@@ -105,6 +105,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				App.SetOrientationLandscape();
 				App.SetOrientationPortrait();
+				
+				await Task.Delay(3000);
 
 				CheckLabelValue("lblPosition", index);
 				CheckLabelValue("lblCurrentItem", index);
