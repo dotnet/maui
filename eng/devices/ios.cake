@@ -195,7 +195,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 {
 	Information("Starting UI Tests...");
 	
-	string testApp = string.empty;
+	string testApp = string.Empty;
 
 	if(USE_NATIVE_AOT)
 	{
