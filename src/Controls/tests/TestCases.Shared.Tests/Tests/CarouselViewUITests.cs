@@ -17,13 +17,14 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected override void FixtureSetup()
 		{
 			base.FixtureSetup();
-			App.NavigateToGallery(CarouselViewGallery);
+			//App.NavigateToGallery(CarouselViewGallery);
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewSetPosition()
 		{
+			App.NavigateToGallery(CarouselViewGallery);
 			if (Device == TestDevice.Windows)
 			{
 				Assert.Ignore("For now not running on windows");
@@ -32,15 +33,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				App.WaitForElement("lblPosition");
 				await Task.Delay(3000);
-				var result = App.FindElement("lblPosition").GetText();
-				ClassicAssert.AreEqual("3", result);
+				CheckLabelValue("lblPosition", "3");
 			}
+
+			Reset();
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewGoToNextCurrentItem()
 		{
+			App.NavigateToGallery(CarouselViewGallery);
 			if (Device == TestDevice.Windows)
 			{
 				Assert.Ignore("For now not running on windows");
@@ -60,12 +63,14 @@ namespace Microsoft.Maui.TestCases.Tests
 				CheckLabelValue("lblSelected", nextIndex);
 				App.Tap("btnPrev");
 			}
+			Reset();
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewGoToPreviousCurrentItem()
 		{
+			App.NavigateToGallery(CarouselViewGallery);
 			if (Device == TestDevice.Windows)
 			{
 				Assert.Ignore("For now not running on windows");
@@ -85,12 +90,14 @@ namespace Microsoft.Maui.TestCases.Tests
 				CheckLabelValue("lblSelected", previousIndex);
 				App.Tap("btnPrev");
 			}
+			Reset();
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewKeepPositionChangingOrientation()
 		{
+			App.NavigateToGallery(CarouselViewGallery);
 			if (Device == TestDevice.Mac || Device == TestDevice.Windows)
 			{
 				Assert.Ignore("For now not running on Desktop");
@@ -111,6 +118,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				CheckLabelValue("lblPosition", index);
 				CheckLabelValue("lblCurrentItem", index);
 			}
+			Reset();
 		}
 		
 		void CheckLabelValue(string labelAutomationId, string value)
