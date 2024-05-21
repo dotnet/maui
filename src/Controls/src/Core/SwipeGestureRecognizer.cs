@@ -16,13 +16,13 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(SwipeGestureRecognizer), null);
 
 		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
-		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create("CommandParameter", typeof(object), typeof(SwipeGestureRecognizer), null);
+		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SwipeGestureRecognizer), null);
 
 		/// <summary>Bindable property for <see cref="Direction"/>.</summary>
-		public static readonly BindableProperty DirectionProperty = BindableProperty.Create("Direction", typeof(SwipeDirection), typeof(SwipeGestureRecognizer), default(SwipeDirection));
+		public static readonly BindableProperty DirectionProperty = BindableProperty.Create(nameof(Direction), typeof(SwipeDirection), typeof(SwipeGestureRecognizer), default(SwipeDirection));
 
 		/// <summary>Bindable property for <see cref="Threshold"/>.</summary>
-		public static readonly BindableProperty ThresholdProperty = BindableProperty.Create("Threshold", typeof(uint), typeof(SwipeGestureRecognizer), DefaultSwipeThreshold);
+		public static readonly BindableProperty ThresholdProperty = BindableProperty.Create(nameof(Threshold), typeof(uint), typeof(SwipeGestureRecognizer), DefaultSwipeThreshold);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeGestureRecognizer.xml" path="//Member[@MemberName='Command']/Docs/*" />
 		public ICommand Command
