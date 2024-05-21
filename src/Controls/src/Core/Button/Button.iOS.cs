@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls
 				return result;
 			}
 
+			// Calculate the size the button wants to use for its current content
 			var image = platformButton.CurrentImage;
 
 			// Save the original image size
@@ -71,6 +72,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
+			// return either the size from its children or the requested button content size or use the explicit height or width if set
 			return new Size(button.WidthRequest == -1 ? Math.Max(result.Width, buttonContentWidth) : button.WidthRequest,
 				button.HeightRequest == -1 ? Math.Max(result.Height, buttonContentHeight) : button.HeightRequest);
 		}
@@ -82,7 +84,7 @@ namespace Microsoft.Maui.Controls
 			var button = this;
 			var platformButton = Handler?.PlatformView as UIButton;
 
-			if (button == null || platformButton == null)
+			if (button is null || platformButton is null)
 			{
 				return result;
 			}
