@@ -58,6 +58,8 @@
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule' and '$(_SkipUpdateBuildNumber)' != 'false'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
     <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)' and '$(_SkipUpdateBuildNumber)' != 'false'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
 
+    <Error Condition="'$(PackageVersion)' == '1.0.0'" Text="Why is PackageVersion == 1.0" />
+
   </Target>
 
 </Project>
