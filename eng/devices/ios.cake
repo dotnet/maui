@@ -194,12 +194,24 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
 {
 	Information("Starting UI Tests...");
-	var testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
+	
+	string testApp = string.empty;
+
+	if(USE_NATIVE_AOT)
+	{
+		rid = 'ios-arm64';
+		testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
+	}
+	else
+	{
+		testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
+	}
 
 	Information($"Testing Device: {device}");
 	Information($"Testing App Project: {app}");
 	Information($"Testing App: {testApp}");
 	Information($"Results Directory: {resultsDir}");
+	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
 
 	if (string.IsNullOrEmpty(testApp))
 	{
@@ -235,9 +247,10 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
 {
 	Information($"Building UI Test app: {appProject}");
+	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
+
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
 	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
-
 
 	if (USE_NATIVE_AOT && config.Equals("Debug", StringComparison.OrdinalIgnoreCase))
 	{
@@ -280,7 +293,7 @@ void ExecuteCGLegacyUITests(string project, string appProject, string device, st
 	CleanDirectories(resultsDir);
 
 	Information("Starting Compatibility Gallery UI Tests...");
-
+	
 	var testApp = GetTestApplications(appProject, device, config, tfm, rid).FirstOrDefault();
 
 	Information($"Testing Device: {device}");
