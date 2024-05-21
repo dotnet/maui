@@ -61,7 +61,9 @@ if (Test-Path $appiumUserData) {
 }
 
 # Check for an existing appium install version
-$appiumCurrentVersion = appium -v | Out-String
+$appiumCurrentVersion = ""
+try { $appiumCurrentVersion = appium -v | Out-String } catch { }
+
 if ($appiumCurrentVersion) {
     Write-Output  "Existing Appium version $appiumCurrentVersion"
 } else {
