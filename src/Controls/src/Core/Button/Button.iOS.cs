@@ -44,8 +44,6 @@ namespace Microsoft.Maui.Controls
 			if (padding.IsNaN)
 				padding = ButtonHandler.DefaultPadding;
 
-			// TODO Issue when using a LineBreakMode - WordWrap
-			// There is no height or width set on the platformButton.Bounds during the measure stage.. Need to pass in something though
 			var titleRect = platformButton.GetTitleBoundingRect(widthConstraint, heightConstraint);
 
 			var buttonContentHeight =
@@ -73,7 +71,8 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			return new Size(Math.Max(result.Width, buttonContentWidth), Math.Max(result.Height, buttonContentHeight));
+			return new Size(button.WidthRequest == -1 ? Math.Max(result.Width, buttonContentWidth) : button.WidthRequest,
+				button.HeightRequest == -1 ? Math.Max(result.Height, buttonContentHeight) : button.HeightRequest);
 		}
 
 		protected override Size ArrangeOverride(Rect bounds)
