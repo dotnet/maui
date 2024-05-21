@@ -21,8 +21,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Issue2680Test_ScrollDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\Issue2680ScrollView.cs)
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[Ignore("Currently fails https://github.com/dotnet/maui/pull/19181")]
 		[FailsOnAndroid("Currently fails on Android; see https://github.com/dotnet/maui/issues/19213")]
+		[FailsOnIOS("Currently fails https://github.com/dotnet/maui/pull/19181")]
+		[FailsOnMac("Currently fails https://github.com/dotnet/maui/pull/19181")]
+		[FailsOnWindows("Currently fails https://github.com/dotnet/maui/pull/19181")]
 		public void ScrollDisabled()
 		{
 			App.WaitForElement(FirstItemMark);
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Issue2680Test_ScrollEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\Issue2680ScrollView.cs)
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[Ignore("Currently fails https://github.com/dotnet/maui/pull/19181")]
+		[FailsOnAllPlatforms("Currently fails https://github.com/dotnet/maui/pull/19181")]
 		public void ScrollEnabled()
 		{			
 			App.WaitForElement(FirstItemMark);

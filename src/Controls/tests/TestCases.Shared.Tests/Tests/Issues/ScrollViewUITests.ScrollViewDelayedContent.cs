@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		// MeasuringEmptyScrollViewDoesNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue1538.cs)
 		[Test]
 		[Description("Measuring empty ScrollView does not crash")]
-		[FailsOnIOS]
-		[FailsOnMac]
+		[FailsOnIOS("This test is failing, likely due to product issue")]
+		[FailsOnMac("This test is failing, likely due to product issue")]
 		public async Task MeasuringEmptyScrollViewDoesNotCrash()
 		{
 			// 1. Let's add a child after a second.

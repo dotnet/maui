@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnWindows]
+		[FailsOnWindows("This test is failing, likely due to product issue")]
 		public void RemovingItemsShouldNotCauseCrash()
 		{
 			_ = App.WaitForElement("addItemButton");

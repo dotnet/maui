@@ -38,8 +38,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnMac("This test is failing, likely due to product issue")]
+		[FailsOnWindows("This test is failing, likely due to product issue")]
 		public void CollectionViewWorksWhenRotatingDevice()
 		{
 			try

@@ -46,7 +46,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatforms("This test is failing, likely due to product issue")]
 		public void KeepScrollOffset()
 		{
 			App.WaitForElement("SelectScrollMode");
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatforms("This test is failing, likely due to product issue")]
 		public void KeepLastItemInView()
 		{
 			App.WaitForElement("SelectScrollMode");

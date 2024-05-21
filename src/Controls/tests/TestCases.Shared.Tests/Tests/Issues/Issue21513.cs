@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Buttons with images don't cover text";
 
 		[Test]
-		[FailsOnIOS]
-		[FailsOnMac]
+		[FailsOnIOS("Not generated snapshot for this platform")]
+		[FailsOnMac("Not generated snapshot for this platform")]
 		public void Issue21513Test()
 		{
 			App.WaitForElement("WaitForStubControl");
