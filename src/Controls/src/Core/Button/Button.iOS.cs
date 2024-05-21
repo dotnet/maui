@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 			// Calculate the size the button wants to use for its current content
 			var image = platformButton.CurrentImage;
 
-			// Save the original image size
+			// Save the original image size for later image resizing
 			if (image is not null && _originalImageSize == CGSize.Empty)
 			{
 				_originalImageSize = image.Size;
@@ -48,12 +48,12 @@ namespace Microsoft.Maui.Controls
 			var titleRect = platformButton.GetTitleBoundingRect(widthConstraint, heightConstraint);
 
 			var buttonContentHeight =
-				(nfloat)Math.Max(titleRect.Height, image?.Size.Height ?? 0)
+				(nfloat)Math.Max(titleRect.Height, _originalImageSize.Height)
 				+ (nfloat)padding.Top
 				+ (nfloat)padding.Bottom;
 
 			var buttonContentWidth =
-				(nfloat)Math.Max(titleRect.Width, image?.Size.Width ?? 0)
+				(nfloat)Math.Max(titleRect.Width, _originalImageSize.Width)
 				+ (nfloat)padding.Left
 				+ (nfloat)padding.Right;
 
@@ -62,13 +62,13 @@ namespace Microsoft.Maui.Controls
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
 					buttonContentHeight += spacing;
-					buttonContentHeight += (nfloat)Math.Min(titleRect.Height, image.Size.Height);
+					buttonContentHeight += (nfloat)Math.Min(titleRect.Height, _originalImageSize.Height);
 				}
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
 					buttonContentWidth += spacing;
-					buttonContentWidth += (nfloat)Math.Min(titleRect.Width, image.Size.Width);
+					buttonContentWidth += (nfloat)Math.Min(titleRect.Width, _originalImageSize.Width);
 				}
 			}
 
@@ -99,6 +99,7 @@ namespace Microsoft.Maui.Controls
 
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
+			var borderWidth = button.BorderWidth == -1 ? 0 : button.BorderWidth;
 
 			var image = platformButton.CurrentImage;
 
@@ -117,7 +118,7 @@ namespace Microsoft.Maui.Controls
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
 				// Resize the image if necessary and then update the image variable
-				if (ResizeImageIfNecessary(platformButton, button, image, spacing, padding, result, _originalImageSize))
+				if (ResizeImageIfNecessary(platformButton, button, image, spacing, padding, borderWidth, result, _originalImageSize))
 				{
 					image = platformButton.CurrentImage;
 				}
@@ -204,7 +205,7 @@ namespace Microsoft.Maui.Controls
 			// If we just have an image, we can still resize it here
 			else if (image is not null)
 			{
-				ResizeImageIfNecessary(platformButton, button, image, 0, padding, result, _originalImageSize);
+				ResizeImageIfNecessary(platformButton, button, image, 0, padding, borderWidth, result, _originalImageSize);
 			}
 
 			platformButton.ImageView.ContentMode = contentMode;
@@ -239,7 +240,8 @@ namespace Microsoft.Maui.Controls
 			var buttonContentHeight =
 				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
 				+ (nfloat)padding.Top
-				+ (nfloat)padding.Bottom;
+				+ (nfloat)padding.Bottom
+				+ (nfloat)borderWidth * 2;
 
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
@@ -288,7 +290,7 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding, Size bounds, CGSize originalImageSize)
+		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding, double borderWidth, Size bounds, CGSize originalImageSize)
 		{
 			var currentImageWidth = image.Size.Width;
 			var currentImageHeight = image.Size.Height;
@@ -296,26 +298,29 @@ namespace Microsoft.Maui.Controls
 			nfloat availableWidth = (nfloat)bounds.Width;
 			nfloat availableHeight = (nfloat)bounds.Height;
 
+			var additionalHorizontalSpace = (nfloat)padding.Left + (nfloat)padding.Right + ((nfloat)borderWidth * 2);
+			var additionalVerticalSpace = (nfloat)padding.Top + (nfloat)padding.Bottom + ((nfloat)borderWidth * 2);
+
 			// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel.
 			var buffer = 0.1;
 
 			if (bounds != Size.Zero && (!double.IsNaN(bounds.Height) || !double.IsNaN(bounds.Width)))
 			{
-				var contentWidth = (nfloat)bounds.Width - (nfloat)padding.Left - (nfloat)padding.Right;
+				var contentWidth = (nfloat)bounds.Width - additionalHorizontalSpace;
 
 				if (currentImageWidth - contentWidth > buffer)
 				{
 					availableWidth = contentWidth;
 				}
 
-				var contentHeight = (nfloat)bounds.Height - ((nfloat)padding.Top + (nfloat)padding.Bottom);
+				var contentHeight = (nfloat)bounds.Height - additionalVerticalSpace;
 				if (currentImageHeight - contentHeight > buffer)
 				{
 					availableHeight = contentHeight;
 				}
 			}
 
-			// make sure we do not have negative values
+			// make sure we have values greater than 0
 			availableWidth = (nfloat)Math.Max(availableWidth, 0.1f);
 			availableHeight = (nfloat)Math.Max(availableHeight, 0.1f);
 
@@ -327,8 +332,10 @@ namespace Microsoft.Maui.Controls
 					image = ResizeImageSource(image, availableWidth, availableHeight, originalImageSize);
 				}
 				// if the image is already sized down but now has more space, we will size it up no more than the original image size
-				else if (availableHeight - ((nfloat)padding.Top + (nfloat)padding.Bottom) - currentImageHeight > buffer && availableWidth - (nfloat)padding.Left - (nfloat)padding.Right - currentImageWidth > buffer
-					&& currentImageHeight != originalImageSize.Height && currentImageWidth != originalImageSize.Width)
+				else if (availableHeight - additionalVerticalSpace - currentImageHeight > buffer
+					&& availableWidth - additionalHorizontalSpace - currentImageWidth > buffer
+					&& currentImageHeight != originalImageSize.Height
+					&& currentImageWidth != originalImageSize.Width)
 				{
 					image = ResizeImageSource(image, availableWidth, availableHeight, originalImageSize, true);
 				}
@@ -387,6 +394,11 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateText(button);
+		}
+
+		internal static void MapBorderWidth(IButtonHandler handler, Button button)
+		{
+			handler.PlatformView?.UpdateContentLayout(button);
 		}
 	}
 }
