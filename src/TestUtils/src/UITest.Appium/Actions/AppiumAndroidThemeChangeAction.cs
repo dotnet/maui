@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -15,35 +14,16 @@ namespace UITest.Appium
 			SetDarkTheme
 		};
 
-		protected readonly AppiumApp _app;
-
-		public AppiumAndroidThemeChangeAction(AppiumApp app)
-		{
-			_app = app;
-		}
-
 		public CommandResponse Execute(string commandName, IDictionary<string, object> parameters)
 		{
 			if (commandName == SetLightTheme)
 			{
-				var args = new Dictionary<string, string>
-				{
-					{ "mode", "night" },
-					{ "value", "no" }
-				};
-
-				_app.Driver.ExecuteScript("mobile: setUiMode", args);
+				ExecuteAdbCommand($"adb shell cmd uimode night no");
 				return CommandResponse.SuccessEmptyResponse;
 			}
-			else if(commandName == SetDarkTheme)
+			else if (commandName == SetDarkTheme)
 			{
-				var args = new Dictionary<string, string>
-				{
-					{ "mode", "night" },
-					{ "value", "yes" }
-				};
-
-				_app.Driver.ExecuteScript("mobile: setUiMode", args);
+				ExecuteAdbCommand($"adb shell cmd uimode night yes");
 				return CommandResponse.SuccessEmptyResponse;
 			}
 
@@ -54,6 +34,40 @@ namespace UITest.Appium
 		{
 			return _commands.Contains(commandName, StringComparer.OrdinalIgnoreCase);
 		}
+
+		private static void ExecuteAdbCommand(string command)
+		{
+			var shell = GetShell();
+			var shellArgument = GetShellArgument(shell, command);
+
+			var processInfo = new ProcessStartInfo(shell, shellArgument)
+			{
+				CreateNoWindow = true,
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true
+			};
+
+			var process = new Process { StartInfo = processInfo };
+
+			process.Start();
+			process.WaitForExit();
+		}
+
+		private static string GetShell()
+		{
+			if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+				return "cmd.exe";
+			else
+				return "/bin/bash";
+		}
+
+		private static string GetShellArgument(string shell, string command)
+		{
+			if (shell == "cmd.exe")
+				return $"/C {command}";
+			else
+				return $"-c \"{command}\"";
+		}
 	}
 }
-
