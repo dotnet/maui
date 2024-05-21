@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls
 				SetBinding(BackgroundProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.BarBackground) , static (TabbedPage page) => page.BarBackground, source: _page));
 				SetBinding(BackgroundColorProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.BarBackgroundColor), static (TabbedPage page) => page.BarBackgroundColor, source: _page));
 				SetBinding(SelectedTabColorProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.SelectedTabColor), static (TabbedPage page) => page.SelectedTabColor, source: _page));
-				SetBinding(UnselectedTabColorProperty, TypedBinding.ForSingleNestingLevelnameof(Microsoft.Maui.Controls.TabbedPage.UnselectedTabColor), static (TabbedPage page) => page.UnselectedTabColor, source: _page));
+				SetBinding(UnselectedTabColorProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.UnselectedTabColor), static (TabbedPage page) => page.UnselectedTabColor, source: _page));
 
 				var label = new XLabel
 				{
