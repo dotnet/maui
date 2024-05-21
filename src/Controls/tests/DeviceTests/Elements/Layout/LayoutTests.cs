@@ -326,7 +326,47 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		/* Commented out of for now due to inconsistent platform behavior
+        [Fact]
+        [Category(TestCategory.Button, TestCategory.FlexLayout)]
+        public async Task ButtonWithImageInFlexLayoutInGridDoesNotCycle()
+        {
+            EnsureHandlerCreated((builder) =>
+            {
+                builder.ConfigureMauiHandlers(handler =>
+                {
+                    handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+                    handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+                });
+            });
+
+            await ButtonWithImageInFlexLayoutInGridDoesNotCycleCore();
+            // Cycle does not occur on first run
+            await ButtonWithImageInFlexLayoutInGridDoesNotCycleCore();
+        }
+
+        async Task ButtonWithImageInFlexLayoutInGridDoesNotCycleCore()
+        {
+            var grid = new Grid() { MaximumWidthRequest = 150 };
+            grid.AddRowDefinition(new RowDefinition(GridLength.Auto));
+
+            var flexLayout = new FlexLayout() { Wrap = Layouts.FlexWrap.Wrap };
+            grid.Add(flexLayout);
+
+            for (int i = 0; i < 2; i++)
+            {
+                var button = new Button { ImageSource = "black.png" };
+                flexLayout.Add(button);
+            }
+
+            await InvokeOnMainThreadAsync(async () =>
+            {
+                // If this can be attached to the hierarchy and make it through a layout
+                // without crashing, then we're good.
+                await AttachAndRun(grid, (handler) => { });
+            });
+        }
+
+        /* Commented out of for now due to inconsistent platform behavior
 		[Fact("Ensures grid rows renders the correct size - Issue 15330")]
 		public async Task Issue15330()
 		{
@@ -400,5 +440,60 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, cyanBlob.MinColumn, 2d);
 			Assert.Equal(bitmap.Height / 3 * 2, cyanBlob.MinRow, 2d);
 		}*/
+
+        [Fact]
+		public async Task DependentLayoutBindingsResolve()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Entry), typeof(EntryHandler));
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			double expectedWidth = 200;
+
+			var outerGrid = new Grid()
+			{
+				WidthRequest = expectedWidth
+			};
+
+			var grid = new Grid
+			{
+				HeightRequest = 80,
+				HorizontalOptions = LayoutOptions.Fill
+			};
+
+			grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+			grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+
+			var entry = new Entry() { Text = "Lorem ipsum dolor", HorizontalOptions = LayoutOptions.Fill };
+			var button = new Button() { Text = "Hello world", HorizontalOptions = LayoutOptions.Fill };
+
+			grid.Add(entry);
+			grid.Add(button);
+
+			grid.SetColumn(entry, 0);
+			grid.SetColumn(button, 1);
+
+			// Because of this binding, the the layout will need two passes.
+			button.SetBinding(VisualElement.WidthRequestProperty, new Binding(nameof(View.Width), mode: BindingMode.Default, source: grid));
+
+			await AttachAndRun(outerGrid, async (handler) =>
+			{
+				// The layout needs to occur while the views are attached to the Window, otherwise they won't be able to schedule
+				// the second layout pass correctly on Android. That's why we don't add the inner Grid to the outer Grid until
+				// we're already attached.
+
+				outerGrid.Add(grid);
+
+				var expectation = () => button.Width == expectedWidth;
+
+				await expectation.AssertEventually(timeout: 2000, message: $"Button did not have expected Width of {expectedWidth}");
+			});
+		}
 	}
 }

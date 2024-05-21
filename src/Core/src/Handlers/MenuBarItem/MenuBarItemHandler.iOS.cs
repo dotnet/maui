@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Handlers
 			Rebuild();
 		}
 
-		void Rebuild()
+		static void Rebuild()
 		{
 			MenuBarHandler.Rebuild();
 		}

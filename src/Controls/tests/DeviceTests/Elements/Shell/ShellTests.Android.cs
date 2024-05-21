@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
+using AndroidX.Core.Widget;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
@@ -16,18 +16,107 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AView = Android.Views.View;
+using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		[Fact(DisplayName = "No crash going back using 'Shell.Current.GoToAsync(\"..\")'")]
+		public async Task GoingBackUsingGoToAsyncMethod()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+
+			var page2Content = new Label { Text = "Test" };
+			var page2 = new ContentPage { Content = page2Content };
+
+			var pointerGestureRecognizer = new PointerGestureRecognizer();
+			pointerGestureRecognizer.PointerPressed += (sender, args) =>
+			{
+				Console.WriteLine("Page Content pressed");
+			};
+
+			page2Content.GestureRecognizers.Add(pointerGestureRecognizer);
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Route = "Item2",
+							Content = page2
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page1);
+				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("..");
+
+				await shell.GoToAsync("//Item1");
+				await shell.GoToAsync("//Item2");
+				await shell.Navigation.PopAsync();
+
+				await shell.GoToAsync("//Item1");
+				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("..");
+			});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task CanHideNavBarShadow(bool navBarHasShadow)
+		{
+			SetupBuilder();
+
+			var contentPage = new ContentPage() { Title = "Flyout Item" };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { contentPage } };
+
+				shell.FlyoutContent = new VerticalStackLayout()
+				{
+					new Label(){ Text = "Flyout Content"}
+				};
+
+				Shell.SetNavBarHasShadow(contentPage, navBarHasShadow);
+			});
+			
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await Task.Delay(100);
+
+				var platformToolbar = GetPlatformToolbar(handler);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+
+				if(navBarHasShadow)
+					Assert.True(appBar.Elevation > 0);
+				else
+					Assert.True(appBar.Elevation == 0);
+			});
+		}
+
 		protected async Task CheckFlyoutState(ShellRenderer handler, bool desiredState)
 		{
 			var drawerLayout = GetDrawerLayout(handler);
@@ -286,7 +375,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem.Items[1].Icon = "blue.png";
 
 				// let the icon and title propagate
-				await AssertionExtensions.Wait(() => menuItem1.Icon != icon1);
+				await AssertEventually(() => menuItem1.Icon != icon1);
 
 				menu = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>().Menu;
 				Assert.Equal(menuItem1, menu.GetItem(0));
@@ -324,7 +413,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem.Items.RemoveAt(2);
 
 				// let the change propagate
-				await AssertionExtensions.Wait(() => bottomView.Menu.Size() == 2);
+				await AssertEventually(() => bottomView.Menu.Size() == 2);
 
 				menu = bottomView.Menu;
 				Assert.Equal(menuItem1, menu.GetItem(0));
@@ -354,7 +443,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem.Items.Insert(1, new Tab() { Items = { new ContentPage() }, Title = "Tab 2", Icon = "green.png" });
 
 				// let the change propagate
-				await AssertionExtensions.Wait(() => bottomView.Menu.GetItem(1).Icon != menuItem2Icon);
+				await AssertEventually(() => bottomView.Menu.GetItem(1).Icon != menuItem2Icon);
 
 				menu = bottomView.Menu;
 				Assert.Equal(menuItem1, menu.GetItem(0));
@@ -414,10 +503,29 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		protected async Task ScrollFlyoutToBottom(ShellRenderer shellRenderer)
+		protected async Task<double> ScrollFlyoutToBottom(ShellRenderer shellRenderer)
 		{
-			var flyoutItems = GetFlyoutMenuReyclerView(shellRenderer);
+			IShellContext shellContext = shellRenderer;
+			DrawerLayout dl = shellContext.CurrentDrawerLayout;
+			var viewGroup = dl.GetChildAt(1) as ViewGroup;
+			var scrollView = viewGroup?.GetChildAt(0);
 
+			if (scrollView is RecyclerView rv)
+			{
+				return await ScrollRecyclerViewToBottom(rv);
+			}
+			else if (scrollView is MauiScrollView mauisv)
+			{
+				return await ScrollMauiScrollViewToBottom(mauisv);
+			}
+			else
+			{
+				throw new Exception("RecyclerView or MauiScrollView not found");
+			}
+		}
+
+		async Task<double> ScrollRecyclerViewToBottom(RecyclerView flyoutItems)
+		{
 			TaskCompletionSource<object> result = new TaskCompletionSource<object>();
 			flyoutItems.ScrollChange += OnFlyoutItemsScrollChange;
 			flyoutItems.ScrollToPosition(flyoutItems.GetAdapter().ItemCount - 1);
@@ -443,6 +551,39 @@ namespace Microsoft.Maui.DeviceTests
 			var verticalOffset = flyoutItems.ComputeVerticalScrollOffset();
 			behavior.OnNestedPreScroll(coordinatorLayout, appbarLayout, flyoutItems, 0, verticalOffset, new int[2], ViewCompat.TypeTouch);
 			await Task.Delay(10);
+
+			return verticalOffset;
+		}
+
+		async Task<double> ScrollMauiScrollViewToBottom(MauiScrollView flyoutItems)
+		{
+			TaskCompletionSource<object> result = new TaskCompletionSource<object>();
+			flyoutItems.ScrollChange += OnFlyoutItemsScrollChange;
+			flyoutItems.ScrollTo(0, flyoutItems.Height);
+			await result.Task.WaitAsync(TimeSpan.FromSeconds(2));
+			await Task.Delay(10);
+
+			void OnFlyoutItemsScrollChange(object sender, NestedScrollView.ScrollChangeEventArgs e)
+			{
+				flyoutItems.ScrollChange -= OnFlyoutItemsScrollChange;
+				result.TrySetResult(true);
+			}
+
+			// The appbar layout won't offset if you programmatically scroll the RecyclerView
+			// I haven't found a way to match the exact behavior when you touch and scroll
+			// I think we'd have to actually send touch events through adb
+
+			var coordinatorLayout = flyoutItems.Parent.GetParentOfType<CoordinatorLayout>();
+			var appbarLayout = coordinatorLayout.GetFirstChildOfType<AppBarLayout>();
+			var clLayoutParams = appbarLayout.LayoutParameters as CoordinatorLayout.LayoutParams;
+			var behavior = clLayoutParams.Behavior as AppBarLayout.Behavior;
+			var headerContainer = appbarLayout.GetFirstChildOfType<HeaderContainer>();
+
+			var verticalOffset = flyoutItems.ComputeVerticalScrollOffset();
+			behavior.OnNestedPreScroll(coordinatorLayout, appbarLayout, flyoutItems, 0, verticalOffset, new int[2], ViewCompat.TypeTouch);
+			await Task.Delay(10);
+
+			return verticalOffset;
 		}
 
 		ShellFlyoutRenderer GetDrawerLayout(ShellRenderer shellRenderer)
@@ -451,16 +592,19 @@ namespace Microsoft.Maui.DeviceTests
 			return (ShellFlyoutRenderer)shellContext.CurrentDrawerLayout;
 		}
 
-		RecyclerViewContainer GetFlyoutMenuReyclerView(ShellRenderer shellRenderer)
+		RecyclerView GetFlyoutMenuReyclerView(ShellRenderer shellRenderer)
 		{
 			IShellContext shellContext = shellRenderer;
 			DrawerLayout dl = shellContext.CurrentDrawerLayout;
 
 			var flyout = dl.GetChildAt(0);
-			RecyclerViewContainer flyoutContainer = null;
+			RecyclerView flyoutContainer = null;
+
+			var ViewGroup = dl.GetChildAt(1) as ViewGroup;
+			var rc = ViewGroup.GetChildAt(0) as RecyclerView;
 
 			if (dl.GetChildAt(1) is ViewGroup vg1 &&
-				vg1.GetChildAt(0) is RecyclerViewContainer rvc)
+				vg1.GetChildAt(0) is RecyclerView rvc)
 			{
 				flyoutContainer = rvc;
 			}

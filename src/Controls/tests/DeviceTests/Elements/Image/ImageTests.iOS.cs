@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await handler.ToPlatform().AssertContainsColor(Colors.White, MauiContext);
 				await handler.ToPlatform().AssertDoesNotContainColor(Colors.Red, MauiContext);
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await handler.ToPlatform().AssertContainsColor(Colors.White, MauiContext);
 			});
@@ -113,7 +113,36 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
+
+				await handler.ToPlatform().AssertContainsColor(Colors.White, MauiContext);
+			});
+
+			// We asked the image to have a fixed height, so it should resize accordingly even if it could grow in width
+			Assert.Equal(100, image.Height);
+			Assert.Equal(200, image.Width);
+		}
+
+		[Fact]
+		public async Task ImageLoadsIfYouDontSpecifyExtension()
+		{
+			SetupBuilder();
+
+			var layout = new Grid();
+			var image = new Image
+			{
+				Source = "big_white_horizontal",
+				Aspect = Aspect.AspectFit,
+				HeightRequest = 100
+			};
+
+			layout.Add(image);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LayoutHandler>(layout);
+
+				await image.WaitUntilLoaded();
 
 				await handler.ToPlatform().AssertContainsColor(Colors.White, MauiContext);
 			});

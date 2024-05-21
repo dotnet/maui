@@ -7,7 +7,6 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -36,6 +35,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		Func<UICollectionViewCell> _getPrototype;
+		
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		Func<NSIndexPath, UICollectionViewCell> _getPrototypeForIndexPath;
 		CGSize _previousContentSize = CGSize.Empty;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
@@ -175,15 +177,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			EnsureLayoutInitialized();
 		}
 
+		public override void LoadView()
+		{
+			base.LoadView(); 
+
+			CollectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
+		}
+
 		public override void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
-			ConstrainToItemsView();
+			ConstrainItemsToBounds();
 		}
 
 		public override void ViewWillLayoutSubviews()
 		{
-			ConstrainToItemsView();
+			ConstrainItemsToBounds();
 			base.ViewWillLayoutSubviews();
 			InvalidateMeasureIfContentSizeChanged();
 			LayoutEmptyView();
@@ -237,7 +246,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					(ItemsView as IView)?.InvalidateMeasure();
 				}
 			}
-
 			_previousContentSize = contentSize.Value;
 		}
 
@@ -251,18 +259,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
-		void ConstrainToItemsView()
+		void ConstrainItemsToBounds()
 		{
-			var itemsViewWidth = ItemsView.Width;
-			var itemsViewHeight = ItemsView.Height;
-
-			if (itemsViewHeight < 0 || itemsViewWidth < 0)
-			{
-				ItemsViewLayout.UpdateConstraints(CollectionView.Bounds.Size);
-				return;
-			}
-
-			ItemsViewLayout.UpdateConstraints(new CGSize(itemsViewWidth, itemsViewHeight));
+			var contentBounds = CollectionView.AdjustedContentInset.InsetRect(CollectionView.Bounds);
+			var constrainedSize = contentBounds.Size;
+			ItemsViewLayout.UpdateConstraints(constrainedSize);
 		}
 
 		void EnsureLayoutInitialized()
@@ -276,6 +277,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_getPrototype ??= GetPrototype;
 			ItemsViewLayout.GetPrototype = _getPrototype;
+
+			_getPrototypeForIndexPath ??= GetPrototypeForIndexPath;
+			ItemsViewLayout.GetPrototypeForIndexPath = _getPrototypeForIndexPath;
 
 			Delegator = CreateDelegator();
 			CollectionView.Delegate = Delegator;
@@ -320,7 +324,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			Layout.InvalidateLayout();
 		}
-
 
 		public override nint NumberOfSections(UICollectionView collectionView)
 		{
@@ -485,6 +488,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var indexPath = NSIndexPath.Create(group, 0);
 
+			return GetPrototypeForIndexPath(indexPath);
+		}
+
+		internal UICollectionViewCell GetPrototypeForIndexPath(NSIndexPath indexPath)
+		{
 			return CreateMeasurementCell(indexPath);
 		}
 

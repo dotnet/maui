@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ namespace Microsoft.Maui
 {
 	public partial class MauiUIApplicationDelegate
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "There is a single MauiUIApplicationDelegate")]
 		internal IUIMenuBuilder? MenuBuilder { get; private set; }
 
 		[SupportedOSPlatform("ios13.0")]
@@ -82,7 +84,9 @@ namespace Microsoft.Maui
 
 		[SupportedOSPlatform("ios13.0")]
 		[Export(KeyboardAcceleratorExtensions.MenuItemSelectedSelector)]
+		#pragma warning disable CA1822 // Selectors can't be static, or else it won't be found
 		internal void MenuItemSelected(UICommand uiCommand)
+		#pragma warning restore CA1822
 		{
 			uiCommand.SendClicked();
 		}

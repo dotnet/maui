@@ -329,8 +329,11 @@ namespace Microsoft.Maui.Platform
 			if (PaneContentGrid == null)
 				return;
 
-			var newSize = new Size(OpenPaneLength, PaneContentGrid.ActualHeight - PaneContentGrid.RowDefinitions[1].Height.Value);
+			var newHeight = PaneContentGrid.ActualHeight - PaneContentGrid.RowDefinitions[1].Height.Value;
+			if (newHeight < 0)
+				return;
 
+			var newSize = new Size(OpenPaneLength, newHeight);
 			if (newSize == FlyoutPaneSize)
 				return;
 

@@ -15,10 +15,11 @@ using Xunit;
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ControlsHandlerTestBase : HandlerTestBase, IDisposable
+	public partial class ControlsHandlerTestBase : HandlerTestBase
 	{
 		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
 		// that way all the lifecycle events related to being attached to the window will fire
@@ -561,7 +562,7 @@ namespace Microsoft.Maui.DeviceTests
 			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
 
 			// Wait for the layout to propagate to the platform
-			await AssertionExtensions.Wait(
+			await AssertEventually(
 				() =>
 				{
 					var size = frameworkElement.GetBoundingBox().Size;

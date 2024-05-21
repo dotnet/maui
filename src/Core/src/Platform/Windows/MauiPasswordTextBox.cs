@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Platform
 
 			return text.Length == 1
 				? text
-				: new string(ObfuscationCharacter, text.Length - 1) + text.Substring(text.Length - 1, 1);
+				: string.Concat(new string(ObfuscationCharacter, text.Length - 1), text.AsSpan(text.Length - 1, 1));
 		}
 
 		static string DetermineTextFromPassword(string realText, int start, string passwordText)

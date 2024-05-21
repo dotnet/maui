@@ -14,7 +14,7 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	// This is used to monitor an xplat View and apply layout changes
-	internal class ShellViewRenderer
+	internal sealed class ShellViewRenderer
 	{
 		public IViewHandler Handler { get; private set; }
 		IView _view;
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return ((IPlatformViewHandler)_view.Handler).MeasureVirtualView(widthMeasureSpec, heightMeasureSpec);
 		}
 
-		public virtual void OnViewSet(IView view)
+		public void OnViewSet(IView view)
 		{
 			if (view == View)
 				return;

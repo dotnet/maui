@@ -9,7 +9,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	internal class iOS7ButtonContainer : UIView
+	internal sealed class iOS7ButtonContainer : UIView
 	{
 		readonly nfloat _buttonWidth;
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 	}
 
-	internal class ContextScrollViewDelegate : UIScrollViewDelegate
+	internal sealed class ContextScrollViewDelegate : UIScrollViewDelegate
 	{
 		readonly nfloat _finalButtonSize;
 		UIView _backgroundView;

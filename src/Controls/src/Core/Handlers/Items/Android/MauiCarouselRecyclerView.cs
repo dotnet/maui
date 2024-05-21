@@ -101,11 +101,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void TearDownOldElement(CarouselView oldElement)
 		{
-			if (ItemsView != null)
+			if (ItemsView is not null)
 				ItemsView.Scrolled -= CarouselViewScrolled;
 
 			ClearLayoutListener();
+			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			base.TearDownOldElement(oldElement);
+		}
+
+		protected override void OnAttachedToWindow()
+		{
+			AddLayoutListener();
+			base.OnAttachedToWindow();
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			ClearLayoutListener();
+			base.OnDetachedFromWindow();
 		}
 
 		public override void UpdateAdapter()
@@ -116,9 +129,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var oldItemViewAdapter = ItemsViewAdapter;
 
+			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			if (oldItemViewAdapter != null && _initialized)
 			{
-				UnsubscribeCollectionItemsSourceChanged(oldItemViewAdapter);
 				ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, 0);
 				ItemsView.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 			}
@@ -513,7 +526,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void AddLayoutListener()
 		{
-			if (_carouselViewLayoutListener != null)
+			if (_carouselViewLayoutListener is not null)
 				return;
 
 			_carouselViewLayoutListener = new CarouselViewOnGlobalLayoutListener(this);
@@ -522,6 +535,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void LayoutReady()
 		{
+			if (ItemsView is null)
+				return;
+
 			if (!_initialized)
 			{
 				ItemsView.Scrolled += CarouselViewScrolled;
@@ -603,7 +619,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			public void OnGlobalLayout()
 			{
-				if (_recyclerView.TryGetTarget(out var recyclerView))
+				if (_recyclerView.TryGetTarget(out var recyclerView) &&
+					recyclerView.IsAlive())
 				{
 					recyclerView.LayoutReady();
 				}

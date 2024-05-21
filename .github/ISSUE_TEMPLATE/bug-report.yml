@@ -44,7 +44,18 @@ body:
       label: Version with bug
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
-        - 8.0.3
+        - 
+        - 9.0.0-preview.3.10457
+        - 9.0.0-preview.2.10293
+        - 9.0.0-preview.1.9973
+        - 8.0.40 SR5
+        - 8.0.21 SR4.1
+        - 8.0.20 SR4
+        - 8.0.14 SR3.1
+        - 8.0.10 SR3
+        - 8.0.7 SR2
+        - 8.0.6 SR1
+        - 8.0.3 GA
         - 7.0.101
         - 7.0.100
         - 7.0.96
@@ -55,6 +66,7 @@ body:
         - 7.0.58
         - 7.0.52
         - 7.0.49
+        - Nightly / CI build (Please specify exact version)
         - Unknown/Other
     validations:
       required: true
@@ -75,8 +87,9 @@ body:
     id: version-that-worked
     attributes:
       label: Last version that worked well
-      description: If you answered yes, there a version on which this _did_ work, which one? If no or unknown, please select `Unknown/Other`.  Run `dotnet workload list` to find your version.
+      description: If you answered yes, is there a version on which this _did_ work, which one? If no or unknown, please select `Unknown/Other`.  Run `dotnet workload list` to find your version.
       options:
+        - 
         - Unknown/Other
         - 6.0
         - 7.0.49
@@ -99,7 +112,17 @@ body:
         - 8.0.0-rc.1.9171
         - 8.0.0-rc.2.9373
         - 8.0.0-rc.2.9511
-        - 8.0.3
+        - 8.0.3 GA
+        - 8.0.6 SR1
+        - 8.0.7 SR2        
+        - 8.0.10 SR3
+        - 8.0.14 SR3.1
+        - 8.0.20 SR4
+        - 8.0.21 SR4.1
+        - 8.0.40 SR5
+        - 9.0.0-preview.1.9973
+        - 9.0.0-preview.2.10293
+        - 9.0.0-preview.3.10457
     validations:
       required: true
   - type: dropdown
@@ -134,7 +157,7 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      description: Including a binary log or 'binlog' to your issue (see [Capturing Binary Logs](https://github.com/dotnet/maui/wiki/Capturing-Binary-Logs) for more info) is helpful in diagnosing your issue.  You can also paste any relevant log output below. This will be automatically formatted into code, so no need for backticks.
       render: shell
   - type: markdown
     attributes:

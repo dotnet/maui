@@ -5,7 +5,7 @@ using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiTextView : AppCompatTextView, IInputTransparentCapable
+	public class MauiTextView : PlatformAppCompatTextView, IInputTransparentCapable
 	{
 		public MauiTextView(Context context) : base(context)
 		{
@@ -15,10 +15,8 @@ namespace Microsoft.Maui.Platform
 
 		internal event EventHandler<LayoutChangedEventArgs>? LayoutChanged;
 
-		protected override void OnLayout(bool changed, int l, int t, int r, int b)
+		internal override void OnLayoutFormatted(bool changed, int l, int t, int r, int b)
 		{
-			base.OnLayout(changed, l, t, r, b);
-
 			LayoutChanged?.Invoke(this, new LayoutChangedEventArgs(l, t, r, b));
 		}
 

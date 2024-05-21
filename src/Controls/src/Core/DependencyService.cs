@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		static readonly object s_dependencyLock = new object();
 		static readonly object s_initializeLock = new object();
 
-		static readonly List<Type> DependencyTypes = new List<Type>();
+		static readonly List<DependencyType> DependencyTypes = new List<DependencyType>();
 		static readonly Dictionary<Type, DependencyData> DependencyImplementations = new Dictionary<Type, DependencyData>();
 
 		public static T Resolve<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(DependencyFetchTarget fallbackFetchTarget = DependencyFetchTarget.GlobalInstance) where T : class
@@ -64,16 +64,14 @@ namespace Microsoft.Maui.Controls
 		public static void Register<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T>() where T : class
 		{
 			Type type = typeof(T);
-			if (!DependencyTypes.Contains(type))
-				DependencyTypes.Add(type);
+			AddDependencyTypeIfNeeded(type);
 		}
 
 		public static void Register<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TImpl>() where T : class where TImpl : class, T
 		{
 			Type targetType = typeof(T);
 			Type implementorType = typeof(TImpl);
-			if (!DependencyTypes.Contains(targetType))
-				DependencyTypes.Add(targetType);
+			AddDependencyTypeIfNeeded(targetType);
 
 			lock (s_dependencyLock)
 				DependencyImplementations[targetType] = new DependencyData { ImplementorType = implementorType };
@@ -83,16 +81,22 @@ namespace Microsoft.Maui.Controls
 		{
 			Type targetType = typeof(T);
 			Type implementorType = typeof(T);
-			if (!DependencyTypes.Contains(targetType))
-				DependencyTypes.Add(targetType);
+			AddDependencyTypeIfNeeded(targetType);
 
 			lock (s_dependencyLock)
 				DependencyImplementations[targetType] = new DependencyData { ImplementorType = implementorType, GlobalInstance = instance };
 		}
 
+		static void AddDependencyTypeIfNeeded(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+		{
+			if (!DependencyTypes.Any(t => t.Type == type))
+				DependencyTypes.Add(new DependencyType { Type = type });
+		}
+
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		static Type FindImplementor(Type target) =>
-			DependencyTypes.FirstOrDefault(t => target.IsAssignableFrom(t));
+			DependencyTypes.FirstOrDefault(t => target.IsAssignableFrom(t.Type)).Type;
 
 		// Once we get essentials/cg converted to using startup.cs
 		// we will delete the initialize code from here and just use
@@ -137,10 +141,7 @@ namespace Microsoft.Maui.Controls
 					for (int i = 0; i < attributes.Length; i++)
 					{
 						DependencyAttribute attribute = (DependencyAttribute)attributes[i];
-						if (!DependencyTypes.Contains(attribute.Implementor))
-						{
-							DependencyTypes.Add(attribute.Implementor);
-						}
+						AddDependencyTypeIfNeeded(attribute.Implementor);
 					}
 				}
 			}
@@ -168,6 +169,12 @@ namespace Microsoft.Maui.Controls
 
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 			public Type ImplementorType { get; set; }
+		}
+
+		struct DependencyType
+		{
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+			public Type Type { get; set; }
 		}
 	}
 }

@@ -249,9 +249,9 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush forestGreen;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.ForestGreen"/>.</summary>
 		public static SolidColorBrush ForestGreen => forestGreen ??= new(Colors.ForestGreen);
-		static ImmutableBrush fuschia;
+		static ImmutableBrush fuchsia;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Fuchsia"/>.</summary>
-		public static SolidColorBrush Fuchsia => fuschia ??= new(Colors.Fuchsia);
+		public static SolidColorBrush Fuchsia => fuchsia ??= new(Colors.Fuchsia);
 		static ImmutableBrush gainsboro;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Gainsboro"/>.</summary>
 		public static SolidColorBrush Gainsboro => gainsboro ??= new(Colors.Gainsboro);

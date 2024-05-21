@@ -6,12 +6,18 @@ namespace UITest.Appium
 	{
 		const string IsKeyboardShownCommand = "isKeyboardShown";
 		const string HideKeyboardCommand = "dismissKeyboard";
+		const string PressEnterCommand = "pressEnter";
+		const string PressVolumeDownCommand = "pressVolumeDown";
+		const string PressVolumeUpCommand = "pressVolumeUp";
 
 		protected readonly AppiumApp _app;
 		readonly List<string> _commands = new()
 		{
 			IsKeyboardShownCommand,
 			HideKeyboardCommand,
+			PressEnterCommand,
+			PressVolumeDownCommand,
+			PressVolumeUpCommand,
 		};
 
 		public AppiumVirtualKeyboardActions(AppiumApp app)
@@ -30,6 +36,9 @@ namespace UITest.Appium
 			{
 				IsKeyboardShownCommand => IsKeyboardShown(parameters),
 				HideKeyboardCommand => DismissKeyboard(parameters),
+				PressEnterCommand => PressEnter(parameters),
+				PressVolumeDownCommand => PressVolumeDown(parameters),
+				PressVolumeUpCommand => PressVolumeUp(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -40,6 +49,21 @@ namespace UITest.Appium
 		}
 
 		protected virtual CommandResponse DismissKeyboard(IDictionary<string, object> parameters)
+		{
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		protected virtual CommandResponse PressEnter(IDictionary<string, object> parameters)
+		{
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		protected virtual CommandResponse PressVolumeDown(IDictionary<string, object> parameters)
+		{
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		protected virtual CommandResponse PressVolumeUp(IDictionary<string, object> parameters)
 		{
 			return CommandResponse.SuccessEmptyResponse;
 		}

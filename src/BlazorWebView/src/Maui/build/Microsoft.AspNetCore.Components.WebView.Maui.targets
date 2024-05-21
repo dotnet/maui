@@ -121,13 +121,4 @@
     </ItemGroup>
   </Target>
 
-  <!-- Microsoft.Android.Sdk.AssemblyResolution.targets _ResolveAssemblies triggers a nested build to
-       resolve publish files in a Maui specific way and that breaks elements depending on the '$(IntermediateOutputPath)'.
-       This target detects we are running inside one of such builds and adjust the relevant paths. -->
-  <Target Name="_AdjustStaticWebAssetPathBaseWhenBuildingWithRid" BeforeTargets="ResolveStaticWebAssetsConfiguration" Condition="'$(_OuterIntermediateOutputPath)' != ''">
-    <PropertyGroup>
-      <_StaticWebAssetsManifestBase>$(_OuterIntermediateOutputPath)</_StaticWebAssetsManifestBase>
-    </PropertyGroup>
-  </Target>
-
 </Project>

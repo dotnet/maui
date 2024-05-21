@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public class SwipeItemButton : UIButton
 	{
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: SwipeViewTests.ItemsDoNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Proven safe in test: SwipeViewTests.ItemsDoNotLeak")]
 		public event EventHandler? FrameChanged;
 
 		public override CGRect Frame

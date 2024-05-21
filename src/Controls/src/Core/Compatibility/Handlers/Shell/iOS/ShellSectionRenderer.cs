@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
@@ -221,6 +222,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		}
 
 
+		public override void ViewDidAppear(bool animated)
+		{
+			base.ViewDidAppear(animated);
+			if (_context is ShellRenderer shellRenderer)
+			{
+				shellRenderer.ViewController.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+				shellRenderer.ViewController.SetNeedsStatusBarAppearanceUpdate();
+			}
+		}
 
 		void IDisconnectable.Disconnect()
 		{
@@ -724,11 +734,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var element = _self.ElementForViewController(viewController);
 
-				bool navBarVisible;
-				if (element is ShellSection)
-					navBarVisible = _self._renderer.ShowNavBar;
-				else
-					navBarVisible = Shell.GetNavBarIsVisible(element);
+				bool navBarVisible = false;
+
+				if (element is not null)
+				{
+					if (element is ShellSection)
+						navBarVisible = _self._renderer.ShowNavBar;
+					else
+						navBarVisible = Shell.GetNavBarIsVisible(element);
+				}
 
 				navigationController.SetNavigationBarHidden(!navBarVisible, true);
 

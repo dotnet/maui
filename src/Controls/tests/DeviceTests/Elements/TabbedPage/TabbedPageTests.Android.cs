@@ -18,6 +18,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -38,6 +39,36 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(platformView);
 				return Task.CompletedTask;
 			});
+		}
+
+		[Fact]
+		public async Task SettingJustSelectedATabColorOnBottomTabsDoesntCrash()
+		{
+			SetupBuilder();
+			var tabbedPage = new TabbedPage
+            {
+                Children =
+                {
+                    new ContentPage() { Title = "Page1"}
+                    ,new ContentPage() { Title = "Page2"}
+                    ,new ContentPage() { Title = "Page3"}
+                
+                },
+				SelectedTabColor = Colors.Red,
+            };
+
+			Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage
+				.SetToolbarPlacement(tabbedPage, Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Bottom);
+				
+			tabbedPage.SelectedTabColor = Colors.Red;
+
+			bool success = false;
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				success = true;
+			});
+
+			Assert.True(success);
 		}
 
 		[Fact]
@@ -68,7 +99,7 @@ namespace Microsoft.Maui.DeviceTests
 				tabbedPage.Children[1].IconImageSource = "blue.png";
 
 				// let the icon and title propagate
-				await AssertionExtensions.Wait(() => menuItem1.Icon != icon1);
+				await AssertEventually(() => menuItem1.Icon != icon1);
 
 				menu = GetBottomNavigationView(handler).Menu;
 				Assert.Equal(menuItem1, menu.GetItem(0));

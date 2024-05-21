@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var cell = (ViewCell)item;
 
 			var container = convertView as ViewCellContainer;
-			if (container != null)
+			if (container is not null)
 			{
 				container.Update(cell);
 				Performance.Stop(reference, "GetCellCore");
@@ -47,16 +47,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var view = (IPlatformViewHandler)cell.View.ToHandler(cell.FindMauiContext());
 			cell.View.IsPlatformEnabled = true;
 
-			ViewCellContainer c = view.PlatformView.GetParentOfType<ViewCellContainer>();
+			// If the convertView is null we don't want to return the same view, we need to return a new one.
+			// We should probably do this for ListView as well
+			if (ParentView is TableView)
+			{
+				view.ToPlatform().RemoveFromParent();
+			}
+			else
+			{
+				ViewCellContainer c = view.ToPlatform().GetParentOfType<ViewCellContainer>();
 
-			if (c != null)
-				return c;
+				if (c != null)
+					return c;
+			}
 
-			c = new ViewCellContainer(context, (IPlatformViewHandler)cell.View.Handler, cell, ParentView, unevenRows, rowHeight);
+			var newContainer = new ViewCellContainer(context, (IPlatformViewHandler)cell.View.Handler, cell, ParentView, unevenRows, rowHeight);
 
 			Performance.Stop(reference, "GetCellCore");
 
-			return c;
+			return newContainer;
 		}
 
 		protected override void DisconnectHandler(AView platformView)
@@ -66,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			c?.DisconnectHandler();
 		}
 
-		internal class ViewCellContainer : ViewGroup, INativeElementView
+		internal sealed class ViewCellContainer : ViewGroup, INativeElementView
 		{
 			readonly View _parent;
 			readonly BindableProperty _rowHeight;
@@ -142,25 +151,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_unevenRows = unevenRows;
 				_rowHeight = rowHeight;
 				_viewCell = viewCell;
-				AddView(view.PlatformView);
+				AddView(view.ToPlatform());
 				UpdateIsEnabled();
 				UpdateWatchForLongPress();
 			}
 
-			protected bool ParentHasUnevenRows
-			{
-				get { return (bool)_parent.GetValue(_unevenRows); }
-			}
+			private bool ParentHasUnevenRows => (bool)_parent.GetValue(_unevenRows);
 
-			protected int ParentRowHeight
-			{
-				get { return (int)_parent.GetValue(_rowHeight); }
-			}
+			private int ParentRowHeight => (int)_parent.GetValue(_rowHeight);
 
-			public Element Element
-			{
-				get { return _viewCell; }
-			}
+			public Element Element => _viewCell;
 
 			public override bool OnInterceptTouchEvent(MotionEvent ev)
 			{
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public void Update(ViewCell cell)
 			{
-				// This cell could have a handler that was used for the measure pass for the Listview height calculations
+				// This cell could have a handler that was used for the measure pass for the ListView height calculations
 				//cell.View.Handler.DisconnectHandler();
 
 				Performance.Start(out string reference);
@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public void DisconnectHandler()
 			{
-				var oldView = _currentView ?? _viewHandler.PlatformView;
+				var oldView = _currentView ?? _viewHandler.ToPlatform();
 				if (oldView != null)
 					RemoveView(oldView);
 
@@ -283,7 +283,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				if (_viewHandler.PlatformView == null || Context == null)
+				if (_viewHandler.PlatformView is null || Context is null)
 				{
 					return;
 				}
@@ -300,7 +300,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (ParentHasUnevenRows)
 				{
-					if (_viewHandler.PlatformView == null)
+					if (_viewHandler.PlatformView is null)
 					{
 						SetMeasuredDimension(0, 0);
 						return;
@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ListViewRenderer?.LongClickOn(this);
 			}
 
-			internal class TapGestureListener : Java.Lang.Object, GestureDetector.IOnGestureListener
+			internal sealed class TapGestureListener : Java.Lang.Object, GestureDetector.IOnGestureListener
 			{
 				readonly Action _onClick;
 
@@ -415,7 +415,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			internal class LongPressGestureListener : Java.Lang.Object, GestureDetector.IOnGestureListener
+			internal sealed class LongPressGestureListener : Java.Lang.Object, GestureDetector.IOnGestureListener
 			{
 				readonly Action _onLongClick;
 

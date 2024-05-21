@@ -1,6 +1,12 @@
 ﻿
 namespace Microsoft.Maui.IntegrationTests
 {
+	public enum RuntimeVariant
+	{
+		Mono,
+		NativeAOT
+	}
+
 	public class BaseBuildTest
 	{
 		public const string DotNetCurrent = "net8.0";

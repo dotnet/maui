@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+		[MovedToAppium]
 		[Test]
 		public void GroupListViewHeaderIndexOutOfRangeTest()
 		{

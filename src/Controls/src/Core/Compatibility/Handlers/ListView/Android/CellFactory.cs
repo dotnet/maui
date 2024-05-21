@@ -12,13 +12,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		public static AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context, View view)
 		{
+			// If the convert view coming in is null that means this cell is going to need a new view generated for it
+			// This should probably be copied over to ListView once all sets of these TableView changes are propagated There
+			if (item.Handler is IElementHandler handler && convertView is null && view is TableView)
+			{
+				handler.DisconnectHandler();
+			}
+
 			CellRenderer renderer = CellRenderer.GetRenderer(item);
 			if (renderer == null)
 			{
 				var mauiContext = view.FindMauiContext() ?? item.FindMauiContext();
 				item.ConvertView = convertView;
 
-				_ = item.ToPlatform(mauiContext);
+				convertView = item.ToPlatform(mauiContext);
 				item.ConvertView = null;
 
 				renderer = CellRenderer.GetRenderer(item);

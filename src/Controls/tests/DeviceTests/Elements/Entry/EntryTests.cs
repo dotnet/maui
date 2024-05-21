@@ -201,12 +201,5 @@ namespace Microsoft.Maui.DeviceTests
 			protected override Task<string> GetPlatformText(EntryHandler handler) =>
 				EntryTests.GetPlatformText(handler);
 		}
-
-		[Category(TestCategory.Entry)]
-		[Category(TestCategory.TextInput)]
-		[Collection(RunInNewWindowCollection)]
-		public class EntryTextInputFocusTests : TextInputFocusTests<EntryHandler, Entry>
-		{
-		}
 	}
 }
