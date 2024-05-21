@@ -40,11 +40,11 @@ Find the script for that on the DevDiv Azure DevOps instance, Engineering team, 
 
 param
 (
-    [string] $appiumVersion = '2.1.1',
-    [string] $windowsDriverVersion = '2.10.1',
-    [string] $androidDriverVersion = '2.29.4',
-    [string] $iOSDriverVersion = '5.2.0',
-    [string] $macDriverVersion = '1.7.2'
+    [string] $appiumVersion = '2.5.4',
+    [string] $windowsDriverVersion = '2.12.23',
+    [string] $androidDriverVersion = '3.5.1',
+    [string] $iOSDriverVersion = '7.16.1',
+    [string] $macDriverVersion = '1.17.3'
 )
 
 Write-Output  "Welcome to the Appium installer"
