@@ -25,18 +25,28 @@ namespace Microsoft.Maui.TestCases.Tests
 		public async Task CarouselViewSetPosition()
 		{
 			App.NavigateToGallery(CarouselViewGallery);
-			if (Device == TestDevice.Windows)
+			await Task.Delay(2000);
+			try
 			{
-				Assert.Ignore("For now not running on windows");
+				if (Device == TestDevice.Windows)
+				{
+					Assert.Ignore("For now not running on windows");
+				}
+				else
+				{
+					App.WaitForElement("lblPosition");
+					await Task.Delay(3000);
+					CheckLabelValue("lblPosition", "3");
+				}
 			}
-			else
+			catch
 			{
-				App.WaitForElement("lblPosition");
-				await Task.Delay(3000);
-				CheckLabelValue("lblPosition", "3");
+				App.Screenshot("Failed to Start on the correct position ");
 			}
-
-			Reset();
+			finally
+			{
+				Reset();
+			}
 		}
 
 		[Test]
@@ -44,26 +54,36 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void CarouselViewGoToNextCurrentItem()
 		{
 			App.NavigateToGallery(CarouselViewGallery);
-			if (Device == TestDevice.Windows)
+			try
 			{
-				Assert.Ignore("For now not running on windows");
+				if (Device == TestDevice.Windows)
+				{
+					Assert.Ignore("For now not running on windows");
+				}
+				else
+				{
+					int indexToTest = 3;
+					var index = indexToTest.ToString();
+					var nextIndex = (indexToTest + 1).ToString();
+
+					CheckLabelValue("lblPosition", index);
+					CheckLabelValue("lblCurrentItem", index);
+
+					App.Tap("btnNext");
+					CheckLabelValue("lblPosition", nextIndex);
+					CheckLabelValue("lblCurrentItem", nextIndex);
+					CheckLabelValue("lblSelected", nextIndex);
+					App.Tap("btnPrev");
+				}
 			}
-			else
+			catch
 			{
-				int indexToTest = 3;
-				var index = indexToTest.ToString();
-				var nextIndex = (indexToTest + 1).ToString();
-
-				CheckLabelValue("lblPosition", index);
-				CheckLabelValue("lblCurrentItem", index);
-
-				App.Tap("btnNext");
-				CheckLabelValue("lblPosition", nextIndex);
-				CheckLabelValue("lblCurrentItem", nextIndex);
-				CheckLabelValue("lblSelected", nextIndex);
-				App.Tap("btnPrev");
+				App.Screenshot("Failed to tap on btnNext");
 			}
-			Reset();
+			finally
+			{
+				Reset();
+			}
 		}
 
 		[Test]
@@ -71,26 +91,35 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void CarouselViewGoToPreviousCurrentItem()
 		{
 			App.NavigateToGallery(CarouselViewGallery);
-			if (Device == TestDevice.Windows)
+			try
 			{
-				Assert.Ignore("For now not running on windows");
+				if (Device == TestDevice.Windows)
+				{
+					Assert.Ignore("For now not running on windows");
+				}
+				else
+				{
+					int indexToTest = 3;
+					var index = indexToTest.ToString();
+					var previousIndex = (indexToTest - 1).ToString();
+
+					CheckLabelValue("lblPosition", index);
+					CheckLabelValue("lblCurrentItem", index);
+
+					App.Tap("btnPrev");
+					CheckLabelValue("lblPosition", previousIndex);
+					CheckLabelValue("lblCurrentItem", previousIndex);
+					CheckLabelValue("lblSelected", previousIndex);
+				}
 			}
-			else
+			catch
 			{
-				int indexToTest = 3;
-				var index = indexToTest.ToString();
-				var previousIndex = (indexToTest + 1).ToString();
-
-				CheckLabelValue("lblPosition", index);
-				CheckLabelValue("lblCurrentItem", index);
-
-				App.Tap("btnNext");
-				CheckLabelValue("lblPosition", previousIndex);
-				CheckLabelValue("lblCurrentItem", previousIndex);
-				CheckLabelValue("lblSelected", previousIndex);
-				App.Tap("btnPrev");
+				App.Screenshot("Failed to tap on btnPrev");
 			}
-			Reset();
+			finally
+			{
+				Reset();
+			}
 		}
 
 		[Test]
@@ -98,29 +127,39 @@ namespace Microsoft.Maui.TestCases.Tests
 		public async Task CarouselViewKeepPositionChangingOrientation()
 		{
 			App.NavigateToGallery(CarouselViewGallery);
-			if (Device == TestDevice.Mac || Device == TestDevice.Windows)
+			try
 			{
-				Assert.Ignore("For now not running on Desktop");
+				if (Device == TestDevice.Mac || Device == TestDevice.Windows)
+				{
+					Assert.Ignore("For now not running on Desktop");
+				}
+				else
+				{
+					int indexToTest = 3;
+					var index = indexToTest.ToString();
+
+					CheckLabelValue("lblPosition", index);
+					CheckLabelValue("lblCurrentItem", index);
+
+					App.SetOrientationLandscape();
+					App.SetOrientationPortrait();
+
+					await Task.Delay(3000);
+
+					CheckLabelValue("lblPosition", index);
+					CheckLabelValue("lblCurrentItem", index);
+				}
 			}
-			else
+			catch
 			{
-				int indexToTest = 3;
-				var index = indexToTest.ToString();
-
-				CheckLabelValue("lblPosition", index);
-				CheckLabelValue("lblCurrentItem", index);
-
-				App.SetOrientationLandscape();
-				App.SetOrientationPortrait();
-				
-				await Task.Delay(3000);
-
-				CheckLabelValue("lblPosition", index);
-				CheckLabelValue("lblCurrentItem", index);
+				App.Screenshot("Failed to tap on btnSetPosition");
 			}
-			Reset();
+			finally
+			{
+				Reset();
+			}
 		}
-		
+
 		void CheckLabelValue(string labelAutomationId, string value)
 		{
 			var result = App.FindElement(labelAutomationId).GetText();
