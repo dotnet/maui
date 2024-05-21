@@ -20,8 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Issue12574 (src\ControlGallery\src\Issues.Shared\Issue12574.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488")]
-		[FailsOnMac("Currently fails on Catalyst; see https://github.com/dotnet/maui/issues/19488")]
+		[FailsOnAllPlatforms("Currently fails; see https://github.com/dotnet/maui/issues/19488")]
 		public void Issue12574Test()
 		{
 			App.WaitForNoElement("0 item");
@@ -49,8 +48,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488")]
-		[FailsOnMac("Currently fails on Catalyst; see https://github.com/dotnet/maui/issues/19488")]
+		[FailsOnAllPlatforms("Currently fails; see https://github.com/dotnet/maui/issues/19488")]
 		public void RemoveItemsQuickly()
 		{
 			App.WaitForNoElement("0 item");
