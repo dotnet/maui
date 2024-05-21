@@ -6,6 +6,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class CarouselViewLoopNoFreeze : _IssuesUITest
 	{
+		readonly string _carouselAutomationId = "carouselView";
+		readonly string _btnRemoveAutomationId = "btnRemove";
+		readonly string _btnRemoveAllAutomationId = "btnRemoveAll"; 
+		
 		public CarouselViewLoopNoFreeze(TestDevice device)
 			: base(device)
 		{
@@ -13,16 +17,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CarouselView Loop=True default freezes iOS app";
 
-		/*
-		readonly string _carouselAutomationId = "carouselView";
-		readonly string _btnRemoveAutomationId = "btnRemove";
-		readonly string _btnRemoveAllAutomationId = "btnRemoveAll";
-
 		// Issue12574 (src\ControlGallery\src\Issues.Shared\Issue12574.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[Ignore("Currently fails")]
 		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488")]
+		[FailsOnMac("Currently fails on Catalyst; see https://github.com/dotnet/maui/issues/19488")]
 		public void Issue12574Test()
 		{
 			App.WaitForNoElement("0 item");
@@ -50,8 +49,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[Ignore("Currently fails")]
 		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488")]
+		[FailsOnMac("Currently fails on Catalyst; see https://github.com/dotnet/maui/issues/19488")]
 		public void RemoveItemsQuickly()
 		{
 			App.WaitForNoElement("0 item");
@@ -60,6 +59,5 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// If we haven't crashed, then the other button should be here
 			App.WaitForElement(_btnRemoveAutomationId);
 		}
-		*/
 	}
 }
