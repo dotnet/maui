@@ -14,16 +14,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		public async Task AppThemeShouldChange()
+		public void AppThemeShouldChange()
 		{
-			_ = App.WaitForElement("label");
+			_ = App.WaitForElement("labelVisibleOnlyInLightMode");
 
 			App.SetDarkTheme();
-			await Task.Delay(200);
+			_ = App.WaitForElement("labelVisibleOnlyInDarkMode");
 			VerifyScreenshot();
 
 			App.SetLightTheme();
-			await Task.Delay(200);
+			_ = App.WaitForElement("labelVisibleOnlyInLightMode");
 			VerifyScreenshot();
 		}
 	}
