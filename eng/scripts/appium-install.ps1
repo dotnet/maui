@@ -52,15 +52,35 @@ Write-Output  "Welcome to the Appium installer"
 Write-Output  "Node version"
 node -v
 
-Write-Output  "Installing appium $appiumVersion"
-npm install -g appium@$appiumVersion
+# If there's a ~/.appium folder, remove it as it can cause issues from v1
+# it might also generally have caching issues for us with our runs
+$appiumUserData = "$env:USERPROFILE/.appium"
+if (Test-Path $appiumUserData) {
+    Write-Output  "Removing $appiumUserData"
+    Remove-Item -Path $appiumUserData -Force -Recurse
+}
 
-write-Output  "Installed appium"
-appium -v
+# Check for an existing appium install version
+$appiumCurrentVersion = appium -v | Out-String
+if ($appiumCurrentVersion) {
+    Write-Output  "Existing Appium version $appiumCurrentVersion"
+} else {
+    Write-Output  "No Appium version installed"
+}
+
+# If current version does not match the one we want, uninstall and install the new version
+if ($appiumCurrentVersion -ne $appiumVersion) {
+    Write-Output  "Uninstalling appium $appiumCurrentVersion"
+    npm uninstall -g appium
+    Write-Output  "Uninstalled appium $appiumCurrentVersion"
+
+    Write-Output  "Installing appium $appiumVersion"
+    npm install -g appium@$appiumVersion
+    write-Output  "Installed appium $appiumVersion"   
+}
 
 Write-Output  "Installing appium doctor"
-npm install -g appium-doctor
-
+npm install -g @appium/doctor
 Write-Output  "Installed appium doctor"
 
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
