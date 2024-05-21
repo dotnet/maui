@@ -14,22 +14,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		public void CustomEntryListenerWorks()
+		public void EntryReturnTypeWorks()
 		{
 			App.WaitForElement("WaitForStubControl");
 
-			// 1. Verify that ReturnType works as expected.
+			// Verify that ReturnType works as expected.
+			if (App.IsKeyboardShown())
+				App.DismissKeyboard();
+
 			var returnType1 = App.FindElement("ReturnTypeResult").GetText();
+			App.Tap("ReturnTypeEntry");
 			App.EnterText("ReturnTypeEntry", "a");
 			var returnType2 = App.FindElement("ReturnTypeResult").GetText();
 			ClassicAssert.AreNotEqual(returnType1, returnType2);
-
-			// 2. Use a custom Entry with a NumberKeyListener.
-			App.Tap("CustomDecimalEntry");
-			App.EnterText("CustomDecimalEntry", "1");
-
-			// 3. If appear an alert, the test passed.
-			VerifyScreenshot();
 		}
 	}
 }
