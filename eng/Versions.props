@@ -29,7 +29,7 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>7.0.101</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>8.0.100</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>8.0.105</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>8.0.0</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
@@ -116,10 +116,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <MicrosoftNETTestSdkPackageVersion>17.6.0</MicrosoftNETTestSdkPackageVersion>
-    <XunitPackageVersion>2.8.0</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.8.0</XunitRunnerVisualStudioPackageVersion>
-    <XunitAssertPackageVersion>2.8.0</XunitAssertPackageVersion>
-    <XUnitAnalyzersPackageVersion>1.13.0</XUnitAnalyzersPackageVersion>
+    <XunitPackageVersion>2.5.3</XunitPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.5.3</XunitRunnerVisualStudioPackageVersion>
+    <XunitAssertPackageVersion>2.5.3</XunitAssertPackageVersion>
+    <XUnitAnalyzersPackageVersion>1.4.0</XUnitAnalyzersPackageVersion>
     <XunitAbstractionsPackageVersion>2.0.3</XunitAbstractionsPackageVersion>
     <NSubstitutePackageVersion>5.1.0</NSubstitutePackageVersion>
     <CoverletCollectorPackageVersion>6.0.0</CoverletCollectorPackageVersion>
