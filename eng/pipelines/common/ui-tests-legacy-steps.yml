@@ -10,9 +10,6 @@ parameters:
   targetSample: "dotnet-legacy-controlgallery"
   configuration : "Release"
 
-variables:
-  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-
 steps:
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
