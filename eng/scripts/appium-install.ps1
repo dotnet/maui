@@ -92,56 +92,58 @@ if ($appiumCurrentVersion -ne $appiumVersion) {
     write-Output  "Installed appium $appiumVersion"   
 }
 
+# Try to clean up old npm packages
+npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-windows-driver
+npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-xcuitest-driver
+npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-uiautomator2-driver
+npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-mac2-driver
+
+
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers $existingDrivers"
+
 if ($existingDrivers.windows) {
-    Write-Output  "Uninstalling appium driver windows"
-    # appium driver uninstall windows
-    npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-windows-driver
-    Write-Output  "Uninstalled appium driver windows"
+    Write-Output  "Updating appium driver windows"
+    appium driver update windows
+    Write-Output  "Updated appium driver windows"
+} else {
+    Write-Output  "Installing appium driver windows"
+    appium driver install windows
+    Write-Output  "Installed appium driver windows"
 }
 
 if ($existingDrivers.uiautomator2) {
-    Write-Output  "Uninstalling appium driver uiautomator2"
-    # appium driver uninstall uiautomator2
-    npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-uiautomator2-driver
-    Write-Output  "Uninstalled appium driver uiautomator2"
+    Write-Output  "Updating appium driver uiautomator2"
+    appium driver update uiautomator2
+    Write-Output  "Updated appium driver uiautomator2"
+} else {
+    Write-Output  "Installing appium driver uiautomator2"
+    appium driver install uiautomator2
+    Write-Output  "Installed appium driver uiautomator2"
 }
 
 if ($existingDrivers.xcuitest) {
-    Write-Output  "Uninstalling appium driver xcuitest"
-    # appium driver uninstall xcuitest
-    npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-xcuitest-driver
-    Write-Output  "Uninstalled appium driver xcuitest"
+    Write-Output  "Updating appium driver xcuitest"
+    appium driver update xcuitest
+    Write-Output  "Updated appium driver xcuitest"
+} else {
+    Write-Output  "Installing appium driver xcuitest"
+    appium driver install xcuitest
+    Write-Output  "Installed appium driver xcuitest"
 }
 
 if ($existingDrivers.mac2) {
-    Write-Output  "Uninstalling appium driver mac2"
-    # appium driver uninstall mac2
-    npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-mac2-driver
-    Write-Output  "Uninstalled appium driver mac2"
+    Write-Output  "Updating appium driver mac2"
+    appium driver update mac2
+    Write-Output  "Updated appium driver mac2"
+} else {
+    Write-Output  "Installing appium driver mac2"
+    appium driver install mac2
+    Write-Output  "Installed appium driver mac2"
 }
 
 $drivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers after cleaup $drivers"
-
-Write-Output  "We will now install the appium drivers windows $windowsDriverVersion, uiautomator2 $androidDriverVersion, xcuitest $iOSDriverVersion and mac2 $macDriverVersion"
-
-Write-Output  "Installing appium driver windows $windowsDriverVersion"
-appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
-Write-Output  "Installed appium driver windows"
-
-Write-Output  "Installing appium driver uiautomator2 $androidDriverVersion"
-appium driver install uiautomator2@$androidDriverVersion
-Write-Output  "Installed appium driver uiautomator2"
-
-Write-Output  "Installing appium driver xcuitest $iOSDriverVersion"
-appium driver install xcuitest@$iOSDriverVersion
-Write-Output  "Installed appium driver xcuitest"
-
-Write-Output  "Installing appium driver mac2 $macDriverVersion"
-appium driver install mac2@$macDriverVersion
-Write-Output  "Installed appium driver mac2"
 
 Write-Output  "Check everything is installed correctly with appium doctor"
 appium driver doctor appium-windows-driver || & { "ignore failure"; $global:LASTEXITCODE = 0 }
