@@ -58,6 +58,10 @@
 
     <Error Condition="'$(_UpdateBuildNumber)' == '1.0.0'" Text="Unexpected _UpdateBuildNumber: '$(_UpdateBuildNumber)'" />
 
+    <PropertyGroup Condition="'@(VersionMetadata)' != '' and '$(_UpdateBuildNumber)' != ''">
+      <_UpdateBuildNumber>$(_UpdateBuildNumber)+@(VersionMetadata -> '%(Identity)', '.')</_UpdateBuildNumber>
+    </PropertyGroup>
+
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
     <Message Condition="'$(_UpdateBuildNumber)' != ''" Importance="high" Text="##vso[build.updatebuildnumber]$(_UpdateBuildNumber)"/>
 
