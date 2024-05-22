@@ -56,8 +56,8 @@ node -v
 $npmLogLevel = 'verbose'
 
 # Create logs directory for npm logs if it doesn't exist
-if (!Test-Path $logsDir) {
-    Create-Item -Path $logsDir -ItemType Directory
+if (!(Test-Path $logsDir -PathType Container)) {
+    Create-Item -ItemType Directory -Path $logsDir
 }
 
 # If there's a ~/.appium folder, remove it as it can cause issues from v1
