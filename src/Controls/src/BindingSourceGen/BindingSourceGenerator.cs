@@ -39,7 +39,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		{
 
 			var fileName = $"{binding.Location.FilePath}/GeneratedBindableObjectExtensions-{binding.Location.Line}-{binding.Location.Column}.g.cs";
-			spc.AddSource(fileName, BindingCodeWriter.GenerateBinding(binding, BindingGenerationUtilities.ComputeSha256Hash(fileName)));
+			spc.AddSource(fileName, BindingCodeWriter.GenerateBinding(binding, (uint)Math.Abs(binding.Location.GetHashCode())));
 		});
 	}
 
