@@ -20,17 +20,8 @@ namespace Maui.Controls.Sample
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-				});
-
-			Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(DecimalEntry), (handler, view) =>
-			{
-				if (view is DecimalEntry)
-				{
-#if ANDROID
-					handler.PlatformView.KeyListener = new Platform.NumericKeyListener(handler.PlatformView.InputType);
-#endif
-				}
-			});
+				})
+				.Issue21109AddMappers();
 
 			return appBuilder.Build();
 		}

@@ -23,7 +23,7 @@
       AutomationId="ReturnTypeResult"/>
     <Label    
       Text="Custom DecimalEntry" />
-    <controls:DecimalEntry 
+    <controls:Issue21109DecimalEntry 
       AutomationId="CustomDecimalEntry"/>
   </VerticalStackLayout>
 </ContentPage>

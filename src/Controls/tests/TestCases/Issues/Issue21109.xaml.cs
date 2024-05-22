@@ -2,6 +2,7 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Hosting;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -33,11 +34,32 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	public class DecimalEntry : Entry
+	public class Issue21109DecimalEntry : Entry
 	{
-		public DecimalEntry()
+		public Issue21109DecimalEntry()
 		{
 			Keyboard = Keyboard.Numeric;
+		}
+	}
+
+	public static class Issue21109Extensions
+	{
+		public static MauiAppBuilder Issue21109AddMappers(this MauiAppBuilder builder)
+		{
+			builder.ConfigureMauiHandlers(handlers => 
+			{
+				Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(Issue21109DecimalEntry), (handler, view) =>
+				{
+					if (view is Issue21109DecimalEntry)
+					{
+#if ANDROID
+						handler.PlatformView.KeyListener = new Platform.Issue21109NumericKeyListener(handler.PlatformView.InputType);
+#endif
+					}
+				});
+			});
+
+			return builder;
 		}
 	}
 }

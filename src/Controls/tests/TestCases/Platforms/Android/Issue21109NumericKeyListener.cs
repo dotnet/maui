@@ -6,13 +6,13 @@ using AView = Android.Views.View;
 
 namespace Maui.Controls.Sample.Platform;
 
-public class NumericKeyListener : NumberKeyListener
+public class Issue21109NumericKeyListener : NumberKeyListener
 {
     public override InputTypes InputType { get; }
 
     protected override char[] GetAcceptedChars() => "0123456789-,.".ToCharArray();
 
-    public NumericKeyListener(InputTypes inputType)
+    public Issue21109NumericKeyListener(InputTypes inputType)
     {
         InputType = inputType;
     }
