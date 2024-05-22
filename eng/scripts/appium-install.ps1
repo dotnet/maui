@@ -96,25 +96,29 @@ $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers $existingDrivers"
 if ($existingDrivers.windows) {
     Write-Output  "Uninstalling appium driver windows"
-    appium driver uninstall windows
+    # appium driver uninstall windows
+    npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-windows-driver
     Write-Output  "Uninstalled appium driver windows"
 }
 
 if ($existingDrivers.uiautomator2) {
     Write-Output  "Uninstalling appium driver uiautomator2"
-    appium driver uninstall uiautomator2
+    # appium driver uninstall uiautomator2
+    npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-uiautomator2-driver
     Write-Output  "Uninstalled appium driver uiautomator2"
 }
 
 if ($existingDrivers.xcuitest) {
     Write-Output  "Uninstalling appium driver xcuitest"
-    appium driver uninstall xcuitest
+    # appium driver uninstall xcuitest
+    npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-xcuitest-driver
     Write-Output  "Uninstalled appium driver xcuitest"
 }
 
 if ($existingDrivers.mac2) {
     Write-Output  "Uninstalling appium driver mac2"
-    appium driver uninstall mac2
+    # appium driver uninstall mac2
+    npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-mac2-driver
     Write-Output  "Uninstalled appium driver mac2"
 }
 
