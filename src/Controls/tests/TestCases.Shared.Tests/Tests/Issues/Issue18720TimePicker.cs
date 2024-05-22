@@ -15,11 +15,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.TimePicker)]
-		public void SettingTimePickerBackgroundFromHandler()
+		public async Task SettingTimePickerBackgroundFromHandler()
 		{
 			App.WaitForElement("TestButton");
 			App.Tap("TestButton");
 			App.WaitForElement("CustomTimePicker1");
+
+			async Task.Delay(500);
+
 			VerifyScreenshot();
 		}
 	}

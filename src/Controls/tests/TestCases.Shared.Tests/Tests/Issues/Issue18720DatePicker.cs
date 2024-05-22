@@ -15,11 +15,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.DatePicker)]
-		public void SettingDatePickerBackgroundFromHandler()
+		public async Task SettingDatePickerBackgroundFromHandler()
 		{
 			App.WaitForElement("TestButton");
 			App.Tap("TestButton");
 			App.WaitForElement("CustomDatePicker1");
+
+			await Task.Delay(500);
+
 			VerifyScreenshot();
 		}
 	}

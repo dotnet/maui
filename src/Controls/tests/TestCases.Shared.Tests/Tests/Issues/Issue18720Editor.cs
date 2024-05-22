@@ -15,11 +15,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		public void SettingEditorBackgroundFromHandler()
+		public async Task SettingEditorBackgroundFromHandler()
 		{
 			App.WaitForElement("TestButton");
 			App.Tap("TestButton");
 			App.WaitForElement("CustomEditor1");
+
+			await Task.Delay(500);
+
 			VerifyScreenshot();
 		}
 	}

@@ -15,11 +15,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		public void SettingEntryBackgroundFromHandler()
+		public async Task SettingEntryBackgroundFromHandler()
 		{
 			App.WaitForElement("TestButton");
 			App.Tap("TestButton");
 			App.WaitForElement("CustomEntry1");
+
+			await Task.Delay(500);
+
 			VerifyScreenshot();
 		}
 	}
