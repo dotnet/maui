@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Platform
 			//Update UpdateCharacterSpacing
 			if (textStyle.CharacterSpacing != 0)
 			{
-			attributedString = attributedString.WithCharacterSpacing(textStyle.CharacterSpacing);
+				attributedString = attributedString.WithCharacterSpacing(textStyle.CharacterSpacing);
 			}
 
 			//Update Text Color
