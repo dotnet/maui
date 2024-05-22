@@ -9,6 +9,9 @@ parameters:
   agentPoolAccessToken: ''
   configuration : "Release"
 
+variables:
+  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+
 steps:
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
@@ -59,6 +62,10 @@ steps:
       ls -al $(npm root -g)/appium
       echo "##[endgroup]"
 
+      echo "##[group]Running ls -al $(npm root -g)/.appium"
+      ls -al $(npm root -g)/.appium
+      echo "##[endgroup]"
+
       echo "##[group]Running ls -al $(npm root -g)/.appium-????????"
       ls -al $(npm root -g)/.appium-????????
       echo "##[endgroup]"
@@ -80,10 +87,13 @@ steps:
 
   # Clean up any leftover cached folders of appium and appium-doctor node modules
   - bash: |
+      rm -rf $(npm root -g)/.appium
       rm -rf $(npm root -g)/.appium-????????
       rm -rf $(npm root -g)/.appium-doctor-????????
-    displayName: "Delete temp .appium-???????? and .appium-doctor-???????? folders"
+    displayName: "Delete temp .appium and .appium-???????? and .appium-doctor-???????? folders"
     continueOnError: true
+    env:
+      APPIUM_HOME: $(APPIUM_HOME)
 
   - pwsh: |
       $fullLogsDir = Join-Path "$(LogDirectory)" "npm"
@@ -91,6 +101,8 @@ steps:
     displayName: "Install Appium (Drivers)"
     continueOnError: false
     retryCountOnTaskFailure: 1
+    env:
+      APPIUM_HOME: $(APPIUM_HOME)
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
@@ -119,6 +131,8 @@ steps:
     displayName: $(Agent.JobName)
     ${{ if ne(parameters.platform, 'android')}}:
       retryCountOnTaskFailure: 1
+    env:
+      APPIUM_HOME: $(APPIUM_HOME)
 
   - bash: |
       suffix=$(date +%Y%m%d%H%M%S)
