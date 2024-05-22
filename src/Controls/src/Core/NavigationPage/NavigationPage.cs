@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null,
 			propertyChanging: TitleViewPropertyChanging, propertyChanged: (bo, oldV, newV) => bo.AddRemoveLogicalChildren(oldV, newV));
 
-		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null, propertyChanged: OnCurrentPageChanged);
+		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly(nameof(CurrentPage), typeof(Page), typeof(NavigationPage), null, propertyChanged: OnCurrentPageChanged);
 
 		/// <summary>Bindable property for <see cref="CurrentPage"/>.</summary>
 		public static readonly BindableProperty CurrentPageProperty = CurrentPagePropertyKey.BindableProperty;
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls
 		public static bool GetHasBackButton(Page page)
 		{
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 			return (bool)page.GetValue(HasBackButtonProperty);
 		}
 
@@ -332,7 +332,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetHasBackButton(Page page, bool value)
 		{
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 			page.SetValue(HasBackButtonProperty, value);
 		}
 
