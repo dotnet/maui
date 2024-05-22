@@ -39,7 +39,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{BindingGenerationUtilities.ComputeSha256Hash("Path\\To\\Program.cs/GeneratedBindableObjectExtensions-3-7.g.cs")}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<string, int> getter,
@@ -78,7 +78,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
+            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-3-7.g.cs"]);
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 6, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{BindingGenerationUtilities.ComputeSha256Hash("Path\\To\\Program.cs/GeneratedBindableObjectExtensions-6-7.g.cs")}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, int> getter,
@@ -179,7 +179,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
+            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-6-7.g.cs"]);
     }
 
     [Fact]
@@ -234,7 +234,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{BindingGenerationUtilities.ComputeSha256Hash("Path\\To\\Program.cs/GeneratedBindableObjectExtensions-7-7.g.cs")}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, int> getter,
@@ -283,7 +283,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
+            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-7-7.g.cs"]);
     }
 
     public static IEnumerable<object[]> GenerateSimpleBindingWhenNullableDisabledAndPropertyNullableData =>
@@ -441,7 +441,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{BindingGenerationUtilities.ComputeSha256Hash("Path\\To\\Program.cs/GeneratedBindableObjectExtensions-7-7.g.cs")}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, global::MyNamespace.C?> getter,
@@ -488,7 +488,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
+            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-7-7.g.cs"]);
     }
 
     [Fact]
@@ -557,7 +557,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{BindingGenerationUtilities.ComputeSha256Hash("Path\\To\\Program.cs/GeneratedBindableObjectExtensions-7-7.g.cs")}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, global::MyNamespace.D?> getter,
@@ -605,7 +605,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
+            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-7-7.g.cs"]);
     }
 
     [Theory]
@@ -674,7 +674,7 @@ public class IntegrationTests
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 4, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{BindingGenerationUtilities.ComputeSha256Hash("Path\\To\\Program.cs/GeneratedBindableObjectExtensions-4-7.g.cs")}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
@@ -729,7 +729,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
+            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-4-7.g.cs"]);
     }
 
     [Fact]
@@ -796,7 +796,7 @@ public class IntegrationTests
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 4, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{BindingGenerationUtilities.ComputeSha256Hash("Path\\To\\Program.cs/GeneratedBindableObjectExtensions-4-7.g.cs")}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
@@ -847,7 +847,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
+            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-4-7.g.cs"]);
     }
 
     [Fact]
@@ -904,7 +904,7 @@ public class IntegrationTests
                 {
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{BindingGenerationUtilities.ComputeSha256Hash("Path\\To\\Program.cs/GeneratedBindableObjectExtensions-3-7.g.cs")}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A, int> getter,
@@ -948,7 +948,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
+            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-3-7.g.cs"]);
     }
 
     [Fact]
@@ -1010,7 +1010,7 @@ public class IntegrationTests
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 6, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{BindingGenerationUtilities.ComputeSha256Hash("Path\\To\\Program.cs/GeneratedBindableObjectExtensions-6-7.g.cs")}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
@@ -1063,6 +1063,6 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["GeneratedBindableObjectExtensions1.g.cs"]);
+            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-6-7.g.cs"]);
     }
 }

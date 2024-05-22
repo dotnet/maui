@@ -71,9 +71,9 @@ internal static class SourceGenHelpers
         return CreateCompilationFromSyntaxTrees([CSharpSyntaxTree.ParseText(source, ParseOptions, path: @"Path\To\Program.cs")]);
     }
 
-    internal static Compilation CreateCompilation(List<string> sources)
+    internal static Compilation CreateCompilation(Dictionary<string, string> sources)
     {
-        var syntaxTrees = sources.Select(source => CSharpSyntaxTree.ParseText(source, ParseOptions, path: $@"Path\To\Program{sources.IndexOf(source)}.cs")).ToList();
+        var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s.Value, ParseOptions, path: s.Key)).ToList(); 
         return CreateCompilationFromSyntaxTrees(syntaxTrees);
     }
 }

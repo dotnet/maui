@@ -1,8 +1,10 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
-internal static class BindingGenerationUtilities
+public static class BindingGenerationUtilities
 {
     internal static bool IsTypeNullable(ITypeSymbol typeInfo, bool enabledNullable)
     {
@@ -41,5 +43,15 @@ internal static class BindingGenerationUtilities
         }
 
         return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+    }
+
+    public static uint ComputeSha256Hash(string rawData)
+    {
+        using SHA256 sha256Hash = SHA256.Create();
+        byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+
+        uint hashInt = BitConverter.ToUInt32(bytes, 0);
+
+        return hashInt;
     }
 }

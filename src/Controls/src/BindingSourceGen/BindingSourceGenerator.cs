@@ -27,18 +27,19 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var bindings = bindingsWithDiagnostics
 			.Where(static binding => !binding.HasDiagnostics)
 			.Select(static (binding, t) => binding.Value)
-			.WithTrackingName(TrackingNames.Bindings)
-			.Collect();
+			.WithTrackingName(TrackingNames.Bindings);
 
-
-		context.RegisterSourceOutput(bindings, (spc, bindings) =>
+		
+		context.RegisterPostInitializationOutput(spc =>
 		{
 			spc.AddSource("GeneratedBindableObjectExtensionsCommon.g.cs", BindingCodeWriter.GenerateCommonCode());
+		});
 
-			for (int i = 0; i < bindings.Length; i++)
-			{
-				spc.AddSource($"GeneratedBindableObjectExtensions{i+1}.g.cs", BindingCodeWriter.GenerateBinding(bindings[i], i + 1));
-			}
+		context.RegisterSourceOutput(bindings, (spc, binding) =>
+		{
+
+			var fileName = $"{binding.Location.FilePath}/GeneratedBindableObjectExtensions-{binding.Location.Line}-{binding.Location.Column}.g.cs";
+			spc.AddSource(fileName, BindingCodeWriter.GenerateBinding(binding, BindingGenerationUtilities.ComputeSha256Hash(fileName)));
 		});
 	}
 

@@ -83,7 +83,7 @@ public static class BindingCodeWriter
 	""";
 
 
-	public static string GenerateBinding(SetBindingInvocationDescription binding, int id)
+	public static string GenerateBinding(SetBindingInvocationDescription binding, uint id)
 	{
 		if (!binding.NullableContextEnabled)
 		{
@@ -95,7 +95,7 @@ public static class BindingCodeWriter
 		return GenerateBindingCode(bindingMethod);
 	}
 
-	private static string GenerateBindingMethod(SetBindingInvocationDescription binding, int id)
+	private static string GenerateBindingMethod(SetBindingInvocationDescription binding, uint id)
 	{
 		using var builder = new BindingInterceptorCodeBuilder(indent: 2);
 		builder.AppendSetBindingInterceptor(id: id, binding: binding);
@@ -119,7 +119,7 @@ public static class BindingCodeWriter
 			_indentedTextWriter = new IndentedTextWriter(_stringWriter, "\t") { Indent = indent };
 		}
 
-		public void AppendSetBindingInterceptor(int id, SetBindingInvocationDescription binding)
+		public void AppendSetBindingInterceptor(uint id, SetBindingInvocationDescription binding)
 		{
 			AppendLine(GeneratedCodeAttribute);
 			AppendInterceptorAttribute(binding.Location);
