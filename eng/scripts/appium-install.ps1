@@ -89,10 +89,6 @@ if ($appiumCurrentVersion -ne $appiumVersion) {
     write-Output  "Installed appium $appiumVersion"   
 }
 
-Write-Output  "Installing appium doctor"
-npm install -g @appium/doctor
-Write-Output  "Installed appium doctor"
-
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers $existingDrivers"
 if ($existingDrivers.windows) {
@@ -141,6 +137,9 @@ appium driver install mac2@$macDriverVersion --logs-dir=$logsDir --loglevel $npm
 Write-Output  "Installed appium driver mac2"
 
 Write-Output  "Check everything is installed correctly with appium doctor"
-appium-doctor
+appium driver doctor appium-windows-driver --logs-dir=$logsDir --loglevel $npmLogLevel
+appium driver doctor uiautomator2 --logs-dir=$logsDir --loglevel $npmLogLevel
+appium driver doctor xcuitest --logs-dir=$logsDir --loglevel $npmLogLevel
+appium driver doctor mac2 --logs-dir=$logsDir --loglevel $npmLogLevel
 
 Write-Output  "Done, thanks!"
