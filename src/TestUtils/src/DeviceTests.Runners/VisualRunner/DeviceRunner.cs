@@ -286,17 +286,10 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 			var deviceExecSink = new DeviceExecutionSink(xunitTestCases, this, context);
 
-			IExecutionSink resultsSink = new ExecutionSink(deviceExecSink, new ExecutionSinkOptions
-			{
-				CancelThunk = () => cancelled
-			});
+			IExecutionSink resultsSink = new DelegatingExecutionSummarySink(deviceExecSink, () => cancelled);
+
 			if (longRunningSeconds > 0)
-				resultsSink = new ExecutionSink(resultsSink, new ExecutionSinkOptions
-				{	
-					CancelThunk = () => cancelled,
-					DiagnosticMessageSink = diagSink,
-					LongRunningTestTime = TimeSpan.FromSeconds(longRunningSeconds)
-				});
+				resultsSink = new DelegatingLongRunningTestDetectionSink(resultsSink, TimeSpan.FromSeconds(longRunningSeconds), diagSink);
 
 			var assm = new XunitProjectAssembly() { AssemblyFilename = runInfo.AssemblyFileName };
 			deviceExecSink.OnMessage(new TestAssemblyExecutionStarting(assm, executionOptions));
