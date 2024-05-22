@@ -15,13 +15,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("button");
 
-			//Border should have radius
-			VerifyScreenshot();
+			// Border should have radius
+			VerifyScreenshot("BindingOnStrokeShapeWithRadius");
 
 			App.Click("button");
 
-			//The test passes if border radius is equal to 0
-			VerifyScreenshot();
+			// The test passes if border radius is equal to 0
+			VerifyScreenshot("BindingOnStrokeShapeWithoutRadius");
 		}
 	}
 }
