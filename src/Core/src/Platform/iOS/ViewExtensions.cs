@@ -16,6 +16,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsEnabled(this UIView platformView, IView view)
 		{
+			if (platformView is UIResponder &&
+				platformView.GestureRecognizers != null)
+			{
+				foreach (var gesture in platformView.GestureRecognizers)
+				{
+					gesture.Enabled = view.IsEnabled;
+				}
+			}
+
 			if (platformView is not UIControl uiControl)
 				return;
 
