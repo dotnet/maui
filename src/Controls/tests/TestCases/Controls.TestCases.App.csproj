@@ -51,7 +51,7 @@
     <MauiFont Include="Resources\Fonts\OpenSans-Regular.ttf" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Include="..\CustomAttributes\*.cs" />
     <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
