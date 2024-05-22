@@ -52,14 +52,13 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true' or '$(IsTestProject)' == 'true'">true</_SkipUpdateBuildNumber>
+      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true' or '$(IsTestProject)' == 'true' or '$(IsPackable)' == 'false'">true</_SkipUpdateBuildNumber>
       <_UpdateBuildNumber Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)' AND '$(_SkipUpdateBuildNumber)' != 'true'">$(PackageVersion)</_UpdateBuildNumber>
     </PropertyGroup>
 
     <Error Condition="'$(_UpdateBuildNumber)' == '1.0.0'" Text="Unexpected _UpdateBuildNumber: '$(_UpdateBuildNumber)'" />
 
     <PropertyGroup Condition="'$(_UpdateBuildNumber)' != ''">
-      <_UpdateBuildNumber Condition="'$(PreReleaseVersionLabel)' != ''">$(_UpdateBuildNumber)+$(PreReleaseVersionLabel)</_UpdateBuildNumber>
       <_UpdateBuildNumber Condition="'@(VersionMetadata)' != ''">$(_UpdateBuildNumber)+@(VersionMetadata -> '%(Identity)', '.')</_UpdateBuildNumber>
     </PropertyGroup>
 
