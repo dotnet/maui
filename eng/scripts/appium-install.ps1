@@ -108,13 +108,15 @@ if ($existingDrivers.windows) {
     Write-Output  "Updated appium driver windows"
 } else {
     Write-Output  "Installing appium driver windows"
-    appium driver install windows
+    #appium driver install windows
+    npm install --logs-dir=$logsDir --loglevel $npmLogLevel --save-dev --no-progress --no-audit --omit=peer --save-exact --global-style --no-package-lock appium-windows-driver@$windowsDriverVersion --json
     Write-Output  "Installed appium driver windows"
 }
 
 if ($existingDrivers.uiautomator2) {
     Write-Output  "Updating appium driver uiautomator2"
-    appium driver update uiautomator2
+    #appium driver update uiautomator2
+    npm install --logs-dir=$logsDir --loglevel $npmLogLevel --save-dev --no-progress --no-audit --omit=peer --save-exact --global-style --no-package-lock appium-uiautomator2-driver@$androidDriverVersion --json
     Write-Output  "Updated appium driver uiautomator2"
 } else {
     Write-Output  "Installing appium driver uiautomator2"
@@ -128,7 +130,8 @@ if ($existingDrivers.xcuitest) {
     Write-Output  "Updated appium driver xcuitest"
 } else {
     Write-Output  "Installing appium driver xcuitest"
-    appium driver install xcuitest
+    #appium driver install xcuitest
+    npm install --logs-dir=$logsDir --loglevel $npmLogLevel --save-dev --no-progress --no-audit --omit=peer --save-exact --global-style --no-package-lock appium-xcuitest-driver@$iOSDriverVersion --json
     Write-Output  "Installed appium driver xcuitest"
 }
 
@@ -138,7 +141,8 @@ if ($existingDrivers.mac2) {
     Write-Output  "Updated appium driver mac2"
 } else {
     Write-Output  "Installing appium driver mac2"
-    appium driver install mac2
+    #appium driver install mac2
+    npm install --logs-dir=$logsDir --loglevel $npmLogLevel --save-dev --no-progress --no-audit --omit=peer --save-exact --global-style --no-package-lock appium-mac2-driver@$macDriverVersion --json
     Write-Output  "Installed appium driver mac2"
 }
 
