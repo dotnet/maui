@@ -73,10 +73,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			Context context = mauiContext.Context;
 
-			while (items.Count < menu.Size())
-			{
-				menu.RemoveItem(menu.GetItem(menu.Size() - 1).ItemId);
-			}
+			menu.Clear();
 
 			int numberOfMenuItems = items.Count;
 			bool showMore = numberOfMenuItems > maxBottomItems;
