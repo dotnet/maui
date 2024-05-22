@@ -65,11 +65,11 @@ if (!(Test-Path $logsDir -PathType Container)) {
 
 # If there's a ~/.appium folder, remove it as it can cause issues from v1
 # it might also generally have caching issues for us with our runs
-$appiumUserData = (Join-Path $env:USERPROFILE ".appium")
-if (Test-Path $appiumUserData) {
-    Write-Output  "Removing $appiumUserData"
-    Remove-Item -Path $appiumUserData -Force -Recurse
-}
+# $appiumUserData = (Join-Path $env:USERPROFILE ".appium")
+# if (Test-Path $appiumUserData) {
+#     Write-Output  "Removing $appiumUserData"
+#     Remove-Item -Path $appiumUserData -Force -Recurse
+# }
 
 # Check for an existing appium install version
 $appiumCurrentVersion = ""
