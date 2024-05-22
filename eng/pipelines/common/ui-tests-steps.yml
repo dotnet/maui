@@ -85,7 +85,7 @@ steps:
     displayName: "Delete temp .appium-???????? and .appium-doctor-???????? folders"
     continueOnError: true
 
-  - pwsh: ./eng/scripts/appium-install.ps1
+  - pwsh: ./eng/scripts/appium-install.ps1 -logsDir $(LogDirectory)/npm/
     displayName: "Install Appium (Drivers)"
     continueOnError: false
     retryCountOnTaskFailure: 1

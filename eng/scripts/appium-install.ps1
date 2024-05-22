@@ -44,13 +44,21 @@ param
     [string] $windowsDriverVersion = '2.12.23',
     [string] $androidDriverVersion = '3.5.1',
     [string] $iOSDriverVersion = '7.16.1',
-    [string] $macDriverVersion = '1.17.3'
+    [string] $macDriverVersion = '1.17.3',
+    [string] $logsDir = '../appium-logs'
 )
 
 Write-Output  "Welcome to the Appium installer"
 
 Write-Output  "Node version"
 node -v
+
+$npmLogLevel = 'verbose'
+
+# Create logs directory for npm logs if it doesn't exist
+if (!Test-Path $logsDir) {
+    Create-Item -Path $logsDir -ItemType Directory
+}
 
 # If there's a ~/.appium folder, remove it as it can cause issues from v1
 # it might also generally have caching issues for us with our runs
@@ -73,11 +81,11 @@ if ($appiumCurrentVersion) {
 # If current version does not match the one we want, uninstall and install the new version
 if ($appiumCurrentVersion -ne $appiumVersion) {
     Write-Output  "Uninstalling appium $appiumCurrentVersion"
-    npm uninstall -g appium
+    npm uninstall -g appium --logs-dir=$logsDir --loglevel $npmLogLevel
     Write-Output  "Uninstalled appium $appiumCurrentVersion"
 
     Write-Output  "Installing appium $appiumVersion"
-    npm install -g appium@$appiumVersion
+    npm install -g appium@$appiumVersion --logs-dir=$logsDir --loglevel $npmLogLevel
     write-Output  "Installed appium $appiumVersion"   
 }
 
@@ -89,25 +97,25 @@ $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers $existingDrivers"
 if ($existingDrivers.windows) {
     Write-Output  "Uninstalling appium driver windows"
-    appium driver uninstall windows
+    appium driver uninstall windows --logs-dir=$logsDir --loglevel $npmLogLevel
     Write-Output  "Uninstalled appium driver windows"
 }
 
 if ($existingDrivers.uiautomator2) {
     Write-Output  "Uninstalling appium driver uiautomator2"
-    appium driver uninstall uiautomator2
+    appium driver uninstall uiautomator2 --logs-dir=$logsDir --loglevel $npmLogLevel
     Write-Output  "Uninstalled appium driver uiautomator2"
 }
 
 if ($existingDrivers.xcuitest) {
     Write-Output  "Uninstalling appium driver xcuitest"
-    appium driver uninstall xcuitest
+    appium driver uninstall xcuitest --logs-dir=$logsDir --loglevel $npmLogLevel
     Write-Output  "Uninstalled appium driver xcuitest"
 }
 
 if ($existingDrivers.mac2) {
     Write-Output  "Uninstalling appium driver mac2"
-    appium driver uninstall mac2
+    appium driver uninstall mac2 --logs-dir=$logsDir --loglevel $npmLogLevel
     Write-Output  "Uninstalled appium driver mac2"
 }
 
@@ -117,19 +125,19 @@ Write-Output "List of installed drivers after cleaup $drivers"
 Write-Output  "We will now install the appium drivers windows $windowsDriverVersion, uiautomator2 $androidDriverVersion, xcuitest $iOSDriverVersion and mac2 $macDriverVersion"
 
 Write-Output  "Installing appium driver windows $windowsDriverVersion"
-appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
+appium driver install --source=npm appium-windows-driver@$windowsDriverVersion --logs-dir=$logsDir --loglevel $npmLogLevel
 Write-Output  "Installed appium driver windows"
 
 Write-Output  "Installing appium driver uiautomator2 $androidDriverVersion"
-appium driver install uiautomator2@$androidDriverVersion
+appium driver install uiautomator2@$androidDriverVersion --logs-dir=$logsDir --loglevel $npmLogLevel
 Write-Output  "Installed appium driver uiautomator2"
 
 Write-Output  "Installing appium driver xcuitest $iOSDriverVersion"
-appium driver install xcuitest@$iOSDriverVersion
+appium driver install xcuitest@$iOSDriverVersion --logs-dir=$logsDir --loglevel $npmLogLevel
 Write-Output  "Installed appium driver xcuitest"
 
 Write-Output  "Installing appium driver mac2 $macDriverVersion"
-appium driver install mac2@$macDriverVersion
+appium driver install mac2@$macDriverVersion --logs-dir=$logsDir --loglevel $npmLogLevel
 Write-Output  "Installed appium driver mac2"
 
 Write-Output  "Check everything is installed correctly with appium doctor"
