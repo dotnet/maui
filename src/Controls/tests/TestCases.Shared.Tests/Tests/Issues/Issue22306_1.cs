@@ -14,12 +14,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         [Category(UITestCategories.Button)]
         public void ButtonMeasuresLargerThanDefault()
         {
-            this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
             var rotateButtonRect = App.WaitForElement("RotateButton").GetRect();
             var button3Rect = App.WaitForElement("Button3").GetRect();
 
-            Assert.That(rotateButtonRect.Height > button3Rect.Height);
+            Assert.That(rotateButtonRect.Height > button3Rect.Height, $"rotateButtonRect.Height is {rotateButtonRect.Height} is not greater than button3Rect.Height {button3Rect.Height}");
         }
 
         [Test]
@@ -39,8 +37,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
             App.WaitForElement("RotateButton").Tap();
             VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Left");
-
-
         }
     }
 }
