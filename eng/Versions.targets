@@ -52,14 +52,14 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(IsTestProject)' == 'true'">true</_SkipUpdateBuildNumber>
+      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true' or '$(IsTestProject)' == 'true'">true</_SkipUpdateBuildNumber>
     </PropertyGroup>
     <PropertyGroup Condition="'$(_SkipUpdateBuildNumber)' != 'true'">
       <_UpdateBuildNumber Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</_UpdateBuildNumber>
       <_UpdateBuildNumber Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)'">$(PackageVersion)</_UpdateBuildNumber>
     </PropertyGroup>
 
-    <Error Condition="'$(_UpdateBuildNumber)' == '1.0.0'" Text="Unexpected _UpdateBuildNumber: '$(_UpdateBuildNumber)' - '$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(IsTestProject)' == 'true'" />
+    <Error Condition="'$(_UpdateBuildNumber)' == '1.0.0'" Text="Unexpected _UpdateBuildNumber: '$(_UpdateBuildNumber)'" />
     <Message Condition="'$(_UpdateBuildNumber)' != ''" Importance="high" Text="##vso[build.addbuildtag]$(_UpdateBuildNumber)"/>
 
   </Target>
