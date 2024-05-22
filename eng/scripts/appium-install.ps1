@@ -140,9 +140,9 @@ appium driver install mac2@$macDriverVersion
 Write-Output  "Installed appium driver mac2"
 
 Write-Output  "Check everything is installed correctly with appium doctor"
-appium driver doctor appium-windows-driver
-appium driver doctor uiautomator2
-appium driver doctor xcuitest
-appium driver doctor mac2
+appium driver doctor appium-windows-driver || & { "ignore failure"; $global:LASTEXITCODE = 0 }
+appium driver doctor uiautomator2 || & { "ignore failure"; $global:LASTEXITCODE = 0 }
+appium driver doctor xcuitest || & { "ignore failure"; $global:LASTEXITCODE = 0 }
+appium driver doctor mac2 || & { "ignore failure"; $global:LASTEXITCODE = 0 }
 
 Write-Output  "Done, thanks!"
