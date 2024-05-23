@@ -70,9 +70,15 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
+			// add on the margin to the measurements
+			buttonContentWidth += (nfloat)button.Margin.HorizontalThickness;
+			buttonContentHeight += (nfloat)button.Margin.VerticalThickness;
+			var borderWidthRequestWithMargin = button.WidthRequest + button.Margin.HorizontalThickness;
+			var borderHeightRequestWithMargin = button.HeightRequest + button.Margin.VerticalThickness;
+
 			// return either the size from its children or the requested button content size or use the explicit height or width if set
-			return new Size(button.WidthRequest == -1 ? Math.Max(result.Width, buttonContentWidth) : button.WidthRequest,
-				button.HeightRequest == -1 ? Math.Max(result.Height, buttonContentHeight) : button.HeightRequest);
+			return new Size(button.WidthRequest == -1 ? Math.Max(result.Width, buttonContentWidth) : borderWidthRequestWithMargin,
+				button.HeightRequest == -1 ? Math.Max(result.Height, buttonContentHeight) : borderHeightRequestWithMargin);
 		}
 
 		protected override Size ArrangeOverride(Rect bounds)

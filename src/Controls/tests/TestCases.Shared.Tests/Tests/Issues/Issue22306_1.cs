@@ -37,6 +37,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
             App.WaitForElement("RotateButton").Tap();
             VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Left");
+
+            App.WaitForElement("RotateButton").Tap();
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Top");
         }
     }
 }
