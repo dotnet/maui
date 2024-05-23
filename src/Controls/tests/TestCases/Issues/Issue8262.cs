@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -25,6 +23,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			IEnumerable<View> Select((string groupHeader, IEnumerable<int> items) t)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				yield return new AbsoluteLayout
 				{
 					Children = {
@@ -36,8 +35,10 @@ namespace Maui.Controls.Sample.Issues
 					VerticalOptions = LayoutOptions.Start,
 					HeightRequest = 46
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 				foreach (var item in t.items)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					yield return new AbsoluteLayout
 					{
 						Children = {
@@ -50,6 +51,7 @@ namespace Maui.Controls.Sample.Issues
 						VerticalOptions = LayoutOptions.Start,
 						HeightRequest = 49.7
 					};
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			}
 

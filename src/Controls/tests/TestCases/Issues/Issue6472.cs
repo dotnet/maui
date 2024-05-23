@@ -122,6 +122,7 @@ namespace Maui.Controls.Sample.Issues
 					labelAccount.FontSize = 18;
 					labelAccount.SetBinding(Label.TextProperty, "recordText");
 
+#pragma warning disable CS0618 // Type or member is obsolete
 					var stackAccountLayout = new StackLayout
 					{
 						Orientation = StackOrientation.Vertical,
@@ -129,6 +130,7 @@ namespace Maui.Controls.Sample.Issues
 						HorizontalOptions = LayoutOptions.StartAndExpand,
 						Children = { labelAccount }
 					};
+#pragma warning restore CS0618 // Type or member is obsolete
 					return new ViewCell { View = stackAccountLayout };
 				}),
 				AutomationId = ListViewAutomationId

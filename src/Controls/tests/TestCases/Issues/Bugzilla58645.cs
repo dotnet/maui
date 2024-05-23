@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
@@ -73,8 +74,8 @@ namespace Maui.Controls.Sample.Issues
 				mainLabel.SetBinding(Label.TextProperty, ".");
 
 				var sw = new Switch();
-				layout.Children.Add(mainLabel, 0, 0);
-				layout.Children.Add(sw, 2, 0);
+				layout.Add(mainLabel, 0, 0);
+				layout.Add(sw, 2, 0);
 				View = layout;
 			}
 		}
@@ -106,8 +107,8 @@ namespace Maui.Controls.Sample.Issues
 					Text = "B"
 				};
 
-				layout.Children.Add(mainLabel, 0, 0);
-				layout.Children.Add(secondLabel, 2, 0);
+				layout.Add(mainLabel, 0, 0);
+				layout.Add(secondLabel, 2, 0);
 				View = layout;
 			}
 		}
@@ -124,7 +125,7 @@ namespace Maui.Controls.Sample.Issues
 					return LayoutA;
 
 				var text = (string)item;
-				return text.Contains("A") ? LayoutA : LayoutB;
+				return text.Contains("A", StringComparison.OrdinalIgnoreCase) ? LayoutA : LayoutB;
 			}
 		}
 	}

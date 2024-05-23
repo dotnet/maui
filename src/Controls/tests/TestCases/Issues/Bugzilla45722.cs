@@ -34,11 +34,13 @@ namespace Maui.Controls.Sample.Issues
 #pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<_45722Label>(this, _45722Label.CountMessage, sender =>
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				Device.BeginInvokeOnMainThread(() =>
 				{
 					_currentLabelCount.Text = _45722Label.Count.ToString();
 					_statusLabel.Text = _45722Label.Count - ItemCount <= 0 ? Success : Running;
 				});
+#pragma warning restore CS0612 // Type or member is obsolete
 			});
 #pragma warning restore CS0618 // Type or member is obsolete
 
@@ -156,13 +158,17 @@ namespace Maui.Controls.Sample.Issues
 		public _45722Label()
 		{
 			Interlocked.Increment(ref Count);
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Send(this, CountMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		~_45722Label()
 		{
 			Interlocked.Decrement(ref Count);
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Send(this, CountMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

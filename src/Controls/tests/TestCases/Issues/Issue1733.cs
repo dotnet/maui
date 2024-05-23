@@ -137,12 +137,16 @@ namespace Maui.Controls.Sample.Issues
 					if (String.IsNullOrWhiteSpace(e.Text))
 					{
 						e.Text = String.Join(" ", Enumerable.Range(0, 100).Select(x => "f").ToArray());
+#pragma warning disable CS0612 // Type or member is obsolete
 						Device.BeginInvokeOnMainThread(() => buttonChangeText.Text = btnChangeToNoText);
+#pragma warning restore CS0612 // Type or member is obsolete
 					}
 					else
 					{
 						e.Text = String.Empty;
+#pragma warning disable CS0612 // Type or member is obsolete
 						Device.BeginInvokeOnMainThread(() => buttonChangeText.Text = btnChangeToHasText);
+#pragma warning restore CS0612 // Type or member is obsolete
 					}
 				});
 			};

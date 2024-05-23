@@ -105,7 +105,7 @@ namespace Maui.Controls.Sample.Issues
 										cookieResult.Text = String.Empty;
 										cookieExpectation = (cookieValue) =>
 										{
-											if(cookieValue.Contains("TestCookie"))
+											if(cookieValue.Contains("TestCookie", StringComparison.OrdinalIgnoreCase))
 											{
 												cookieResult.Text = "Test Cookie Was not correctly cleared";
 											}
@@ -249,7 +249,7 @@ namespace Maui.Controls.Sample.Issues
 										cookieResult.Text = String.Empty;
 										cookieExpectation = (cookieValue) =>
 										{
-											if(cookieValue.Contains(cookieToAdd.Name))
+											if(cookieValue.Contains(cookieToAdd.Name, StringComparison.OrdinalIgnoreCase))
 											{
 												cookieResult.Text = "Cookie not added during navigating";
 											}

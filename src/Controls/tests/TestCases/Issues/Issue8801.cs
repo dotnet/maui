@@ -52,6 +52,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			base.OnAppearing();
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			Device.BeginInvokeOnMainThread(() =>
 			{
 				foreach (var button in _elements.OfType<Button>())
@@ -65,6 +66,7 @@ namespace Maui.Controls.Sample.Issues
 						label.Text += "changed";
 				}
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 		}
 
@@ -194,7 +196,7 @@ namespace Maui.Controls.Sample.Issues
 				{
 					if (rootPage.Content.AutomationId != PageRootGridId.ToString())
 					{
-						var rootGrid = new Compatibility.Grid() { AutomationId = PageRootGridId.ToString() };
+						var rootGrid = new Microsoft.Maui.Controls.Compatibility.Grid() { AutomationId = PageRootGridId.ToString() };
 						var content = rootPage.Content;
 						rootPage.Content = null;
 						rootGrid.Children.Add(content);

@@ -38,6 +38,7 @@ namespace Maui.Controls.Sample.Issues
 				switcher.Toggled += switcher_Toggled;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
 				_label = new Label
 				{
 					Text = string.Format(SwitchIsNowLabelTextFormat, switcher.IsToggled),
@@ -45,6 +46,7 @@ namespace Maui.Controls.Sample.Issues
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.CenterAndExpand
 				};
+#pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
 
 				// Accomodate iPhone status bar.

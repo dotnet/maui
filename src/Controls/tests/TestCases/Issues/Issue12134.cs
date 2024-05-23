@@ -55,7 +55,7 @@ namespace Maui.Controls.Sample.Issues
 		private async void WebViewOnNavigated(object sender, WebNavigatedEventArgs e)
 		{
 			var result = await ((WebView)sender).EvaluateJavaScriptAsync("document.cookie");
-			_label.Text = result.Contains(_guid.ToString()) ? "Success" : "Failed";
+			_label.Text = result.Contains(_guid.ToString(), StringComparison.OrdinalIgnoreCase) ? "Success" : "Failed";
 		}
 
 		private void OnButtonClicked(object sender, EventArgs e)

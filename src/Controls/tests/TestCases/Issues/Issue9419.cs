@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -51,6 +49,8 @@ namespace Maui.Controls.Sample.Issues
 			{
 				var item = (ConditionalToolbarItem)bindable;
 
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 				Device.BeginInvokeOnMainThread(() =>
 				{
 					IList<ToolbarItem> items = ((Page)item.Parent)?.ToolbarItems;
@@ -80,6 +80,8 @@ namespace Maui.Controls.Sample.Issues
 						items.Remove(item);
 					}
 				});
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			}
 		}
 

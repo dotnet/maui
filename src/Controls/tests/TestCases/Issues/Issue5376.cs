@@ -1,7 +1,5 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -59,6 +57,8 @@ namespace Maui.Controls.Sample.Issues
 					while (!IsTested)
 					{
 						await Task.Delay(100);
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 						Device.BeginInvokeOnMainThread(() =>
 						{
 							if (entry.IsFocused)
@@ -71,6 +71,8 @@ namespace Maui.Controls.Sample.Issues
 								entry.Focus();
 							}
 						});
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 					}
 				});
 			}

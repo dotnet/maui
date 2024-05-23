@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -66,7 +65,9 @@ namespace Maui.Controls.Sample.Issues
 						source.Clear();
 						await Task.Delay(2000);
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 						await Device.InvokeOnMainThreadAsync(() => instructions.Text = "Success");
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 					});
 
