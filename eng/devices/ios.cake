@@ -121,13 +121,10 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 		{
 			args
 				.Append("/p:BuildIpa=true")
+				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");
 
-			if (device.ToLower().Contains("device"))
-			{
-				args.Append("/p:RuntimeIdentifier=ios-arm64");
-			}
 			return args;
 		}
 	});
@@ -270,14 +267,9 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 			args
 			.Append("/p:BuildIpa=true")
 			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
+			.Append($"/p:RuntimeIdentifier={rid}")
 			.Append("/bl:" + binlog)
 			.Append("/tl");
-
-			// if we building for a device
-			if (device.ToLower().Contains("device"))
-			{
-				args.Append("/p:RuntimeIdentifier=ios-arm64");
-			}
 
 			return args;
 		}
