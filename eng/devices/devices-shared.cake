@@ -45,7 +45,7 @@ IEnumerable<string> GetTestApplications(string project, string device, string co
     const string artifactsDir = "../../artifacts/bin/";
     bool isAndroid = tfm.Contains("android");
 
-    var binDir = new DirectoryPath(project).Combine($"{binDirBase}/{config}/{tfm}/{rid}");
+    var binDir = new DirectoryPath(project).Combine($"{config}/{tfm}/{rid}");
     IEnumerable<string> applications;
 
     if (isAndroid)
