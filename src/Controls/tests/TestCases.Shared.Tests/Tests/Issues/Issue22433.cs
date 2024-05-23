@@ -13,19 +13,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Button Device Tests Default";
 
 		[Test]
-		public void ButtonLayoutAndSpacingTests()
+		public async Task ButtonLayoutAndSpacingTests()
 		{
 			App.WaitForElement("TestNavigateButtonLayout");
 			VerifyScreenshot("Issue22433_Default");
 
 			App.Tap("TestNavigateButtonLayout");
 			App.WaitForElement("TestLayoutHeader");
+			await Task.Delay(500); // wait for nav animation
 			VerifyScreenshot("Issue22433_Layout");
-			App.Back();
+
+			App.WaitForElement("NavBackButton");
+			App.Tap("NavBackButton");
 
 			App.WaitForElement("TestNavigateButtonPadding");
 			App.Tap("TestNavigateButtonPadding");
 			App.WaitForElement("TestSpacingHeader");
+			await Task.Delay(500);  // wait for nav animation
 			VerifyScreenshot("Issue22433_Spacing");
 		}
 	}

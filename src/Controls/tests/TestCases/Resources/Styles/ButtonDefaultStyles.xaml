@@ -110,12 +110,4 @@
             </VisualStateGroupList>
         </Setter>
     </Style>
-
-    <Style TargetType="BoxView" x:Key="HRule">
-        <Setter Property="Color" 
-        Value="{AppThemeBinding 
-            Dark={StaticResource Neutral},
-            Light={StaticResource NeutralDarker}}"/>
-        <Setter Property="HeightRequest" Value="1"/>
-    </Style>
 </ResourceDictionary>

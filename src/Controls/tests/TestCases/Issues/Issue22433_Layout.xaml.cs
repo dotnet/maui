@@ -10,4 +10,9 @@ public partial class Issue22433_Layout : ContentPage
 	{
 		InitializeComponent();
 	}
+
+	async void NavBackButton_Clicked(object sender, System.EventArgs e)
+	{
+		await Navigation.PopAsync();
+	}
 }

@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue22433_Layout"
-             Title="Issue22433_Layout">
+             Title="Issue22433_Layout"
+             Background="White">
     <ContentPage.Resources>
         <ResourceDictionary Source="../Resources/Styles/ButtonDefaultStyles.xaml" />
     </ContentPage.Resources>
@@ -11,7 +12,12 @@
     <VerticalStackLayout>
         <Label 
             Text="ContentLayout default spacing, Padding=20"
-            AutomationId="TestSpacingHeader"/>
+            AutomationId="TestLayoutHeader"/>
+        <Button
+            Text="Back"
+            AutomationId="NavBackButton"
+            HorizontalOptions="Start"
+            Clicked="NavBackButton_Clicked"/>
         <HorizontalStackLayout>
                 <Button 
                     ImageSource="{StaticResource CircleIconAlt}"

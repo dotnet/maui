@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue22433_Default"
-             Title="Issue22433_Default">
+             Title="Issue22433_Default"
+             Background="White">
     <ContentPage.Resources>
         <ResourceDictionary Source="../Resources/Styles/ButtonDefaultStyles.xaml" />
     </ContentPage.Resources>
@@ -46,11 +47,11 @@
             Text="Icon as Text"/>
         <HorizontalStackLayout>
             <Button 
-                FontFamily="FontAwesome"
-                Text="&#xF1D8;"/>
+                FontFamily="OpenSansRegular"
+                Text="&#x0489;"/>
             <Button 
-                FontFamily="FontAwesome"
-                Text="&#xF1D8;"
+                FontFamily="OpenSansRegular"
+                Text="&#x0489;"
                 IsEnabled="False"/>
         </HorizontalStackLayout>
 
