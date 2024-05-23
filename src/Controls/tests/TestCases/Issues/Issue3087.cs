@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -14,7 +9,7 @@ namespace Maui.Controls.Sample.Issues
 		PlatformAffected.iOS)]
 	public class Issue3087 : TestContentPage
 	{
-		LegacyComponents.NonAppCompatSwitch legacySwitch = null;
+		NonAppCompatSwitch legacySwitch = null;
 		Label status = new Label();
 		protected override void Init()
 		{
@@ -32,7 +27,7 @@ namespace Maui.Controls.Sample.Issues
 		protected async override void OnAppearing()
 		{
 			base.OnAppearing();
-			legacySwitch = new LegacyComponents.NonAppCompatSwitch() { IsToggled = true };
+			legacySwitch = new NonAppCompatSwitch() { IsToggled = true };
 			(Content as StackLayout).Children.Add(legacySwitch);
 			await Task.Delay(10);
 			legacySwitch.IsToggled = !legacySwitch.IsToggled;
@@ -42,5 +37,9 @@ namespace Maui.Controls.Sample.Issues
 			legacySwitch.IsToggled = !legacySwitch.IsToggled;
 			status.Text = "Success";
 		}
+	}
+
+	public class NonAppCompatSwitch : Switch
+	{
 	}
 }
