@@ -65,7 +65,9 @@ namespace Maui.Controls.Sample.Issues
 						await Task.Delay(20);
 						source.Clear();
 						await Task.Delay(2000);
+#pragma warning disable CS0612 // Type or member is obsolete
 						await Device.InvokeOnMainThreadAsync(() => instructions.Text = "Success");
+#pragma warning restore CS0612 // Type or member is obsolete
 					});
 
 				stackLayout.Children.Remove(instructions);

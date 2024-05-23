@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
@@ -73,6 +74,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = new ListView
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
@@ -113,6 +115,7 @@ namespace Maui.Controls.Sample.Issues
 				   };
 			   })
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			buttonAdd.Clicked += (sender, e) =>
 			{

@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues

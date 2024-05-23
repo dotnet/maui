@@ -1,4 +1,5 @@
-﻿
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -20,12 +21,14 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "TestReady"
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			layout.Children.Add(new BoxView
 			{
 				BackgroundColor = Colors.Red,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				HorizontalOptions = LayoutOptions.FillAndExpand
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			layout.Children.Add(new Label
 			{

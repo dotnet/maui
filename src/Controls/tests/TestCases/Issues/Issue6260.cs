@@ -36,6 +36,7 @@ namespace Maui.Controls.Sample.Issues
 			this.Appearing += (_, __) =>
 			{
 				button.ImageSource = "coffee.png";
+#pragma warning disable CS0612 // Type or member is obsolete
 				Device.BeginInvokeOnMainThread(() =>
 				{
 					button.MeasureInvalidated += (___, ____) =>
@@ -44,8 +45,10 @@ namespace Maui.Controls.Sample.Issues
 						label.Text = text + measurecount.ToString();
 					};
 				});
+#pragma warning restore CS0612 // Type or member is obsolete
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Content = new StackLayout()
 			{
 				Children =
@@ -61,6 +64,7 @@ namespace Maui.Controls.Sample.Issues
 					label
 				}
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

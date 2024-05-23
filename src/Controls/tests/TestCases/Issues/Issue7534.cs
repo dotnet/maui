@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -30,11 +31,13 @@ namespace Maui.Controls.Sample.Issues
 				//it's already pass the MaxLines range because of the paragraph('\n' character).
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var labelDescription = new Label
 			{
 				Text = "If you opened this page, the app didn't crash and you can read three lines in the label above, this test has passed",
 				VerticalOptions = LayoutOptions.StartAndExpand
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var layout = new Microsoft.Maui.Controls.StackLayout();
 			layout.Children.Add(label);

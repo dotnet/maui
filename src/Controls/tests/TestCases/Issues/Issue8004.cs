@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -24,6 +23,7 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "TestReady"
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var button = new Button
 			{
 				AutomationId = AnimateBoxViewButton,
@@ -32,6 +32,7 @@ namespace Maui.Controls.Sample.Issues
 				TextColor = Colors.White,
 				VerticalOptions = LayoutOptions.EndAndExpand
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			button.Clicked += AnimateButton_Clicked;
 

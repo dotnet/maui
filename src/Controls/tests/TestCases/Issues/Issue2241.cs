@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
@@ -13,6 +14,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		protected override void Init()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var grid = new Grid
 			{
 				BackgroundColor = Colors.Red,
@@ -20,15 +22,18 @@ namespace Maui.Controls.Sample.Issues
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				AutomationId = "MainGrid"
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 			grid.RowDefinitions.Add(new RowDefinition { Height = 10 });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 			grid.RowDefinitions.Add(new RowDefinition { Height = 10 });
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var boxView = new BoxView
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				Color = Colors.Yellow
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 			Grid.SetRow(boxView, 0);
 
 			var label = new Label
@@ -42,17 +47,20 @@ namespace Maui.Controls.Sample.Issues
 			};
 			Grid.SetRow(label, 1);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var boxView2 = new BoxView
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				Color = Colors.Yellow
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 			Grid.SetRow(boxView2, 2);
 
 			grid.Children.Add(boxView);
 			grid.Children.Add(label);
 			grid.Children.Add(boxView2);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var scrollView = new ScrollView
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
@@ -60,6 +68,7 @@ namespace Maui.Controls.Sample.Issues
 				Padding = new Thickness(20),
 				Content = grid
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Content = scrollView;
 		}

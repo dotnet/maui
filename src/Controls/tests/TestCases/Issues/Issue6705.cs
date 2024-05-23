@@ -12,6 +12,7 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 			StackLayout stack = null;
+#pragma warning disable CS0612 // Type or member is obsolete
 			stack = new StackLayout
 			{
 				Children =
@@ -48,6 +49,7 @@ namespace Maui.Controls.Sample.Issues
 					},
 				}
 			};
+#pragma warning restore CS0612 // Type or member is obsolete
 
 			Content = stack;
 		}
