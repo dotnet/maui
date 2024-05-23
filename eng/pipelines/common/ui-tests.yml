@@ -114,6 +114,7 @@ stages:
                 pool: ${{ parameters.iosPool }}
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
