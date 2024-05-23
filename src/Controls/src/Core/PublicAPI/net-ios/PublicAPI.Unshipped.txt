@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Controls.Button.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
@@ -262,4 +263,7 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.get -> double
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
+*REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+*REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+*REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void

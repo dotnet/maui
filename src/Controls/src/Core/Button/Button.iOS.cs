@@ -15,9 +15,7 @@ namespace Microsoft.Maui.Controls
 	{
 		CGSize _originalImageSize = CGSize.Empty;
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			var result = base.MeasureOverride(widthConstraint, heightConstraint);
 
