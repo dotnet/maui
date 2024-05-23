@@ -192,17 +192,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 {
 	Information("Starting UI Tests...");
 	
-	string testApp = string.Empty;
-
-	if(USE_NATIVE_AOT)
-	{
-		rid = "ios-arm64";
-		testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
-	}
-	else
-	{
-		testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
-	}
+	string testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
 
 	Information($"Testing Device: {device}");
 	Information($"Testing App Project: {app}");
