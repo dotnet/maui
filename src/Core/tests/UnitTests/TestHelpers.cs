@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Controls.Core.UnitTests
+namespace Microsoft.Maui.UnitTests
 {
 	internal static class TestHelpers
 	{

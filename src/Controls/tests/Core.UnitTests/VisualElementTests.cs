@@ -173,9 +173,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var geometry = (Geometry)Activator.CreateInstance(type);
 			var reference = new WeakReference(new VisualElement { Clip = geometry });
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
 		}

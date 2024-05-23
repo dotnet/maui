@@ -735,7 +735,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void CollectionAndContextAreHeldWeakly()
+		public async Task CollectionAndContextAreHeldWeakly()
 		{
 			WeakReference weakCollection = null, weakContext = null;
 
@@ -760,8 +760,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			create();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			Assert.False(weakCollection.IsAlive);
 			Assert.False(weakContext.IsAlive);

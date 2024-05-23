@@ -718,9 +718,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await navPage.PopAsync();
 
 			await Task.Delay(100);
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			Assert.True(isFinalized);
 		}

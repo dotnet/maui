@@ -442,9 +442,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var tracker = new WeakReference(label);
 			label.Style = style;
 			label = null;
-
-			await Task.Delay(10);
-			GC.Collect();
+						
+			await TestHelpers.Collect();
 
 			Assert.False(tracker.IsAlive);
 			Assert.NotNull(style);

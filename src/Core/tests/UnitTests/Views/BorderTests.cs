@@ -63,9 +63,7 @@ namespace Microsoft.Maui.UnitTests.Views
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 			GC.KeepAlive(border);
 
 			strokeShape.CornerRadius = new CornerRadius(24);
@@ -85,10 +83,8 @@ namespace Microsoft.Maui.UnitTests.Views
 				if (e.PropertyName == nameof(Border.Stroke))
 					fired = true;
 			};
-
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			
+			await TestHelpers.Collect();
 			GC.KeepAlive(border);
 
 			stroke.Color = Colors.Green;
@@ -105,10 +101,8 @@ namespace Microsoft.Maui.UnitTests.Views
 			var reference = new WeakReference(new Border { StrokeShape = strokeShape });
 
 			strokeShape = null;
-
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+						
+			await TestHelpers.Collect();
 
 			Assert.False(reference.IsAlive, "Border should not be alive!");
 		}

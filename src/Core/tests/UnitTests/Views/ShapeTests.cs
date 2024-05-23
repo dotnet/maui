@@ -22,10 +22,8 @@ namespace Microsoft.Maui.UnitTests.Views
 				if (e.PropertyName == nameof(Shape.Fill))
 					fired = true;
 			};
-
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			
+			await TestHelpers.Collect();
 			GC.KeepAlive(shape);
 
 			fill.Color = Colors.Green;
@@ -38,10 +36,8 @@ namespace Microsoft.Maui.UnitTests.Views
 		{
 			var fill = new SolidColorBrush(Colors.Red);
 			var reference = new WeakReference(new Rectangle { Fill = fill });
-
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			
+			await TestHelpers.Collect();
 
 			Assert.False(reference.IsAlive, "Shape should not be alive!");
 		}
@@ -58,10 +54,8 @@ namespace Microsoft.Maui.UnitTests.Views
 				if (e.PropertyName == nameof(Shape.Stroke))
 					fired = true;
 			};
-
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			
+			await TestHelpers.Collect();
 			GC.KeepAlive(shape);
 
 			stroke.Color = Colors.Green;
@@ -75,9 +69,7 @@ namespace Microsoft.Maui.UnitTests.Views
 			var stroke = new SolidColorBrush(Colors.Red);
 			var reference = new WeakReference(new Rectangle { Stroke = stroke });
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			Assert.False(reference.IsAlive, "Shape should not be alive!");
 		}

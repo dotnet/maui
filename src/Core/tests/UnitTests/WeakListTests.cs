@@ -13,10 +13,8 @@ namespace Microsoft.Maui.UnitTests
 			var expected = new object();
 			var list = new WeakList<object> { expected, new object() };
 			list.CleanupThreshold = 1;
-
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			
+			await TestHelpers.Collect();
 
 			foreach (var item in list)
 			{
@@ -34,9 +32,8 @@ namespace Microsoft.Maui.UnitTests
 			var list = new WeakList<object> { expected, new object() };
 			list.CleanupThreshold = 1;
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			
+			await TestHelpers.Collect();
 
 			list.Remove(expected);
 
@@ -50,9 +47,8 @@ namespace Microsoft.Maui.UnitTests
 			var list = new WeakList<object> { expected, new object() };
 			list.CleanupThreshold = 1;
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			
+			await TestHelpers.Collect();
 
 			list.Add(new object());
 
