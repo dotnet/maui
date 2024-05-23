@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("TestButton");
 			App.WaitForElement("CustomTimePicker1");
 
-			async Task.Delay(500);
+			await Task.Delay(500);
 
 			VerifyScreenshot();
 		}
