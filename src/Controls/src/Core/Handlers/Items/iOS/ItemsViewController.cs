@@ -771,7 +771,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return ItemsViewLayout.EstimatedItemSize;
 		}
 
-		private protected virtual void UpdateVisibility()
+		internal protected virtual void UpdateVisibility()
 		{
 			if (ItemsView.IsVisible)
 			{

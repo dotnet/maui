@@ -624,7 +624,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_oldViews = newViews;
 		}
 
-		private protected override void UpdateVisibility()
+		internal protected override void UpdateVisibility()
 		{
 			if (ItemsView.IsVisible)
 			{
