@@ -1,4 +1,3 @@
-using Maui.Controls.Sample;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -18,7 +17,7 @@ public class LabelUITests : _ViewUITests
 	protected override void NavigateToGallery() =>
 		App.NavigateToGallery(LabelGallery);
 
-	public override void _IsEnabled()
+	public override void IsEnabled()
 	{
 		Assert.Ignore("Labels do not really have a concept of being \"disabled\".");
 	}
