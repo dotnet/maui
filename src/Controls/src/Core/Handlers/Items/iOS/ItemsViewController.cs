@@ -185,18 +185,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(collectionView as IUIViewLifeCycleEvents).MovedToWindow += CollectionViewMovedToWindow;	
 		}
 
-		void CollectionViewMovedToWindow(object sender, EventArgs e)
-		{
-			if (CollectionView?.Window != null)
-			{
-				AttachingToWindow();
-			}
-			else
-			{
-				DettachingFromWindow();
-			}
-		}
-
 		public override void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
@@ -209,6 +197,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ViewWillLayoutSubviews();
 			InvalidateMeasureIfContentSizeChanged();
 			LayoutEmptyView();
+		}
+
+		void CollectionViewMovedToWindow(object sender, EventArgs e)
+		{
+			if (CollectionView?.Window != null)
+			{
+				AttachingToWindow();
+			}
+			else
+			{
+				DetachingFromWindow();
+			}
 		}
 
 		void InvalidateMeasureIfContentSizeChanged()
@@ -261,16 +261,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			_previousContentSize = contentSize.Value;
 		}
+		
 
-		internal virtual void AttachingToWindow()
-		{
-
-		}
-
-		internal virtual void DettachingFromWindow()
-		{
-
-		}
 		internal Size? GetSize()
 		{
 			if (_emptyViewDisplayed)
@@ -779,7 +771,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return ItemsViewLayout.EstimatedItemSize;
 		}
 
-		internal protected virtual void UpdateVisibility()
+		private protected virtual void UpdateVisibility()
 		{
 			if (ItemsView.IsVisible)
 			{
@@ -795,6 +787,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				CollectionView.Hidden = true;
 			}
+		}
+
+		private protected virtual void AttachingToWindow()
+		{
+
+		}
+
+		private protected virtual void DetachingFromWindow()
+		{
+
 		}
 	}
 }

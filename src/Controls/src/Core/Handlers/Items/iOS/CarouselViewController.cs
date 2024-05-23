@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		CarouselViewLoopManager _carouselViewLoopManager;
 		bool _isCenteringItem;
+
+		// We need to keep track of the old views to update the visual states
+		// if this is null we are not attached to the window
 		List<View> _oldViews;
 		int _gotoPosition = -1;
 		CGSize _size;
@@ -32,11 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			CollectionView.AllowsSelection = false;
 			CollectionView.AllowsMultipleSelection = false;
-			itemsView.Scrolled += CarouselViewScrolled;
-			_oldViews = new List<View>();
 		}
-
-	
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
@@ -79,23 +78,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_carouselViewLoopManager = new CarouselViewLoopManager(Layout as UICollectionViewFlowLayout);
 			base.ViewDidLoad();
-		}
-
-		internal override void AttachingToWindow()
-		{
-			base.AttachingToWindow();
-			
-			if(_initialOrientation == null)
-			{
-				_initialOrientation = DeviceDisplay.MainDisplayInfo.Orientation;
-				DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
-			}
-		}
-
-		internal override void DettachingFromWindow()
-		{
-			base.DettachingFromWindow();
-			TearDown();
 		}
 
 		public override void ViewWillLayoutSubviews()
@@ -203,21 +185,49 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.CacheCellAttributes(NSIndexPath.FromItemSection(itemIndex, 0), size);
 		}
 
+		private protected override void AttachingToWindow()
+		{
+			base.AttachingToWindow();
+			Setup(ItemsView);
+		}
+
+		private protected override void DetachingFromWindow()
+		{
+			base.DetachingFromWindow();
+			TearDown(ItemsView);
+		}
+
 		internal bool InitialPositionSet { get; private set; }
 
-		internal void TearDown()
+		void TearDown(CarouselView carouselView)
 		{
-			if (ItemsView is CarouselView carousel)
-			{
-				carousel.Scrolled -= CarouselViewScrolled;
-			}
+			_oldViews = null;
+
+			carouselView.Scrolled -= CarouselViewScrolled;			
 
 			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
 			_initialOrientation = null;
 
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
+			
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
+
+		}
+
+		void Setup(CarouselView carouselView)
+		{
+			_oldViews = new List<View>();
+			
+			carouselView.Scrolled += CarouselViewScrolled;
+
+			if(_initialOrientation == null)
+			{
+				_initialOrientation = DeviceDisplay.MainDisplayInfo.Orientation;
+				DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
+			}
+
+			SubscribeCollectionItemsSourceChanged(ItemsSource);
 		}
 
 		internal void UpdateIsScrolling(bool isScrolling)
@@ -550,6 +560,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// We aren't ready to update the visual states yet
+			if(_oldViews == null)
+			{
+				return;
+			}
+
 			var cells = CollectionView.VisibleCells;
 
 			var newViews = new List<View>();
@@ -608,7 +624,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_oldViews = newViews;
 		}
 
-		protected internal override void UpdateVisibility()
+		private protected override void UpdateVisibility()
 		{
 			if (ItemsView.IsVisible)
 			{
