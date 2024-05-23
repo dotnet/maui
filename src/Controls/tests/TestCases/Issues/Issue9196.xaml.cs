@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Xaml;
+﻿using System.Collections.Generic;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -16,9 +8,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public Issue9196()
 		{
-#if APP
 			InitializeComponent();
-#endif
 		}
 
 		protected override void Init()

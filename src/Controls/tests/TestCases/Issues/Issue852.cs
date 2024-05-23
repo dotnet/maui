@@ -1,9 +1,5 @@
-using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
-
-using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -17,7 +13,6 @@ namespace Maui.Controls.Sample.Issues
 		const string UsernameId = "username852";
 		const string PasswordId = "password852";
 
-#if APP
 		StackLayout _loggingInStackLayout;
 		Button _loginButton;
 		ScrollView _loginScrollView;
@@ -55,11 +50,13 @@ namespace Maui.Controls.Sample.Issues
 
 			if (!(await AttemptLogin())) //try to log in, if login fails show login screen
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				Device.BeginInvokeOnMainThread(() => BuildLogin());
+#pragma warning restore CS0612 // Type or member is obsolete
 			}
 			else
 			{
-				Navigation.PopModalAsync();
+				await Navigation.PopModalAsync();
 			}
 			IsBusy = false;
 
@@ -128,8 +125,5 @@ namespace Maui.Controls.Sample.Issues
 
 		// Can't tell if it wasn't working in iOS or Android, but in either case we can probably just use automationID
 		// instead of querying on the placeholder text
-
-
-#endif
 	}
 }

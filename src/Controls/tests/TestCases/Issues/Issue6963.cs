@@ -13,9 +13,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		protected override void Init()
 		{
-#if APP
-			PushAsync(new GalleryPages.CollectionViewGalleries.SelectionGalleries.SelectionSynchronization());
-#endif
+			PushAsync(new CollectionViewGalleries.SelectionGalleries.SelectionSynchronization());
 		}
 	}
 }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -63,14 +61,5 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 		}
-	}
-
-	[Preserve(AllMembers = true)]
-	public class Issue13436Model
-	{
-		public string Name { get; set; }
-		public string Desc { get; set; }
-		public Color Color { get; set; }
-		public double Scale { get; set; }
 	}
 }

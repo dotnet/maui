@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using static Maui.Controls.Sample.Issues.CollectionViewDynamicallyLoad;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -44,6 +46,34 @@ namespace Maui.Controls.Sample.Issues
 			}
 
 			_vm.IsBusy = false;
+		}
+	}
+
+	internal class _13126VM : INotifyPropertyChanged
+	{
+		private bool _isBusy;
+
+		public bool IsBusy
+		{
+			get
+			{
+				return _isBusy;
+			}
+
+			set
+			{
+				_isBusy = value;
+				OnPropertyChanged(nameof(IsBusy));
+			}
+		}
+
+		public OptimizedObservableCollection<string> Data { get; } = new OptimizedObservableCollection<string>();
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		void OnPropertyChanged(string name)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 		}
 	}
 }

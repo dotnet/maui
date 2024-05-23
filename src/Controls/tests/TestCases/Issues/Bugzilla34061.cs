@@ -10,11 +10,11 @@ namespace Maui.Controls.Sample.Issues
 	[Issue(IssueTracker.Bugzilla, 34061, "RelativeLayout - First child added after page display does not appear")]
 	public class Bugzilla34061 : TestContentPage
 	{
-		Compatibility.RelativeLayout _layout;
+		Microsoft.Maui.Controls.Compatibility.RelativeLayout _layout;
 
 		protected override void Init()
 		{
-			_layout = new Compatibility.RelativeLayout();
+			_layout = new Microsoft.Maui.Controls.Compatibility.RelativeLayout();
 			var label = new Label { Text = "Some content goes here", HorizontalOptions = LayoutOptions.Center };
 
 			var addButton = new Button { Text = "Add Popover", AutomationId = "btnAdd" };
@@ -30,10 +30,10 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 			_layout.Children.Add(stack,
-				Compatibility.Constraint.Constant(0),
-				Compatibility.Constraint.Constant(0),
-				Compatibility.Constraint.RelativeToParent(p => p.Width),
-				Compatibility.Constraint.RelativeToParent(p => p.Height));
+				Microsoft.Maui.Controls.Compatibility.Constraint.Constant(0),
+				Microsoft.Maui.Controls.Compatibility.Constraint.Constant(0),
+				Microsoft.Maui.Controls.Compatibility.Constraint.RelativeToParent(p => p.Width),
+				Microsoft.Maui.Controls.Compatibility.Constraint.RelativeToParent(p => p.Height));
 
 			Content = _layout;
 		}
@@ -50,10 +50,10 @@ namespace Maui.Controls.Sample.Issues
 
 			_layout.Children.Add(
 				newView,
-				Compatibility.Constraint.Constant(0),
-				Compatibility.Constraint.RelativeToParent(p => p.Height / 2),
-				Compatibility.Constraint.RelativeToParent(p => p.Width),
-				Compatibility.Constraint.RelativeToParent(p => p.Height / 2));
+				Microsoft.Maui.Controls.Compatibility.Constraint.Constant(0),
+				Microsoft.Maui.Controls.Compatibility.Constraint.RelativeToParent(p => p.Height / 2),
+				Microsoft.Maui.Controls.Compatibility.Constraint.RelativeToParent(p => p.Width),
+				Microsoft.Maui.Controls.Compatibility.Constraint.RelativeToParent(p => p.Height / 2));
 		}
 
 		void RemovePopover(View view)

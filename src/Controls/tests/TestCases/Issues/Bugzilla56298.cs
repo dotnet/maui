@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using ListView = Microsoft.Maui.Controls.ListView;
 
 namespace Maui.Controls.Sample.Issues
 {

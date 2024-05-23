@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -13,9 +10,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		protected override void Init()
 		{
-#if APP
-			PushAsync(new GalleryPages.CollectionViewGalleries.SpacingGalleries.SpacingGallery(new GridItemsLayout(3, ItemsLayoutOrientation.Vertical)));
-#endif
+			PushAsync(new CollectionViewGalleries.SpacingGalleries.SpacingGallery(new GridItemsLayout(3, ItemsLayoutOrientation.Vertical)));
 		}
 	}
 }

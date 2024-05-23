@@ -12,9 +12,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public Issue8715()
 		{
-#if APP
 			InitializeComponent();
-#endif
 		}
 
 		protected override void Init()

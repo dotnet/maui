@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Entry = Microsoft.Maui.Controls.Entry;
 
 namespace Maui.Controls.Sample.Issues
 {

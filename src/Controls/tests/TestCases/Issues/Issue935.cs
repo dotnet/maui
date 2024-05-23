@@ -1,22 +1,8 @@
-﻿using System.Diagnostics;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
-	public class Person
-	{
-		public string Name { get; set; }
-
-		public Person(string name)
-		{
-			Name = name;
-		}
-	}
-
-
 	[Preserve(AllMembers = true)]
 	public class CustomViewCell : ViewCell
 	{

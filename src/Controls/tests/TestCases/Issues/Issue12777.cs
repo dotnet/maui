@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -39,50 +38,6 @@ namespace Maui.Controls.Sample.Issues
 			layout.Children.Add(carouselView);
 
 			Content = layout;
-		}
-	}
-
-	[Preserve(AllMembers = true)]
-	public class Issue12777Model
-	{
-		public Color Color { get; set; }
-		public string Name { get; set; }
-	}
-
-	[Preserve(AllMembers = true)]
-	public class Issue12777ViewModel : BindableObject
-	{
-		ObservableCollection<Issue12777Model> _items;
-
-		public Issue12777ViewModel()
-		{
-			LoadItems();
-		}
-
-		public ObservableCollection<Issue12777Model> Items
-		{
-			get { return _items; }
-			set
-			{
-				_items = value;
-				OnPropertyChanged();
-			}
-		}
-
-		void LoadItems()
-		{
-			Items = new ObservableCollection<Issue12777Model>();
-
-			var random = new Random();
-
-			for (int n = 0; n < 5; n++)
-			{
-				Items.Add(new Issue12777Model
-				{
-					Color = Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255)),
-					Name = $"{n + 1}"
-				});
-			}
 		}
 	}
 }

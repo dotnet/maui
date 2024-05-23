@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using System.Collections.Generic;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -17,7 +15,6 @@ namespace Maui.Controls.Sample.Issues
 
 		protected override void Init()
 		{
-#if APP
 			var instructions = new Label { Text = "Rotate the device, then rotate it back 3 times. If the application crashes or hangs, this test has failed." };
 
 			var button = new Button { Text = CheckResult, AutomationId = CheckResult };
@@ -54,7 +51,6 @@ namespace Maui.Controls.Sample.Issues
 			layout.Children.Add(cv);
 
 			Content = layout;
-#endif
 		}
 	}
 }
