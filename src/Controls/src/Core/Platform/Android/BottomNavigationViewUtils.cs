@@ -94,8 +94,16 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 				{
 					menuItem = menu.GetItem(i);
-					SetMenuItemTitle(menuItem, item.title);
-					loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext));
+					if (menuItem.ItemId == MoreTabId)
+					{
+						menu.RemoveItem(MoreTabId);
+						loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem));
+					}
+					else
+					{
+						SetMenuItemTitle(menuItem, item.title);
+						loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext));
+					}
 				}
 
 				menuItems.Add(menuItem);
@@ -103,9 +111,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (showMore)
 			{
+				var menuSize = menu.Size();
 				var moreString = context.Resources.GetText(Resource.String.overflow_tab_title);
-				if (menu.Size() == maxBottomItems)
-					menu.RemoveItem(menu.GetItem(menu.Size() - 1).ItemId);
+				if (menuSize == maxBottomItems)
+					menu.RemoveItem(menu.GetItem(menuSize - 1).ItemId);
 				var menuItem = menu.Add(0, MoreTabId, 0, moreString);
 				menuItems.Add(menuItem);
 
