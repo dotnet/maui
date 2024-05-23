@@ -73,7 +73,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			Context context = mauiContext.Context;
 
-			menu.Clear();
+			while (items.Count < menu.Size())
+			{
+				menu.RemoveItem(menu.GetItem(menu.Size() - 1).ItemId);
+			}
 
 			int numberOfMenuItems = items.Count;
 			bool showMore = numberOfMenuItems > maxBottomItems;
@@ -101,6 +104,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (showMore)
 			{
 				var moreString = context.Resources.GetText(Resource.String.overflow_tab_title);
+				if (menu.Size() == maxBottomItems)
+					menu.RemoveItem(menu.GetItem(menu.Size() - 1).ItemId);
 				var menuItem = menu.Add(0, MoreTabId, 0, moreString);
 				menuItems.Add(menuItem);
 
