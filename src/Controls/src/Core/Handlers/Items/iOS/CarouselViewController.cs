@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		CGSize _size;
 		ILoopItemsViewSource LoopItemsSource => ItemsSource as ILoopItemsViewSource;
 		bool _isDragging;
-		DisplayOrientation _initialOrientation;
+		DisplayOrientation? _initialOrientation = null;
 
 		bool _isRotating;
 
@@ -34,19 +34,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CollectionView.AllowsMultipleSelection = false;
 			itemsView.Scrolled += CarouselViewScrolled;
 			_oldViews = new List<View>();
-			_initialOrientation = DeviceDisplay.MainDisplayInfo.Orientation;
-			DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
 		}
 
-		void OnDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
-		{
-			// While we are rotation the device we don't want to update the position
-			if(e.DisplayInfo.Orientation != _initialOrientation)
-			{
-				_initialOrientation = e.DisplayInfo.Orientation;
-				_isRotating = true;
-			}
-		}
+	
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
@@ -87,8 +77,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void ViewDidLoad()
 		{
-			_carouselViewLoopManager = new CarouselViewLoopManager(Layout as UICollectionViewFlowLayout);		
+			_carouselViewLoopManager = new CarouselViewLoopManager(Layout as UICollectionViewFlowLayout);
 			base.ViewDidLoad();
+		}
+
+		internal override void AttachingToWindow()
+		{
+			base.AttachingToWindow();
+			
+			if(_initialOrientation == null)
+			{
+				_initialOrientation = DeviceDisplay.MainDisplayInfo.Orientation;
+				DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
+			}
+		}
+
+		internal override void DettachingFromWindow()
+		{
+			base.DettachingFromWindow();
+			TearDown();
 		}
 
 		public override void ViewWillLayoutSubviews()
@@ -206,6 +213,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
+			_initialOrientation = null;
 
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			_carouselViewLoopManager?.Dispose();
@@ -240,6 +248,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return indexPath.Row;
 		}
 
+		void OnDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
+		{
+			// While we are rotation the device we don't want to update the position
+			if (e.DisplayInfo.Orientation != _initialOrientation)
+			{
+				_initialOrientation = e.DisplayInfo.Orientation;
+				_isRotating = true;
+			}
+		}
+
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
@@ -257,7 +275,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// If we are rotating the device we don't want to update the position
-			if(_isRotating)
+			if (_isRotating)
 			{
 				return;
 			}
