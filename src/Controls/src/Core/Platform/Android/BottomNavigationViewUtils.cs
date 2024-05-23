@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 				{
 					menuItem = menu.GetItem(i);
-					if (menuItem.ItemId == MoreTabId)
+					if (menuItem.ItemId != i)
 					{
 						menu.RemoveItem(MoreTabId);
 						loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem));
