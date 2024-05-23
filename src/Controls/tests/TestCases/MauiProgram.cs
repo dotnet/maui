@@ -21,15 +21,14 @@ namespace Maui.Controls.Sample
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				})
-				.Issue21109AddMappers();
-
-			return appBuilder.Build();
-		}
+				.Issue21109AddMappers()
 				.Issue18720AddMappers()
 				.Issue18720EditorAddMappers()
 				.Issue18720DatePickerAddMappers()
-				.Issue18720TimePickerAddMappers()
-				.Build();
+				.Issue18720TimePickerAddMappers();
+
+			return appBuilder.Build();
+		}
 	}
 
 	class App : Application
