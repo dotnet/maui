@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -14,7 +11,9 @@ namespace Maui.Controls.Sample.Issues
 		Label _textField;
 		protected override void Init()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var btnModal = new Button { AutomationId = "btnModal", Text = "open", HorizontalOptions = LayoutOptions.FillAndExpand, VerticalOptions = LayoutOptions.FillAndExpand };
+#pragma warning restore CS0618 // Type or member is obsolete
 			btnModal.Clicked += async (sender, e) => await Navigation.PushModalAsync(new Bugzilla32615Page2());
 			_textField = new Label { AutomationId = "lblCount" };
 			var layout = new StackLayout();
@@ -33,7 +32,9 @@ namespace Maui.Controls.Sample.Issues
 		{
 			public Bugzilla32615Page2()
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				var btnPop = new Button { AutomationId = "btnPop", Text = "pop", HorizontalOptions = LayoutOptions.FillAndExpand, VerticalOptions = LayoutOptions.FillAndExpand };
+#pragma warning restore CS0618 // Type or member is obsolete
 				btnPop.Clicked += async (sender, e) => await Navigation.PopModalAsync();
 				Content = btnPop;
 			}

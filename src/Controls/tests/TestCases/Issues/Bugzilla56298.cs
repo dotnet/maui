@@ -13,7 +13,6 @@ namespace Maui.Controls.Sample.Issues
 	[Issue(IssueTracker.Bugzilla, 56298, "Changing ListViews HasUnevenRows at runtime on iOS has no effect", PlatformAffected.iOS)]
 	public class Bugzilla56298 : TestContentPage // or TestFlyoutPage, etc ...
 	{
-
 		ListView list;
 		Button button;
 		StackLayout layoutRoot;

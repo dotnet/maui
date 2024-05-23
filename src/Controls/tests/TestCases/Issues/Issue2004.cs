@@ -282,6 +282,5 @@ namespace Maui.Controls.Sample.Issues
 				};
 			}
 		}
-#endif
 	}
 }

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Devices;
@@ -50,13 +48,13 @@ namespace Maui.Controls.Sample.Issues
 			if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				var red = new Button { Text = "Red", TextColor = Colors.Red };
-				red.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Colors.Red);
+				red.Clicked += (sender, e) => _entry.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetCursorColor(Colors.Red);
 
 				var blue = new Button { Text = "Blue", TextColor = Colors.Blue };
-				blue.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Colors.Blue);
+				blue.Clicked += (sender, e) => _entry.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetCursorColor(Colors.Blue);
 
 				var defaultColor = new Button { Text = "Default" };
-				defaultColor.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(null);
+				defaultColor.Clicked += (sender, e) => _entry.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>().SetCursorColor(null);
 
 				layout.Children.Add(red);
 				layout.Children.Add(blue);

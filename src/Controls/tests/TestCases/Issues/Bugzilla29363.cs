@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -14,7 +11,9 @@ namespace Maui.Controls.Sample.Issues
 	{
 		protected override void Init()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var layout = new StackLayout() { HorizontalOptions = LayoutOptions.FillAndExpand, VerticalOptions = LayoutOptions.FillAndExpand };
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Button modal = new Button
 			{

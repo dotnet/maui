@@ -1,3 +1,4 @@
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
@@ -14,6 +15,7 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 			PushAsync(new ContentPage());
+#pragma warning disable CS0618 // Type or member is obsolete
 			var stacklayout = new StackLayout
 			{
 				Children =
@@ -30,6 +32,7 @@ namespace Maui.Controls.Sample.Issues
 					}
 				}
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Microsoft.Maui.Controls.CompressedLayout.SetIsHeadless(stacklayout, true);
 
@@ -38,6 +41,7 @@ namespace Maui.Controls.Sample.Issues
 				Content = stacklayout
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Device.BeginInvokeOnMainThread(async () =>
 			{
 				await Navigation.PushModalAsync(page);
@@ -51,6 +55,7 @@ namespace Maui.Controls.Sample.Issues
 					}
 				});
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

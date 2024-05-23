@@ -4,9 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
 
 namespace Maui.Controls.Sample.Issues
 {

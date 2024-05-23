@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -31,10 +26,12 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 #if !UITEST
+#pragma warning disable CS0612 // Type or member is obsolete
 			Device.BeginInvokeOnMainThread(() =>
 			{
 				DependencyService.Get<IMultiWindowService>().OpenWindow(this.GetType());
 			});
+#pragma warning restore CS0612 // Type or member is obsolete
 #endif
 
 		}

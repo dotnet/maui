@@ -38,6 +38,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			_result = new Label();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var innerLayout = new StackLayout
 			{
 				AutomationId = InnerLayout,
@@ -56,6 +57,7 @@ namespace Maui.Controls.Sample.Issues
 					}
 				}
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var outerLayout = new StackLayout
 			{
