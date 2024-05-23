@@ -1,0 +1,81 @@
+﻿using System.Diagnostics;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
+
+namespace Maui.Controls.Sample.Issues
+{
+	[Preserve(AllMembers = true)]
+	public class Person
+	{
+		public string Name { get; set; }
+
+		public Person(string name)
+		{
+			Name = name;
+		}
+	}
+
+
+	[Preserve(AllMembers = true)]
+	public class CustomViewCell : ViewCell
+	{
+		public CustomViewCell()
+		{
+			int tapsFired = 0;
+
+			Height = 50;
+
+			var label = new Label
+			{
+				Text = "I have been selected:"
+			};
+
+			if (this is CustomViewCellBindingContext)
+				label.Text = "If you can read this text the UI Test has failed";
+
+			Tapped += (s, e) =>
+			{
+				tapsFired++;
+				label.Text = "I have been selected:" + tapsFired;
+
+				var cell = (CustomViewCell)s;
+			};
+
+			View = label;
+		}
+	}
+
+
+	[Preserve(AllMembers = true)]
+	public class CustomViewCellBindingContext : CustomViewCell
+	{
+		public CustomViewCellBindingContext()
+		{
+		}
+	}
+
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 935, "ViewCell.ItemTapped only fires once for ListView.SelectedItem", PlatformAffected.Android)]
+	public class Issue935 : TestContentPage
+	{
+		protected override void Init()
+		{
+			Title = "List Page";
+
+			var items = new[] {
+				new CustomViewCellBindingContext()
+			};
+
+			var cellTemplate = new DataTemplate(typeof(CustomViewCell));
+
+			var list = new ListView()
+			{
+				ItemTemplate = cellTemplate,
+				ItemsSource = items
+			};
+
+			Content = list;
+		}
+	}
+}
