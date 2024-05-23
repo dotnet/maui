@@ -1,4 +1,15 @@
 #nullable enable
+Microsoft.Maui.Controls.HybridWebView
+Microsoft.Maui.Controls.HybridWebView.DefaultFile.get -> string?
+Microsoft.Maui.Controls.HybridWebView.DefaultFile.set -> void
+Microsoft.Maui.Controls.HybridWebView.HybridRoot.get -> string?
+Microsoft.Maui.Controls.HybridWebView.HybridRoot.set -> void
+Microsoft.Maui.Controls.HybridWebView.HybridWebView() -> void
+Microsoft.Maui.Controls.HybridWebView.RawMessageReceived -> System.EventHandler<Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.SendRawMessage(string! rawMessage) -> void
+Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs
+Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs.HybridWebViewRawMessageReceivedEventArgs(string? message) -> void
+Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs.Message.get -> string?
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
 Microsoft.Maui.Controls.PlatformDragEventArgs
@@ -57,6 +68,8 @@ Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
 Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
+static readonly Microsoft.Maui.Controls.HybridWebView.DefaultFileProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.HybridWebView.HybridRootProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!
