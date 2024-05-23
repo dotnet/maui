@@ -96,16 +96,6 @@ if ($appiumCurrentVersion -ne $appiumVersion) {
     write-Output  "Installed appium $appiumVersion"   
 }
 
-# Try to clean up old npm packages
-# if ($IsWindows) {
-#     npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-windows-driver
-# }
-# if ($IsMacOS) {
-#     npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-xcuitest-driver
-#     npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-mac2-driver
-# }
-# npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium-uiautomator2-driver
-
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers $existingDrivers"
 
@@ -116,7 +106,7 @@ if ($IsWindows) {
         Write-Output  "Updated appium driver windows"
     } else {
         Write-Output  "Installing appium driver windows"
-        appium driver install --source=npm appium-windows-driver
+        appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
         Write-Output  "Installed appium driver windows"
     }
 }
@@ -129,7 +119,7 @@ if ($IsMacOS) {
         Write-Output  "Updated appium driver xcuitest"
     } else {
         Write-Output  "Installing appium driver xcuitest"
-        appium driver install xcuitest
+        appium driver install xcuitest@$iOSDriverVersion
         Write-Output  "Installed appium driver xcuitest"
     }
     
@@ -139,7 +129,7 @@ if ($IsMacOS) {
         Write-Output  "Updated appium driver mac2"
     } else {
         Write-Output  "Installing appium driver mac2"
-        appium driver install mac2
+        appium driver install mac2@$macDriverVersion
         Write-Output  "Installed appium driver mac2"
     }
 }
@@ -150,7 +140,7 @@ if ($existingDrivers.uiautomator2) {
     Write-Output  "Updated appium driver uiautomator2"
 } else {
     Write-Output  "Installing appium driver uiautomator2"
-    appium driver install uiautomator2
+    appium driver install uiautomator2@$androidDriverVersion
     Write-Output  "Installed appium driver uiautomator2"
 }
 
