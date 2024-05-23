@@ -14,6 +14,8 @@ public class IntegrationTests
         """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
+
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -39,7 +41,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 7)]
-                    public static void SetBinding{{Math.Abs(result.Binding!.Location.GetHashCode())}}(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<string, int> getter,
@@ -107,6 +109,7 @@ public class IntegrationTests
         """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -132,7 +135,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 6, 7)]
-                    public static void SetBinding{{Math.Abs(result.Binding!.Location.GetHashCode())}}(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, int> getter,
@@ -209,6 +212,7 @@ public class IntegrationTests
         """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -234,7 +238,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
-                    public static void SetBinding{{Math.Abs(result.Binding!.Location.GetHashCode())}}(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, int> getter,
@@ -416,6 +420,7 @@ public class IntegrationTests
     public void GenerateSimpleBindingWhenNullableDisabledAndPropertyNullable(string source)
     {
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -441,7 +446,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
-                    public static void SetBinding{{Math.Abs(result.Binding!.Location.GetHashCode())}}(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, global::MyNamespace.C?> getter,
@@ -532,6 +537,7 @@ public class IntegrationTests
         """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -557,7 +563,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
-                    public static void SetBinding{{Math.Abs(result.Binding!.Location.GetHashCode())}}(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, global::MyNamespace.D?> getter,
@@ -648,6 +654,7 @@ public class IntegrationTests
             """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
 
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
@@ -674,7 +681,7 @@ public class IntegrationTests
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 4, 7)]
-                    public static void SetBinding{{Math.Abs(result.Binding!.Location.GetHashCode())}}(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
@@ -770,6 +777,7 @@ public class IntegrationTests
             """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
 
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
@@ -796,7 +804,7 @@ public class IntegrationTests
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 4, 7)]
-                    public static void SetBinding{{Math.Abs(result.Binding!.Location.GetHashCode())}}(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
@@ -879,6 +887,7 @@ public class IntegrationTests
             """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
 
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
@@ -904,7 +913,7 @@ public class IntegrationTests
                 {
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 7)]
-                    public static void SetBinding{{Math.Abs(result.Binding!.Location.GetHashCode())}}(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A, int> getter,
@@ -984,6 +993,7 @@ public class IntegrationTests
             """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
 
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
@@ -1010,7 +1020,7 @@ public class IntegrationTests
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 6, 7)]
-                    public static void SetBinding{{Math.Abs(result.Binding!.Location.GetHashCode())}}(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
