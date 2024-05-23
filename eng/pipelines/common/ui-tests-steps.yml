@@ -53,7 +53,7 @@ steps:
   - pwsh: |
       $fullLogsDir = Join-Path "$(LogDirectory)" "npm"
       ./eng/scripts/appium-install.ps1 -logsDir "$fullLogsDir"
-      Dir -Recurse $fullLogsDir | Get-Childitem | Select Fullname
+      Dir -Recurse $(APPIUM_HOME) | Get-Childitem | Select Fullname
     displayName: "Install Appium (Drivers)"
     continueOnError: false
     retryCountOnTaskFailure: 1
