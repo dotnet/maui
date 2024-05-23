@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Maui.Controls.Sample.Issues;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -9,17 +9,22 @@ namespace Maui.Controls.Sample
 {
 	public static class MauiProgram
 	{
-		public static MauiApp CreateMauiApp() =>
-			MauiApp
-				.CreateBuilder()
+		public static MauiApp CreateMauiApp()
+		{
+			var appBuilder = MauiApp.CreateBuilder();
+
 #if IOS || ANDROID
-				.UseMauiMaps()
+			appBuilder.UseMauiMaps();
 #endif
-				.UseMauiApp<App>()
+			appBuilder.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				})
+				.Issue21109AddMappers();
+
+			return appBuilder.Build();
+		}
 				.Issue18720AddMappers()
 				.Issue18720EditorAddMappers()
 				.Issue18720DatePickerAddMappers()
