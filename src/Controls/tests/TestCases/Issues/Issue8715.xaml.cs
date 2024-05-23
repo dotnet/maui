@@ -2,12 +2,6 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Xaml;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 8715, "NullReferenceException Microsoft.Maui.Controls.Platform.iOS.StructuredItemsViewRenderer [Bug]",
@@ -25,22 +19,6 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 		}
-
-#if UITEST
-		[Category(UITestCategories.CollectionView), Category(UITestCategories.Shell)]
-		[Test, Description("Reappearing CollectionView should not throw NullReferenceException")]
-		public void ReappearingCollectionViewShouldNotThrowNRE()
-		{
-			RunningApp.Tap(FlyoutIconAutomationId);
-			RunningApp.Tap("CollectionView");
-			RunningApp.Tap("Toggle");
-			RunningApp.Tap("Toggle");
-			RunningApp.Tap(FlyoutIconAutomationId);
-			RunningApp.Tap("About");
-			RunningApp.Tap(FlyoutIconAutomationId);
-			RunningApp.Tap("CollectionView");
-		}
-#endif
 	}
 
 	public class _8715AboutPage : ContentPage

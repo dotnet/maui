@@ -1,13 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {

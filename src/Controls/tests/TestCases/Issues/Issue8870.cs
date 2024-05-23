@@ -5,17 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[Category(UITestCategories.CollectionView)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8870, "[Bug] CollectionView with HTML Labels Freeze the Screen on Rotation",
 		PlatformAffected.iOS)]
@@ -65,35 +56,5 @@ namespace Maui.Controls.Sample.Issues
 			Content = layout;
 #endif
 		}
-
-#if UITEST
-		[Test]
-		public async Task RotatingCollectionViewWithHTMLShouldNotHangOrCrash()
-		{
-			int delay = 3000;
-
-			RunningApp.WaitForElement(CheckResult);
-
-			RunningApp.SetOrientationPortrait();
-			await Task.Delay(delay);
-
-			RunningApp.SetOrientationLandscape();
-			await Task.Delay(delay);
-
-			RunningApp.SetOrientationPortrait();
-			await Task.Delay(delay);
-
-			RunningApp.SetOrientationLandscape();
-			await Task.Delay(delay);
-
-			RunningApp.SetOrientationPortrait();
-			await Task.Delay(delay);
-
-			RunningApp.WaitForElement(CheckResult);
-			RunningApp.Tap(CheckResult);
-
-			RunningApp.WaitForElement(Success);
-		}
-#endif
 	}
 }

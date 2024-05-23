@@ -1,19 +1,9 @@
 ﻿using System;
-
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2963, "Disabling Editor in iOS does not disable entry of text")]
 	public class Issue2963 : TestContentPage
@@ -46,17 +36,5 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue2963Test ()
-		{
-			RunningApp.Screenshot ("I am at Issue 2963");
-			RunningApp.Tap (q => q.Marked (_editorId));
-			Assert.AreEqual ("False", RunningApp.Query (q => q.Marked (_focusedLabelId))[0].Text);
-			RunningApp.Screenshot ("Label should still be false");
-		}
-#endif
 	}
 }

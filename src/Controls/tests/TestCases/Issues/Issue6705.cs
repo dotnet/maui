@@ -1,12 +1,7 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -56,19 +51,5 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = stack;
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue6705Test()
-		{
-			for (var i = 1; i < 6; i++)
-			{
-				RunningApp.WaitForElement($"Button{i}");
-				RunningApp.Tap($"Button{i}");
-				RunningApp.WaitForElement($"{i}");
-			}
-		}
-#endif
 	}
 }

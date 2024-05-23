@@ -1,12 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 9580, "[Bug] CollectionView - iOS - Crash when adding first item to empty item group",
@@ -75,16 +69,5 @@ namespace Maui.Controls.Sample.Issues
 		{
 			public string Name { get; set; }
 		}
-
-#if UITEST
-		[Category(UITestCategories.CollectionView)]
-		[Test]
-		public void AllEmptyGroupsShouldNotCrashOnItemInsert()
-		{
-			RunningApp.WaitForElement(Test9580);
-			RunningApp.Tap(Test9580);
-			RunningApp.WaitForElement(Success);
-		}
-#endif
 	}
 }

@@ -1,15 +1,10 @@
 ﻿using System;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
-
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -56,19 +51,6 @@ namespace Maui.Controls.Sample.Issues
 
 
 		}
-
-#if UITEST
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
-		[Test]
-		public void Issue5951Test()
-		{
-			RunningApp.Tap(q => q.Marked("Push page"));
-			RunningApp.WaitForElement(q => q.Marked("Push page"));
-
-			RunningApp.WaitForElement(q => q.Marked("Success"));
-		}
-#endif
 	}
 
 	[Preserve(AllMembers = true)]

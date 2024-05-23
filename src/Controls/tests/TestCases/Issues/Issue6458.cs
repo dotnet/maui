@@ -1,11 +1,6 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -27,19 +22,5 @@ namespace Maui.Controls.Sample.Issues
 				Text = "Make sure you run this on Non AppCompact Activity"
 			};
 		}
-
-#if UITEST && __ANDROID__
-		[Test]
-		public void Issue6458Test()
-		{
-			RunningApp.WaitForElement("IssuePageLabel");
-			var element = RunningApp.WaitForElement("banktitleicon");
-
-			Assert.AreEqual(1, element.Length, "banktitleicon not found");
-
-			Assert.Greater(element[0].Rect.Height, 10);
-			Assert.Greater(element[0].Rect.Width, 10);
-		}
-#endif
 	}
 }

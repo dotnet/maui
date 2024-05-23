@@ -1,10 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
@@ -46,14 +42,5 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = layout;
 		}
-
-#if UITEST && __ANDROID__
-		[Test]
-		[Compatibility.UITests.FailsOnMauiAndroid]
-		public void ExpectingPageNotToBreak()
-		{
-			RunningApp.Screenshot("Test passed, label is showing as it should!");
-		}
-#endif
 	}
 }

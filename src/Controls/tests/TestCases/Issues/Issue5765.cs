@@ -1,21 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[Category(UITestCategories.CollectionView)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5765, "[Frame, CollectionView, Android]The Label.Text is invisible on Android if DataTemplate have frame as layout",
 		PlatformAffected.Android)]
@@ -67,14 +59,5 @@ namespace Maui.Controls.Sample.Issues
 
 			return page;
 		}
-
-#if UITEST
-		[Test]
-		public void FlexLayoutsInFramesShouldSizeCorrectly()
-		{
-			// If the first label is visible at all, then this has succeeded
-			RunningApp.WaitForElement(Target);
-		}
-#endif
 	}
 }

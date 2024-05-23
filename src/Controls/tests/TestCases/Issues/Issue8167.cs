@@ -1,19 +1,11 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(UITestCategories.ManualReview)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8167, "[Bug] XF 4.3 UWP Crash - Element not found", PlatformAffected.UWP)]
 	public class Issue8167 : TestContentPage
@@ -107,18 +99,5 @@ namespace Maui.Controls.Sample.Issues
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void ThreadpoolBindingUpdateShouldNotCrash()
-		{
-			RunningApp.WaitForElement(Run);
-			RunningApp.Tap(Run);
-			RunningApp.WaitForElement(Success);
-		}
-#endif
 	}
-
-
 }

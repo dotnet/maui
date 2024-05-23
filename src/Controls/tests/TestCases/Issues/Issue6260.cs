@@ -2,26 +2,16 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-
-
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6260, "[Android] infinite layout loop",
 		PlatformAffected.Android)]
-#if UITEST
-	[NUnit.Framework.Category(UITestCategories.Button)]
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
-#endif
 	public class Issue6260 : TestContentPage
 	{
 		const string text = "If this number keeps increasing test has failed: ";
@@ -72,14 +62,5 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-
-#if UITEST
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-		[Test]
-		public void ButtonImageInfiniteLayout()
-		{
-			RunningApp.WaitForElement(success);
-		}
-#endif
 	}
 }

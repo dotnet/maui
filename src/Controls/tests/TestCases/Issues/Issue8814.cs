@@ -3,18 +3,8 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[Category(UITestCategories.Shell)]
-	[Category(UITestCategories.CollectionView)]
-#endif
 	[Issue(IssueTracker.Github, 8814,
 		"[Bug] UWP Shell cannot host CollectionView/CarouselView",
 		PlatformAffected.UWP)]
@@ -54,13 +44,5 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-
-#if UITEST
-		[Test]
-		public void CollectionViewInShellShouldBeVisible()
-		{
-			RunningApp.WaitForElement(Success);
-		}
-#endif
 	}
 }

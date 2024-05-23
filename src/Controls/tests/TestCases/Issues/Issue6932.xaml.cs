@@ -4,17 +4,8 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[Category(UITestCategories.Layout)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6932, "EmptyView for BindableLayout (view)", PlatformAffected.All)]
 	public partial class Issue6932 : TestContentPage
@@ -23,64 +14,14 @@ namespace Maui.Controls.Sample.Issues
 
 		public Issue6932()
 		{
-#if APP
 			InitializeComponent();
 			BindingContext = _viewModel;
-#endif
 		}
 
 		protected override void Init()
 		{
 
 		}
-
-#if UITEST
-		[Test]
-		public void EmptyViewBecomesVisibleWhenItemsSourceIsCleared()
-		{
-			RunningApp.Screenshot("Screen opens, items are shown");
-
-			RunningApp.WaitForElement(_viewModel.LayoutAutomationId);
-			RunningApp.Tap(_viewModel.ClearAutomationId);
-			RunningApp.WaitForElement(_viewModel.EmptyViewAutomationId);
-
-			RunningApp.Screenshot("Empty view is visible");
-		}
-
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void EmptyViewBecomesVisibleWhenItemsSourceIsEmptiedOneByOne()
-		{
-			RunningApp.Screenshot("Screen opens, items are shown");
-
-			RunningApp.WaitForElement(_viewModel.LayoutAutomationId);
-
-			for (var i = 0; i < _viewModel.ItemsSource.Count; i++)
-				RunningApp.Tap(_viewModel.RemoveAutomationId);
-
-			RunningApp.WaitForElement(_viewModel.EmptyViewAutomationId);
-
-			RunningApp.Screenshot("Empty view is visible");
-		}
-
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void EmptyViewHidesWhenItemsSourceIsFilled()
-		{
-			RunningApp.Screenshot("Screen opens, items are shown");
-
-			RunningApp.WaitForElement(_viewModel.LayoutAutomationId);
-			RunningApp.Tap(_viewModel.ClearAutomationId);
-			RunningApp.WaitForElement(_viewModel.EmptyViewAutomationId);
-
-			RunningApp.Screenshot("Items are cleared, empty view visible");
-
-			RunningApp.Tap(_viewModel.AddAutomationId);
-			RunningApp.WaitForNoElement(_viewModel.EmptyViewAutomationId);
-
-			RunningApp.Screenshot("Item is added, empty view is not visible");
-		}
-#endif
 	}
 
 	[Preserve(AllMembers = true)]

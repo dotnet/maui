@@ -7,12 +7,6 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using NUnit.Framework;
-using Xamarin.UITest;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
@@ -136,27 +130,6 @@ namespace Maui.Controls.Sample.Issues
 		// instead of querying on the placeholder text
 
 
-#endif
-#if UITEST
-		[Test]
-		[UiTest (typeof(ContentPage))]
-		public void Issue852TestsEntriesClickable ()
-		{
-			RunningApp.WaitForElement (q => q.Marked ("Welcome to the System"));
-			RunningApp.WaitForElement (UsernameId);
-			RunningApp.WaitForElement (PasswordId);
-			RunningApp.WaitForElement (q => q.Button ("Login"));
-			RunningApp.Screenshot ("All elements present");
-
-			RunningApp.Tap (UsernameId);
-			RunningApp.WaitForElement (q => q.Marked ("Clicked User"));
-			RunningApp.EnterText (UsernameId, "Usertest");
-			RunningApp.Screenshot ("User entered");
-
-			RunningApp.Tap (PasswordId);
-			RunningApp.WaitForElement (q => q.Marked ("Clicked Password"));
-			RunningApp.EnterText (PasswordId, "Userpass");
-		}
 #endif
 	}
 }

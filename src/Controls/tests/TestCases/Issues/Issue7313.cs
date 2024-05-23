@@ -5,19 +5,10 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7313, "ListView RefreshControl Not Hiding", PlatformAffected.iOS)]
-#if UITEST
-	[NUnit.Framework.Category(UITestCategories.ListView)]
-#endif
 	public class Issue7313 : TestContentPage
 	{
 		ListView _listView;
@@ -55,16 +46,5 @@ namespace Maui.Controls.Sample.Issues
 			_testLoaded.Text = _testReady;
 
 		}
-
-#if UITEST && __IOS__
-		[Test]
-		public void RefreshControlTurnsOffSuccessfully()
-		{
-			RunningApp.WaitForElement(_testReady);
-
-			RunningApp.WaitForNoElement("RefreshControl");
-		}
-#endif
-
 	}
 }

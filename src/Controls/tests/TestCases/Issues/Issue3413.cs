@@ -2,12 +2,6 @@
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
@@ -64,18 +58,5 @@ namespace Maui.Controls.Sample.Issues
 			Grid.SetRow(searchBar2, 2);
 			Content = grid;
 		}
-
-#if UITEST
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
-		[Test]
-		[Category(UITestCategories.ManualReview)]
-		public void Issue3413Test()
-		{
-			RunningApp.WaitForElement(q => q.Marked("srb_vertical"));
-			RunningApp.WaitForElement(q => q.Marked("srb_horizontal"));
-			RunningApp.Screenshot("Please verify we have 2 SearchBars. One below the label, other side by side with the label");
-		}
-#endif
 	}
 }

@@ -8,12 +8,6 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Xaml;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 9196, "[Bug] [iOS] CollectionView EmptyView causes the application to crash",
@@ -31,16 +25,6 @@ namespace Maui.Controls.Sample.Issues
 		{
 			BindingContext = new _9196ViewModel();
 		}
-
-#if UITEST
-		[MovedToAppium]
-		[Test, Category(UITestCategories.CollectionView)]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void EmptyViewShouldNotCrash()
-		{
-			RunningApp.WaitForElement("Success");
-		}
-#endif
 	}
 
 	public class _9196ViewModel

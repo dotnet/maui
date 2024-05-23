@@ -2,15 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-using CategoryAttribute = NUnit.Framework.CategoryAttribute;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -56,13 +50,5 @@ namespace Maui.Controls.Sample.Issues
 		{
 			public string Name { get; set; }
 		}
-
-#if UITEST
-		[Test, Category(UITestCategories.CollectionView)]
-		public void BindablePropertiesAvailableAtOnElementChanged()
-		{
-			RunningApp.WaitForElement(Success);
-		}
-#endif
 	}
 }

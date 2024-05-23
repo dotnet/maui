@@ -1,14 +1,8 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-
-#if UITEST
-using NUnit.Framework;
-using Xamarin.UITest;
-using Xamarin.UITest.Queries;
-#endif
-
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -20,31 +14,6 @@ namespace Maui.Controls.Sample.Issues
 		{
 			PushAsync(new CannotScrollRepro());
 		}
-
-#if UITEST
-		[Compatibility.UITests.MovedToAppium]
-		[Test]
-		[Issue (IssueTracker.Github, 773, "Horizontal ScrollView locks after rotation - relayout correctly after rotation", PlatformAffected.iOS)]
-		[UiTest (typeof(ScrollView))]
-		[Compatibility.UITests.FailsOnMauiAndroid]
-		public void Issue773TestsRotationRelayoutIssue ()
-		{
-			RunningApp.SetOrientationLandscape ();
-
-			var buttonLabels = new [] { 
-				"Button 1",
-				"Button 2",
-				"Button 3",
-			};
-
-			foreach (string buttonLabel in buttonLabels)
-				RunningApp.WaitForElement (q => q.Button (buttonLabel));
-
-			RunningApp.Screenshot ("StackLayout in Modal respects rotation");
-
-			RunningApp.SetOrientationPortrait ();
-		}
-#endif
 	}
 
 	public class CannotScrollRepro : ContentPage

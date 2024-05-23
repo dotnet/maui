@@ -6,21 +6,11 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6262, "[Bug] Button in Grid gets wrong z-index",
 		PlatformAffected.iOS)]
-#if UITEST
-	[NUnit.Framework.Category(UITestCategories.Layout)]
-#endif
 	public class Issue6262 : TestContentPage
 	{
 		protected override void Init()
@@ -74,23 +64,5 @@ namespace Maui.Controls.Sample.Issues
 					BackgroundColor = Colors.Green
 				});
 		}
-
-#if UITEST
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
-		[Test]
-		public void ImageShouldLayoutOnTopOfButton()
-		{
-			RunningApp.WaitForElement("ClickMe");
-			RunningApp.Tap("ClickMe");
-			RunningApp.WaitForElement("ClickMe");
-			RunningApp.WaitForNoElement("Fail");
-			RunningApp.Tap("RetryTest");
-			RunningApp.WaitForElement("ClickMe");
-			RunningApp.Tap("ClickMe");
-			RunningApp.WaitForElement("ClickMe");
-			RunningApp.WaitForNoElement("Fail");
-		}
-#endif
 	}
 }

@@ -1,21 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[Category(UITestCategories.Animation)]
-	[Category(UITestCategories.ManualReview)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8004, "Add a ScaleXTo and ScaleYTo animation extension method", PlatformAffected.All)]
 	public class Issue8004 : TestContentPage
@@ -71,27 +62,5 @@ namespace Maui.Controls.Sample.Issues
 			_boxView.ScaleYTo(2, 250, Easing.CubicInOut);
 			_boxView.ScaleXTo(1.5, 400, Easing.BounceOut);
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public async Task AnimateScaleOfBoxView()
-		{
-			RunningApp.WaitForElement("TestReady");
-			RunningApp.Screenshot("Small blue box");
-
-			// Check the box and button elements.
-			RunningApp.WaitForElement(q => q.Marked(BoxToScale));
-			RunningApp.WaitForElement(q => q.Marked(AnimateBoxViewButton));
-
-			// Tap the button.
-			RunningApp.Tap(q => q.Marked(AnimateBoxViewButton));
-
-			// Wait for animation to finish.
-			await Task.Delay(500);
-			   
-			RunningApp.Screenshot("Bigger blue box");
-		}
-#endif
 	}
 }

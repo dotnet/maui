@@ -2,24 +2,13 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(UITestCategories.ListView)]
-	[NUnit.Framework.Category(UITestCategories.Label)]
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
-#endif
-
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6994, "Regression in Xamarin.Forms 4.2.0-pre1 (Java.Lang.NullPointerException when using FastRenderers)", PlatformAffected.Android)]
 	public class Issue6994 : TestContentPage
@@ -84,17 +73,6 @@ namespace Maui.Controls.Sample.Issues
 				stackLayout.Children.Insert(0, instructions);
 			};
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void NullPointerExceptionOnFastLabelTextColorChange()
-		{
-			RunningApp.WaitForElement(q => q.Marked("Click me"));
-			RunningApp.Tap(q => q.Marked("Click me"));
-			RunningApp.WaitForElement(q => q.Marked("Success"));
-		}
-#endif
 
 		[Preserve(AllMembers = true)]
 		public class ItemViewModel : INotifyPropertyChanged

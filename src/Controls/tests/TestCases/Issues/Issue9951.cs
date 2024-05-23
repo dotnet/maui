@@ -1,18 +1,9 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using System.Threading.Tasks;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 9951, "Android 10 Setting ThumbColor on Switch causes a square block", PlatformAffected.Android)]
-#if UITEST
-	[NUnit.Framework.Category(UITestCategories.ManualReview)]
-#endif
 	public class Issue9951 : TestContentPage
 	{
 		private const string switchId = "switch";
@@ -34,22 +25,5 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = stackLayout;
 		}
-
-#if UITEST && __ANDROID__
-		[Test]
-		public async Task SwitchColorTest()
-		{
-			RunningApp.WaitForElement(switchId);
-
-			RunningApp.Screenshot("Initial switch state");
-
-			RunningApp.Tap(switchId);
-
-			//Delay so that the switch toggling is finished
-			await Task.Delay(200);
-
-			RunningApp.Screenshot("Toggled switch state");
-		}
-#endif
 	}
 }

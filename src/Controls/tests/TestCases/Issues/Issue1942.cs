@@ -6,17 +6,8 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1942, "[Android] Attached Touch Listener events do not dispatch to immediate parent Grid Renderer View on Android when Child fakes handled",
 		PlatformAffected.Android)]
@@ -40,15 +31,5 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 		public class CustomGrid : Grid { }
-
-#if UITEST && __ANDROID__
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-		[Test]
-		public void ClickPropagatesToOnTouchListener()
-		{
-			RunningApp.Tap(ClickMeString);
-			RunningApp.WaitForElement(SuccessString);
-		}
-#endif
 	}
 }

@@ -5,12 +5,6 @@ using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 8766, "[Bug] CollectionView.EmptyView does not inherit parent Visual", PlatformAffected.All)]
@@ -41,15 +35,5 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = layout;
 		}
-
-#if UITEST
-		[Test]
-		[Category(UITestCategories.ManualReview)]
-		public void VisualPropagatesToEmptyView()
-		{
-			RunningApp.WaitForElement("TestReady");
-			RunningApp.Screenshot("CollectionViewWithEmptyView");
-		}
-#endif
 	}
 }

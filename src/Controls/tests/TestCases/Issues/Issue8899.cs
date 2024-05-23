@@ -5,12 +5,6 @@ using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
@@ -97,19 +91,5 @@ namespace Maui.Controls.Sample.Issues
 		{
 			public string Text { get; set; }
 		}
-
-#if UITEST
-		[MovedToAppium]
-		[Test, Category(UITestCategories.CollectionView)]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void ClearingGroupedCollectionViewShouldNotCrash()
-		{
-			RunningApp.WaitForElement(Go);
-			RunningApp.Tap(Go);
-			RunningApp.WaitForElement(Success);
-		}
-#endif
 	}
-
-
 }

@@ -1,22 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using NUnit.Framework;
-using Xamarin.UITest;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2259, "ListView.ScrollTo crashes app", PlatformAffected.iOS)]
 	public class Issue2259 : TestContentPage
@@ -153,21 +144,6 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-
-#if UITEST
-		[Test]
-		[UiTest(typeof(ListView), "ScrollTo")]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue2259Tests()
-		{
-			for (int i = 0; i < 20; i++)
-			{
-				RunningApp.Tap(q => q.Button("Add"));
-				RunningApp.WaitForElement(q => q.Marked("Name " + (i + 1).ToString()));
-				RunningApp.Screenshot("Added Cell");
-			}
-		}
-#endif
 	}
 }
 

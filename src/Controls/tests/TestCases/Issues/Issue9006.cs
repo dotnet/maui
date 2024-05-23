@@ -1,20 +1,11 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 9006, "[Bug] Unable to open a new Page for the second time in Xamarin.Forms Shell Tabbar",
 		PlatformAffected.iOS)]
-#if UITEST
-	[NUnit.Framework.Category(UITestCategories.Shell)]
-#endif
 	public class Issue9006 : TestShell
 	{
 		protected override void Init()
@@ -66,18 +57,5 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-
-
-#if UITEST && __IOS__
-		[Test]
-		public void ClickingOnTabToPopToRootDoesntBreakNavigation()
-		{
-			RunningApp.Tap("Click Me");
-			RunningApp.WaitForElement("FinalLabel");
-			RunningApp.Tap("Tab1AutomationId");
-			RunningApp.Tap("Click Me");
-			RunningApp.Tap("Success");
-		}
-#endif
 	}
 }

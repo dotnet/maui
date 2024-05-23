@@ -5,17 +5,8 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using NUnit.Framework;
-using Xamarin.UITest;
-using Xamarin.UITest.Android;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2241, "ScrollView content can become stuck on orientation change (iOS)", PlatformAffected.iOS)]
 	public class Issue2241 : TestContentPage
@@ -72,29 +63,6 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = scrollView;
 		}
-
-#if UITEST
-		[Test]
-		[Ignore("Fails intermittently on TestCloud")]
-		public void ChangeOrientationCheckScroll ()
-		{
-#if __ANDROID__
-			var isAndroid = true;
-#else
-			var isAndroid = false;
-#endif
-			var grid1 = RunningApp.Query("MainGrid").Single();
-			RunningApp.SetOrientationLandscape ();
-			RunningApp.ScrollDown ();
-			RunningApp.SetOrientationPortrait ();
-			var grid2 = RunningApp.Query("MainGrid").Single();
-			RunningApp.Screenshot ("Did it resize ok? Do you see some white on the bottom?");
-
-			if (!isAndroid) {
-				Assert.AreEqual (grid1.Rect.CenterY, grid2.Rect.CenterY);
-			}
-		}
-#endif
 	}
 }
 

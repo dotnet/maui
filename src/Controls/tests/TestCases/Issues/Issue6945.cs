@@ -2,25 +2,16 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-
-
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6945, "[iOS] Wrong anchor behavior when setting HeightRequest ",
 		PlatformAffected.iOS)]
-#if UITEST
-	[NUnit.Framework.Category(UITestCategories.ListView)]
-#endif
 	public class Issue6946 : TestContentPage
 	{
 		const string ClickMeId = "ClickMeAutomationId";
@@ -62,20 +53,5 @@ namespace Maui.Controls.Sample.Issues
 					}
 				};
 		}
-
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void WrongTranslationBehaviorWhenChangingHeightRequestAndSettingAnchor()
-		{
-			var rect = RunningApp.WaitForElement(BoxViewId)[0].Rect;
-			RunningApp.Tap(ClickMeId);
-			var rect2 = RunningApp.WaitForElement(BoxViewId)[0].Rect;
-
-			Assert.AreEqual(rect.X, rect2.X);
-			Assert.AreEqual(rect.Y, rect2.Y);
-		}
-#endif
 	}
 }

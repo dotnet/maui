@@ -1,19 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[Category(UITestCategories.ManualReview)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6472, "[Bug][iOS] listview / observable collection throwing native error on load", PlatformAffected.iOS)]
 	public class Issue6472 : TestContentPage
@@ -157,24 +149,5 @@ namespace Maui.Controls.Sample.Issues
 			base.OnAppearing();
 			staticData.testPopulate();
 		}
-
-#if UITEST && __IOS__
-		[Test]
-		[Ignore("Fails occasionally on iOS 12 https://github.com/xamarin/Xamarin.Forms/issues/6472")]
-		public void ListViewDoesNotThrowExceptionWithObservableCollection() 
-		{
-			RunningApp.WaitForElement (ListViewAutomationId);
-			RunningApp.Screenshot ("We got here without an exception while loading the data and data is visible");
-
-			RunningApp.Tap(ClearButtonAutomationId);
-			RunningApp.Tap(UiThreadButtonAutomationId);
-			RunningApp.Tap(OtherThreadButtonAutomationId);
-
-			RunningApp.Tap(ClearButtonAutomationId);
-			RunningApp.Tap(OtherThreadButtonAutomationId);
-			RunningApp.Tap(UiThreadButtonAutomationId);
-
-		}
-#endif
 	}
 }

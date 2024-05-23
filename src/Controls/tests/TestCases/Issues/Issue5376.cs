@@ -1,20 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[Category(UITestCategories.LifeCycle)]
-	[Category(UITestCategories.UwpIgnore)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5376, "Call unfocus entry crashes app", PlatformAffected.Android)]
 	public class Issue5376 : TestFlyoutPage
@@ -84,13 +75,5 @@ namespace Maui.Controls.Sample.Issues
 				});
 			}
 		}
-
-#if UITEST
-		[Test]
-		public void Issue5376Test() 
-		{
-			RunningApp.WaitForFirstElement ("Success");
-		}
-#endif
 	}
 }
