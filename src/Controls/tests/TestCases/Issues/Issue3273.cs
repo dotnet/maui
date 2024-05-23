@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-	[Category(UITestCategories.ListView)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3273, "Drag and drop reordering not firing CollectionChanged", PlatformAffected.UWP)]
 	public class Issue3273 : TestContentPage
@@ -69,16 +61,5 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue3273Test()
-		{
-			RunningApp.WaitForElement("Move items");
-			RunningApp.Tap("Move items");
-			RunningApp.WaitForElement("Success");
-		}
-#endif
 	}
 }

@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-
-#if UITEST
-using NUnit.Framework;
-using Xamarin.UITest;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -75,15 +70,5 @@ namespace Maui.Controls.Sample.Issues
 				Content = mainG;
 			}
 		}
-
-#if UITEST
-		[Test]
-		[Category(UITestCategories.ManualReview)]
-		public void Issue4879Test()
-		{
-			RunningApp.WaitForElement("TestReady");
-			RunningApp.Screenshot("I am at Issue 4879 - All buttons/images should be the same size.");
-		}
-#endif
 	}
 }

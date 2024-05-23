@@ -2,26 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-
-
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3333, "[UWP] with ListView on page, Navigation.PopAsync() throws exception",
 		PlatformAffected.UWP)]
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-	[NUnit.Framework.Category(UITestCategories.ListView)]
-	[NUnit.Framework.Category(UITestCategories.Navigation)]
-#endif
 	public class Issue3333 : TestNavigationPage
 	{
 		const string kSuccess = "If you're reading this the test has passed";
@@ -88,13 +77,5 @@ namespace Maui.Controls.Sample.Issues
 				});
 			}
 		}
-
-#if UITEST
-		[Test]
-		public void SettingBindingContextToNullBeforingPoppingPageCrashes()
-		{
-			RunningApp.WaitForElement(kSuccess);
-		}
-#endif
 	}
 }

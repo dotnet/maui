@@ -1,16 +1,9 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2837, " Exception thrown during NavigationPage.Navigation.PopAsync", PlatformAffected.Android)]
 	public class Issue2837 : TestNavigationPage // or TestFlyoutPage, etc ...
@@ -30,13 +23,5 @@ namespace Maui.Controls.Sample.Issues
 			await nav.Navigation.PopAsync(false);
 			base.OnAppearing();
 		}
-
-#if UITEST
-		[Test]
-		public void Issue2837Test()
-		{
-			RunningApp.WaitForElement(q => q.Text(_labelText));
-		}
-#endif
 	}
 }

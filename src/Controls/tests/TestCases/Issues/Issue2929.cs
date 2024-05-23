@@ -1,19 +1,10 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-	[Category(UITestCategories.ListView)]
-#endif
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2929, "[UWP] ListView with null ItemsSource crashes on 3.0.0.530893",
@@ -38,21 +29,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void NullItemSourceDoesNotCrash()
-		{
-			// If we can see the Success label, it means we didn't crash. 
-			RunningApp.WaitForElement(Success);
-		}
-#endif
 	}
-
-#if UITEST
-	[Category(UITestCategories.ListView)]
-#endif
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 99, "Make sure setting ItemSource to null doesn't blow up",
@@ -99,19 +76,5 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-
-#if UITEST
-		[Test]
-		[NUnit.Framework.Category(UITestCategories.ListView)]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void SettingItemsSourceToNullDoesNotCrash()
-		{
-			RunningApp.WaitForElement(Go);
-			RunningApp.Tap(Go);
-
-			// If we can see the Success label, it means we didn't crash. 
-			RunningApp.WaitForElement(Success);
-		}
-#endif
 	}
 }

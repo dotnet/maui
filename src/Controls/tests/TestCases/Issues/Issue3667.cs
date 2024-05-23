@@ -1,11 +1,7 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-
-#if UITEST
-using NUnit.Framework;
-using Xamarin.UITest;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -74,23 +70,6 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = layout;
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue3667Tests ()
-		{
-			RunningApp.WaitForElement(query => query.Text(text));
-			RunningApp.Tap("Change TextTransform");
-			RunningApp.WaitForElement(query => query.Text(text));
-			RunningApp.Tap("Change TextTransform");
-			RunningApp.WaitForElement(query => query.Text(text.ToLowerInvariant()));
-			RunningApp.Tap("Change TextTransform");
-			RunningApp.WaitForElement(query => query.Text(text.ToUpperInvariant()));
-			RunningApp.Tap("Change TextTransform");
-			RunningApp.WaitForElement(query => query.Text(text));
-		}
-#endif
 	}
 }
 

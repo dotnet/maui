@@ -2,20 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2681, "[UWP] Label inside Listview gets stuck inside infinite loop",
 		PlatformAffected.UWP)]
@@ -72,15 +64,5 @@ namespace Maui.Controls.Sample.Issues
 				};
 			}
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.MovedToAppium]
-		public void ListViewDoesntFreezeApp()
-		{
-			RunningApp.Tap(x => x.Marked(NavigateToPage));
-			RunningApp.WaitForElement("3");
-		}
-#endif
 	}
 }

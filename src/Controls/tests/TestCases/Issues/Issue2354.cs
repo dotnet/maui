@@ -4,20 +4,8 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using NUnit.Framework;
-using Xamarin.UITest;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Image)]
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.ListView)]
-	[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2354, "ListView, ImageCell and disabled source cache and same image url", PlatformAffected.iOS | PlatformAffected.Android)]
 	public class Issue2354 : TestContentPage
@@ -119,22 +107,6 @@ namespace Maui.Controls.Sample.Issues
 			{
 				throw new NotImplementedException();
 			}
-
 		}
-
-#if UITEST
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-		[Test]
-		public void TestDoesntCrashWithCachingDisable()
-		{
-			RunningApp.WaitForElement("ImageLoaded");
-			RunningApp.ScrollDown();
-			RunningApp.ScrollDown();
-		}
-#endif
-
 	}
-
 }
-
-

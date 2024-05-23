@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3390, "Crash/incorrect behavior with corner radius 5", PlatformAffected.All)]
 	public class Issue3390 : TestContentPage
@@ -50,15 +43,5 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue3390Test()
-		{
-			RunningApp.Tap("Click me");
-			RunningApp.WaitForElement("Success");
-		}
-#endif
 	}
 }

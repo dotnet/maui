@@ -1,18 +1,10 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[Category(UITestCategories.ManualReview)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3884, "BoxView corner radius", PlatformAffected.Android)]
 	public class Issue3884 : TestContentPage // or TestFlyoutPage, etc ...
@@ -36,16 +28,5 @@ namespace Maui.Controls.Sample.Issues
 				Children = { label, box }
 			};
 		}
-
-#if UITEST
-		[Test]
-		[Category(UITestCategories.ManualReview)]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue3884Test()
-		{
-			RunningApp.WaitForElement("TestReady");
-			RunningApp.Screenshot("I see a blue circle");
-		}
-#endif
 	}
 }

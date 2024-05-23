@@ -1,22 +1,14 @@
 ﻿using System;
 using System.Net;
 using System.Text.RegularExpressions;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[Category(UITestCategories.WebView)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3262, "Adding Cookies ability to a WebView...")]
 	public class Issue3262 : TestContentPage // or TestFlyoutPage, etc ...
@@ -296,95 +288,5 @@ namespace Maui.Controls.Sample.Issues
 				throw;
 			}
 		}
-
-#if UITEST
-
-		[Test]
-		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
-		{
-			RunningApp.Tap("PageWithoutCookies");
-			RunningApp.WaitForElement("PageWithoutCookies");
-		}
-
-		[Test]
-		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		[Compatibility.UITests.FailsOnMauiAndroid]
-		public void ChangeDuringNavigating()
-		{
-			RunningApp.WaitForElement("Loaded");
-			// add a couple cookies
-			RunningApp.Tap("ChangeDuringNavigating");
-			ValidateSuccess();
-			RunningApp.Tap("ChangeDuringNavigating");
-			ValidateSuccess();
-		}
-
-		[Test]
-		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void AddAdditionalCookieToWebView()
-		{
-			RunningApp.WaitForElement("Loaded");
-			// add a couple cookies
-			RunningApp.Tap("AdditionalCookie");
-			ValidateSuccess();
-			RunningApp.Tap("AdditionalCookie");
-			ValidateSuccess();
-		}
-
-		[Test]
-		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		[Compatibility.UITests.FailsOnMauiAndroid]
-		public void SetToOneCookie()
-		{
-			RunningApp.WaitForElement("Loaded");
-			RunningApp.Tap("OneCookie");
-			ValidateSuccess();
-		}
-
-		[Test]
-		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		[Compatibility.UITests.FailsOnMauiAndroid]
-		public void SetCookieContainerToNullDisablesCookieManagement()
-		{
-			RunningApp.WaitForElement("Loaded");
-			// add a cookie to verify said cookie remains
-			RunningApp.Tap("AdditionalCookie");
-			ValidateSuccess();
-			RunningApp.Tap("NullAllCookies");
-			ValidateSuccess();
-		}
-
-		[Test]
-		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void RemoveAllTheCookiesIAdded()
-		{
-			RunningApp.WaitForElement("Loaded");
-			// add a cookie so you can remove a cookie
-			RunningApp.Tap("AdditionalCookie");
-			ValidateSuccess();
-			RunningApp.Tap("EmptyAllCookies");
-			ValidateSuccess();
-		}
-
-		void ValidateSuccess()
-		{
-			try
-			{
-				RunningApp.WaitForElement("Success");
-			}
-			catch
-			{
-				RunningApp.Tap("DisplayAllCookies");
-				throw;
-			}
-		}
-#endif
 	}
 }

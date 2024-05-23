@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Linq.Expressions;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3001, "[macOS] Navigating back from a complex page is highly inefficient", PlatformAffected.macOS)]
 	public class Issue3001 : TestContentPage
@@ -74,17 +68,5 @@ namespace Maui.Controls.Sample.Issues
 			sp.Children.Add(BuildLevel());
 			Content = sp;
 		}
-
-#if UITEST
-#if __MACOS__
-		[Test]
-		public void Issue3001Test()
-		{
-			RunningApp.WaitForElement(q => q.Marked(ButtonId));
-			RunningApp.Tap(q => q.Marked(ButtonId));
-			RunningApp.WaitForElement(q => q.Marked(ReadyId), timeout: TimeSpan.FromSeconds(5));
-		}
-#endif
-#endif
 	}
 }

@@ -5,25 +5,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Windows.Input;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-
-
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3089, "TextCell text doesn't change when using Recycling on ListViews")]
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-	[NUnit.Framework.Category(UITestCategories.ListView)]
-	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
-#endif
 	public class Issue3089 : TestNavigationPage
 	{
 		const string reload = "reload";
@@ -118,15 +107,5 @@ namespace Maui.Controls.Sample.Issues
 				view.SetBinding(ListView.ItemsSourceProperty, "Items");
 			}
 		}
-
-#if UITEST
-		[Test]
-		[FailsOnMauiIOS]
-		public void ResettingItemsOnRecycledListViewKeepsOldText()
-		{
-			RunningApp.Tap(reload);
-			RunningApp.WaitForElement(success);
-		}
-#endif
 	}
 }

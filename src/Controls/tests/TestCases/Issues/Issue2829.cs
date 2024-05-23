@@ -4,21 +4,14 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.ControlGallery.Effects;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2829, "[Android] Renderers associated with ListView cells are occasionaly not being disposed of which causes left over events to propagate to disposed views",
 		PlatformAffected.Android)]
@@ -146,19 +139,5 @@ namespace Maui.Controls.Sample.Issues
 
 			public event PropertyChangedEventHandler PropertyChanged;
 		}
-
-#if UITEST && __ANDROID__
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-		[Test]
-		public void ViewCellsAllDisposed()
-		{
-			RunningApp.Tap(kCreateListViewButton);
-			RunningApp.WaitForElement("0");
-			RunningApp.Tap(kScrollMe);
-			RunningApp.WaitForElement("70");
-			RunningApp.Back();
-			RunningApp.WaitForElement(kSuccess);
-		}
-#endif
 	}
 }

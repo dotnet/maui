@@ -1,18 +1,11 @@
 ﻿using System;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 
-#if UITEST && __IOS__
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3049, "DisplayActionSheet freezes app in iOS custom renderer (iPad only)", PlatformAffected.iOS)]
 	public class Issue3049 : TestContentPage
@@ -57,31 +50,5 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = stackLayout;
 		}
-
-#if UITEST && __IOS__
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue3049Test()
-		{
-			RunningApp.WaitForElement(q => q.Marked(Button1Id));
-
-			if (RunningApp.Query(q => q.Marked(Skip)).Length > 0)
-				Assert.Pass("Test ignored, not relevant on phone");
-			else
-			{
-				RunningApp.Tap(q => q.Marked(Button1Id));
-
-				RunningApp.WaitForElement(q => q.Marked(Action1));
-
-				// tap outside ActionSheet to dismiss it
-				RunningApp.Tap(q => q.Marked(LabelId));
-
-				RunningApp.WaitForElement(q => q.Marked(Button2Id));
-				RunningApp.Tap(q => q.Marked(Button2Id));
-
-				RunningApp.WaitForElement(q => q.Marked(Success));
-			}
-		}
-#endif
 	}
 }

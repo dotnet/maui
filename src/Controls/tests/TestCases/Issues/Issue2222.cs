@@ -3,16 +3,8 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using NUnit.Framework;
-using Xamarin.UITest;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2222, "NavigationBar.ToolbarItems.Add() crashes / breaks app in iOS7. works fine in iOS8", PlatformAffected.iOS)]
 	public class Issue2222 : TestNavigationPage
@@ -38,17 +30,6 @@ namespace Maui.Controls.Sample.Issues
 				};
 			}
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void TestItDoesntCrashWithWrongIconName()
-		{
-			RunningApp.WaitForElement(c => c.Marked("Hello Toolbaritem"));
-			RunningApp.Screenshot("Was label on page shown");
-		}
-#endif
-
 	}
 }
 

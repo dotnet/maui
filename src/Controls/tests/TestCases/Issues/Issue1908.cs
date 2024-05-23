@@ -1,16 +1,10 @@
 ﻿using System;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
 
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1908, "Image reuse", PlatformAffected.Android)]
 	public class Issue1908 : TestContentPage
@@ -32,17 +26,5 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = new ScrollView() { Content = listView };
 		}
-
-
-
-#if UITEST && __ANDROID__
-		[Test]
-		public void Issue1908Test()
-		{
-			RunningApp.WaitForElement(q => q.Marked("OASIS1"));
-			RunningApp.Screenshot("For manual review. Images load");
-		}
-#endif
-
 	}
 }

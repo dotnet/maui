@@ -6,29 +6,17 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2777, "When add GroupHeaderTemplate in XAML the group header does not show up")]
 	public partial class Issue2777 : TestContentPage
 	{
 		public Issue2777()
 		{
-#if APP
 			InitializeComponent();
 			var list = SetupList();
 			itemListView.ItemsSource = list;
-#endif
-
 		}
 
 		protected override void Init()
@@ -127,17 +115,6 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 		}
-
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue2777Test()
-		{
-			RunningApp.Screenshot("I am at Issue 2965");
-			RunningApp.WaitForElement(q => q.Marked("The letter A"));
-		}
-#endif
 	}
 
 	// Note: this fails on UWP because we can't currently inspect listview headers

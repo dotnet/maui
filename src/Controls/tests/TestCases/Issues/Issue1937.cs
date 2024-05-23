@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1937, "[UWP] Choppy animation", PlatformAffected.UWP)]
 	public class Issue1937 : TestContentPage
@@ -91,24 +84,5 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 		}
-
-#if UITEST && WINDOWS
-		[Test]
-		public void Issue1937Test ()
-		{
-			RunningApp.Tap(q => q.Marked("FAST_TIMER"));
-			RunningApp.WaitForElement(q => q.Marked("COMPLETE"), timeout:TimeSpan.FromSeconds(2));
-			var result = RunningApp.WaitForElement(q => q.Marked("RESULT"))[0];
-			var timerTicks = int.Parse(result.ReadText());
-			//If fps > 50 then result must be 50. For small fps we use comparing with 35.
-			Assert.IsTrue(timerTicks > 35, $"Expected timer ticks are greater than 35. Actual: {timerTicks}");
-
-			RunningApp.Tap(q => q.Marked("SLOW_TIMER"));
-			RunningApp.WaitForElement(q => q.Marked("COMPLETE"), timeout:TimeSpan.FromSeconds(2));
-			result = RunningApp.WaitForElement(q => q.Marked("RESULT"))[0];
-			timerTicks = int.Parse(result.ReadText());
-			Assert.IsTrue(timerTicks < 11, $"Expected timer ticks are less than 11. Actual: {timerTicks}");
-		}
-#endif
 	}
 }

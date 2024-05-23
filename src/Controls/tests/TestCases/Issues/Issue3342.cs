@@ -1,17 +1,10 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3342, "[Android] BoxView BackgroundColor not working on 3.2.0-pre1", PlatformAffected.Android)]
 	public class Issue3342 : TestContentPage
@@ -49,15 +42,5 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = grid;
 		}
-
-#if UITEST
-		[Test]
-		public void Issue3342Test()
-		{
-			RunningApp.Screenshot("I am at Issue 3342");
-			//RunningApp.WaitForNoElement (q => q.Marked ("FAIL"));
-			RunningApp.Screenshot("I see the green box");
-		}
-#endif
 	}
 }

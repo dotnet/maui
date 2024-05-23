@@ -1,20 +1,10 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-#if UITEST
-using Microsoft.Maui.Controls.Compatibility.UITests;
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 namespace Maui.Controls.Sample.Issues
 {
-#if UITEST
-	[Category(UITestCategories.ManualReview)]
-	[Category(UITestCategories.TableView)]
-	[Category(UITestCategories.Cells)]
-#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2842, "ViewCell in TableView not adapting to changed size on iOS", PlatformAffected.iOS)]
 	public class Issue2842 : TestContentPage
@@ -60,16 +50,5 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = new StackLayout { Children = { label, button, tableView }, Margin = 20 };
 		}
-
-#if UITEST
-		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue2842Test() 
-		{
-			RunningApp.WaitForElement (q => q.Marked ("btnClick"));
-			RunningApp.Tap (q => q.Marked ("btnClick"));
-			RunningApp.Screenshot ("Verify that the text is not on top of the image");
-		}
-#endif
 	}
 }
