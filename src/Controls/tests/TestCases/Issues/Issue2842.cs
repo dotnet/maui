@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -18,11 +19,11 @@ namespace Maui.Controls.Sample.Issues
 				RowDefinitions = { new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) }, new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) } }
 			};
 
-			grid.Children.Add(new Label { Text = "I am initially visible." }, 0, 0);
+			grid.Add(new Label { Text = "I am initially visible." }, 0, 0);
 
 			Label target = new Label { Text = "Success", AutomationId = "lblSuccess", IsVisible = false, TextColor = Colors.Red };
 
-			grid.Children.Add(target, 0, 1);
+			grid.Add(target, 0, 1);
 
 			var tableView = new TableView { HasUnevenRows = true, Intent = TableIntent.Settings };
 

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -31,7 +29,7 @@ namespace Maui.Controls.Sample.Issues
 			Microsoft.Maui.Controls.CompressedLayout.SetIsHeadless(stack, true);
 			var button = new Button { Text = "CRASH!" };
 			stack.Children.Add(button);
-			grid.Children.Add(stack, 0, 1);
+			grid.Add(stack, 0, 1);
 
 			button.Clicked += (s, e) => Content = null;
 

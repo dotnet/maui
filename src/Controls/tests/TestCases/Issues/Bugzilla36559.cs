@@ -15,8 +15,8 @@ namespace Maui.Controls.Sample.Issues
 			var entry = new Entry { AutomationId = "entry" };
 			var grid = new Grid();
 
-			grid.Children.Add(label, 0, 0);
-			grid.Children.Add(entry, 1, 0);
+			grid.Add(label, 0, 0);
+			grid.Add(entry, 1, 0);
 			var tableView = new TableView
 			{
 				Root = new TableRoot

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -27,6 +23,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			ContentPage webViewPage = new ContentPage()
 			{
 				Content = new StackLayout()
@@ -50,6 +47,7 @@ namespace Maui.Controls.Sample.Issues
 					}
 				}
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 
 			AddFlyoutItem(contentPage, "User Search").Route = "usersearch";
@@ -59,7 +57,7 @@ namespace Maui.Controls.Sample.Issues
 		string GetHtml(string uid)
 		{
 			var htmlHeader = @"<header><meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no'></header>";
-			if ("UserOne".Equals(uid))
+			if ("UserOne".Equals(uid, System.StringComparison.OrdinalIgnoreCase))
 				return htmlHeader + @"<h3>Welcome <b style=""color:red;"">User One</b>,</h3><div>Displaying Html message</div>";
 			return htmlHeader + @"<h3>Welcome <b style=""color:blue;"">User Two</b>,</h3><div>Displaying Html message</div>";
 		}

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -31,7 +27,9 @@ namespace Maui.Controls.Sample.Issues
 
 		protected override void Init()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			layout = new Grid { BackgroundColor = Colors.Red, VerticalOptions = LayoutOptions.FillAndExpand, HorizontalOptions = LayoutOptions.FillAndExpand };
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			layout.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
 			layout.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Star });

@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Issues
 				Title = "Page 1";
 				BackgroundColor = Colors.Gray;
 
-				var relativeLayout = new Compatibility.RelativeLayout { };
+				var relativeLayout = new Microsoft.Maui.Controls.Compatibility.RelativeLayout { };
 
 				relativeLayout.Children.Add(new StackLayout
 				{
@@ -55,13 +55,13 @@ namespace Maui.Controls.Sample.Issues
 							TextColor = Colors.White
 						}
 					}
-				}, yConstraint: Compatibility.Constraint.RelativeToParent(parent => { return parent.Y; }));
+				}, yConstraint: Microsoft.Maui.Controls.Compatibility.Constraint.RelativeToParent(parent => { return parent.Y; }));
 
 				relativeLayout.Children.Add(new Label
 				{
 					Text = BottomLabel,
 					TextColor = Colors.White
-				}, yConstraint: Compatibility.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
+				}, yConstraint: Microsoft.Maui.Controls.Compatibility.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
 
 				Content = relativeLayout;
 
@@ -76,7 +76,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				Title = "Page 2";
 				BackgroundColor = Colors.Gray;
-				var relativeLayout = new Compatibility.RelativeLayout { };
+				var relativeLayout = new Microsoft.Maui.Controls.Compatibility.RelativeLayout { };
 				relativeLayout.Children.Add(new StackLayout
 				{
 					VerticalOptions = LayoutOptions.Center,
@@ -98,13 +98,13 @@ namespace Maui.Controls.Sample.Issues
 								TextColor = Colors.White
 							}
 						}
-				}, yConstraint: Compatibility.Constraint.RelativeToParent(parent => { return parent.Y; }));
+				}, yConstraint: Microsoft.Maui.Controls.Compatibility.Constraint.RelativeToParent(parent => { return parent.Y; }));
 
 				relativeLayout.Children.Add(new Label
 				{
 					Text = BottomLabel,
 					TextColor = Colors.White
-				}, yConstraint: Compatibility.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
+				}, yConstraint: Microsoft.Maui.Controls.Compatibility.Constraint.RelativeToParent(parent => { return parent.Height - 30; }));
 
 				Content = relativeLayout;
 			}

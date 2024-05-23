@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
@@ -27,14 +27,17 @@ namespace Maui.Controls.Sample.Issues
 					HorizontalOptions = LayoutOptions.Center
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var switcher = new Switch
 				{
 					AutomationId = SwitchAutomatedId,
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.CenterAndExpand
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 				switcher.Toggled += switcher_Toggled;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				_label = new Label
 				{
 					Text = string.Format(SwitchIsNowLabelTextFormat, switcher.IsToggled),
@@ -42,6 +45,7 @@ namespace Maui.Controls.Sample.Issues
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.CenterAndExpand
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				// Accomodate iPhone status bar.
 				Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -39,10 +37,10 @@ namespace Maui.Controls.Sample.Issues
 			g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 			g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
-			g.Children.Add(BuildLevel(), 0, 0);
-			g.Children.Add(BuildLevel(), 0, 1);
-			g.Children.Add(BuildLevel(), 1, 0);
-			g.Children.Add(BuildLevel(), 1, 1);
+			g.Add(BuildLevel(), 0, 0);
+			g.Add(BuildLevel(), 0, 1);
+			g.Add(BuildLevel(), 1, 0);
+			g.Add(BuildLevel(), 1, 1);
 
 			_level--;
 

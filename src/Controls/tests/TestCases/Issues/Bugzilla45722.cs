@@ -6,9 +6,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -32,6 +31,7 @@ namespace Maui.Controls.Sample.Issues
 			_currentLabelCount = new Label();
 			_statusLabel = new Label { Text = Running };
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<_45722Label>(this, _45722Label.CountMessage, sender =>
 			{
 				Device.BeginInvokeOnMainThread(() =>
@@ -40,6 +40,7 @@ namespace Maui.Controls.Sample.Issues
 					_statusLabel.Text = _45722Label.Count - ItemCount <= 0 ? Success : Running;
 				});
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var lv = new ListView(ListViewCachingStrategy.RetainElement);
 

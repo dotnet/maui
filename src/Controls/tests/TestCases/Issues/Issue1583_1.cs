@@ -13,20 +13,28 @@ namespace Maui.Controls.Sample.Issues
 
 		protected override void Init()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			_webview = new WebView
 			{
 				AutomationId = "webview",
 				VerticalOptions = LayoutOptions.FillAndExpand
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 			_label = new Label { AutomationId = "label" };
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var hashButton = new Button { Text = "1:hash", HorizontalOptions = LayoutOptions.FillAndExpand, AutomationId = "hashButton" };
+#pragma warning restore CS0618 // Type or member is obsolete
 			hashButton.Clicked += (sender, args) => Load("https://github.com/xamarin/Xamarin.Forms/issues/2736#issuecomment-389443737");
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var unicodeButton = new Button { Text = "2:unicode", HorizontalOptions = LayoutOptions.FillAndExpand, AutomationId = "unicodeButton" };
+#pragma warning restore CS0618 // Type or member is obsolete
 			unicodeButton.Clicked += (sender, args) => Load("https://www.google.no/maps/place/Skøyen");
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var queryButton = new Button { Text = "3:query", HorizontalOptions = LayoutOptions.FillAndExpand, AutomationId = "queryButton" };
+#pragma warning restore CS0618 // Type or member is obsolete
 			queryButton.Clicked += (sender, args) => Load("https://www.google.com/search?q=http%3A%2F%2Fmicrosoft.com");
 
 			Content = new StackLayout

@@ -90,10 +90,10 @@ namespace Maui.Controls.Sample.Issues
 				this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
 				this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
 
-				this.Children.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 0, 0);
-				this.Children.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 1, 0);
-				this.Children.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 2, 0);
-				this.Children.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 3, 0);
+				this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 0, 0);
+				this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 1, 0);
+				this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 2, 0);
+				this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 3, 0);
 
 				this.Children.Add(new StackLayout()
 				{

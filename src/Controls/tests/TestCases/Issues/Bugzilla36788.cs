@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
@@ -43,7 +44,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				Padding = 16,
 				BackgroundColor = Colors.Gray,
-				Content = new Compatibility.RelativeLayout
+				Content = new Microsoft.Maui.Controls.Compatibility.RelativeLayout
 				{
 					BackgroundColor = Colors.Navy,
 					Children = {
@@ -51,17 +52,17 @@ namespace Maui.Controls.Sample.Issues
 							BackgroundColor = Colors.Blue,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Compatibility.Constraint.Constant (0)},
+						}, Microsoft.Maui.Controls.Compatibility.Constraint.Constant (0)},
 						{new Label {
 							BackgroundColor = Colors.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Compatibility.Constraint.Constant (0), Compatibility.Constraint.Constant (40)},
+						}, Microsoft.Maui.Controls.Compatibility.Constraint.Constant (0), Microsoft.Maui.Controls.Compatibility.Constraint.Constant (40)},
 						{new Label {
 							BackgroundColor = Colors.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Compatibility.Constraint.Constant (10), Compatibility.Constraint.Constant (80)},
+						}, Microsoft.Maui.Controls.Compatibility.Constraint.Constant (10), Microsoft.Maui.Controls.Compatibility.Constraint.Constant (80)},
 					}
 				}
 			};
@@ -82,17 +83,17 @@ namespace Maui.Controls.Sample.Issues
 							BackgroundColor = Colors.Blue,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Compatibility.Constraint.Constant (0)},
+						}, Microsoft.Maui.Controls.Compatibility.Constraint.Constant (0)},
 						{new Label {
 							BackgroundColor = Colors.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Compatibility.Constraint.Constant (0), Compatibility.Constraint.Constant (40)},
+						}, Microsoft.Maui.Controls.Compatibility.Constraint.Constant (0), Microsoft.Maui.Controls.Compatibility.Constraint.Constant (40)},
 						{new Label {
 							BackgroundColor = Colors.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Compatibility.Constraint.Constant (10), Compatibility.Constraint.Constant (80)},
+						}, Microsoft.Maui.Controls.Compatibility.Constraint.Constant (10), Microsoft.Maui.Controls.Compatibility.Constraint.Constant (80)},
 					}
 				}
 			};

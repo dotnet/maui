@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
-
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -23,6 +17,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			});
 
+#pragma warning disable CS0612 // Type or member is obsolete
 			Device.InvokeOnMainThreadAsync(() =>
 			{
 				var shellContent = new ShellContent()
@@ -35,6 +30,7 @@ namespace Maui.Controls.Sample.Issues
 
 				Items[0].Items[0].Items.Add(shellContent);
 			});
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 	}
 
@@ -45,6 +41,7 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 			Items.Add(new FlyoutItem());
+#pragma warning disable CS0612 // Type or member is obsolete
 			Device.InvokeOnMainThreadAsync(() =>
 			{
 				var tab = new Tab()
@@ -63,6 +60,7 @@ namespace Maui.Controls.Sample.Issues
 
 				Items[0].Items.Add(tab);
 			});
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 	}
 
@@ -72,6 +70,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		protected override void Init()
 		{
+#pragma warning disable CS0612 // Type or member is obsolete
 			Device.InvokeOnMainThreadAsync(() =>
 			{
 				var page = AddBottomTab("Flyout Item");
@@ -80,6 +79,7 @@ namespace Maui.Controls.Sample.Issues
 					Text = "Success"
 				};
 			});
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 	}
 }

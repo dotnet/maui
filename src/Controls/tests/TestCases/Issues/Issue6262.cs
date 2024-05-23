@@ -12,7 +12,9 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 			Grid theGrid = null;
+#pragma warning disable CS0618 // Type or member is obsolete
 			theGrid = new Grid() { VerticalOptions = LayoutOptions.FillAndExpand };
+#pragma warning restore CS0618 // Type or member is obsolete
 			SetupGrid(theGrid);
 
 			Content = new StackLayout()

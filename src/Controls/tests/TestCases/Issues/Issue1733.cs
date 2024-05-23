@@ -116,12 +116,16 @@ namespace Maui.Controls.Sample.Issues
 					if (e.FontSize == fontSizeInitial)
 					{
 						e.FontSize = 40;
+#pragma warning disable CS0612 // Type or member is obsolete
 						Device.BeginInvokeOnMainThread(() => buttonChangeFont.Text = btnChangeFontToDefault);
+#pragma warning restore CS0612 // Type or member is obsolete
 					}
 					else
 					{
 						e.FontSize = fontSizeInitial;
+#pragma warning disable CS0612 // Type or member is obsolete
 						Device.BeginInvokeOnMainThread(() => buttonChangeFont.Text = btnChangeFontToLarger);
+#pragma warning restore CS0612 // Type or member is obsolete
 					}
 				});
 			};

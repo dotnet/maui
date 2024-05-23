@@ -1,9 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -15,7 +12,9 @@ namespace Maui.Controls.Sample.Issues
 
 		protected override void Init()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			StackLayout sl = new StackLayout() { VerticalOptions = LayoutOptions.FillAndExpand };
+#pragma warning restore CS0618 // Type or member is obsolete
 			sl.Children.Add(_sv = new ScrollView() { HeightRequest = 100 });
 			Content = sl;
 

@@ -2,10 +2,11 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Label = Microsoft.Maui.Controls.Label;
+using WebView = Microsoft.Maui.Controls.WebView;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -17,12 +18,14 @@ namespace Maui.Controls.Sample.Issues
 
 		protected override void Init()
 		{
+#pragma warning disable CS0612 // Type or member is obsolete
 			Label header = new Label
 			{
 				Text = "Cookies...",
 				FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
 				HorizontalOptions = LayoutOptions.Center
 			};
+#pragma warning restore CS0612 // Type or member is obsolete
 
 			try
 			{
@@ -41,6 +44,7 @@ namespace Maui.Controls.Sample.Issues
 
 				cookieContainer.Add(uri, cookie);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				WebView webView = new WebView
 				{
 					Source = url,
@@ -48,6 +52,7 @@ namespace Maui.Controls.Sample.Issues
 					VerticalOptions = LayoutOptions.FillAndExpand,
 					Cookies = cookieContainer
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 				webView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
 
 				Action<string> cookieExpectation = null;

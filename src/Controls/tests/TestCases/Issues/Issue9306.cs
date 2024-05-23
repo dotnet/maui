@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -31,6 +29,7 @@ namespace Maui.Controls.Sample.Issues
 				HorizontalTextAlignment = TextAlignment.End
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Content =
 				new StackLayout
 				{
@@ -55,6 +54,7 @@ namespace Maui.Controls.Sample.Issues
 						}
 					}
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		SwipeView CreateMySwipeView()

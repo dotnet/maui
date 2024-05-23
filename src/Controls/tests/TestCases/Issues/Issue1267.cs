@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -22,16 +23,16 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 			Label label;
-			grid.Children.Add(label = new Label { BackgroundColor = Colors.Lime });
+			grid.Add(label = new Label { BackgroundColor = Colors.Lime });
 			label.SetBinding(Label.TextProperty, "FirstName");
 
-			grid.Children.Add(label = new Label(), 0, 1);
+			grid.Add(label = new Label(), 0, 1);
 			label.SetBinding(Label.TextProperty, "LastName");
 
-			grid.Children.Add(label = new Label { HorizontalTextAlignment = TextAlignment.End }, 1, 0);
+			grid.Add(label = new Label { HorizontalTextAlignment = TextAlignment.End }, 1, 0);
 			label.SetBinding(Label.TextProperty, "Zip");
 
-			grid.Children.Add(label = new Label { VerticalTextAlignment = TextAlignment.End }, 1, 1);
+			grid.Add(label = new Label { VerticalTextAlignment = TextAlignment.End }, 1, 1);
 			label.SetBinding(Label.TextProperty, "City");
 			View = grid;
 

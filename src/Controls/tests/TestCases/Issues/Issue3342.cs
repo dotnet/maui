@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -36,9 +36,9 @@ namespace Maui.Controls.Sample.Issues
 									new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }}
 			};
 
-			grid.Children.Add(instructions);
-			grid.Children.Add(hiddenLabel, 0, 1);
-			grid.Children.Add(target, 0, 1);
+			grid.Add(instructions);
+			grid.Add(hiddenLabel, 0, 1);
+			grid.Add(target, 0, 1);
 
 			Content = grid;
 		}

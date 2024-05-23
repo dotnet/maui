@@ -54,8 +54,8 @@ namespace Maui.Controls.Sample.Issues
 				reorder();
 			};
 
-			grid.Children.Add(button0, 0, 0);
-			grid.Children.Add(button1, 0, 0);
+			grid.Add(button0, 0, 0);
+			grid.Add(button1, 0, 0);
 
 			Content = new StackLayout
 			{
