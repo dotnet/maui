@@ -9,6 +9,7 @@
             ImageSource="dotnet_bot.png"
             HorizontalOptions="Center"
             BackgroundColor="Green"
+            BorderColor="Black"
             BorderWidth="0"
             x:Name="TextImageButton"
             AutomationId="TextImageButton"/>
@@ -17,6 +18,7 @@
             ImageSource="dotnet_bot.png"
             HorizontalOptions="Center"
             BackgroundColor="Green"
+            BorderColor="Black"
             BorderWidth="0"
             x:Name="ImageButton"
             AutomationId="ImageButton"/>
@@ -25,6 +27,7 @@
             Text="BorderWidth Changing"
             HorizontalOptions="Center"
             BackgroundColor="Green"
+            BorderColor="Black"
             BorderWidth="0"
             x:Name="TextButton"
             AutomationId="TextButton"/>
