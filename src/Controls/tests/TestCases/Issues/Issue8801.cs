@@ -211,7 +211,7 @@ namespace Maui.Controls.Sample.Issues
 					}
 					else
 					{
-						var rootGrid = rootPage.Content as Grid;
+						var rootGrid = rootPage.Content as  Microsoft.Maui.Controls.Compatibility.Grid;
 						popupStack.Layout(new Rect(x, y, popupStack.WidthRequest, height));
 						rootGrid.Children.Add(popupStack);
 						popupStack.Parent = rootGrid;

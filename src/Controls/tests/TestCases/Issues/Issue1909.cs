@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "TestReady"
 			};
 
-			button.On<Android>().SetUseDefaultPadding(true).SetUseDefaultShadow(true);
+			button.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetUseDefaultPadding(true).SetUseDefaultShadow(true);
 
 			FlatButton flatButton = new FlatButton
 			{

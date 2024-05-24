@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+﻿using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -13,7 +7,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		protected override void Init()
 		{
-			Visual = VisualMarker.Material;
+			//Visual = VisualMarker.Material;
 
 			var layout = new StackLayout() { AutomationId = "TestReady" };
 

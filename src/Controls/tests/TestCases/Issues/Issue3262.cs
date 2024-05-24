@@ -54,7 +54,7 @@ namespace Maui.Controls.Sample.Issues
 					Cookies = cookieContainer
 				};
 #pragma warning restore CS0618 // Type or member is obsolete
-				webView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
+				webView.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetIsJavaScriptAlertEnabled(true);
 
 				Action<string> cookieExpectation = null;
 				var cookieResult = new Label()

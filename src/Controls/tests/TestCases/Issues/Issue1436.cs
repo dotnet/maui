@@ -83,12 +83,11 @@ namespace Maui.Controls.Sample.Issues
 				},
 			};
 
-			foreach (var element in stackLayout.Descendants())
+			foreach (var element in stackLayout.GetVisualTreeDescendants())
 			{
 				//TODO: if (element is Button button)
 				var button = element as Button;
-				if (button != null)
-					button.On<Android>().SetUseDefaultPadding(true).SetUseDefaultShadow(true);
+				button?.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetUseDefaultPadding(true).SetUseDefaultShadow(true);
 			}
 
 			Content = stackLayout;
