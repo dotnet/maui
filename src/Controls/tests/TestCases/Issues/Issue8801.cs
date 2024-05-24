@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 
-			grid.AddChild(new Label() { Text = "Success" }, 0, 0);
+			grid.AddChild(new Label() { AutomationId = "Success", Text = "Success" }, 0, 0);
 			grid.AddChild(layout, 0, 1);
 
 			Content = grid;

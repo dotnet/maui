@@ -47,6 +47,7 @@ namespace Maui.Controls.Sample.Issues
 				Children = {
 					statusLabel,
 					new Button {
+						AutomationId = "Move items",
 						Text = "Move items",
 						Command = new Command(() =>
 						{

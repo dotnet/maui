@@ -63,6 +63,7 @@ namespace Maui.Controls.Sample.Issues
 #pragma warning disable CS0618 // Type or member is obsolete
 			var scrollView = new ScrollView
 			{
+				AutomationId = "TestScrollView",
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				Padding = new Thickness(20),

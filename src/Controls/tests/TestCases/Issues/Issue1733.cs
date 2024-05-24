@@ -94,17 +94,20 @@ namespace Maui.Controls.Sample.Issues
 
 			Button buttonChangeFont = new Button()
 			{
+				AutomationId = btnChangeFontToLarger,
 				Text = btnChangeFontToLarger
 			};
 
 
 			Button buttonChangeText = new Button()
 			{
+				AutomationId = btnChangeToHasText,
 				Text = btnChangeToHasText
 			};
 
 			Button buttonChangeSizeOption = new Button()
 			{
+				AutomationId = btnChangeSizeOption,
 				Text = btnChangeSizeOption
 			};
 

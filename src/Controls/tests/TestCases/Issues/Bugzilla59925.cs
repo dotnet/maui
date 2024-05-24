@@ -25,12 +25,14 @@ namespace Maui.Controls.Sample.Issues
 
 			var buttonBigger = new Button
 			{
+				AutomationId = "Bigger",
 				Text = "Bigger",
 			};
 			buttonBigger.Clicked += (x, o) => ChangeFontSize(Delta);
 
 			var buttonSmaller = new Button
 			{
+				AutomationId = "Smaller",
 				Text = "Smaller"
 			};
 			buttonSmaller.Clicked += (x, o) => ChangeFontSize(-Delta);

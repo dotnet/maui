@@ -30,6 +30,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var label = new Label()
 			{
+				AutomationId = success,
 				Text = success
 			};
 

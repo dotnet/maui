@@ -35,6 +35,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
 			{
+				AutomationId = "TestListView",
 				ItemsSource = presidents,
 				ItemTemplate = cell,
 				RowHeight = 200

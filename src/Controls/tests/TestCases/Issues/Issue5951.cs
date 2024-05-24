@@ -25,6 +25,7 @@ namespace Maui.Controls.Sample.Issues
 
 				var pushButton = new Button
 				{
+					AutomationId = "Push page",
 					Text = "Push page",
 					Command = new Command(async () =>
 					{

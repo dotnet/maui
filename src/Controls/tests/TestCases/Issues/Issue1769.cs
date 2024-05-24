@@ -24,6 +24,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				var button = new Button()
 				{
+					AutomationId = GoToPageTwoButtonText,
 					Text = GoToPageTwoButtonText
 				};
 				button.Clicked += async (sender, args) =>
@@ -61,6 +62,7 @@ namespace Maui.Controls.Sample.Issues
 #pragma warning disable CS0612 // Type or member is obsolete
 					_label = new Label
 					{
+						AutomationId = string.Format(SwitchIsNowLabelTextFormat, switcher.IsToggled),
 						Text = string.Format(SwitchIsNowLabelTextFormat, switcher.IsToggled),
 						FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
 						HorizontalOptions = LayoutOptions.Center,

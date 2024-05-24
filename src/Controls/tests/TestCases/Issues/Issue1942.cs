@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample.Issues
 				{
 					new Grid
 					{
-						Children = { new Label() { Text = ClickMeString, BackgroundColor = Colors.Blue, HeightRequest = 300, WidthRequest = 300 } }
+						Children = { new Label() { AutomationId = ClickMeString, Text = ClickMeString, BackgroundColor = Colors.Blue, HeightRequest = 300, WidthRequest = 300 } }
 					}
 				}
 			};

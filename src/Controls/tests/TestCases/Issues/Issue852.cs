@@ -22,6 +22,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			var welcomeLabel = new Label()
 			{
+				AutomationId = "WelcomeLabel",
 				Text = "Logging into the System",
 				HorizontalOptions = LayoutOptions.Center
 			};
@@ -70,6 +71,7 @@ namespace Maui.Controls.Sample.Issues
 			Title = "Login";
 			var welcomeLabel = new Label()
 			{
+				AutomationId = "WelcomeLabel",
 				Text = "Welcome to the System",
 				HorizontalOptions = LayoutOptions.Center
 			};
@@ -93,7 +95,8 @@ namespace Maui.Controls.Sample.Issues
 			passwordEntry.Focused += (s, e) => welcomeLabel.Text = "Clicked Password";
 
 			_loginButton = new Button
-			{
+			{ 
+				AutomationId = "Login",
 				ClassId = "loginButton",
 				Text = "Login",
 			};

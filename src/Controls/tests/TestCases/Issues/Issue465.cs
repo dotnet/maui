@@ -21,6 +21,7 @@ namespace Maui.Controls.Sample.Issues
 				{
 					Content = new Label
 					{
+						AutomationId = "Popppppped",
 						Text = "I was popppppped"
 					}
 				}
@@ -36,6 +37,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				var popButton = new Button
 				{
+					AutomationId = "PopPage",
 					Text = "Pop this page"
 				};
 				popButton.Clicked += (s, e) => Navigation.PopModalAsync();

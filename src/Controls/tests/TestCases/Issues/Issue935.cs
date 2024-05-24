@@ -14,6 +14,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var label = new Label
 			{
+				AutomationId = "TestLabel",
 				Text = "I have been selected:"
 			};
 

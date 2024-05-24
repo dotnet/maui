@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var layout = new StackLayout() { Margin = 40 };
 
-			var button = new Button { Text = Show };
+			var button = new Button { AutomationId = Show, Text = Show };
 			button.Clicked += (sender, args) => { cv.IsVisible = !cv.IsVisible; };
 
 			layout.Children.Add(button);

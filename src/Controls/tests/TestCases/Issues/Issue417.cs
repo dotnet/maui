@@ -23,11 +23,13 @@ namespace Maui.Controls.Sample.Issues
 			{
 				public FirstPage()
 				{
+					AutomationId = "FirstPage",
 					Title = "First Page";
 					BackgroundColor = Colors.Black;
 
 					var nextPageBtn = new Button
 					{
+						AutomationId = "NextPage",
 						Text = "Next Page"
 					};
 
@@ -42,10 +44,12 @@ namespace Maui.Controls.Sample.Issues
 			{
 				public NextPage()
 				{
+					AutomationId = "SecondPage";
 					Title = "Second Page";
 
 					var nextPage2Btn = new Button
 					{
+						AutomationId = "NextPage2",
 						Text = "Next Page 2"
 					};
 
@@ -60,10 +64,12 @@ namespace Maui.Controls.Sample.Issues
 			{
 				public NextPage2()
 				{
+					AutomationId = "ThirdPage";
 					Title = "Third Page";
 
 					var popToRootButton = new Button
 					{
+						AutomationId = "PopToRoot",
 						Text = "Pop to root"
 					};
 

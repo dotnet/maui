@@ -21,7 +21,7 @@ namespace Maui.Controls.Sample.Issues
 
 			ListView.IsRefreshing = true;
 
-			Application.Current.MainPage = new ContentPage() { Content = new Label { Text = "Success", VerticalOptions = LayoutOptions.Center } };
+			Application.Current.MainPage = new ContentPage() { Content = new Label { AutomationId = "Success", Text = "Success", VerticalOptions = LayoutOptions.Center } };
 
 			ListView.IsRefreshing = false;
 		}

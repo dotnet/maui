@@ -15,6 +15,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			var btn = new Button()
 			{
+				AutomationId = "TestButton",
 				Text = "Click me",
 				WidthRequest = 50,
 				HeightRequest = 50,

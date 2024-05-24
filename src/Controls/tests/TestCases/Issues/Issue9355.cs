@@ -56,6 +56,7 @@ namespace Maui.Controls.Sample.Issues
 					{
 						Content = new Label
 						{
+							AutomationId = TestOk,
 							Text = TestOk
 						}
 					});

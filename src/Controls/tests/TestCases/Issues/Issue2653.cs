@@ -48,6 +48,7 @@ namespace Maui.Controls.Sample.Issues
 
 			layout.Children.Add(new Button()
 			{
+				AutomationId = ButtonText,
 				Text = ButtonText,
 				BackgroundColor = Colors.Green,
 				Margin = 10,
@@ -83,6 +84,7 @@ namespace Maui.Controls.Sample.Issues
 					layout,
 					new Button()
 					{
+						AutomationId = TestForButtonClicked,
 						Text = TestForButtonClicked, Command = new Command(() =>
 						{
 							if(bv == null)

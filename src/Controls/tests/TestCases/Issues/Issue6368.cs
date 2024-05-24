@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Issues
 			static StackLayout GetContent()
 			{
 				var content2 = new StackLayout();
-				content2.Children.Add(new RoundedLabel { Text = "Go to next Page" });
+				content2.Children.Add(new RoundedLabel { AutomationId = "GoToNextPage", Text = "Go to next Page" });
 				content2.Children.Add(new RoundedLabel { Text = "then navigate back" });
 				content2.Children.Add(new RoundedLabel { Text = "If test doesn't crash it passed" });
 				content2.Children.Add(new CustomView());

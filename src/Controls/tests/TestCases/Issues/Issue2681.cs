@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Issues
 
 			public MainPage()
 			{
-				Navigation.PushAsync(new ContentPage() { Title = "Freeze Test", Content = new Button() { Text = NavigateToPage, Command = new Command(() => this.Navigation.PushAsync(new FreezeMe())) } });
+				Navigation.PushAsync(new ContentPage() { Title = "Freeze Test", Content = new Button() { AutomationId = NavigateToPage, Text = NavigateToPage, Command = new Command(() => this.Navigation.PushAsync(new FreezeMe())) } });
 			}
 
 			[Preserve(AllMembers = true)]

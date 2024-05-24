@@ -34,9 +34,9 @@ namespace Maui.Controls.Sample.Issues
 					BackgroundColor = Colors.Gray
 				};
 
-				var button1 = new Button { Text = "Button 1" };
-				var button2 = new Button { Text = "Button 2", IsEnabled = false };
-				var button3 = new Button { Text = "Button 3", IsEnabled = false };
+				var button1 = new Button { AutomationId = "Button1", Text = "Button 1" };
+				var button2 = new Button { AutomationId = "Button2", Text = "Button 2", IsEnabled = false };
+				var button3 = new Button { AutomationId = "Button3", Text = "Button 3", IsEnabled = false };
 				var button4 = new Button { Text = "Button 4", IsEnabled = false };
 				var button5 = new Button { Text = "Button 5", IsEnabled = false };
 				var button6 = new Button { Text = "Button 6", IsEnabled = false };

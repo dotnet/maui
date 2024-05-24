@@ -13,7 +13,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Title = "Bug";
 			Children.Add(new ContentPage() { Title = "Page 1" });
-			Children.Add(new ContentPage() { Title = "Page 2", Content = new Label { Text = Success } });
+			Children.Add(new ContentPage() { Title = "Page 2", Content = new Label { AutomationId = Success, Text = Success } });
 			Children.Add(new ContentPage() { Title = "Page 3" });
 			CurrentPage = Children[1];
 		}

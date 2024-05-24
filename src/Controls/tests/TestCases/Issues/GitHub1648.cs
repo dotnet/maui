@@ -39,10 +39,12 @@ namespace Maui.Controls.Sample.Issues
 					{
 						Children = {
 						new Label {
+							AutomationId = "Success",
 							Text = "Success"
 						},
 						new Button
 						{
+							AutomationId = "Reload",
 							Text = "Reload",
 							Command = new Command(() => Navigation.PopModalAsync())
 						}

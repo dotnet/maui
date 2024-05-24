@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample.Issues
 					Content = new StackLayout
 					{
 						Children = {
-						new Label { Text = "Hello Toolbaritem" }
+						new Label { AutomationId = "TestLabel", Text = "Hello Toolbaritem" }
 					}
 					};
 				}

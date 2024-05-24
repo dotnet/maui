@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 12374, "[Bug] [iOS] CollectionView EmptyView causes the application to crash",
+	[Issue(IssueTracker.Github, 12374, "[Bug] iOS XF 5.0-pre1 crash with CollectionView when using EmptyView",
 		PlatformAffected.iOS)]
 	public partial class Issue12374 : TestContentPage
 	{
