@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_viewController = new(itemsViewController);
 		}
 
-		public override void Scrolled(UIScrollView scrollView)
+		void ProcessScrolledEvent(UIScrollView scrollView)
 		{
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
 
@@ -71,6 +71,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						itemsView.SendRemainingItemsThresholdReached();
 					break;
 			}
+
+		}
+
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void DecelerationEnded(UIScrollView scrollView)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			//base.DecelerationEnded(scrollView);
+			ProcessScrolledEvent(scrollView);
+			
+		}
+
+		public override void Scrolled(UIScrollView scrollView)
+		{
+			
 		}
 
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,

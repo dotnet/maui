@@ -16,21 +16,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.Scrolled(scrollView);
 
-			ViewController?.UpdateIsScrolling(true);
+			//ViewController?.UpdateIsScrolling(true);
 		}
+
 
 		public override void ScrollAnimationEnded(UIScrollView scrollView)
 		{
-			ViewController?.UpdateIsScrolling(false);
+			//ViewController?.UpdateIsScrolling(false);
 		}
 
 		public override void DecelerationEnded(UIScrollView scrollView)
 		{
-			ViewController?.UpdateIsScrolling(false);
+			//ViewController?.UpdateIsScrolling(false);
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
+			ViewController?.UpdateIsScrolling(true);
 			ViewController?.DraggingStarted(scrollView);
 
 			PreviousHorizontalOffset = (float)scrollView.ContentOffset.X;
