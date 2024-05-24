@@ -53,7 +53,7 @@
     <MicrosoftAndroidSdkWindowsPackageVersion>34.99.0-preview.5.292</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdknet90_172PackageVersion>17.2.9624-net9-p6</MicrosoftMacCatalystSdknet90_172PackageVersion>
-    <MicrosoftmacOSSdknet90_142PackageVersion>14.2.9612-net9-p6</MicrosoftmacOSSdknet90_142PackageVersion>
+    <MicrosoftmacOSSdknet90_142PackageVersion>14.2.9624-net9-p6</MicrosoftmacOSSdknet90_142PackageVersion>
     <MicrosoftiOSSdknet90_172PackageVersion>17.2.9612-net9-p6</MicrosoftiOSSdknet90_172PackageVersion>
     <MicrosofttvOSSdknet90_172PackageVersion>17.2.9624-net9-p6</MicrosofttvOSSdknet90_172PackageVersion>
     <!-- Samsung/Tizen.NET -->
