@@ -8,72 +8,79 @@ namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 31255, "Flyout's page Icon cause memory leak after FlyoutPage is popped out by holding on page")]
-	public class Bugzilla31255 : TestContentPage // or TestFlyoutPage, etc ...
+	public class Bugzilla31255 : NavigationPage
 	{
-		protected override void Init()
+		public Bugzilla31255() : base(new MainPage())
 		{
-			var stack = new StackLayout() { VerticalOptions = LayoutOptions.Center };
-
-			stack.Children.Add(new Label()
-			{
-				VerticalOptions = LayoutOptions.Center,
-				HorizontalTextAlignment = TextAlignment.Center,
-				Text = "Page 1"
-			});
-
-			Content = stack;
-
 		}
 
-		WeakReference _page2Tracker;
-
-		protected override async void OnAppearing()
+		public class MainPage : ContentPage
 		{
-			base.OnAppearing();
-
-			if (_page2Tracker == null)
+			public MainPage()
 			{
-				var page2 = new Page2();
+				var stack = new StackLayout() { VerticalOptions = LayoutOptions.Center };
 
-				_page2Tracker = new WeakReference(page2, false);
-
-				await Task.Delay(1000);
-				await Navigation.PushModalAsync(page2);
-
-				StartTrackPage2();
-			}
-		}
-
-		async void StartTrackPage2()
-		{
-			while (true)
-			{
-				((Label)((StackLayout)Content).Children[0]).Text =
-						string.Format("Page1. But Page2 IsAlive = {0}", _page2Tracker.IsAlive);
-				await Task.Delay(1000);
-				GarbageCollectionHelper.Collect();
-			}
-		}
-
-		[Preserve(AllMembers = true)]
-		public class Page2 : FlyoutPage
-		{
-			public Page2()
-			{
-				Flyout = new Page()
+				stack.Children.Add(new Label()
 				{
-					Title = "Flyout",
-					IconImageSource = "Icon.png"
-				};
-				Detail = new Page() { Title = "Detail" };
+					VerticalOptions = LayoutOptions.Center,
+					HorizontalTextAlignment = TextAlignment.Center,
+					Text = "Page 1"
+				});
+
+				Content = stack;
+
 			}
+
+			WeakReference _page2Tracker;
 
 			protected override async void OnAppearing()
 			{
 				base.OnAppearing();
 
-				await Task.Delay(1000);
-				await Navigation.PopModalAsync();
+				if (_page2Tracker == null)
+				{
+					var page2 = new Page2();
+
+					_page2Tracker = new WeakReference(page2, false);
+
+					await Task.Delay(1000);
+					await Navigation.PushModalAsync(page2);
+
+					StartTrackPage2();
+				}
+			}
+
+			async void StartTrackPage2()
+			{
+				while (true)
+				{
+					((Label)((StackLayout)Content).Children[0]).Text =
+							string.Format("Page1. But Page2 IsAlive = {0}", _page2Tracker.IsAlive);
+					await Task.Delay(1000);
+					GarbageCollectionHelper.Collect();
+				}
+			}
+
+			[Preserve(AllMembers = true)]
+			public class Page2 : FlyoutPage
+			{
+				public Page2()
+				{
+					Flyout = new Page()
+					{
+						Title = "Flyout",
+						IconImageSource = "Icon.png"
+					};
+					Detail = new Page() { Title = "Detail" };
+				}
+
+				protected override async void OnAppearing()
+				{
+					base.OnAppearing();
+
+					await Task.Delay(1000);
+					await Navigation.PopModalAsync();
+				}
 			}
 		}
 	}

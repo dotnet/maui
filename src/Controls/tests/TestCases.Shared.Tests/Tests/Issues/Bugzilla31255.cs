@@ -12,13 +12,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "Flyout's page Icon cause memory leak after FlyoutPage is popped out by holding on page";
-		public override bool ResetMainPage => false;
 
 		[Test]
-		[Ignore("The sample is crashing.")]
+		[Ignore("The sample is crashing. More information: https://github.com/dotnet/maui/issues/21206")]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[IgnoredDuringMoveToAppium("The sample is crashing. More information: https://github.com/dotnet/maui/issues/21206")]
 		public async Task Bugzilla31255Test()
 		{
 			App.Screenshot("I am at Bugzilla 31255");

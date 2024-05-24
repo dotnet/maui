@@ -12,7 +12,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "Crash when switching MainPage and using a Custom Render";
-		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

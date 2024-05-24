@@ -13,8 +13,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Tabbar Disappears with linker";
 		
-		public override bool ResetMainPage => false;
-
 		[Test]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]
