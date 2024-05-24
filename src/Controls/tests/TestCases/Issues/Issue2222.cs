@@ -1,36 +1,39 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2222, "NavigationBar.ToolbarItems.Add() crashes / breaks app in iOS7. works fine in iOS8", PlatformAffected.iOS)]
-	public class Issue2222 : TestNavigationPage
+	public class Issue2222 : NavigationPage
 	{
-		protected override void Init()
+		public Issue2222() : base(new MainPage())
 		{
-			var tbItem = new ToolbarItem { Text = "hello", IconImageSource = "wrongName" };
-			ToolbarItems.Add(tbItem);
-
-			PushAsync(new Issue22221());
 		}
 
-		[Preserve(AllMembers = true)]
-		public class Issue22221 : ContentPage
+		public class MainPage : ContentPage
 		{
-			public Issue22221()
+			public MainPage()
 			{
-				Content = new StackLayout
+				var tbItem = new ToolbarItem { Text = "hello", IconImageSource = "wrongName" };
+				ToolbarItems.Add(tbItem);
+
+				Navigation.PushAsync(new Issue22221());
+			}
+
+			[Preserve(AllMembers = true)]
+			public class Issue22221 : ContentPage
+			{
+				public Issue22221()
 				{
-					Children = {
+					Content = new StackLayout
+					{
+						Children = {
 						new Label { Text = "Hello Toolbaritem" }
 					}
-				};
+					};
+				}
 			}
 		}
 	}
 }
-
-

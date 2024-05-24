@@ -16,118 +16,126 @@ namespace Maui.Controls.Sample.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2004, "[Android] Xamarin caused by: android.runtime.JavaProxyThrowable: System.ObjectDisposedException: Cannot access a disposed object",
 		PlatformAffected.Android)]
-	public class Issue2004 : TestContentPage
+	public class Issue2004 : NavigationPage
 	{
-		static internal NavigationPage settingsPage = new NavigationPage(new SettingsView());
-		static internal NavigationPage addressesPage = new NavigationPage(new AddressListView());
-		static internal NavigationPage associationsPage = new NavigationPage(new ContentPage());
-		static FlyoutPage RootPage;
-		protected override void Init()
+		public Issue2004() : base(new Issue2004MainPage())
 		{
-			FlyoutPage testPage = new FlyoutPage();
-			RootPage = testPage;
-			testPage.Flyout = new ContentPage
+		}
+
+		public class Issue2004MainPage : ContentPage
+		{
+			static internal NavigationPage settingsPage = new NavigationPage(new SettingsView());
+			static internal NavigationPage addressesPage = new NavigationPage(new AddressListView());
+			static internal NavigationPage associationsPage = new NavigationPage(new ContentPage());
+
+			static FlyoutPage RootPage;
+
+			public Issue2004MainPage()
 			{
-				Title = "M",
-			};
-
-			testPage.Detail = new SettingsView();
-		}
-
-		protected override void OnAppearing()
-		{
-			base.OnAppearing();
-			Application.Current.MainPage = RootPage;
-		}
-
-		static void SetPage(Page page)
-		{
-			RootPage.Detail = page;
-		}
-
-		static async Task UI(int delay)
-		{
-			await Task.Delay(delay);
-		}
-
-		public static INavigation NavigationPage => RootPage.Detail.Navigation;
-
-		public static async Task DisposedBitmapTest()
-		{
-			SetPage(Issue2004.associationsPage);
-			await UI(999);
-			SetPage(Issue2004.addressesPage);
-			await UI(999);
-
-			SetPage(Issue2004.associationsPage);
-
-			await UI(999);
-			SetPage(Issue2004.addressesPage);
-			await UI(999);
-
-			await NavigationPage.PushAsync(new ContentPage());
-			await UI(999);
-			await NavigationPage.PopAsync();
-			await UI(999);
-
-			SetPage(Issue2004.associationsPage);
-			await UI(999);
-
-			SetPage(Issue2004.addressesPage);
-			await UI(999);
-			SetPage(new ContentPage() { Content = new Label() { Text = "Success" } });
-		}
-
-
-		[Preserve(AllMembers = true)]
-		public class AddressListItemView : Grid
-		{
-			public AddressListItemView()
-			{
-				this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-				this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-				this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-				this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-				this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
-
-				this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 0, 0);
-				this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 1, 0);
-				this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 2, 0);
-				this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 3, 0);
-
-				this.Add(new StackLayout()
+				FlyoutPage testPage = new FlyoutPage();
+				RootPage = testPage;
+				testPage.Flyout = new ContentPage
 				{
-					Children =
+					Title = "M",
+				};
+
+				testPage.Detail = new SettingsView();
+			}
+
+			protected override void OnAppearing()
+			{
+				base.OnAppearing();
+				Application.Current.MainPage = RootPage;
+			}
+
+			static void SetPage(Page page)
+			{
+				RootPage.Detail = page;
+			}
+
+			static async Task UI(int delay)
+			{
+				await Task.Delay(delay);
+			}
+
+			public static INavigation NavigationPage => RootPage.Detail.Navigation;
+
+			public static async Task DisposedBitmapTest()
+			{
+				SetPage(Issue2004MainPage.associationsPage);
+				await UI(999);
+				SetPage(Issue2004MainPage.addressesPage);
+				await UI(999);
+
+				SetPage(Issue2004MainPage.associationsPage);
+
+				await UI(999);
+				SetPage(Issue2004MainPage.addressesPage);
+				await UI(999);
+
+				await NavigationPage.PushAsync(new ContentPage());
+				await UI(999);
+				await NavigationPage.PopAsync();
+				await UI(999);
+
+				SetPage(Issue2004MainPage.associationsPage);
+				await UI(999);
+
+				SetPage(Issue2004MainPage.addressesPage);
+				await UI(999);
+				SetPage(new ContentPage() { Content = new Label() { Text = "Success" } });
+			}
+
+
+			[Preserve(AllMembers = true)]
+			public class AddressListItemView : Grid
+			{
+				public AddressListItemView()
+				{
+					this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+					this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+					this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+					this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+					this.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
+
+					this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 0, 0);
+					this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 1, 0);
+					this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 2, 0);
+					this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 3, 0);
+
+					this.Add(new StackLayout()
+					{
+						Children =
 					{
 						new Label{ Text = "Address", LineBreakMode = LineBreakMode.TailTruncation},
 						new Label{ Text = "Owner", LineBreakMode = LineBreakMode.TailTruncation},
 						new Label{ Text = "ViolationCount"},
 					}
 
-				}, 4, 0);
+					}, 4, 0);
+				}
 			}
-		}
 
-		[Preserve(AllMembers = true)]
-		public class AddressListView : ContentPage
-		{
-			public AddressListView()
+			[Preserve(AllMembers = true)]
+			public class AddressListView : ContentPage
 			{
-				ListView listView = new ListView() { RowHeight = 75 };
-
-				listView.SetBinding(ListView.ItemsSourceProperty, "UnitList");
-
-				listView.ItemTemplate = new DataTemplate(() =>
+				public AddressListView()
 				{
-					ViewCell cell = new ViewCell();
-					cell.View = new AddressListItemView();
-					return cell;
-				});
+					ListView listView = new ListView() { RowHeight = 75 };
 
-				Content = new StackLayout()
-				{
+					listView.SetBinding(ListView.ItemsSourceProperty, "UnitList");
 
-					Children =
+					listView.ItemTemplate = new DataTemplate(() =>
+					{
+						ViewCell cell = new ViewCell();
+						cell.View = new AddressListItemView();
+						return cell;
+					});
+
+					Content = new StackLayout()
+					{
+
+						Children =
 					{
 						new StackLayout()
 						{
@@ -150,127 +158,127 @@ namespace Maui.Controls.Sample.Issues
 						},
 						listView
 					}
-				};
+					};
 
-				BindingContext = this;
-			}
+					BindingContext = this;
+				}
 
-			protected override void OnAppearing()
-			{
-				base.OnAppearing();
-				UnitList = null;
-				NotifyPropertyChanged(() => UnitList);
-				SelectedAddress = null;
-				LoadAddresses();
-			}
-
-			string _selectedAddress;
-			public string SelectedAddress
-			{
-				get => _selectedAddress;
-				set
+				protected override void OnAppearing()
 				{
-					if (_selectedAddress != value)
+					base.OnAppearing();
+					UnitList = null;
+					NotifyPropertyChanged(() => UnitList);
+					SelectedAddress = null;
+					LoadAddresses();
+				}
+
+				string _selectedAddress;
+				public string SelectedAddress
+				{
+					get => _selectedAddress;
+					set
 					{
-						_selectedAddress = value;
-						NotifyPropertyChanged(() => SelectedAddress);
-						if (SelectedAddress != null)
+						if (_selectedAddress != value)
 						{
-							LoadUnitsByAddress(_selectedAddress);
-							NotifyPropertyChanged(() => UnitList);
+							_selectedAddress = value;
+							NotifyPropertyChanged(() => SelectedAddress);
+							if (SelectedAddress != null)
+							{
+								LoadUnitsByAddress(_selectedAddress);
+								NotifyPropertyChanged(() => UnitList);
+							}
 						}
 					}
 				}
-			}
 
-			List<string> _streeAddresses;
-			private List<string> _unitList;
+				List<string> _streeAddresses;
+				private List<string> _unitList;
 
-			public List<string> StreetAddresses
-			{
-				get { return _streeAddresses; }
-				set
+				public List<string> StreetAddresses
 				{
-					_streeAddresses = value;
-					NotifyPropertyChanged();
-				}
-			}
-
-			public void LoadAddresses()
-			{
-				StreetAddresses = Enumerable.Range(1, 10).Select(x => x.ToString()).ToList();
-				SelectedAddress = StreetAddresses.First();
-			}
-
-			public void LoadUnitsByAddress(string address)
-			{
-				if (string.IsNullOrEmpty(address))
-				{
-					UnitList?.Clear();
-					return;
-				}
-				UnitList = Enumerable.Range(1, 10).Select(x => x.ToString()).ToList();
-			}
-
-			public List<string> UnitList
-			{
-				get { return _unitList; }
-				set { _unitList = value; }
-			}
-
-			public virtual void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
-			{
-				OnPropertyChanged(propertyName);
-			}
-
-			protected virtual void NotifyPropertyChanged<T>(Expression<Func<T>> propertyExpression)
-			{
-				string propertyName = GetPropertyName(propertyExpression);
-				OnPropertyChanged(propertyName);
-			}
-
-			private string GetPropertyName<T>(Expression<Func<T>> propertyExpression)
-			{
-				if (propertyExpression == null)
-				{
-					throw new ArgumentNullException("propertyExpression");
-				}
-
-				if (propertyExpression.Body.NodeType != ExpressionType.MemberAccess)
-				{
-					throw new ArgumentException("Should be a member access lambda expression", "propertyExpression");
-				}
-
-				var memberExpression = (MemberExpression)propertyExpression.Body;
-				return memberExpression.Member.Name;
-			}
-		}
-
-
-		[Preserve(AllMembers = true)]
-		public class SettingsView : ContentPage
-		{
-			public Command AutoTest => new Command(async () =>
-			{
-				await Issue2004.DisposedBitmapTest();
-			});
-
-
-			protected async override void OnAppearing()
-			{
-				base.OnAppearing();
-				await Task.Delay(1000);
-				AutoTest.Execute(null);
-
-			}
-			public SettingsView()
-			{
-				BindingContext = this;
-				Content = new ScrollView()
-				{
-					Content = new StackLayout()
+					get { return _streeAddresses; }
+					set
 					{
-						Children =
+						_streeAddresses = value;
+						NotifyPropertyChanged();
+					}
+				}
+
+				public void LoadAddresses()
+				{
+					StreetAddresses = Enumerable.Range(1, 10).Select(x => x.ToString()).ToList();
+					SelectedAddress = StreetAddresses.First();
+				}
+
+				public void LoadUnitsByAddress(string address)
+				{
+					if (string.IsNullOrEmpty(address))
+					{
+						UnitList?.Clear();
+						return;
+					}
+					UnitList = Enumerable.Range(1, 10).Select(x => x.ToString()).ToList();
+				}
+
+				public List<string> UnitList
+				{
+					get { return _unitList; }
+					set { _unitList = value; }
+				}
+
+				public virtual void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
+				{
+					OnPropertyChanged(propertyName);
+				}
+
+				protected virtual void NotifyPropertyChanged<T>(Expression<Func<T>> propertyExpression)
+				{
+					string propertyName = GetPropertyName(propertyExpression);
+					OnPropertyChanged(propertyName);
+				}
+
+				private string GetPropertyName<T>(Expression<Func<T>> propertyExpression)
+				{
+					if (propertyExpression == null)
+					{
+						throw new ArgumentNullException("propertyExpression");
+					}
+
+					if (propertyExpression.Body.NodeType != ExpressionType.MemberAccess)
+					{
+						throw new ArgumentException("Should be a member access lambda expression", "propertyExpression");
+					}
+
+					var memberExpression = (MemberExpression)propertyExpression.Body;
+					return memberExpression.Member.Name;
+				}
+			}
+
+
+			[Preserve(AllMembers = true)]
+			public class SettingsView : ContentPage
+			{
+				public Command AutoTest => new Command(async () =>
+				{
+					await Issue2004MainPage.DisposedBitmapTest();
+				});
+
+
+				protected async override void OnAppearing()
+				{
+					base.OnAppearing();
+					await Task.Delay(1000);
+					AutoTest.Execute(null);
+
+				}
+				public SettingsView()
+				{
+					BindingContext = this;
+					Content = new ScrollView()
+					{
+						Content = new StackLayout()
+						{
+							Children =
 						{
 							new Label()
 							{
@@ -278,8 +286,9 @@ namespace Maui.Controls.Sample.Issues
 								HorizontalOptions = LayoutOptions.Start
 							}
 						}
-					}
-				};
+						}
+					};
+				}
 			}
 		}
 	}

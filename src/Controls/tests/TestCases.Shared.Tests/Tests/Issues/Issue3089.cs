@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "TextCell text doesn't change when using Recycling on ListViews";
-		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.ListView)]

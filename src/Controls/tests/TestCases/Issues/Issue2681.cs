@@ -8,41 +8,48 @@ namespace Maui.Controls.Sample.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2681, "[UWP] Label inside Listview gets stuck inside infinite loop",
 		PlatformAffected.UWP)]
-	public class Issue2681 : TestNavigationPage
+	public class Issue2681 : NavigationPage
 	{
-		const string NavigateToPage = "Click Me.";
-		protected override void Init()
+		public Issue2681() : base(new MainPage())
 		{
-			PushAsync(new ContentPage() { Title = "Freeze Test", Content = new Button() { Text = NavigateToPage, Command = new Command(() => this.PushAsync(new FreezeMe())) } });
 		}
 
-		[Preserve(AllMembers = true)]
-		public partial class FreezeMe : ContentPage
+		public class MainPage : ContentPage
 		{
-			public List<int> Items { get; set; }
+			const string NavigateToPage = "Click Me.";
 
-			public FreezeMe()
+			public MainPage()
 			{
-				this.BindingContext = this;
-				var lv = new ListView()
-				{
-					Margin = new Thickness(20, 5, 5, 5)
-				};
+				Navigation.PushAsync(new ContentPage() { Title = "Freeze Test", Content = new Button() { Text = NavigateToPage, Command = new Command(() => this.Navigation.PushAsync(new FreezeMe())) } });
+			}
 
-				lv.ItemTemplate = new DataTemplate(() =>
-				{
-					var label = new Label() { Text = "sassifrass" };
-					label.SetBinding(Label.TextProperty, ".");
-					return new ViewCell() { View = label };
-				});
+			[Preserve(AllMembers = true)]
+			public partial class FreezeMe : ContentPage
+			{
+				public List<int> Items { get; set; }
 
-				lv.SetBinding(ListView.ItemsSourceProperty, "Items");
-
-				this.Content = new ScrollView()
+				public FreezeMe()
 				{
-					Content = new StackLayout()
+					this.BindingContext = this;
+					var lv = new ListView()
 					{
-						Children =
+						Margin = new Thickness(20, 5, 5, 5)
+					};
+
+					lv.ItemTemplate = new DataTemplate(() =>
+					{
+						var label = new Label() { Text = "sassifrass" };
+						label.SetBinding(Label.TextProperty, ".");
+						return new ViewCell() { View = label };
+					});
+
+					lv.SetBinding(ListView.ItemsSourceProperty, "Items");
+
+					this.Content = new ScrollView()
+					{
+						Content = new StackLayout()
+						{
+							Children =
 						{
 							new Label(){ Text = "If page is not frozen this test has passed" },
 							new StackLayout()
@@ -51,15 +58,17 @@ namespace Maui.Controls.Sample.Issues
 								Children = {lv  }
 							}
 						}
-					}
-				};
+						}
+					};
 
-				this.Appearing += (s, e) =>
-				{
-					this.Items = new List<int> { 1, 2, 3 };
-					this.OnPropertyChanged("Items");
-				};
+					this.Appearing += (s, e) =>
+					{
+						this.Items = new List<int> { 1, 2, 3 };
+						this.OnPropertyChanged("Items");
+					};
+				}
 			}
 		}
 	}
+
 }

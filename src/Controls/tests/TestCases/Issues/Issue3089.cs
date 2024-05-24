@@ -1,30 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3089, "TextCell text doesn't change when using Recycling on ListViews")]
-	public class Issue3089 : TestNavigationPage
+	public class Issue3089 : NavigationPage
 	{
-		const string reload = "reload";
-		const string success = "success";
-
-		protected override void Init()
+		public Issue3089() : base(new MainPage())
 		{
-			var oc = new ObservableCollection<string>(new[] { $"Click {reload}", "and this text should go away" });
+		}
+
+		public class MainPage : ContentPage
+	{
+		const string Reload = "reload";
+		const string Success = "success";
+
+			public MainPage()
+		{
+			var oc = new ObservableCollection<string>(new[] { $"Click {Reload}", "and this text should go away" });
 
 			Enumerable.Range(0, 100).ToList().ForEach(x => oc.Add(x.ToString()));
 
-			PushAsync(new MainPageCode
+			Navigation.PushAsync(new MainPageCode
 			{
 				BindingContext = new MainViewModel
 				{
@@ -61,7 +63,7 @@ namespace Maui.Controls.Sample.Issues
 			void AddItems(ObservableCollection<string> list)
 			{
 				list.Add("new item");
-				list.Add(success);
+				list.Add(Success);
 			}
 
 			public MainViewModel()
@@ -95,16 +97,17 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
-		public partial class ListPageCode : ContentPage
-		{
-			public ListPageCode()
+			[Preserve(AllMembers = true)]
+			public partial class ListPageCode : ContentPage
 			{
-				IconImageSource = "coffee.png";
-				ListView view = new ListView(ListViewCachingStrategy.RecycleElement);
-				Content = view;
+				public ListPageCode()
+				{
+					IconImageSource = "coffee.png";
+					ListView view = new ListView(ListViewCachingStrategy.RecycleElement);
+					Content = view;
 
-				view.SetBinding(ListView.ItemsSourceProperty, "Items");
+					view.SetBinding(ListView.ItemsSourceProperty, "Items");
+				}
 			}
 		}
 	}

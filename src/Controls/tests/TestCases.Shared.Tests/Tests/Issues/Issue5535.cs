@@ -11,7 +11,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "CollectionView: Swapping EmptyViews has no effect";
-		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]

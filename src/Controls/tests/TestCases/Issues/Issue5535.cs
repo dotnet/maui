@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -10,13 +6,18 @@ namespace Maui.Controls.Sample.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5535, "CollectionView: Swapping EmptyViews has no effect",
 		PlatformAffected.iOS | PlatformAffected.Android)]
-	public class Issue5535 : TestNavigationPage
+	public class Issue5535 : NavigationPage
 	{
-		protected override void Init()
+		public Issue5535() : base(new MainPage())
 		{
-#if APP
-			PushAsync(new GalleryPages.CollectionViewGalleries.EmptyViewGalleries.EmptyViewSwapGallery());
-#endif
+		}
+
+		public class MainPage : ContentPage
+		{
+			public MainPage()
+			{
+				Navigation.PushAsync(new CollectionViewGalleries.EmptyViewGalleries.EmptyViewSwapGallery());
+			}
 		}
 	}
 }
