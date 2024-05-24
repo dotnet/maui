@@ -300,27 +300,21 @@ class GesturePlatformManager : IDisposable
 				return;
 			}
 
-			if (_element != null)
+			if (_element is View)
 			{
-				if (_element is View view)
+				if (ElementGestureRecognizers != null)
 				{
-					if (ElementGestureRecognizers != null)
-					{
-						ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
-					}
+					ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 				}
 			}
 
 			_element = value;
 
-			if (_element != null)
+			if (_element is View)
 			{
-				if (_element is View view)
+				if (ElementGestureRecognizers != null)
 				{
-					if (ElementGestureRecognizers != null)
-					{
-						ElementGestureRecognizers.CollectionChanged += _collectionChangedHandler;
-					}
+					ElementGestureRecognizers.CollectionChanged += _collectionChangedHandler;
 				}
 			}
 		}
