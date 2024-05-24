@@ -265,8 +265,7 @@ class GesturePlatformManager : IDisposable
 				}
 				else if (!string.IsNullOrWhiteSpace(args.Data.Text))
 				{
-					Uri? uri;
-					if (Uri.TryCreate(args.Data.Text, UriKind.Absolute, out uri))
+					if (Uri.TryCreate(args.Data.Text, UriKind.Absolute, out Uri? uri))
 					{
 						if (args.Data.Text.StartsWith("http", StringComparison.OrdinalIgnoreCase))
 						{
