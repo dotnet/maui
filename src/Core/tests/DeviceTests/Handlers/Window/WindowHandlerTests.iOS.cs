@@ -11,11 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 #if MACCATALYST
 
-		[Fact(
-#if MACCATALYST
-		Skip = "Causes Catalyst test run to hang"
-#endif
-		)]
+		[Fact]
 		public async Task TitleSetsOnWindow()
 		{
 			var window = new Window
@@ -35,12 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-		[Fact(
-#if MACCATALYST
-		Skip = "Causes Catalyst test run to hang"
-#endif
-		)]
+		[Fact]
 		public async Task ContentIsSetInitially()
 		{
 			var window = new Window
@@ -60,17 +51,13 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.NotNull(page.View);
 				var content = Assert.IsType<Platform.ContentView>(root.View.Subviews[0]);
-				var btn = Assert.IsType<UIButton>(content.Subviews[0]);
+				var btn = Assert.IsType<UIButton>(content.Subviews[0].Subviews[0]);
 
 				Assert.Equal("Yay!", btn.Title(UIControlState.Normal));
 			});
 		}
 
-		[Fact(
-#if MACCATALYST
-		Skip = "Causes Catalyst test run to hang"
-#endif
-		)]
+		[Fact]
 		public async Task WindowSupportsEmptyPage_Platform()
 		{
 			var window = new Window(new ContentPage());
