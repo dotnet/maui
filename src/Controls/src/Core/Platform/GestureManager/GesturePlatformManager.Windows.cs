@@ -315,6 +315,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDragEventsSubscribed;
 
+					_container.CanDrag = false;
 					_container.DragStarting -= HandleDragStarting;
 					_container.DropCompleted -= HandleDropCompleted;
 				}
@@ -323,6 +324,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDropEventsSubscribed;
 
+					_container.AllowDrop = false;
 					_container.DragOver -= HandleDragOver;
 					_container.Drop -= HandleDrop;
 					_container.DragLeave -= HandleDragLeave;
@@ -719,15 +721,13 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			bool canDrag = gestures.FirstGestureOrDefault<DragGestureRecognizer>()?.CanDrag ?? false;
-			_container.CanDrag = canDrag;
-
 			bool allowDrop = gestures.FirstGestureOrDefault<DropGestureRecognizer>()?.AllowDrop ?? false;
-			_container.AllowDrop = allowDrop;
 
 			if (canDrag)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
 
+				_container.CanDrag = true;
 				_container.DragStarting += HandleDragStarting;
 				_container.DropCompleted += HandleDropCompleted;
 			}
@@ -736,6 +736,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
 				
+				_container.AllowDrop = true;
 				_container.DragOver += HandleDragOver;
 				_container.Drop += HandleDrop;
 				_container.DragLeave += HandleDragLeave;
