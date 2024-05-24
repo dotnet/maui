@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				public FirstPage()
 				{
-					AutomationId = "FirstPage",
+					AutomationId = "FirstPage";
 					Title = "First Page";
 					BackgroundColor = Colors.Black;
 
