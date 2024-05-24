@@ -354,23 +354,21 @@ namespace Microsoft.Maui.Graphics
 
 		protected override void OnBoundsChange(ARect bounds)
 		{
+			// This method can probably be cleaned up more
 			if (_bounds != bounds)
 			{
-				_bounds = bounds;
+				_bounds = new ARect(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
 
-				if (_bounds != null)
-				{
-					var width = _bounds.Width();
-					var height = _bounds.Height();
+				var width = _bounds.Width();
+				var height = _bounds.Height();
 
-					if (_width == width && _height == height)
-						return;
+				if (_width == width && _height == height)
+					return;
 
-					_invalidatePath = true;
+				_invalidatePath = true;
 
-					_width = width;
-					_height = height;
-				}
+				_width = width;
+				_height = height;
 			}
 
 			base.OnBoundsChange(bounds);
