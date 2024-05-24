@@ -604,7 +604,7 @@ class GesturePlatformManager : IDisposable
 		}
 	}
 
-	Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)
+	static Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)
 	{
 		var result = e.GetPositionRelativeToElement(relativeTo);
 
