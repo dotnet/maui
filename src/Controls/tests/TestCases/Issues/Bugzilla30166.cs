@@ -6,27 +6,33 @@ namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 30166, "NavigationBar.BarBackgroundColor resets on Lollipop after popping modal page", PlatformAffected.Android)]
-	public class Bugzilla30166 : TestNavigationPage
+	public class Bugzilla30166 : NavigationPage
 	{
-		protected override void Init()
+		public Bugzilla30166() : base(new MainPage())
 		{
 			BarBackgroundColor = Colors.Red;
+		}
 
-			Navigation.PushAsync(new ContentPage
+		public class MainPage : ContentPage
+		{
+			public MainPage()
 			{
-				Content = new Button
+				Navigation.PushAsync(new ContentPage
 				{
-					Text = "Push Modal",
-					Command = new Command(async () => await Navigation.PushModalAsync(new ContentPage
+					Content = new Button
 					{
-						Content = new Button
+						Text = "Push Modal",
+						Command = new Command(async () => await Navigation.PushModalAsync(new ContentPage
 						{
-							Text = "Back",
-							Command = new Command(async () => await Navigation.PopModalAsync()),
-						},
-					})),
-				},
-			});
+							Content = new Button
+							{
+								Text = "Back",
+								Command = new Command(async () => await Navigation.PopModalAsync()),
+							},
+						})),
+					},
+				});
+			}
 		}
 	}
 }

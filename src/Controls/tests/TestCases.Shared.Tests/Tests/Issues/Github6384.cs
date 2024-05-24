@@ -11,7 +11,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "content page in tabbed page not showing inside shell tab";
-		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

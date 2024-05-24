@@ -1,7 +1,5 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -9,62 +7,69 @@ namespace Maui.Controls.Sample.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 31366, "Pushing and then popping a page modally causes ArgumentOutOfRangeException",
 		PlatformAffected.All)]
-	public class Bugzilla31366 : TestNavigationPage
+	public class Bugzilla31366 : NavigationPage
 	{
-		protected override void Init()
+		public Bugzilla31366() : base(new MainPage())
 		{
-			var page1 = new ContentPage() { Title = "Page1" };
+		}
 
-			var successLabel = new Label();
-			var startPopOnAppearing = new Button() { Text = "Start PopOnAppearing Test" };
-			var startModalStack = new Button() { Text = "Start ModalStack Test" };
-
-			page1.Content = new StackLayout()
+		public class MainPage : ContentPage
+		{
+			public MainPage()
 			{
-				Children = { startPopOnAppearing, startModalStack, successLabel }
-			};
+				var page1 = new ContentPage() { Title = "Page1" };
 
-			var popOnAppearing = new ContentPage()
-			{
-				Title = "PopOnAppearing",
-				Content = new StackLayout()
-			};
+				var successLabel = new Label();
+				var startPopOnAppearing = new Button() { Text = "Start PopOnAppearing Test" };
+				var startModalStack = new Button() { Text = "Start ModalStack Test" };
 
-			popOnAppearing.Appearing += async (sender, args) =>
-			{
-				await Task.Yield();
-				await popOnAppearing.Navigation.PopModalAsync();
-			};
-
-			startPopOnAppearing.Clicked += async (sender, args) =>
-			{
-				successLabel.Text = string.Empty;
-
-				await page1.Navigation.PushModalAsync(popOnAppearing);
-
-				successLabel.Text = "If this is visible, the PopOnAppearing test has passed.";
-			};
-
-			startModalStack.Clicked += async (sender, args) =>
-			{
-				successLabel.Text = string.Empty;
-
-				var intermediatePage = new ContentPage()
+				page1.Content = new StackLayout()
 				{
-					Content = new StackLayout()
-					{
-						Children = {
-							new Label () { Text = "If this is visible, the modal stack test has passed." }
-						}
-					}
+					Children = { startPopOnAppearing, startModalStack, successLabel }
 				};
 
-				await intermediatePage.Navigation.PushModalAsync(popOnAppearing);
+				var popOnAppearing = new ContentPage()
+				{
+					Title = "PopOnAppearing",
+					Content = new StackLayout()
+				};
 
-				await page1.Navigation.PushModalAsync(intermediatePage);
-			};
+				popOnAppearing.Appearing += async (sender, args) =>
+				{
+					await Task.Yield();
+					await popOnAppearing.Navigation.PopModalAsync();
+				};
 
-			PushAsync(page1);
+				startPopOnAppearing.Clicked += async (sender, args) =>
+				{
+					successLabel.Text = string.Empty;
+
+					await page1.Navigation.PushModalAsync(popOnAppearing);
+
+					successLabel.Text = "If this is visible, the PopOnAppearing test has passed.";
+				};
+
+				startModalStack.Clicked += async (sender, args) =>
+				{
+					successLabel.Text = string.Empty;
+
+					var intermediatePage = new ContentPage()
+					{
+						Content = new StackLayout()
+						{
+							Children = {
+							new Label () { Text = "If this is visible, the modal stack test has passed." }
+							}
+						}
+					};
+
+					await intermediatePage.Navigation.PushModalAsync(popOnAppearing);
+
+					await page1.Navigation.PushModalAsync(intermediatePage);
+				};
+
+				Navigation.PushAsync(page1);
+			}
 		}
 	}
 }

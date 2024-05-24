@@ -6,11 +6,18 @@ namespace Maui.Controls.Sample.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 9929, "[Bug] NSInternalInconsistencyException when trying to run XamarinTV on iOS",
 		PlatformAffected.iOS)]
-	public class Issue9929 : TestNavigationPage
+	public class Issue9929 : NavigationPage
 	{
-		protected override void Init()
+		public Issue9929() : base(new MainPage())
 		{
-			PushAsync(new CollectionViewGalleries.SpacingGalleries.SpacingGallery(new GridItemsLayout(3, ItemsLayoutOrientation.Vertical)));
+		}
+
+		public class MainPage : ContentPage
+		{
+			public MainPage()
+			{
+				Navigation.PushAsync(new CollectionViewGalleries.SpacingGalleries.SpacingGallery(new GridItemsLayout(3, ItemsLayoutOrientation.Vertical)));
+			}
 		}
 	}
 }

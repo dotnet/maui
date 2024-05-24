@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "[Bug] Exception Ancestor must be provided for all pushes except first";
-		public override bool ResetMainPage => false;
 
 		// Crash after navigation
 		/*

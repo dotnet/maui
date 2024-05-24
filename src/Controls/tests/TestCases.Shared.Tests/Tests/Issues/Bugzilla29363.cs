@@ -11,7 +11,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "PushModal followed immediate by PopModal crashes";
-		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

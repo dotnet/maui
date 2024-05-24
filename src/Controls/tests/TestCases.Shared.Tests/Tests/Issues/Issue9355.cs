@@ -13,7 +13,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "ScrollViewRenderer renderer dispose crash";
-		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]

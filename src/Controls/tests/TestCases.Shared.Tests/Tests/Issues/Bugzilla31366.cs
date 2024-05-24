@@ -11,13 +11,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "Pushing and then popping a page modally causes ArgumentOutOfRangeException";
-		public override bool ResetMainPage => false;
-
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			Reset();
-		}
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

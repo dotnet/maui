@@ -9,67 +9,74 @@ namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 10222, "[CollectionView] ObjectDisposedException if the page is closed during scrolling", PlatformAffected.iOS)]
-	public class Issue10222 : TestNavigationPage // or TestFlyoutPage, etc ...
+	public class Issue10222 : NavigationPage
 	{
-		protected override void Init()
+		public Issue10222() : base(new MainPage())
 		{
-			// Initialize ui here instead of ctor
-			Navigation.PushAsync(new ContentPage
-			{
-				Content = new Button
-				{
-					AutomationId = "goTo",
-					Text = "Go",
-					Command = new Command(async () => await Navigation.PushAsync(new CarouselViewTestPage()))
-				}
-			});
 		}
 
-		class CarouselViewTestPage : ContentPage
+		public class MainPage : ContentPage
 		{
-			CollectionView cv;
-			public CarouselViewTestPage()
+			public MainPage()
 			{
-				cv = new CollectionView
+				// Initialize ui here instead of ctor
+				Navigation.PushAsync(new ContentPage
 				{
-					AutomationId = "collectionView",
-					Margin = new Thickness(0, 40),
-					ItemTemplate = new DataTemplate(() =>
+					Content = new Button
 					{
-						var label = new Label
-						{
-							HorizontalTextAlignment = TextAlignment.Center,
-							Margin = new Thickness(0, 100)
-						};
-						label.SetBinding(Label.TextProperty, new Binding("."));
-						return label;
-					})
-				};
-				Content = cv;
-				InitCV();
+						AutomationId = "goTo",
+						Text = "Go",
+						Command = new Command(async () => await Navigation.PushAsync(new CarouselViewTestPage()))
+					}
+				});
 			}
 
-			async void InitCV()
+			class CarouselViewTestPage : ContentPage
 			{
-				var items = new List<string>();
-				for (int i = 0; i < 10; i++)
+				CollectionView cv;
+				public CarouselViewTestPage()
 				{
-					items.Add($"items{i}");
+					cv = new CollectionView
+					{
+						AutomationId = "collectionView",
+						Margin = new Thickness(0, 40),
+						ItemTemplate = new DataTemplate(() =>
+						{
+							var label = new Label
+							{
+								HorizontalTextAlignment = TextAlignment.Center,
+								Margin = new Thickness(0, 100)
+							};
+							label.SetBinding(Label.TextProperty, new Binding("."));
+							return label;
+						})
+					};
+					Content = cv;
+					InitCV();
 				}
 
-				cv.ItemsSource = items;
+				async void InitCV()
+				{
+					var items = new List<string>();
+					for (int i = 0; i < 10; i++)
+					{
+						items.Add($"items{i}");
+					}
 
-				//give the cv time to draw the items
-				await Task.Delay(1000);
+					cv.ItemsSource = items;
 
-				cv.ScrollTo(items.Count - 1);
+					//give the cv time to draw the items
+					await Task.Delay(1000);
 
-				//give the cv time to scroll
-				var rand = new Random();
-				await Task.Delay(rand.Next(10, 200));
+					cv.ScrollTo(items.Count - 1);
 
-				await Navigation.PopAsync(false);
+					//give the cv time to scroll
+					var rand = new Random();
+					await Task.Delay(rand.Next(10, 200));
 
+					await Navigation.PopAsync(false);
+
+				}
 			}
 		}
 	}

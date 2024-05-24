@@ -12,11 +12,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Regression] CollectionView NSRangeException";
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			App.Back();
-		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]

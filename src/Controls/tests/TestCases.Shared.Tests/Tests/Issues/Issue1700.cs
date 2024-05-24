@@ -14,11 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Image fails loading from long URL";
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			App.Back();
-		}
 
 		[Test]
 		[Category(UITestCategories.Image)]

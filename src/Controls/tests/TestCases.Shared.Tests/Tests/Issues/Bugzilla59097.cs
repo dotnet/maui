@@ -11,7 +11,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "[Android] Calling PopAsync via TapGestureRecognizer causes an application crash";
-		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Gestures)]

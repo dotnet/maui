@@ -1,50 +1,50 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40005, "Navigation Bar back button does not show when using InsertPageBefore")]
-	public class Bugzilla40005 : TestContentPage // or TestFlyoutPage, etc ...
+	public class Bugzilla40005 : NavigationPage
 	{
-		public const string GoToPage2 = "Go to Page 2";
-		public const string PageOneLabel = "Page 1";
-		public const string PageTwoLabel = "Page 2";
-		public const string InsertedPageLabel = "Inserted page";
-		public const string TestInstructions = "Click " + GoToPage2 + " and you should still see a back bar button";
-
-		public Bugzilla40005()
+		public Bugzilla40005() : base(new MainPage())
 		{
 		}
 
-		protected override void Init()
+		public class MainPage : ContentPage
 		{
-			Application.Current.MainPage = new NavigationPage(new Page1());
-		}
+			public const string GoToPage2 = "Go to Page 2";
+			public const string PageOneLabel = "Page 1";
+			public const string PageTwoLabel = "Page 2";
+			public const string InsertedPageLabel = "Inserted page";
+			public const string TestInstructions = "Click " + GoToPage2 + " and you should still see a back bar button";
 
-		public class Page1 : ContentPage
-		{
-			bool pageInserted;
-
-			public Page1()
+			public MainPage()
 			{
-				var btn = new Button()
-				{
-					Text = GoToPage2
-				};
-				btn.Clicked += async (sender, e) =>
-				{
-					await Navigation.PushAsync(new Page2());
-				};
+				Application.Current.MainPage = new NavigationPage(new Page1());
+			}
 
-				Content = new StackLayout
+			public class Page1 : ContentPage
+			{
+				bool pageInserted;
+
+				public Page1()
 				{
-					VerticalOptions = LayoutOptions.Center,
-					Children =
+					var btn = new Button()
+					{
+						Text = GoToPage2
+					};
+					btn.Clicked += async (sender, e) =>
+					{
+						await Navigation.PushAsync(new Page2());
+					};
+
+					Content = new StackLayout
+					{
+						VerticalOptions = LayoutOptions.Center,
+						Children =
 					{
 						new Label
 						{
@@ -58,34 +58,34 @@ namespace Maui.Controls.Sample.Issues
 							Text = TestInstructions
 						}
 					}
-				};
-			}
+					};
+				}
 
-			protected override void OnAppearing()
-			{
-				base.OnAppearing();
-				if (!pageInserted)
+				protected override void OnAppearing()
 				{
-					Navigation.InsertPageBefore(new InsertedPage(), this);
-					pageInserted = true;
+					base.OnAppearing();
+					if (!pageInserted)
+					{
+						Navigation.InsertPageBefore(new InsertedPage(), this);
+						pageInserted = true;
+					}
+				}
+
+				protected override bool OnBackButtonPressed()
+				{
+					Debug.WriteLine($"Hardware BackButton Pressed on {PageOneLabel}");
+					return base.OnBackButtonPressed();
 				}
 			}
 
-			protected override bool OnBackButtonPressed()
+			public class InsertedPage : ContentPage
 			{
-				Debug.WriteLine($"Hardware BackButton Pressed on {PageOneLabel}");
-				return base.OnBackButtonPressed();
-			}
-		}
-
-		public class InsertedPage : ContentPage
-		{
-			public InsertedPage()
-			{
-				Content = new StackLayout
+				public InsertedPage()
 				{
-					VerticalOptions = LayoutOptions.Center,
-					Children =
+					Content = new StackLayout
+					{
+						VerticalOptions = LayoutOptions.Center,
+						Children =
 					{
 						new Label
 						{
@@ -93,24 +93,24 @@ namespace Maui.Controls.Sample.Issues
 							Text = InsertedPageLabel
 						}
 					}
-				};
-			}
+					};
+				}
 
-			protected override bool OnBackButtonPressed()
-			{
-				Debug.WriteLine($"Hardware BackButton Pressed on {InsertedPageLabel}");
-				return base.OnBackButtonPressed();
-			}
-		}
-
-		public class Page2 : ContentPage
-		{
-			public Page2()
-			{
-				Content = new StackLayout
+				protected override bool OnBackButtonPressed()
 				{
-					VerticalOptions = LayoutOptions.Center,
-					Children =
+					Debug.WriteLine($"Hardware BackButton Pressed on {InsertedPageLabel}");
+					return base.OnBackButtonPressed();
+				}
+			}
+
+			public class Page2 : ContentPage
+			{
+				public Page2()
+				{
+					Content = new StackLayout
+					{
+						VerticalOptions = LayoutOptions.Center,
+						Children =
 					{
 						new Label
 						{
@@ -118,13 +118,14 @@ namespace Maui.Controls.Sample.Issues
 							Text = PageTwoLabel
 						}
 					}
-				};
-			}
+					};
+				}
 
-			protected override bool OnBackButtonPressed()
-			{
-				Debug.WriteLine($"Hardware BackButton Pressed on {PageTwoLabel}");
-				return base.OnBackButtonPressed();
+				protected override bool OnBackButtonPressed()
+				{
+					Debug.WriteLine($"Hardware BackButton Pressed on {PageTwoLabel}");
+					return base.OnBackButtonPressed();
+				}
 			}
 		}
 	}

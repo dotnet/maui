@@ -11,7 +11,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "PopAsync crashing after RemovePage when support packages are updated to 25.1.1";
-		public override bool ResetMainPage => false;
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

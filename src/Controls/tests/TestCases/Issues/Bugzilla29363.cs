@@ -7,32 +7,39 @@ namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 29363, "PushModal followed immediate by PopModal crashes")]
-	public class Bugzilla29363 : TestContentPage
+	public class Bugzilla29363 : NavigationPage
 	{
-		protected override void Init()
+		public Bugzilla29363() : base(new MainPage())
 		{
+		}
+
+		public class MainPage : ContentPage
+		{
+			public MainPage()
+			{
 #pragma warning disable CS0618 // Type or member is obsolete
-			var layout = new StackLayout() { HorizontalOptions = LayoutOptions.FillAndExpand, VerticalOptions = LayoutOptions.FillAndExpand };
+				var layout = new StackLayout() { HorizontalOptions = LayoutOptions.FillAndExpand, VerticalOptions = LayoutOptions.FillAndExpand };
 #pragma warning restore CS0618 // Type or member is obsolete
 
-			Button modal = new Button
-			{
-				Text = "Modal Push Pop Test",
-				FontAttributes = FontAttributes.Bold,
-				FontSize = 25,
-				HorizontalOptions = LayoutOptions.Center
-			};
-			modal.Clicked += async (object sender, EventArgs e) =>
-			{
-				var page = new ContentPage() { BackgroundColor = Colors.Red };
+				Button modal = new Button
+				{
+					Text = "Modal Push Pop Test",
+					FontAttributes = FontAttributes.Bold,
+					FontSize = 25,
+					HorizontalOptions = LayoutOptions.Center
+				};
+				modal.Clicked += async (object sender, EventArgs e) =>
+				{
+					var page = new ContentPage() { BackgroundColor = Colors.Red };
 
-				await Navigation.PushModalAsync(page);
+					await Navigation.PushModalAsync(page);
 
-				await Navigation.PopModalAsync(true);
-			};
+					await Navigation.PopModalAsync(true);
+				};
 
-			layout.Children.Add(modal);
-			Content = layout;
+				layout.Children.Add(modal);
+				Content = layout;
+			}
 		}
 	}
 }
