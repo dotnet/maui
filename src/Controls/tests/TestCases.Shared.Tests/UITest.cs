@@ -16,11 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[TestFixture(TestDevice.Mac)]
 #elif WINTEST
 		[TestFixture(TestDevice.Windows)]
-#else
-	[TestFixture(TestDevice.iOS)]
-	[TestFixture(TestDevice.Mac)]
-	[TestFixture(TestDevice.Windows)]
-	[TestFixture(TestDevice.Android)]
 #endif
 	public abstract class UITest : UITestBase
 	{
@@ -201,6 +196,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 
 			_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+		}
+
+		[SetUp]
+		public void TestSetup()
+		{
+			var device = App.GetTestDevice();
+			if(device == TestDevice.Android || device == TestDevice.iOS)
+			{
+				App.SetOrientationPortrait();
+			}
 		}
 	}
 }
