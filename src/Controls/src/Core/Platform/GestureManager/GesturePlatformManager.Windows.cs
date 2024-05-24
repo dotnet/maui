@@ -154,7 +154,7 @@ class GesturePlatformManager : IDisposable
 		}
 	}
 
-	void HandleDragLeave(object sender, Microsoft.UI.Xaml.DragEventArgs e)
+	void HandleDragLeave(object sender, UI.Xaml.DragEventArgs e)
 	{
 		var dragEventArgs = ToDragEventArgs(e, new PlatformDragEventArgs(sender as UIElement, e));
 
@@ -183,7 +183,7 @@ class GesturePlatformManager : IDisposable
 		});
 	}
 
-	void HandleDragOver(object sender, Microsoft.UI.Xaml.DragEventArgs e)
+	void HandleDragOver(object sender, UI.Xaml.DragEventArgs e)
 	{
 		var dragEventArgs = ToDragEventArgs(e, new PlatformDragEventArgs(sender as UIElement, e));
 
@@ -204,13 +204,13 @@ class GesturePlatformManager : IDisposable
 		});
 	}
 
-	void HandleDropCompleted(UIElement sender, Microsoft.UI.Xaml.DropCompletedEventArgs e)
+	void HandleDropCompleted(UIElement sender, UI.Xaml.DropCompletedEventArgs e)
 	{
 		var args = new DropCompletedEventArgs(new PlatformDropCompletedEventArgs(sender, e));
 		SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args));
 	}
 
-	void HandleDrop(object sender, Microsoft.UI.Xaml.DragEventArgs e)
+	void HandleDrop(object sender, UI.Xaml.DragEventArgs e)
 	{
 		var datapackage = e.DataView.Properties[_doNotUsePropertyString] as DataPackage;
 		VisualElement? element = null;
@@ -240,7 +240,7 @@ class GesturePlatformManager : IDisposable
 		});
 	}
 
-	void HandleDragStarting(UIElement sender, Microsoft.UI.Xaml.DragStartingEventArgs e)
+	void HandleDragStarting(UIElement sender, UI.Xaml.DragStartingEventArgs e)
 	{
 		SendEventArgs<DragGestureRecognizer>(rec =>
 		{
