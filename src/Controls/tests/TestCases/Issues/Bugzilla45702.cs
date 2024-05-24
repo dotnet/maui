@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				public DetailPage45702()
 				{
-					var button = new Button { Text = "Click me" };
+					var button = new Button { AutomationId = "ClickMe", Text = "Click me" };
 					button.Clicked += Button_Clicked;
 					Content = button;
 				}

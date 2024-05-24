@@ -32,32 +32,32 @@ namespace Maui.Controls.Sample.Issues
 			{
 				_1Template = new DataTemplate(() =>
 				{
-					return new TextCell { Text = Success1 };
+					return new TextCell { AutomationId = Success1, Text = Success1 };
 				});
 
 				_2Template = new DataTemplate(() =>
 				{
-					return new TextCell { Text = Success2 };
+					return new TextCell { AutomationId = Success2, Text = Success2 };
 				});
 
 				_3Template = new DataTemplate(() =>
 				{
-					return new TextCell { Text = Success3 };
+					return new TextCell { AutomationId = Success3, Text = Success3 };
 				});
 
 				_4Template = new DataTemplate(() =>
 				{
-					return new TextCell { Text = Success4 };
+					return new TextCell { AutomationId = Success4, Text = Success4 };
 				});
 
 				_5Template = new DataTemplate(() =>
 				{
-					return new TextCell { Text = Success5 };
+					return new TextCell { AutomationId = Success5, Text = Success5 };
 				});
 
 				_6Template = new DataTemplate(() =>
 				{
-					return new TextCell { Text = Success6 };
+					return new TextCell { AutomationId = Success6, Text = Success6 };
 				});
 			}
 

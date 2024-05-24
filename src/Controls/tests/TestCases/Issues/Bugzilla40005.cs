@@ -34,6 +34,7 @@ namespace Maui.Controls.Sample.Issues
 				{
 					var btn = new Button()
 					{
+						AutomationId = GoToPage2,
 						Text = GoToPage2
 					};
 					btn.Clicked += async (sender, e) =>
@@ -48,12 +49,14 @@ namespace Maui.Controls.Sample.Issues
 					{
 						new Label
 						{
+							AutomationId = PageOneLabel,
 							HorizontalTextAlignment = TextAlignment.Center,
 							Text = PageOneLabel
 						},
 						btn,
 						new Label
 						{
+							AutomationId = TestInstructions,
 							HorizontalTextAlignment = TextAlignment.Center,
 							Text = TestInstructions
 						}
@@ -114,6 +117,7 @@ namespace Maui.Controls.Sample.Issues
 					{
 						new Label
 						{
+							AutomationId = PageTwoLabel,
 							HorizontalTextAlignment = TextAlignment.Center,
 							Text = PageTwoLabel
 						}

@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Issues
 				Text = "Tap the frame below. The label with the text 'No taps yet' should change its text to 'Frame was tapped'."
 			};
 			var frame = new Frame() { };
-			var frameLabel = new Label() { Text = "Tap here" };
+			var frameLabel = new Label() { AutomationId = "TapHere", Text = "Tap here" };
 
 			frame.Content = new StackLayout() { Children = { frameLabel } };
 

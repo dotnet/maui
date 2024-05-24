@@ -20,6 +20,7 @@ namespace Maui.Controls.Sample.Issues
 				{
 					Children = {
 					new Label {
+						AutomationId = "Page1",
 						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Page 1"
 					}

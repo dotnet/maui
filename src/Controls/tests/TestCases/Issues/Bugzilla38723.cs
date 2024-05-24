@@ -29,6 +29,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var button = new Button
 			{
+				AutomationId = "SELECT",
 				Text = "SELECT"
 			};
 

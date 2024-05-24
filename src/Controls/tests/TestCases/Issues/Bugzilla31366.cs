@@ -20,8 +20,8 @@ namespace Maui.Controls.Sample.Issues
 				var page1 = new ContentPage() { Title = "Page1" };
 
 				var successLabel = new Label();
-				var startPopOnAppearing = new Button() { Text = "Start PopOnAppearing Test" };
-				var startModalStack = new Button() { Text = "Start ModalStack Test" };
+				var startPopOnAppearing = new Button() { AutomationId = "StartPopOnAppearingTest", Text = "Start PopOnAppearing Test" };
+				var startModalStack = new Button() { AutomationId = "StartModalStackTest", Text = "Start ModalStack Test" };
 
 				page1.Content = new StackLayout()
 				{

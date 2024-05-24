@@ -22,6 +22,7 @@ namespace Maui.Controls.Sample.Issues
 						VerticalOptions = LayoutOptions.Center,
 						Children = {
 						new Button {
+							AutomationId = "SwitchMainPage",
 							Text = "Switch Main Page",
 							Command = new Command (() => SwitchMainPage ())
 						}

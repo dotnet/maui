@@ -34,6 +34,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var button = new Button
 			{
+				AutomationId = "TapMe",
 				Text = "Tap Me!",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center

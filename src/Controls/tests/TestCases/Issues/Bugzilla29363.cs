@@ -23,6 +23,7 @@ namespace Maui.Controls.Sample.Issues
 
 				Button modal = new Button
 				{
+					AutomationId = "ModalPushPopTest",
 					Text = "Modal Push Pop Test",
 					FontAttributes = FontAttributes.Bold,
 					FontSize = 25,

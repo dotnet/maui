@@ -56,7 +56,7 @@ namespace Maui.Controls.Sample.Issues
 				seventeen = new DataTemplate(() => new ViewCell { View = new Label { Text = "I am the seventeen!" } });
 				eighteen = new DataTemplate(() => new ViewCell { View = new Label { Text = "I am the eighteen!" } });
 				nineteen = new DataTemplate(() => new ViewCell { View = new Label { Text = "I am the nineteen! Is this how I should be databinding? Whatev." } });
-				twenty = new DataTemplate(() => new ViewCell { View = new Label { Text = Success } });
+				twenty = new DataTemplate(() => new ViewCell { View = new Label { AutomationId = Success, Text = Success } });
 			}
 
 			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)

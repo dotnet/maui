@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Issues
 			Flyout = new Page() { Title = "Flyout" };
 
 			Detail = new NavigationPage(new Page());
-			Detail = new NavigationPage(new ContentPage { Content = new Label { Text = "Success" } });
+			Detail = new NavigationPage(new ContentPage { Content = new Label { AutomationId = "Success", Text = "Success" } });
 		}
 	}
 }

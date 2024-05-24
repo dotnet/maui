@@ -34,11 +34,12 @@ namespace Maui.Controls.Sample.Issues
 				_itemsPanel.Children.Add(view);
 			}
 
-			var clearButton = new Button { Text = "Clear", Command = new Command(o => viewModel.Clear()) };
+			var clearButton = new Button { AutomationId = "Clear", Text = "Clear", Command = new Command(o => viewModel.Clear()) };
 			_layout.Children.Add(clearButton);
 
 			var collectButton = new Button
 			{
+				AutomationId = "Garbage",
 				Text = "Garbage",
 				Command = new Command(o =>
 				{
