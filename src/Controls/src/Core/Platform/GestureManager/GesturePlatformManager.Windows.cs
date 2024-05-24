@@ -534,10 +534,7 @@ class GesturePlatformManager : IDisposable
 	void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
 	{
 		uint id = e.Pointer.PointerId;
-		if (_fingers.Contains(id))
-		{
-			_fingers.Remove(id);
-		}
+		_fingers.Remove(id);
 
 		SwipeComplete(false);
 		PinchComplete(false);
@@ -549,10 +546,7 @@ class GesturePlatformManager : IDisposable
 		if (!_isPanning)
 		{
 			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-			{
-				_fingers.Remove(id);
-			}
+			_fingers.Remove(id);
 		}
 		
 		SwipeComplete(true);
@@ -571,10 +565,7 @@ class GesturePlatformManager : IDisposable
 	void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 	{
 		uint id = e.Pointer.PointerId;
-		if (_fingers.Contains(id))
-		{
-			_fingers.Remove(id);
-		}
+		_fingers.Remove(id);
 
 		SwipeComplete(true);
 		PinchComplete(true);
