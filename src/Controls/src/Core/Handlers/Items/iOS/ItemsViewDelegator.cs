@@ -27,6 +27,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void Scrolled(UIScrollView scrollView)
 		{
+			//base.Scrolled(scrollView);
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void DecelerationEnded(UIScrollView scrollView)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
 
 			if (!visibleItems)

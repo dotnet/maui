@@ -27,9 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		CGSize _size;
 		ILoopItemsViewSource LoopItemsSource => ItemsSource as ILoopItemsViewSource;
 		bool _isDragging;
-		DisplayOrientation? _initialOrientation = null;
-
-		bool _isRotating;
+		bool _isProgramaticScrolling;
 
 		public CarouselViewController(CarouselView itemsView, ItemsViewLayout layout) : base(itemsView, layout)
 		{
@@ -106,7 +104,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				UpdateInitialPosition();
 			}
-			_isRotating = false;
 		}
 
 		void BoundsSizeChanged()
@@ -205,14 +202,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			carouselView.Scrolled -= CarouselViewScrolled;			
 
-			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
-			_initialOrientation = null;
-
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
-
 		}
 
 		void Setup(CarouselView carouselView)
@@ -220,12 +213,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_oldViews = new List<View>();
 			
 			carouselView.Scrolled += CarouselViewScrolled;
-
-			if(_initialOrientation == null)
-			{
-				_initialOrientation = DeviceDisplay.MainDisplayInfo.Orientation;
-				DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
-			}
 
 			SubscribeCollectionItemsSourceChanged(ItemsSource);
 		}
@@ -258,16 +245,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return indexPath.Row;
 		}
 
-		void OnDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
-		{
-			// While we are rotation the device we don't want to update the position
-			if (e.DisplayInfo.Orientation != _initialOrientation)
-			{
-				_initialOrientation = e.DisplayInfo.Orientation;
-				_isRotating = true;
-			}
-		}
-
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
@@ -280,12 +257,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// If we are dragging the carousel we don't want to update the position
 			// We will do it when the dragging ends
 			if (_isDragging)
-			{
-				return;
-			}
-
-			// If we are rotating the device we don't want to update the position
-			if (_isRotating)
 			{
 				return;
 			}
@@ -438,7 +409,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
 			{
 				_gotoPosition = goToPosition;
-				carousel.ScrollTo(goToPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
+				_isProgramaticScrolling = true;
+				
+				if(!animate)
+				{
+					carousel.ScrollTo(goToPosition, -1, position: Microsoft.Maui.Controls.ScrollToPosition.Center, false);	
+					SetPosition(goToPosition);
+				}
+				else
+				{
+					UIView.Animate(0.25, () => {
+						UpdateIsScrolling(true);
+						var currentItemPosition = ItemsSource.GetIndexForItem(carousel.CurrentItem);
+						CollectionView.ScrollToItem(currentItemPosition, UICollectionViewScrollPosition.CenteredHorizontally, false);				
+					},
+				 	() => { 
+						UpdateIsScrolling(false);
+						SetPosition(goToPosition);
+					});
+				}
 			}
 		}
 
@@ -453,6 +442,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (position == _gotoPosition)
 			{
 				_gotoPosition = -1;
+			}
+
+			if(_gotoPosition != -1 && _isProgramaticScrolling)
+			{
+				_isProgramaticScrolling = false;
+				carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
 			}
 
 			//If _gotoPosition is != -1 we are scrolling to that possition
@@ -548,6 +543,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				carousel.ScrollTo(position, -1, Microsoft.Maui.Controls.ScrollToPosition.Center, false);
+				SetPosition(position);
 			}
 
 			UpdateVisualStates();
