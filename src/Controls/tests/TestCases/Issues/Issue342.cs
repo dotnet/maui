@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 342, "NRE when Image is not assigned source", PlatformAffected.WinPhone)]
+	[Issue(IssueTracker.ManualTest, "342", "NRE when Image is not assigned source", PlatformAffected.WinPhone)]
 	public class Issue342NoSource : TestContentPage
 	{
 		protected override void Init()
@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Issues
 	}
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 342, "NRE when Image is delayed source", PlatformAffected.WinPhone)]
+	[Issue(IssueTracker.ManualTest, "342 Delayed", "NRE when Image is delayed source", PlatformAffected.WinPhone)]
 	public class Issue342DelayedSource : TestContentPage
 	{
 		protected override void Init()

@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 12848, "[Bug] CarouselView position resets when visibility toggled",
+	[Issue(IssueTracker.ManualTest, "12848 Compatibility", "[Bug] CarouselView position resets when visibility toggled",
 		PlatformAffected.Android)]
 	public partial class Issue12848 : TestContentPage
 	{
