@@ -898,7 +898,7 @@ class GesturePlatformManager : IDisposable
 		doubleTappedRoutedEventArgs.Handled = true;
 	}
 
-	DragEventArgs ToDragEventArgs(UI.Xaml.DragEventArgs e, PlatformDragEventArgs platformArgs)
+	static DragEventArgs ToDragEventArgs(UI.Xaml.DragEventArgs e, PlatformDragEventArgs platformArgs)
 	{
 		// The package should never be null here since the UI.Xaml.DragEventArgs have already been initialized
 		var package = e.DataView.Properties[_doNotUsePropertyString] as DataPackage;
