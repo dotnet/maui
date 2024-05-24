@@ -27,7 +27,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void DecelerationEnded(UIScrollView scrollView)
 		{
-			//ViewController?.UpdateIsScrolling(false);
+			base.DecelerationEnded(scrollView);
+			ViewController?.UpdateIsScrolling(false);
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
@@ -38,6 +39,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			PreviousHorizontalOffset = (float)scrollView.ContentOffset.X;
 			PreviousVerticalOffset = (float)scrollView.ContentOffset.Y;
 		}
+
+
 
 		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
 		{

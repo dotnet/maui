@@ -75,7 +75,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
+#pragma warning disable RS0016 // Add public types and members to the declared APIared API
+
+		// This gets called when dragging animation
 		public override void DecelerationEnded(UIScrollView scrollView)
 #pragma warning restore RS0016 // Add public types and members to the declared API
 		{
@@ -86,7 +88,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void Scrolled(UIScrollView scrollView)
 		{
-			
+			// this already doesn't fire if you call go to position without animation on
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+
+		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
+		{
+		}
+
+		public override void ScrollAnimationEnded(UIScrollView scrollView)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			//base.ScrollAnimationEnded(scrollView);
+			ProcessScrolledEvent(scrollView);
 		}
 
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
