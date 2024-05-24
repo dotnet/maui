@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 
@@ -56,10 +53,14 @@ namespace Maui.Controls.Sample.Issues
 			inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeSentence", FlagsToSet = KeyboardFlags.CapitalizeSentence, FlagsToTestFor = KeyboardFlags.CapitalizeSentence });
 			inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeWord", FlagsToSet = KeyboardFlags.CapitalizeWord, FlagsToTestFor = KeyboardFlags.CapitalizeWord });
 
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Device.RuntimePlatform != Device.WinUI)
 			{
 				inputViews.Add(new EntryKeyboardFlags() { ClassId = "CustomRendererCapitalizeCharacter", FlagsToSet = KeyboardFlags.CapitalizeCharacter });
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 
 			if (DeviceInfo.Platform == DevicePlatform.WinUI)
 			{
@@ -91,7 +92,9 @@ namespace Maui.Controls.Sample.Issues
 					(child as Editor).Text = "All the Same.";
 
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				child.HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning restore CS0618 // Type or member is obsolete
 				var theLabel = new Label();
 
 				theLabel.SetBinding(Label.TextProperty, new Binding("ClassId", source: child));

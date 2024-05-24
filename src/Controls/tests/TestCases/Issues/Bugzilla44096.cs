@@ -55,7 +55,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 			AddTapGesture(result, stackLayout);
 
-			var relativeLayout = new Compatibility.RelativeLayout
+			var relativeLayout = new Microsoft.Maui.Controls.Compatibility.RelativeLayout
 			{
 				IsEnabled = true,
 				WidthRequest = 250,

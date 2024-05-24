@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Text;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -86,6 +83,8 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = grid;
 
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			Device.StartTimer(TimeSpan.FromMilliseconds(300), () =>
 			{
 				Device.BeginInvokeOnMainThread(() =>
@@ -96,6 +95,8 @@ namespace Maui.Controls.Sample.Issues
 
 				return false;
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 
 		class IntToBoolConverter : IValueConverter

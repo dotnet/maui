@@ -99,6 +99,7 @@ namespace Maui.Controls.Sample.Issues
 
 				// Need an asynchronous action that happens sometime between creation of the Element and Pop of the containing page
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 				Device.StartTimer(TimeSpan.FromMilliseconds((100)), () =>
 				{
 					Header = $"Header! {_counter++}";
@@ -106,6 +107,7 @@ namespace Maui.Controls.Sample.Issues
 
 					return true;
 				});
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 			}
 
@@ -161,6 +163,7 @@ namespace Maui.Controls.Sample.Issues
 
 				// Need an asynchronous action that happens sometime between creation of the Element and Pop of the containing page
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 				Device.StartTimer(TimeSpan.FromMilliseconds((1000)), () =>
 				{
 					DownloadProgressPercentage += 0.05d;
@@ -171,6 +174,7 @@ namespace Maui.Controls.Sample.Issues
 
 					return DownloadProgressPercentage != 1.0d;
 				});
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 			}
 

@@ -144,7 +144,9 @@ namespace Maui.Controls.Sample.Issues
 
 		protected override void OnDisappearing()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Unsubscribe<_45722Label>(this, _45722Label.CountMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
 			base.OnDisappearing();
 		}
 	}

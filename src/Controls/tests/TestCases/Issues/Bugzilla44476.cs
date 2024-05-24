@@ -12,6 +12,7 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 			BackgroundColor = Colors.Maroon;
+#pragma warning disable CS0618 // Type or member is obsolete
 			PushAsync(new FlyoutPage
 			{
 				Title = "Bugzilla Issue 44476",
@@ -47,6 +48,7 @@ namespace Maui.Controls.Sample.Issues
 					}
 				},
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

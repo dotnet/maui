@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using ListView = Microsoft.Maui.Controls.ListView;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -15,7 +13,6 @@ namespace Maui.Controls.Sample.Issues
 	[Issue(IssueTracker.Github, 1905, "AlertView doesn't scroll when text is to large", PlatformAffected.iOS | PlatformAffected.Android)]
 	public class Issue1905 : ContentPage
 	{
-
 		public Issue1905()
 		{
 			var btn = new Button { Text = "Show alert" };
@@ -27,14 +24,11 @@ namespace Maui.Controls.Sample.Issues
 			Content = btn;
 		}
 
-
-
 		protected override void OnAppearing()
 		{
 
 			base.OnAppearing();
 		}
-
 	}
 
 	[Preserve(AllMembers = true)]

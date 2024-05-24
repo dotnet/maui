@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		protected override void Init()
 		{
-			var layout = new Compatibility.RelativeLayout
+			var layout = new Microsoft.Maui.Controls.Compatibility.RelativeLayout
 			{
 				BackgroundColor = Colors.Gray
 			};

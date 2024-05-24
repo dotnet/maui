@@ -40,6 +40,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
 			Device.BeginInvokeOnMainThread(async () =>
 			{
 				await Navigation.PushModalAsync(page);
@@ -53,6 +54,7 @@ namespace Maui.Controls.Sample.Issues
 					}
 				});
 			});
+#pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}

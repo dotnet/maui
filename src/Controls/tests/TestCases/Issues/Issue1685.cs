@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Entry = Microsoft.Maui.Controls.Entry;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -69,6 +64,7 @@ namespace Maui.Controls.Sample.Issues
 				context.EntryValue = Success;
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var root = new StackLayout()
 			{
 				VerticalOptions = LayoutOptions.FillAndExpand,
@@ -78,6 +74,7 @@ namespace Maui.Controls.Sample.Issues
 					button
 				}
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Content = root;
 		}

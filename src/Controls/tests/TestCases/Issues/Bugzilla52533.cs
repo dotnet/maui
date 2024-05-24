@@ -1,6 +1,6 @@
 ﻿using System.Linq;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Issues
 
 				// Infinitely wide + Label
 				var horStack = new StackLayout { Orientation = StackOrientation.Horizontal, Children = { new Label { Text = "If this does not crash, this test has passed.", AutomationId = LabelId } } };
-				grid.Children.Add(horStack, 0, 0);
+				grid.Add(horStack, 0, 0);
 
 				View = grid;
 			}

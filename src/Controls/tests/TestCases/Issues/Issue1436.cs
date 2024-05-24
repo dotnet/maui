@@ -1,10 +1,10 @@
-﻿using System.Reflection;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
+using Button = Microsoft.Maui.Controls.Button;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Issues
 				RowDefinitions = { new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }, new RowDefinition { Height = new GridLength(1, GridUnitType.Star) } }
 			};
 
-			grid.Children.Add(new Button
+			grid.Add(new Button
 			{
 				Text = "Button",
 				HorizontalOptions = LayoutOptions.End,
@@ -29,20 +29,20 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "TestReady"
 			}, 0, 0);
 
-			grid.Children.Add(new Button
+			grid.Add(new Button
 			{
 				Text = "Button",
 				HorizontalOptions = LayoutOptions.Start,
 				BackgroundColor = Colors.Gray
 			}, 1, 1);
 
-			grid.Children.Add(new Button
+			grid.Add(new Button
 			{
 				Text = "Button",
 				HorizontalOptions = LayoutOptions.End,
 			}, 0, 1);
 
-			grid.Children.Add(new Button
+			grid.Add(new Button
 			{
 				Text = "Button",
 

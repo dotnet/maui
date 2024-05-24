@@ -38,6 +38,8 @@ namespace Maui.Controls.Sample.Issues
 				var timerTicks = 0;
 				var stopwatch = new Stopwatch();
 				stopwatch.Start();
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 				Device.StartTimer(TimeSpan.FromMilliseconds(20), () =>
 				{
 					timerTicks++;
@@ -47,6 +49,8 @@ namespace Maui.Controls.Sample.Issues
 					finishFlag.Text = "COMPLETE";
 					return false;
 				});
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			};
 
 			var slowTimerStartButton = new Button
@@ -60,6 +64,8 @@ namespace Maui.Controls.Sample.Issues
 				var timerTicks = 0;
 				var stopwatch = new Stopwatch();
 				stopwatch.Start();
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 				Device.StartTimer(TimeSpan.FromMilliseconds(100), () =>
 				{
 					timerTicks++;
@@ -69,6 +75,8 @@ namespace Maui.Controls.Sample.Issues
 					finishFlag.Text = "COMPLETE";
 					return false;
 				});
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 			};
 
 			Content = new StackLayout

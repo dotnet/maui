@@ -49,7 +49,9 @@ namespace Maui.Controls.Sample.Issues
 				})
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<object>(this, _57114NativeGestureFiredMessage, NativeGestureFired);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			view.GestureRecognizers.Add(tap);
 

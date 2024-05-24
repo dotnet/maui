@@ -59,11 +59,15 @@ namespace Maui.Controls.Sample.Issues
 			var labelRunsBackground = new Label() { Text = "This should start updating with the time in a few seconds" };
 			layout.Children.Add(labelRunsBackground);
 
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			Device.StartTimer(TimeSpan.FromSeconds(1), () =>
 			{
 				labelRunsBackground.Dispatcher.Dispatch(() => labelRunsBackground.Text = DateTime.Now.ToString("HH:mm:ss"));
 				return true;
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 
 			var threadpoolButton = new Button { Text = "Update Instructions from Thread Pool" };
 			layout.Children.Add(threadpoolButton);

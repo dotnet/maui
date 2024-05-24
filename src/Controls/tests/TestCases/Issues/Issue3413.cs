@@ -43,6 +43,7 @@ namespace Maui.Controls.Sample.Issues
 			layout1.Children.Add(new Label { Text = "Horizontal" });
 			layout1.Children.Add(searchBar1);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var searchBar2 = new SearchBar
 			{
 				BackgroundColor = Colors.Blue,
@@ -50,6 +51,7 @@ namespace Maui.Controls.Sample.Issues
 				HorizontalOptions = LayoutOptions.CenterAndExpand,
 				AutomationId = "srb_grid"
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var grid = new Grid();
 			grid.Children.Add(layout);

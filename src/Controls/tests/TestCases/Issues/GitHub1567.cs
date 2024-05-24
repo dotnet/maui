@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
-{	[Preserve(AllMembers = true)]
+{
+	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1567, "NRE using TapGestureRecognizer on cell with HasUnevenRows", PlatformAffected.iOS, issueTestNumber: 1)]
 	public class GitHub1567 : TestContentPage // or TestFlyoutPage, etc ...
 	{
@@ -49,12 +49,14 @@ namespace Maui.Controls.Sample.Issues
 				var lbl = new Label { FontSize = 14 };
 				lbl.SetBinding(Label.TextProperty, "Value1");
 				var grd = new Grid();
+#pragma warning disable CS0618 // Type or member is obsolete
 				var boxView = new BoxView
 				{
 					BackgroundColor = Colors.Transparent,
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					VerticalOptions = LayoutOptions.FillAndExpand
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 				var gesture = new TapGestureRecognizer();
 				gesture.SetBinding(TapGestureRecognizer.CommandProperty, "SomeCommand");
 				boxView.GestureRecognizers.Add(gesture);

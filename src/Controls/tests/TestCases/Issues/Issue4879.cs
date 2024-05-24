@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -64,9 +61,9 @@ namespace Maui.Controls.Sample.Issues
 				// Green Button top left
 				// Purple ImageButton top right to compare height
 				// Red ImageButton bottom left to compare width
-				mainG.Children.Add(b, 0, 0);
-				mainG.Children.Add(ib1, 1, 0);
-				mainG.Children.Add(ib2, 0, 1);
+				mainG.Add(b, 0, 0);
+				mainG.Add(ib1, 1, 0);
+				mainG.Add(ib2, 0, 1);
 				Content = mainG;
 			}
 		}

@@ -74,7 +74,7 @@ namespace Maui.Controls.Sample.Issues
 				Padding = 16,
 				BackgroundColor = Colors.Gray,
 				IsClippedToBounds = true,
-				Content = _container = new Compatibility.RelativeLayout
+				Content = _container = new Microsoft.Maui.Controls.Compatibility.RelativeLayout
 				{
 					IsClippedToBounds = true,
 					BackgroundColor = Colors.Navy,

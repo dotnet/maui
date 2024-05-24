@@ -56,11 +56,15 @@ namespace Maui.Controls.Sample.Issues
 
 		void AddSourceAfterDelay()
 		{
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			Device.StartTimer(TimeSpan.FromSeconds(2), () =>
 			{
 				_image.Source = "cover1.jpg";
 				return false;
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 	}
 }

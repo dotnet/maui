@@ -117,14 +117,18 @@ namespace Maui.Controls.Sample.Issues
 					{
 						e.FontSize = 40;
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 						Device.BeginInvokeOnMainThread(() => buttonChangeFont.Text = btnChangeFontToDefault);
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 					}
 					else
 					{
 						e.FontSize = fontSizeInitial;
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 						Device.BeginInvokeOnMainThread(() => buttonChangeFont.Text = btnChangeFontToLarger);
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 					}
 				});
@@ -138,14 +142,18 @@ namespace Maui.Controls.Sample.Issues
 					{
 						e.Text = String.Join(" ", Enumerable.Range(0, 100).Select(x => "f").ToArray());
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 						Device.BeginInvokeOnMainThread(() => buttonChangeText.Text = btnChangeToNoText);
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 					}
 					else
 					{
 						e.Text = String.Empty;
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 						Device.BeginInvokeOnMainThread(() => buttonChangeText.Text = btnChangeToHasText);
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 					}
 				});

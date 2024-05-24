@@ -95,7 +95,7 @@ namespace Maui.Controls.Sample.Issues
 				this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 2, 0);
 				this.Add(new Button() { Text = "qwe", BackgroundColor = Colors.Transparent }, 3, 0);
 
-				this.Children.Add(new StackLayout()
+				this.Add(new StackLayout()
 				{
 					Children =
 					{

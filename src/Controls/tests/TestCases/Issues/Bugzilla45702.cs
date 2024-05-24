@@ -1,5 +1,4 @@
 ﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
@@ -12,7 +11,9 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Navigation.PushAsync(new NavigationPage(new FlyoutPage() { Flyout = new ContentPage() { Title = "Flyout" }, Detail = new DetailPage45702() }));
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<DetailPage45702>(this, "switch", SwitchControl);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void SwitchControl(object sender)
@@ -32,7 +33,9 @@ namespace Maui.Controls.Sample.Issues
 
 			void Button_Clicked(object sender, System.EventArgs e)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				MessagingCenter.Send(this, "switch");
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 	}
