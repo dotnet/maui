@@ -19,17 +19,17 @@
             HorizontalOptions="Start"
             Clicked="NavBackButton_Clicked"/>
         <HorizontalStackLayout>
-                <Button 
-                    ImageSource="{StaticResource CircleIconAlt}"
-                    ContentLayout="Left"
-                    Padding="20"
-                    Text="Button" Style="{StaticResource PrimaryButtonOutlineIcon}"/>
-                <Button 
-                    ImageSource="{StaticResource CircleIconAlt}"
-                    ContentLayout="Left"
-                    Padding="20"
-                    Text="Button" IsEnabled="False" Style="{StaticResource PrimaryButtonOutlineIcon}"/>
-            </HorizontalStackLayout>
+            <Button 
+                ImageSource="{StaticResource CircleIconAlt}"
+                ContentLayout="Left"
+                Padding="20"
+                Text="Button" Style="{StaticResource PrimaryButtonOutlineIcon}"/>
+            <Button 
+                ImageSource="{StaticResource CircleIconAlt}"
+                ContentLayout="Left"
+                Padding="20"
+                Text="Button" IsEnabled="False" Style="{StaticResource PrimaryButtonOutlineIcon}"/>
+        </HorizontalStackLayout>
 
         <HorizontalStackLayout>
             <Button 

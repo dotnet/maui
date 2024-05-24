@@ -10,17 +10,19 @@
 
     <VerticalStackLayout
         Padding="16">
-        <Button
-            x:Name="NavigateBtnLayout"
-            AutomationId="TestNavigateButtonLayout"
-            Text="Go to layout test page"
-            Clicked="NavigateBtnLayout_Clicked"/>
-        <Button
-            x:Name="NavigateBtnPadding"
-            AutomationId="TestNavigateButtonPadding"
-            Text="Go to padding test page"
-            Clicked="NavigateBtnPadding_Clicked"/>
-        
+        <HorizontalStackLayout>
+            <Button
+                x:Name="NavigateBtnLayout"
+                AutomationId="TestNavigateButtonLayout"
+                Text="Go to layout test page"
+                Clicked="NavigateBtnLayout_Clicked"/>
+            <Button
+                x:Name="NavigateBtnPadding"
+                AutomationId="TestNavigateButtonPadding"
+                Text="Go to padding test page"
+                Clicked="NavigateBtnPadding_Clicked"/>
+        </HorizontalStackLayout>
+
         <Label 
             Text="Primary filled"/>
         <HorizontalStackLayout>
@@ -106,9 +108,6 @@
                 Text="Button"
                 IsEnabled="False" 
                 Style="{StaticResource PrimaryButtonOutlineIcon}"/>
-        </HorizontalStackLayout>
-
-        <HorizontalStackLayout>
             <Button 
                 ImageSource="{StaticResource CircleIconAlt}"
                 ContentLayout="Bottom"
