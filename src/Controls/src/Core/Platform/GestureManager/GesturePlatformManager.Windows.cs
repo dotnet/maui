@@ -17,7 +17,7 @@ class GesturePlatformManager : IDisposable
 {
 	readonly IPlatformViewHandler _handler;
 	readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
-	readonly List<uint> _fingers = new List<uint>();
+	readonly List<uint> _fingers = new();
 	FrameworkElement? _container;
 	FrameworkElement? _control;
 	VisualElement? _element;
