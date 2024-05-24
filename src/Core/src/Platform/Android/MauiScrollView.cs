@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnLayout(changed, left, top, right, bottom);
 
-			if (_hScrollView?.Parent == this && _content is not null)
+			if (changed && _hScrollView?.Parent == this && _content is not null)
 			{
 				var scrollViewContentHeight = _content.Height;
 				var hScrollViewHeight = bottom - top;
