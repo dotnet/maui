@@ -266,7 +266,7 @@ class GesturePlatformManager : IDisposable
 				{
 					e.Data.SetBitmap(RandomAccessStreamReference.CreateFromUri(bi.UriSource));
 				}
-				else if (!String.IsNullOrWhiteSpace(args.Data.Text))
+				else if (!string.IsNullOrWhiteSpace(args.Data.Text))
 				{
 					Uri? uri;
 					if (Uri.TryCreate(args.Data.Text, UriKind.Absolute, out uri))
