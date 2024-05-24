@@ -294,7 +294,10 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					// Log an error because this should never happen
+					Application.Current?
+						.FindMauiContext()?
+						.CreateLogger<Element>()?
+						.LogWarning($"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 
 				return null;
@@ -346,7 +349,10 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					// Log an error because this should never happen
+					Application.Current?
+						.FindMauiContext()?
+						.CreateLogger<Element>()?
+						.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 
 				return null;
