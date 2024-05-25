@@ -13,9 +13,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		public void NoExceptionShouldBeThrown()
 		{
-			_ = App.WaitForElement("GoToTest");
-			App.Click("GoToTest");
-
 			_ = App.WaitForElement("button");
 			App.Click("button");
 			App.Click("button");

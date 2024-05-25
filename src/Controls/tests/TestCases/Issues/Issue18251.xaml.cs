@@ -3,25 +3,6 @@
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 18251, "IllegalArgumentException when changing number of tabbar pages", PlatformAffected.Android)]
-	public class Issue18251Test : ContentPage
-	{
-		public Issue18251Test()
-		{
-			Content = new VerticalStackLayout()
-			{
-				Children = 
-				{
-					new Button() 
-					{ 
-						Text = "Go To Test", 
-						AutomationId = "GoToTest", 
-						Command = new Command(() => Application.Current.MainPage = new Issue18251()) 
-					}
-				}
-			};			
-		}
-	}
-
 	public partial class Issue18251 : Shell
 	{
 		internal static Issue18251ViewModel ViewModel;
