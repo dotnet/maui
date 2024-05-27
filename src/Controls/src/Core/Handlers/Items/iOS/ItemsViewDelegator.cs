@@ -27,17 +27,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void Scrolled(UIScrollView scrollView)
 		{
-			//base.Scrolled(scrollView);
+			base.Scrolled(scrollView);
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public override void DecelerationEnded(UIScrollView scrollView)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
+			var viewController = ViewController;
+			if (viewController is null)
+			{
+				return;
+			}
+
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
 
 			if (!visibleItems)
+			{
 				return;
+			}
 
 			var contentInset = scrollView.ContentInset;
 			var contentOffsetX = scrollView.ContentOffset.X + contentInset.Left;
@@ -54,9 +60,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				LastVisibleItemIndex = lastVisibleItemIndex
 			};
 
-			var viewController = ViewController;
-			if (viewController is null)
-				return;
 
 			var itemsView = viewController.ItemsView;
 			var source = viewController.ItemsSource;
@@ -80,8 +83,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
-			nint section)
+		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
 			if (ItemsViewLayout == null)
 			{
@@ -132,11 +134,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		public override CGSize GetSizeForItem(UICollectionView collectionView, UICollectionViewLayout layout, NSIndexPath indexPath)
+		{
+			return ViewController?.GetSizeForItem(indexPath) ?? CGSize.Empty;
+		}
+
 		protected virtual (bool VisibleItems, NSIndexPath First, NSIndexPath Center, NSIndexPath Last) GetVisibleItemsIndexPath()
 		{
 			var collectionView = ViewController?.CollectionView;
 			if (collectionView is null)
+			{
 				return default;
+			}
 
 			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Row).ToList();
 
@@ -181,11 +190,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var centerIndexPath = collectionView.IndexPathForItemAtPoint(centerPoint);
 			centerItemIndex = centerIndexPath ?? firstVisibleItemIndex;
 			return centerItemIndex;
-		}
-
-		public override CGSize GetSizeForItem(UICollectionView collectionView, UICollectionViewLayout layout, NSIndexPath indexPath)
-		{
-			return ViewController?.GetSizeForItem(indexPath) ?? CGSize.Empty;
 		}
 	}
 }
