@@ -418,15 +418,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 				else
 				{
-					UIView.Animate(0.25, () => {
-						UpdateIsScrolling(true);
-						var currentItemPosition = ItemsSource.GetIndexForItem(carousel.CurrentItem);
-						CollectionView.ScrollToItem(currentItemPosition, UICollectionViewScrollPosition.CenteredHorizontally, false);				
-					},
-				 	() => { 
-						UpdateIsScrolling(false);
-						SetPosition(goToPosition);
-					});
+					carousel.ScrollTo(goToPosition, -1, position: Microsoft.Maui.Controls.ScrollToPosition.Center, true);
 				}
 			}
 		}

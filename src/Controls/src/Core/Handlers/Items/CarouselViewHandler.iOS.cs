@@ -1,6 +1,8 @@
 ﻿#nullable disable
 using System;
+using Foundation;
 using Microsoft.Maui.Graphics;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -16,23 +18,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
+			NSIndexPath goToIndexPath = NSIndexPath.FromIndex((nuint)args.Index);
 			if (VirtualView?.Loop == true)
 			{
-				var goToIndexPath = (Controller as CarouselViewController).GetScrollToIndexPath(args.Index);
+				goToIndexPath = (Controller as CarouselViewController).GetScrollToIndexPath(args.Index);
+			}
 
-				if (!IsIndexPathValid(goToIndexPath))
-				{
-					return;
-				}
+			if (!IsIndexPathValid(goToIndexPath))
+			{
+				return;
+			}
+			var scrollDirection = args.ScrollToPosition.ToCollectionViewScrollPosition(_layout.ScrollDirection);
 
-				Controller.CollectionView.ScrollToItem(goToIndexPath,
-					args.ScrollToPosition.ToCollectionViewScrollPosition(_layout.ScrollDirection),
-					args.IsAnimated);
+			void scrollToItemAction()
+			{
+				Controller.CollectionView.ScrollToItem(goToIndexPath, scrollDirection, false);
+			}
+
+			if (args.IsAnimated)
+			{
+				UIView.Animate(AnimationDuration, scrollToItemAction,
+					() => Controller.CollectionView.Delegate?.DecelerationEnded(Controller.CollectionView));
 			}
 			else
 			{
-				base.ScrollToRequested(sender, args);
-			}
+				scrollToItemAction();
+			}	
 		}
 
 		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)
@@ -60,7 +71,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			// If the initial position hasn't been set, we have a UpdateInitialPosition call on CarouselViewController
 			// that will handle this so we want to skip this mapper call. We need to wait for the CollectionView to be ready
-			if(handler.Controller is CarouselViewController  carouselViewController && carouselViewController.InitialPositionSet)
+			if (handler.Controller is CarouselViewController carouselViewController && carouselViewController.InitialPositionSet)
 			{
 				carouselViewController.UpdateFromPosition();
 			}
@@ -71,7 +82,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => 
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+
+		protected virtual double AnimationDuration => 0.5;
 	}
 }
