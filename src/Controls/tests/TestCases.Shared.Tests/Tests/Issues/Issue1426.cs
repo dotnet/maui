@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,8 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void Github1426Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			App.Screenshot("You can see the coffe mug");
 			App.WaitForElement("CoffeeImageId");
 			App.WaitForElement("NextButtonID");
@@ -30,3 +29,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

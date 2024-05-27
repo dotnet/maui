@@ -14,8 +14,10 @@ namespace Maui.Controls.Sample.Issues
 
 		public class MainPage : ContentPage
 		{
-			public MainPage()
+			protected override void OnAppearing()
 			{
+				base.OnAppearing();
+
 				Navigation.PushAsync(new FirstPage());
 			}
 

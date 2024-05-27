@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 181, "Color not initialized for Label", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]
+	[Issue(IssueTracker.Github, 181, "Color not initialized for Label", PlatformAffected.Android)]
 	public class Issue181 : TestContentPage
 	{
 		protected override void Init()
