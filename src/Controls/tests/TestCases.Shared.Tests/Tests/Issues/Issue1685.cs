@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,13 +19,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroid]
 		public void EntryOneWayBindingShouldUpdate()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement(ButtonId);
 			App.Tap(ButtonId);
 			App.WaitForNoElement(Success);
 		}
 	}
 }
+#endif

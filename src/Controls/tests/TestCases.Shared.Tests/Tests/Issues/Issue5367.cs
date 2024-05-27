@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]
 		[FailsOnIOS]
-		public void Issue3390Test()
+		public void Issue5367Test()
 		{
 			App.WaitForElement(MaxLengthEditor);
 			App.Tap(ForceBigStringButton);

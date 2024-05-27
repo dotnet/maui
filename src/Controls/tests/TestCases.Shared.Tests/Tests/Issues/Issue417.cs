@@ -15,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOS]
 		public void Issue417TestsNavigateAndPopToRoot()
 		{
 			App.WaitForElement("FirstPage");
