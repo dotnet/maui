@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		public Issue22606(TestDevice device) : base(device) { }
 
-		public override string Issue => "Border doesnt expand on Content size changed";
+		public override string Issue => "Border does not expand on Content size changed";
 
 		[Test]
 		public void BorderBackgroundExpandsOnContentSizeChanged()
