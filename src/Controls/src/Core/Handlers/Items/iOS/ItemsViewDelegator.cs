@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void Scrolled(UIScrollView scrollView)
 		{
-			base.Scrolled(scrollView);
 		}
 
 		public override void DecelerationEnded(UIScrollView scrollView)
