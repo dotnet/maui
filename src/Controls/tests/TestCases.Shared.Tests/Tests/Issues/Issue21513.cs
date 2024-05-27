@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[FailsOnIOS("Not generated snapshot for this platform")]
-		[FailsOnMac("Not generated snapshot for this platform")]
+		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
 		public void Issue21513Test()
 		{
 			App.WaitForElement("WaitForStubControl");
