@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				var page = (ContentPage)this;
 
-				page.Navigation.InsertPageBefore(new ContentPage() { Title = "SecondPage ", Content = new Label { Text = _labelText } }, App.Current.MainPage);
+				page.Navigation.InsertPageBefore(new ContentPage() { Title = "SecondPage ", Content = new Label { AutomationId = _labelText, Text = _labelText } }, App.Current.MainPage);
 				await page.Navigation.PopAsync(false);
 
 				base.OnAppearing();
