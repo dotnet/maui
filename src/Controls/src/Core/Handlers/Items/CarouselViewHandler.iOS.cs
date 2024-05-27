@@ -101,6 +101,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
-		protected virtual double AnimationDuration => 0.5;
+		private protected virtual double AnimationDuration => 0.5;
 	}
 }
