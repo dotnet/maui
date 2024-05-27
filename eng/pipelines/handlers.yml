@@ -201,14 +201,25 @@ stages:
             demands:
               - macOS.Name -equals Ventura
               - macOS.Architecture -equals x64
+          variables:
+            - name: _buildScript
+              value: $(Build.SourcesDirectory)/build.cmd -ci
+            - name: _BuildConfig
+              value: Release
           steps:
             - template: common/pack.yml
               parameters:
                 platform: ${{ PackPlatform.name }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
-                artifactsPath: '(Build.ArtifactStagingDirectory)'
+                artifactsPath: $(Build.ArtifactStagingDirectory)
                 artifactBinaries: 'pack-binaries'
+                buildConfiguration: $(_BuildConfig)
+                dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
+                buildScript: $(_buildScript)
+                repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
+                repoLogPath: $(Build.Arcade.LogsPath)
+                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                 prepareSteps:
                   - template: common/provision.yml
@@ -279,7 +290,7 @@ stages:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
         BuildPlatforms: ${{ parameters.BuildPlatforms }}
 
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
-    - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
+  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  #   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+  #   - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+  #   - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]

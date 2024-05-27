@@ -29,6 +29,11 @@ namespace Microsoft.Maui.Controls
 #if WINDOWS || ANDROID || TIZEN
 			TabbedViewHandler.PlatformViewFactory = OnCreatePlatformView;
 #endif
+
+#if IOS
+			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty), MapPrefersHomeIndicatorAutoHiddenProperty);
+			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty), MapPrefersPrefersStatusBarHiddenProperty);
+#endif
 		}
 	}
 }

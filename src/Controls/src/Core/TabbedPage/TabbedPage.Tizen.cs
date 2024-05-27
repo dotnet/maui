@@ -200,10 +200,10 @@ namespace Microsoft.Maui.Controls
 				Padding = new Thickness(0);
 				HasShadow = false;
 				BorderColor = GColors.DarkGray;
-				SetBinding(BackgroundProperty, TypedBinding.ForSingleNestingLevel("BarBackground", static (TabbedPage page) => page.BarBackground, source: _page));
-				SetBinding(BackgroundColorProperty, TypedBinding.ForSingleNestingLevel("BarBackgroundColor", static (TabbedPage page) => page.BarBackgroundColor, source: _page));
-				SetBinding(SelectedTabColorProperty, TypedBinding.ForSingleNestingLevel("SelectedTabColor", static (TabbedPage page) => page.SelectedTabColor, source: _page));
-				SetBinding(UnselectedTabColorProperty, TypedBinding.ForSingleNestingLevel("UnselectedTabColor", static (TabbedPage page) => page.UnselectedTabColor, source: _page));
+				SetBinding(BackgroundProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.BarBackground) , static (TabbedPage page) => page.BarBackground, source: _page));
+				SetBinding(BackgroundColorProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.BarBackgroundColor), static (TabbedPage page) => page.BarBackgroundColor, source: _page));
+				SetBinding(SelectedTabColorProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.SelectedTabColor), static (TabbedPage page) => page.SelectedTabColor, source: _page));
+				SetBinding(UnselectedTabColorProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.UnselectedTabColor), static (TabbedPage page) => page.UnselectedTabColor, source: _page));
 
 				var label = new XLabel
 				{

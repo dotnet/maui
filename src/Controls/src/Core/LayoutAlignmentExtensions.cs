@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 				case LayoutAlignment.End:
 					return 1;
 			}
-			throw new ArgumentOutOfRangeException("align");
+			throw new ArgumentOutOfRangeException(nameof(align));
 		}
 	}
 }
