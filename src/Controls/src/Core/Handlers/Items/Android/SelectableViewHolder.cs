@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void OnClick(global::Android.Views.View view)
 		{
-			if (_isSelectionEnabled)
+			if (_isSelectionEnabled && BindingAdapterPosition >= 0)
 			{
 				OnViewHolderClicked(BindingAdapterPosition);
 			}
