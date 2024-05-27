@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
+			//we dont have groups on CarouselView
 			NSIndexPath goToIndexPath = NSIndexPath.FromIndex((nuint)args.Index);
 			if (VirtualView?.Loop == true)
 			{
@@ -28,21 +29,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return;
 			}
+
 			var scrollDirection = args.ScrollToPosition.ToCollectionViewScrollPosition(_layout.ScrollDirection);
 
 			void scrollToItemAction()
 			{
-				Controller.CollectionView.ScrollToItem(goToIndexPath, scrollDirection, false);
+				Controller.CollectionView.ScrollToItem(goToIndexPath, scrollDirection, false);			
 			}
 
 			if (args.IsAnimated)
 			{
-				UIView.Animate(AnimationDuration, scrollToItemAction,
-					() => Controller.CollectionView.Delegate?.DecelerationEnded(Controller.CollectionView));
+				UIView.Animate(AnimationDuration, 
+					() => 
+					{
+						 	(Controller as CarouselViewController)?.UpdateIsScrolling(true);
+							scrollToItemAction();
+					},
+					() => 
+					{
+							// We call DecelaerationEnded beacause the animation is finished
+							// and we now want to raise the Scrolled event on the ItemsViewDelegator
+							// This in turn will update the Position on the CarouselView
+							Controller.CollectionView.Delegate?.DecelerationEnded(Controller.CollectionView);
+							(Controller as CarouselViewController)?.UpdateIsScrolling(false);
+					}
+				);
 			}
 			else
 			{
 				scrollToItemAction();
+				(Controller as CarouselViewController)?.UpdateIsScrolling(false);
 			}	
 		}
 

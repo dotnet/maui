@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void Scrolled(UIScrollView scrollView)
 		{		
 			base.Scrolled(scrollView);
+			ViewController?.UpdateIsScrolling(true);
 		}
 
 		public override void ScrollAnimationEnded(UIScrollView scrollView)

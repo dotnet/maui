@@ -17,6 +17,16 @@ namespace Maui.Controls.Sample
 			int startCurrentItem = 3;
 
 			BindingContext = new CarouselViewModel(useLooping, startCurrentItem: startCurrentItem);
+			carousel.PropertyChanged += (s,e) =>
+			{
+				//IsScrolling is a property of CarouselView but not a bindable property
+				System.Diagnostics.Debug.WriteLine($"IsScrolling: {carousel.IsScrolling}");
+			};
+			carousel.Scrolled += (s, e) =>
+			{
+				System.Diagnostics.Debug.WriteLine($"Scrolled: {e}");
+				System.Diagnostics.Debug.WriteLine($"IsScrolling: {carousel.IsScrolling}");
+			};
 		}
 	}
 
