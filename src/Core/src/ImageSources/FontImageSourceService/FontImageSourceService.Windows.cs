@@ -129,7 +129,7 @@ namespace Microsoft.Maui
 			{
 				// the Uri type encodes the fragment, so let's remove first
 				var fragment = "";
-				if (fontSource.IndexOf('#', StringComparison.OrdinalIgnoreCase) is int index && index > 0)
+				if (fontSource.IndexOf('#', StringComparison.OrdinalIgnoreCase) is int index && index >= 0)
 				{
 					fragment = fontSource.Substring(index);
 					fontSource = fontSource.Substring(0, index);
