@@ -25,18 +25,18 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		class Page2 : ContentPage
 		{
-			static int Count;
+			static int count;
 			public Page2(string title)
 			{
-				Count++;
-				Title = $"{title}{Count}";
+				count++;
+				Title = $"{title}{count}";
 				NavigationPage.SetHasNavigationBar(this, false);
 				Content = new StackLayout
 				{
 					Children =
 				{
-					new Label { Text = $"This is page {Count}." },
-					new Button { AutomationId = "Click", Text = "Click", Command = new Command(() => Navigation.PushAsync(new Page2(title))) }
+					new Label { Text = $"This is page {count}." },
+					new Button { Text = "Click", Command = new Command(() => Navigation.PushAsync(new Page2(title))) }
 				}
 				};
 			}
