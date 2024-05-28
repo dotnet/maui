@@ -346,7 +346,6 @@ namespace Microsoft.Maui.IntegrationTests
 					<ItemGroup>
 						<TrimmerRootAssembly Include="Microsoft.Maui" />
 						<TrimmerRootAssembly Include="Microsoft.Maui.Controls" />
-						<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Compatibility" />
 						<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Foldable" />
 						<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Maps" />
 						<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Xaml" />
