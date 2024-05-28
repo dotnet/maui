@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
@@ -426,7 +425,7 @@ namespace Microsoft.Maui.Controls
 
 		void HandleRadioButtonGroupSelectionChanged(RadioButton selected, RadioButtonGroupSelectionChanged args)
 		{
-			if (!IsChecked || selected == this || string.IsNullOrEmpty(GroupName) || GroupName != selected.GroupName || !MatchesScope(args))
+			if (!IsChecked || selected == this || string.IsNullOrEmpty(GroupName) || GroupName != selected.GroupName || object.Equals(Value, args.Value) || !MatchesScope(args))
 			{
 				return;
 			}

@@ -52,7 +52,7 @@ variables:
 
 parameters:
   - name: pushMauiPackagesToMaestro
-    default: false
+    default: true
 
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
@@ -75,6 +75,7 @@ parameters:
       metadataArtifact: metadata
       logsArtifact: logs
       docsArtifact: xml-docs
+      artifactsPath: '$(Build.ArtifactStagingDirectory)'
 
   - name: Skip1ESComplianceTasks
     default: false
@@ -136,8 +137,8 @@ extends:
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.artifact }}
-                  targetPath: '(Build.ArtifactStagingDirectory)'
-            
+                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/nuget'
+                
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
@@ -151,12 +152,12 @@ extends:
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.metadataArtifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.metadataArtifact }}
-                  targetPath: '(Build.ArtifactStagingDirectory)/metadata'
+                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/metadata'
 
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.logsArtifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.logsArtifact }}
-                  targetPath: '(Build.ArtifactStagingDirectory)/logs'
+                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/logs'
         
             variables:
               - name: _buildScript
@@ -177,7 +178,7 @@ extends:
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
                   artifact: ${{ parameters.PackPlatform.artifact }}
                   artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
-                  artifactsPath: '(Build.ArtifactStagingDirectory)'
+                  artifactsPath: ${{ parameters.PackPlatform.artifactsPath }}
                   buildConfiguration: $(_BuildConfig)
                   dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
                   buildScript: $(_buildScript)
