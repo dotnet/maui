@@ -19,8 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void Issue1937Test()
 		{
+			App.WaitForElement("FAST_TIMER");
 			App.Tap("FAST_TIMER");
-			App.WaitForElement("COMPLETE", timeout: TimeSpan.FromSeconds(2));
+			App.WaitForNoElement("COMPLETE", timeout: TimeSpan.FromSeconds(2));
 			var result = App.WaitForElement("RESULT");
 			int.TryParse(result.GetText(), out int timerTicks1);
 
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.IsTrue(timerTicks1 > 35, $"Expected timer ticks are greater than 35. Actual: {timerTicks1}");
 
 			App.Tap("SLOW_TIMER");
-			App.WaitForElement("COMPLETE", timeout: TimeSpan.FromSeconds(2));
+			App.WaitForNoElement("COMPLETE", timeout: TimeSpan.FromSeconds(2));
 			result = App.WaitForElement("RESULT");
 			int.TryParse(result.GetText(), out int timerTicks2);
 

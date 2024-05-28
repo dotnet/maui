@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnAndroid]
 		public void ClickPropagatesToOnTouchListener()
 		{
+			App.WaitForElement(ClickMeString);
 			App.Tap(ClickMeString);
 		}
 	}

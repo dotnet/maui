@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("TapLabel");
 			App.WaitForNoElement("Single");
 
-			App.DoubleClick("TapLabel");
+			App.DoubleTap("TapLabel");
 			App.WaitForNoElement("Double");
 		}
 	}

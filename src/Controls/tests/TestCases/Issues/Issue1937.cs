@@ -29,6 +29,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var fastTimerStartButton = new Button
 			{
+				AutomationId = "FAST_TIMER",
 				Text = "FAST_TIMER"
 			};
 
@@ -55,6 +56,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var slowTimerStartButton = new Button
 			{
+				AutomationId = "SLOW_TIMER",
 				Text = "SLOW_TIMER"
 			};
 

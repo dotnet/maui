@@ -19,6 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac("SetOrientationPortrait method not implemented")]
+		[FailsOnWindows("SetOrientationPortrait method not implemented")]
 		public async Task RotatingCollectionViewWithHTMLShouldNotHangOrCrash()
 		{
 			int delay = 3000;

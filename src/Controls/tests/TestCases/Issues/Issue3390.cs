@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 3390, "Crash/incorrect behavior with corner radius 5", PlatformAffected.All)]
+	[Issue(IssueTracker.Github, 3390, "Crash or incorrect behavior with corner radius 5", PlatformAffected.All)]
 	public class Issue3390 : TestContentPage
 	{
 		protected override void Init()

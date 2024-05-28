@@ -18,6 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]
 		[FailsOnIOS]
+		[FailsOnMac("SetOrientationPortrait method not implemented")]
+		[FailsOnWindows("SetOrientationPortrait method not implemented")]
 		public void Issue968TestsRotationRelayoutIssue()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);

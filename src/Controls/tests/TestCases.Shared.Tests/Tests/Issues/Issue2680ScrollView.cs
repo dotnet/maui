@@ -23,6 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnIOS]
 		public void Issue2680Test_ScrollDisabled()
 		{
+			App.WaitForElement(ScrollViewMark);
 			App.ScrollDown(ScrollViewMark);
 			App.ScrollDown(ScrollViewMark);
 
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnIOS]
 		public void Issue2680Test_ScrollEnabled()
 		{
+			App.WaitForElement(ToggleButtonMark);
 			App.Tap(ToggleButtonMark);
 
 			App.ScrollDown(ScrollViewMark);

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,8 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnIOS]
 		public void Issue935TestsMultipleOnTappedViewCell()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
+			App.WaitForElement("TestLabel");
 			App.Tap("TestLabel");
 			App.Screenshot("Tapped Cell Once");
 			App.Tap("TestLabel");
@@ -28,3 +28,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
