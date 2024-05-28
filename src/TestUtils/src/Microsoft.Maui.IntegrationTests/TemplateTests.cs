@@ -49,6 +49,70 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		// Parameters:  target framework, build config, dotnet new additional parameters
+
+		// First, 4 default scenarios
+		[TestCase(DotNetCurrent, "Debug", "")]
+		[TestCase(DotNetCurrent, "Release", "")]
+		[TestCase(DotNetCurrent, "Debug", "")]
+		[TestCase(DotNetCurrent, "Release", "")]
+
+		// Then, scenarios with additional template parameters:
+		// - Interactivity Location: None/WASM/Server/Auto
+		// - Empty vs. With Sample Content
+		// - ProgramMain vs. TopLevel statements
+		// And alternately testing other options for a healthy mix.
+		[TestCase(DotNetCurrent, "Debug", "-I None --Empty")]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty")]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty")]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty")]
+		[TestCase(DotNetCurrent, "Debug", "-I None")]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly")]
+		[TestCase(DotNetCurrent, "Debug", "-I Server")]
+		[TestCase(DotNetCurrent, "Release", "-I Auto")]
+		[TestCase(DotNetCurrent, "Debug", "-I None --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Debug", "-I None --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain")]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --UseProgramMain")]
+		public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams)
+		{
+			const string templateShortName = "maui-blazor-web";
+
+			var solutionProjectDir = TestDirectory;
+
+			var webAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir) + ".Web");
+			var webAppProjectFile = Path.Combine(webAppProjectDir, $"{Path.GetFileName(webAppProjectDir)}.csproj");
+
+			var mauiAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir));
+			var mauiAppProjectFile = Path.Combine(mauiAppProjectDir, $"{Path.GetFileName(mauiAppProjectDir)}.csproj");
+
+			TestContext.WriteLine($"Creating project in {solutionProjectDir}");
+
+			Assert.IsTrue(DotnetInternal.New(templateShortName, outputDirectory: solutionProjectDir, framework: framework, additionalDotNetNewParams: additionalDotNetNewParams),
+				$"Unable to create template {templateShortName}. Check test output for errors.");
+
+			TestContext.WriteLine($"Solution directory: {solutionProjectDir} (exists? {Directory.Exists(solutionProjectDir)})");
+			TestContext.WriteLine($"Blazor Web app project directory: {webAppProjectDir} (exists? {Directory.Exists(webAppProjectDir)})");
+			TestContext.WriteLine($"Blazor Web app project file: {webAppProjectFile} (exists? {File.Exists(webAppProjectFile)})");
+			TestContext.WriteLine($"MAUI app project directory: {mauiAppProjectDir} (exists? {Directory.Exists(mauiAppProjectDir)})");
+			TestContext.WriteLine($"MAUI app project file: {mauiAppProjectFile} (exists? {File.Exists(mauiAppProjectFile)})");
+
+			EnableTizen(mauiAppProjectFile);
+
+			TestContext.WriteLine($"Building Blazor Web app: {webAppProjectFile}");
+			Assert.IsTrue(DotnetInternal.Build(webAppProjectFile, config, target: "", properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(webAppProjectFile)} failed to build. Check test output/attachments for errors.");
+
+			TestContext.WriteLine($"Building .NET MAUI app: {mauiAppProjectFile}");
+			Assert.IsTrue(DotnetInternal.Build(mauiAppProjectFile, config, target: "", properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(mauiAppProjectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		[TestCase("Debug")]
 		[TestCase("Release")]
 		public void BuildMultiProject(string config)
@@ -71,11 +135,35 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		[TestCase("Debug", "--android")]
+		[TestCase("Debug", "--ios")]
+		[TestCase("Debug", "--windows")]
+		[TestCase("Debug", "--macos")]
+		public void BuildMultiProjectSinglePlatform(string config, string platformArg)
+		{
+			var projectDir = TestDirectory;
+			var name = Path.GetFileName(projectDir);
+			var solutionFile = Path.Combine(projectDir, $"{name}.sln");
+
+			Assert.IsTrue(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent),
+				$"Unable to create template maui-multiproject. Check test output for errors.");
+
+			if (!TestEnvironment.IsWindows)
+			{
+				Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} remove {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
+					$"Unable to remove WinUI project from solution. Check test output for errors.");
+			}
+
+			Assert.IsTrue(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Solution {name} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		// with spaces
 		[TestCase("maui", "Project Space", "projectspace")]
 		[TestCase("maui-blazor", "Project Space", "projectspace")]
 		[TestCase("mauilib", "Project Space", "projectspace")]
-  		// with invalid characters
+		// with invalid characters
 		[TestCase("maui", "Project@Symbol", "projectsymbol")]
 		[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
 		[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
@@ -218,12 +306,7 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 				$"Unable to create template {id}. Check test output for errors.");
 
-			var extendedBuildProps = BuildProps;
-			extendedBuildProps.Add("PublishAot=true");
-			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060 in net9
-			extendedBuildProps.Add("_IsPublishing=true"); // This makes 'dotnet build -r iossimulator-x64' equivalent to 'dotnet publish -r iossimulator-x64'
-			extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
-			extendedBuildProps.Add("TrimmerSingleWarn=false");
+			var extendedBuildProps = PrepareNativeAotBuildProps();
 
 			string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
@@ -231,6 +314,66 @@ namespace Microsoft.Maui.IntegrationTests
 
 			var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
 			actualWarnings.AssertNoWarnings();
+		}
+
+		[Test]
+		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
+		[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
+		[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
+		[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-arm64")]
+		[TestCase("maui", $"{DotNetCurrent}-maccatalyst", "maccatalyst-x64")]
+		public void PublishNativeAOTRootAllMauiAssemblies(string id, string framework, string runtimeIdentifier)
+		{
+			// This test follows the following guide: https://devblogs.microsoft.com/dotnet/creating-aot-compatible-libraries/#publishing-a-test-application-for-aot
+			if (!TestEnvironment.IsMacOS)
+				Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
+
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			var extendedBuildProps = PrepareNativeAotBuildProps();
+			FileUtilities.ReplaceInFile(projectFile,
+				"</Project>",
+				"""
+					<ItemGroup>
+						<PackageReference Include="Microsoft.Maui.Controls.Foldable" Version="$(MauiVersion)" />
+						<PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
+						<PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="$(MauiVersion)" />
+					</ItemGroup>
+					<ItemGroup>
+						<TrimmerRootAssembly Include="Microsoft.Maui" />
+						<TrimmerRootAssembly Include="Microsoft.Maui.Controls" />
+						<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Foldable" />
+						<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Maps" />
+						<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Xaml" />
+						<TrimmerRootAssembly Include="Microsoft.Maui.Essentials" />
+						<TrimmerRootAssembly Include="Microsoft.Maui.Graphics" />
+						<TrimmerRootAssembly Include="Microsoft.Maui.Graphics.Skia" />
+						<TrimmerRootAssembly Include="Microsoft.Maui.Maps" />
+					</ItemGroup>
+				</Project>
+				""");
+
+			string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+			var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
+			actualWarnings.AssertNoWarnings();
+		}
+
+		private List<string> PrepareNativeAotBuildProps()
+		{
+			var extendedBuildProps = new List<string>(BuildProps);
+			extendedBuildProps.Add("PublishAot=true");
+			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060 in net9
+			extendedBuildProps.Add("_IsPublishing=true"); // This makes 'dotnet build -r iossimulator-x64' equivalent to 'dotnet publish -r iossimulator-x64'
+			extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
+			extendedBuildProps.Add("TrimmerSingleWarn=false");
+			return extendedBuildProps;
 		}
 
 		[Test]

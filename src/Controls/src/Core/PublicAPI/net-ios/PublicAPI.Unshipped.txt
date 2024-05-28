@@ -1,4 +1,8 @@
 #nullable enable
+override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
+override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersStatusBarHidden() -> bool
 Microsoft.Maui.Controls.Toolbar.NavigationController.get -> UIKit.UINavigationController!
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
@@ -81,6 +85,11 @@ Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan
 Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
 Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
+override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersStatusBarHidden() -> bool
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewDidAppear(bool animated) -> void
 static Microsoft.Maui.Controls.Toolbar.MapBackButtonTitle(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.Toolbar.MapBackButtonVisible(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void
 static Microsoft.Maui.Controls.Toolbar.MapBarBackground(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.Controls.Toolbar! toolbar) -> void

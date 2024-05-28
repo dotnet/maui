@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			public IList<int> WarningsAsErrors { get; set; }
 			public IList<int> WarningsNotAsErrors { get; set; }
 			public IList<int> NoWarn { get; set; }
+			public bool HasLoggedError { get; set; }
 		}
 
 		static LoggingHelperContext Context { get; set; }
@@ -85,9 +86,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return;
 			if ((Context.TreatWarningsAsErrors && (Context.WarningsNotAsErrors == null || !Context.WarningsNotAsErrors.Contains(code.CodeCode)))
 				|| (Context.WarningsAsErrors != null && Context.WarningsAsErrors.Contains(code.CodeCode)))
-				loggingHelper.LogError($"XamlC {code.CodePrefix}{code.CodeCode:0000}", null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
+			{
+				loggingHelper.LogError("XamlC", $"{code.CodePrefix}{code.CodeCode:0000}", code.HelpLink, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
+				Context.HasLoggedError = true;
+			}
 			else
-				loggingHelper.LogWarning($"XamlC {code.CodePrefix}{code.CodeCode:0000}", null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
+			{
+				loggingHelper.LogWarning("XamlC", $"{code.CodePrefix}{code.CodeCode:0000}", code.HelpLink, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
+			}
 		}
 	}
 
@@ -271,6 +277,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								LoggingHelper.LogMessage(Low, e.StackTrace);
 								continue;
 							}
+							else
+							{
+								success &= !LoggingHelper.HasLoggedErrors;
+							}
+							
 							if (initComp.HasCustomAttributes)
 							{
 								var suppressMessageAttribute = initComp.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute");
@@ -373,8 +384,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				rootnode.Accept(new CreateObjectVisitor(visitorContext), null);
 				rootnode.Accept(new SetNamescopesAndRegisterNamesVisitor(visitorContext), null);
 				rootnode.Accept(new SetFieldVisitor(visitorContext), null);
-				rootnode.Accept(new SetResourcesVisitor(visitorContext), null);
 				rootnode.Accept(new SimplifyTypeExtensionVisitor(), null);
+				rootnode.Accept(new SetResourcesVisitor(visitorContext), null);
 				rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
 
 				il.Emit(Ret);

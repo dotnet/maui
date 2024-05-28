@@ -364,21 +364,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
 			out XamlParseException exception)
 		{
-			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
-			{
-				throw new NotSupportedException(RuntimeFeature.XamlRuntimeParsingNotSupportedErrorMessage);
-			}
-
-			return GetElementTypeCore(xmlType, xmlInfo, currentAssembly, out exception);
-		}
-
-		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
-#endif
-		private static Type GetElementTypeCore(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
-			out XamlParseException exception)
-		{
 			bool hasRetriedNsSearch = false;
 
 		retry:

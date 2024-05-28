@@ -312,7 +312,7 @@ public static class KeyboardAutoManagerScroll
 	{
 		if (ContainerView is null
 			|| (View is not UITextField && View is not UITextView)
-			|| ContainerView.Window is null)
+			|| !View.IsDescendantOfView(ContainerView))
 		{
 			IsKeyboardAutoScrollHandling = false;
 			return;
@@ -324,6 +324,12 @@ public static class KeyboardAutoManagerScroll
 		var rootViewOrigin = new CGPoint(ContainerView.Frame.GetMinX(), ContainerView.Frame.GetMinY());
 		var window = ContainerView.Window;
 
+		if (window is null)
+		{
+			IsKeyboardAutoScrollHandling = false;
+			return;
+		}
+
 		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
 		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
 
@@ -332,6 +338,12 @@ public static class KeyboardAutoManagerScroll
 
 		if (View.FindResponder<UINavigationController>() is UINavigationController navigationController)
 		{
+			if (View.IsDescendantOfView(navigationController.NavigationBar))
+			{
+				IsKeyboardAutoScrollHandling = false;
+				return;
+			}
+
 			navigationBarAreaHeight = navigationController.NavigationBar.Frame.GetMaxY();
 		}
 		else

@@ -80,12 +80,16 @@ namespace Microsoft.Maui.IntegrationTests
 			return Run("publish", $"{buildArgs}");
 		}
 
-		public static bool New(string shortName, string outputDirectory, string framework = "")
+		public static bool New(string shortName, string outputDirectory, string framework = "", string? additionalDotNetNewParams = null)
 		{
 			var args = $"{shortName} -o \"{outputDirectory}\"";
 
 			if (!string.IsNullOrEmpty(framework))
+			{
 				args += $" -f {framework}";
+			}
+
+			args += $" {additionalDotNetNewParams}";
 
 			var output = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300);
 			TestContext.WriteLine(output);
@@ -105,6 +109,8 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static string RunForOutput(string command, string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
 		{
+			TestContext.WriteLine($"Running: '{DotnetTool}' with '{command}'");
+			TestContext.WriteLine($"Args list: {args}");
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;

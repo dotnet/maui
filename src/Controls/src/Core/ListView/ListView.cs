@@ -24,53 +24,53 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => _visualChildren;
 
 		/// <summary>Bindable property for <see cref="IsPullToRefreshEnabled"/>.</summary>
-		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create("IsPullToRefreshEnabled", typeof(bool), typeof(ListView), false);
+		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create(nameof(IsPullToRefreshEnabled), typeof(bool), typeof(ListView), false);
 
 		/// <summary>Bindable property for <see cref="IsRefreshing"/>.</summary>
-		public static readonly BindableProperty IsRefreshingProperty = BindableProperty.Create("IsRefreshing", typeof(bool), typeof(ListView), false, BindingMode.TwoWay);
+		public static readonly BindableProperty IsRefreshingProperty = BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(ListView), false, BindingMode.TwoWay);
 
 		/// <summary>Bindable property for <see cref="RefreshCommand"/>.</summary>
-		public static readonly BindableProperty RefreshCommandProperty = BindableProperty.Create("RefreshCommand", typeof(ICommand), typeof(ListView), null, propertyChanged: OnRefreshCommandChanged);
+		public static readonly BindableProperty RefreshCommandProperty = BindableProperty.Create(nameof(RefreshCommand), typeof(ICommand), typeof(ListView), null, propertyChanged: OnRefreshCommandChanged);
 
 		/// <summary>Bindable property for <see cref="Header"/>.</summary>
-		public static readonly BindableProperty HeaderProperty = BindableProperty.Create("Header", typeof(object), typeof(ListView), null, propertyChanged: OnHeaderChanged);
+		public static readonly BindableProperty HeaderProperty = BindableProperty.Create(nameof(Header), typeof(object), typeof(ListView), null, propertyChanged: OnHeaderChanged);
 
 		/// <summary>Bindable property for <see cref="HeaderTemplate"/>.</summary>
-		public static readonly BindableProperty HeaderTemplateProperty = BindableProperty.Create("HeaderTemplate", typeof(DataTemplate), typeof(ListView), null, propertyChanged: OnHeaderTemplateChanged,
+		public static readonly BindableProperty HeaderTemplateProperty = BindableProperty.Create(nameof(HeaderTemplate), typeof(DataTemplate), typeof(ListView), null, propertyChanged: OnHeaderTemplateChanged,
 			validateValue: ValidateHeaderFooterTemplate);
 
 		/// <summary>Bindable property for <see cref="Footer"/>.</summary>
-		public static readonly BindableProperty FooterProperty = BindableProperty.Create("Footer", typeof(object), typeof(ListView), null, propertyChanged: OnFooterChanged);
+		public static readonly BindableProperty FooterProperty = BindableProperty.Create(nameof(Footer), typeof(object), typeof(ListView), null, propertyChanged: OnFooterChanged);
 
 		/// <summary>Bindable property for <see cref="FooterTemplate"/>.</summary>
-		public static readonly BindableProperty FooterTemplateProperty = BindableProperty.Create("FooterTemplate", typeof(DataTemplate), typeof(ListView), null, propertyChanged: OnFooterTemplateChanged,
+		public static readonly BindableProperty FooterTemplateProperty = BindableProperty.Create(nameof(FooterTemplate), typeof(DataTemplate), typeof(ListView), null, propertyChanged: OnFooterTemplateChanged,
 			validateValue: ValidateHeaderFooterTemplate);
 
 		/// <summary>Bindable property for <see cref="SelectedItem"/>.</summary>
-		public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create("SelectedItem", typeof(object), typeof(ListView), null, BindingMode.OneWayToSource,
+		public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(ListView), null, BindingMode.OneWayToSource,
 			propertyChanged: OnSelectedItemChanged);
 
 		/// <summary>Bindable property for <see cref="SelectionMode"/>.</summary>
 		public static readonly BindableProperty SelectionModeProperty = BindableProperty.Create(nameof(SelectionMode), typeof(ListViewSelectionMode), typeof(ListView), ListViewSelectionMode.Single);
 
 		/// <summary>Bindable property for <see cref="HasUnevenRows"/>.</summary>
-		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create("HasUnevenRows", typeof(bool), typeof(ListView), false);
+		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create(nameof(HasUnevenRows), typeof(bool), typeof(ListView), false);
 
 		/// <summary>Bindable property for <see cref="RowHeight"/>.</summary>
-		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(ListView), -1);
+		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create(nameof(RowHeight), typeof(int), typeof(ListView), -1);
 
 		/// <summary>Bindable property for <see cref="GroupHeaderTemplate"/>.</summary>
-		public static readonly BindableProperty GroupHeaderTemplateProperty = BindableProperty.Create("GroupHeaderTemplate", typeof(DataTemplate), typeof(ListView), null,
+		public static readonly BindableProperty GroupHeaderTemplateProperty = BindableProperty.Create(nameof(GroupHeaderTemplate), typeof(DataTemplate), typeof(ListView), null,
 			propertyChanged: OnGroupHeaderTemplateChanged);
 
 		/// <summary>Bindable property for <see cref="IsGroupingEnabled"/>.</summary>
-		public static readonly BindableProperty IsGroupingEnabledProperty = BindableProperty.Create("IsGroupingEnabled", typeof(bool), typeof(ListView), false);
+		public static readonly BindableProperty IsGroupingEnabledProperty = BindableProperty.Create(nameof(IsGroupingEnabled), typeof(bool), typeof(ListView), false);
 
 		/// <summary>Bindable property for <see cref="SeparatorVisibility"/>.</summary>
-		public static readonly BindableProperty SeparatorVisibilityProperty = BindableProperty.Create("SeparatorVisibility", typeof(SeparatorVisibility), typeof(ListView), SeparatorVisibility.Default);
+		public static readonly BindableProperty SeparatorVisibilityProperty = BindableProperty.Create(nameof(SeparatorVisibility), typeof(SeparatorVisibility), typeof(ListView), SeparatorVisibility.Default);
 
 		/// <summary>Bindable property for <see cref="SeparatorColor"/>.</summary>
-		public static readonly BindableProperty SeparatorColorProperty = BindableProperty.Create("SeparatorColor", typeof(Color), typeof(ListView), null);
+		public static readonly BindableProperty SeparatorColorProperty = BindableProperty.Create(nameof(SeparatorColor), typeof(Color), typeof(ListView), null);
 
 		/// <summary>Bindable property for <see cref="RefreshControlColor"/>.</summary>
 		public static readonly BindableProperty RefreshControlColorProperty = BindableProperty.Create(nameof(RefreshControlColor), typeof(Color), typeof(ListView), null);
@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls
 		public void ScrollTo(object item, ScrollToPosition position, bool animated)
 		{
 			if (!Enum.IsDefined(typeof(ScrollToPosition), position))
-				throw new ArgumentException("position is not a valid ScrollToPosition", "position");
+				throw new ArgumentException("position is not a valid ScrollToPosition", nameof(position));
 
 			var args = new ScrollToRequestedEventArgs(item, position, animated);
 			if (IsPlatformEnabled)
@@ -399,7 +399,7 @@ namespace Microsoft.Maui.Controls
 			if (!IsGroupingEnabled)
 				throw new InvalidOperationException("Grouping is not enabled");
 			if (!Enum.IsDefined(typeof(ScrollToPosition), position))
-				throw new ArgumentException("position is not a valid ScrollToPosition", "position");
+				throw new ArgumentException("position is not a valid ScrollToPosition", nameof(position));
 
 			var args = new ScrollToRequestedEventArgs(item, group, position, animated);
 			if (IsPlatformEnabled)
