@@ -16,11 +16,10 @@ namespace Microsoft.Maui.Controls.Xaml
 	{
 		// Used from XamlC generated code
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void LoadFromSource(ResourceDictionary rd, string value, Assembly assembly, IXmlLineInfo lineInfo)
+		public static void LoadFromSource(ResourceDictionary rd, Uri source, string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
 		{
-			var sourceUri = ResourceDictionary.RDSourceTypeConverter.CombineUriAndAssembly(value, assembly);
-			var sourceInstance = CreateFromResource(value, assembly, lineInfo);
-			rd.SetSource(sourceUri, sourceInstance);
+			var sourceInstance = CreateFromResource(resourcePath, assembly, lineInfo);
+			rd.SetSource(source, sourceInstance);
 		}
 
 		internal static void LoadFromSource(ResourceDictionary rd, string value, Type rootType, IXmlLineInfo lineInfo)

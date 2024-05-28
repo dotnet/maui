@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.XamlC
 
 			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 
-			foreach (var instruction in CreateUri(context, currentModule, (ILRootNode)rootNode, resourcePath, rdNode, node, asmName))
+			foreach (var instruction in CreateUri(context, (ILRootNode)rootNode, value, node, asmName))
 				yield return instruction;
 
 			var uriVarDef = new VariableDefinition(currentModule.ImportReference(context.Cache, ("System", "System", "Uri")));
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			var resourceTypeRef = GetTypeForPath(context.Cache, module, resourcePath);
 			if (resourceTypeRef is not null)
 			{
-				foreach (var instruction in CreateResourceDictionaryType(context, currentModule, module, node, resourceTypeRef, uriVarDef))
+				foreach (var instruction in CreateResourceDictionaryType(context, currentModule, module, node, rdNode, resourceTypeRef, uriVarDef))
 					yield return instruction;
 			}
 			else
@@ -68,18 +68,15 @@ namespace Microsoft.Maui.Controls.XamlC
 					throw new BuildException(BuildExceptionCode.ResourceMissing, node, null, value);
 				}
 
-				foreach (var instruction in LoadResourceDictionaryFromSource(context, currentModule, (ILRootNode)rootNode, node, resourcePath, asmName))
+				foreach (var instruction in LoadResourceDictionaryFromSource(context, currentModule, (ILRootNode)rootNode, node, rdNode, uriVarDef, resourcePath, asmName))
 					yield return instruction;
 			}
 
 			yield return Create(Ldloc, uriVarDef);
 		}
 
-		private static IEnumerable<Instruction> CreateUri(ILContext context, ModuleDefinition currentModule, ILRootNode rootNode, string value, IElementNode rdNode, BaseNode node, string asmName)
+		private static IEnumerable<Instruction> CreateUri(ILContext context, ILRootNode rootNode, string value, BaseNode node, string asmName)
 		{
-			//abuse the converter, produce some side effect, but leave the stack untouched
-			foreach (var instruction in context.Variables[rdNode].LoadAs(context.Cache, currentModule.GetTypeDefinition(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary")), currentModule))
-				yield return instruction;
 			//reappend assembly= in all cases, see other RD converter
 			if (!string.IsNullOrEmpty(asmName))
 				value = $"{value};assembly={asmName}";
@@ -94,6 +91,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			ModuleDefinition currentModule,
 			ModuleDefinition module,
 			BaseNode node,
+			IElementNode rdNode,
 			TypeReference resourceTypeRef,
 			VariableDefinition uriVarDef)
 		{
@@ -114,7 +112,8 @@ namespace Microsoft.Maui.Controls.XamlC
 			genericInstanceMethod.GenericArguments.Add(resourceType);
 
 			// public void rd.SetAndCreateSource<TResourceType>(Uri value)
-			// rd is already on the stack
+			foreach (var instruction in context.Variables[rdNode].LoadAs(context.Cache, currentModule.GetTypeDefinition(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary")), currentModule))
+				yield return instruction;
 			yield return Create(Ldloc, uriVarDef);
 			yield return Create(Callvirt, currentModule.ImportReference(genericInstanceMethod));
 		}
@@ -124,11 +123,15 @@ namespace Microsoft.Maui.Controls.XamlC
 			ModuleDefinition currentModule,
 			ILRootNode rootNode,
 			BaseNode node,
+			IElementNode rdNode,
+			VariableDefinition uriVarDef,
 			string resourcePath,
 			string asmName)
 		{
-			// public void static ResourceDictionaryHelpers.LoadFromSource(ResourceDictionary rd, string value, Type rootType, IXmlLineInfo lineInfo)
-			// rd is already on the stack
+			// public void static ResourceDictionaryHelpers.LoadFromSource(ResourceDictionary rd, Uri source, string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
+			foreach (var instruction in context.Variables[rdNode].LoadAs(context.Cache, currentModule.GetTypeDefinition(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary")), currentModule))
+				yield return instruction;
+			yield return Create(Ldloc, uriVarDef);
 			yield return Create(Ldstr, resourcePath);
 
 			if (!string.IsNullOrEmpty(asmName))
@@ -152,6 +155,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				methodName: "LoadFromSource",
 				parameterTypes: new[] {
 					("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary"),
+					("System", "System", "Uri"),
 					("mscorlib", "System", "String"),
 					("mscorlib", "System.Reflection", "Assembly"),
 					("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") },
