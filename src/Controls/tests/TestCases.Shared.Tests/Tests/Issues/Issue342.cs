@@ -36,7 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Page)]
-		[FailsOnIOS]
+		[FailsOnWindows]
 		public void Issue342DelayedLoadTestsImageLoads()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);

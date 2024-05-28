@@ -15,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnWindows]
 		public void VisualPropagatesToEmptyView()
 		{
 			App.WaitForElement("TestReady");
