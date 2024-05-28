@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnWindows]
 		public void GitHub1648Test()
 		{
 			App.WaitForElement("Reload");

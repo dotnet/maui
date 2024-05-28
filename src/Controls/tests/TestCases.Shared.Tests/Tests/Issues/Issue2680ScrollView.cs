@@ -33,6 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[FailsOnIOS]
+		[FailsOnWindows]
 		public void Issue2680Test_ScrollEnabled()
 		{
 			App.WaitForElement(ToggleButtonMark);

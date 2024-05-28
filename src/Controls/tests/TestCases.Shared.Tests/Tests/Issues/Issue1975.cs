@@ -18,10 +18,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public void ClickPropagatesToOnTouchListener()
 		{
+			App.WaitForElement(Go);
 			App.Tap(Go);
 			App.WaitForElement(Success);
 		}

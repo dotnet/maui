@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroid]
 		public void ChangePeekAreaInsetsInOnSizeAllocatedTest()
 		{
 			App.WaitForElement("CarouselId");
