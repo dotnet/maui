@@ -11,11 +11,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "IllegalArgumentException when changing number of tabbar pages";
 
 		[Test]
-		public void NoExceptionShouldBeThrown()
+		public void NoExceptionShouldBeThrownAddingShellTabs()
 		{
-			_ = App.WaitForElement("button");
-			App.Click("button");
-			App.Click("button");
+			App.WaitForElement("button");
+
+			for (int i = 0; i < 2; i++)
+			{
+				App.Click("button");
+			}
 
 			// The test passes if no crash is observed
 		}
