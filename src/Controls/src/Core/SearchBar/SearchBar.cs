@@ -12,19 +12,19 @@ namespace Microsoft.Maui.Controls
 	{
 		/// <summary>Bindable property for <see cref="SearchCommand"/>.</summary>
 		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create(
-			"SearchCommand", typeof(ICommand), typeof(SearchBar), null,
+			nameof(SearchCommand), typeof(ICommand), typeof(SearchBar), null,
 			propertyChanging: CommandElement.OnCommandChanging, propertyChanged: CommandElement.OnCommandChanged);
 
 		/// <summary>Bindable property for <see cref="SearchCommandParameter"/>.</summary>
 		public static readonly BindableProperty SearchCommandParameterProperty = BindableProperty.Create(
-			"SearchCommandParameter", typeof(object), typeof(SearchBar), null,
+			nameof(SearchCommandParameter), typeof(object), typeof(SearchBar), null,
 			propertyChanged: CommandElement.OnCommandParameterChanged);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
 		/// <summary>Bindable property for <see cref="CancelButtonColor"/>.</summary>
-		public static readonly BindableProperty CancelButtonColorProperty = BindableProperty.Create("CancelButtonColor", typeof(Color), typeof(SearchBar), default(Color));
+		public static readonly BindableProperty CancelButtonColorProperty = BindableProperty.Create(nameof(CancelButtonColor), typeof(Color), typeof(SearchBar), default(Color));
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='PlaceholderProperty']/Docs/*" />
 		public new static readonly BindableProperty PlaceholderProperty = InputView.PlaceholderProperty;

@@ -11,7 +11,7 @@ var projectMappings = new Dictionary<string, string>
     ["Graphics.DeviceTests"] = "Graphics.DeviceTests",
     ["MauiBlazorWebView.DeviceTests"] = "MauiBlazorWebView.DeviceTests",
     ["Essentials.DeviceTests"] = "Essentials.DeviceTests",
-    ["Controls.Sample.UITests"] = "Controls.Sample.UITests",
+    ["Controls.TestCases.App"] = "Controls.TestCases.App",
     ["Compatibility.ControlGallery.iOS"] = "Compatibility.ControlGallery.iOS",
     ["Compatibility.ControlGallery.Android"] = "Compatibility.ControlGallery.Android",
 };
@@ -23,14 +23,14 @@ string DEFAULT_APP_PROJECT = "";
 
 if (string.Equals(TARGET, "uitest", StringComparison.OrdinalIgnoreCase))
 {
-    DEFAULT_PROJECT = "../../src/Controls/tests/UITests/Controls.AppiumTests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
+    DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
+    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases/Controls.TestCases.App.csproj";
 }
 
 if (string.Equals(TARGET, "uitest-build", StringComparison.OrdinalIgnoreCase))
 {
-    DEFAULT_PROJECT = "../../src/Controls/tests/UITests/Controls.AppiumTests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
+    DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
+    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases/Controls.TestCases.App.csproj";
 }
 
 if (string.Equals(TARGET, "cg-uitest", StringComparison.OrdinalIgnoreCase))

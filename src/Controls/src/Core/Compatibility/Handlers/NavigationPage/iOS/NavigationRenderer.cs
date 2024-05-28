@@ -599,9 +599,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void InsertPageBefore(Page page, Page before)
 		{
 			if (before.Handler is not IPlatformViewHandler nvh)
-				throw new ArgumentNullException("before");
+				throw new ArgumentNullException(nameof(before));
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 
 			var pageContainer = CreateViewControllerForPage(page);
 			var target = nvh.ViewController.ParentViewController;
@@ -641,7 +641,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void RemovePage(Page page)
 		{
 			if (page?.Handler is not IPlatformViewHandler nvh)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 			if (page == Current)
 				throw new NotSupportedException(); // should never happen as NavPage protects against this
 

@@ -73,6 +73,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST && __ANDROID__
+		[MovedToAppium]
 		[Test]
 		public void ChangePeekAreaInsetsInOnSizeAllocatedTest()
         {

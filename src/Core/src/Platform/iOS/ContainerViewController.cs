@@ -8,8 +8,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class ContainerViewController : UIViewController, IReloadHandler
 	{
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: NavigationPageTests.DoesNotLeak")]
-		IElement? _view;
+		WeakReference<IElement>? _view;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: NavigationPageTests.DoesNotLeak")]
 		UIView? currentPlatformView;
 
@@ -21,7 +20,7 @@ namespace Microsoft.Maui.Platform
 
 		public IElement? CurrentView
 		{
-			get => _view;
+			get => _view?.GetTargetOrDefault();
 			set => SetView(value);
 		}
 
@@ -33,15 +32,15 @@ namespace Microsoft.Maui.Platform
 
 		void SetView(IElement? view, bool forceRefresh = false)
 		{
-			if (view == _view && !forceRefresh)
+			if (CurrentView is IElement existingView && view == existingView && !forceRefresh)
 				return;
 
-			_view = view;
+			_view = view is null ? null : new(view);
 
 			if (view is ITitledElement page)
 				Title = page.Title;
 
-			if (_view is IHotReloadableView ihr)
+			if (view is IHotReloadableView ihr)
 			{
 				ihr.ReloadHandler = this;
 				MauiHotReloadHelper.AddActiveView(ihr);
@@ -50,8 +49,8 @@ namespace Microsoft.Maui.Platform
 			currentPlatformView?.RemoveFromSuperview();
 			currentPlatformView = null;
 
-			if (IsViewLoaded && _view != null)
-				LoadPlatformView(_view);
+			if (IsViewLoaded && view is not null)
+				LoadPlatformView(view);
 		}
 
 		internal UIView LoadFirstView(IElement view)
@@ -63,8 +62,8 @@ namespace Microsoft.Maui.Platform
 		public override void LoadView()
 		{
 			base.LoadView();
-			if (_view != null && Context != null)
-				LoadPlatformView(_view);
+			if (CurrentView is IElement view && Context != null)
+				LoadPlatformView(view);
 		}
 
 		void LoadPlatformView(IElement view)
@@ -83,7 +82,7 @@ namespace Microsoft.Maui.Platform
 			_ = Context ?? throw new ArgumentNullException(nameof(Context));
 			_ = _view ?? throw new ArgumentNullException(nameof(view));
 
-			return _view.ToPlatform(Context);
+			return view.ToPlatform(Context);
 		}
 
 		public override void ViewDidLayoutSubviews()

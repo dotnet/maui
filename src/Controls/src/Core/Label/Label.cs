@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
 		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
-		public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create("VerticalTextAlignment", typeof(TextAlignment), typeof(Label), TextAlignment.Start);
+		public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create(nameof(VerticalTextAlignment), typeof(TextAlignment), typeof(Label), TextAlignment.Start);
 
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
@@ -268,7 +268,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnFormattedTextChanging(object sender, PropertyChangingEventArgs e)
 		{
-			OnPropertyChanging("FormattedText");
+			OnPropertyChanging(nameof(FormattedText));
 		}
 
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue) =>
@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnFormattedTextChanged(object sender, PropertyChangedEventArgs e)
 		{
-			OnPropertyChanged("FormattedText");
+			OnPropertyChanged(nameof(FormattedText));
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 

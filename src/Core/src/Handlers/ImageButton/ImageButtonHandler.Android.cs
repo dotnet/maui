@@ -40,27 +40,27 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IImageButtonHandler handler, IImageButton imageButton)
 		{
-			(handler.PlatformView as ShapeableImageView)?.UpdateBackground(imageButton);
+			handler.PlatformView?.UpdateBackground(imageButton);
 		}
 
 		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.PlatformView as ShapeableImageView)?.UpdateStrokeColor(buttonStroke);
+			handler.PlatformView?.UpdateStrokeColor(buttonStroke);
 		}
 
 		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.PlatformView as ShapeableImageView)?.UpdateStrokeThickness(buttonStroke);
+			handler.PlatformView?.UpdateStrokeThickness(buttonStroke);
 		}
 
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			(handler.PlatformView as ShapeableImageView)?.UpdateCornerRadius(buttonStroke);
+			handler.PlatformView.UpdateCornerRadius(buttonStroke);
 		}
 
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)
 		{
-			(handler.PlatformView as ShapeableImageView)?.UpdatePadding(imageButton);
+			handler.PlatformView?.UpdatePadding(imageButton);
 		}
 
 		void OnFocusChange(object? sender, View.FocusChangeEventArgs e)

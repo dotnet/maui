@@ -6,13 +6,13 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ToolbarItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.ToolbarItem']/Docs/*" />
 	public class ToolbarItem : MenuItem
 	{
-		static readonly BindableProperty OrderProperty = BindableProperty.Create("Order", typeof(ToolbarItemOrder), typeof(ToolbarItem), ToolbarItemOrder.Default, validateValue: (bo, o) =>
+		static readonly BindableProperty OrderProperty = BindableProperty.Create(nameof(Order), typeof(ToolbarItemOrder), typeof(ToolbarItem), ToolbarItemOrder.Default, validateValue: (bo, o) =>
 		{
 			var order = (ToolbarItemOrder)o;
 			return order == ToolbarItemOrder.Default || order == ToolbarItemOrder.Primary || order == ToolbarItemOrder.Secondary;
 		});
 
-		static readonly BindableProperty PriorityProperty = BindableProperty.Create("Priority", typeof(int), typeof(ToolbarItem), 0);
+		static readonly BindableProperty PriorityProperty = BindableProperty.Create(nameof(Priority), typeof(int), typeof(ToolbarItem), 0);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ToolbarItem.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public ToolbarItem()
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 		public ToolbarItem(string name, string icon, Action activated, ToolbarItemOrder order = ToolbarItemOrder.Default, int priority = 0)
 		{
 			if (activated == null)
-				throw new ArgumentNullException("activated");
+				throw new ArgumentNullException(nameof(activated));
 
 			Text = name;
 			IconImageSource = icon;

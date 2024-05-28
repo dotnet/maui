@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new StackLayout();
 			var groupName = "foo";
-			var radioButton = new RadioButton();
+			var radioButton = new RadioButton() { Value = 1 };
 
 			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
 			layout.Children.Add(radioButton);
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new StackLayout();
 			var groupName = "foo";
-			var radioButton = new RadioButton();
+			var radioButton = new RadioButton() { Value = 1 };
 
 			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var layout = new StackLayout();
 			var groupName = "foo";
 			var oldName = "bar";
-			var radioButton = new RadioButton() { GroupName = oldName };
+			var radioButton = new RadioButton() { GroupName = oldName, Value = 1 };
 
 			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
 			layout.Children.Add(radioButton);
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new StackLayout();
 			var groupName = "foo";
-			var radioButton = new RadioButton();
+			var radioButton = new RadioButton() { Value = 1 };
 
 			layout.Children.Add(radioButton);
 			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
@@ -72,8 +72,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var groupName = "foo";
 			var updatedGroupName = "bar";
 			var otherGroupName = "other";
-			var radioButton1 = new RadioButton();
-			var radioButton2 = new RadioButton() { GroupName = otherGroupName };
+			var radioButton1 = new RadioButton() { Value = 1 };
+			var radioButton2 = new RadioButton() { GroupName = otherGroupName, Value = 2 };
 
 			layout.Children.Add(radioButton1);
 			layout.Children.Add(radioButton2);
@@ -90,10 +90,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var groupName = "foo";
 
-			var radioButton1 = new RadioButton() { GroupName = groupName };
-			var radioButton2 = new RadioButton() { GroupName = groupName };
-			var radioButton3 = new RadioButton() { GroupName = groupName };
-			var radioButton4 = new RadioButton() { GroupName = groupName };
+			var radioButton1 = new RadioButton() { GroupName = groupName, Value = 1 };
+			var radioButton2 = new RadioButton() { GroupName = groupName, Value = 2 };
+			var radioButton3 = new RadioButton() { GroupName = groupName, Value = 3 };
+			var radioButton4 = new RadioButton() { GroupName = groupName, Value = 4 };
 
 			var layout = new Grid();
 
@@ -120,9 +120,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ImpliedGroup()
 		{
-			var radioButton1 = new RadioButton();
-			var radioButton2 = new RadioButton();
-			var radioButton3 = new RadioButton();
+			var radioButton1 = new RadioButton() { Value = 1 };
+			var radioButton2 = new RadioButton() { Value = 2 };
+			var radioButton3 = new RadioButton() { Value = 3 };
 
 			var layout = new Grid();
 
@@ -146,9 +146,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ImpliedGroupDoesNotIncludeExplicitGroups()
 		{
-			var radioButton1 = new RadioButton();
-			var radioButton2 = new RadioButton();
-			var radioButton3 = new RadioButton() { GroupName = "foo" };
+			var radioButton1 = new RadioButton() { Value = 1 };
+			var radioButton2 = new RadioButton() { Value = 2 };
+			var radioButton3 = new RadioButton() { GroupName = "foo", Value = 3 };
 
 			var layout = new Grid();
 
@@ -167,9 +167,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void RemovingSelectedButtonFromGroupClearsSelection()
 		{
-			var radioButton1 = new RadioButton() { GroupName = "foo" };
-			var radioButton2 = new RadioButton() { GroupName = "foo" };
-			var radioButton3 = new RadioButton() { GroupName = "foo" };
+			var radioButton1 = new RadioButton() { GroupName = "foo", Value = 1 };
+			var radioButton2 = new RadioButton() { GroupName = "foo", Value = 2 };
+			var radioButton3 = new RadioButton() { GroupName = "foo", Value = 3 };
 
 			radioButton1.IsChecked = true;
 			radioButton2.IsChecked = true;

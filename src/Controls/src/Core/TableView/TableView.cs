@@ -16,10 +16,10 @@ namespace Microsoft.Maui.Controls
 	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement
 	{
 		/// <summary>Bindable property for <see cref="RowHeight"/>.</summary>
-		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(TableView), -1);
+		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create(nameof(RowHeight), typeof(int), typeof(TableView), -1);
 
 		/// <summary>Bindable property for <see cref="HasUnevenRows"/>.</summary>
-		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create("HasUnevenRows", typeof(bool), typeof(TableView), false);
+		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create(nameof(HasUnevenRows), typeof(bool), typeof(TableView), false);
 
 		readonly Lazy<PlatformConfigurationRegistry<TableView>> _platformConfigurationRegistry;
 
@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls
 			internal static Tuple<int, int> GetPath(Cell item)
 			{
 				if (item == null)
-					throw new ArgumentNullException("item");
+					throw new ArgumentNullException(nameof(item));
 
 				return (Tuple<int, int>)item.GetValue(PathProperty);
 			}

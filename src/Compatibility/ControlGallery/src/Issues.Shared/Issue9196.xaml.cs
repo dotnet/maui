@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+		[MovedToAppium]
 		[Test, Category(UITestCategories.CollectionView)]
 		[Compatibility.UITests.FailsOnMauiIOS]
 		public void EmptyViewShouldNotCrash()

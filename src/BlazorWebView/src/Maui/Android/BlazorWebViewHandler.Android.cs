@@ -59,19 +59,37 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return blazorAndroidWebView;
 		}
 
+		private const string AndroidFireAndForgetAsyncSwitch = "BlazorWebView.AndroidFireAndForgetAsync";
+
+		private static bool IsAndroidFireAndForgetAsyncEnabled =>
+			AppContext.TryGetSwitch(AndroidFireAndForgetAsyncSwitch, out var enabled) && enabled;
+
 		protected override void DisconnectHandler(AWebView platformView)
 		{
 			platformView.StopLoading();
 
 			if (_webviewManager != null)
 			{
-				// Dispose this component's contents and block on completion so that user-written disposal logic and
-				// Blazor disposal logic will complete.
-				_webviewManager?
+				// Dispose this component's contents so that user-written disposal logic and Blazor disposal logic will complete.
+
+				// Start the disposal...
+				var disposalTask = _webviewManager?
 					.DisposeAsync()
-					.AsTask()
-					.GetAwaiter()
-					.GetResult();
+					.AsTask()!;
+
+				if (IsAndroidFireAndForgetAsyncEnabled)
+				{
+					// If the app is configured to fire-and-forget via an AppContext Switch, we'll do that.
+					disposalTask.FireAndForget();
+				}
+				else
+				{
+					// Otherwise by default, we'll synchronously wait for the disposal to complete. This can cause
+					// a deadlock, but is the original behavior.
+					disposalTask
+						.GetAwaiter()
+						.GetResult();
+				}
 
 				_webviewManager = null;
 			}

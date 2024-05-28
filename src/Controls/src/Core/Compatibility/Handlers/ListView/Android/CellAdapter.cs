@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected CellAdapter(Context context)
 		{
 			if (context == null)
-				throw new ArgumentNullException("context");
+				throw new ArgumentNullException(nameof(context));
 
 			_context = context;
 		}
