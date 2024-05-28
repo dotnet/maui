@@ -6,7 +6,7 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 9.0.100-preview.4.24267.6
+  value: 9.0.100-preview.4.24267.66
 - name: REQUIRED_XCODE
   value: 15.2.0
 - name: DEVICETESTS_REQUIRED_XCODE
