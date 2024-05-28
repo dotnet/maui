@@ -8,11 +8,10 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class OrientationSensorImplementation : IOrientationSensor
 	{
-		static SensorManager? _sensorManager;
 		static Sensor? orientationSensor;
 
 		static SensorManager? SensorManager =>
-			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+			Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
 		static Sensor? Sensor =>
 			orientationSensor ??= SensorManager?.GetDefaultSensor(SensorType.RotationVector);
