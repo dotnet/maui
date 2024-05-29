@@ -13,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Buttons with images don't cover text";
 
 		[Test]
+		[FailsOnMac("VerifyScreenshot method not implemented")]
 		public void Issue21513Test()
 		{
 			this.IgnoreIfPlatforms(new [] { TestDevice.Mac, TestDevice.iOS });

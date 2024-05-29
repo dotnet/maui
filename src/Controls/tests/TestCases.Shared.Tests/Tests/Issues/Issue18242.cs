@@ -13,9 +13,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Button ImageSource not Scaling as expected";
 
 		[Test]
+		[FailsOnMac("VerifyScreenshot method not implemented")]
 		public void Issue18242Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.iOS }, "iOS will be fixed in https://github.com/dotnet/maui/pull/20953");
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS }, "iOS will be fixed in https://github.com/dotnet/maui/pull/20953");
 
 			App.WaitForElement("WaitForStubControl");
 

@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		[FailsOnMac("VerifyScreenshot method not implemented")]
 		public async Task EntryIsPasswordObscureText()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },

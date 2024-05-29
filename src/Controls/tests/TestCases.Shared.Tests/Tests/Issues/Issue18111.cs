@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Slider)]
+		[FailsOnMac("VerifyScreenshot method not implemented")]
 		public void SettingMaximumTrackColorOnSliderWorks()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Windows }, "Regression test validating the design differences between iOS and Mac specifically");

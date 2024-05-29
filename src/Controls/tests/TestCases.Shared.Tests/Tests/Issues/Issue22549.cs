@@ -11,6 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Binding Border.StrokeShape not working";
 
 		[Test]
+		[FailsOnMac("VerifyScreenshot method not implemented")]
 		public void BindingOnStrokeShapeShouldWork()
 		{
 			App.WaitForElement("button");
