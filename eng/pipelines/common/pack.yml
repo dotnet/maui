@@ -123,7 +123,7 @@ steps:
     displayName: 'Setup ANDROID_SDK_ROOT Paths'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.buildConfiguration }}" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}" --officialbuildid="${{ parameters.officialBuildId }}"
+  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.buildConfiguration }}" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
     workingDirectory: ${{ parameters.checkoutDirectory }}
