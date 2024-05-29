@@ -87,9 +87,14 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateAttributedTitle(this UIButton platformButton, IFontManager fontManager, ITextStyle textStyle)
 		{
+			if(platformButton.CurrentTitle == null)
+			{
+				return;
+			}
+
 			// Any text update requires that we update any attributed string formatting
 			var uiFontAttribute = fontManager.GetFont(textStyle.Font, UIFont.ButtonFontSize);
-			var attributedString = new NSMutableAttributedString(new NSAttributedString(platformButton.CurrentTitle!));
+			var attributedString = new NSMutableAttributedString(new NSAttributedString(platformButton.CurrentTitle));
 
 			// Update font family & size
 			attributedString.AddAttribute(UIStringAttributeKey.Font, uiFontAttribute, new NSRange(0, attributedString.Length));
