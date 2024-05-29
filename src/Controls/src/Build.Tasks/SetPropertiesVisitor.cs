@@ -291,11 +291,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
-				if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension"
-					&& bpRef != null //do not compile bindings if we're not gonna SetBinding
-					)
-					foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition))
-						yield return instruction;
+				if (bpRef is not null) // do not compile bindings if we're not gonna SetBinding
+				{
+					if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension")
+					{
+						foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "BindingExtension")))
+							yield return instruction;
+					}
+					else if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")
+					{
+						foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "TemplateBindingExtension")))
+							yield return instruction;
+					}
+				}
 
 				var markExt = markupExtension.ResolveCached(context.Cache);
 				var provideValueInfo = markExt.Methods.First(md => md.Name == "ProvideValue");
@@ -383,7 +391,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		//Once we get compiled IValueProvider, this will move to the BindingExpression
-		static IEnumerable<Instruction> CompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt)
+		static IEnumerable<Instruction> CompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt, (string, string, string) bindingExtensionType)
 		{
 			//TODO support casting operators
 			var module = context.Module;
@@ -479,8 +487,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				   && md.Parameters.Count == 3
 				   && !md.HasCustomAttributes(module.ImportReference(context.Cache, ("mscorlib", "System", "ObsoleteAttribute")))));
 			var ctorinforef = ctorInfo.MakeGeneric(typedBindingRef, funcRef, actionRef, tupleRef);
-
-			var bindingExtensionType = ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "BindingExtension");
 
 			foreach (var instruction in bindingExt.LoadAs(context.Cache, module.GetTypeDefinition(context.Cache, bindingExtensionType), module))
 				yield return instruction;
