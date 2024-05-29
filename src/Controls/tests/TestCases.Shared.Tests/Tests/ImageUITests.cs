@@ -19,6 +19,11 @@ internal class ImageUITests : _ViewUITests
 		App.NavigateToGallery(ImageGallery);
 	}
 
+	public override void IsEnabled()
+	{
+		Assert.Ignore("Image elements do not really have a concept of being \"disabled\".");
+	}
+
 	[Test]
 	public void Source_FontImageSource()
 	{
