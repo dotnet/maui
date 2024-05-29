@@ -73,10 +73,10 @@
        - Feed URI in the nuget.config
        - Native assets build and sha
     -->
-    <_SkiaSharpVersion>2.88.8-preview.1.1</_SkiaSharpVersion>
-    <_SkiaSharpExtendedVersion>2.0.0-preview.86</_SkiaSharpExtendedVersion>
-    <_HarfBuzzSharpVersion>7.3.0.2-preview.1.1</_HarfBuzzSharpVersion>
-    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.3af63fa78a77a8007b633a8b44884f7119c14dad.1071</_SkiaSharpNativeAssetsVersion>
+    <_SkiaSharpVersion>2.88.8</_SkiaSharpVersion>
+    <_SkiaSharpExtendedVersion>2.0.0</_SkiaSharpExtendedVersion>
+    <_HarfBuzzSharpVersion>7.3.0.2</_HarfBuzzSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.7af1d0840a381c0ce7ef2877454a88dbb2949686.1086</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.114</MicrosoftTemplateEngineTasksVersion>
     <MicrosoftDotNetXHarnessTestRunnersCommonVersion>9.0.0-prerelease.24178.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
     <MicrosoftDotNetXHarnessTestRunnersXunitVersion>9.0.0-prerelease.24178.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
