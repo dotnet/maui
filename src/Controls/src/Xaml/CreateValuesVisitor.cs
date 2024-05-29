@@ -152,6 +152,11 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (value is BindableObject bindableValue && node.NameScopeRef != (parentNode as IElementNode)?.NameScopeRef)
 				NameScope.SetNameScope(bindableValue, node.NameScopeRef.NameScope);
 
+			//Workaround for when a VSM is applied before parenting
+			if (value is Element iElement)
+				iElement.transientNamescope = node.NameScopeRef.NameScope;
+
+
 			var assemblyName = (Context.RootAssembly ?? Context.RootElement?.GetType().Assembly)?.GetName().Name;
 			if (assemblyName != null && value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(Context.RootElement) is string path)
 				VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);

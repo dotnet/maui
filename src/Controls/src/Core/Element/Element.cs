@@ -502,13 +502,15 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
+		internal INameScope transientNamescope;
+
 		/// <summary>Returns the element that has the specified name.</summary>
 		/// <param name="name">The name of the element to be found.</param>
 		/// <returns>The element that has the specified name.</returns>
 		/// <exception cref="InvalidOperationException">Thrown if the element's namescope couldn't be found.</exception>
 		public object FindByName(string name)
 		{
-			var namescope = GetNameScope();
+			var namescope = GetNameScope() ?? transientNamescope;
 			if (namescope == null)
 				throw new InvalidOperationException("this element is not in a namescope");
 			return namescope.FindByName(name);
