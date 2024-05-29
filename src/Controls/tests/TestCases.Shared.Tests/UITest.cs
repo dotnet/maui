@@ -71,9 +71,8 @@ namespace Microsoft.Maui.TestCases.Tests
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
-					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.Sample.UITests");
-					var appProjectPath = Path.Combine(appProjectFolder, "Controls.Sample.UITests.csproj");
-					var windowsExe = "Controls.Sample.UITests.exe";
+					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.App");
+					var windowsExe = "Controls.TestCases.App.exe";
 					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
 					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win10-x64\\{windowsExe}");
 
@@ -160,6 +159,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 
 			name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+
+			// Currently Android is the OS with the ripple animations, but Windows may also have some animations
+			// that need to finish before taking a screenshot.
+			if (_testDevice == TestDevice.Android)
+			{
+				Thread.Sleep(350);
+			}
 
 			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
 

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Reflection;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample
@@ -13,14 +16,18 @@ namespace Maui.Controls.Sample
 		{
 			var name = formsMember.ToString();
 
+			var propertyName = name;
+			if (name.IndexOf('_', StringComparison.OrdinalIgnoreCase) is int idx && idx > 0)
+				propertyName = name[0..idx];
+
 			var stateTitleLabel = new Label
 			{
-				Text = name + "?"
+				Text = propertyName + "? "
 			};
 
 			ViewInteractionLabel = new Label
 			{
-				Text = "Interacted? : False"
+				Text = "Interacted? False"
 			};
 
 			var stateValueLabel = new Label
@@ -29,14 +36,35 @@ namespace Maui.Controls.Sample
 				AutomationId = name + "StateLabel"
 			};
 
+			var converter = new GenericValueConverter(o =>
+			{
+				try
+				{
+					var attr = o.GetType().GetCustomAttribute<TypeConverterAttribute>();
+					if (attr is not null)
+					{
+						var name = attr.ConverterTypeName;
+						var converter = Type.GetType(name);
+						var instance = (TypeConverter)Activator.CreateInstance(converter);
+						return instance.ConvertTo(o, typeof(string));
+					}
+				}
+				catch (Exception)
+				{
+					// no-op: fall back to ToString
+				}
+
+				return o.ToString();
+			});
+
 			if (name == "Focus" || name == "Unfocused" || name == "Focused")
-				stateValueLabel.SetBinding(Label.TextProperty, "IsFocused", converter: new GenericValueConverter(o => o.ToString()));
+				stateValueLabel.SetBinding(Label.TextProperty, "IsFocused", converter: converter);
 			else
-				stateValueLabel.SetBinding(Label.TextProperty, name, converter: new GenericValueConverter(o => o.ToString()));
+				stateValueLabel.SetBinding(Label.TextProperty, propertyName, converter: converter);
 
 			StateChangeButton = new Button
 			{
-				Text = "Change State: " + name,
+				Text = "Change State: " + propertyName,
 				AutomationId = name + "StateButton"
 			};
 

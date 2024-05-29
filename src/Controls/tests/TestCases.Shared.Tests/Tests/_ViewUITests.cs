@@ -1,4 +1,4 @@
-﻿using Maui.Controls.Sample;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
@@ -12,10 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		public _ViewUITests(TestDevice device) : base(device) { }
 
 		[Test]
-		public virtual void _IsEnabled()
+		public virtual void IsEnabled()
 		{
-			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsEnabled);
-			remote.GoTo();
+			var remote = GoToStateRemote();
 
 			var enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
 			ClassicAssert.IsTrue(enabled);
@@ -37,10 +36,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		public virtual void _IsVisible()
+		public virtual void IsVisible()
 		{
-			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsVisible);
-			remote.GoTo();
+			var remote = GoToStateRemote();
+
 			App.WaitForElement($"IsVisibleStateButton");
 			var viewPre = remote.GetViews();
 
@@ -52,6 +51,32 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			ClassicAssert.AreEqual(0, viewPost.Count);
 		}
-	}
 
+		internal StateViewContainerRemote GoToStateRemote([CallerMemberName] string? testName = null)
+		{
+			_ = testName ?? throw new ArgumentNullException(nameof(testName));
+
+			var remote = new StateViewContainerRemote(UITestContext, testName);
+			remote.GoTo(testName);
+			return remote;
+		}
+
+		internal EventViewContainerRemote GoToEventRemote([CallerMemberName] string? testName = null)
+		{
+			_ = testName ?? throw new ArgumentNullException(nameof(testName));
+
+			var remote = new EventViewContainerRemote(UITestContext, testName);
+			remote.GoTo(testName);
+			return remote;
+		}
+
+		internal ViewContainerRemote GoToRemote([CallerMemberName] string? testName = null)
+		{
+			_ = testName ?? throw new ArgumentNullException(nameof(testName));
+
+			var remote = new ViewContainerRemote(UITestContext, testName);
+			remote.GoTo(testName);
+			return remote;
+		}
+	}
 }
