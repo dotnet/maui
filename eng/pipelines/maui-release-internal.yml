@@ -164,6 +164,8 @@ extends:
                 value: $(Build.SourcesDirectory)/build.cmd -ci
               - name: _BuildConfig
                 value: Release
+              - name: _BuildOfficalId
+                value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
                 
             preSteps:
               - checkout: self
@@ -185,6 +187,7 @@ extends:
                   repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
                   repoLogPath: $(Build.Arcade.LogsPath)
                   repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                  officialBuildId: $(_BuildOfficalId)
                   # prepareSteps:
                   #   - template: /eng/pipelines/common/provision.yml@self
                   #     parameters:
