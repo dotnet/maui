@@ -5,7 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -41,11 +46,12 @@ namespace Microsoft.Maui.DeviceTests
 				data.Add("Item 3");
 				data.Insert(1, "Item 2");
 
-				await Task.Delay(100);
+				await Task.Delay(1000);
 
-				var children = listView.GetVisualTreeDescendants();
+				var actualListView = listView.ToPlatform() as ListViewRenderer;
+				var textChildren = actualListView.GetChildren<UI.Xaml.Controls.TextBlock>();
 
-				Assert.True(children.Any());
+				Assert.True(textChildren.Any(x => x.Text == "Item 3"));
 			});
 		}
 	}
