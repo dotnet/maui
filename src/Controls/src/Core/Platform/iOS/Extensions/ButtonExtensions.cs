@@ -31,17 +31,17 @@ namespace Microsoft.Maui.Controls.Platform
 					platformButton.TitleLabel.LineBreakMode == UILineBreakMode.TailTruncation ||
 					platformButton.TitleLabel.LineBreakMode == UILineBreakMode.Clip)
 				{
-					availableHeight = lineHeight;
+					availableHeight = Math.Min(lineHeight, heightConstraint);
 				}
 
 				var availableSize = new CGSize(widthConstraint, availableHeight);
 
 				var boundingRect = title.GetBoundingRect(
 					availableSize,
-					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
+					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading | NSStringDrawingOptions.UsesDeviceMetrics,
 					null);
 
-				return boundingRect;
+				return new CGRect(boundingRect.Location, new CGSize(boundingRect.Width, Math.Min(availableHeight, boundingRect.Height)));
 			}
 
 			return CGRect.Empty;
