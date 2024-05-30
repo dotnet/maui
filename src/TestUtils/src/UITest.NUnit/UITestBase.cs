@@ -6,20 +6,6 @@ using UITest.Core;
 
 namespace UITest.Appium.NUnit
 {
-	//#if ANDROID
-	//	[TestFixture(TestDevice.Android)]
-	//#elif IOSUITEST
-	//	[TestFixture(TestDevice.iOS)]
-	//#elif MACUITEST
-	//	[TestFixture(TestDevice.Mac)]
-	//#elif WINTEST
-	//	[TestFixture(TestDevice.Windows)]
-	//#else
-	//    [TestFixture(TestDevice.iOS)]
-	//    [TestFixture(TestDevice.Mac)]
-	//    [TestFixture(TestDevice.Windows)]
-	//    [TestFixture(TestDevice.Android)]
-	//#endif
 	public abstract class UITestBase : UITestContextBase
 	{
 		public UITestBase(TestDevice testDevice)

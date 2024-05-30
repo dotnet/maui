@@ -204,6 +204,9 @@ stages:
               value: $(Build.SourcesDirectory)/build.cmd -ci
             - name: _BuildConfig
               value: Release
+            - name: _BuildOfficalId
+              value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
+
           steps:
             - template: common/pack.yml
               parameters:
@@ -219,6 +222,7 @@ stages:
                 repoLogPath: $(Build.Arcade.LogsPath)
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                officialBuildId: $(_BuildOfficalId)
                 prepareSteps:
                   - template: common/provision.yml
                     parameters:

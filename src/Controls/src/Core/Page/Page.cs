@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls
 		bool _hasAppeared;
 		private protected bool HasAppeared => _hasAppeared;
 
-		View _titleView;
+		internal View TitleView;
 
 		List<Action> _pendingActions = new List<Action>();
 
@@ -494,8 +494,8 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(menubarItem, BindingContext);
 			}
 
-			if (_titleView != null)
-				SetInheritedBindingContext(_titleView, BindingContext);
+			if (TitleView != null)
+				SetInheritedBindingContext(TitleView, BindingContext);
 		}
 
 		/// <summary>
@@ -798,7 +798,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void SetTitleView(View oldTitleView, View newTitleView)
 		{
-			_titleView = newTitleView;
+			TitleView = newTitleView;
 		}
 
 		internal bool HasNavigatedTo { get; private set; }

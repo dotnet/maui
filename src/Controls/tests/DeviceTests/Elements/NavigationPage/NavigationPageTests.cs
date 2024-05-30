@@ -332,6 +332,7 @@ namespace Microsoft.Maui.DeviceTests
 						new RadioButton(),
 					}
 				};
+				NavigationPage.SetTitleView(page, new Label() { Text = "Title View" });
 				pageReference = new WeakReference(page);
 				await navPage.Navigation.PushAsync(page);
 				await navPage.Navigation.PopAsync();
