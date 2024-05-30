@@ -10,6 +10,24 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	public class DeviceInfo_Tests
 	{
 		[Fact]
+		public void IdIsSet()
+		{
+			var id = DeviceInfo.DeviceId;
+
+			Assert.NotNull(id);
+			Assert.NotEmpty(id);
+		}
+
+		[Fact]
+		public void IdIsRetained()
+		{
+			var id1 = DeviceInfo.DeviceId;
+			var id2 = DeviceInfo.DeviceId;
+
+			Assert.Equal(id1, id2);
+		}
+
+		[Fact]
 		public void Versions_Are_Correct()
 		{
 #if WINDOWS_UWP || WINDOWS
