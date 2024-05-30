@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 				data.Add("Item 3");
 				data.Insert(1, "Item 2");
 
-				await Task.Delay(1000);
+				await Task.Delay(200);
 
 				var actualListView = listView.ToPlatform() as ListViewRenderer;
 				var textChildren = actualListView.GetChildren<UI.Xaml.Controls.TextBlock>();
