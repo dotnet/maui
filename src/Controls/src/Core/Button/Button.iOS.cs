@@ -17,85 +17,13 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			var result = base.MeasureOverride(widthConstraint, heightConstraint);
-
 			var button = this;
+
 			var platformButton = Handler?.PlatformView as UIButton;
 
 			if (button is null || platformButton is null)
 			{
-				return result;
-			}
-
-			// Calculate the size the button wants to use for its current content
-			var image = platformButton.CurrentImage;
-
-			// Save the original image size for later image resizing
-			if (image is not null && _originalImageSize == CGSize.Empty)
-			{
-				_originalImageSize = image.Size;
-			}
-
-			var layout = button.ContentLayout;
-			var spacing = (nfloat)layout.Spacing;
-
-			var padding = button.Padding;
-			if (padding.IsNaN)
-				padding = ButtonHandler.DefaultPadding;
-
-			var titleRect = platformButton.GetTitleBoundingRect(widthConstraint, heightConstraint);
-
-			var buttonContentHeight =
-				(nfloat)Math.Max(titleRect.Height, _originalImageSize.Height)
-				+ (nfloat)padding.Top
-				+ (nfloat)padding.Bottom;
-
-			var buttonContentWidth =
-				(nfloat)Math.Max(titleRect.Width, _originalImageSize.Width)
-				+ (nfloat)padding.Left
-				+ (nfloat)padding.Right;
-
-			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
-			{
-				if (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
-				{
-					buttonContentHeight += spacing;
-					buttonContentHeight += (nfloat)Math.Min(titleRect.Height, _originalImageSize.Height);
-				}
-
-				if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
-				{
-					buttonContentWidth += spacing;
-					buttonContentWidth += (nfloat)Math.Min(titleRect.Width, _originalImageSize.Width);
-				}
-			}
-
-			// add on the margin to the measurements
-			buttonContentWidth += (nfloat)button.Margin.HorizontalThickness;
-			buttonContentHeight += (nfloat)button.Margin.VerticalThickness;
-			var borderWidthRequestWithMargin = button.WidthRequest + button.Margin.HorizontalThickness;
-			var borderHeightRequestWithMargin = button.HeightRequest + button.Margin.VerticalThickness;
-
-			// return either the size from its children or the requested button content size or use the explicit height or width if set
-			return new Size(button.WidthRequest == -1 ? Math.Max(result.Width, buttonContentWidth) : borderWidthRequestWithMargin,
-				button.HeightRequest == -1 ? Math.Max(result.Height, buttonContentHeight) : borderHeightRequestWithMargin);
-		}
-
-		protected override Size ArrangeOverride(Rect bounds)
-		{
-			var result = base.ArrangeOverride(bounds);
-
-			var button = this;
-			var platformButton = Handler?.PlatformView as UIButton;
-
-			if (button is null || platformButton is null)
-			{
-				return result;
-			}
-
-			if (platformButton.Bounds.Width == 0)
-			{
-				return result;
+				return Size.Zero;
 			}
 
 			var imageInsets = new UIEdgeInsets();
@@ -107,6 +35,12 @@ namespace Microsoft.Maui.Controls
 
 			var image = platformButton.CurrentImage;
 
+			// Save the original image size for later image resizing
+			if (image is not null && _originalImageSize == CGSize.Empty)
+			{
+				_originalImageSize = image.Size;
+			}
+
 			// if the image is too large then we just position at the edge of the button
 			// depending on the position the user has picked
 			// This makes the behavior consistent with android
@@ -116,48 +50,43 @@ namespace Microsoft.Maui.Controls
 			if (padding.IsNaN)
 				padding = ButtonHandler.DefaultPadding;
 
-			// If the button's image takes up too much space, we will want to hide the title
-			var hidesTitle = false;
+			var buttonWidthConstraint = button.WidthRequest == -1 ? widthConstraint : Math.Min(button.WidthRequest, widthConstraint);
+			var buttonHeightConstraint = button.HeightRequest == -1 ? heightConstraint : Math.Min(button.HeightRequest, heightConstraint);
+
+			var titleWidthConstraint = buttonWidthConstraint - padding.Left - padding.Right - borderWidth * 2;
+			var titleHeightConstraint = buttonHeightConstraint - padding.Top - padding.Bottom - borderWidth * 2;
 
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
 				// Resize the image if necessary and then update the image variable
-				if (ResizeImageIfNecessary(platformButton, button, image, spacing, padding, borderWidth, result, _originalImageSize))
+				if (ResizeImageIfNecessary(platformButton, button, image, spacing, padding, borderWidth, buttonWidthConstraint, buttonHeightConstraint, _originalImageSize))
 				{
 					image = platformButton.CurrentImage;
 				}
 
+				// In non-UIButtonConfiguration setups, the title will always be truncated by the image's width
+				// even when the image is on top or bottom.
+				titleWidthConstraint -= image.Size.Width;
+
 				// TODO: Do not use the title label as it is not yet updated and
 				//       if we move the image, then we technically have more
 				//       space and will require a new layout pass.
-				var titleRect = platformButton.GetTitleBoundingRect(platformButton.Bounds.Width, platformButton.Bounds.Height);
+				var titleRect = platformButton.GetTitleBoundingRect(Math.Max(titleWidthConstraint, 0.1f), Math.Max(titleHeightConstraint, 0.1f));
 				var titleWidth = titleRect.Width;
 				var titleHeight = titleRect.Height;
 				var imageWidth = image.Size.Width;
 				var imageHeight = image.Size.Height;
-				var buttonWidth = platformButton.Bounds.Width;
-				var buttonHeight = platformButton.Bounds.Height;
 				var sharedSpacing = spacing / 2;
-
-				// The titleWidth will include the part of the title that is potentially truncated. Let's figure out the max width of the title in the button for our calculations.
-				// Note: we do not calculate spacing in maxTitleWidth since the original button laid out by iOS will not contain the spacing in the measurements.
-				var maxTitleWidth = platformButton.Bounds.Width - (imageWidth + (nfloat)padding.Left + (nfloat)padding.Right);
-				var titleWidthMove = (nfloat)Math.Min(maxTitleWidth, titleWidth);
 
 				// These are just used to shift the image and title to center
 				// Which makes the later math easier to follow
-				imageInsets.Left += titleWidthMove / 2;
-				imageInsets.Right -= titleWidthMove / 2;
+				imageInsets.Left += titleWidth / 2;
+				imageInsets.Right -= titleWidth / 2;
 				titleInsets.Left -= imageWidth / 2;
 				titleInsets.Right += imageWidth / 2;
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
-					if (imageHeight > buttonHeight)
-					{
-						contentMode = UIViewContentMode.Top;
-					}
-
 					imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom += (titleHeight / 2) + sharedSpacing;
 
@@ -166,11 +95,6 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
-					if (imageHeight > buttonHeight)
-					{
-						contentMode = UIViewContentMode.Bottom;
-					}
-
 					imageInsets.Top += (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom -= (titleHeight / 2) + sharedSpacing;
 
@@ -179,13 +103,8 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
 				{
-					if (imageWidth > buttonWidth)
-					{
-						contentMode = UIViewContentMode.Left;
-					}
-
-					imageInsets.Left -= (titleWidthMove / 2) + sharedSpacing;
-					imageInsets.Right += (titleWidthMove / 2) + sharedSpacing;
+					imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
+					imageInsets.Right += (titleWidth / 2) + sharedSpacing;
 
 					titleInsets.Left += (imageWidth / 2) + sharedSpacing;
 					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
@@ -193,13 +112,8 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					if (imageWidth > buttonWidth)
-					{
-						contentMode = UIViewContentMode.Right;
-					}
-
-					imageInsets.Left += (titleWidthMove / 2) + sharedSpacing;
-					imageInsets.Right -= (titleWidthMove / 2) + sharedSpacing;
+					imageInsets.Left += (titleWidth / 2) + sharedSpacing;
+					imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
 
 					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
 					titleInsets.Right += (imageWidth / 2) + sharedSpacing;
@@ -209,7 +123,7 @@ namespace Microsoft.Maui.Controls
 			// If we just have an image, we can still resize it here
 			else if (image is not null)
 			{
-				ResizeImageIfNecessary(platformButton, button, image, 0, padding, borderWidth, result, _originalImageSize);
+				ResizeImageIfNecessary(platformButton, button, image, 0, padding, borderWidth, buttonWidthConstraint, buttonHeightConstraint, _originalImageSize);
 			}
 
 			platformButton.ImageView.ContentMode = contentMode;
@@ -233,13 +147,18 @@ namespace Microsoft.Maui.Controls
 			{
 				platformButton.ImageEdgeInsets = imageInsets;
 				platformButton.TitleEdgeInsets = titleInsets;
-				platformButton.Superview?.SetNeedsLayout();
-				platformButton.Superview?.LayoutIfNeeded();
-				return result;
 			}
 #pragma warning restore CA1416, CA1422
 
-			var titleRectHeight = platformButton.GetTitleBoundingRect(platformButton.Bounds.Width, platformButton.Bounds.Height).Height;
+			var titleRect2 = platformButton.GetTitleBoundingRect(titleWidthConstraint, titleHeightConstraint);
+			var titleRectWidth = titleRect2.Width;
+			var titleRectHeight = titleRect2.Height;
+
+			var buttonContentWidth =
+				+ (nfloat)Math.Max(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0)
+				+ (nfloat)padding.Left
+				+ (nfloat)padding.Right
+				+ (nfloat)borderWidth * 2;
 
 			var buttonContentHeight =
 				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
@@ -251,56 +170,28 @@ namespace Microsoft.Maui.Controls
 			{
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
-					if (!hidesTitle)
-					{
-						buttonContentHeight += spacing;
-						buttonContentHeight += (nfloat)Math.Min(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0);
-					}
-					// If the title is hidden, we don't need to add the spacing or the title to this measurement
-					else
-					{
-						if (titleRectHeight > platformButton.CurrentImage.Size.Height)
-						{
-							buttonContentHeight -= titleRectHeight;
-							buttonContentHeight += platformButton.CurrentImage.Size.Height;
-						}
-					}
+					buttonContentHeight += spacing;
+					buttonContentHeight += (nfloat)Math.Min(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0);
 				}
 
-#pragma warning disable CA1416, CA1422
-
-				var maxButtonHeight = Math.Min(buttonContentHeight, result.Height);
-
-				// If the button's content is larger than the button, we need to adjust the ContentEdgeInsets.
-				// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel
-				if (maxButtonHeight - button.Height > 1 && button.HeightRequest == -1)
+				else
 				{
-					var contentInsets = platformButton.ContentEdgeInsets;
-
-					var additionalVerticalSpace = (maxButtonHeight - button.Height) / 2;
-
-					platformButton.ContentEdgeInsets = new UIEdgeInsets(
-						(nfloat)(additionalVerticalSpace + (nfloat)padding.Top),
-						contentInsets.Left,
-						(nfloat)(additionalVerticalSpace + (nfloat)padding.Bottom),
-						contentInsets.Right);
-
-					platformButton.Superview?.SetNeedsLayout();
-					platformButton.Superview?.LayoutIfNeeded();
+					buttonContentWidth += spacing;
+					buttonContentWidth += (nfloat)Math.Min(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0);
 				}
-#pragma warning restore CA1416, CA1422
 			}
 
-			return result;
+			return new Size(button.WidthRequest == -1 ? Math.Min(buttonContentWidth, buttonWidthConstraint) : button.WidthRequest,
+							button.HeightRequest == -1 ? Math.Min(buttonContentHeight, buttonHeightConstraint) : button.HeightRequest);
 		}
 
-		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding, double borderWidth, Size bounds, CGSize originalImageSize)
+		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding, double borderWidth, double widthConstraint, double heightConstraint, CGSize originalImageSize)
 		{
 			var currentImageWidth = image.Size.Width;
 			var currentImageHeight = image.Size.Height;
 
-			nfloat availableWidth = (nfloat)bounds.Width;
-			nfloat availableHeight = (nfloat)bounds.Height;
+			nfloat availableWidth = (nfloat)widthConstraint;
+			nfloat availableHeight = (nfloat)heightConstraint;
 
 			var additionalHorizontalSpace = (nfloat)padding.Left + (nfloat)padding.Right + ((nfloat)borderWidth * 2);
 			var additionalVerticalSpace = (nfloat)padding.Top + (nfloat)padding.Bottom + ((nfloat)borderWidth * 2);
@@ -308,16 +199,16 @@ namespace Microsoft.Maui.Controls
 			// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel.
 			var buffer = 0.1;
 
-			if (bounds != Size.Zero && (!double.IsNaN(bounds.Height) || !double.IsNaN(bounds.Width)))
+			if (!double.IsNaN(widthConstraint) || !double.IsNaN(heightConstraint))
 			{
-				var contentWidth = (nfloat)bounds.Width - additionalHorizontalSpace;
+				var contentWidth = (nfloat)widthConstraint - additionalHorizontalSpace;
 
 				if (currentImageWidth - contentWidth > buffer)
 				{
 					availableWidth = contentWidth;
 				}
 
-				var contentHeight = (nfloat)bounds.Height - additionalVerticalSpace;
+				var contentHeight = (nfloat)heightConstraint - additionalVerticalSpace;
 				if (currentImageHeight - contentHeight > buffer)
 				{
 					availableHeight = contentHeight;
@@ -351,8 +242,6 @@ namespace Microsoft.Maui.Controls
 				image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 				platformButton.SetImage(image, UIControlState.Normal);
-
-				platformButton.Superview?.SetNeedsLayout();
 
 				return true;
 			}
