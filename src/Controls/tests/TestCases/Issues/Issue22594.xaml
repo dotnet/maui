@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue22594"
+             Title="Issue22594">
+    <Grid ColumnDefinitions="*,auto"
+          ColumnSpacing="10">
+        <VerticalStackLayout Grid.Row="2"
+                             VerticalOptions="Center">
+            <Label
+                LineBreakMode="CharacterWrap"
+                AutomationId="label"
+                BackgroundColor="Red"
+                Text="someverylongemailblablablablablablablablablablabla@gmail.com"/>
+        </VerticalStackLayout>
+        <Button
+            Grid.Column="2"
+            Padding="20,0"
+            HeightRequest="45"
+            HorizontalOptions="End"
+            Text="buttom"
+            WidthRequest="90">
+        </Button>
+    </Grid>
+</ContentPage>
