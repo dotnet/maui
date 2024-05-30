@@ -70,11 +70,11 @@ namespace Microsoft.Maui.Authentication
 				sf = null;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(12))
+			if (OperatingSystem.IsIOSVersionAtLeast(12) || OperatingSystem.IsMacCatalyst())
 			{
 				was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 
-				if (OperatingSystem.IsIOSVersionAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalyst())
 				{
 					var ctx = new ContextProvider(WindowStateManager.Default.GetCurrentUIWindow());
 					was.PresentationContextProvider = ctx;
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Authentication
 				ClearCookies();
 
 #pragma warning disable CA1422 // 'SFAuthenticationSession' is obsoleted on: 'ios' 12.0 and later
-			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalyst())
 			{
 				sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 				using (sf)
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Authentication
 			NSUrlCache.SharedCache.RemoveAllCachedResponses();
 
 #if __IOS__
-			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalyst())
 			{
 				WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.GetAllCookies((cookies) =>
 				{
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Authentication
 		static bool VerifyHasUrlSchemeOrDoesntRequire(string scheme)
 		{
 			// iOS11+ uses sfAuthenticationSession which handles its own url routing
-			if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsTvOSVersionAtLeast(11, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(11, 0) || OperatingSystem.IsTvOSVersionAtLeast(11, 0) || OperatingSystem.IsMacCatalyst())
 				return true;
 
 			return AppInfoImplementation.VerifyHasUrlScheme(scheme);
