@@ -27,7 +27,7 @@
                 <Button Grid.Row="2"
                         Grid.Column="0"
                         AutomationId="button"
-                        Text="Row 2: Why is this happening to this button in this context on this iOS simulator? This text should be truncated" 
+                        Text="Row 2: Why is this happening to this button in this context on this iOS simulator? This text should be truncated. This text should be truncated. This text should be truncated. This text should be truncated. This text should be truncated. This text should be truncated. This text should be truncated. This text should be truncated." 
                         HorizontalOptions="Start"
                         BorderWidth="1"
                         BackgroundColor="White"
