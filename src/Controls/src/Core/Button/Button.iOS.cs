@@ -232,7 +232,7 @@ namespace Microsoft.Maui.Controls
 					&& currentImageHeight != originalImageSize.Height
 					&& currentImageWidth != originalImageSize.Width)
 				{
-					image = ResizeImageSource(image, availableWidth, availableHeight, originalImageSize, true);
+					image = ResizeImageSource(image, (nfloat)widthConstraint - additionalHorizontalSpace, (nfloat)heightConstraint - additionalVerticalSpace, originalImageSize, true);
 				}
 				else
 				{
