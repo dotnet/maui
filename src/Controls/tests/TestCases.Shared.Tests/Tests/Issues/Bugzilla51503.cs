@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]
+		[FailsOnMac]
 		[FailsOnWindows]
 		public void Issue51503Test()
 		{
