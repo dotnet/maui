@@ -56,16 +56,6 @@ body:
         - 8.0.7 SR2
         - 8.0.6 SR1
         - 8.0.3 GA
-        - 7.0.101
-        - 7.0.100
-        - 7.0.96
-        - 7.0.92
-        - 7.0.86
-        - 7.0.81
-        - 7.0.59
-        - 7.0.58
-        - 7.0.52
-        - 7.0.49
         - Nightly / CI build (Please specify exact version)
         - Unknown/Other
     validations:
