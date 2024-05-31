@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Graphics
 
 		bool _disposed;
 
-		ARect? _bounds;
 		int _width;
 		int _height;
 
@@ -347,31 +346,21 @@ namespace Microsoft.Maui.Graphics
 
 		public void InvalidateBorderBounds()
 		{
-			_bounds = null;
-
 			InvalidateSelf();
 		}
 
 		protected override void OnBoundsChange(ARect bounds)
 		{
-			if (_bounds != bounds)
-			{
-				_bounds = bounds;
+			var width = bounds.Width();
+			var height = bounds.Height();
 
-				if (_bounds != null)
-				{
-					var width = _bounds.Width();
-					var height = _bounds.Height();
+			if (_width == width && _height == height)
+				return;
 
-					if (_width == width && _height == height)
-						return;
+			_invalidatePath = true;
 
-					_invalidatePath = true;
-
-					_width = width;
-					_height = height;
-				}
-			}
+			_width = width;
+			_height = height;
 
 			base.OnBoundsChange(bounds);
 		}

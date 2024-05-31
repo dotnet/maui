@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -20,8 +19,8 @@ namespace Microsoft.Maui.Resizetizer
 		static public Dictionary<(string Resolution, string Orientation), string> splashDpiMap = new Dictionary<(string, string), string>();
 
 		const string splashDirectoryName = "splash";
-		Size hdSize = new Size(720, 1080);
-		Size fhdSize = new Size(1080, 1920);
+		SKSizeI hdSize = new SKSizeI(720, 1080);
+		SKSizeI fhdSize = new SKSizeI(1080, 1920);
 
 		public override bool Execute()
 		{
@@ -61,14 +60,14 @@ namespace Microsoft.Maui.Resizetizer
 			return true;
 		}
 
-		Size GetScreenSize(string resolution, string orientation) =>
+		SKSizeI GetScreenSize(string resolution, string orientation) =>
 			resolution switch
 			{
-				"mdpi" => orientation == "portrait" ? hdSize : new Size(hdSize.Height, hdSize.Width),
-				_ => orientation == "portrait" ? fhdSize : new Size(fhdSize.Height, fhdSize.Width)
+				"mdpi" => orientation == "portrait" ? hdSize : new SKSizeI(hdSize.Height, hdSize.Width),
+				_ => orientation == "portrait" ? fhdSize : new SKSizeI(fhdSize.Height, fhdSize.Width)
 			};
 
-		void UpdateColorAndMoveFile(ResizeImageInfo splashInfo, Size screenSize, string sourceFilePath, string destFilePath)
+		void UpdateColorAndMoveFile(ResizeImageInfo splashInfo, SKSizeI screenSize, string sourceFilePath, string destFilePath)
 		{
 			var color = splashInfo.Color;
 			if (color == null)
