@@ -42,7 +42,7 @@ body:
     id: version-with-bug
     attributes:
       label: Version with bug
-      description: In what (currently supported) version do you see this issue? Run `dotnet workload list` to find your version.
+      description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
         - 
         - 9.0.0-preview.3.10457
