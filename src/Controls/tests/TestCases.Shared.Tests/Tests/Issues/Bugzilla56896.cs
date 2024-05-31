@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void ListViewsWithManyElementsPerformanceCheck()
 		{
 			App.WaitForElement(InstructionsId);

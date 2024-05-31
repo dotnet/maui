@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Focus)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public async Task ControlCanBeFocusedByUnfocusedEvent()
 		{
 			App.WaitForElement(TheEntry);

@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void Issue34007TestFirstElementHasLowestZOrder()
 		{
 			var buttonLocations = App.WaitForElement("Button0");

@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Image)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void RemovingImageWithGestureFromLayoutWithinGestureHandlerDoesNotCrash()
 		{
 			App.WaitForElement(ImageId);

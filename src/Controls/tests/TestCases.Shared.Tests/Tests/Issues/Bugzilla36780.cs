@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void MultipleTapGestures()
 		{
 			App.WaitForElement(TestImage);

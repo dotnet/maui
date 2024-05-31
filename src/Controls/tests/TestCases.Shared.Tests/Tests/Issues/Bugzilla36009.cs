@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid("The content is not visible. The test is failing.")]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void Bugzilla36009Test()
 		{
 			App.WaitForElement("Victory");

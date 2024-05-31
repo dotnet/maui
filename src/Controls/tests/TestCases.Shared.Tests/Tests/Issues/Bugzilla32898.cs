@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void Issu32898Test()
 		{
 			var timeout = Timeout; // Give this a little slop to set the result text

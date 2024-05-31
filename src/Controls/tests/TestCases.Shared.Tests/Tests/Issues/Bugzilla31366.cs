@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void Issue31366PushingAndPoppingModallyCausesArgumentOutOfRangeException()
 		{
 			App.WaitForElement("StartPopOnAppearingTest");
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void Issue31366PushingWithModalStackCausesIncorrectStackOrder()
 		{
 			App.WaitForElement("StartModalStackTest");

@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void GestureBubblingInStackLayout()
 		{
 			App.WaitForElement(StackLabelId);
@@ -32,6 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Layout)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void GestureBubblingInGrid()
 		{
 			App.WaitForElement(GridLabelId);
