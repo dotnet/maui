@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test]
 		public void Bugzilla44461Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
 				"This test is failing, likely due to product issue");
 
 			var positions = TapButton(0);

@@ -20,8 +20,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var imageCell = (ImageCell)item;
 
-			WireUpForceUpdateSizeRequested(item, result, tv);
-
 			SetImage(imageCell, result);
 
 			return result;
@@ -47,12 +45,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			source.LoadImage(cell.FindMauiContext(), (result) =>
 			{
-				var uiimage = result.Value;
-				if (uiimage != null)
+				var uiimage = result?.Value;
+				if (uiimage is not null)
 				{
 					NSRunLoop.Main.BeginInvokeOnMainThread(() =>
 					{
-						if (target.Cell != null)
+						if (target.Cell is not null)
 						{
 							target.ImageView.Image = uiimage;
 							target.SetNeedsLayout();
