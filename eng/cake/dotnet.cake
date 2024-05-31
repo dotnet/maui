@@ -344,6 +344,8 @@ Task("dotnet-pack-docs")
                 Unzip(nupkg, d);
                 DeleteFiles($"{d}/**/*.pri");
                 DeleteFiles($"{d}/**/*.aar");
+                DeleteFiles($"{d}/**/*.DesignTools.*");
+                DeleteFiles($"{d}/**/*.resources.dll");
 
                 if (filename.StartsWith("Microsoft.AspNetCore.Components.WebView.Wpf")
                     || filename.StartsWith("Microsoft.AspNetCore.Components.WebView.WindowsForms"))
@@ -353,7 +355,7 @@ Task("dotnet-pack-docs")
                     continue;
                 }
 
-                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
+                CopyFiles($"{d}/lib/**/net?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
             }
         }
 
