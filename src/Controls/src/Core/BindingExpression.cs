@@ -427,7 +427,22 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static readonly Type[] DecimalTypes = { typeof(float), typeof(decimal), typeof(double) };
-		static readonly Type[] NumericTypes = { typeof(float), typeof(decimal), typeof(double), typeof(int)};
+		static readonly Type[] NumericTypes =
+		{
+			typeof(sbyte),
+			typeof(byte),
+			typeof(short),
+			typeof(ushort),
+			typeof(int),
+			typeof(uint),
+			typeof(long),
+			typeof(ulong),
+			typeof(nint),
+			typeof(nuint),
+			typeof(float),
+			typeof(double),
+			typeof(decimal),
+		};
 
 		internal static bool TryConvert(ref object value, BindableProperty targetProperty, Type convertTo, bool toTarget)
 		{
