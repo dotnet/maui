@@ -17,6 +17,7 @@ namespace Maui.Controls.Sample.Issues
 		void Button1_Clicked(System.Object sender, System.EventArgs e)
 		{
 			CurrentItem = shellTab2;
+			Shell.FlyoutIcon = String.Empty;
 		}
 
 	}
