@@ -433,6 +433,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnTabReselected(ShellSection shellSection)
 		{
+			_ = shellSection.Navigation.PopToRootAsync();
 		}
 
 		protected virtual void ResetAppearance() => _appearanceTracker.ResetAppearance(_bottomView);
