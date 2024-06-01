@@ -540,9 +540,11 @@ namespace Microsoft.Maui.Controls.Platform
 					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerExited(view, (relativeTo)
-					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		{
+			HandlePgrPointerEvent(e, (view, recognizer)
+						=> recognizer.SendPointerExited(view, (relativeTo)
+							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		}
 
 		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
@@ -550,14 +552,18 @@ namespace Microsoft.Maui.Controls.Platform
 					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerPressed(view, (relativeTo)
-					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		{
+			HandlePgrPointerEvent(e, (view, recognizer)
+						=> recognizer.SendPointerPressed(view, (relativeTo)
+							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		}
 
 		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerReleased(view, (relativeTo)
-					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		{
+			HandlePgrPointerEvent(e, (view, recognizer)
+						=> recognizer.SendPointerReleased(view, (relativeTo)
+							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		}
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{
