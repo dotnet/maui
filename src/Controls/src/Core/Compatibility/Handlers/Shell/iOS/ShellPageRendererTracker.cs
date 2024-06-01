@@ -332,16 +332,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UIImage icon = null;
 
-				if (_flyoutBehavior == FlyoutBehavior.Flyout)
+				if (image != null)
 				{
-					if (image != null)
-					{
-						icon = result?.Value;
-					}
-					else if (String.IsNullOrWhiteSpace(text) && IsRootPage)
-					{
-						icon = DrawHamburger();
-					}
+					icon = result?.Value;
+				}
+				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
+				{
+					icon = DrawHamburger();
 				}
 
 				if (icon != null)
