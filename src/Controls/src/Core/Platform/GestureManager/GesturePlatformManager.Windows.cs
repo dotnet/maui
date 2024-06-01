@@ -361,9 +361,6 @@ namespace Microsoft.Maui.Controls.Platform
 					_container.ManipulationDelta -= OnManipulationDelta;
 					_container.ManipulationStarted -= OnManipulationStarted;
 					_container.ManipulationCompleted -= OnManipulationCompleted;
-					_container.PointerPressed -= OnPointerPressed;
-					_container.PointerExited -= OnPointerExited;
-					_container.PointerReleased -= OnPointerReleased;
 					_container.PointerCanceled -= OnPointerCanceled;
 				}
 			}
@@ -544,6 +541,11 @@ namespace Microsoft.Maui.Controls.Platform
 			HandlePgrPointerEvent(e, (view, recognizer)
 						=> recognizer.SendPointerExited(view, (relativeTo)
 							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+
+			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
+			{
+				OnPointerExited(sender, e);
+			}
 		}
 
 		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -556,6 +558,11 @@ namespace Microsoft.Maui.Controls.Platform
 			HandlePgrPointerEvent(e, (view, recognizer)
 						=> recognizer.SendPointerPressed(view, (relativeTo)
 							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+
+			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
+			{
+				OnPointerPressed(sender, e);
+			}
 		}
 
 		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -563,6 +570,11 @@ namespace Microsoft.Maui.Controls.Platform
 			HandlePgrPointerEvent(e, (view, recognizer)
 						=> recognizer.SendPointerReleased(view, (relativeTo)
 							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+
+			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
+			{
+				OnPointerReleased(sender, e);
+			}
 		}
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
@@ -827,9 +839,6 @@ namespace Microsoft.Maui.Controls.Platform
 			_container.ManipulationDelta += OnManipulationDelta;
 			_container.ManipulationStarted += OnManipulationStarted;
 			_container.ManipulationCompleted += OnManipulationCompleted;
-			_container.PointerPressed += OnPointerPressed;
-			_container.PointerExited += OnPointerExited;
-			_container.PointerReleased += OnPointerReleased;
 			_container.PointerCanceled += OnPointerCanceled;
 		}
 
