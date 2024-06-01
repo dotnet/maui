@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 			_proxy.Disconnect(platformView);
 		}
 
-		public void MapUpdateOnTap(bool isMapUpdateOnTapEnabled)
+		internal void MapUpdateOnTap(bool isMapUpdateOnTapEnabled)
 		{
 			if (isMapUpdateOnTapEnabled)
 			{
