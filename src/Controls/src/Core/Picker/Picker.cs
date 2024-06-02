@@ -248,14 +248,7 @@ namespace Microsoft.Maui.Controls
 			if (((LockableObservableListWrapper)Items).IsLocked)
 				return;
 
-			var oldIndex = SelectedIndex;
-			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
-			//FIXME use the specificity of the caller
-			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
-			// If the index has not changed, still need to change the selected item
-			if (newIndex == oldIndex)
-				UpdateSelectedItem(newIndex);
-
+			ClampSelectedIndex();
 			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
 
@@ -323,15 +316,7 @@ namespace Microsoft.Maui.Controls
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
 			if (index <= SelectedIndex)
 			{
-				var oldIndex = SelectedIndex;
-				var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
-
-				SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
-				// Update SelectedItem separately if index hasn't changed
-				if (newIndex == oldIndex)
-				{
-					UpdateSelectedItem(newIndex);
-				}
+				ClampSelectedIndex();
 			}
 		}
 
@@ -344,11 +329,7 @@ namespace Microsoft.Maui.Controls
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
-			var oldIndex = SelectedIndex;
-			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
-			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
-			if (oldIndex == newIndex)
-				UpdateSelectedItem(SelectedIndex);
+			ClampSelectedIndex();
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
@@ -362,6 +343,17 @@ namespace Microsoft.Maui.Controls
 		{
 			var picker = (Picker)bindable;
 			picker.UpdateSelectedIndex(newValue);
+		}
+
+		void ClampSelectedIndex()
+		{
+			var oldIndex = SelectedIndex;
+			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
+			//FIXME use the specificity of the caller
+			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
+			// If the index has not changed, still need to change the selected item
+			if (newIndex == oldIndex)
+				UpdateSelectedItem(newIndex);
 		}
 
 		void UpdateSelectedIndex(object selectedItem)
