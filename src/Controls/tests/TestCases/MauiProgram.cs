@@ -20,6 +20,8 @@ namespace Maui.Controls.Sample
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+					fonts.AddFont("FontAwesome.ttf", "FA");
+					fonts.AddFont("ionicons.ttf", "Ion");
 				})
 				.Issue21109AddMappers();
 
