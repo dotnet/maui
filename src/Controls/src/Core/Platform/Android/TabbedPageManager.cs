@@ -192,8 +192,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				if (!fragmentManager.IsDestroyed(_context?.Context))
 				{
-					SetContentBottomMargin(0);
-
 					if (_context?.Context is Context c)
 					{
 						_pendingFragment =
@@ -253,8 +251,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				id = Resource.Id.navigationlayout_bottomtabs;
 				if (_tabplacementId == id)
 					return;
-
-				SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
 			}
 			else
 			{
@@ -262,7 +258,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (_tabplacementId == id)
 					return;
 
-				SetContentBottomMargin(0);
 			}
 
 			if (_context?.Context is Context c)
@@ -289,16 +284,6 @@ namespace Microsoft.Maui.Controls.Handlers
 								.SetReorderingAllowed(true)
 								.Commit();
 						});
-			}
-		}
-
-		void SetContentBottomMargin(int bottomMargin)
-		{
-			var rootManager = _context.GetNavigationRootManager();
-			var layoutContent = rootManager.RootView?.FindViewById(Resource.Id.navigationlayout_content);
-			if (layoutContent != null && layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
-			{
-				cl.BottomMargin = bottomMargin;
 			}
 		}
 

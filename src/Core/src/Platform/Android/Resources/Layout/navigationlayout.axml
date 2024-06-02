@@ -1,38 +1,52 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-		xmlns:android="http://schemas.android.com/apk/res/android"
-		xmlns:app="http://schemas.android.com/apk/res-auto"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-        android:id="@+id/navigation_layout"
-		>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    
+  <androidx.coordinatorlayout.widget.CoordinatorLayout
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintBottom_toTopOf="@+id/navigationlayout_bottomtabs"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:id="@+id/navigation_layout">
 
-    <com.google.android.material.appbar.AppBarLayout
-			android:id="@+id/navigationlayout_appbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-			android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-				>
+      <com.google.android.material.appbar.AppBarLayout
+          android:id="@+id/navigationlayout_appbar"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:background="?attr/colorPrimary"
+          android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <androidx.fragment.app.FragmentContainerView
-                   android:id="@+id/navigationlayout_toptabs"
-                   android:layout_width="match_parent"
-                   android:layout_height="wrap_content"
-            />
+          <androidx.fragment.app.FragmentContainerView
+              android:id="@+id/navigationlayout_toptabs"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"/>
 
-    </com.google.android.material.appbar.AppBarLayout>
+      </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/navigationlayout_content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            />
-    <androidx.fragment.app.FragmentContainerView
-               android:id="@+id/navigationlayout_bottomtabs"
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:layout_gravity="bottom"
-            />
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+      <androidx.fragment.app.FragmentContainerView
+          android:id="@+id/navigationlayout_content"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          app:layout_constraintBottom_toTopOf="@+id/navigationlayout_bottomtabs"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+
+      </androidx.coordinatorlayout.widget.CoordinatorLayout>
+      
+      <androidx.fragment.app.FragmentContainerView
+          android:id="@+id/navigationlayout_bottomtabs"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

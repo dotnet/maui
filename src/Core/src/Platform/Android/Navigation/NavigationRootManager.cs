@@ -3,7 +3,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
-using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.ConstraintLayout.Widget;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Platform
 			ClearPlatformParts();
 
 			mauiContext = mauiContext ?? _mauiContext;
-			CoordinatorLayout? navigationLayout = null;
+			ConstraintLayout? navigationLayout = null;
 
 			if (view is IFlyoutView)
 			{
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Platform
 				navigationLayout ??=
 				   LayoutInflater
 					   .Inflate(Resource.Layout.navigationlayout, null)
-					   .JavaCast<CoordinatorLayout>();
+					   .JavaCast<ConstraintLayout>();
 
 				_rootView = navigationLayout;
 			}
