@@ -2,7 +2,9 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Graphics.Drawables;
 using Android.OS;
+using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
@@ -13,6 +15,7 @@ using AndroidX.Fragment.App;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -231,7 +234,9 @@ namespace Microsoft.Maui.Controls.Platform
 				_modalFragment = new ModalFragment(_windowMauiContext, modal);
 				_fragmentManager = _windowMauiContext.GetFragmentManager();
 
-				parentView.AddView(this);
+				_modalFragment.Cancelable = false;
+				_modalFragment.Show(_fragmentManager, modal.Title);
+
 				//parentView.AddView(this);
 
 				//_fragmentManager
@@ -444,6 +449,17 @@ namespace Microsoft.Maui.Controls.Platform
 					_mauiWindowContext = mauiContext;
 				}
 
+				public override global::Android.App.Dialog OnCreateDialog(Bundle? savedInstanceState)
+				{
+					var dialog = base.OnCreateDialog(savedInstanceState);
+					dialog.CancelEvent += Dialog_CancelEvent;
+					return dialog;
+				}
+
+				private void Dialog_CancelEvent(object? sender, EventArgs e)
+				{
+				}
+
 				public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 				{
 					var modalContext = _mauiWindowContext
@@ -452,9 +468,34 @@ namespace Microsoft.Maui.Controls.Platform
 					_navigationRootManager = modalContext.GetNavigationRootManager();
 					_navigationRootManager.Connect(_modal, modalContext);
 
+					Dialog!.Window!.SetBackgroundDrawable(new ColorDrawable(AColor.Transparent));
+
 					return _navigationRootManager?.RootView ??
 						throw new InvalidOperationException("Root view not initialized");
 				}
+
+				public override void OnCreate(Bundle? savedInstanceState)
+				{
+					base.OnCreate(savedInstanceState);
+					SetStyle(DialogFragment.StyleNormal, Resource.Style.Maui_MainTheme_NoActionBar);
+				}
+
+				public override void OnViewCreated(AView view, Bundle? savedInstanceState)
+				{
+					base.OnViewCreated(view, savedInstanceState);
+				}
+
+				public override void OnStart()
+				{
+					base.OnStart();
+
+					var dialog = this.Dialog;
+					if (dialog?.Window != null)
+					{
+						int width = ViewGroup.LayoutParams.MatchParent;
+						int height = ViewGroup.LayoutParams.MatchParent;
+						dialog.Window.SetLayout(width, height);
+					}
 			}
 		}
 	}
