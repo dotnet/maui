@@ -203,10 +203,10 @@ namespace Microsoft.Maui.Controls.Platform
 			ModalFragment _modalFragment;
 			FragmentManager? _fragmentManager;
 			NavigationRootManager? NavigationRootManager => _modalFragment.NavigationRootManager;
-			int _currentRootViewHeight = 0;
-			int _currentRootViewWidth = 0;
-			GenericGlobalLayoutListener? _rootViewLayoutListener;
-			AView? _rootView;
+			//int _currentRootViewHeight = 0;
+			//int _currentRootViewWidth = 0;
+			//GenericGlobalLayoutListener? _rootViewLayoutListener;
+			//AView? _rootView;
 
 			AView GetWindowRootView() =>
 				 _windowMauiContext
@@ -232,116 +232,117 @@ namespace Microsoft.Maui.Controls.Platform
 				_fragmentManager = _windowMauiContext.GetFragmentManager();
 
 				parentView.AddView(this);
+				//parentView.AddView(this);
 
-				_fragmentManager
-					.BeginTransaction()
-					.Add(this.Id, _modalFragment)
-					.Commit();
+				//_fragmentManager
+				//	.BeginTransaction()
+				//	.Add(this.Id, _modalFragment)
+				//	.Commit();
 			}
 
 			protected override void OnAttachedToWindow()
 			{
 				base.OnAttachedToWindow();
 				UpdateMargin();
-				UpdateRootView(GetWindowRootView());
+				//UpdateRootView(GetWindowRootView());
 			}
 
 			protected override void OnDetachedFromWindow()
 			{
 				base.OnDetachedFromWindow();
-				UpdateRootView(null);
+				//UpdateRootView(null);
 			}
 
-			void UpdateRootView(AView? rootView)
-			{
-				if (_rootView.IsAlive())
-				{
-					_rootView.LayoutChange -= OnRootViewLayoutChanged;
-					_rootView = null;
-				}
+			//void UpdateRootView(AView? rootView)
+			//{
+			//	if (_rootView.IsAlive())
+			//	{
+			//		_rootView.LayoutChange -= OnRootViewLayoutChanged;
+			//		_rootView = null;
+			//	}
 
-				if (rootView.IsAlive())
-				{
-					rootView.LayoutChange += OnRootViewLayoutChanged;
-					_rootView = rootView;
-					_currentRootViewHeight = _rootView.MeasuredHeight;
-					_currentRootViewWidth = _rootView.MeasuredWidth;
-				}
-			}
+			//	if (rootView.IsAlive())
+			//	{
+			//		rootView.LayoutChange += OnRootViewLayoutChanged;
+			//		_rootView = rootView;
+			//		_currentRootViewHeight = _rootView.MeasuredHeight;
+			//		_currentRootViewWidth = _rootView.MeasuredWidth;
+			//	}
+			//}
 
 			// If the RootView changes sizes that means we also need to change sizes
 			// This will typically happen when the user is opening the soft keyboard 
 			// which sometimes causes the available window size to change
-			void OnRootViewLayoutChanged(object? sender, LayoutChangeEventArgs e)
-			{
-				if (Modal is null || sender is not AView view)
-					return;
+			//void OnRootViewLayoutChanged(object? sender, LayoutChangeEventArgs e)
+			//{
+			//	if (Modal is null || sender is not AView view)
+			//		return;
 
-				var modalStack = Modal?.Navigation?.ModalStack;
-				if (modalStack is null ||
-					modalStack.Count == 0 ||
-					modalStack[modalStack.Count - 1] != Modal)
-				{
-					return;
-				}
+			//	var modalStack = Modal?.Navigation?.ModalStack;
+			//	if (modalStack is null ||
+			//		modalStack.Count == 0 ||
+			//		modalStack[modalStack.Count - 1] != Modal)
+			//	{
+			//		return;
+			//	}
 
-				if ((_currentRootViewHeight != view.MeasuredHeight || _currentRootViewWidth != view.MeasuredWidth)
-					&& this.ViewTreeObserver is not null)
-				{
-					// When the keyboard closes Android calls layout but doesn't call remeasure.
-					// MY guess is that this is due to the modal not being part of the FitSystemWindowView
-					// The modal is added to the decor view so its dimensions don't get updated.
-					// So, here we are waiting for the layout pass to finish and then we remeasure the modal					
-					//
-					// For .NET 8 we'll convert this all over to using a DialogFragment
-					// which means we can delete most of the awkward code here
-					_currentRootViewHeight = view.MeasuredHeight;
-					_currentRootViewWidth = view.MeasuredWidth;
-					if (!this.IsInLayout)
-					{
-						this.InvalidateMeasure(Modal);
-						return;
-					}
+			//	if ((_currentRootViewHeight != view.MeasuredHeight || _currentRootViewWidth != view.MeasuredWidth)
+			//		&& this.ViewTreeObserver is not null)
+			//	{
+			//		// When the keyboard closes Android calls layout but doesn't call remeasure.
+			//		// MY guess is that this is due to the modal not being part of the FitSystemWindowView
+			//		// The modal is added to the decor view so its dimensions don't get updated.
+			//		// So, here we are waiting for the layout pass to finish and then we remeasure the modal					
+			//		//
+			//		// For .NET 8 we'll convert this all over to using a DialogFragment
+			//		// which means we can delete most of the awkward code here
+			//		_currentRootViewHeight = view.MeasuredHeight;
+			//		_currentRootViewWidth = view.MeasuredWidth;
+			//		if (!this.IsInLayout)
+			//		{
+			//			this.InvalidateMeasure(Modal);
+			//			return;
+			//		}
 
-					_rootViewLayoutListener ??= new GenericGlobalLayoutListener((listener, view) =>
-					{
-						if (view is not null && !this.IsInLayout)
-						{
-							listener.Invalidate();
-							_rootViewLayoutListener = null;
-							this.InvalidateMeasure(Modal);
-						}
-					}, this);
-				}
-			}
+			//		_rootViewLayoutListener ??= new GenericGlobalLayoutListener((listener, view) =>
+			//		{
+			//			if (view is not null && !this.IsInLayout)
+			//			{
+			//				listener.Invalidate();
+			//				_rootViewLayoutListener = null;
+			//				this.InvalidateMeasure(Modal);
+			//			}
+			//		}, this);
+			//	}
+			//}
 
 			void UpdateMargin()
 			{
 				// This sets up the modal container to be offset from the top of window the same
 				// amount as the view it's covering. This will make it so the
 				// ModalContainer takes into account the StatusBar or lack thereof
-				var decorView = Context?.GetActivity()?.Window?.DecorView;
+				//var decorView = Context?.GetActivity()?.Window?.DecorView;
 
-				if (decorView is not null && this.LayoutParameters is ViewGroup.MarginLayoutParams mlp)
-				{
-					var windowInsets = ViewCompat.GetRootWindowInsets(decorView);
-					if (windowInsets is not null)
-					{
-						var barInsets = windowInsets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+				//if (decorView is not null && this.LayoutParameters is ViewGroup.MarginLayoutParams mlp)
+				//{
+				//	var windowInsets = ViewCompat.GetRootWindowInsets(decorView);
+				//	if (windowInsets is not null)
+				//	{
+				//		var barInsets = windowInsets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 
-						if (mlp.TopMargin != barInsets.Top)
-							mlp.TopMargin = barInsets.Top;
+				//		if (mlp.TopMargin != barInsets.Top)
+				//			mlp.TopMargin = barInsets.Top;
 
-						if (mlp.LeftMargin != barInsets.Left)
-							mlp.LeftMargin = barInsets.Left;
+				//		if (mlp.LeftMargin != barInsets.Left)
+				//			mlp.LeftMargin = barInsets.Left;
 
-						if (mlp.RightMargin != barInsets.Right)
-							mlp.RightMargin = barInsets.Right;
+				//		if (mlp.RightMargin != barInsets.Right)
+				//			mlp.RightMargin = barInsets.Right;
 
-						if (mlp.BottomMargin != barInsets.Bottom)
-							mlp.BottomMargin = barInsets.Bottom;
-					}
-				}
+				//		if (mlp.BottomMargin != barInsets.Bottom)
+				//			mlp.BottomMargin = barInsets.Bottom;
+				//	}
+				//}
 			}
 
 			public override bool OnTouchEvent(MotionEvent? e)
@@ -410,22 +411,22 @@ namespace Microsoft.Maui.Controls.Platform
 
 				Modal.Handler = null;
 
-				UpdateRootView(null);
-				_rootViewLayoutListener?.Invalidate();
-				_rootViewLayoutListener = null;
+				//UpdateRootView(null);
+				//_rootViewLayoutListener?.Invalidate();
+				//_rootViewLayoutListener = null;
 
-				_fragmentManager
-					.BeginTransaction()
-					.Remove(_modalFragment)
-					.Commit();
+				//_fragmentManager
+				//	.BeginTransaction()
+				//	.Remove(_modalFragment)
+				//	.Commit();
 
 				Modal = null;
 				_windowMauiContext = null;
 				_fragmentManager = null;
-				this.RemoveFromParent();
+				//this.RemoveFromParent();
 			}
 
-			class ModalFragment : Fragment
+			class ModalFragment : DialogFragment
 			{
 				readonly Page _modal;
 				readonly IMauiContext _mauiWindowContext;
