@@ -10,7 +10,6 @@ using AndroidX.Lifecycle;
 
 namespace Microsoft.Maui.Handlers
 {
-
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, View>
 	{
 		View? _flyoutView;
@@ -50,8 +49,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		IDisposable? _pendingFragment;
 		void UpdateDetailsFragmentView()
 		{
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			if (_detailViewFragment is not null &&
@@ -61,31 +64,49 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			var context = MauiContext.Context;
+			if (context is null)
+				return;
+
 			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
 				pvh.DisconnectHandler();
+
+			var fragmentManager = MauiContext.GetFragmentManager();
 
 			if (VirtualView.Detail is null)
 			{
 				if (_detailViewFragment is not null)
 				{
-					MauiContext
-						.GetFragmentManager()
-						.BeginTransaction()
-						.Remove(_detailViewFragment)
-						.SetReorderingAllowed(true)
-						.Commit();
+					_pendingFragment =
+						fragmentManager
+							.RunOrWaitForResume(context, (fm) =>
+							{
+								if (_detailViewFragment is null)
+								{
+									return;
+								}
+
+								fm
+									.BeginTransactionEx()
+									.RemoveEx(_detailViewFragment)
+									.SetReorderingAllowed(true)
+									.Commit();
+							});
 				}
 			}
 			else
 			{
-				_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
-
-				MauiContext
-					.GetFragmentManager()
-					.BeginTransaction()
-					.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
-					.SetReorderingAllowed(true)
-					.Commit();
+				_pendingFragment =
+					fragmentManager
+						.RunOrWaitForResume(context, (fm) =>
+						{
+							_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
+							fm
+								.BeginTransaction()
+								.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
+								.SetReorderingAllowed(true)
+								.Commit();
+						});
 			}
 		}
 

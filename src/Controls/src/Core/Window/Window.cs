@@ -9,6 +9,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -202,59 +203,56 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.FrameChanged(Rect frame)
 		{
-			var x = X;
-			var y = Y;
-			var width = Width;
-			var height = Height;
-			if (new Rect(x, y, width, height) == frame)
+			if (new Rect(X, Y, Width, Height) == frame)
 				return;
 
 			_batchFrameUpdate++;
+			bool shouldTriggerSizeChanged = (Width != frame.Width) || (Height != frame.Height);
 
-			SetPropertyChanging(XProperty, nameof(X), x, frame.X);
-			SetPropertyChanging(YProperty, nameof(Y), y, frame.Y);
-			SetPropertyChanging(WidthProperty, nameof(Width), width, frame.Width);
-			SetPropertyChanging(HeightProperty, nameof(Height), height, frame.Height);
-
-			SetValueCore(XProperty, frame.X, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
-			SetValueCore(YProperty, frame.Y, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
-			SetValueCore(WidthProperty, frame.Width, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
-			SetValueCore(HeightProperty, frame.Height, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
+			X = frame.X;
+			Y = frame.Y;
+			Width = frame.Width;
+			Height = frame.Height;
 
 			_batchFrameUpdate--;
 			if (_batchFrameUpdate < 0)
 				_batchFrameUpdate = 0;
 
-			if (_batchFrameUpdate == 0)
+			if (_batchFrameUpdate == 0 && shouldTriggerSizeChanged)
 			{
-				SetPropertyChanged(XProperty, nameof(X), x, frame.X);
-				SetPropertyChanged(YProperty, nameof(Y), y, frame.Y);
-				SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width);
-				SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height);
-
 				SizeChanged?.Invoke(this, EventArgs.Empty);
 			}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			void SetPropertyChanging(BindableProperty property, string name, double oldValue, double newValue)
+
+			// If for some reason during the PropertyChanged event on X,Y,Width,Height
+			// the user has changed these values. Then we need to propagate them back to the handler
+			UpdateHandler(X != frame.X, nameof(X));
+			UpdateHandler(Y != frame.Y, nameof(Y));
+			UpdateHandler(Width != frame.Width, nameof(Width));
+			UpdateHandler(Height != frame.Height, nameof(Height));
+
+
+			void UpdateHandler(bool condition, string property)
 			{
-				if (oldValue == newValue)
+				if (Handler is null || !condition)
+				{
 					return;
+				}
 
-				property.PropertyChanging?.Invoke(this, oldValue, newValue);
-				OnPropertyChanging(name);
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			void SetPropertyChanged(BindableProperty property, string name, double oldValue, double newValue)
-			{
-				if (oldValue == newValue)
-					return;
-
-				OnPropertyChanged(name);
-				property.PropertyChanged?.Invoke(this, oldValue, newValue);
+				Handler.UpdateValue(property);
 			}
 		}
+
+		private protected override void UpdateHandlerValue(string property)
+		{
+			if (_batchFrameUpdate > 0 && (property == nameof(X) || property == nameof(Y) || property == nameof(Width) || property == nameof(Height)))
+			{
+				return;
+			}
+
+			base.UpdateHandlerValue(property);
+		}
+
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
 		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
@@ -677,6 +675,31 @@ namespace Microsoft.Maui.Controls
 			public NavigationImpl(Window owner)
 			{
 				_owner = owner;
+			}
+
+			protected override void OnInsertPageBefore(Page page, Page before)
+			{
+				throw new InvalidOperationException("InsertPageBefore is not supported, please use a NavigationPage.");
+			}
+
+			protected override Task OnPushAsync(Page page, bool animated)
+			{
+				throw new InvalidOperationException("PushAsync is not supported, please use a NavigationPage.");
+			}
+
+			protected override Task<Page> OnPopAsync(bool animated)
+			{
+				throw new InvalidOperationException("PopAsync is not supported, please use a NavigationPage.");
+			}
+
+			protected override Task OnPopToRootAsync(bool animated)
+			{
+				throw new InvalidOperationException("PopToRootAsync is not supported, please use a NavigationPage.");
+			}
+
+			protected override void OnRemovePage(Page page)
+			{
+				throw new InvalidOperationException("RemovePage is not supported, please use a NavigationPage.");
 			}
 
 			protected override IReadOnlyList<Page> GetModalStack()

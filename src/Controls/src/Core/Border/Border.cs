@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), new Rectangle(),
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
-					if (newvalue is not null)
+					if (oldvalue is not null)
 						(bindable as Border)?.StopNotifyingStrokeShapeChanges();
 				},
 				propertyChanged: (bindable, oldvalue, newvalue) =>
@@ -64,10 +64,13 @@ namespace Microsoft.Maui.Controls
 
 			if (strokeShape is VisualElement visualElement)
 			{
-				AddLogicalChild(visualElement);
+				SetInheritedBindingContext(visualElement, BindingContext);
 				_strokeShapeChanged ??= (sender, e) => OnPropertyChanged(nameof(StrokeShape));
 				_strokeShapeProxy ??= new();
 				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(visualElement.OnParentResourcesChanged);
 			}
 		}
 
@@ -77,7 +80,9 @@ namespace Microsoft.Maui.Controls
 
 			if (strokeShape is VisualElement visualElement)
 			{
-				RemoveLogicalChild(visualElement);
+				((IElementDefinition)this).RemoveResourcesChangedListener(visualElement.OnParentResourcesChanged);
+
+				SetInheritedBindingContext(visualElement, null);
 				_strokeShapeProxy?.Unsubscribe();
 			}
 		}
@@ -87,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
-					if (newvalue is not null)
+					if (oldvalue is not null)
 						(bindable as Border)?.StopNotifyingStrokeChanges();
 				},
 				propertyChanged: (bindable, oldvalue, newvalue) =>
@@ -109,6 +114,9 @@ namespace Microsoft.Maui.Controls
 				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
 				_strokeProxy ??= new();
 				_strokeProxy.Subscribe(stroke, _strokeChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(stroke.OnParentResourcesChanged);
 			}
 		}
 
@@ -121,6 +129,8 @@ namespace Microsoft.Maui.Controls
 
 			if (stroke is not null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(stroke.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(stroke, null);
 				_strokeProxy?.Unsubscribe();
 			}
@@ -298,11 +308,13 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanged(propertyName);
 
 			if (propertyName == HeightProperty.PropertyName ||
-				propertyName == WidthProperty.PropertyName ||
-				propertyName == StrokeShapeProperty.PropertyName)
+				propertyName == StrokeThicknessProperty.PropertyName ||
+				propertyName == StrokeShapeProperty.PropertyName ||
+				propertyName == WidthProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
-			else if (propertyName == StrokeThicknessProperty.PropertyName)
 				UpdateStrokeShape();
+			}
 			else if (propertyName == StrokeDashArrayProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
 		}

@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui.Graphics;
+using System.Threading.Tasks;
 using NSubstitute;
 using Xunit;
 
@@ -267,7 +265,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async void TestScrollToInvalid()
+		public async Task TestScrollToInvalid()
 		{
 			var scrollView = new ScrollView();
 

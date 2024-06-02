@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Controls
 
 		Guid? _id;
 
-		Element _parentOverride;
+		WeakReference<Element> _parentOverride;
 
 		string _styleId;
 
@@ -281,10 +282,29 @@ namespace Microsoft.Maui.Controls
 
 		internal Element ParentOverride
 		{
-			get { return _parentOverride; }
+			get 
+			{
+				if (_parentOverride is null)
+				{
+					return null;
+				}
+				if (_parentOverride.TryGetTarget(out var parent))
+				{
+					return parent;
+				}
+				else
+				{
+					Application.Current?
+						.FindMauiContext()?
+						.CreateLogger<Element>()?
+						.LogWarning($"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+				}
+
+				return null;
+			}
 			set
 			{
-				if (_parentOverride == value)
+				if (ParentOverride == value)
 					return;
 
 				bool emitChange = Parent != value;
@@ -299,7 +319,10 @@ namespace Microsoft.Maui.Controls
 						OnParentChangingCore(Parent, RealParent);
 				}
 
-				_parentOverride = value;
+				if (value == null)
+					_parentOverride = null;
+				else
+					_parentOverride = new WeakReference<Element>(value);
 
 				if (emitChange)
 				{
@@ -309,16 +332,46 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		WeakReference<Element> _realParent;
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Element RealParent { get; private set; }
+		public Element RealParent 
+		{ 
+			get
+			{
+				if (_realParent is null)
+				{
+					return null;
+				}
+				if (_realParent.TryGetTarget(out var parent))
+				{
+					return parent;
+				}
+				else
+				{
+					Application.Current?
+						.FindMauiContext()?
+						.CreateLogger<Element>()?
+						.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+				}
+
+				return null;
+			} 
+			private set
+			{
+				if (value is null)
+					_realParent = null;
+				else
+					_realParent = new WeakReference<Element>(value);
+			}
+		}
 
 		Dictionary<BindableProperty, (string, SetterSpecificity)> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, (string, SetterSpecificity)>());
 
 		/// <inheritdoc/>
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
-			_changeHandlers = _changeHandlers ?? new List<Action<object, ResourcesChangedEventArgs>>(2);
+			_changeHandlers ??= new List<Action<object, ResourcesChangedEventArgs>>(2);
 			_changeHandlers.Add(onchanged);
 		}
 
@@ -327,7 +380,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>Most application authors will not need to set the parent element by hand.</remarks>
 		public Element Parent
 		{
-			get { return _parentOverride ?? RealParent; }
+			get { return ParentOverride ?? RealParent; }
 			set => SetParent(value);
 		}
 
@@ -570,7 +623,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
-			Handler?.UpdateValue(propertyName);
+			UpdateHandlerValue(propertyName);
 
 			if (_effects?.Count > 0)
 			{
@@ -581,6 +634,9 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+
+		private protected virtual void UpdateHandlerValue(string property) =>
+			Handler?.UpdateValue(property);
 
 		internal IEnumerable<Element> Descendants() =>
 			Descendants<Element>();
@@ -645,7 +701,7 @@ namespace Microsoft.Maui.Controls
 			if (values == null)
 				return;
 			if (_changeHandlers != null)
-				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers)
+				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
 					handler(this, new ResourcesChangedEventArgs(values));
 			if (_dynamicResources == null)
 				return;
@@ -928,6 +984,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Registers the specified <paramref name="effect"/> to this element.
+		/// </summary>
+		/// <param name="effect">The effect to be registered.</param>
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			if (effect is RoutingEffect re && re.Inner != null)

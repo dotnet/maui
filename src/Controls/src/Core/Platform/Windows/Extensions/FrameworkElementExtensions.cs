@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static WBrush GetForeground(this FrameworkElement element)
 		{
 			if (element == null)
-				throw new ArgumentNullException("element");
+				throw new ArgumentNullException(nameof(element));
 
 			return (WBrush)element.GetValue(GetForegroundProperty(element));
 		}
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void SetForeground(this FrameworkElement element, WBrush foregroundBrush)
 		{
 			if (element == null)
-				throw new ArgumentNullException("element");
+				throw new ArgumentNullException(nameof(element));
 
 			element.SetValue(GetForegroundProperty(element), foregroundBrush);
 		}
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void SetForeground(this FrameworkElement element, WBinding binding)
 		{
 			if (element == null)
-				throw new ArgumentNullException("element");
+				throw new ArgumentNullException(nameof(element));
 
 			element.SetBinding(GetForegroundProperty(element), binding);
 		}
