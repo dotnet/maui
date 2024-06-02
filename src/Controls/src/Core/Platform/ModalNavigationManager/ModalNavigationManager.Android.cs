@@ -75,10 +75,41 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (modal.Handler is IPlatformViewHandler modalHandler)
 			{
-				ModalContainer? modalContainer = null;
-				for (int i = 0; i <= GetModalParentView().ChildCount; i++)
+
+
+				var fragmentManager = WindowMauiContext.GetFragmentManager();
+				var dialogFragment = (DialogFragment?)fragmentManager.FindFragmentByTag(modal.Title);
+
+				var modalParent = GetModalParentView();
+
+				if (animated)
 				{
-					if (GetModalParentView().GetChildAt(i) is ModalContainer mc &&
+					dialogFragment?.View?.Animate()?.TranslationY(modalParent.Height)
+								?.SetInterpolator(new AccelerateInterpolator(1))?.SetDuration(300)?.
+								SetListener(new GenericAnimatorListener
+								{
+									OnEnd = a =>
+									{
+										dialogFragment.Dismiss();
+										source.TrySetResult(modal);
+									}
+								});
+				}
+				else
+				{
+					dialogFragment?.Dismiss();
+					source.TrySetResult(modal);
+				}
+
+
+				/*
+				ModalContainer? modalContainer = null;
+
+				var childCount = GetModalParentView().ChildCount;
+				for (int i = 0; i <= childCount; i++)
+				{
+					var view = GetModalParentView().GetChildAt(i);
+					if (view is ModalContainer mc &&
 						mc.Modal == modal)
 					{
 						modalContainer = mc;
@@ -86,7 +117,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				_ = modalContainer ?? throw new InvalidOperationException("Parent is not Modal Container");
-
+				
 				if (animated)
 				{
 					modalContainer
@@ -106,6 +137,8 @@ namespace Microsoft.Maui.Controls.Platform
 					modalContainer.Destroy();
 					source.TrySetResult(modal);
 				}
+				
+				*/
 			}
 
 			RestoreFocusability(GetCurrentRootView());
@@ -496,6 +529,7 @@ namespace Microsoft.Maui.Controls.Platform
 						int height = ViewGroup.LayoutParams.MatchParent;
 						dialog.Window.SetLayout(width, height);
 					}
+				}
 			}
 		}
 	}
