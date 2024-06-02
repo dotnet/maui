@@ -75,8 +75,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (modal.Handler is IPlatformViewHandler modalHandler)
 			{
-
-
 				var fragmentManager = WindowMauiContext.GetFragmentManager();
 				var dialogFragment = (DialogFragment?)fragmentManager.FindFragmentByTag(modal.Title);
 
