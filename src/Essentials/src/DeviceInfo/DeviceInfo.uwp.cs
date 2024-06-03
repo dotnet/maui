@@ -159,13 +159,13 @@ namespace Microsoft.Maui.Devices
 			bool success = GetAutoRotationState(ref rotationState);
 
 			// Fetch succeeded and device does not support rotation
-			if (success && rotationState.HasFlag(AutoRotationState.AR_NOT_SUPPORTED | AutoRotationState.AR_LAPTOP | AutoRotationState.AR_NOSENSOR))
+			if (success && (rotationState & (AutoRotationState.AR_NOT_SUPPORTED | AutoRotationState.AR_LAPTOP | AutoRotationState.AR_NOSENSOR)) != 0)
 			{
 				return false;
 			}
 
 			// Check if power management says we are mobile (laptop) or a tablet
-			if (PowerDeterminePlatformRoleEx(2).HasFlag(PowerPlatformRole.PlatformRoleMobile | PowerPlatformRole.PlatformRoleSlate))
+			if ((PowerDeterminePlatformRoleEx(2) & (PowerPlatformRole.PlatformRoleMobile | PowerPlatformRole.PlatformRoleSlate)) != 0)
 			{
 				// Check if tablet mode is 0. 0 is default value.
 				return GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0;
