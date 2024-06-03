@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "TableView ViewCell vanishes after content is updated";
+		public override string Issue => "Using radiobuttons in a group, pressing one button works fine, but pressing the second does not reset the first hence";
 		
 		[Test]
 		public void RadioButtonUpdateValueInsideBorder()
