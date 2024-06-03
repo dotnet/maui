@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//HomePageView/SecondPageView/ThirdPageView");
 			await shell.GoToAsync("//HomePageView/FourthPage");
 
-			shell.TestNavigatedArgs(ShellNavigationSource.Pop, "//HomePageView/SecondPageView/ThirdPageView", "//HomePageView/FourthPage");
+			await shell.TestNavigatedArgs(ShellNavigationSource.Pop, "//HomePageView/SecondPageView/ThirdPageView", "//HomePageView/FourthPage");
 			Assert.Equal(3, shell.NavigatedCount);
 		}
 
@@ -64,10 +64,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.RegisterPage(nameof(PushingSetsCorrectNavigationSource));
 			await shell.GoToAsync(nameof(PushingSetsCorrectNavigationSource));
 
-			shell.TestNavigatingArgs(ShellNavigationSource.Push,
+			await shell.TestNavigatingArgs(ShellNavigationSource.Push,
 				"//item1", $"{nameof(PushingSetsCorrectNavigationSource)}");
 
-			shell.TestNavigatedArgs(ShellNavigationSource.Push,
+			await shell.TestNavigatedArgs(ShellNavigationSource.Push,
 				"//item1", $"//item1/{nameof(PushingSetsCorrectNavigationSource)}");
 		}
 
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync("//item2");
 
-			shell.TestNavigationArgs(ShellNavigationSource.ShellItemChanged,
+			await shell.TestNavigationArgs(ShellNavigationSource.ShellItemChanged,
 				"//item1", "//item2");
 		}
 
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync("//item2");
 
-			shell.TestNavigationArgs(ShellNavigationSource.ShellSectionChanged,
+			await shell.TestNavigationArgs(ShellNavigationSource.ShellSectionChanged,
 				"//item1", "//item2");
 		}
 
@@ -109,10 +109,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.Navigation.PopAsync();
 
 
-			shell.TestNavigatingArgs(ShellNavigationSource.Pop,
+			await shell.TestNavigatingArgs(ShellNavigationSource.Pop,
 				"//item1/detailspage/detailspage", $"..");
 
-			shell.TestNavigatedArgs(ShellNavigationSource.Pop,
+			await shell.TestNavigatedArgs(ShellNavigationSource.Pop,
 				"//item1/detailspage/detailspage", $"//item1/detailspage");
 		}
 
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync("//item2");
 
-			shell.TestNavigationArgs(ShellNavigationSource.ShellContentChanged,
+			await shell.TestNavigationArgs(ShellNavigationSource.ShellContentChanged,
 				"//item1", "//item2");
 		}
 
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//item/page");
 			await shell.GoToAsync("//item/pagemiddle/page");
 
-			shell.TestNavigationArgs(ShellNavigationSource.Insert,
+			await shell.TestNavigationArgs(ShellNavigationSource.Insert,
 				"//item/page", "//item/pagemiddle/page");
 		}
 
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Routing.SetRoute(contentPage, "pagemiddle");
 			shell.Navigation.InsertPageBefore(contentPage, shell.Navigation.NavigationStack.Last());
 
-			shell.TestNavigationArgs(ShellNavigationSource.Insert,
+			await shell.TestNavigationArgs(ShellNavigationSource.Insert,
 				"//item/page", "//item/pagemiddle/page");
 		}
 
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//item/pagemiddle/page");
 			shell.Navigation.RemovePage(shell.Navigation.NavigationStack[1]);
 
-			shell.TestNavigationArgs(ShellNavigationSource.Remove,
+			await shell.TestNavigationArgs(ShellNavigationSource.Remove,
 				"//item/pagemiddle/page", "//item/page");
 		}
 
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//item/page");
 
 
-			shell.TestNavigationArgs(ShellNavigationSource.Remove,
+			await shell.TestNavigationArgs(ShellNavigationSource.Remove,
 				"//item/pagemiddle/page", "//item/page");
 		}
 
@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				CreateShellItem(shellItemRoute: "item")
 			);
 
-			shell.TestNavigationArgs(ShellNavigationSource.ShellItemChanged,
+			await shell.TestNavigationArgs(ShellNavigationSource.ShellItemChanged,
 				null, "//item");
 		}
 	}

@@ -178,6 +178,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(shellContentPage.Appearing);
 			Assert.False(nonVisiblePage.Appearing);
+			await page.AppearingTask.ConfigureAwait(false);
 			Assert.True(page.Appearing);
 		}
 
@@ -544,11 +545,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			public bool Appearing;
 			public bool ParentSet;
+			public Task AppearingTask => _appearingTaskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			TaskCompletionSource<bool> _appearingTaskCompletionSource = new TaskCompletionSource<bool>();
+
 
 			protected override void OnAppearing()
 			{
 				base.OnAppearing();
 				Appearing = true;
+				_appearingTaskCompletionSource.TrySetResult(true);
 			}
 
 			protected override void OnParentSet()
