@@ -191,9 +191,9 @@ namespace Microsoft.Maui.Devices
 	/// </summary>
 	enum AutoRotationState
 	{
-		AR_ENABLED,
-		AR_NOT_SUPPORTED,
-		AR_LAPTOP,
-		AR_NOSENSOR,
+		AR_ENABLED = 0x0,
+		AR_NOT_SUPPORTED = 0x20,
+		AR_LAPTOP = 0x80,
+		AR_NOSENSOR = 0x10,
 	}
 }
