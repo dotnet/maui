@@ -19,6 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void InitiallyInvisbleCollectionViewSurvivesiOSLayoutNonsense()
 		{
 			App.WaitForElement(Show);

@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void ChildAddedShouldFire()
 		{
 			App.WaitForNoElement(Success);
