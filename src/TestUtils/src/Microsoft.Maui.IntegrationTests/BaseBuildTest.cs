@@ -67,7 +67,7 @@ namespace Microsoft.Maui.IntegrationTests
 				"Microsoft.Maui.Essentials.*.nupkg",
 				"Microsoft.Maui.Graphics.*.nupkg",
 				"Microsoft.Maui.Maps.*.nupkg",
-				"Microsoft.Maui.Resizetizer.nupkg",
+				"Microsoft.Maui.Resizetizer.*.nupkg",
 				"Microsoft.AspNetCore.Components.WebView.*.nupkg",
 			};
 
