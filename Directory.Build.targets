@@ -13,6 +13,13 @@
                                  $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" /> -->
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Fix for VS Code Hot Reload errors -->
+    <Using Include="System.Type" Alias="Type" />
+    <Using Include="System.Exception" Alias="Exception" />
+    <Using Include="System.IO.FileNotFoundException" Alias="FileNotFoundException" />
+  </ItemGroup>
+
   <Import Condition="'$(SampleProject)' != 'true'" Project="eng\Versions.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
