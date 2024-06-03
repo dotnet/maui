@@ -87,9 +87,8 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig, true);
-			FileUtilities.ReplaceInFile(TestNuGetConfig,
-				"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-				$"<add key=\"nuget-only\" value=\"{extraPacksDir}\" />");
+			FileUtilities.ReplaceInFile(TestNuGetConfig, "<add key=\"nuget-only\" value=\"true\" />", "");
+			FileUtilities.ReplaceInFile(TestNuGetConfig, "NUGET_ONLY_PLACEHOLDER", extraPacksDir);
 		}
 
 		[SetUp]

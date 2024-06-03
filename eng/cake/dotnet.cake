@@ -47,10 +47,8 @@ Task("dotnet")
         {
             EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
-            ReplaceTextInFiles(
-                originalNuget,
-                 $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-                $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
+            ReplaceTextInFiles(originalNuget, "<add key=\"nuget-only\" value=\"true\" />", "");
+            ReplaceTextInFiles(originalNuget, "NUGET_ONLY_PLACEHOLDER", nugetSource);
         }
 
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
@@ -267,10 +265,8 @@ Task("dotnet-pack-maui")
         {
             EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
-            ReplaceTextInFiles(
-                originalNuget,
-                $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-                $"<add key=\"local\" value=\"{nugetSource}\" />");
+            ReplaceTextInFiles(originalNuget, "<add key=\"local\" value=\"true\" />", "");
+            ReplaceTextInFiles(originalNuget, "LOCAL_PLACEHOLDER", nugetSource);
         }
 
         var sln = "./Microsoft.Maui.Packages.slnf";
@@ -800,10 +796,8 @@ DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, s
     }
 
     // Add a specific folder for nuget-only packages
-    ReplaceTextInFiles(
-        config.FullPath,
-        $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-        $"<add key=\"nuget-only\" value=\"{nugetOnly.FullPath}\" />");
+    ReplaceTextInFiles(config.FullPath, "<add key=\"nuget-only\" value=\"true\" />", "");
+    ReplaceTextInFiles(config.FullPath, "NUGET_ONLY_PLACEHOLDER", nugetOnly.FullPath);
 
     // Create empty or copy test Directory.Build.props/targets
     if (string.IsNullOrEmpty(props))
