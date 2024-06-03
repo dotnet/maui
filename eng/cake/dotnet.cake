@@ -304,7 +304,7 @@ Task("dotnet-pack-additional")
             Version = nativeAssetsVersion,
             ExcludeVersion = true,
             OutputDirectory = assetsDir,
-            Source = new[] { "https://aka.ms/skiasharp-eap/index.json" },
+            Source = new[] { "https://pkgs.dev.azure.com/xamarin/public/_packaging/SkiaSharp/nuget/v3/index.json" },
         });
         foreach (var nupkg in GetFiles($"{assetsDir}/**/*.nupkg"))
             DeleteFile(nupkg);
