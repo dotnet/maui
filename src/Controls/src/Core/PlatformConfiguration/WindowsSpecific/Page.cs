@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	using FormsElement = Maui.Controls.Page;
 
 	/// <summary>
-	/// The page instance that Microsoft.Maui.Controls created on the Windows platform.
+	/// Provides the Page Windows Platform-Specific Functionality.
 	/// </summary>
 	public static class Page
 	{
