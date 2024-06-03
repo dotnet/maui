@@ -270,8 +270,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdatePageSpecifics()
 		{
-			ChildViewControllerForHomeIndicatorAutoHidden.SetNeedsUpdateOfHomeIndicatorAutoHidden();
-			ChildViewControllerForStatusBarHidden().SetNeedsStatusBarAppearanceUpdate();
+			ChildViewControllerForHomeIndicatorAutoHidden?.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			ChildViewControllerForStatusBarHidden()?.SetNeedsStatusBarAppearanceUpdate();
 		}
 
 		void Reset()
