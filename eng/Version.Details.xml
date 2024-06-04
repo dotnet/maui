@@ -153,6 +153,10 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>91fdecfe881902a109205279e023037692db4c11</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.24274.1">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>91fdecfe881902a109205279e023037692db4c11</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24274.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>91fdecfe881902a109205279e023037692db4c11</Sha>
