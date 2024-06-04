@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Storage
 				}
 				else if (value is DateTimeOffset dto)
 				{
-					appDataContainer.Values[key] = dt.ToString("O");
+					appDataContainer.Values[key] = dto.ToString("O");
 				}
 				else
 				{
