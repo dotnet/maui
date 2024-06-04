@@ -238,6 +238,14 @@ namespace Microsoft.Maui.Storage
 		public static void Set(string key, DateTime value, string? sharedName) =>
 			Current.Set<DateTime>(key, value, sharedName);
 
+		/// <inheritdoc cref="IPreferences.Get{T}(string, T, string?)"/>
+		public static DateTimeOffset Get(string key, DateTimeOffset defaultValue, string? sharedName) =>
+			Current.Get<DateTimeOffset>(key, defaultValue, sharedName);
+
+		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?)"/>
+		public static void Set(string key, DateTimeOffset value, string? sharedName) =>
+			Current.Set<DateTimeOffset>(key, value, sharedName);
+
 		static IPreferences Current => Storage.Preferences.Default;
 
 		internal static string GetPrivatePreferencesSharedName(string feature) =>
@@ -263,6 +271,7 @@ namespace Microsoft.Maui.Storage
 			typeof(double),
 			typeof(float),
 			typeof(DateTime),
+			typeof(DateTimeOffset)
 		};
 
 		internal static void CheckIsSupportedType<T>()

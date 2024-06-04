@@ -88,6 +88,10 @@ namespace Microsoft.Maui.Storage
 				{
 					appDataContainer.Values[key] = dt.ToBinary();
 				}
+				else if (value is DateTimeOffset dt)
+				{
+					appDataContainer.Values[key] = dt.ToString("O");
+				}
 				else
 				{
 					appDataContainer.Values[key] = value;
@@ -108,6 +112,13 @@ namespace Microsoft.Maui.Storage
 						if (defaultValue is DateTime dt)
 						{
 							return (T)(object)DateTime.FromBinary((long)tempValue);
+						}
+						else if (defaultValue is DateTimeOffset dt)
+						{
+							if (DateTimeOffset.TryParse((string)tempValue, out var dateTimeOffset))
+							{
+								return (T)(object)dateTimeOffset;
+							}
 						}
 						else
 						{
