@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Context = new LoggingHelperContext();
 			Context.WarningLevel = warningLevel;
 			Context.TreatWarningsAsErrors = treatWarningsAsErrors;
-			Context.PathPrefix = pathPrefix?.TrimEnd('/');
+			Context.PathPrefix = pathPrefix;
 
 			Context.NoWarn = noWarn?.Split([';', ','], StringSplitOptions.RemoveEmptyEntries).Select(s =>
 			{
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			if (Context.PathPrefix is string prefix)
 			{
-				xamlFilePath = $"{prefix}/{xamlFilePath}";
+				xamlFilePath = IOPath.Combine(prefix, xamlFilePath);
 			}
 
 			return xamlFilePath;
