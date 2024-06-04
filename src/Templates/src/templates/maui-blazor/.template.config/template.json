@@ -125,5 +125,5 @@
         "replaces": "com.companyname.mauiapp"
       }
     },
-    "defaultName": "MauiApp1"
+    "defaultName": "MauiBlazorApp1"
   }
