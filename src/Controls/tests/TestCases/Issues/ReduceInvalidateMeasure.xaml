@@ -48,6 +48,28 @@
         AutomationId="UpdateLineBreakModeButton"
         Text="Update Label LineBreakMode"
         Clicked="OnUpdateLineBreakModeButtonClicked"/>
+      <Label 
+        x:Name="UpdateLineHeightLabel"
+        AutomationId="UpdateLineHeightLabel"
+        LineHeight="1"
+        Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+      <Button 
+        x:Name="UpdateLineHeightButton"
+        AutomationId="UpdateLineHeightButton"
+        Text="Update Label LineHeight"
+        Clicked="OnUpdateLineHeightButtonClicked"/>
+      <Label 
+        x:Name="UpdateVisibilityLabel"
+        AutomationId="UpdateVisibilityLabel"
+        FontSize="Medium"
+        TextColor="Orange"
+        Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+        LineBreakMode="WordWrap"/>
+      <Button 
+        x:Name="UpdateVisibilityButton"
+        AutomationId="UpdateVisibilityButton"
+        Text="Update Label Visibility"
+        Clicked="OnUpdateVisibilityButtonClicked"/>
     </VerticalStackLayout>
   </ScrollView>
 </ContentPage>

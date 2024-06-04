@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("UpdateTextLabel");
 
-			const int repeats = 3;
+			const int repeats = 2;
 
 			for (int i = 0; i < repeats; i++)
 			{
@@ -38,6 +38,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			for (int i = 0; i < repeats; i++)
 			{
 				App.Tap("UpdateLineBreakModeButton");
+			}
+
+			for (int i = 0; i < repeats; i++)
+			{
+				App.Tap("UpdateLineHeightButton");
+			}
+
+			for (int i = 0; i < repeats; i++)
+			{
+				App.Tap("UpdateVisibilityButton");
 			}
 
 			VerifyScreenshot();

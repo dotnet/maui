@@ -42,5 +42,15 @@ namespace Maui.Controls.Sample.Issues
 
 			_currentLineBreakMode++;
 		}
+
+		void OnUpdateLineHeightButtonClicked(object sender, EventArgs e)
+		{
+			UpdateLineHeightLabel.LineHeight++;
+		}
+
+		void OnUpdateVisibilityButtonClicked(object sender, EventArgs e)
+		{
+			UpdateVisibilityLabel.IsVisible = !UpdateVisibilityLabel.IsVisible;
+		}
 	}
 }
