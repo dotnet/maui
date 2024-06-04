@@ -25,8 +25,8 @@
 
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
-    <SupportedOSPlatformVersion>12.2</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>12.2</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>13.0</TargetPlatformMinVersion>
     <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
