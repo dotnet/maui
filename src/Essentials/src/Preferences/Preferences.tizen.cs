@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Storage
 							var encodedValue = Preference.Get<long>(fullKey);
 							value = (T)(object)DateTime.FromBinary(encodedValue);
 							break;
-						case DateTimOffset dt:
+						case DateTimeOffset dt:
 							var savedDateTimeOffset = Preference.Get<string>(fullKey);
 							if (DateTimeOffset.TryParse(savedDateTimeOffset, out var dateTimeOffset))
 							{
