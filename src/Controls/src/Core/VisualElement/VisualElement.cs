@@ -1628,11 +1628,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var constraint = LayoutConstraint.None;
 			var element = (VisualElement)bindable;
-			if (element.WidthRequest >= 0 && element.MinimumWidthRequest >= 0)
+			if (element.WidthRequest >= 0)
 			{
 				constraint |= LayoutConstraint.HorizontallyFixed;
 			}
-			if (element.HeightRequest >= 0 && element.MinimumHeightRequest >= 0)
+			if (element.HeightRequest >= 0)
 			{
 				constraint |= LayoutConstraint.VerticallyFixed;
 			}
