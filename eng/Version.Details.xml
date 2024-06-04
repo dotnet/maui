@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="8.0.103-servicing.24119.1">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="8.0.204-servicing.24169.39">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>96079bf81dc2299f54c3a0673fed1cf58ca2a2a5</Sha>
+      <Sha>5b9983e91a5c841353034dbcdb9c1ced38e33de7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.3">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>62304a6d7085e32672ec988835eab41d89b82e25</Sha>
+     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.4">
+    <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>fd8f5b5af7d73f697fe9654ad8ed7953cd597287</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="8.0.3">
+    <Dependency Name="System.Text.Json" Version="8.0.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>62304a6d7085e32672ec988835eab41d89b82e25</Sha>
+      <Sha>fd8f5b5af7d73f697fe9654ad8ed7953cd597287</Sha>
     </Dependency>
     <Dependency Name="System.Text.Encodings.Web" Version="8.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -44,9 +44,9 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>66484fc6c35c47e7b0d88d487ea19d0f7bcda80a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100" Version="8.0.3" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100" Version="8.0.4" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>9a29abdd764a4de0f253ed368871877a47725247</Sha>
+      <Sha>08a90ca2c88b17f1b5d081318354a41db0882cff</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
