@@ -1,6 +1,7 @@
+using Microsoft.Maui.Controls.BindingSourceGen;
 using Xunit;
 
-namespace Microsoft.Maui.Controls.BindingSourceGen;
+namespace BindingSourceGen.UnitTests;
 
 public class BindingTransformerTests
 {
