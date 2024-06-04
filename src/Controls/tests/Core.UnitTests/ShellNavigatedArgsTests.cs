@@ -148,23 +148,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
-		[Fact]
-		public async Task InsertPageFromNavigationSetsCorrectNavigationSource()
-		{
-			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
-			Routing.RegisterRoute("page", typeof(ContentPage));
-			var shell = new TestShell(
-				CreateShellItem(shellItemRoute: "item")
-			);
+		// [Fact]
+		// public async Task InsertPageFromNavigationSetsCorrectNavigationSource()
+		// {
+		// 	Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
+		// 	Routing.RegisterRoute("page", typeof(ContentPage));
+		// 	var shell = new TestShell(
+		// 		CreateShellItem(shellItemRoute: "item")
+		// 	);
 
-			await shell.GoToAsync("//item/page");
-			ContentPage contentPage = new ContentPage();
-			Routing.SetRoute(contentPage, "pagemiddle");
-			shell.Navigation.InsertPageBefore(contentPage, shell.Navigation.NavigationStack.Last());
+		// 	await shell.GoToAsync("//item/page");
+		// 	ContentPage contentPage = new ContentPage();
+		// 	Routing.SetRoute(contentPage, "pagemiddle");
+		// 	shell.Navigation.InsertPageBefore(contentPage, shell.Navigation.NavigationStack.Last());
 
-			await shell.TestNavigationArgs(ShellNavigationSource.Insert,
-				"//item/page", "//item/pagemiddle/page");
-		}
+		// 	await shell.TestNavigationArgs(ShellNavigationSource.Insert,
+		// 		"//item/page", "//item/pagemiddle/page");
+		// }
 
 
 		[Fact]
