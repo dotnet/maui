@@ -7,7 +7,6 @@ using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui
@@ -44,21 +43,6 @@ namespace Microsoft.Maui
 		{
 			_fontRegistrar = fontRegistrar;
 			_serviceProvider = serviceProvider;
-
-			Application.Current.Resources.RegisterPropertyChangedCallback(Control.FontFamilyProperty, OnPropertyChanged);
-			Application.Current.Resources.RegisterPropertyChangedCallback(Control.FontSizeProperty, OnPropertyChanged);
-		}
-
-		private void OnPropertyChanged(DependencyObject sender, DependencyProperty dp)
-		{
-			if (dp == Control.FontFamilyProperty)
-			{
-				_defaultFontFamily = (FontFamily)Application.Current.Resources[SystemFontFamily];
-			}
-			else if (dp == Control.FontSizeProperty)
-			{
-				_defaultFontSize = (double)Application.Current.Resources[SystemFontSize];
-			}
 		}
 
 		/// <inheritdoc/>
