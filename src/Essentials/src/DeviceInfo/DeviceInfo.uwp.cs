@@ -113,19 +113,22 @@ namespace Microsoft.Maui.Devices
 			}
 		}
 
-		// Whether or not the device is in "tablet mode" or not
-		// This has to be implemented by the device manufacturer
+		/// <summary>
+		/// Whether or not the device is in "tablet mode" or not. This
+		/// has to be implemented by the device manufacturer.
+		/// </summary>
 		const int SM_CONVERTIBLESLATEMODE = 0x2003;
 
-		// Whether or not the OS supports tablet mode, usually always true
-		const int SM_TABLETPC = 0x56;
-
-		// How many fingers (aka touches) are supported for touch control
+		/// <summary>
+		/// How many fingers (aka touches) are supported for touch control
+		/// </summary>
 		const int SM_MAXIMUMTOUCHES = 95;
 
-		// Whether a physical keyboard is attached or not
-		// Manufacturers have to remember to set this
-		// Defaults to not-attached
+		/// <summary>
+		/// Whether a physical keyboard is attached or not.
+		/// Manufacturers have to remember to set this.
+		/// Defaults to not-attached.
+		/// </summary>
 		const int SM_ISDOCKED = 0x2004;
 
 
