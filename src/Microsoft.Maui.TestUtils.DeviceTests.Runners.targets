@@ -9,4 +9,8 @@
     <AdditionalFiles Include="@(MauiSplashScreen)" IsMauiSplashScreen="True" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" ExcludeAssets="all" />
+  </ItemGroup>
+
 </Project>

@@ -17,7 +17,7 @@
             TextTransform="Uppercase"
             FontFamily="OpenSansRegular">
             <Button.ImageSource>
-                <FontImageSource Glyph="A" Color="Black" FontFamily="OpenSansRegular"/>
+                <FontImageSource Glyph="&#xf133;" Color="Black" FontFamily="FA"/>
             </Button.ImageSource>
         </Button>
         <Label
@@ -29,7 +29,7 @@
             TextTransform="Uppercase"
             FontFamily="OpenSansRegular">
             <Button.ImageSource>
-                <FontImageSource Glyph="A" Color="Black" FontFamily="OpenSansRegular"/>
+                <FontImageSource Glyph="&#xf133;" Color="Black" FontFamily="FA"/>
             </Button.ImageSource>
         </Button>
         <Label
@@ -41,7 +41,7 @@
             TextTransform="Uppercase"
             FontFamily="OpenSansRegular">
             <Button.ImageSource>
-                <FontImageSource Glyph="A" Size="60" Color="Black" FontFamily="OpenSansRegular"/>
+                <FontImageSource Glyph="&#xf133;" Size="60" Color="Black" FontFamily="FA"/>
             </Button.ImageSource>
         </Button>
     </VerticalStackLayout>
