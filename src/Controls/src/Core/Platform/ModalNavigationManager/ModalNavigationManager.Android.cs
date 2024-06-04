@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Controls.Platform
 			_window.Resumed += (_, _) => SyncModalStackWhenPlatformIsReady();
 		}
 
+		readonly Dictionary<Page, ModalFragment> modals = [];
+
 		// This is only here for the device tests to use.
 		// With the device tests we have a `FakeActivityRootView` and a `WindowTestFragment`
 		// that we use to replicate the `DecorView` and `MainActivity`
@@ -77,7 +79,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (modal.Handler is IPlatformViewHandler modalHandler)
 			{
 				var fragmentManager = WindowMauiContext.GetFragmentManager();
-				var dialogFragment = (DialogFragment?)fragmentManager.FindFragmentByTag(modal.Title);
+
+				var dialogFragment = modals[modal]; //(ModalFragment?)fragmentManager.FindFragmentByTag(modal.Title);
+				modals.Remove(modal);
+
+				// If for the dialog is null what we want to do?
+				if (dialogFragment is null)
+					return Task.FromResult(modal);
+
+				dialogFragment.IsAnimated = animated;
 
 				var modalParent = GetModalParentView();
 
@@ -116,7 +126,7 @@ namespace Microsoft.Maui.Controls.Platform
 					throw new InvalidOperationException("Current Root View cannot be null");
 		}
 
-		async Task PushModalPlatformAsync(Page modal, bool animated)
+		Task PushModalPlatformAsync(Page modal, bool animated)
 		{
 			var viewToHide = GetCurrentRootView();
 
@@ -124,9 +134,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_platformModalPages.Add(modal);
 
-			Task presentModal = PresentModal(modal, animated);
-
-			await presentModal;
+			PresentModal(modal, animated);
 
 			// The state of things might have changed after the modal view was pushed
 			if (IsModalReady)
@@ -134,31 +142,24 @@ namespace Microsoft.Maui.Controls.Platform
 				GetCurrentRootView()
 					.SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
 			}
+
+			return Task.CompletedTask;
 		}
 
-		Task PresentModal(Page modal, bool animated)
+		void PresentModal(Page modal, bool animated)
 		{
 			var parentView = GetModalParentView();
 
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
 			{
-				Cancelable = false
+				Cancelable = true,
+				IsAnimated = animated
 			};
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
 			dialogFragment.ShowNow(fragmentManager, modal.Title);
-			var source = new TaskCompletionSource<bool>();
 
-			NavAnimationInProgress = true;
-			if (animated)
-			{
-				//TODO: handle animation
-			}
-			else
-			{
-				source.TrySetResult(true);
-			}
-
-			return source.Task.ContinueWith(task => NavAnimationInProgress = false);
+			modals.Add(modal, dialogFragment);
+			NavAnimationInProgress = false;
 		}
 
 		internal static void RestoreFocusability(AView platformView)
@@ -195,6 +196,7 @@ namespace Microsoft.Maui.Controls.Platform
 				get => _navigationRootManager;
 				private set => _navigationRootManager = value;
 			}
+			public bool IsAnimated { get; internal set; }
 
 			public ModalFragment(IMauiContext mauiContext, Page modal)
 			{
@@ -207,8 +209,13 @@ namespace Microsoft.Maui.Controls.Platform
 				var dialog = base.OnCreateDialog(savedInstanceState);
 				dialog.CancelEvent += Dialog_CancelEvent;
 
-				dialog!.Window!.SetBackgroundDrawable(new ColorDrawable(AColor.Transparent));
-				dialog!.Window!.Attributes!.WindowAnimations = Resource.Animation.nav_default_pop_enter_anim;
+				if (dialog is null || dialog.Window is null)
+					throw new InvalidOperationException($"{dialog} or {dialog?.Window} is null, and it's invalid");
+
+				dialog.Window.SetBackgroundDrawable(new ColorDrawable(AColor.Transparent));
+
+				if (IsAnimated)
+					dialog.Window.Attributes!.WindowAnimations = Resource.Animation.nav_default_pop_enter_anim;
 				return dialog;
 			}
 
@@ -241,6 +248,11 @@ namespace Microsoft.Maui.Controls.Platform
 				base.OnViewCreated(view, savedInstanceState);
 			}
 
+			public override void OnCancel(IDialogInterface dialog)
+			{
+
+			}
+
 			//TODO handle back button pressed
 			public override void OnDestroy()
 			{
@@ -265,14 +277,17 @@ namespace Microsoft.Maui.Controls.Platform
 					dialog.Window.SetLayout(width, height);
 				}
 
-				var slideUp = new TranslateAnimation(0, 0, 1000, 0)
+				if (IsAnimated)
 				{
-					Duration = 500,
-					FillAfter = true
-				};
+					var slideUp = new TranslateAnimation(0, 0, 1000, 0)
+					{
+						Duration = 500,
+						FillAfter = true
+					};
 
-				// Start the animation
-				View.StartAnimation(slideUp);
+					// Start the animation
+					View.StartAnimation(slideUp);
+				}
 			}
 		}
 	}
