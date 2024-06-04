@@ -160,9 +160,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformButton.GetContent<WImage>() is WImage nativeImage)
 			{
-				// Stretch to fill
-				nativeImage.Stretch = UI.Xaml.Media.Stretch.Uniform;
-
 				// If we're a CanvasImageSource (font image source), we need to explicitly set the image height
 				// to the desired size of the font, otherwise it will be stretched to the available space
 				if (nativeImageSource is CanvasImageSource canvas)

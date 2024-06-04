@@ -143,23 +143,28 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>59edaad404d1b8e47080015ae8d0787f94c970df</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.24203.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.24270.4">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>28af9496b0e260f7e66ec549b39f1410ee9743d1</Sha>
+      <Sha>8478d1a9a531e6b1cd26fb8c86400e2efbb8f2f3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="9.0.0-prerelease.24203.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="9.0.0-prerelease.24270.4">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>28af9496b0e260f7e66ec549b39f1410ee9743d1</Sha>
+      <Sha>8478d1a9a531e6b1cd26fb8c86400e2efbb8f2f3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="9.0.0-prerelease.24203.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="9.0.0-prerelease.24270.4">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>28af9496b0e260f7e66ec549b39f1410ee9743d1</Sha>
+      <Sha>8478d1a9a531e6b1cd26fb8c86400e2efbb8f2f3</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="8.0.0-beta.24113.2">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="8.0.0-beta.24225.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>da98edc4c3ea539f109ea320672136ceb32591a7</Sha>
+      <Sha>67d23f4ba1813b315e7e33c71d18b63475f5c5f8</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24225.1">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>67d23f4ba1813b315e7e33c71d18b63475f5c5f8</Sha>
+      <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>

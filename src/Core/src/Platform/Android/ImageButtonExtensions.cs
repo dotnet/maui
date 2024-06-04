@@ -1,79 +1,97 @@
 ﻿using System.Threading.Tasks;
-using Android.Graphics.Drawables;
-using Android.Widget;
 using Google.Android.Material.ImageView;
 using Google.Android.Material.Shape;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class ImageButtonExtensions
 	{
-		// TODO: NET8 should this be public?
-		internal static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton)
-		{
-			Paint? paint = imageButton.Background;
+		// TODO: NET9 should this be public?
+		internal static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton) =>
+			platformButton.UpdateButtonBackground(imageButton);
 
-			platformButton.Background = paint?.ToDrawable(platformButton.Context);
-		}
+		public static void UpdateStrokeColor(this ShapeableImageView platformButton, IButtonStroke buttonStroke) =>
+			platformButton.UpdateButtonStroke(buttonStroke);
 
-		public static void UpdateStrokeColor(this ShapeableImageView platformButton, IButtonStroke buttonStroke)
-		{
-			if (buttonStroke.StrokeColor is Color stroke)
-				platformButton.StrokeColor = ColorStateListExtensions.CreateButton(stroke.ToPlatform());
-		}
+		public static void UpdateStrokeThickness(this ShapeableImageView platformButton, IButtonStroke buttonStroke) =>
+			platformButton.UpdateButtonStroke(buttonStroke);
 
-		public static void UpdateStrokeThickness(this ShapeableImageView platformButton, IButtonStroke buttonStroke)
-		{
-			if (buttonStroke.StrokeThickness >= 0)
-				platformButton.StrokeWidth = (int)platformButton.Context.ToPixels(buttonStroke.StrokeThickness);
-		}
-
-		public static void UpdateCornerRadius(this ShapeableImageView platformButton, IButtonStroke buttonStroke)
-		{
-			var radius = platformButton.Context.ToPixels(buttonStroke.CornerRadius);
-			platformButton.ShapeAppearanceModel =
-				platformButton.ShapeAppearanceModel
-				.ToBuilder()
-				.SetTopLeftCorner(CornerFamily.Rounded, radius)
-				.SetTopRightCorner(CornerFamily.Rounded, radius)
-				.SetBottomLeftCorner(CornerFamily.Rounded, radius)
-				.SetBottomRightCorner(CornerFamily.Rounded, radius)
-				.Build();
-		}
+		public static void UpdateCornerRadius(this ShapeableImageView platformButton, IButtonStroke buttonStroke) =>
+			platformButton.UpdateButtonStroke(buttonStroke);
 
 		public static async void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
-			platformButton.SetContentPadding(imageButton);
+			var padding = platformButton.Context!.ToPixels(imageButton.Padding);
 
-			// see: https://github.com/material-components/material-components-android/issues/2063
+			// The simple operation we are trying to do.
+			platformButton.SetContentPadding((int)padding.Left, (int)padding.Top, (int)padding.Right, (int)padding.Bottom);
+
+			// Because there is only a single padding property, we need to reset the padding to 0 otherwise we
+			// probably will get a double padding. Trust me. I've seen it happen. It's not pretty.
+			platformButton.SetPadding(0, 0, 0, 0);
+
+			// The padding has a few issues, but setting and then resetting after some calculations
+			// are done seems to work. This is a workaround for the following issue:
+			// https://github.com/material-components/material-components-android/issues/2063
 			await Task.Yield();
-			platformButton.SetContentPadding(imageButton);
+
+			// We must re-set all the paddings because the first time was not hard enough.
+			platformButton.SetContentPadding((int)padding.Left, (int)padding.Top, (int)padding.Right, (int)padding.Bottom);
+			platformButton.SetPadding(0, 0, 0, 0);
+
+			// Just like before, the bugs are not done. This needs to trigger a re-calculation of
+			// the shape appearance mode to avoid clipping issues.
+			if (platformButton.Drawable is not null)
+			{
+				platformButton.ShapeAppearanceModel =
+					platformButton.ShapeAppearanceModel
+						.ToBuilder()
+						.Build();
+			}
 		}
 
-		internal static void SetContentPadding(this ShapeableImageView platformButton, IImageButton imageButton)
+		internal static void UpdateButtonStroke(this ShapeableImageView platformView, IButtonStroke button)
 		{
-			var imageView = platformButton as ImageView;
-
-			if (imageView is not null)
+			if (!platformView.UpdateMauiRippleDrawableStroke(button))
 			{
-				var bitmapDrawable = imageView.Drawable as BitmapDrawable;
+				// Fall back to the default mechanism. This may be due to the fact that the background
+				// is not a "MAUI" background, so we need to update the stroke on the button itself.
 
-				// Without ImageSource we do not apply Padding, although since there is no content
-				// there are no differences.
-				if (bitmapDrawable is null)
-					return;
+				var (width, color, radius) = button.GetStrokeProperties(platformView.Context!, true);
 
-				var backgroundBounds = bitmapDrawable.Bounds;
+				platformView.StrokeColor = color;
 
-				var padding = imageButton.Padding;
+				platformView.StrokeWidth = width;
 
-				bitmapDrawable.SetBounds(
-					backgroundBounds.Left + (int)platformButton.Context.ToPixels(padding.Left),
-					backgroundBounds.Top + (int)platformButton.Context.ToPixels(padding.Top),
-					backgroundBounds.Right - (int)platformButton.Context.ToPixels(padding.Right),
-					backgroundBounds.Bottom - (int)platformButton.Context.ToPixels(padding.Bottom));
+				platformView.ShapeAppearanceModel =
+					platformView.ShapeAppearanceModel
+						.ToBuilder()
+						.SetTopLeftCorner(CornerFamily.Rounded, radius)
+						.SetTopRightCorner(CornerFamily.Rounded, radius)
+						.SetBottomLeftCorner(CornerFamily.Rounded, radius)
+						.SetBottomRightCorner(CornerFamily.Rounded, radius)
+						.Build();
 			}
+		}
+
+		internal static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
+		{
+			platformView.UpdateMauiRippleDrawableBackground(button,
+				beforeSet: () =>
+				{
+					// We have a background, so we need to remove the things that were set on the
+					// platform view as they are now in the drawable.
+
+					platformView.StrokeColor = null;
+
+					platformView.StrokeWidth = 0;
+
+					platformView.ShapeAppearanceModel =
+						platformView.ShapeAppearanceModel
+							.ToBuilder()
+							.SetAllCornerSizes(0)
+							.Build();
+				});
 		}
 	}
 }
