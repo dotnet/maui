@@ -229,6 +229,14 @@ namespace Microsoft.Maui.Storage
 		/// <inheritdoc cref="Set(string, string?)"/>
 		public static void Set(string key, DateTime value) =>
 			Set(key, value, null);
+		
+		/// <inheritdoc cref="Get(string, string?)"/>
+		public static DateTimeOffset Get(string key, DateTimeOffset defaultValue) =>
+			Get(key, defaultValue, null);
+
+		/// <inheritdoc cref="Set(string, string?)"/>
+		public static void Set(string key, DateTimeOffset value) =>
+			Set(key, value, null);
 
 		/// <inheritdoc cref="IPreferences.Get{T}(string, T, string?)"/>
 		public static DateTime Get(string key, DateTime defaultValue, string? sharedName) =>
