@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
 			{
-				Cancelable = true,
+				Cancelable = false,
 				IsAnimated = animated
 			};
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
@@ -189,6 +189,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			readonly Page _modal;
 			readonly IMauiContext _mauiWindowContext;
+			static DialogBackButoonListener _instanceFoo = default!;
 			NavigationRootManager? _navigationRootManager;
 
 			public NavigationRootManager? NavigationRootManager
@@ -202,8 +203,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_modal = modal;
 				_mauiWindowContext = mauiContext;
+				_instanceFoo = new((MauiAppCompatActivity)_mauiWindowContext.GetActivity());
 			}
-
 			public override global::Android.App.Dialog OnCreateDialog(Bundle? savedInstanceState)
 			{
 				var dialog = base.OnCreateDialog(savedInstanceState);
@@ -216,7 +217,31 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (IsAnimated)
 					dialog.Window.Attributes!.WindowAnimations = Resource.Animation.nav_default_pop_enter_anim;
+
+				dialog.SetOnKeyListener(_instanceFoo);
+
 				return dialog;
+			}
+
+
+			private sealed class DialogBackButoonListener : Java.Lang.Object, IDialogInterfaceOnKeyListener
+			{
+				readonly MauiAppCompatActivity _activity;
+
+				public DialogBackButoonListener(MauiAppCompatActivity activity)
+				{
+					_activity = activity;
+				}
+
+				public bool OnKey(IDialogInterface? dialog, [GeneratedEnum] Keycode keyCode, KeyEvent? e)
+				{
+					if (keyCode == Keycode.Back && e?.Action == KeyEventActions.Up)
+					{
+						_activity.OnBackPressed();
+						return true;
+					}
+					return false;
+				}
 			}
 
 			private void Dialog_CancelEvent(object? sender, EventArgs e)
