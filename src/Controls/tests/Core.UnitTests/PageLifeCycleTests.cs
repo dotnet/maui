@@ -262,6 +262,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, firstModalPage.AppearingCount);
 		}
 
+
+		[Fact]
+		public async Task LoadedUnLoadedEvents()
+		{
+			var previousPage = new LCPage();
+			var lcPage = new LCPage();
+			var navigationPage =
+				new TestNavigationPage(true, previousPage)
+					.AddToTestWindow();
+
+			await navigationPage.PushAsync(lcPage);
+
+			int loadedCnt = 0;
+			int unLoadedCnt = 0;
+			lcPage.Loaded += (_, _) => loadedCnt++;
+			lcPage.Unloaded += (_, _) => unLoadedCnt++;
+
+			Assert.Equal(1, loadedCnt);
+			Assert.Equal(0, unLoadedCnt);
+			
+			await navigationPage.PopAsync();
+
+			Assert.Equal(1, loadedCnt);
+			Assert.Equal(1, unLoadedCnt);
+		}
+
 		public class LCPage : ContentPage
 		{
 			public NavigatedFromEventArgs NavigatedFromArgs { get; private set; }
