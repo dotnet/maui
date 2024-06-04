@@ -1,18 +1,70 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 
-namespace Maui.Controls.Sample
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
 {
-	public partial class MainPage : ContentPage
+	const int rowCount = 30;
+	const int columnCount = 30;
+
+	public MainPage()
 	{
-		public MainPage()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
 	}
+
+	private void ClearGrid_Clicked(object sender, EventArgs e)
+	{
+		Stopwatch sw = Stopwatch.StartNew();
+
+		contentGrid.Clear();
+
+		sw.Stop();
+
+		info.Text = $"Clearing grid took: {sw.ElapsedMilliseconds} ms";
+	}
+
+	private void Button_Clicked(object sender, EventArgs e)
+	{
+		Stopwatch sw = Stopwatch.StartNew();
+		contentGrid.Clear();
+
+		for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+		{
+			for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+			{
+				Label label = new Label() { Text = $"[{columnIndex}x{rowIndex}]" };
+				contentGrid.Add(label, column: columnIndex, row: rowIndex);
+			}
+		}
+
+		sw.Stop();
+		info.Text = $"Clearing grid took: {sw.ElapsedMilliseconds} ms";
+	}
+
+	private void BatchGenerate_Clicked(object sender, EventArgs e)
+	{
+		Stopwatch sw = Stopwatch.StartNew();		
+
+		int batchSize = int.Parse(BatchSize.Text);
+
+		for (int i = 0; i < batchSize; i++)
+		{
+			contentGrid.Clear();
+
+			for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+			{
+				for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+				{
+					Label label = new Label() { Text = $"[{columnIndex}x{rowIndex}]" };
+					contentGrid.Add(label, column: columnIndex, row: rowIndex);
+				}
+			}
+		}
+
+		sw.Stop();
+		info.Text = $"Grid was created {batchSize} times and it took {sw.ElapsedMilliseconds} ms in total. Avg run took {Math.Round(sw.ElapsedMilliseconds / (double)batchSize, 2)} ms";
+	}
+
 }
