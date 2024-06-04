@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Storage;
 using Xunit;
 
@@ -474,6 +475,28 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			Assert.Equal(date, get);
 			Assert.Equal(kind, get.Kind);
+		}
+
+		public static IEnumerable<object[]> GetDateTimeOffsetData()
+		{
+			yield return [null, TimeSpan.Zero];
+			yield return [sharedNameTestData, TimeSpan.Zero];
+			yield return [null, TimeSpan.FromHours(1)];
+			yield return [sharedNameTestData, TimeSpan.FromHours(1)];
+		}
+
+		[Theory]
+		[MemberData(nameof(GetDateTimeOffsetData))]
+		public void DateTimeOffsetPreservesOffset_NonStatic(string sharedName, TimeSpan offset)
+		{
+			var date = new DateTime(2018, 05, 07, 8, 30, 0);
+			var dateTimeOffset = new DateTimeOffset(date, offset);
+
+			Preferences.Default.Set("datetimeoffset_offset", dateTimeOffset, sharedName);
+
+			var get = Preferences.Default.Get("datetimeoffset_offset", DateTimeOffset.MinValue, sharedName);
+
+			Assert.Equal(offset, get.Offset);
 		}
 		#endregion
 	}
