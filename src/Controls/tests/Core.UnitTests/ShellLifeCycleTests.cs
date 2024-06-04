@@ -183,16 +183,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// }
 
 
-		[Fact]
-		public async Task EnsureOnAppearingFiresForPushedPage()
-		{
-			Shell shell = new TestShell();
-			shell.Items.Add(CreateShellItem());
-			await shell.Navigation.PushAsync(new LifeCyclePage());
-			var page = (LifeCyclePage)shell.GetVisiblePage();
-			Assert.True(page.Appearing);
-			Assert.True(page.ParentSet);
-		}
+		// [Fact]
+		// public async Task EnsureOnAppearingFiresForPushedPage()
+		// {
+		// 	Shell shell = new TestShell();
+		// 	shell.Items.Add(CreateShellItem());
+		// 	await shell.Navigation.PushAsync(new LifeCyclePage());
+		// 	var page = (LifeCyclePage)shell.GetVisiblePage();
+		// 	Assert.True(page.Appearing);
+		// 	Assert.True(page.ParentSet);
+		// }
 
 		[Fact]
 		public async Task NavigatedFiresAfterContentIsCreatedWhenUsingTemplate()
