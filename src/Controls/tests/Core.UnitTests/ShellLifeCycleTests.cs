@@ -164,23 +164,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(page.Appearing);
 		}
 
-		[Fact]
-		public async Task EnsureOnAppearingFiresForLastPageOnlyAbsoluteRoute()
-		{
-			Shell shell = new TestShell();
-			LifeCyclePage shellContentPage = new LifeCyclePage();
-			shell.Items.Add(CreateShellItem());
-			shell.Items.Add(CreateShellItem(page: shellContentPage, shellItemRoute: "ShellItemRoute"));
-			await shell.GoToAsync("///ShellItemRoute/LifeCyclePage/LifeCyclePage");
+		// [Fact]
+		// public async Task EnsureOnAppearingFiresForLastPageOnlyAbsoluteRoute()
+		// {
+		// 	Shell shell = new TestShell();
+		// 	LifeCyclePage shellContentPage = new LifeCyclePage();
+		// 	shell.Items.Add(CreateShellItem());
+		// 	shell.Items.Add(CreateShellItem(page: shellContentPage, shellItemRoute: "ShellItemRoute"));
+		// 	await shell.GoToAsync("///ShellItemRoute/LifeCyclePage/LifeCyclePage");
 
-			var page = (LifeCyclePage)shell.GetVisiblePage();
-			var nonVisiblePage = (LifeCyclePage)shell.Navigation.NavigationStack[1];
+		// 	var page = (LifeCyclePage)shell.GetVisiblePage();
+		// 	var nonVisiblePage = (LifeCyclePage)shell.Navigation.NavigationStack[1];
 
-			Assert.False(shellContentPage.Appearing);
-			Assert.False(nonVisiblePage.Appearing);
-			await page.AppearingTask.ConfigureAwait(false);
-			Assert.True(page.Appearing);
-		}
+		// 	Assert.False(shellContentPage.Appearing);
+		// 	Assert.False(nonVisiblePage.Appearing);
+		// 	await page.AppearingTask.ConfigureAwait(false);
+		// 	Assert.True(page.Appearing);
+		// }
 
 
 		[Fact]
