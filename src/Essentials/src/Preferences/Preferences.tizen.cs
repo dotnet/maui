@@ -58,9 +58,9 @@ namespace Microsoft.Maui.Storage
 				{
 					Preference.Set(fullKey, dt.ToBinary());
 				}
-				else if (value is DateTimeOffset dt)
+				else if (value is DateTimeOffset dto)
 				{
-					Preference.Set(fullKey, dt.ToString("O"));
+					Preference.Set(fullKey, dto.ToString("O"));
 				}
 				else
 					Preference.Set(fullKey, value);
