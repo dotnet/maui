@@ -30,6 +30,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			int toX = rect2.CenterX();
 			int toY = rect2.CenterY();
 
+			DragCoordinatesAndRestore(androidApp, fromX, fromY, toX, toY);
+
+			VerifyScreenshot();
+		}
+
+		void DragCoordinatesAndRestore(AppiumAndroidApp androidApp, int fromX, int fromY, int toX, int toY)
+		{
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var refreshSequence = new ActionSequence(touchDevice, 0);
 			refreshSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, fromX, fromY, TimeSpan.Zero));
@@ -38,8 +45,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			refreshSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, fromX, fromY, TimeSpan.FromMilliseconds(250)));
 			refreshSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			androidApp.Driver.PerformActions([refreshSequence]);
-
-			VerifyScreenshot();
 		}
 	}
 }
