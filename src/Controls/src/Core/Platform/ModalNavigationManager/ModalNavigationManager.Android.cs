@@ -174,40 +174,99 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			readonly Page _modal;
 			readonly IMauiContext _mauiWindowContext;
-			static DialogBackButoonListener _instanceFoo = default!;
+			static DialogBackButoonListener _backButtonListener = default!;
 			NavigationRootManager? _navigationRootManager;
+			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 
 			public NavigationRootManager? NavigationRootManager
 			{
 				get => _navigationRootManager;
 				private set => _navigationRootManager = value;
 			}
+
 			public bool IsAnimated { get; internal set; }
 
 			public ModalFragment(IMauiContext mauiContext, Page modal)
 			{
 				_modal = modal;
 				_mauiWindowContext = mauiContext;
-				_instanceFoo = new((MauiAppCompatActivity)_mauiWindowContext.GetActivity());
+				_backButtonListener = new((MauiAppCompatActivity)_mauiWindowContext.GetActivity());
 			}
+
 			public override global::Android.App.Dialog OnCreateDialog(Bundle? savedInstanceState)
 			{
 				var dialog = base.OnCreateDialog(savedInstanceState);
-				dialog.CancelEvent += Dialog_CancelEvent;
 
 				if (dialog is null || dialog.Window is null)
 					throw new InvalidOperationException($"{dialog} or {dialog?.Window} is null, and it's invalid");
 
-				dialog.Window.SetBackgroundDrawable(new ColorDrawable(AColor.Transparent));
+				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
 
-				if (IsAnimated)
-					dialog.Window.Attributes!.WindowAnimations = Resource.Animation.nav_default_pop_enter_anim;
-
-				dialog.SetOnKeyListener(_instanceFoo);
+				dialog.SetOnKeyListener(_backButtonListener);
 
 				return dialog;
 			}
 
+			public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
+			{
+				var modalContext = _mauiWindowContext
+					.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
+
+				_navigationRootManager = modalContext.GetNavigationRootManager();
+				_navigationRootManager.Connect(_modal, modalContext);
+
+				return _navigationRootManager?.RootView ??
+					throw new InvalidOperationException("Root view not initialized");
+			}
+
+			public override void OnCreate(Bundle? savedInstanceState)
+			{
+				base.OnCreate(savedInstanceState);
+				SetStyle(DialogFragment.StyleNormal, Resource.Style.Maui_MainTheme_NoActionBar);
+			}
+
+			public override void OnViewCreated(AView view, Bundle? savedInstanceState)
+			{
+				base.OnViewCreated(view, savedInstanceState);
+			}
+
+			public override void OnStart()
+			{
+				base.OnStart();
+
+				var dialog = this.Dialog;
+
+				if (dialog is null || dialog.Window is null || View is null)
+					return;
+
+				int width = ViewGroup.LayoutParams.MatchParent;
+				int height = ViewGroup.LayoutParams.MatchParent;
+				dialog.Window.SetLayout(width, height);
+
+
+				if (IsAnimated)
+				{
+					var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim);
+					View.StartAnimation(animation);
+
+					// Remove this before merge, it's here in case the team preffer to use the animation in code
+					//var slideUp = new TranslateAnimation(0, 0, 1000, 0)
+					//{
+					//	Duration = 500,
+					//	FillAfter = true
+					//};
+
+					//// Start the animation
+					//View.StartAnimation(slideUp);
+				}
+			}
+
+			public override void OnDismiss(IDialogInterface dialog)
+			{
+				var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_exit_anim);
+				View!.StartAnimation(animation);
+				base.OnDismiss(dialog);
+			}
 
 			private sealed class DialogBackButoonListener : Java.Lang.Object, IDialogInterfaceOnKeyListener
 			{
@@ -226,77 +285,6 @@ namespace Microsoft.Maui.Controls.Platform
 						return true;
 					}
 					return false;
-				}
-			}
-
-			private void Dialog_CancelEvent(object? sender, EventArgs e)
-			{
-			}
-
-			public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
-			{
-				var modalContext = _mauiWindowContext
-					.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
-
-				_navigationRootManager = modalContext.GetNavigationRootManager();
-				_navigationRootManager.Connect(_modal, modalContext);
-
-				//Dialog!.Window!.SetBackgroundDrawable(new ColorDrawable(AColor.Transparent));
-
-				return _navigationRootManager?.RootView ??
-					throw new InvalidOperationException("Root view not initialized");
-			}
-
-			public override void OnCreate(Bundle? savedInstanceState)
-			{
-				base.OnCreate(savedInstanceState);
-				SetStyle(DialogFragment.StyleNormal, Resource.Style.Maui_MainTheme_NoActionBar);
-			}
-
-			public override void OnViewCreated(AView view, Bundle? savedInstanceState)
-			{
-				base.OnViewCreated(view, savedInstanceState);
-			}
-
-			public override void OnCancel(IDialogInterface dialog)
-			{
-
-			}
-
-			//TODO handle back button pressed
-			public override void OnDestroy()
-			{
-				base.OnDestroy();
-			}
-
-			public override void OnStart()
-			{
-				base.OnStart();
-
-				var dialog = this.Dialog;
-
-				if (dialog?.Window is null || View is null)
-				{
-					return;
-				}
-
-				if (dialog?.Window != null)
-				{
-					int width = ViewGroup.LayoutParams.MatchParent;
-					int height = ViewGroup.LayoutParams.MatchParent;
-					dialog.Window.SetLayout(width, height);
-				}
-
-				if (IsAnimated)
-				{
-					var slideUp = new TranslateAnimation(0, 0, 1000, 0)
-					{
-						Duration = 500,
-						FillAfter = true
-					};
-
-					// Start the animation
-					View.StartAnimation(slideUp);
 				}
 			}
 		}
