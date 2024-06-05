@@ -73,9 +73,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override nint GetItemsCount(UICollectionView collectionView, nint section) => LoopItemsSource.LoopCount;
 
+		void InitializeCarouselViewLoopManager()
+		{
+			if (_carouselViewLoopManager is null)
+			{
+				_carouselViewLoopManager = new CarouselViewLoopManager(Layout as UICollectionViewFlowLayout);
+				_carouselViewLoopManager.SetItemsSource(LoopItemsSource);
+			}
+		}
+
 		public override void ViewDidLoad()
 		{
-			_carouselViewLoopManager = new CarouselViewLoopManager(Layout as UICollectionViewFlowLayout);
+			InitializeCarouselViewLoopManager();
 			base.ViewDidLoad();
 		}
 
@@ -214,11 +223,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
+			InitialPositionSet = false;
 
 		}
 
 		void Setup(CarouselView carouselView)
 		{
+			InitializeCarouselViewLoopManager();
+						
 			_oldViews = new List<View>();
 			
 			carouselView.Scrolled += CarouselViewScrolled;
