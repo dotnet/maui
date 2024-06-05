@@ -139,12 +139,14 @@ namespace Maui.Controls.Sample
 			Index = index;
 
 			if (string.IsNullOrEmpty(image))
-				Image = "https://picsum.photos/700/300/";
+				Image = "oasis.jpg";
 			else
 				Image = image;
 		}
 
 		public int Index { get; set; }
+
+		public string Title => $"CarouselItem{Index}";
 
 		public string Image { get; set; }
 	}

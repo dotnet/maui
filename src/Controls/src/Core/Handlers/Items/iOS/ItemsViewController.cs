@@ -179,9 +179,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void LoadView()
 		{
-			base.LoadView(); 
-
-			CollectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
+			base.LoadView();
+			var collectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
+			CollectionView = collectionView;
+			(collectionView as IUIViewLifeCycleEvents).MovedToWindow += CollectionViewMovedToWindow;	
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -196,6 +197,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ViewWillLayoutSubviews();
 			InvalidateMeasureIfContentSizeChanged();
 			LayoutEmptyView();
+		}
+
+		void CollectionViewMovedToWindow(object sender, EventArgs e)
+		{
+			if (CollectionView?.Window != null)
+			{
+				AttachingToWindow();
+			}
+			else
+			{
+				DetachingFromWindow();
+			}
 		}
 
 		void InvalidateMeasureIfContentSizeChanged()
@@ -248,6 +261,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			_previousContentSize = contentSize.Value;
 		}
+		
 
 		internal Size? GetSize()
 		{
@@ -773,6 +787,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				CollectionView.Hidden = true;
 			}
+		}
+
+		private protected virtual void AttachingToWindow()
+		{
+
+		}
+
+		private protected virtual void DetachingFromWindow()
+		{
+
 		}
 	}
 }
