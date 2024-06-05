@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using Foundation;
 using UIKit;
 using WebKit;
@@ -19,9 +20,15 @@ namespace Microsoft.Maui.Platform
 
 		public override void SetContextMenuConfiguration(WKWebView webView, WKContextMenuElementInfo elementInfo, Action<UIContextMenuConfiguration> completionHandler)
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)))
 				return;
+			SetContextMenuConfigurationImpl(webView, elementInfo, completionHandler);
+		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void SetContextMenuConfigurationImpl(WKWebView webView, WKContextMenuElementInfo elementInfo, Action<UIContextMenuConfiguration> completionHandler)
+		{
 			UIContextMenuConfiguration? uIContextMenuConfiguration = null;
 			foreach (var interaction in webView.Interactions)
 			{

@@ -503,15 +503,27 @@ namespace Microsoft.Maui.Controls.Platform
 				UIEventButtonMask uIEventButtonMask = (UIEventButtonMask)0;
 
 				if ((tapGesture.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary)
-					uIEventButtonMask |= UIEventButtonMask.Primary;
+					uIEventButtonMask |= Primary;
 
 				if ((tapGesture.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
-					uIEventButtonMask |= UIEventButtonMask.Secondary;
+					uIEventButtonMask |= Secondary;
 
-				result.ButtonMaskRequired = uIEventButtonMask;
+				SetButtonMask(result, uIEventButtonMask);
 			}
 
 			return result;
+		}
+
+		[SupportedOSPlatform("ios13.4")]
+		static UIEventButtonMask Primary => UIEventButtonMask.Primary;
+
+		[SupportedOSPlatform("ios13.4")]
+		static UIEventButtonMask Secondary => UIEventButtonMask.Secondary;
+
+		[SupportedOSPlatform("ios13.4")]
+		void SetButtonMask(UITapGestureRecognizer recognizer, UIEventButtonMask buttonMask)
+		{
+			recognizer.ButtonMaskRequired = buttonMask;
 		}
 
 		static bool ShouldRecognizeTapsTogether(UIGestureRecognizer gesture, UIGestureRecognizer other)
@@ -598,8 +610,7 @@ namespace Microsoft.Maui.Controls.Platform
 #endif
 					)
 				{
-					_defaultAccessibilityRespondsToUserInteraction = PlatformView.AccessibilityRespondsToUserInteraction;
-					PlatformView.AccessibilityRespondsToUserInteraction = true;
+					SetAccessibilityRespondsToUserInteraction();
 				}
 			}
 
@@ -727,6 +738,19 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.0")]
+#if TVOS
+		[SupportedOSPlatform("tvos11.0")]
+#endif
+		void SetAccessibilityRespondsToUserInteraction()
+		{
+			if (PlatformView is not null) {
+				_defaultAccessibilityRespondsToUserInteraction = PlatformView.AccessibilityRespondsToUserInteraction;
+				PlatformView.AccessibilityRespondsToUserInteraction = true;		
+			}
+		}
+
 		void OnTapGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.Is(TapGestureRecognizer.ButtonsProperty))
@@ -782,16 +806,22 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				PlatformView.AccessibilityTraits &= ~_addedFlags;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
 				{
 					if (_defaultAccessibilityRespondsToUserInteraction != null)
-						PlatformView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;
+						SetAccessibilityResponse(PlatformView, _defaultAccessibilityRespondsToUserInteraction.Value);
 				}
 			}
 
 			_addedFlags = UIAccessibilityTrait.None;
 			_defaultAccessibilityRespondsToUserInteraction = null;
 			LoadRecognizers();
+		}
+
+		[SupportedOSPlatform("ios15.0")]
+	void SetAccessibilityResponse(PlatformView view, bool newValue)
+		{
+			view.AccessibilityRespondsToUserInteraction = newValue;
 		}
 
 		void OnElementChanged(object sender, VisualElementChangedEventArgs e)

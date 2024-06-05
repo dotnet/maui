@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
 using UIKit;
@@ -77,8 +78,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the control adheres to changes in UI theme
-			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if ((OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) && !UIStyleMatches(previousTraitCollection))
 				SetupLayer();
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		bool UIStyleMatches (UITraitCollection target)
+		{
+			return target.UserInterfaceStyle == TraitCollection.UserInterfaceStyle;
 		}
 
 		public virtual void SetupLayer()

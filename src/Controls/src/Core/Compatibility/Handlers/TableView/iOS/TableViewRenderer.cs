@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -126,8 +127,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the cells adhere to changes UI theme
-			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (OperatingSystem.IsIOSVersionAtLeast(13) && !UIStyleMatches(previousTraitCollection))
 				Control.ReloadData();
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		bool UIStyleMatches (UITraitCollection target)
+		{
+			return target.UserInterfaceStyle == TraitCollection.UserInterfaceStyle;
 		}
 
 		void SetSource()
