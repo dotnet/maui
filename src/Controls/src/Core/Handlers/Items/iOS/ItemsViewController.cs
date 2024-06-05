@@ -377,7 +377,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return ItemsSource[index];
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
 		void CellContentSizeChanged(object sender, EventArgs e)
 		{
 			if (_disposed)
@@ -400,7 +400,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
 		void CellLayoutAttributesChanged(object sender, LayoutAttributesChangedEventArgs args)
 		{
 			CacheCellAttributes(args.NewAttributes.IndexPath, args.NewAttributes.Size);
