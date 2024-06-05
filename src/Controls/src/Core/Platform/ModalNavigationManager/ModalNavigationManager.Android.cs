@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
@@ -7,16 +6,11 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
-using AndroidX.Activity;
-using AndroidX.AppCompat.App;
-using AndroidX.AppCompat.Widget;
-using AndroidX.Core.View;
 using AndroidX.Fragment.App;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 using AColor = Android.Graphics.Color;
 using System.Collections.Generic;
+using AAnimation = Android.Views.Animations.Animation;
 
 namespace Microsoft.Maui.Controls.Platform
 {
