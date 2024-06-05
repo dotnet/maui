@@ -1628,11 +1628,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var constraint = LayoutConstraint.None;
 			var element = (VisualElement)bindable;
-			if (element.WidthRequest >= 0 && element.MinimumWidthRequest >= 0)
+			if (element.WidthRequest >= 0)
 			{
 				constraint |= LayoutConstraint.HorizontallyFixed;
 			}
-			if (element.HeightRequest >= 0 && element.MinimumHeightRequest >= 0)
+			if (element.HeightRequest >= 0)
 			{
 				constraint |= LayoutConstraint.VerticallyFixed;
 			}
@@ -2139,17 +2139,26 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Occurs when an element has been constructed and added to the object tree.
+		/// Occurs when an element has been constructed and added to the platform visual tree.
 		/// </summary>
 		/// <remarks>This event may occur before the element has been measured so should not be relied on for size information.</remarks>
 		public event EventHandler? Loaded
 		{
 			add
 			{
+				bool watchingLoaded = _watchingPlatformLoaded;
 				_loaded += value;
 				UpdatePlatformUnloadedLoadedWiring(Window);
-				if (_isLoadedFired)
-					_loaded?.Invoke(this, EventArgs.Empty);
+
+				// The point of this code, is to fire loaded if the element is already loaded.
+				//
+				// If this is the first time the user is subscribing to Loaded,
+				// UpdatePlatformUnloadedLoadedWiring will take care of firing Loaded.
+				// If we are already wired up to watch loaded, then we'll fire it off if we know this
+				// view is in a state where it's been determined that it's accurate to fire
+				// _isLoadedFired.
+				if (_isLoadedFired && watchingLoaded)
+					value?.Invoke(this, EventArgs.Empty);
 
 			}
 			remove
@@ -2160,7 +2169,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Occurs when an element is no longer connected to the main object tree.
+		/// Occurs when an element is no longer connected to the platform visual tree.
 		/// </summary>
 		public event EventHandler? Unloaded
 		{
