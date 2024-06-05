@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		ViewGroup? _modalParentView;
 		bool _navAnimationInProgress;
 		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
+		AAnimation? dismissAnimation;
 
 		partial void InitializePlatform()
 		{
@@ -70,43 +71,32 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var source = new TaskCompletionSource<Page>();
 
-			if (modal.Handler is IPlatformViewHandler modalHandler)
+			var fragmentManager = WindowMauiContext.GetFragmentManager();
+
+			var dialogFragment = modals[modal]; //(ModalFragment?)fragmentManager.FindFragmentByTag(modal.Title);
+			modals.Remove(modal);
+
+			// If for the dialog is null what we want to do?
+			if (dialogFragment is null)
+				return Task.FromResult(modal);
+
+			if (animated && dialogFragment.View is not null)
 			{
-				var fragmentManager = WindowMauiContext.GetFragmentManager();
+				dismissAnimation ??= AnimationUtils.LoadAnimation(WindowMauiContext.Context, Resource.Animation.nav_modal_default_exit_anim);
 
-				var dialogFragment = modals[modal]; //(ModalFragment?)fragmentManager.FindFragmentByTag(modal.Title);
-				modals.Remove(modal);
+				dismissAnimation!.AnimationEnd += OnAnimationEnded;
 
-				// If for the dialog is null what we want to do?
-				if (dialogFragment is null)
-					return Task.FromResult(modal);
-
-				dialogFragment.IsAnimated = animated;
-
-				var modalParent = GetModalParentView();
-
-				if (animated)
-				{
-					dialogFragment?.View?.Animate()?.TranslationY(modalParent.Height)
-								?.SetInterpolator(new AccelerateInterpolator(1))?.SetDuration(300)?.
-								SetListener(new GenericAnimatorListener
-								{
-									OnEnd = a =>
-									{
-										dialogFragment.Dismiss();
-										source.TrySetResult(modal);
-									}
-								});
-				}
-				else
-				{
-					dialogFragment?.Dismiss();
-					source.TrySetResult(modal);
-				}
+				dialogFragment.View.StartAnimation(dismissAnimation);
 			}
 
 			RestoreFocusability(GetCurrentRootView());
 			return source.Task;
+
+			void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
+			{
+				dialogFragment.Dismiss();
+				source.TrySetResult(modal);
+			}
 		}
 
 		// The CurrentPage doesn't represent the root of the platform hierarchy.
