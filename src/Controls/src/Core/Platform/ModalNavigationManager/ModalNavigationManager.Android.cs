@@ -139,8 +139,9 @@ namespace Microsoft.Maui.Controls.Platform
 				Cancelable = false,
 				IsAnimated = animated
 			};
+
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
-			dialogFragment.ShowNow(fragmentManager, modal.Title);
+			dialogFragment.ShowNow(fragmentManager, null);
 
 			modals.Add(modal, dialogFragment);
 			NavAnimationInProgress = false;
