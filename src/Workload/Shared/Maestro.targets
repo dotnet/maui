@@ -5,10 +5,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Arcade.Sdk" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" PrivateAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
-  <!-- https://github.com/dotnet/arcade/blob/efc3da96e5ac110513e92ebd9ef87c73f44d8540/Documentation/DependencyFlowOnboardingWithoutArcade.md -->
+  <UsingTask TaskName="Microsoft.DotNet.Build.Tasks.Feed.PushToBuildStorage" AssemblyFile="$(PkgMicrosoft_DotNet_Build_Tasks_Feed)\tools\net9.0\Microsoft.DotNet.Build.Tasks.Feed.dll" />
+
+  <!-- https://github.com/dotnet/arcade/blob/main/Documentation/DependencyFlowOnboardingWithoutArcade.md -->
   <Target Name="PushManifestToBuildAssetRegistry" DependsOnTargets="SetVersions">
     <PropertyGroup>
       <ArtifactsLogDir>$(RootManifestOutputPath)</ArtifactsLogDir>

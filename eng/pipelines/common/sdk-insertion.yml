@@ -64,6 +64,14 @@ jobs:
         inputs:
           artifactName: vsdrop-multitarget-signed
           downloadPath: $(Build.StagingDirectory)/$(MultiTargetVSDropCommitStatusName)
+  
+  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+    displayName: 'Use .NET SDK $(DOTNET_VERSION)'
+    inputs:
+      packageType: sdk
+      version: $(DOTNET_VERSION)
+      includePreviewVersions: true
+
   - task: DotNetCoreCLI@2
     displayName: Generate and publish BAR manifest
     inputs:
