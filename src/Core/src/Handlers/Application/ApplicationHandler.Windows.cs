@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Handlers
 					if (appWindow is not null && !appWindow.IsVisible)
 						appWindow.Show();
 
+					// Cannot close an already closed, or disposed Window.
 					platformWindow.Close();
 				}
 			}
