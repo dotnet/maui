@@ -11,7 +11,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public class CarouselViewController : ItemsViewController<CarouselView>, MauiCollectionView.ICustomMauiCollectionViewDelegate
+	public class CarouselViewController : ItemsViewController<CarouselView>
 	{
 		[Obsolete("Use ItemsView property instead")]
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Unused")]
@@ -77,23 +77,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_carouselViewLoopManager = new CarouselViewLoopManager(Layout as UICollectionViewFlowLayout);
 			base.ViewDidLoad();
-
-			if(CollectionView is MauiCollectionView mauiCollectionView)
-			{
-				mauiCollectionView.SetCustomDelegate(this);
-			}
-		}
-
-		void MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
-		{
-			if (view?.Window is not null)
-			{
-				DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
-			}
-			else
-			{
-				DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
-			}
 		}
 
 		void OnDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
@@ -225,6 +208,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_oldViews = null;
 
 			carouselView.Scrolled -= CarouselViewScrolled;
+			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
 
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			
@@ -238,6 +222,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_oldViews = new List<View>();
 			
 			carouselView.Scrolled += CarouselViewScrolled;
+			DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
 
 			SubscribeCollectionItemsSourceChanged(ItemsSource);
 		}

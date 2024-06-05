@@ -11,7 +11,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract class ItemsViewController<TItemsView> : UICollectionViewController
+	public abstract class ItemsViewController<TItemsView> : UICollectionViewController, MauiCollectionView.ICustomMauiCollectionViewDelegate
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
@@ -181,8 +181,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.LoadView();
 			var collectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
+			collectionView.SetCustomDelegate(this);
 			CollectionView = collectionView;
-			(collectionView as IUIViewLifeCycleEvents).MovedToWindow += CollectionViewMovedToWindow;	
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -199,7 +199,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			LayoutEmptyView();
 		}
 
-		void CollectionViewMovedToWindow(object sender, EventArgs e)
+
+
+		void MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
 		{
 			if (CollectionView?.Window != null)
 			{
