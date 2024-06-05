@@ -18,6 +18,7 @@ namespace Microsoft.Maui
 		private const bool IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault = true;
 		private const bool IsQueryPropertyAttributeSupportedByDefault = true;
 		private const bool IsImplicitCastOperatorsUsageViaReflectionSupportedByDefault = true;
+		private const bool AreBindingInterceptorsEnabledByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if !NETSTANDARD
@@ -55,6 +56,11 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported", out bool isSupported)
 				? isSupported
 				: IsImplicitCastOperatorsUsageViaReflectionSupportedByDefault;
+
+		internal static bool AreBindingInterceptorsEnabled =>
+			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsEnabled", out bool areEnabled)
+				? areEnabled
+				: AreBindingInterceptorsEnabledByDefault;
 #pragma warning restore IL4000
 	}
 }
