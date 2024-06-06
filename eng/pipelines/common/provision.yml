@@ -1,13 +1,13 @@
 parameters:
   poolName: ''
+  clearCaches: true
   skipXcode: false
-  skipVS: true
   skipProvisioning: $(skipProvisionator)
   skipAndroidSdks: false
+  skipAndroidImages: false
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
-  provisionatorVSPath: $(provisionator.vs)
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
@@ -49,8 +49,10 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
-        ${{ if eq(parameters.skipAndroidSdks, 'true') }}:
-          SKIP_ANDROID_API_SDKS: true
+        ${{ if eq(parameters.skipAndroidSdks, true) }}:
+          SKIP_ANDROID_API_SDKS: 'true'
+        ${{ if eq(parameters.skipAndroidImages, true) }}:
+          SKIP_ANDROID_API_IMAGES: 'true'
 
   # Setup JDK Paths (gradle needs it)
   - bash: |
@@ -70,33 +72,6 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
   # Prepare Windows
-  - powershell: |
-      if (-not $(where.exe pwsh)) {
-        $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
-        $output = "$env:TEMP\PowerShell.msi"
-        Remove-Item -Force $output -ErrorAction Ignore
-        Invoke-WebRequest -Uri $url -OutFile $output
-        msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
-      }
-    displayName: 'Install PowerShell Core'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-
-  - ${{ if ne(parameters.skipVS, 'true') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@2
-      displayName: 'Provision Visual Studio'
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-      inputs:
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorVSPath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-    - pwsh: |
-        $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
-        echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
-      displayName: 'Setup MSBuild Paths'
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
     - task: xamops.azdevex.provisionator-task.provisionator@2
@@ -108,6 +83,10 @@ steps:
         github_token: ${{ parameters.gitHubToken }}
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+        ${{ if eq(parameters.skipAndroidSdks, true) }}:
+          SKIP_ANDROID_API_SDKS: 'true'
+        ${{ if eq(parameters.skipAndroidImages, true) }}:
+          SKIP_ANDROID_API_IMAGES: 'true'
 
   - pwsh: |
       if ($env:JAVA_HOME_11_X64) {
@@ -146,7 +125,7 @@ steps:
 
   # Prepare Both
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
-    displayName: 'Use .NET SDK 7'
+    displayName: 'Use .NET SDK $(DOTNET_VERSION)'
     inputs:
       packageType: sdk
       version: $(DOTNET_VERSION)
@@ -156,8 +135,9 @@ steps:
       dotnet --list-sdks
     displayName: 'Show .NET SDK info'
 
-  - pwsh: dotnet nuget locals all --clear
-    displayName: 'Clear all NuGet caches'
+  - ${{ if eq(parameters.clearCaches, 'true') }}:
+    - pwsh: dotnet nuget locals all --clear
+      displayName: 'Clear all NuGet caches'
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - task: PowerShell@2

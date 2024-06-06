@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (_initialized)
 			{
-				// Reload the data so the currently visible cells get laid out according to the new layout
+				// Reload the data so the currently visible cells are arranged in accordance with the updated layout configuration.
 				CollectionView.ReloadData();
 			}
 		}

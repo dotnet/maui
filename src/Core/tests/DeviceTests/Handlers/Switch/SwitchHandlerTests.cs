@@ -37,11 +37,9 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, fireCount);
 		}
 
-		[Theory(DisplayName = "Track Color Initializes Correctly"
-#if WINDOWS
-			, Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/9113"
-#endif
-			)]
+#if !WINDOWS
+// WINDOWS: https://github.com/dotnet/maui/issues/20535
+		[Theory(DisplayName = "Track Color Initializes Correctly")]
 		[InlineData(true)]
 		//[InlineData(false)] // Track color is not always visible when off
 		public async Task TrackColorInitializesCorrectly(bool isToggled)
@@ -52,23 +50,25 @@ namespace Microsoft.Maui.DeviceTests
 				TrackColor = Colors.Red
 			};
 
-			await ValidateTrackColor(switchStub, Colors.Red);
+			await AttachAndRun(switchStub, async (handler) =>
+			{
+				await ValidateTrackColor(switchStub, Colors.Red);
+			});
 		}
 
-		[Fact(DisplayName = "Track Color Updates Correctly"
-#if WINDOWS
-			, Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/9113"
-#endif
-			)]
+		[Fact(DisplayName = "Track Color Updates Correctly")]
 		public async Task TrackColorUpdatesCorrectly()
 		{
 			var switchStub = new SwitchStub()
 			{
 				IsOn = true
 			};
-
-			await ValidateTrackColor(switchStub, Colors.Red, () => switchStub.TrackColor = Colors.Red);
+			await AttachAndRun(switchStub, async (handler) =>
+			{
+				await ValidateTrackColor(switchStub, Colors.Red, () => switchStub.TrackColor = Colors.Red);
+			});
 		}
+#endif
 
 		[Fact(DisplayName = "ThumbColor Initializes Correctly", Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/1275")]
 		public async Task ThumbColorInitializesCorrectly()

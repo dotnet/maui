@@ -1,7 +1,7 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Mobile" ],
     "identity": "Microsoft.Maui.MauiApp.CSharp.DOTNET_TFM_VERSION_VALUE",
     "groupIdentity": "Microsoft.Maui.App",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
@@ -21,6 +21,9 @@
       {
         "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
         "path": "MainPage.xaml"
+      },
+      {
+        "path": "MauiApp.1.csproj"
       }
     ],
     "postActions": [
@@ -98,7 +101,7 @@
           "steps": [
             {
               "regex": "[^a-z0-9_\\.]",
-              "replacement": "_"
+              "replacement": ""
             }
           ]
         }

@@ -70,8 +70,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
-			return DesiredSize;
+			return this.ComputeDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		protected override Size ArrangeOverride(Rect bounds)

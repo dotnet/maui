@@ -1,10 +1,7 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <Import Project="../Shared/Common.targets" />
-
-  <PropertyGroup>
-    <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
-  </PropertyGroup>
+  <Import Project="../Shared/Maestro.targets" />
 
   <PropertyGroup>
     <!-- NuGet package information -->
@@ -62,6 +59,18 @@
       />
       <FileWrites Include="$(IntermediateOutputPath)BundledVersions.targets" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="_CopyWorkloadFiles" AfterTargets="_GenerateBundledVersions">
+    <PropertyGroup>
+      <_DestinationFolder>$(DotNetPacksDirectory)$(PackageId)/$(PackageReferenceVersion)/Sdk/</_DestinationFolder>
+    </PropertyGroup>
+    <ItemGroup>
+      <_Files Include="Sdk/*" />
+      <_Files Include="$(IntermediateOutputPath)BundledVersions.targets" />
+    </ItemGroup>
+    <MakeDir Directories="$(_DestinationFolder)" />
+    <Copy SourceFiles="@(_Files)" DestinationFolder="$(_DestinationFolder)" />
   </Target>
 
 </Project>

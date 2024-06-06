@@ -1,5 +1,7 @@
 ﻿using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.Interactions;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -7,7 +9,7 @@ namespace UITest.Appium
 	public class AppiumSliderActions : ICommandExecutionGroup
 	{
 		const string SetSliderValueCommand = "setSliderValue";
-		
+
 		protected readonly AppiumApp _app;
 
 		public AppiumSliderActions(AppiumApp app)
@@ -75,14 +77,15 @@ namespace UITest.Appium
 			int x = position.X;
 			int y = position.Y;
 
-			double moveToX = (x + size.Width) * value / maximum;
-			
-			TouchAction touchAction = new TouchAction(driver);
-			touchAction
-				.Press(x, y)
-				.MoveTo(moveToX, y)
-				.Release()
-				.Perform();
+			int moveToX = (int)((x + size.Width) * value / maximum);
+
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+			var touchSequence = new ActionSequence(touchDevice, 0);
+			touchSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, x, y, TimeSpan.Zero));
+			touchSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+			touchSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, moveToX, y, TimeSpan.FromMicroseconds(250)));
+			touchSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+			driver.PerformActions([touchSequence]);
 		}
 	}
 }

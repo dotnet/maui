@@ -8,6 +8,7 @@
     <Nullable>disable</Nullable>
     <DefineConstants>$(DefineConstants);__IOS__;UITEST;__SHELL__;IOS;iOS</DefineConstants>
     <NoWarn>1701;1702;0618;0612;CA1307;CA1309</NoWarn>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,10 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
-    <PackageReference Include="Xamarin.UITest" Version="4.1.4" />
+    <PackageReference Include="Xamarin.UITest" Version="4.3.4" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
 

@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Graphics.Platform
 	[Register(nameof(PlatformGraphicsView))]
 	public class PlatformGraphicsView : UIView
 	{
-		private WeakReference<IGraphicsRenderer> _renderer;
+		private IGraphicsRenderer _renderer;
 		private CGColorSpace _colorSpace;
-		private WeakReference<IDrawable> _drawable;
+		private IDrawable _drawable;
 		private CGRect _lastBounds;
 
 		public PlatformGraphicsView(CGRect frame, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(frame)
@@ -34,34 +34,32 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IGraphicsRenderer Renderer
 		{
-			get => _renderer is not null && _renderer.TryGetTarget(out var r) ? r : null;
+			get => _renderer;
 
 			set
 			{
-				var renderer = Renderer;
-				if (renderer != null)
+				if (_renderer != null)
 				{
-					renderer.Drawable = null;
-					renderer.GraphicsView = null;
-					renderer.Dispose();
+					_renderer.Drawable = null;
+					_renderer.GraphicsView = null;
+					_renderer.Dispose();
 				}
 
-				renderer = value ?? new DirectRenderer();
-				_renderer = new(renderer);
+				_renderer = value ?? new DirectRenderer();
 
-				renderer.GraphicsView = this;
-				renderer.Drawable = Drawable;
+				_renderer.GraphicsView = this;
+				_renderer.Drawable = Drawable;
 				var bounds = Bounds;
-				renderer.SizeChanged((float)bounds.Width, (float)bounds.Height);
+				_renderer.SizeChanged((float)bounds.Width, (float)bounds.Height);
 			}
 		}
 
 		public IDrawable Drawable
 		{
-			get => _drawable is not null && _drawable.TryGetTarget(out var d) ? d : null;
+			get => _drawable;
 			set
 			{
-				_drawable = new(value);
+				_drawable = value;
 				if (Renderer is IGraphicsRenderer renderer)
 				{
 					renderer.Drawable = value;

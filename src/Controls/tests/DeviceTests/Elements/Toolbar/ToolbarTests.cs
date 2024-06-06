@@ -14,10 +14,12 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 #if IOS || MACCATALYST
 using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
 using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
+using TabbedRenderer = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
@@ -37,7 +39,11 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					#if IOS || MACCATALYST
+                    handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#else
+                    handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+#endif
 
 					SetupShellHandlers(handlers);
 				});
@@ -174,7 +180,7 @@ namespace Microsoft.Maui.DeviceTests
 						pageSet[i].Contains("NavigationPage", StringComparison.OrdinalIgnoreCase) ||
 						pageSet[i].Contains("Shell", StringComparison.OrdinalIgnoreCase);
 
-					await AssertionExtensions.Wait(() => shouldHaveToolbar == IsNavigationBarVisible(currentPage.Handler));
+					await AssertEventually(() => shouldHaveToolbar == IsNavigationBarVisible(currentPage.Handler));
 					Assert.Equal(shouldHaveToolbar, IsNavigationBarVisible(currentPage.Handler));
 				}
 			});

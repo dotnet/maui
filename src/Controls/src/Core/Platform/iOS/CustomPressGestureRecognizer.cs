@@ -14,6 +14,7 @@ internal class CustomPressGestureRecognizer : UIGestureRecognizer
 	public CustomPressGestureRecognizer(NSObject target, Selector action) : base(target, action)
 	{
 		_target = target;
+		CancelsTouchesInView = false;
 	}
 
 	public CustomPressGestureRecognizer(Action<UIGestureRecognizer> action)

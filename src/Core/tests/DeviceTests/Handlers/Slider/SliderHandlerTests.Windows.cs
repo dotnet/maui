@@ -1,13 +1,35 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SliderHandlerTests
 	{
+		[Fact(DisplayName = "Thumb Color Initializes Correctly")]
+		public async Task ThumbColorInitializesCorrectly()
+		{
+			var slider = new SliderStub()
+			{
+				ThumbColor = Colors.Purple
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(slider);
+
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					await AssertEventually(() => handler.PlatformView.IsLoaded());
+
+					await ValidateNativeThumbColor(slider, Colors.Purple);
+				}, MauiContext);
+			});
+
+		}
+
 		// https://github.com/dotnet/maui/issues/12405
 		[Theory(DisplayName = "Platform Slider SmallChange Initializes Correctly")]
 		[InlineData(0, 1, 0)]
@@ -54,9 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(slider);
 
-				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
-
-				Assert.True(imageLoaded);
+				await AssertEventually(() => ImageSourceLoaded(handler));
 
 				await Task.Delay(100);
 
@@ -82,8 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(slider);
 
-				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
-				Assert.True(imageLoaded);
+				await AssertEventually(() => ImageSourceLoaded(handler));
 
 				await handler.PlatformView.AttachAndRun(async () =>
 				{
@@ -99,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		Slider GetNativeSlider(SliderHandler sliderHandler) =>
+        UI.Xaml.Controls.Slider GetNativeSlider(SliderHandler sliderHandler) =>
 			sliderHandler.PlatformView;
 
 		double GetNativeProgress(SliderHandler sliderHandler) =>
@@ -129,6 +148,26 @@ namespace Microsoft.Maui.DeviceTests
 		bool ImageSourceLoaded(SliderHandler sliderHandler)
 		{
 			return (sliderHandler.PlatformView as MauiSlider)?.ThumbImageSource != null;
+		}
+
+		async Task ValidateNativeThumbColor(ISlider slider, Color color)
+		{
+			var expected = await GetValueAsync(slider, handler =>
+			{
+				var nativeSlider = GetNativeSlider(handler);
+
+				if (nativeSlider.GetFirstDescendant<Thumb>() is Thumb thumb)
+				{
+					if (thumb.Background is UI.Xaml.Media.SolidColorBrush solidThumb)
+					{
+						return solidThumb.Color.ToColor();
+					}
+				}
+				
+				return null;
+			});
+
+			Assert.Equal(expected, color);
 		}
 	}
 }

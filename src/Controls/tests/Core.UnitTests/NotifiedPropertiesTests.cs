@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					return init();
 				if (typeof(TView) == typeof(View))
 					return new View();
-				return (TView)Activator.CreateInstance(typeof(TView), new object[] { });
+				return (TView)Activator.CreateInstance(typeof(TView), Array.Empty<object>());
 			}
 
 			public override string DebugName

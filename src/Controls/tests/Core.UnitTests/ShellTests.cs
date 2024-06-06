@@ -620,10 +620,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(item1);
 			shell.Items.Add(item2);
 
-			shell.GoToAsync("//rootlevelcontent2");
+			await shell.GoToAsync("//rootlevelcontent2");
 			Assert.Equal(shell.CurrentItem, item2);
 
-			shell.GoToAsync("//rootlevelcontent1");
+			await shell.GoToAsync("//rootlevelcontent1");
 			Assert.Equal(shell.CurrentItem, item1);
 		}
 
@@ -1292,7 +1292,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				page = shell.CurrentPage;
 			};
 
-			shell.GoToAsync(new ShellNavigationState("//two/tabfour/"));
+			await shell.GoToAsync(new ShellNavigationState("//two/tabfour/"));
 			Assert.NotNull(page);
 			Assert.IsType<ShellTestPage>(page);
 			Assert.Equal((tabfour as IShellSectionController).PresentedPage, page);

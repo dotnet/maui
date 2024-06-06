@@ -160,15 +160,15 @@ namespace Microsoft.Maui.Platform
 			return IsChecked ? Checked : Unchecked;
 		}
 
-		UIBezierPath CreateBoxPath(CGRect backgroundRect) => UIBezierPath.FromOval(backgroundRect);
-		UIBezierPath CreateCheckPath() => new UIBezierPath
+		static UIBezierPath CreateBoxPath(CGRect backgroundRect) => UIBezierPath.FromOval(backgroundRect);
+		static UIBezierPath CreateCheckPath() => new UIBezierPath
 		{
 			LineWidth = (nfloat)0.077,
 			LineCapStyle = CGLineCap.Round,
 			LineJoinStyle = CGLineJoin.Round
 		};
 
-		void DrawCheckMark(UIBezierPath path)
+		static void DrawCheckMark(UIBezierPath path)
 		{
 			path.MoveTo(new CGPoint(0.72f, 0.22f));
 			path.AddLineTo(new CGPoint(0.33f, 0.6f));
@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Platform
 			return img;
 		}
 
-		UIImage CreateCheckMark()
+		static UIImage CreateCheckMark()
 		{
 			UIGraphics.BeginImageContextWithOptions(new CGSize(DefaultSize, DefaultSize), false, 0);
 			var context = UIGraphics.GetCurrentContext();

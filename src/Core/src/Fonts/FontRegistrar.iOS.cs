@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 			return LoadEmbeddedFont(font, filename, alias, GetNativeFontStream(filename, alias));
 		}
 
-		string? ResolveFileSystemFont(string filename)
+		static string? ResolveFileSystemFont(string filename)
 		{
 			var mainBundlePath = Foundation.NSBundle.MainBundle.BundlePath;
 
@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		FileStream GetNativeFontStream(string filename, string? alias)
+		static FileStream GetNativeFontStream(string filename, string? alias)
 		{
 			var resolvedFilename = ResolveFileSystemFont(filename);
 

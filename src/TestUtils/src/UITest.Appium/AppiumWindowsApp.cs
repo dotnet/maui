@@ -10,6 +10,7 @@ namespace UITest.Appium
 		public AppiumWindowsApp(Uri remoteAddress, IConfig config)
 			: base(new WindowsDriver(remoteAddress, GetOptions(config)), config)
 		{
+
 		}
 
 		public override ApplicationState AppState
@@ -23,7 +24,11 @@ namespace UITest.Appium
 				}
 				catch (NoSuchWindowException)
 				{
-					return ApplicationState.Not_Running;
+					return ApplicationState.NotRunning;
+				}
+				catch(Exception)
+				{
+					return ApplicationState.Unknown;
 				}
 			}
 		}

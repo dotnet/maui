@@ -64,38 +64,35 @@ parameters:
   - name: BuildEverything
     type: boolean
     default: false
+
   - name: BuildConfigurations
     type: object
     default:
       - Debug
       - Release
+
   - name: BuildPlatforms
     type: object
     default:
       - name: Windows
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
-        bootsAndroid: $(Android.Msi)
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
-        bootsAndroid: $(Android.Pkg)
-        bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: build-macos
+ 
   - name: PackPlatforms
     type: object
     default:
       - name: Windows
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
-        bootsAndroid: $(Android.Msi)
         artifact: nuget
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
-        bootsAndroid: $(Android.Pkg)
-        bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: nuget-macos
 
   - name: RunTemplatePlatforms
@@ -106,7 +103,6 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
-        - Agent.OSVersion -equals 13.5
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
@@ -114,7 +110,6 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
-        - Agent.OSVersion -equals 13.5
       testName: RunOniOS
       artifact: templates-run-ios
 
@@ -123,8 +118,6 @@ parameters:
     default:
       - name: default
         tfm: default
-      # - name: net6
-      #   tfm: net6.0
       - name: net8
         tfm: net8.0
 
@@ -164,7 +157,6 @@ stages:
               demands:
                 - macOS.Name -equals Ventura
                 - macOS.Architecture -equals x64
-                - Agent.OSVersion -equals 13.5
             steps:
               - template: common/provision.yml
                 parameters:
@@ -207,15 +199,37 @@ stages:
             demands:
               - macOS.Name -equals Ventura
               - macOS.Architecture -equals x64
-              - Agent.OSVersion -equals 13.5
+          variables:
+            - name: _buildScript
+              value: $(Build.SourcesDirectory)/build.cmd -ci
+            - name: _BuildConfig
+              value: Release
+            - name: _BuildOfficalId
+              value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
+
           steps:
             - template: common/pack.yml
               parameters:
                 platform: ${{ PackPlatform.name }}
-                poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
+                artifactsPath: $(Build.ArtifactStagingDirectory)
+                artifactBinaries: 'pack-binaries'
+                buildConfiguration: $(_BuildConfig)
+                dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
+                buildScript: $(_buildScript)
+                repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
+                repoLogPath: $(Build.Arcade.LogsPath)
+                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                officialBuildId: $(_BuildOfficalId)
+                prepareSteps:
+                  - template: common/provision.yml
+                    parameters:
+                      checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                      skipAndroidImages: true
 
   - stage: samples_net
     displayName: Test .NET MAUI Samples
@@ -233,7 +247,6 @@ stages:
             demands:
               - macOS.Name -equals Ventura
               - macOS.Architecture -equals x64
-              - Agent.OSVersion -equals 13.5
           steps:
             - template: common/provision.yml
               parameters:
@@ -274,8 +287,7 @@ stages:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
         BuildPlatforms: ${{ parameters.BuildPlatforms }}
 
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - template: common/security-compliance.yml
-    - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
-    - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
+  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  #   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+  #   - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+  #   - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]

@@ -1,11 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
-using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -23,7 +20,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, widthConstraint, heightConstraint) =>
 			{
 				if (widthConstraint < 30)
+				{
 					return new SizeRequest(new Size(40, 50));
+				}
+
 				return new SizeRequest(new Size(20, 100));
 			};
 		}
@@ -538,7 +538,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var task = new TaskCompletionSource<bool>();
 
-			Task.Factory.StartNew(() => Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
+			_ = Task.Factory.StartNew(() => Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
 			{
 				task.SetResult(false);
 				return false;
@@ -554,11 +554,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var task = new TaskCompletionSource<int>();
 
 			int steps = 0;
-			Task.Factory.StartNew(() => Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
+			_ = Task.Factory.StartNew(() => Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
 			{
 				steps++;
 				if (steps < 2)
+				{
 					return true;
+				}
+
 				task.SetResult(steps);
 				return false;
 			}));
@@ -604,7 +607,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					args.PropertyName == View.YProperty.PropertyName ||
 					args.PropertyName == View.WidthProperty.PropertyName ||
 					args.PropertyName == View.HeightProperty.PropertyName)
+				{
 					changed = true;
+				}
 			};
 
 			view.SizeChanged += (sender, args) => changed = true;
@@ -671,7 +676,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, widthConstraint, heightConstraint) =>
 			{
 				if (heightConstraint < 30)
+				{
 					return new SizeRequest(new Size(40, 50));
+				}
+
 				return new SizeRequest(new Size(20, 100));
 			};
 

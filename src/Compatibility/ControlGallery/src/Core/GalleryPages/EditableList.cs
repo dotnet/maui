@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		{
 			Messages = new ObservableCollection<MessageViewModel>(Enumerable.Range(0, messagesCount).Select(i =>
 			{
-				return new MessageViewModel { Subject = "Subject Line " + i, MessagePreview = "Lorem ipsum dolorem monkeys bonkers " + i };
+				return new MessageViewModel { Subject = "Subject Line " + i, MessagePreview = "Lorem ipsum dolorem monkeys" + i };
 			}));
 
 			MessagingCenter.Subscribe<MessageViewModel, MessageViewModel>(this, "DeleteMessage", (vm, vm2) =>
