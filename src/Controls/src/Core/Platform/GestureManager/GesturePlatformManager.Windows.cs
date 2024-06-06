@@ -38,18 +38,26 @@ class GesturePlatformManager : IDisposable
 		_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
 
 		if (_handler.VirtualView == null)
+		{
 			throw new ArgumentNullException(nameof(handler.VirtualView));
+		}
 
 		if (_handler.PlatformView == null)
+		{
 			throw new ArgumentNullException(nameof(handler.PlatformView));
+		}
 
 		Element = (VisualElement)_handler.VirtualView;
 		Control = _handler.PlatformView;
 
 		if (_handler.ContainerView != null)
+		{
 			Container = _handler.ContainerView;
+		}
 		else
+		{
 			Container = _handler.PlatformView;
+		}
 	}
 
 	public FrameworkElement? Container
@@ -58,7 +66,9 @@ class GesturePlatformManager : IDisposable
 		set
 		{
 			if (_container == value)
+			{
 				return;
+			}
 
 			ClearContainerEventHandlers();
 
@@ -101,7 +111,9 @@ class GesturePlatformManager : IDisposable
 		set
 		{
 			if (_control == value)
+			{
 				return;
+			}
 
 			if (_control != null)
 			{
@@ -121,18 +133,24 @@ class GesturePlatformManager : IDisposable
 	void SendEventArgs<TRecognizer>(Action<TRecognizer> func)
 	{
 		if (_container == null && _control == null)
+		{
 			return;
+		}
 
 		var view = Element as View;
 		var gestures = view?.GestureRecognizers;
 
 		if (gestures == null)
+		{
 			return;
+		}
 
 		foreach (var gesture in gestures)
 		{
 			if (gesture is TRecognizer recognizer)
+			{
 				func(recognizer);
+			}
 		}
 	}
 
@@ -207,7 +225,9 @@ class GesturePlatformManager : IDisposable
 		SendEventArgs<DropGestureRecognizer>(async rec =>
 		{
 			if (!rec.AllowDrop)
+			{
 				return;
+			}
 
 			try
 			{
@@ -252,9 +272,13 @@ class GesturePlatformManager : IDisposable
 					if (Uri.TryCreate(args.Data.Text, UriKind.Absolute, out uri))
 					{
 						if (args.Data.Text.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+						{
 							e.Data.SetWebLink(uri);
+						}
 						else
+						{
 							e.Data.SetApplicationLink(uri);
+						}
 					}
 					else
 					{
@@ -275,7 +299,9 @@ class GesturePlatformManager : IDisposable
 		set
 		{
 			if (_element == value)
+			{
 				return;
+			}
 
 			if (_element != null)
 			{
@@ -283,7 +309,9 @@ class GesturePlatformManager : IDisposable
 				if (view != null)
 				{
 					if (ElementGestureRecognizers != null)
+					{
 						ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
+					}
 				}
 			}
 
@@ -295,7 +323,9 @@ class GesturePlatformManager : IDisposable
 				if (view != null)
 				{
 					if (ElementGestureRecognizers != null)
+					{
 						ElementGestureRecognizers.CollectionChanged += _collectionChangedHandler;
+					}
 				}
 			}
 		}
@@ -371,12 +401,16 @@ class GesturePlatformManager : IDisposable
 	protected virtual void Dispose(bool disposing)
 	{
 		if (_isDisposed)
+		{
 			return;
+		}
 
 		_isDisposed = true;
 
 		if (!disposing)
+		{
 			return;
+		}
 
 		ClearContainerEventHandlers();
 
@@ -387,7 +421,9 @@ class GesturePlatformManager : IDisposable
 			if (view != null)
 			{
 				if (ElementGestureRecognizers != null)
+				{
 					ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
+				}
 			}
 		}
 
@@ -405,7 +441,9 @@ class GesturePlatformManager : IDisposable
 	void HandleSwipe(ManipulationDeltaRoutedEventArgs e, View view)
 	{
 		if (_fingers.Count > 1 || view == null)
+		{
 			return;
+		}
 
 		_isSwiping = true;
 
@@ -418,8 +456,10 @@ class GesturePlatformManager : IDisposable
 	void HandlePan(ManipulationDeltaRoutedEventArgs e, View view)
 	{
 		if (view == null)
+		{
 			return;
-		
+		}
+
 		_isPanning = true;
 
 		foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
@@ -436,7 +476,9 @@ class GesturePlatformManager : IDisposable
 	void HandlePinch(ManipulationDeltaRoutedEventArgs e, View view)
 	{
 		if (_fingers.Count < 2 || view == null)
+		{
 			return;
+		}
 
 		_isPinching = true;
 
@@ -477,7 +519,9 @@ class GesturePlatformManager : IDisposable
 		var view = Element as View;
 
 		if (view == null)
+		{
 			return;
+		}
 
 		HandleSwipe(e, view);
 		HandlePinch(e, view);
@@ -488,7 +532,10 @@ class GesturePlatformManager : IDisposable
 	{
 		var view = Element as View;
 		if (view == null)
+		{
 			return;
+		}
+
 		_wasPinchGestureStartedSent = false;
 		_wasPanGestureStartedSent = false;
 	}
@@ -497,7 +544,10 @@ class GesturePlatformManager : IDisposable
 	{
 		uint id = e.Pointer.PointerId;
 		if (_fingers.Contains(id))
+		{
 			_fingers.Remove(id);
+		}
+
 		SwipeComplete(false);
 		PinchComplete(false);
 		PanComplete(false);
@@ -509,7 +559,9 @@ class GesturePlatformManager : IDisposable
 		{
 			uint id = e.Pointer.PointerId;
 			if (_fingers.Contains(id))
+			{
 				_fingers.Remove(id);
+			}
 		}
 		
 		SwipeComplete(true);
@@ -520,14 +572,19 @@ class GesturePlatformManager : IDisposable
 	{
 		uint id = e.Pointer.PointerId;
 		if (!_fingers.Contains(id))
+		{
 			_fingers.Add(id);
+		}
 	}
 
 	void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 	{
 		uint id = e.Pointer.PointerId;
 		if (_fingers.Contains(id))
+		{
 			_fingers.Remove(id);
+		}
+
 		SwipeComplete(true);
 		PinchComplete(true);
 		PanComplete(true);
@@ -583,7 +640,9 @@ class GesturePlatformManager : IDisposable
 	{
 		var view = Element as View;
 		if (view == null)
+		{
 			return;
+		}
 
 		var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
 		foreach (var recognizer in pointerGestures)
@@ -597,7 +656,9 @@ class GesturePlatformManager : IDisposable
 		var result = e.GetPositionRelativeToElement(relativeTo);
 
 		if (result is null)
+		{
 			return null;
+		}
 
 		return result.Value.ToPoint();
 	}
@@ -606,19 +667,25 @@ class GesturePlatformManager : IDisposable
 	{
 		var view = Element as View;
 		if (view == null)
+		{
 			return;
+		}
 
 		var tapPosition = e.GetPositionRelativeToPlatformElement(Control);
 
 		if (tapPosition == null)
+		{
 			return;
+		}
 
 		var children =
 			(view as IGestureController)?.GetChildElements(new Point(tapPosition.Value.X, tapPosition.Value.Y))?.
 			GetChildGesturesFor<TapGestureRecognizer>(ValidateGesture);
 
 		if (ProcessGestureRecognizers(children))
+		{
 			return;
+		}
 
 		IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(ValidateGesture);
 		ProcessGestureRecognizers(tapGestures);
@@ -627,7 +694,9 @@ class GesturePlatformManager : IDisposable
 		{
 			bool handled = false;
 			if (tapGestures == null)
+			{
 				return handled;
+			}
 
 			foreach (var recognizer in tapGestures)
 			{
@@ -646,16 +715,24 @@ class GesturePlatformManager : IDisposable
 			{
 				// Currently we only support single right clicks
 				if ((g.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+				{
 					return g.NumberOfTapsRequired == 1;
+				}
 				else
+				{
 					return false;
+				}
 			}
 
 			if ((g.Buttons & ButtonsMask.Primary) != ButtonsMask.Primary)
+			{
 				return false;
+			}
 
 			if (e is DoubleTappedRoutedEventArgs)
+			{
 				return g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2;
+			}
 
 			return g.NumberOfTapsRequired == 1;
 		}
@@ -666,7 +743,9 @@ class GesturePlatformManager : IDisposable
 	{
 		var view = Element as View;
 		if (view == null || !_isSwiping)
+		{
 			return;
+		}
 
 		if (success)
 		{
@@ -683,7 +762,9 @@ class GesturePlatformManager : IDisposable
 	{
 		var view = Element as View;
 		if (view == null || !_isPanning)
+		{
 			return;
+		}
 
 		foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
 		{
@@ -705,7 +786,9 @@ class GesturePlatformManager : IDisposable
 	{
 		var view = Element as View;
 		if (view == null || !_isPinching)
+		{
 			return;
+		}
 
 		IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
 		foreach (IPinchGestureController recognizer in pinchGestures)
@@ -827,11 +910,20 @@ class GesturePlatformManager : IDisposable
 		{
 			var logger = Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>();
 			if (hasPinchGesture)
+			{
 				logger?.LogWarning("PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+			}
+
 			if (hasPanGesture)
+			{
 				logger?.LogWarning("PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+			}
+
 			if (hasSwipeGesture)
+			{
 				logger?.LogWarning("SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+			}
+
 			return;
 		}
 
