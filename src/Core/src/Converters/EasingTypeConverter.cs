@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Reflection;
 using static Microsoft.Maui.Easing;
 
 #nullable disable
@@ -11,7 +10,6 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class EasingTypeConverter : TypeConverter
 	{
-
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
@@ -20,62 +18,36 @@ namespace Microsoft.Maui.Converters
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			var strValue = value?.ToString();
+			if (value is null)
+				return null;
+
+			var strValue = value as string ?? value.ToString();
 
 			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
 
-			var parts = (strValue = strValue.Trim()).Split('.');
+			var parts = strValue.Split('.');
+			if (parts.Length == 2 && Compare(parts[0], nameof(Easing)))
+				strValue = parts[1];
 
-			if (parts.Length == 2 && parts[0] == nameof(Easing))
-				strValue = parts[parts.Length - 1];
-
-			switch (easing)
+			return strValue switch
 			{
-				case _ when Compare(strValue, Linear):
-					return Linear;
-				case _ when Compare(strValue, SinIn):
-					return SinIn;
-				case _ when Compare(strValue, SinOut):
-					return SinOut;
-				case _ when Compare(strValue, SinInOut):
-					return SinInOut;
-				case _ when Compare(strValue, CubicIn):
-					return CubicIn;
-				case _ when Compare(strValue, CubicOut):
-					return CubicOut;
-				case _ when Compare(strValue, CubicInOut):
-					return CubicInOut;
-				case _ when Compare(strValue, BounceIn):
-					return BounceIn;
-				case _ when Compare(strValue, BounceOut):
-					return BounceOut;
-				case _ when Compare(strValue, SpringIn):
-					return SpringIn;
-				case _ when Compare(strValue, SpringOut):
-					return SpringOut;
-			}
-			bool Compare(string left, string right) => left.Equals(right, StringComparison.InvariantCultureIgnoreCase);
+				_ when Compare(strValue, nameof(Linear)) => Linear,
+				_ when Compare(strValue, nameof(SinIn)) => SinIn,
+				_ when Compare(strValue, nameof(SinOut)) => SinOut,
+				_ when Compare(strValue, nameof(SinInOut)) => SinInOut,
+				_ when Compare(strValue, nameof(CubicIn)) => CubicIn,
+				_ when Compare(strValue, nameof(CubicOut)) => CubicOut,
+				_ when Compare(strValue, nameof(CubicInOut)) => CubicInOut,
+				_ when Compare(strValue, nameof(BounceIn)) => BounceIn,
+				_ when Compare(strValue, nameof(BounceOut)) => BounceOut,
+				_ when Compare(strValue, nameof(SpringIn)) => SpringIn,
+				_ when Compare(strValue, nameof(SpringOut)) => SpringOut,
+				_ => throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}")
+			};
 
-			var delcaredFields = typeof(Easing)
-								.GetTypeInfo()
-								.DeclaredFields;
-
-			var fallbackValue = null;
-			for (int i = 0; i < delcaredFields.Length; i++)
-			{
-				if (delcaredFields[i].Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
-				{
-					fallbackValue = delcaredFields[i].GetValue(null);
-					break;
-				}
-			}
-
-			if (fallbackValue is Easing fallbackEasing)
-				return fallbackEasing;
-
-			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}");
-
+			static bool Compare(string left, string right) =>
+				left.Equals(right, StringComparison.OrdinalIgnoreCase);
 		}
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
