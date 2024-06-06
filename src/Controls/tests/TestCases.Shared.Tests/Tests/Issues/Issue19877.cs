@@ -2,28 +2,22 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues
+namespace Microsoft.Maui.TestCases.Tests.Issues;
+
+public class Issue19877 : _IssuesUITest
 {
-	public class Issue19877 : _IssuesUITest
+	public Issue19877(TestDevice device) : base(device) { }
+
+	public override string Issue => "RoundRectangle Border is messed up when contains an Image with AspectFill";
+
+#if ANDROID
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void BorderRoundRectangleWithImage()
 	{
-		public Issue19877(TestDevice device) : base(device) { }
+		App.WaitForElement("TestBorder");
 
-		public override string Issue => "RoundRectangle Border is messed up when contains an Image with AspectFill";
-
-		[Test]
-		[Category(UITestCategories.Entry)]
-		public void BorderRoundRectangleWithImage()
-		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.iOS,
-				TestDevice.Mac,
-				TestDevice.Windows
-			});
-
-			App.WaitForElement("TestBorder");
-
-			VerifyScreenshot();
-		}
+		VerifyScreenshot();
 	}
+#endif
 }

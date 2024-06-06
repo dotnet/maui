@@ -2,7 +2,7 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue21173 : _IssuesUITest
 {
@@ -12,14 +12,14 @@ public class Issue21173 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
+#if ANDROID
+	[Test]
 	public void BorderWithRoundRectangleShouldRoundCornersOfContentWithinIt()
 	{
-		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 		_ = App.WaitForElement("border");
 
 		// The test passes if corners of borders' contents' have proper corner radiuses
 		VerifyScreenshot();
 	}
+#endif
 }
