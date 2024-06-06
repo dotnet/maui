@@ -136,10 +136,10 @@
     <comment>0 is indexer type name</comment>
   </data>
   <data name="BindingWithoutDataType" xml:space="preserve">
-    <value>Binding could be compiled if x:DataType is specified.</value>
+    <value>Binding could be compiled to improve runtime performance if x:DataType is specified. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
   </data>  
   <data name="BindingWithNullDataType" xml:space="preserve">
-    <value>Binding could be compiled if x:DataType is not explicitly null.</value>
+    <value>Binding could be compiled to improve runtime performance if x:DataType is not explicitly null. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
   </data>  
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Binding: Property "{0}" not found on "{1}".</value>
@@ -241,7 +241,7 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}.</value>
+    <value>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}.</value>
   </data>
   <data name="UnattributedMarkupType" xml:space="preserve">
     <value>Consider attributing the markup extension "{0}" with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any.</value>

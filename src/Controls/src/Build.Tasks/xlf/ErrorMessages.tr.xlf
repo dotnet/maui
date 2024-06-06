@@ -158,8 +158,8 @@
         <note>0 is a type name</note>
       </trans-unit>
       <trans-unit id="XDataTypeSyntax">
-        <source>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}.</source>
-        <target state="translated">x:DataType için bir dize sabit değeri, {{x:Type}} işaretlemesi veya {{x:Nul}l} bekleniyor.</target>
+        <source>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}.</source>
+        <target state="translated">x:DataType için bir dize sabit değeri, {{x:Type}} işaretlemesi veya {{x:Null}} bekleniyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="XKeyNotLiteral">

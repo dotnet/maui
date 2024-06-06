@@ -291,12 +291,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
-				if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension"
-					&& (node.Properties == null || !node.Properties.ContainsKey(new XmlName("", "Source"))) //do not compile bindings if Source is set
-					&& bpRef != null //do not compile bindings if we're not gonna SetBinding
-					)
-					foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition))
-						yield return instruction;
+				if (bpRef is not null) // do not compile bindings if we're not gonna SetBinding
+				{
+					if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension")
+					{
+						foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "BindingExtension")))
+							yield return instruction;
+					}
+					else if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")
+					{
+						foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "TemplateBindingExtension")))
+							yield return instruction;
+					}
+				}
 
 				var markExt = markupExtension.ResolveCached(context.Cache);
 				var provideValueInfo = markExt.Methods.First(md => md.Name == "ProvideValue");
@@ -384,7 +391,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		//Once we get compiled IValueProvider, this will move to the BindingExpression
-		static IEnumerable<Instruction> CompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt)
+		static IEnumerable<Instruction> CompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt, (string, string, string) bindingExtensionType)
 		{
 			//TODO support casting operators
 			var module = context.Module;
@@ -398,11 +405,26 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			INode dataTypeNode = null;
 			IElementNode n = node;
+
+			// Special handling for BindingContext={Binding ...}
+			// The order of checks is:
+			// - x:DataType on the binding itself
+			// - SKIP looking for x:DataType on the parent
+			// - continue looking for x:DataType on the parent's parent...
+			IElementNode skipNode = null;
+			if (IsBindingContextBinding(node))
+			{
+				skipNode = GetParent(node);
+			}
+
 			while (n != null)
 			{
-				if (n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
+				if (n != skipNode && n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
+				{
 					break;
-				n = n.Parent as IElementNode;
+				}
+
+				n = GetParent(n);
 			}
 
 			if (dataTypeNode is null)
@@ -420,27 +442,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield break;
 			}
 
-			string dataType = null;
-
-			if (dataTypeNode is ElementNode elementNode
-				&& elementNode.XmlType.NamespaceUri == XamlParser.X2009Uri
-				&& elementNode.XmlType.Name == nameof(Microsoft.Maui.Controls.Xaml.TypeExtension)
-				&& elementNode.Properties.ContainsKey(new XmlName("", nameof(Microsoft.Maui.Controls.Xaml.TypeExtension.TypeName)))
-				&& (elementNode.Properties[new XmlName("", nameof(Microsoft.Maui.Controls.Xaml.TypeExtension.TypeName))] as ValueNode)?.Value is string stringtype)
-				dataType = stringtype;
-
-			if ((dataTypeNode as ValueNode)?.Value is string sType)
-				dataType = sType;
-
+			string dataType = (dataTypeNode as ValueNode)?.Value as string;
 			if (dataType is null)
 				throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
 
-			var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
-			var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix) ?? "";
-			if (!string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(namespaceuri))
+			XmlType dtXType = null;
+			try
+			{
+				dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
+					?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+			}
+			catch (XamlParseException)
+			{
+				var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
 				throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
-
-			var dtXType = new XmlType(namespaceuri, dataType, null);
+			}
 
 			var tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
 			if (tSourceRef == null)
@@ -472,8 +488,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				   && !md.HasCustomAttributes(module.ImportReference(context.Cache, ("mscorlib", "System", "ObsoleteAttribute")))));
 			var ctorinforef = ctorInfo.MakeGeneric(typedBindingRef, funcRef, actionRef, tupleRef);
 
-			var bindingExtensionType = ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "BindingExtension");
-
 			foreach (var instruction in bindingExt.LoadAs(context.Cache, module.GetTypeDefinition(context.Cache, bindingExtensionType), module))
 				yield return instruction;
 			foreach (var instruction in CompiledBindingGetGetter(tSourceRef, tPropertyRef, properties, node, context))
@@ -494,6 +508,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Ldnull);
 			yield return Create(Newobj, module.ImportReference(ctorinforef));
 			yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, bindingExtensionType, propertyName: "TypedBinding"));
+
+			static IElementNode GetParent(IElementNode node)
+			{
+				return node switch
+				{
+					{ Parent: ListNode { Parent: IElementNode parentNode } } => parentNode,
+					{ Parent: IElementNode parentNode } => parentNode,
+					_ => null,
+				};
+			}
+
+			static bool IsBindingContextBinding(ElementNode node)
+			{
+				// looking for BindingContext="{Binding ...}"
+				return GetParent(node) is IElementNode parentNode
+					&& node.TryGetPropertyName(parentNode, out var propertyName)
+					&& propertyName.NamespaceURI == ""
+					&& propertyName.LocalName == nameof(BindableObject.BindingContext);
+			}
 		}
 
 		static IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> ParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module)
@@ -958,7 +991,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Ldnull);
 				yield return Create(Ldftn, partGetters[i]);
 				yield return Create(Newobj, module.ImportReference(funcCtor));
-				yield return Create(Ldstr, properties[i].Item1.Name);
+				if (properties[i].Item3 == null) //no indexer
+					yield return Create(Ldstr, properties[i].Item1.Name);
+				else
+					yield return Create(Ldstr, $"{properties[i].Item1.Name}[{properties[i].Item3}]");
+
 				yield return Create(Newobj, module.ImportReference(tupleCtor));
 				yield return Create(Stelem_Ref);
 			}

@@ -6,7 +6,7 @@
  */
 
 using System;
-using System.Text.RegularExpressions;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -254,8 +254,7 @@ public static class KeyboardAutoManagerScroll
 		if (description is null)
 			return null;
 
-		// remove everything except for numbers and commas
-		var temp = Regex.Replace(description, @"[^0-9,]", "");
+		var temp = RemoveEverythingExceptForNumbersAndCommas(description);
 		var dimensions = temp.Split(',');
 
 		if (dimensions.Length == 4
@@ -268,6 +267,19 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		return null;
+
+		static string RemoveEverythingExceptForNumbersAndCommas(string input)
+		{
+			var sb = new StringBuilder(input.Length);
+			foreach (var character in input)
+			{
+				if (char.IsDigit(character) || character == ',')
+				{
+					sb.Append(character);
+				}
+			}
+			return sb.ToString();
+		}
 	}
 
 	// Used to debounce calls from different oberservers so we can be sure
@@ -282,7 +294,7 @@ public static class KeyboardAutoManagerScroll
 		// while we have the keyboard up, we need a delay to recalculate
 		// the height of the InputAccessoryView
 		if (IsKeyboardShowing && View?.InputAccessoryView is not null)
-			await Task.Delay(20);
+			await Task.Delay(30);
 
 		if (entranceCount == DebounceCount)
 		{
@@ -299,7 +311,8 @@ public static class KeyboardAutoManagerScroll
 	internal static void AdjustPosition()
 	{
 		if (ContainerView is null
-			|| (View is not UITextField && View is not UITextView))
+			|| (View is not UITextField && View is not UITextView)
+			|| !View.IsDescendantOfView(ContainerView))
 		{
 			IsKeyboardAutoScrollHandling = false;
 			return;
@@ -311,14 +324,26 @@ public static class KeyboardAutoManagerScroll
 		var rootViewOrigin = new CGPoint(ContainerView.Frame.GetMinX(), ContainerView.Frame.GetMinY());
 		var window = ContainerView.Window;
 
+		if (window is null)
+		{
+			IsKeyboardAutoScrollHandling = false;
+			return;
+		}
+
 		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
 		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
 
 		nfloat statusBarHeight;
 		nfloat navigationBarAreaHeight;
 
-		if (ContainerView.FindResponder<UINavigationController>() is UINavigationController navigationController)
+		if (View.FindResponder<UINavigationController>() is UINavigationController navigationController)
 		{
+			if (View.IsDescendantOfView(navigationController.NavigationBar))
+			{
+				IsKeyboardAutoScrollHandling = false;
+				return;
+			}
+
 			navigationBarAreaHeight = navigationController.NavigationBar.Frame.GetMaxY();
 		}
 		else

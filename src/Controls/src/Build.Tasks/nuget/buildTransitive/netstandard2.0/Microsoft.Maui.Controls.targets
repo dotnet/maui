@@ -146,11 +146,19 @@
 		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
 		Outputs="$(IntermediateOutputPath)XamlC.stamp"
 		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != ''">
-	    <PropertyGroup>
-		<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
-		<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
-		<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
-	    </PropertyGroup>
+		<PropertyGroup>
+			<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
+			<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
+			<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
+
+			<MauiStrictXamlCompilation Condition="'$(MauiStrictXamlCompilation)' == '' and ('$(PublishAot)' == 'true' or '$(TrimMode)' == 'full')">true</MauiStrictXamlCompilation>
+			<_MauiXamlCNoWarn>$(NoWarn)</_MauiXamlCNoWarn>
+			<_MauiXamlCNoWarn Condition="'$(MauiStrictXamlCompilation)' != 'true'">$(_MauiXamlCNoWarn);XC0022;XC0023</_MauiXamlCNoWarn>
+
+      <_MauiXamlCGenerateFullPaths Condition="'$(_MauiXamlCGenerateFullPaths)' == '' and '$(GenerateFullPaths)' == 'true'">true</_MauiXamlCGenerateFullPaths>
+      <_MauiXamlCGenerateFullPaths Condition="'$(_MauiXamlCGenerateFullPaths)' == ''">false</_MauiXamlCGenerateFullPaths>
+      <_MauiXamlCFullPathPrefix Condition="'$(_MauiXamlCFullPathPrefix)' == '' and '$(_MauiXamlCGenerateFullPaths)' == 'true'">$(MSBuildProjectDirectory)</_MauiXamlCFullPathPrefix>
+		</PropertyGroup>
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
@@ -164,9 +172,11 @@
 
       WarningLevel = "$(WarningLevel)"
       TreatWarningsAsErrors = "$(TreatWarningsAsErrors)"
-      NoWarn = "$(NoWarn)"
+      NoWarn = "$(_MauiXamlCNoWarn)"
       WarningsAsErrors = "$(WarningsAsErrors)"
-      WarningsNotAsErrors = "$(WarningsNotAsErrors)" />
+      WarningsNotAsErrors = "$(WarningsNotAsErrors)"
+      GenerateFullPaths = "$(_MauiXamlCGenerateFullPaths)"
+      FullPathPrefix = "$(_MauiXamlCFullPathPrefix)" />
       
 		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True" />
 		<ItemGroup>
@@ -208,22 +218,29 @@
 
   <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink;_GenerateRuntimeConfigurationFilesInputCache">
     <PropertyGroup>
-      <MauiXamlRuntimeParsingSupport Condition="'$(MauiXamlRuntimeParsingSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiXamlRuntimeParsingSupport>
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
+      <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == ''">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
       <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == ''">false</MauiQueryPropertyAttributeSupport>
+      <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
     </PropertyGroup>
     <ItemGroup>
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported"
-                                      Condition="'$(MauiXamlRuntimeParsingSupport)' != ''"
-                                      Value="$(MauiXamlRuntimeParsingSupport)"
-                                      Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
                                       Condition="'$(MauiEnableIVisualAssemblyScanning)' != ''"
                                       Value="$(MauiEnableIVisualAssemblyScanning)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported"
+                                      Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' != ''"
+                                      Value="$(MauiShellSearchResultsRendererDisplayMemberNameSupported)"
+                                      Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported"
                                       Condition="'$(MauiQueryPropertyAttributeSupport)' != ''"
                                       Value="$(MauiQueryPropertyAttributeSupport)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported"
+                                      Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
+                                      Value="$(MauiImplicitCastOperatorsUsageViaReflectionSupport)"
                                       Trim="true" />
     </ItemGroup>
   </Target>

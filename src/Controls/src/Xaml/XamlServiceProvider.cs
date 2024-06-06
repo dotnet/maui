@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Internals;
@@ -13,6 +14,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		static IValueConverterProvider defaultValueConverterProvider = new ValueConverterProvider();
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 		internal XamlServiceProvider(INode node, HydrationContext context)
 		{
 			if (context != null && node != null && node.Parent != null && context.Values.TryGetValue(node.Parent, out object targetObject))
@@ -181,6 +186,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		readonly GetTypeFromXmlName getTypeFromXmlName;
 		readonly IXmlNamespaceResolver namespaceResolver;
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 		public XamlTypeResolver(IXmlNamespaceResolver namespaceResolver, Assembly currentAssembly)
 			: this(namespaceResolver, XamlParser.GetElementType, currentAssembly)
 		{
@@ -217,23 +226,6 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		Type Resolve(string qualifiedTypeName, IServiceProvider serviceProvider, out XamlParseException exception)
 		{
-			exception = null;
-			var split = qualifiedTypeName.Split(':');
-			if (split.Length > 2)
-				return null;
-
-			string prefix, name;
-			if (split.Length == 2)
-			{
-				prefix = split[0];
-				name = split[1];
-			}
-			else
-			{
-				prefix = "";
-				name = split[0];
-			}
-
 			IXmlLineInfo xmlLineInfo = null;
 			if (serviceProvider != null)
 			{
@@ -241,14 +233,8 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 					xmlLineInfo = lineInfoProvider.XmlLineInfo;
 			}
 
-			var namespaceuri = namespaceResolver.LookupNamespace(prefix);
-			if (namespaceuri == null)
-			{
-				exception = new XamlParseException($"No xmlns declaration for prefix \"{prefix}\"", xmlLineInfo);
-				return null;
-			}
-
-			return getTypeFromXmlName(new XmlType(namespaceuri, name, null), xmlLineInfo, currentAssembly, out exception);
+			var xmlType = TypeArgumentsParser.ParseSingle(qualifiedTypeName, namespaceResolver, xmlLineInfo);
+			return getTypeFromXmlName(xmlType, xmlLineInfo, currentAssembly, out exception);
 		}
 
 		internal delegate Type GetTypeFromXmlName(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly, out XamlParseException exception);

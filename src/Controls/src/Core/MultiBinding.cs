@@ -76,6 +76,8 @@ namespace Microsoft.Maui.Controls
 			return clone;
 		}
 
+		internal static readonly object DoNothing = new object(); // this object instance must be the same as Binding.DoNothing
+
 		internal override void Apply(bool fromTarget)
 		{
 			if (_applying)
@@ -95,10 +97,10 @@ namespace Microsoft.Maui.Controls
 			if (!fromTarget)
 			{
 				var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
-				if (value != Binding.DoNothing)
+				if (value != DoNothing)
 				{
 					_applying = true;
-					if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+					if (!BindingExpressionHelper.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 					{
 						BindingDiagnostics.SendBindingFailure(this, null, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
 						return;
@@ -118,7 +120,7 @@ namespace Microsoft.Maui.Controls
 						return;
 					for (var i = 0; i < Math.Min(_bpProxies.Length, values.Length); i++)
 					{
-						if (ReferenceEquals(values[i], Binding.DoNothing) || ReferenceEquals(values[i], BindableProperty.UnsetValue))
+						if (ReferenceEquals(values[i], DoNothing) || ReferenceEquals(values[i], BindableProperty.UnsetValue))
 							continue;
 						_proxyObject.SetValue(_bpProxies[i], values[i]);
 					}
@@ -168,10 +170,10 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var value = GetSourceValue(GetValueArray(), _targetProperty.ReturnType);
-			if (value != Binding.DoNothing)
+			if (value != DoNothing)
 			{
 				_applying = true;
-				if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+				if (!BindingExpressionHelper.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 				{
 					BindingDiagnostics.SendBindingFailure(this, context, _targetObject, _targetProperty, "MultiBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
 					return;

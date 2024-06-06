@@ -313,7 +313,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			layout.Clear();
+			ClearChildren(layout);
 
 			UpdateEmptyView(layout);
 
@@ -323,6 +323,23 @@ namespace Microsoft.Maui.Controls
 			foreach (object item in _itemsSource)
 			{
 				layout.Add(CreateItemView(item, layout));
+			}
+		}
+
+		void ClearChildren(IBindableLayout layout)
+		{
+			var index = layout.Children.Count;
+			while (--index >= 0)
+			{
+				var child = (View)layout.Children[index]!;
+				layout.RemoveAt(index);
+
+				// Empty view inherits the BindingContext automatically,
+				// we don't want to mess up with automatic inheritance.
+				if (child == _currentEmptyView) continue;
+				
+				// Given that we've set BindingContext manually on children we have to clear it on removal.
+				child.BindingContext = null;
 			}
 		}
 
@@ -369,7 +386,6 @@ namespace Microsoft.Maui.Controls
 			if (dataTemplate != null)
 			{
 				var view = (View)dataTemplate.CreateContent();
-				view.BindingContext = (layout as BindableObject).BindingContext;
 				return view;
 			}
 
@@ -390,7 +406,15 @@ namespace Microsoft.Maui.Controls
 
 			e.Apply(
 				insert: (item, index, _) => layout.Insert(CreateItemView(item, layout), index),
-				removeAt: (item, index) => layout.RemoveAt(index),
+				removeAt: (item, index) =>
+				{
+					var child = (View)layout.Children[index]!;
+					layout.RemoveAt(index);
+					
+					// It's our responsibility to clear the BindingContext for the children
+					// Given that we've set them manually in CreateItemView
+					child.BindingContext = null;
+				},
 				reset: CreateChildren);
 
 			// UpdateEmptyView is called from within CreateChildren, therefor skip it for Reset

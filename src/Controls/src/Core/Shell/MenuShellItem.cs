@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
@@ -13,10 +14,34 @@ namespace Microsoft.Maui.Controls
 			MenuItem = menuItem;
 			MenuItem.Parent = this;
 			Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(menuItem));
-			SetBinding(TitleProperty, new Binding(nameof(MenuItem.Text), BindingMode.OneWay, source: menuItem));
-			SetBinding(IconProperty, new Binding(nameof(MenuItem.IconImageSource), BindingMode.OneWay, source: menuItem));
-			SetBinding(FlyoutIconProperty, new Binding(nameof(MenuItem.IconImageSource), BindingMode.OneWay, source: menuItem));
-			SetBinding(AutomationIdProperty, new Binding(nameof(MenuItem.AutomationId), BindingMode.OneWay, source: menuItem));
+			SetBinding(
+				TitleProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(MenuItem.Text),
+					static (MenuItem item) => item.Text,
+					mode: BindingMode.OneWay,
+					source: menuItem));
+			SetBinding(
+				IconProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(MenuItem.IconImageSource),
+					static (MenuItem item) => item.IconImageSource,
+					mode: BindingMode.OneWay,
+					source: menuItem));
+			SetBinding(
+				FlyoutIconProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(MenuItem.IconImageSource),
+					static (MenuItem item) => item.IconImageSource,
+					mode: BindingMode.OneWay,
+					source: menuItem));
+			SetBinding(
+				AutomationIdProperty,
+				TypedBinding.ForSingleNestingLevel(
+					nameof(MenuItem.AutomationId),
+					static (MenuItem item) => item.AutomationId,
+					mode: BindingMode.OneWay,
+					source: menuItem));
 
 			MenuItem.PropertyChanged += OnMenuItemPropertyChanged;
 		}

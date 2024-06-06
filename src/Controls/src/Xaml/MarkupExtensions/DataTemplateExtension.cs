@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(TypeName))]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.DataTemplateExtension")]
+	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 	public sealed class DataTemplateExtension : IMarkupExtension<DataTemplate>
 	{
 		public string TypeName { get; set; }

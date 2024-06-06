@@ -1,5 +1,6 @@
 ﻿#nullable enable
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
+Microsoft.Maui.ElementHandlerExtensions
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.Handlers.IImageHandler.OnWindowChanged() -> void
 Microsoft.Maui.Handlers.ImageHandler.OnWindowChanged() -> void
@@ -81,6 +82,9 @@ override Microsoft.Maui.Platform.MauiView.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.MauiView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 override Microsoft.Maui.Platform.NoCaretField.MovedToWindow() -> void
+override Microsoft.Maui.Platform.PageViewController.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
+override Microsoft.Maui.Platform.PageViewController.PrefersHomeIndicatorAutoHidden.get -> bool
+override Microsoft.Maui.Platform.PageViewController.PrefersStatusBarHidden() -> bool
 override Microsoft.Maui.Platform.WrapperView.MovedToWindow() -> void
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.SizeRequest.GetHashCode() -> int
@@ -137,6 +141,12 @@ static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, M
 static Microsoft.Maui.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
 static Microsoft.Maui.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
+static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
+static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler) -> T?
+static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
+static Microsoft.Maui.ElementHandlerExtensions.GetServiceProvider(this Microsoft.Maui.IElementHandler! handler) -> System.IServiceProvider!
+static Microsoft.Maui.ElementHandlerExtensions.IsConnected(this Microsoft.Maui.IElementHandler! handler) -> bool
 *REMOVED*Microsoft.Maui.Handlers.ButtonHandler.ImageSourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
@@ -161,3 +171,4 @@ Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double h
 Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiLabel.InvalidateIntrinsicContentSize() -> void

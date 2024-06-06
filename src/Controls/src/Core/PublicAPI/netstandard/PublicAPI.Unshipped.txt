@@ -50,6 +50,12 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> v
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
 override Microsoft.Maui.Controls.CheckBox.IsEnabledCore.get -> bool
+Microsoft.Maui.Controls.TimeChangedEventArgs
+Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
+Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
+override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -217,3 +223,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
+*REMOVED*~Microsoft.Maui.Controls.ResourceDictionary.SetAndLoadSource(System.Uri value, string resourcePath, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo) -> void
+static Microsoft.Maui.Controls.BindableObjectExtensions.SetBinding<TSource, TProperty>(this Microsoft.Maui.Controls.BindableObject! self, Microsoft.Maui.Controls.BindableProperty! targetProperty, System.Func<TSource, TProperty>! getter, Microsoft.Maui.Controls.BindingMode mode = Microsoft.Maui.Controls.BindingMode.Default, Microsoft.Maui.Controls.IValueConverter? converter = null, object? converterParameter = null, string? stringFormat = null, object? source = null, object? fallbackValue = null, object? targetNullValue = null) -> void

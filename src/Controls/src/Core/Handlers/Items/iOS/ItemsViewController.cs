@@ -35,6 +35,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		Func<UICollectionViewCell> _getPrototype;
+		
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		Func<NSIndexPath, UICollectionViewCell> _getPrototypeForIndexPath;
 		CGSize _previousContentSize = CGSize.Empty;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
@@ -174,6 +177,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			EnsureLayoutInitialized();
 		}
 
+		public override void LoadView()
+		{
+			base.LoadView(); 
+
+			CollectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
+		}
+
 		public override void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
@@ -236,7 +246,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					(ItemsView as IView)?.InvalidateMeasure();
 				}
 			}
-
 			_previousContentSize = contentSize.Value;
 		}
 
@@ -268,6 +277,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_getPrototype ??= GetPrototype;
 			ItemsViewLayout.GetPrototype = _getPrototype;
+
+			_getPrototypeForIndexPath ??= GetPrototypeForIndexPath;
+			ItemsViewLayout.GetPrototypeForIndexPath = _getPrototypeForIndexPath;
 
 			Delegator = CreateDelegator();
 			CollectionView.Delegate = Delegator;
@@ -476,6 +488,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var indexPath = NSIndexPath.Create(group, 0);
 
+			return GetPrototypeForIndexPath(indexPath);
+		}
+
+		internal UICollectionViewCell GetPrototypeForIndexPath(NSIndexPath indexPath)
+		{
 			return CreateMeasurementCell(indexPath);
 		}
 

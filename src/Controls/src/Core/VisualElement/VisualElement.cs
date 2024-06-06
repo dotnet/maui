@@ -30,57 +30,57 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="InputTransparent"/>.</summary>
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create(
-			"InputTransparent", typeof(bool), typeof(VisualElement), default(bool),
+			nameof(InputTransparent), typeof(bool), typeof(VisualElement), default(bool),
 			propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
-		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool),
+		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
 			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
-		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly("X", typeof(double), typeof(VisualElement), default(double));
+		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly(nameof(X), typeof(double), typeof(VisualElement), default(double));
 
 		/// <summary>Bindable property for <see cref="X"/>.</summary>
 		public static readonly BindableProperty XProperty = XPropertyKey.BindableProperty;
 
-		static readonly BindablePropertyKey YPropertyKey = BindableProperty.CreateReadOnly("Y", typeof(double), typeof(VisualElement), default(double));
+		static readonly BindablePropertyKey YPropertyKey = BindableProperty.CreateReadOnly(nameof(Y), typeof(double), typeof(VisualElement), default(double));
 
 		/// <summary>Bindable property for <see cref="Y"/>.</summary>
 		public static readonly BindableProperty YProperty = YPropertyKey.BindableProperty;
 
 		/// <summary>Bindable property for <see cref="AnchorX"/>.</summary>
-		public static readonly BindableProperty AnchorXProperty = BindableProperty.Create("AnchorX", typeof(double), typeof(VisualElement), .5d);
+		public static readonly BindableProperty AnchorXProperty = BindableProperty.Create(nameof(AnchorX), typeof(double), typeof(VisualElement), .5d);
 
 		/// <summary>Bindable property for <see cref="AnchorY"/>.</summary>
-		public static readonly BindableProperty AnchorYProperty = BindableProperty.Create("AnchorY", typeof(double), typeof(VisualElement), .5d);
+		public static readonly BindableProperty AnchorYProperty = BindableProperty.Create(nameof(AnchorY), typeof(double), typeof(VisualElement), .5d);
 
 		/// <summary>Bindable property for <see cref="TranslationX"/>.</summary>
-		public static readonly BindableProperty TranslationXProperty = BindableProperty.Create("TranslationX", typeof(double), typeof(VisualElement), 0d);
+		public static readonly BindableProperty TranslationXProperty = BindableProperty.Create(nameof(TranslationX), typeof(double), typeof(VisualElement), 0d);
 
 		/// <summary>Bindable property for <see cref="TranslationY"/>.</summary>
-		public static readonly BindableProperty TranslationYProperty = BindableProperty.Create("TranslationY", typeof(double), typeof(VisualElement), 0d);
+		public static readonly BindableProperty TranslationYProperty = BindableProperty.Create(nameof(TranslationY), typeof(double), typeof(VisualElement), 0d);
 
-		static readonly BindablePropertyKey WidthPropertyKey = BindableProperty.CreateReadOnly("Width", typeof(double), typeof(VisualElement), -1d,
+		static readonly BindablePropertyKey WidthPropertyKey = BindableProperty.CreateReadOnly(nameof(Width), typeof(double), typeof(VisualElement), -1d,
 			coerceValue: (bindable, value) => double.IsNaN((double)value) ? 0d : value);
 
 		/// <summary>Bindable property for <see cref="Width"/>.</summary>
 		public static readonly BindableProperty WidthProperty = WidthPropertyKey.BindableProperty;
 
-		static readonly BindablePropertyKey HeightPropertyKey = BindableProperty.CreateReadOnly("Height", typeof(double), typeof(VisualElement), -1d,
+		static readonly BindablePropertyKey HeightPropertyKey = BindableProperty.CreateReadOnly(nameof(Height), typeof(double), typeof(VisualElement), -1d,
 			coerceValue: (bindable, value) => double.IsNaN((double)value) ? 0d : value);
 
 		/// <summary>Bindable property for <see cref="Height"/>.</summary>
 		public static readonly BindableProperty HeightProperty = HeightPropertyKey.BindableProperty;
 
 		/// <summary>Bindable property for <see cref="Rotation"/>.</summary>
-		public static readonly BindableProperty RotationProperty = BindableProperty.Create("Rotation", typeof(double), typeof(VisualElement), default(double));
+		public static readonly BindableProperty RotationProperty = BindableProperty.Create(nameof(Rotation), typeof(double), typeof(VisualElement), default(double));
 
 		/// <summary>Bindable property for <see cref="RotationX"/>.</summary>
-		public static readonly BindableProperty RotationXProperty = BindableProperty.Create("RotationX", typeof(double), typeof(VisualElement), default(double));
+		public static readonly BindableProperty RotationXProperty = BindableProperty.Create(nameof(RotationX), typeof(double), typeof(VisualElement), default(double));
 
 		/// <summary>Bindable property for <see cref="RotationY"/>.</summary>
-		public static readonly BindableProperty RotationYProperty = BindableProperty.Create("RotationY", typeof(double), typeof(VisualElement), default(double));
+		public static readonly BindableProperty RotationYProperty = BindableProperty.Create(nameof(RotationY), typeof(double), typeof(VisualElement), default(double));
 
 		/// <summary>Bindable property for <see cref="Scale"/>.</summary>
 		public static readonly BindableProperty ScaleProperty = BindableProperty.Create(nameof(Scale), typeof(double), typeof(VisualElement), 1d);
@@ -266,11 +266,11 @@ namespace Microsoft.Maui.Controls
 									propertyChanged: (b, o, n) => { (((VisualElement)b).AnchorX, ((VisualElement)b).AnchorY) = (Point)n; });
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
-		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create("IsVisible", typeof(bool), typeof(VisualElement), true,
+		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), true,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
-		public static readonly BindableProperty OpacityProperty = BindableProperty.Create("Opacity", typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
+		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), null);
@@ -279,13 +279,15 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
-				if (oldvalue != null)
-					(bindable as VisualElement)?.StopNotifyingBackgroundChanges();
+				if (oldvalue == null) return;
+
+				(bindable as VisualElement)?.StopNotifyingBackgroundChanges();
 			},
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				if (newvalue != null)
-					(bindable as VisualElement)?.NotifyBackgroundChanges();
+				if (newvalue == null) return;
+
+				(bindable as VisualElement)?.NotifyBackgroundChanges();
 			});
 
 		WeakBackgroundChangedProxy _backgroundProxy;
@@ -316,6 +318,9 @@ namespace Microsoft.Maui.Controls
 				_backgroundChanged ??= (sender, e) => OnPropertyChanged(nameof(Background));
 				_backgroundProxy ??= new();
 				_backgroundProxy.Subscribe(background, _backgroundChanged);
+							
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(background.OnParentResourcesChanged);
 			}
 		}
 
@@ -327,6 +332,8 @@ namespace Microsoft.Maui.Controls
 
 			if (background != null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(background.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(background, null);
 				_backgroundProxy?.Unsubscribe();
 			}
@@ -376,7 +383,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static readonly BindablePropertyKey BehaviorsPropertyKey = BindableProperty.CreateReadOnly("Behaviors", typeof(IList<Behavior>), typeof(VisualElement), default(IList<Behavior>),
+		internal static readonly BindablePropertyKey BehaviorsPropertyKey = BindableProperty.CreateReadOnly(nameof(Behaviors), typeof(IList<Behavior>), typeof(VisualElement), default(IList<Behavior>),
 			defaultValueCreator: bindable =>
 			{
 				var collection = new AttachedCollection<Behavior>();
@@ -387,7 +394,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Behaviors"/>.</summary>
 		public static readonly BindableProperty BehaviorsProperty = BehaviorsPropertyKey.BindableProperty;
 
-		internal static readonly BindablePropertyKey TriggersPropertyKey = BindableProperty.CreateReadOnly("Triggers", typeof(IList<TriggerBase>), typeof(VisualElement), default(IList<TriggerBase>),
+		internal static readonly BindablePropertyKey TriggersPropertyKey = BindableProperty.CreateReadOnly(nameof(Triggers), typeof(IList<TriggerBase>), typeof(VisualElement), default(IList<TriggerBase>),
 			defaultValueCreator: bindable =>
 			{
 				var collection = new AttachedCollection<TriggerBase>();
@@ -421,7 +428,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IsFocused"/>.</summary>
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused",
+		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsFocused),
 			typeof(bool), typeof(VisualElement), default(bool), propertyChanged: OnIsFocusedPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="IsFocused"/>.</summary>
@@ -1621,11 +1628,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var constraint = LayoutConstraint.None;
 			var element = (VisualElement)bindable;
-			if (element.WidthRequest >= 0 && element.MinimumWidthRequest >= 0)
+			if (element.WidthRequest >= 0)
 			{
 				constraint |= LayoutConstraint.HorizontallyFixed;
 			}
-			if (element.HeightRequest >= 0 && element.MinimumHeightRequest >= 0)
+			if (element.HeightRequest >= 0)
 			{
 				constraint |= LayoutConstraint.VerticallyFixed;
 			}
@@ -1935,6 +1942,19 @@ namespace Microsoft.Maui.Controls
 			return value;
 		}
 
+		private protected override void UpdateHandlerValue(string property)
+		{
+			// The HeightProperty and WidthProperty are not designed to propagate back to the handler.
+			// Instead, we use WidthRequestProperty and HeightRequestProperty to propagate changes to the handler.
+			// HeightProperty and WidthProperty are readonly and only update when the VisualElement.Frame property is set
+			// during an arrange pass, which indicates the actual width and height of the platform element.
+			// Changes to WidthRequestProperty and HeightRequestProperty will propagate to the handler via the `OnRequestChanged` method.
+			if (this.Batched && (property == HeightProperty.PropertyName || property == WidthProperty.PropertyName))
+				return;
+
+			base.UpdateHandlerValue(property);
+		}
+
 		/// <inheritdoc/>
 		double IView.Width
 		{
@@ -2065,6 +2085,9 @@ namespace Microsoft.Maui.Controls
 				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
 				_shadowProxy ??= new();
 				_shadowProxy.Subscribe(shadow, _shadowChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(shadow.OnParentResourcesChanged);
 			}
 		}
 
@@ -2074,6 +2097,8 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(shadow.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(shadow, null);
 				_shadowProxy?.Unsubscribe();
 			}
@@ -2114,17 +2139,26 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Occurs when an element has been constructed and added to the object tree.
+		/// Occurs when an element has been constructed and added to the platform visual tree.
 		/// </summary>
 		/// <remarks>This event may occur before the element has been measured so should not be relied on for size information.</remarks>
 		public event EventHandler? Loaded
 		{
 			add
 			{
+				bool watchingLoaded = _watchingPlatformLoaded;
 				_loaded += value;
 				UpdatePlatformUnloadedLoadedWiring(Window);
-				if (_isLoadedFired)
-					_loaded?.Invoke(this, EventArgs.Empty);
+
+				// The point of this code, is to fire loaded if the element is already loaded.
+				//
+				// If this is the first time the user is subscribing to Loaded,
+				// UpdatePlatformUnloadedLoadedWiring will take care of firing Loaded.
+				// If we are already wired up to watch loaded, then we'll fire it off if we know this
+				// view is in a state where it's been determined that it's accurate to fire
+				// _isLoadedFired.
+				if (_isLoadedFired && watchingLoaded)
+					value?.Invoke(this, EventArgs.Empty);
 
 			}
 			remove
@@ -2135,7 +2169,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Occurs when an element is no longer connected to the main object tree.
+		/// Occurs when an element is no longer connected to the platform visual tree.
 		/// </summary>
 		public event EventHandler? Unloaded
 		{

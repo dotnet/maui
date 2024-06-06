@@ -48,11 +48,11 @@ namespace Microsoft.Maui.Controls
 
 			// Check for IVisual Types
 			foreach (var assembly in assemblies)
-				Register(assembly, mappings);
+				RegisterAllIVisualTypesInAssembly(assembly, mappings);
 
 			if (Internals.Registrar.ExtraAssemblies != null)
 				foreach (var assembly in Internals.Registrar.ExtraAssemblies)
-					Register(assembly, mappings);
+					RegisterAllIVisualTypesInAssembly(assembly, mappings);
 
 
 			// Check for visual assembly attributes	after scanning for IVisual Types
@@ -63,45 +63,45 @@ namespace Microsoft.Maui.Controls
 			if (Internals.Registrar.ExtraAssemblies != null)
 				foreach (var assembly in Internals.Registrar.ExtraAssemblies)
 					RegisterFromAttributes(assembly, mappings);
-		}
 
-		static void RegisterFromAttributes(Assembly assembly, Dictionary<string, IVisual> mappings)
-		{
-			object[] attributes = assembly.GetCustomAttributesSafe(typeof(VisualAttribute));
-
-			if (attributes != null)
+			static void RegisterAllIVisualTypesInAssembly(Assembly assembly, Dictionary<string, IVisual> mappings)
 			{
-				foreach (VisualAttribute attribute in attributes)
+				if (assembly.IsDynamic)
+					return;
+
+				try
 				{
-					var visual = CreateVisual(attribute.Visual);
-					if (visual != null)
-						mappings[attribute.Key] = visual;
+					foreach (var type in assembly.GetExportedTypes())
+						if (typeof(IVisual).IsAssignableFrom(type) && type != typeof(IVisual))
+							Register(type, mappings);
+				}
+				catch (NotSupportedException)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Cannot scan assembly {assembly} for Visual types.", assembly.FullName);
+				}
+				catch (FileNotFoundException)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. It cannot be scanned for Visual types.", assembly.FullName);
+				}
+				catch (ReflectionTypeLoadException)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. Types cannot be loaded.", assembly.FullName);
 				}
 			}
-		}
 
-		static void Register(Assembly assembly, Dictionary<string, IVisual> mappings)
-		{
-			if (assembly.IsDynamic)
-				return;
+			static void RegisterFromAttributes(Assembly assembly, Dictionary<string, IVisual> mappings)
+			{
+				object[] attributes = assembly.GetCustomAttributesSafe(typeof(VisualAttribute));
 
-			try
-			{
-				foreach (var type in assembly.GetExportedTypes())
-					if (typeof(IVisual).IsAssignableFrom(type) && type != typeof(IVisual))
-						Register(type, mappings);
-			}
-			catch (NotSupportedException)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Cannot scan assembly {assembly} for Visual types.", assembly.FullName);
-			}
-			catch (FileNotFoundException)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. It cannot be scanned for Visual types.", assembly.FullName);
-			}
-			catch (ReflectionTypeLoadException)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. Types cannot be loaded.", assembly.FullName);
+				if (attributes != null)
+				{
+					foreach (VisualAttribute attribute in attributes)
+					{
+						var visual = CreateVisual(attribute.Visual);
+						if (visual != null)
+							mappings[attribute.Key] = visual;
+					}
+				}
 			}
 		}
 

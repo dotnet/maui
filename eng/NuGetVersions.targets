@@ -175,8 +175,16 @@
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.Web"
-        Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)" />
-
+        Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebAssembly"
+        Version="$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebAssembly.Server"
+        Version="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)"
+    />
     <PackageReference
         Update="Microsoft.JSInterop"
         Version="$(MicrosoftJSInteropPackageVersion)"
@@ -234,9 +242,17 @@
         Version="$(FizzlerPackageVersion)"
     />
     <PackageReference
+        Update="ExCSS"
+        Version="$(ExCSSPackageVersion)"
+    />
+    <PackageReference
         Update="MemoryAnalyzers"
         Version="0.1.0-beta.5"
         PrivateAssets="All"
+    />
+    <PackageReference
+        Update="System.Drawing.Common"
+        Version="$(SystemDrawingCommonPackageVersion)"
     />
   </ItemGroup>
 </Project>

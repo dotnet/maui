@@ -8,7 +8,7 @@
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>Windows\</WindowsRoot>
     <TizenRoot>Tizen\</TizenRoot>
-    <IsTrimmable Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsTrimmable>
+    <IsAotCompatible Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsAotCompatible>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -67,7 +67,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\NuGet\Controls.NuGet.csproj" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />

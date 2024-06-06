@@ -11,7 +11,7 @@
       referenced.  This will eventually switch to false by default and become opt, in,
       however Visual Studio currently depends on this assembly being loaded for Live Visual Tree.
     -->
-    <UseMauiCompat Condition=" '$(UseMauiCompat)' == '' and '$(UseMaui)' == 'true' ">true</UseMauiCompat>
+    <UseMauiCompat Condition=" '$(UseMauiCompat)' == '' and '$(UseMaui)' == 'true' ">false</UseMauiCompat>
 
     <!--
       If opted into NuGet Central Package Management, $(DisableMauiImplicitPackageReferences) defaults to true

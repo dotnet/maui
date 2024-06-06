@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler ReorderCompleted;
 
 		/// <summary>Bindable property for <see cref="CanMixGroups"/>.</summary>
-		public static readonly BindableProperty CanMixGroupsProperty = BindableProperty.Create("CanMixGroups", typeof(bool), typeof(ReorderableItemsView), false);
+		public static readonly BindableProperty CanMixGroupsProperty = BindableProperty.Create(nameof(CanMixGroups), typeof(bool), typeof(ReorderableItemsView), false);
 		public bool CanMixGroups
 		{
 			get { return (bool)GetValue(CanMixGroupsProperty); }
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Bindable property for <see cref="CanReorderItems"/>.</summary>
-		public static readonly BindableProperty CanReorderItemsProperty = BindableProperty.Create("CanReorderItems", typeof(bool), typeof(ReorderableItemsView), false);
+		public static readonly BindableProperty CanReorderItemsProperty = BindableProperty.Create(nameof(CanReorderItems), typeof(bool), typeof(ReorderableItemsView), false);
 		public bool CanReorderItems
 		{
 			get { return (bool)GetValue(CanReorderItemsProperty); }

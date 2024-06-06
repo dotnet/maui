@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// Provides a mechanism to propagate data changes from one object to another. Enables validation, type coercion, and an event system.
 	/// </summary>
 	/// <remarks>The <see cref="BindableObject" /> class provides a data storage mechanism that enables the application developer to synchronize data between objects in response to changes, for example, between the View and View Model in the MVVM design pattern. All of the visual elements in the <c>Microsoft.Maui.Controls</c> namespace inherit from <see cref="BindableObject" /> class, so they can all be used to bind the data behind their user interface.</remarks>
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicEvents)]
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
 		IDispatcher _dispatcher;
@@ -579,7 +581,8 @@ namespace Microsoft.Maui.Controls
 					while (delayQueue.Count > 0)
 					{
 						SetValueArgs s = delayQueue.Dequeue();
-						SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity, silent);
+						if (s != null)
+							SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity, silent);
 					}
 
 					context.DelayedSetters = null;

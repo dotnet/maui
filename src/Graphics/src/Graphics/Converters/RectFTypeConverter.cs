@@ -11,7 +11,14 @@ namespace Microsoft.Maui.Graphics.Converters
 			=> sourceType == typeof(string);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-			=> destinationType == typeof(string);
+			=> destinationType == typeof(string)
+#if ANDROID
+				|| destinationType == typeof(global::Android.Graphics.Rect)
+				|| destinationType == typeof(global::Android.Graphics.RectF)
+#elif IOS || MACCATALYST
+				|| destinationType == typeof(CoreGraphics.CGRect)
+#endif
+			;
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
@@ -25,6 +32,17 @@ namespace Microsoft.Maui.Graphics.Converters
 		{
 			if (!(value is RectF r))
 				throw new NotSupportedException();
+
+#if ANDROID
+			if (destinationType == typeof(global::Android.Graphics.Rect))
+				return (global::Android.Graphics.Rect)r;
+			if (destinationType == typeof(global::Android.Graphics.RectF))
+				return (global::Android.Graphics.RectF)r;
+#elif IOS || MACCATALYST
+			if (destinationType == typeof(CoreGraphics.CGRect))
+				return (CoreGraphics.CGRect)r;
+#endif
+
 			return $"{r.X.ToString(CultureInfo.InvariantCulture)}, {r.Y.ToString(CultureInfo.InvariantCulture)}, {r.Width.ToString(CultureInfo.InvariantCulture)}, {r.Height.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}

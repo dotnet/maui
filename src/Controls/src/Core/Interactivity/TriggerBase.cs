@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 			IsSealed = true;
 
 			if (bindable == null)
-				throw new ArgumentNullException("bindable");
+				throw new ArgumentNullException(nameof(bindable));
 			if (!TargetType.IsInstanceOfType(bindable))
 				throw new InvalidOperationException("bindable not an instance of AssociatedType");
 			OnAttachedTo(bindable);
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls
 		void IAttachedObject.DetachFrom(BindableObject bindable)
 		{
 			if (bindable == null)
-				throw new ArgumentNullException("bindable");
+				throw new ArgumentNullException(nameof(bindable));
 			OnDetachingFrom(bindable);
 		}
 

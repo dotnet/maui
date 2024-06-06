@@ -27,6 +27,8 @@
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.TargetNullValue.set -> void
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.TypedBinding.get -> Microsoft.Maui.Controls.Internals.TypedBindingBase
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.TypedBinding.set -> void
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.get -> Microsoft.Maui.Controls.Internals.TypedBindingBase
+~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.set -> void
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.UpdateSourceEventName.get -> string
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.UpdateSourceEventName.set -> void
 ~Microsoft.Maui.Controls.Xaml.DataTemplateExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.DataTemplate
