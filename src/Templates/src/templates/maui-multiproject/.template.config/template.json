@@ -21,6 +21,26 @@
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "MauiApp.1/MainPage.xaml"
+    },
+    {
+      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
+      "path": "MauiApp.1.sln"
+    },
+    {
+      "condition": "(android)",
+      "path": "MauiApp.1.Droid/MauiApp.1.Droid.csproj"
+    },
+    {
+      "condition": "(ios)",
+      "path": "MauiApp.1.iOS/MauiApp.1.iOS.csproj"
+    },
+    {
+      "condition": "(maccatalyst)",
+      "path": "MauiApp.1.Mac/MauiApp.1.Mac.csproj"
+    },
+    {
+      "condition": "(winui)",
+      "path": "MauiApp.1.WinUI/MauiApp.1.WinUI.csproj"
     }
   ],
   "postActions": [
@@ -42,6 +62,12 @@
       "target": "./",
       "copyOnly": [ "**/*.svg", "**/*.ttf" ],
       "modifiers": [
+        {
+          "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+          "exclude": [
+            "MauiApp.1.sln"
+          ]
+        },
         {
           "condition": "(!android && !AllPlatforms)",
           "exclude": [

@@ -11,8 +11,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract class TemplatedCell : ItemsViewCell
 	{
-		public event EventHandler<EventArgs> ContentSizeChanged;
-		public event EventHandler<LayoutAttributesChangedEventArgs> LayoutAttributesChanged;
+		readonly WeakEventManager _weakEventManager = new();
+
+		public event EventHandler<EventArgs> ContentSizeChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
+
+		public event EventHandler<LayoutAttributesChangedEventArgs> LayoutAttributesChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
 
 		protected CGSize ConstrainedSize;
 
@@ -287,12 +298,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected void OnContentSizeChanged()
 		{
-			ContentSizeChanged?.Invoke(this, EventArgs.Empty);
+			_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(ContentSizeChanged));
 		}
 
 		protected void OnLayoutAttributesChanged(UICollectionViewLayoutAttributes newAttributes)
 		{
-			LayoutAttributesChanged?.Invoke(this, new LayoutAttributesChangedEventArgs(newAttributes));
+			_weakEventManager.HandleEvent(this, new LayoutAttributesChangedEventArgs(newAttributes), nameof(LayoutAttributesChanged));
 		}
 
 		protected abstract bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes);

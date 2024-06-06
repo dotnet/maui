@@ -21,6 +21,9 @@
       {
         "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
         "path": "MainPage.xaml"
+      },
+      {
+        "path": "MauiApp.1.csproj"
       }
     ],
     "postActions": [
