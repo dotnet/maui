@@ -71,8 +71,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool invoked = false;
 			var checkBox = new CheckBox()
 			{
-				Command = new Command(() => invoked = true
-				, () => false),
+				Command = new Command(() => invoked = true, () => false),
 				IsChecked = false
 			};
 
@@ -87,8 +86,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool invoked = false;
 			var checkBox = new CheckBox()
 			{
-				Command = new Command(() => invoked = true
-				, () => true),
+				Command = new Command(() => invoked = true, () => true),
 				IsChecked = false
 			};
 
