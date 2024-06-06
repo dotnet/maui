@@ -27,11 +27,11 @@ namespace Microsoft.Maui.Handlers
 					var id = UI.Win32Interop.GetWindowIdFromWindow(handle);
 					var appWindow = UI.Windowing.AppWindow.GetFromWindowId(id);
 
-					if (appWindow is not null && !appWindow.IsVisible)
-						appWindow.Show();
-
 					// Cannot close an already closed, or disposed Window.
-					platformWindow.Close();
+					if (appWindow is not null && appWindow.IsVisible)
+					{
+						platformWindow.Close();
+					}
 				}
 			}
 		}
