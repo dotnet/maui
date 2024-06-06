@@ -50,8 +50,6 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(CommandParameterProperty, value);
 		}
 
-
-
 		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
 
