@@ -1,52 +1,5 @@
-<ContentPage
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.MainPage"
-    xmlns:local="clr-namespace:Maui.Controls.Sample">
-
-    <VerticalStackLayout>
-        <VerticalStackLayout.Resources>
-            <Style x:Key="PrimaryDialogButton" TargetType="Button">
-                <Setter Property="VisualStateManager.VisualStateGroups">
-                    <VisualStateGroupList>
-                        <VisualStateGroup x:Name="CommonStates">
-                            <VisualState x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="Yellow"/>
-                                    <Setter Property="Opacity" Value="1"/>
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="PointerOver">
-                                <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="LightBlue"/>
-                                    <Setter Property="Opacity" Value="1"/>
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Pressed">
-                                <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="Gray"/>
-                                    <Setter Property="Opacity" Value="1"/>
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Focused">
-                                <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="Green"/>
-                                    <Setter Property="Opacity" Value="1"/>
-                                </VisualState.Setters>
-                            </VisualState>
-                            <!--<VisualState x:Name="Disabled">
-                        <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="Yellow"/>
-                            <Setter Property="Opacity" Value="0.5"/>
-                        </VisualState.Setters>
-                    </VisualState>-->
-                        </VisualStateGroup>
-                    </VisualStateGroupList>
-                </Setter>
-            </Style>
-        </VerticalStackLayout.Resources>
-        
-        <Button x:Name="button1" AutomationId="Button1" Style="{StaticResource PrimaryDialogButton}" Command="{Binding ClickCommand}" Text="Does not change background color on hover"/>
-        <Button x:Name="button2" AutomationId="Button2" Style="{StaticResource PrimaryDialogButton}" Clicked="button2_Clicked" Text="DOES change background color on pointer hover"/>
-    </VerticalStackLayout>
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MainPage"
+             xmlns:local="clr-namespace:Maui.Controls.Sample">
 </ContentPage>
