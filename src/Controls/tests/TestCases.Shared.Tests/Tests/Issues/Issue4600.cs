@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,11 +19,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnIOS]
 		public void InitiallyEmptySourceDisplaysAddedItem()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForNoElement("Insert");
 			App.Tap("btnInsert");
 			App.WaitForNoElement("Inserted");
 		}
 	}
 }
+#endif

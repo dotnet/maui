@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,13 +18,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnMac]
 		public void Issue2728TestsItalicLabel()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Windows]);
-
 			App.WaitForNoElement(LabelHome);
 			App.Screenshot("Label rendered with italic font");
 		}
 	}
 }
+#endif

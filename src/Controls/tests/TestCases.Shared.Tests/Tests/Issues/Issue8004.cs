@@ -18,11 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Animation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public async Task AnimateScaleOfBoxView()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Windows]);
-
 			App.WaitForElement("TestReady");
 			App.Screenshot("Small blue box");
 

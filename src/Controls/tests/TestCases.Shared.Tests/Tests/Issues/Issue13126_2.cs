@@ -17,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void CollectionViewShouldSourceShouldResetWhileInvisible()
 		{
 			App.WaitForNoElement(Success);

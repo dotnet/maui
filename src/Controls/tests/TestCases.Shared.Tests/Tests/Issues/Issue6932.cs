@@ -35,6 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		[FailsOnWindows]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{

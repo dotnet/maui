@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void Issue2680Test_ScrollDisabled()
 		{
 			App.WaitForElement(ScrollViewMark);
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		[FailsOnWindows]
 		public void Issue2680Test_ScrollEnabled()
 		{

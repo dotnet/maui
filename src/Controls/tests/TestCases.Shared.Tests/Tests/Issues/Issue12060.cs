@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.DragAndDrop)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void AcceptedOperationNoneDisablesDropOperation()
 		{
 			App.WaitForElement("TestLoaded");

@@ -17,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Description("Verify that OnTapped is fired every time a ViewCell is tapped")]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
 		public void Issue935TestsMultipleOnTappedViewCell()
 		{
 			App.WaitForElement("TestLabel");
