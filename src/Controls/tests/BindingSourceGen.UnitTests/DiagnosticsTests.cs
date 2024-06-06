@@ -98,6 +98,40 @@ public class DiagnosticsTests
 	}
 
 	[Fact]
+	public void DoesNotReportWarningWhenUsingOverloadWithNameofInPath()
+	{
+		var source = """
+            using Microsoft.Maui.Controls;
+            var label = new Label();
+            var slider = new Slider();
+
+            label.BindingContext = slider;
+            label.SetBinding(Label.ScaleProperty, nameof(Slider.Value));
+            """;
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.Empty(result.SourceGeneratorDiagnostics);
+	}
+
+	[Fact]
+	public void DoesNotReportWarningWhenUsingOverloadWithMethodCallThatReturnsString()
+	{
+		var source = """
+            using Microsoft.Maui.Controls;
+            var label = new Label();
+            var slider = new Slider();
+
+            label.BindingContext = slider;
+            label.SetBinding(Label.ScaleProperty, GetPath());
+            
+            static string GetPath() => "Value";
+            """;
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.Empty(result.SourceGeneratorDiagnostics);
+	}
+
+	[Fact]
 	public void ReportsUnableToResolvePathWhenUsingMethodCall()
 	{
 		var source = """
