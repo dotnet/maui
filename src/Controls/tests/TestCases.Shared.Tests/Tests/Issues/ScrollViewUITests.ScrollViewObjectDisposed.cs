@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Tapping a button inside the ScrollView does not cause an exception.")]
 		public void ScrollViewObjectDisposedTest()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Windows },		
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Windows },
 				"This test is failing, likely due to product issue");
 
 			// 1. Tap the button.

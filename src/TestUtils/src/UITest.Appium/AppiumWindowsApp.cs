@@ -26,7 +26,7 @@ namespace UITest.Appium
 				{
 					return ApplicationState.NotRunning;
 				}
-				catch(Exception)
+				catch (Exception)
 				{
 					return ApplicationState.Unknown;
 				}

@@ -6,7 +6,7 @@ using VisualTestUtils.MagickNet;
 namespace UITests
 {
 #if ANDROID
-		[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.Android)]
 #elif IOSUITEST
 		[TestFixture(TestDevice.iOS)]
 #elif MACUITEST

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				TestDevice.Windows
 			});
-   
+
 			App.WaitForElement("HideSoftInputOnTappedTrue");
 
 			if (this.Device == TestDevice.Mac)
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				TestDevice.Windows
 			});
-   
+
 			App.WaitForElement("HideSoftInputOnTappedFalse");
 
 			if (this.Device == TestDevice.Mac)

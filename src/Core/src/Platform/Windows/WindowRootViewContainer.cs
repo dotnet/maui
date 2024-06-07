@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Platform
 				Children.Add(overlayView);
 		}
 
-		internal void RemoveOverlay(FrameworkElement overlayView)
+		internal static void RemoveOverlay(FrameworkElement overlayView)
 		{
 			Children.Remove(overlayView);
 		}

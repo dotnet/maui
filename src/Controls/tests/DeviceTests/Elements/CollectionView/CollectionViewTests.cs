@@ -116,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Header = new Label { Text = "Header" },
 					Footer = new Label { Text = "Footer" },
-					ItemTemplate = new DataTemplate(() => 
+					ItemTemplate = new DataTemplate(() =>
 					{
 						var label = new Label();
 						labels.Add(label);
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.DeviceTests
 					await navPage.PopAsync();
 				});
 
-				
+
 				Assert.NotNull(logicalChildren);
 				Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
 			}
@@ -517,7 +517,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var vsl = new VerticalStackLayout()
 			{
-				collectionView				
+				collectionView
 			};
 
 			vsl.HeightRequest = 500;

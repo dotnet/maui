@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls
 
 		internal Element ParentOverride
 		{
-			get 
+			get
 			{
 				if (_parentOverride is null)
 				{
@@ -335,8 +335,8 @@ namespace Microsoft.Maui.Controls
 		WeakReference<Element> _realParent;
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Element RealParent 
-		{ 
+		public Element RealParent
+		{
 			get
 			{
 				if (_realParent is null)
@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				return null;
-			} 
+			}
 			private set
 			{
 				if (value is null)

@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls
 				if (_mergedDictionaries != null)
 				{
 					var dictionaries = (ObservableCollection<ResourceDictionary>)MergedDictionaries;
-					for (int i = dictionaries.Count - 1; i >= 0 ; i--)
+					for (int i = dictionaries.Count - 1; i >= 0; i--)
 					{
 						if (dictionaries[i].TryGetValue(index, out var value))
 						{
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls
 		bool TryGetMergedDictionaryValue(string key, out object value, out ResourceDictionary source)
 		{
 			var dictionaries = (ObservableCollection<ResourceDictionary>)MergedDictionaries;
-			for (int i = dictionaries.Count - 1; i >= 0 ; i--)
+			for (int i = dictionaries.Count - 1; i >= 0; i--)
 			{
 				var dictionary = dictionaries[i];
 				if (dictionary.TryGetValue(key, out value))

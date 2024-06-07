@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test]
 		public void Issue35127Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },	
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },
 				"This test is failing, likely due to product issue");
 
 			App.WaitForNoElement("See me?");

@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
 
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
-			
+
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
 			InitialPositionSet = false;
@@ -230,9 +230,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void Setup(CarouselView carouselView)
 		{
 			InitializeCarouselViewLoopManager();
-						
+
 			_oldViews = new List<View>();
-			
+
 			carouselView.Scrolled += CarouselViewScrolled;
 			DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
 
@@ -560,7 +560,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// We aren't ready to update the visual states yet
-			if(_oldViews == null)
+			if (_oldViews == null)
 			{
 				return;
 			}

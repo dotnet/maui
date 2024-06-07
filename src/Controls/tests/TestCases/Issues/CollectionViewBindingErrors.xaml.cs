@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Maui.Controls.Sample.CollectionViewGalleries;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
-using Maui.Controls.Sample.CollectionViewGalleries;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample.Issues
 
 	internal class BindingErrorsViewModel
 	{
-		readonly string[] _imageOptions = 
+		readonly string[] _imageOptions =
 		{
 			"cover1.jpg",
 			"oasis.jpg",

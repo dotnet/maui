@@ -11,14 +11,14 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsPassword(this TextBox platformControl, IEntry entry)
 		{
 			if (platformControl is MauiPasswordTextBox passwordTextBox)
-				passwordTextBox.IsPassword = entry.IsPassword;
+				MauiPasswordTextBox.IsPassword = entry.IsPassword;
 		}
 
 		public static void UpdateText(this TextBox platformControl, ITextInput textInput)
 		{
 			var newText = textInput.Text;
 
-			if (platformControl is MauiPasswordTextBox passwordTextBox && passwordTextBox.Password == newText)
+			if (platformControl is MauiPasswordTextBox passwordTextBox && MauiPasswordTextBox.Password == newText)
 				return;
 
 			if (platformControl.Text == newText)

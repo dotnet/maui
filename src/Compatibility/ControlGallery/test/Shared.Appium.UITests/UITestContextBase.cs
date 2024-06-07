@@ -16,7 +16,7 @@ namespace UITests
 		}
 
 		public static IUIClientContext? UITestContext { get { return UiTestContext; } }
-		
+
 		protected AppiumDriver? Driver
 		{
 			get

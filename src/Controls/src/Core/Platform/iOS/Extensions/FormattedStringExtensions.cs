@@ -204,9 +204,9 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				// if the span is multiline, we need to calculate the bounds for each line individually
-				if (lineHeights.Count > 1) 
+				if (lineHeights.Count > 1)
 				{
-					var spanRectangles = GetMultilinedBounds(new NSRange(location, length), layoutManager, textContainer, startRect, endRect, lineHeights, span.Text.EndsWith('\n') ||  span.Text.EndsWith("\r\n"));
+					var spanRectangles = GetMultilinedBounds(new NSRange(location, length), layoutManager, textContainer, startRect, endRect, lineHeights, span.Text.EndsWith('\n') || span.Text.EndsWith("\r\n"));
 					((ISpatialElement)span).Region = Region.FromRectangles(spanRectangles).Inflate(5);
 				}
 				else
@@ -237,16 +237,17 @@ namespace Microsoft.Maui.Controls.Platform
 				stop = false;
 			});
 
-			return CreateSpanRects (startRect, endRect, lineHeights, multilineRects, endsWithNewLine);
+			return CreateSpanRects(startRect, endRect, lineHeights, multilineRects, endsWithNewLine);
 		}
 
-		static Rect[] CreateSpanRects (CGRect startRect, CGRect endRect, List<double> lineHeights, List<CGRect> multilineRects, bool endsWithNewLine)
+		static Rect[] CreateSpanRects(CGRect startRect, CGRect endRect, List<double> lineHeights, List<CGRect> multilineRects, bool endsWithNewLine)
 		{
 			List<Rect> spanRectangles = new List<Rect>();
 			var curHeight = (double)startRect.Top;
 
 			// go through each line and create a Rect for the text contained
-			for (int i = 0; i < multilineRects.Count; i++){
+			for (int i = 0; i < multilineRects.Count; i++)
+			{
 				var rect = multilineRects[i];
 
 				// top line

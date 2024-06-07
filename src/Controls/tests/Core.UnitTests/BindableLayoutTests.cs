@@ -390,7 +390,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(itemTemplateSelector, BindableLayout.GetItemTemplateSelector(layout));
 			Assert.Equal(itemTemplateSelector, layout.GetValue(BindableLayout.ItemTemplateSelectorProperty));
 		}
-		
+
 		[Fact]
 		public async Task ItemViewBindingContextIsSetToNullOnClear()
 		{
@@ -411,7 +411,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Verify item view binding context is null
 			Assert.Null(itemView.BindingContext);
 		}
-		
+
 		[Fact]
 		public async Task ItemViewBindingContextIsSetToNullOnRemove()
 		{
@@ -432,7 +432,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Verify item view binding context is null
 			Assert.Null(itemView.BindingContext);
 		}
-		
+
 		[Fact]
 		public async Task EmptyViewTemplateContentInheritsLayoutBindingContext()
 		{

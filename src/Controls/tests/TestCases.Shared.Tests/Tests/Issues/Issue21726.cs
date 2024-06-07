@@ -5,25 +5,25 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue21726 : _IssuesUITest
-    {
-        public Issue21726(TestDevice device) : base(device)
-        {
-        }
+	public class Issue21726 : _IssuesUITest
+	{
+		public Issue21726(TestDevice device) : base(device)
+		{
+		}
 
-        public override string Issue => "Modal with a bottom sheet should not crash iOS Keyboard Scroll";
+		public override string Issue => "Modal with a bottom sheet should not crash iOS Keyboard Scroll";
 
-        [Test]
-        public void PushViewControllerWithNullWindow()
-        {
-            this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
+		[Test]
+		public void PushViewControllerWithNullWindow()
+		{
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
-            App.WaitForElement("AddVC");
-            App.Click("AddVC");
-            App.WaitForElement("TextField1").Click();
-            App.WaitForElement("Button1").Click();
-            var mainPageElement = App.WaitForElement("AddVC");
-            ClassicAssert.NotNull(mainPageElement);
-        }
-    }
+			App.WaitForElement("AddVC");
+			App.Click("AddVC");
+			App.WaitForElement("TextField1").Click();
+			App.WaitForElement("Button1").Click();
+			var mainPageElement = App.WaitForElement("AddVC");
+			ClassicAssert.NotNull(mainPageElement);
+		}
+	}
 }

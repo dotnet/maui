@@ -1,9 +1,9 @@
+using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
-using System;
-using System.Threading.Tasks;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -67,7 +67,7 @@ public class Issue22443ScrollPage : ContentPage
 
 	protected override async void OnAppearing()
 	{
-		MainThread.BeginInvokeOnMainThread(() =>_scrollView!.ScrollToAsync(0, 10000, true));
+		MainThread.BeginInvokeOnMainThread(() => _scrollView!.ScrollToAsync(0, 10000, true));
 
 		await Task.Delay(200);
 		await Navigation.PopAsync();
