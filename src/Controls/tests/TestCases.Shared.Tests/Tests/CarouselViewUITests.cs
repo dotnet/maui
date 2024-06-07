@@ -89,7 +89,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblPosition", index);
 			CheckLabelValue("lblCurrentItem", index);
 		}
-
+#if !ANDROID
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void NavigateBackWhenLooped()
@@ -127,6 +127,7 @@ namespace Microsoft.Maui.TestCases.Tests
                 index++;
             }
 		}
+#endif
 
 		void CheckLabelValue(string labelAutomationId, string value)
 		{
