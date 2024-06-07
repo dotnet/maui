@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public FailsOnAndroid() : base(nameof(FailsOnAndroid))
 		{
 		}
-		public FailsOnAndroid(string name) : base(name)
+		public FailsOnAndroid(string description) : base(description)
 		{
 		}
 	}
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public FailsOnIOS() : base(nameof(FailsOnIOS))
 		{
 		}
-		public FailsOnIOS(string name) : base(name)
+		public FailsOnIOS(string description) : base(description)
 		{
 		}
 	}
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public FailsOnMac() : base(nameof(FailsOnMac))
 		{
 		}
-		public FailsOnMac(string name) : base(name)
+		public FailsOnMac(string description) : base(description)
 		{
 		}
 	}
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public FailsOnWindows() : base(nameof(FailsOnWindows))
 		{
 		}
-		public FailsOnWindows(string name) : base(name)
+		public FailsOnWindows(string description) : base(description)
 		{
 		}
 	}
