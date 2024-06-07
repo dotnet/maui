@@ -1,3 +1,4 @@
+#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,8 +20,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void JustWhalingAwayOnTheCollectionViewWithAddsAndClearsShouldNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement(Run);
 			App.Tap(Run);
 			Task.Delay(5000).Wait();
@@ -32,3 +31,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

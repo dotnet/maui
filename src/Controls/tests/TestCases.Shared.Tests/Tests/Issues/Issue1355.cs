@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,10 +21,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnAndroid]
 		public void SwitchMainPageOnAppearing()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			// Without the fix, this would crash. If we're here at all, the test passed.
 			App.WaitForNoElement(Success);
 		}
 	}
 }
+#endif

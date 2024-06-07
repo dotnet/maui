@@ -37,11 +37,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public void TestCursorColorOniOS()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("CursorTextEntry");
 			App.Tap("Red");
 			App.Tap("CursorTextEntry");

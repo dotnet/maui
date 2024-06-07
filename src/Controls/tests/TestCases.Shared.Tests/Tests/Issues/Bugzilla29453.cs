@@ -15,13 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
-		[FailsOnMac]
+		[FailsOnAllPlatforms]
 		public void Bugzilla29453Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			App.Screenshot("I am at Issue Bugzilla29453");
 			App.WaitForElement("Page1");
 			App.Tap("btnGotoPage2");

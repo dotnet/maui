@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues
+namespace Microsoft.Maui.TestCases.Tests
 {
 	public class FailsOnAllPlatforms : IgnoreAttribute
 	{

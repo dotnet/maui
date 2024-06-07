@@ -22,8 +22,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnAllPlatforms]
 		public void CascadeInputTransparentGrids()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement(InnerGrid);
 			App.Tap(InnerGrid);
 
