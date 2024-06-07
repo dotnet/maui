@@ -61,6 +61,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty MinimumHeightProperty = BindableProperty.Create(
 			nameof(MinimumHeight), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
 
+		/// <summary>Bindable property for <see cref="TitleBar"/>.</summary>
+		public static readonly BindableProperty TitleBarProperty = BindableProperty.Create(
+			nameof(TitleBar), typeof(ITitleBar), typeof(Window), default(ITitleBar));
+
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
@@ -160,6 +164,14 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (double)GetValue(MinimumHeightProperty);
 			set => SetValue(MinimumHeightProperty, value);
+		}
+
+		public ITitleBar TitleBar
+		{
+			get => (ITitleBar)GetValue(TitleBarProperty);
+#pragma warning disable RS0036 // Annotate nullability of public types and members in the declared API
+			set => SetValue(TitleBarProperty, value);
+#pragma warning restore RS0036 // Annotate nullability of public types and members in the declared API
 		}
 
 		double IWindow.X => GetPositionCoordinate(XProperty);

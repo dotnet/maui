@@ -56,43 +56,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateTitleBar(this UI.Xaml.Window platformWindow, IWindow window, IMauiContext? mauiContext)
 		{
-			if (mauiContext != null)
-			{
-				var handler = window.TitleBar?.ToHandler(mauiContext);
-				if (handler != null &&
-					handler.PlatformView != null)
-				{
-					var passthroughElements = new List<FrameworkElement>();
-					if (window.TitleBar is IVisualTreeElement layoutParent)
-					{
-						// We already check for mauiContext null above?
-						foreach (var p in layoutParent.GetVisualTreeDescendants())
-						{
-							if (p is IContentView)
-								continue;
-
-							var asView = p as IView;
-							if (mauiContext != null &&
-								asView != null &&
-								!asView.InputTransparent)
-							{
-								var childView = asView.ToHandler(mauiContext).PlatformView;
-								if (childView != null)
-								{
-									passthroughElements.Add(childView);
-								}
-							}
-						}
-					}
-					mauiContext?
-						.GetNavigationRootManager()
-						.SetTitleBarInputElements(passthroughElements);
-
-					mauiContext?
-						.GetNavigationRootManager()?
-						.SetTitleBar(handler.PlatformView);
-				}
-			}
+			mauiContext?.GetNavigationRootManager().SetTitleBar(window.TitleBar, mauiContext);
 		}
 
 		public static void UpdateX(this UI.Xaml.Window platformWindow, IWindow window) =>

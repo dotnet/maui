@@ -12,6 +12,7 @@ using FRect = Windows.Foundation.Rect;
 using Microsoft.UI.Input;
 using Microsoft.UI;
 using System.Collections;
+using Microsoft.UI.Windowing;
 
 namespace Microsoft.Maui.Platform
 {
@@ -185,20 +186,27 @@ namespace Microsoft.Maui.Platform
 			AppTitleBarContentControl.SizeChanged += (sender, args) =>
 			{
 				OnWindowTitleBarContentSizeChanged?.Invoke(sender, EventArgs.Empty);
-				if (sender is not FrameworkElement fe)
-					return;
-
-				UpdateTitleBarContentSize(fe);
+				UpdateTitleBarContentSize();
 			};
 
-			UpdateTitleBarContentSize(AppTitleBarContentControl);
+			UpdateTitleBarContentSize();
 		}
 
-		void UpdateTitleBarContentSize(FrameworkElement fe)
+		internal void UpdateTitleBarContentSize()
 		{
-			if (_appTitleBarHeight != fe.ActualHeight)
+			if (AppTitleBarContentControl == null)
+				return;
+
+			if (_appTitleBarHeight != AppTitleBarContentControl.ActualHeight)
 			{
-				UpdateRootNavigationViewMargins(fe.ActualHeight);
+				UpdateRootNavigationViewMargins(AppTitleBarContentControl.ActualHeight);
+
+				if (AppWindowId.HasValue)
+				{
+					AppWindow.GetFromWindowId(AppWindowId.Value).TitleBar.PreferredHeightOption =
+						_appTitleBarHeight > 32 ? TitleBarHeightOption.Tall : TitleBarHeightOption.Standard;
+				}
+
 				this.RefreshThemeResources();
 			}
 
@@ -208,7 +216,7 @@ namespace Microsoft.Maui.Platform
 				var transform = child.TransformToVisual(null);
 				var bounds = transform.TransformBounds(
 					new FRect(0, 0, child.ActualWidth, child.ActualHeight));
-				var rect = GetRect(bounds, child.XamlRoot.RasterizationScale);
+				var rect = GetRect(bounds, XamlRoot.RasterizationScale);
 				rectArray.Add(rect);
 			}
 
@@ -216,7 +224,15 @@ namespace Microsoft.Maui.Platform
 			{
 				var nonClientInputSrc =
 					InputNonClientPointerSource.GetForWindowId(AppWindowId.Value);
-				nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [.. rectArray]);
+
+				if (rectArray.Count > 0)
+				{
+					nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [.. rectArray]);
+				}
+				else
+				{
+					nonClientInputSrc.ClearRegionRects(NonClientRegionKind.Passthrough);
+				}
 			}
 		}
 

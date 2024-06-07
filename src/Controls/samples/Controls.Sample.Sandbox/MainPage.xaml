@@ -4,22 +4,93 @@
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
     <VerticalStackLayout
-        Spacing="8">
-        <Button
-            Text="Set custom titlebar with search + avatar"
-            HorizontalOptions="Center"
-            Clicked="CustomTitlebarButton_Clicked"/>
+        Spacing="16"
+        Margin="16">
 
-        <Button
-            Text="Set to plain text titlebar"
-            HorizontalOptions="Center"
-            Clicked="NormalTitlebarButton_Clicked"/>
+        <HorizontalStackLayout>
+            <CheckBox 
+                x:Name="SetIconCheckBox"
+                IsChecked="False"
+                CheckedChanged="SetIconCheckBox_CheckedChanged"/>
+            <Label
+                Text="Set Icon"
+                VerticalOptions="Center"/>
+        </HorizontalStackLayout>
 
-        <Label
-            Text="Search input:"
-            HorizontalOptions="Center"/>
-        <Label
-            Text="{Binding SearchText}"
-            HorizontalOptions="Center"/>
-    </VerticalStackLayout>
+        <HorizontalStackLayout Spacing="8">
+          <Entry 
+              x:Name="TitleTextBox"
+              Placeholder="Title Text"
+              HorizontalOptions="Start"
+              WidthRequest="120" />
+          <Button 
+              x:Name="TitleButton"
+              Text="Set Title"
+              Clicked="TitleButton_Clicked" />
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout 
+            Spacing="8">
+            <Entry 
+                x:Name="SubtitleTextBox"
+                Placeholder="Subtitle Text"
+                HorizontalOptions="Start"
+                WidthRequest="120" />
+            <Button x:Name="SetSubtitleButton"
+                Text="Set Subtitle"
+                Clicked="SubtitleButton_Clicked" />
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout>
+            <CheckBox 
+                x:Name="LeadingContentCheckBox"
+                IsChecked="False"
+                CheckedChanged="LeadingCheckBox_CheckedChanged"/>
+            <Label
+                Text="Leading Content"
+                VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+      
+        <HorizontalStackLayout>
+            <CheckBox 
+                x:Name="ContentCheckBox"
+                IsChecked="False"
+                CheckedChanged="ContentCheckBox_CheckedChanged"/>
+            <Label
+                Text="Content"
+                VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout>
+            <CheckBox 
+                x:Name="TrailingContentCheckBox"
+                IsChecked="False"
+                CheckedChanged="TrailingCheckBox_CheckedChanged"/>
+            <Label
+                Text="Trailing Content"
+                VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout>
+            <Entry 
+                x:Name="ColorTextBox"
+                Placeholder="Hex Color"
+                HorizontalOptions="Start"
+                WidthRequest="120" />
+            <Button 
+                x:Name="ColorButton"
+                Text="Set Color"
+                Clicked="ColorButton_Clicked" />
+        </HorizontalStackLayout>
+      
+        <HorizontalStackLayout>
+            <CheckBox 
+                x:Name="TallModeCheckBox"
+                IsChecked="False"
+                CheckedChanged="TallModeCheckBox_CheckedChanged"/>
+            <Label
+                Text="Tall TitleBar"
+                VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+  </VerticalStackLayout>
 </ContentPage>

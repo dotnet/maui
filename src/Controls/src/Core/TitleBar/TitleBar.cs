@@ -1,0 +1,199 @@
+﻿namespace Microsoft.Maui.Controls
+{
+	public partial class TitleBar : ContentView, ITitleBar
+	{
+		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
+			typeof(TitleBar), null, propertyChanged: OnIconChanged);
+
+		public static readonly BindableProperty LeadingContentProperty = BindableProperty.Create(nameof(LeadingContent), typeof(IView),
+			typeof(TitleBar), null, propertyChanged: OnLeadingContentChanged);
+
+		public static new readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(IView),
+			typeof(TitleBar), null, propertyChanged: OnContentChanged);
+
+		public static readonly BindableProperty TrailingContentProperty = BindableProperty.Create(nameof(TrailingContent), typeof(IView),
+			typeof(TitleBar), null, propertyChanged: OnTrailingContentChanged);
+
+		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string),
+			typeof(TitleBar), null, propertyChanged: OnTitleChanged);
+
+		public static readonly BindableProperty SubtitleProperty = BindableProperty.Create(nameof(Subtitle), typeof(string),
+			typeof(TitleBar), null, propertyChanged: OnSubtitleChanged);
+
+		public ImageSource Icon
+		{
+			get { return (ImageSource)GetValue(IconProperty); }
+			set { SetValue(IconProperty, value); }
+		}
+		
+		public IView? LeadingContent
+		{
+			get { return (View?)GetValue(LeadingContentProperty); }
+			set { SetValue(LeadingContentProperty, value); }
+		}
+
+		public string Title
+		{
+			get { return (string)GetValue(TitleProperty); }
+			set { SetValue(TitleProperty, value); }
+		}
+
+		public string Subtitle
+		{
+			get { return (string)GetValue(SubtitleProperty); }
+			set { SetValue(SubtitleProperty, value); }
+		}
+
+		public new IView? Content
+		{
+			get { return (View?)GetValue(TitleBar.ContentProperty); }
+			set { SetValue(TitleBar.ContentProperty, value); }
+		}
+
+		public IView? TrailingContent
+		{
+			get { return (View?)GetValue(TitleBar.TrailingContentProperty); }
+			set { SetValue(TitleBar.TrailingContentProperty, value); }
+		}
+
+		static void OnLeadingContentChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+
+			if (oldValue != null)
+			{
+				titlebar.ContentGrid.Remove(oldValue);
+			}
+
+			if (newValue is View view)
+			{
+				titlebar.ContentGrid.Add(newValue);
+				titlebar.ContentGrid.SetColumn(view, 0);
+			}
+		}
+
+		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+			if (newValue is ImageSource imageSource)
+			{
+				titlebar._iconImage.Source = imageSource;
+				titlebar._iconImage.IsVisible = !imageSource.IsEmpty;
+			}
+		}
+
+		static void OnTitleChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+			if (newValue is string text)
+			{
+				titlebar._titleLabel.Text = text;
+				titlebar._titleLabel.IsVisible = !string.IsNullOrEmpty(text);
+			}
+		}
+
+		static void OnSubtitleChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+			if (newValue is string text)
+			{
+				titlebar._subtitleLabel.Text = text;
+				titlebar._subtitleLabel.IsVisible = !string.IsNullOrEmpty(text);
+			}
+		}
+
+		static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+
+			if (oldValue != null)
+			{
+				titlebar.ContentGrid.Remove(oldValue);
+			}
+
+			if (newValue is View view)
+			{
+				titlebar.ContentGrid.Remove(oldValue);
+				titlebar.ContentGrid.Add(newValue);
+				titlebar.ContentGrid.SetColumn(view, 4);
+			}
+		}
+
+		static void OnTrailingContentChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+
+			if (oldValue != null)
+			{
+				titlebar.ContentGrid.Remove(oldValue);
+			}
+
+			if (newValue is View view)
+			{
+				titlebar.ContentGrid.Remove(oldValue);
+				titlebar.ContentGrid.Add(newValue);
+				titlebar.ContentGrid.SetColumn(view, 5);
+			}
+		}
+
+		Grid ContentGrid => (Grid)base.Content;
+		readonly Image _iconImage;
+		readonly Label _titleLabel;
+		readonly Label _subtitleLabel;
+
+		public TitleBar()
+		{
+			base.Content = new Grid
+			{
+				HorizontalOptions = LayoutOptions.Fill,
+				ColumnDefinitions =
+				{
+					new ColumnDefinition(GridLength.Auto), // Leading content
+					new ColumnDefinition(GridLength.Auto), // Icon content
+					new ColumnDefinition(GridLength.Auto), // Title content
+					new ColumnDefinition(GridLength.Auto), // Subtitle content
+					new ColumnDefinition(GridLength.Star), // Content
+					new ColumnDefinition(GridLength.Auto), // Trailing content
+					new ColumnDefinition(150),			   // Min drag region + padding for system buttons
+				}
+			};
+			 
+			_iconImage = new Image()
+			{
+				WidthRequest = 20,
+				HeightRequest = 20,
+				VerticalOptions = LayoutOptions.Center,
+				IsVisible = false,
+			};
+			ContentGrid.Add(_iconImage);
+			ContentGrid.SetColumn(_iconImage, 1);
+
+			_titleLabel = new Label()
+			{
+				Margin = new Thickness(16, 0),
+				LineBreakMode = LineBreakMode.NoWrap,
+				HorizontalOptions = LayoutOptions.Start,
+				VerticalOptions = LayoutOptions.Center,
+				MinimumWidthRequest = 48,
+				FontSize = 12,
+				IsVisible = false
+			};
+			ContentGrid.Add(_titleLabel);
+			ContentGrid.SetColumn(_titleLabel, 2);
+
+			_subtitleLabel = new Label()
+			{
+				Margin = new Thickness(0, 0, 16, 0),
+				LineBreakMode = LineBreakMode.NoWrap,
+				HorizontalOptions = LayoutOptions.Start,
+				VerticalOptions = LayoutOptions.Center,
+				MinimumWidthRequest = 48,
+				FontSize = 12,
+				Opacity = 0.8,
+				IsVisible = false
+			};
+			ContentGrid.Add(_subtitleLabel);
+			ContentGrid.SetColumn(_subtitleLabel, 3);
+		}
+	}
+}

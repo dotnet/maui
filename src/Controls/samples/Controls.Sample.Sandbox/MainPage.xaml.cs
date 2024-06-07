@@ -1,14 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample
 {
 	public partial class MainPage : ContentPage
 	{
 		private MainPageViewModel viewModel = new MainPageViewModel();
+		private TitleBar? _titleBar;
 
 		public MainPage()
 		{
@@ -16,31 +15,126 @@ namespace Maui.Controls.Sample
 			BindingContext = viewModel;
 		}
 
-		private void CustomTitlebarButton_Clicked(object sender, EventArgs e)
+		protected override void OnAppearing()
 		{
-			Window.TitleBar = new TitlebarSample()
-			{
-				BindingContext = viewModel,
-				HeightRequest = 60
-			};
-        }
+			base.OnAppearing();
 
-		private void NormalTitlebarButton_Clicked(object sender, EventArgs e)
+			_titleBar = new TitleBar();
+			Window.TitleBar = _titleBar;
+		}
+
+		private void SetIconCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
 		{
-			var grid = new Grid()
-			{
-				InputTransparent = true
-			};
-			var text = new Label
-			{ 
-				Text = "New Window",
-				HorizontalOptions = LayoutOptions.Start,
-				VerticalOptions = LayoutOptions.Center,
-				Margin = new Microsoft.Maui.Thickness(8, 0, 0, 0)
-			};
-			grid.Children.Add(text);
+			if (_titleBar == null)
+				return;
 
-			Window.TitleBar = grid;
+			if (e.Value)
+			{
+				_titleBar.Icon = "appicon.png";
+			}
+			else
+			{
+				_titleBar.Icon = "";
+			}
+		}
+
+		private void TitleButton_Clicked(object sender, EventArgs e)
+		{
+			if (_titleBar == null)
+				return;
+
+			_titleBar.Title = TitleTextBox.Text;
+		}
+
+		private void SubtitleButton_Clicked(object sender, EventArgs e)
+		{
+			if (_titleBar == null)
+				return;
+
+			_titleBar.Subtitle = SubtitleTextBox.Text;
+		}
+
+		private void ColorButton_Clicked(object sender, EventArgs e)
+		{
+			if (_titleBar == null)
+				return;
+
+			if (Microsoft.Maui.Graphics.Color.TryParse(ColorTextBox.Text, out var color))
+			{
+				_titleBar.BackgroundColor = color;
+			}
+		}
+
+		private void LeadingCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (_titleBar == null)
+				return;
+
+			if (e.Value)
+			{
+				_titleBar.LeadingContent = new Button()
+				{
+					Text = "Leading"
+				};
+			}
+			else
+			{
+				_titleBar.LeadingContent = null;
+			}
+		}
+
+		private void ContentCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (_titleBar == null)
+				return;
+
+			if (e.Value)
+			{
+				_titleBar.Content = new Entry()
+				{
+					Placeholder = "Search",
+					MinimumWidthRequest = 200,
+					MaximumWidthRequest = 500,
+					HeightRequest = 32
+				};
+			}
+			else
+			{
+				_titleBar.Content = null;
+			}
+		}
+
+		private void TrailingCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (_titleBar == null)
+				return;
+
+			if (e.Value)
+			{
+				_titleBar.TrailingContent = new Button()
+				{
+					Text = "Trailing"
+				};
+			}
+			else
+			{
+				_titleBar.TrailingContent = null;
+			}
+		}
+
+		private void TallModeCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (_titleBar == null)
+				return;
+
+			if (e.Value)
+			{
+				_titleBar.HeightRequest = 48;
+			}
+			else
+			{
+				_titleBar.HeightRequest = 32;
+			}
 		}
 	}
 
