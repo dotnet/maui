@@ -798,7 +798,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		private protected virtual void DetachingFromWindow()
 		{
+		}
 
+		private protected virtual NSIndexPath GetAdjustedIndexPathForItemSource(NSIndexPath indexPath)
+		{
+			return indexPath;
+		}
+
+		internal virtual void CellDisplayingEndedFromDelegate(UICollectionViewCell cell, NSIndexPath indexPath)
+		{
+			if (cell is TemplatedCell templatedCell &&
+				(templatedCell.PlatformHandler?.VirtualView as View)?.BindingContext is object bindingContext)
+			{
+				// We want to unbind a cell that is no longer present in the items source. Unfortunately
+				// it's too expensive to check directly, so let's check that the current binding context
+				// matches the item at a given position.
+
+				indexPath = GetAdjustedIndexPathForItemSource(indexPath);
+
+				var itemsSource = ItemsSource;
+				if (itemsSource is null ||
+					!itemsSource.IsIndexPathValid(indexPath) ||
+					!Equals(itemsSource[indexPath], bindingContext))
+				{
+					templatedCell.Unbind();
+				}
+			}
 		}
 	}
 }
