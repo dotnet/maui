@@ -68,6 +68,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					CheckLabelValue("lblPosition", index);
 					CheckLabelValue("lblCurrentItem", index);
+					App.WaitForElement($"CarouselItem{index}");
 
 					App.Tap("btnNext");
 					CheckLabelValue("lblPosition", nextIndex);
@@ -105,6 +106,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					CheckLabelValue("lblPosition", index);
 					CheckLabelValue("lblCurrentItem", index);
+					App.WaitForElement($"CarouselItem{index}");
 
 					App.Tap("btnPrev");
 					CheckLabelValue("lblPosition", previousIndex);
@@ -140,6 +142,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					CheckLabelValue("lblPosition", index);
 					CheckLabelValue("lblCurrentItem", index);
+					App.WaitForElement($"CarouselItem{index}");
 
 					App.SetOrientationLandscape();
 					App.SetOrientationPortrait();
@@ -158,6 +161,46 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				Reset();
 			}
+		}
+
+		[Test]
+		[Category(UITestCategories.CarouselView)]
+		public void NavigateBackWhenLooped()
+		{
+			App.NavigateToGallery(CarouselViewGallery);
+            int index = 3;
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (index < 0)
+                {
+                    index = 4;
+                }
+                
+                App.WaitForElement($"CarouselItem{index}");
+                App.ScrollLeft("TheCarouselView");
+                index--;
+            }
+		}
+
+		[Test]
+		[Category(UITestCategories.CarouselView)]
+		public void NavigateForwardWhenLooped()
+		{
+			App.NavigateToGallery(CarouselViewGallery);
+            int index = 3;
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (index > 4)
+                {
+                    index = 0;
+                }
+                
+                App.WaitForElement($"CarouselItem{index}");
+                App.ScrollRight("TheCarouselView");
+                index++;
+            }
 		}
 
 		void CheckLabelValue(string labelAutomationId, string value)
