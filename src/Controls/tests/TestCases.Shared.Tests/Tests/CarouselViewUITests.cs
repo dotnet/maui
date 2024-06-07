@@ -15,126 +15,85 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
+		protected override bool ResetAfterEachTest => true;
+
+		public override void TestSetup()
+		{
+			base.TestSetup();
+			App.NavigateToGallery(CarouselViewGallery);
+		}
+
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewSetPosition()
 		{
-			App.NavigateToGallery(CarouselViewGallery);
 			await Task.Delay(2000);
-			try
-			{
-				App.WaitForElement("lblPosition");
-				await Task.Delay(3000);
-				CheckLabelValue("lblPosition", "3");
-			}
-			catch
-			{
-				App.Screenshot("Failed to Start on the correct position ");
-			}
-			finally
-			{
-				Reset();
-			}
+			App.WaitForElement("lblPosition");
+			await Task.Delay(3000);
+			CheckLabelValue("lblPosition", "3");
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewGoToNextCurrentItem()
 		{
-			App.NavigateToGallery(CarouselViewGallery);
-			try
-			{
-				int indexToTest = 3;
-				var index = indexToTest.ToString();
-				var nextIndex = (indexToTest + 1).ToString();
+			int indexToTest = 3;
+			var index = indexToTest.ToString();
+			var nextIndex = (indexToTest + 1).ToString();
 
-				CheckLabelValue("lblPosition", index);
-				CheckLabelValue("lblCurrentItem", index);
-				App.WaitForElement($"CarouselItem{index}");
+			CheckLabelValue("lblPosition", index);
+			CheckLabelValue("lblCurrentItem", index);
+			App.WaitForElement($"CarouselItem{index}");
 
-				App.Tap("btnNext");
-				CheckLabelValue("lblPosition", nextIndex);
-				CheckLabelValue("lblCurrentItem", nextIndex);
-				CheckLabelValue("lblSelected", nextIndex);
-				App.Tap("btnPrev");
-			}
-			catch
-			{
-				App.Screenshot("Failed to tap on btnNext");
-			}
-			finally
-			{
-				Reset();
-			}
+			App.Tap("btnNext");
+			CheckLabelValue("lblPosition", nextIndex);
+			CheckLabelValue("lblCurrentItem", nextIndex);
+			CheckLabelValue("lblSelected", nextIndex);
+			App.Tap("btnPrev");
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewGoToPreviousCurrentItem()
 		{
-			App.NavigateToGallery(CarouselViewGallery);
-			try
-			{
-				int indexToTest = 3;
-				var index = indexToTest.ToString();
-				var previousIndex = (indexToTest - 1).ToString();
+			int indexToTest = 3;
+			var index = indexToTest.ToString();
+			var previousIndex = (indexToTest - 1).ToString();
 
-				CheckLabelValue("lblPosition", index);
-				CheckLabelValue("lblCurrentItem", index);
-				App.WaitForElement($"CarouselItem{index}");
+			CheckLabelValue("lblPosition", index);
+			CheckLabelValue("lblCurrentItem", index);
+			App.WaitForElement($"CarouselItem{index}");
 
-				App.Tap("btnPrev");
-				CheckLabelValue("lblPosition", previousIndex);
-				CheckLabelValue("lblCurrentItem", previousIndex);
-				CheckLabelValue("lblSelected", previousIndex);
-			}
-			catch
-			{
-				App.Screenshot("Failed to tap on btnPrev");
-			}
-			finally
-			{
-				Reset();
-			}
+			App.Tap("btnPrev");
+			CheckLabelValue("lblPosition", previousIndex);
+			CheckLabelValue("lblCurrentItem", previousIndex);
+			CheckLabelValue("lblSelected", previousIndex);
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewKeepPositionChangingOrientation()
 		{
-			App.NavigateToGallery(CarouselViewGallery);
-			try
-			{
-				int indexToTest = 3;
-					var index = indexToTest.ToString();
+			int indexToTest = 3;
+			var index = indexToTest.ToString();
 
-					CheckLabelValue("lblPosition", index);
-					CheckLabelValue("lblCurrentItem", index);
-					App.WaitForElement($"CarouselItem{index}");
+			CheckLabelValue("lblPosition", index);
+			CheckLabelValue("lblCurrentItem", index);
+			App.WaitForElement($"CarouselItem{index}");
 
-					App.SetOrientationLandscape();
-					App.SetOrientationPortrait();
+			App.SetOrientationLandscape();
+			App.SetOrientationPortrait();
 
-					await Task.Delay(3000);
+			await Task.Delay(3000);
 
-					CheckLabelValue("lblPosition", index);
-					CheckLabelValue("lblCurrentItem", index);
-			}
-			catch
-			{
-				App.Screenshot("Failed to tap on btnSetPosition");
-			}
-			finally
-			{
-				Reset();
-			}
+			CheckLabelValue("lblPosition", index);
+			CheckLabelValue("lblCurrentItem", index);
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void NavigateBackWhenLooped()
 		{
-			App.NavigateToGallery(CarouselViewGallery);
             int index = 3;
 
             for (int i = 0; i < 10; i++)
@@ -154,7 +113,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.CarouselView)]
 		public void NavigateForwardWhenLooped()
 		{
-			App.NavigateToGallery(CarouselViewGallery);
             int index = 3;
 
             for (int i = 0; i < 10; i++)
