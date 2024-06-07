@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !WINDOWS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -14,12 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			//App.NavigateToGallery(CarouselViewGallery);
-		}
-
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewSetPosition()
@@ -28,16 +23,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			await Task.Delay(2000);
 			try
 			{
-				if (Device == TestDevice.Windows)
-				{
-					Assert.Ignore("For now not running on windows");
-				}
-				else
-				{
-					App.WaitForElement("lblPosition");
-					await Task.Delay(3000);
-					CheckLabelValue("lblPosition", "3");
-				}
+				App.WaitForElement("lblPosition");
+				await Task.Delay(3000);
+				CheckLabelValue("lblPosition", "3");
 			}
 			catch
 			{
@@ -56,26 +44,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(CarouselViewGallery);
 			try
 			{
-				if (Device == TestDevice.Windows)
-				{
-					Assert.Ignore("For now not running on windows");
-				}
-				else
-				{
-					int indexToTest = 3;
-					var index = indexToTest.ToString();
-					var nextIndex = (indexToTest + 1).ToString();
+				int indexToTest = 3;
+				var index = indexToTest.ToString();
+				var nextIndex = (indexToTest + 1).ToString();
 
-					CheckLabelValue("lblPosition", index);
-					CheckLabelValue("lblCurrentItem", index);
-					App.WaitForElement($"CarouselItem{index}");
+				CheckLabelValue("lblPosition", index);
+				CheckLabelValue("lblCurrentItem", index);
+				App.WaitForElement($"CarouselItem{index}");
 
-					App.Tap("btnNext");
-					CheckLabelValue("lblPosition", nextIndex);
-					CheckLabelValue("lblCurrentItem", nextIndex);
-					CheckLabelValue("lblSelected", nextIndex);
-					App.Tap("btnPrev");
-				}
+				App.Tap("btnNext");
+				CheckLabelValue("lblPosition", nextIndex);
+				CheckLabelValue("lblCurrentItem", nextIndex);
+				CheckLabelValue("lblSelected", nextIndex);
+				App.Tap("btnPrev");
 			}
 			catch
 			{
@@ -94,25 +75,18 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(CarouselViewGallery);
 			try
 			{
-				if (Device == TestDevice.Windows)
-				{
-					Assert.Ignore("For now not running on windows");
-				}
-				else
-				{
-					int indexToTest = 3;
-					var index = indexToTest.ToString();
-					var previousIndex = (indexToTest - 1).ToString();
+				int indexToTest = 3;
+				var index = indexToTest.ToString();
+				var previousIndex = (indexToTest - 1).ToString();
 
-					CheckLabelValue("lblPosition", index);
-					CheckLabelValue("lblCurrentItem", index);
-					App.WaitForElement($"CarouselItem{index}");
+				CheckLabelValue("lblPosition", index);
+				CheckLabelValue("lblCurrentItem", index);
+				App.WaitForElement($"CarouselItem{index}");
 
-					App.Tap("btnPrev");
-					CheckLabelValue("lblPosition", previousIndex);
-					CheckLabelValue("lblCurrentItem", previousIndex);
-					CheckLabelValue("lblSelected", previousIndex);
-				}
+				App.Tap("btnPrev");
+				CheckLabelValue("lblPosition", previousIndex);
+				CheckLabelValue("lblCurrentItem", previousIndex);
+				CheckLabelValue("lblSelected", previousIndex);
 			}
 			catch
 			{
@@ -131,13 +105,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(CarouselViewGallery);
 			try
 			{
-				if (Device == TestDevice.Mac || Device == TestDevice.Windows)
-				{
-					Assert.Ignore("For now not running on Desktop");
-				}
-				else
-				{
-					int indexToTest = 3;
+				int indexToTest = 3;
 					var index = indexToTest.ToString();
 
 					CheckLabelValue("lblPosition", index);
@@ -151,7 +119,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					CheckLabelValue("lblPosition", index);
 					CheckLabelValue("lblCurrentItem", index);
-				}
 			}
 			catch
 			{
@@ -210,3 +177,4 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 }
+#endif
