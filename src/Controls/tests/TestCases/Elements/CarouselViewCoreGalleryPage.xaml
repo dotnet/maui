@@ -94,6 +94,7 @@
                                 <Image 
                                     Source="{Binding Image}"
                                     InputTransparent="true"
+                                    AutomationId="{Binding Title}"
                                     Aspect="AspectFit" />
                                 <Label 
                                     Text="{Binding Index}"  Grid.Row="1"
