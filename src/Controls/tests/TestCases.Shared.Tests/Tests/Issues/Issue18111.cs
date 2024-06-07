@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,10 +14,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Slider)]
-		[FailsOnMac("VerifyScreenshot method not implemented")]
+		[FailsOnAndroid("Regression test validating the design differences between iOS and Mac specifically")]
+		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
+		[FailsOnWindows("Regression test validating the design differences between iOS and Mac specifically")]
 		public void SettingMaximumTrackColorOnSliderWorks()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Windows }, "Regression test validating the design differences between iOS and Mac specifically");
 			App.WaitForElement("WaitForSliderControl");
 			VerifyScreenshot();
 		}

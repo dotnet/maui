@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,11 +13,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Button ImageSource not Scaling as expected";
 
 		[Test]
-		[FailsOnMac("VerifyScreenshot method not implemented")]
+		[FailsOnIOS("iOS will be fixed in https://github.com/dotnet/maui/pull/20953")]
+		[FailsOnMac("Catalyst will be fixed in https://github.com/dotnet/maui/pull/20953")]
 		public void Issue18242Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS }, "iOS will be fixed in https://github.com/dotnet/maui/pull/20953");
-
 			App.WaitForElement("WaitForStubControl");
 
 			VerifyScreenshot();
