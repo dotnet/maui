@@ -17,10 +17,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void Issue9355Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForNoElement(TestOk);
 		}
 	}

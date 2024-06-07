@@ -16,10 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.RefreshView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public async Task RefreshingListViewCrashesWhenDisposedTest()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			await Task.Delay(500);
 			App.WaitForElement("Success");
 		}

@@ -16,10 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void ListViewIsGroupingEnabledDoesNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForNoElement("First");
 		}
 	}

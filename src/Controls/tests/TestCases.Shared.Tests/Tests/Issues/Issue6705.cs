@@ -16,10 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void Issue6705Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			for (var i = 1; i < 6; i++)
 			{
 				App.WaitForElement($"Button{i}");

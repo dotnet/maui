@@ -18,10 +18,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.TabbedPage)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void Issue2035Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement(Success);
 			//if it doesn't crash, we're good.
 		}

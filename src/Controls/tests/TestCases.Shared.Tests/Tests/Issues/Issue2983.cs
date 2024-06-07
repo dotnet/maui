@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void TestDoesNotCrash()
 		{
 			App.WaitForElement("footer");

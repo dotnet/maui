@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,13 +18,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
 		public void NullContentOnScrollViewDoesntCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			App.WaitForNoElement(Success);
 			//if it doesn't crash, we're good.
 		}
 	}
 }
+#endif

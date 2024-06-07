@@ -20,8 +20,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public async Task SwitchColorTest()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement(SwitchId);
 
 			App.Screenshot("Initial switch state");

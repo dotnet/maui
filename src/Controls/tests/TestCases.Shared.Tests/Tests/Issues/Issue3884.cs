@@ -11,15 +11,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "BoxView corner radius";
-		
+
 		[Test]
 		[Category(UITestCategories.BoxView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void Issue3884Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("TestReady");
 			App.Screenshot("I see a blue circle");
 		}

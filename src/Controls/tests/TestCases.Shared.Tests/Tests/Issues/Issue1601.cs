@@ -16,10 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void Issue1601Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.Screenshot("Start G1601");
 			App.WaitForElement("CrashButton");
 			App.Screenshot("I see the button");

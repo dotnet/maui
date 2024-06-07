@@ -18,12 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public void ResettingItemsOnRecycledListViewKeepsOldText()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.Tap(Reload);
 			App.WaitForNoElement(Success);
 		}

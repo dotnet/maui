@@ -16,12 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Image)]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public void ScrollingQuicklyOnCollectionViewDoesntCrashOnDestroyedImage()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("ScrollMe");
 			App.ScrollDown("ScrollMe", ScrollStrategy.Gesture, swipeSpeed: 20000);
 			App.ScrollUp("ScrollMe", ScrollStrategy.Gesture, swipeSpeed: 20000);

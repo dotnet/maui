@@ -17,10 +17,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroid]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void AddingItemsToGroupedCollectionViewShouldNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement(Success, timeout: TimeSpan.FromSeconds(30));
 		}
 	}

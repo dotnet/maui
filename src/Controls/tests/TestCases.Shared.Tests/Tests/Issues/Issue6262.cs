@@ -15,12 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public void ImageShouldLayoutOnTopOfButton()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("ClickMe");
 			App.Tap("ClickMe");
 			App.WaitForElement("ClickMe");

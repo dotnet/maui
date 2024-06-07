@@ -15,11 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.DisplayAlert)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
+		[FailsOnAllPlatforms]
 		public void TestIssue1905RefreshShows()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			// wait for test to load
 			App.WaitForElement("btnRefresh");
 			App.Screenshot("Should show refresh control");

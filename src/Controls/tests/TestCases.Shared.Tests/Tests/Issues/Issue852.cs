@@ -18,10 +18,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void Issue852TestsEntriesClickable()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("WelcomeLabel");
 			App.WaitForElement(UsernameId);
 			App.WaitForElement(PasswordId);

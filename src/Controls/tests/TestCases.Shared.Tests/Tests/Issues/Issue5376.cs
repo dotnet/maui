@@ -15,10 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void Issue5376Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForNoElement("Success");
 		}
 	}

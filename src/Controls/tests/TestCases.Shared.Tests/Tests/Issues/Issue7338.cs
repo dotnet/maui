@@ -17,10 +17,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroid]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void Issue3273Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-			
 			// If the instructions are visible at all, then this has succeeded
 			App.WaitForElement(Success);
 		}

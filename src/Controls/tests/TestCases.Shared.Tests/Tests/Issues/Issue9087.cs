@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,9 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void BindablePropertiesAvailableAtOnElementChanged()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			App.WaitForNoElement(Success);
 		}
 	}
 }
+#endif

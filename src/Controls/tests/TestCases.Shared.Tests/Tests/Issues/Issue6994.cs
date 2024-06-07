@@ -15,12 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public void NullPointerExceptionOnFastLabelTextColorChange()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("Click me");
 			App.Tap("Click me");
 			App.WaitForElement("Success");

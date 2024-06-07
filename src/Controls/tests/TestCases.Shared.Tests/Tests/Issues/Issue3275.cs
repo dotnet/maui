@@ -18,11 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public void Issue3275Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement(BtnLeakId);
 			App.Tap(BtnLeakId);
 			App.WaitForElement(BtnScrollToId);

@@ -15,10 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void SwappingEmptyViews()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("FilterItems");
 			App.Tap("FilterItems");
 			App.EnterText("FilterItems", "abcdef");

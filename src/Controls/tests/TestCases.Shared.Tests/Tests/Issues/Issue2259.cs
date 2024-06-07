@@ -15,11 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void Issue2259Tests()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac]);
-
 			for (int i = 0; i < 20; i++)
 			{
 				App.Tap("AddButton");

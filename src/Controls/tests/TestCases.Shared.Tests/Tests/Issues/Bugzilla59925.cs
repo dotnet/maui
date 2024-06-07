@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,11 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
-		[FailsOnMac]
 		public void Issue123456Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			App.Screenshot("I am at Issue 59925");
 			App.WaitForElement("Bigger");
 			App.Screenshot("0");
@@ -36,3 +34,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

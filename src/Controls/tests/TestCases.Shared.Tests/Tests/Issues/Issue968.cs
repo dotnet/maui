@@ -22,8 +22,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindows("SetOrientationPortrait method not implemented")]
 		public void Issue968TestsRotationRelayoutIssue()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("TestReady");
 			App.SetOrientationLandscape();
 			App.Screenshot("Rotated to Landscape");

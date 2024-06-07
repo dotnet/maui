@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,8 +20,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnIOS]
 		public void Issue3884Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("entryUpdate_Spacing");
 			App.Tap("entryUpdate_Spacing");
 			App.ClearText("entryUpdate_Spacing");
@@ -32,3 +31,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

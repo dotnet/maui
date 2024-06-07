@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +19,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnIOS]
 		public async Task Issue1583_1_WebviewTest()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("label", "Could not find label", TimeSpan.FromSeconds(10), null, null);
 			await Task.Delay(TimeSpan.FromSeconds(3));
 			App.Screenshot("I didn't crash and i can see Skøyen");
@@ -32,3 +31,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

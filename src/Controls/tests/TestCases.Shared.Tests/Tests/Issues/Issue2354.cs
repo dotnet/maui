@@ -16,10 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void TestDoesntCrashWithCachingDisable()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement("ImageLoaded");
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);

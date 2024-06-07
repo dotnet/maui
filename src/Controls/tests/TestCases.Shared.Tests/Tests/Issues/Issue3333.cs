@@ -18,11 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public void SettingBindingContextToNullBeforingPoppingPageCrashes()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForNoElement(KSuccess);
 		}
 	}

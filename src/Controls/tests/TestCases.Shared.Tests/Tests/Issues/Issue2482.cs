@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,11 +21,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void AnimationCancel()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement(ButtonId);
 			App.DoubleClick(ButtonId);
 			App.WaitForNoElement(Success, timeout: TimeSpan.FromSeconds(25));
 		}
 	}
 }
+#endif

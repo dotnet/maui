@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void Issue2963Test()
 		{
 			App.Screenshot("I am at Issue 2963");

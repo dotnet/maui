@@ -16,10 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Picker)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
+		[FailsOnMac("Focus Behavior is different")]
+		[FailsOnWindows("Focus Behavior is different")]
 		public void FocusAndUnFocusMultipleTimes()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows], "Focus Behavior is different");
-
 			App.WaitForElement("btnFocusThenUnFocus");
 			App.Tap("btnFocusThenUnFocus");
 			App.WaitForNoElement("Picker Focused: 1");

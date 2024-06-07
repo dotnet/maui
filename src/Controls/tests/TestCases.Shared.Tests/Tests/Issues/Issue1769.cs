@@ -19,12 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Switch)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public void Issue1769Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
 			App.WaitForElement(GoToPageTwoButtonText);
 			App.Tap(GoToPageTwoButtonText);
 

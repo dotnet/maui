@@ -18,11 +18,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroid]
 		[FailsOnIOS]
+		[FailsOnMac]
 		public void NullItemSourceDoesNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac]);
-
 			// If we can see the Success label, it means we didn't crash. 
 			App.WaitForElement(Success);
 		}
@@ -30,12 +30,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnWindows]
+		[FailsOnAllPlatforms]
 		public void SettingItemsSourceToNullDoesNotCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac]);
-			
 			App.WaitForElement(Go);
 			App.Tap(Go);
 

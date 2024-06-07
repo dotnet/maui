@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
@@ -16,10 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void Issue3342Test()
 		{
-			this.IgnoreIfPlatforms([TestDevice.iOS, TestDevice.Mac, TestDevice.Windows]);
-
 			App.Screenshot("I am at Issue 3342");
 			App.Screenshot("I see the green box");
 		}
 	}
 }
+#endif

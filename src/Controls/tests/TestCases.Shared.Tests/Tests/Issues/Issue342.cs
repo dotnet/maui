@@ -15,11 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Page)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnAllPlatforms]
 		public void Issue342NoSourceTestsLablePresentNoImage()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			App.WaitForNoElement("Uninitialized image", "Cannot see label");
 			App.Screenshot("All elements present");
 		}
@@ -36,11 +34,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Page)]
-		[FailsOnWindows]
+		[FailsOnAllPlatforms]
 		public void Issue342DelayedLoadTestsImageLoads()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
 			App.WaitForElement("TestReady");
 			App.Screenshot("Should not crash");
 		}
