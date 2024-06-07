@@ -146,7 +146,17 @@ namespace UITest.Appium
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 			else
-				_app.Driver.TerminateApp(_app.GetAppId());
+			{
+				try
+				{
+					_app.Driver.TerminateApp(_app.GetAppId());
+				}
+				catch (Exception)
+				{
+					// Occasionally the app seems like it's already closed before we get here
+					// and then this throws an exception
+				}
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
