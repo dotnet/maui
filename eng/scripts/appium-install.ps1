@@ -67,9 +67,11 @@ if (!(Test-Path $logsDir -PathType Container)) {
 $AppiumHome = $env:APPIUM_HOME
 Write-Output "APPIUM_HOME: $AppiumHome"
 
-if (Test-Path $AppiumHome) {
-    Write-Output  "Removing existing APPIUM_HOME Cache..."
-    Remove-Item -Path $AppiumHome -Recurse -Force
+if ($AppiumHome) {
+    if (Test-Path $AppiumHome) {
+        Write-Output  "Removing existing APPIUM_HOME Cache..."
+        Remove-Item -Path $AppiumHome -Recurse -Force
+    }
 }
 
 # Create the directory for appium home
