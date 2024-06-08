@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- The .NET product branding version -->
-    <ProductVersion>8.0.60</ProductVersion>
+    <ProductVersion>8.0.70</ProductVersion>
     <MajorVersion>8</MajorVersion>
     <MinorVersion>0</MinorVersion>
     <PatchVersion>60</PatchVersion>
