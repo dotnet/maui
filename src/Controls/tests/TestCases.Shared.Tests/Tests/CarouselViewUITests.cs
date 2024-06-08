@@ -70,6 +70,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblSelected", previousIndex);
 		}
 
+// Catalyst doesn't support orientation changes
+#if !MACCATALYST
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewKeepPositionChangingOrientation()
@@ -89,7 +91,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblPosition", index);
 			CheckLabelValue("lblCurrentItem", index);
 		}
-#if !ANDROID
+#endif
+
+#if IOS || WINDOWS
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void NavigateBackWhenLooped()
