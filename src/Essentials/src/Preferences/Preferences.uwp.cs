@@ -193,6 +193,10 @@ namespace Microsoft.Maui.Storage
 
 			if (value is null)
 				prefs.TryRemove(key, out _);
+			else if (value is DateTime dt)
+				prefs[key] = string.Format(CultureInfo.InvariantCulture, "{0}", dt.ToBinary());
+			else if (value is DateTimeOffset dto)
+				prefs[key] = dto.ToString("O");
 			else
 				prefs[key] = string.Format(CultureInfo.InvariantCulture, "{0}", value);
 
@@ -205,6 +209,19 @@ namespace Microsoft.Maui.Storage
 			{
 				if (inner.TryGetValue(key, out var value) && value is not null)
 				{
+					if (defaultValue is DateTime dt)
+					{
+						long tempValue = (long)Convert.ChangeType(value, typeof(long), CultureInfo.InvariantCulture);
+						return (T)(object)DateTime.FromBinary(tempValue);
+					}
+					else if (defaultValue is DateTimeOffset dto)
+					{
+						if (DateTimeOffset.TryParse((string)value, out var dateTimeOffset))
+						{
+							return (T)(object)dateTimeOffset;
+						}
+					}
+
 					try
 					{
 						return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
