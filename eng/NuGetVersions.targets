@@ -242,5 +242,9 @@
         Version="0.1.0-beta.5"
         PrivateAssets="All"
     />
+    <PackageReference
+        Update="System.Drawing.Common"
+        Version="$(SystemDrawingCommonPackageVersion)"
+    />
   </ItemGroup>
 </Project>

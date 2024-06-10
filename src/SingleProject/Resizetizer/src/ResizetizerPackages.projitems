@@ -18,6 +18,8 @@
     <PackageReference Include="ShimSkiaSharp" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Fizzler" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="ExCSS" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.Drawing.Common" GeneratePathProperty="true" PrivateAssets="all" />
+
     <!-- build task dependencies -->
     <PackageReference Include="System.Memory" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Buffers" GeneratePathProperty="true" PrivateAssets="all" />

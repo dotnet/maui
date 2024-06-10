@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -7,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui
@@ -27,6 +27,12 @@ namespace Microsoft.Maui
 		readonly IFontRegistrar _fontRegistrar;
 		readonly IServiceProvider? _serviceProvider;
 
+		/// <remarks>Value is cached to avoid the performance hit of accessing <see cref="ResourceDictionary"/> many times.</remarks>
+		FontFamily? _defaultFontFamily;
+
+		/// <remarks>Value is cached to avoid the performance hit of accessing <see cref="ResourceDictionary"/> many times.</remarks>
+		double? _defaultFontSize;
+
 		/// <summary>
 		/// Creates a new <see cref="EmbeddedFontLoader"/> instance.
 		/// </summary>
@@ -40,12 +46,24 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public FontFamily DefaultFontFamily =>
-			(FontFamily)UI.Xaml.Application.Current.Resources[SystemFontFamily];
+		public FontFamily DefaultFontFamily
+		{
+			get
+			{
+				_defaultFontFamily ??= (FontFamily)Application.Current.Resources[SystemFontFamily];
+				return _defaultFontFamily;
+			}
+		}
 
 		/// <inheritdoc/>
-		public double DefaultFontSize =>
-			(double)UI.Xaml.Application.Current.Resources[SystemFontSize];
+		public double DefaultFontSize
+		{
+			get
+			{
+				_defaultFontSize ??= (double)Application.Current.Resources[SystemFontSize];
+				return _defaultFontSize.Value;
+			}
+		}
 
 		/// <inheritdoc/>
 		public FontFamily GetFontFamily(Font font)

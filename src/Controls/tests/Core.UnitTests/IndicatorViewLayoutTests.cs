@@ -50,5 +50,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Assert
 			Assert.Equal(expected, indicatorStackLayout.Children.Count);
 		}
+
+		[Fact]
+		public void IndicatorLayout_ShouldBeRemovedWhenIndicatorTemplateIsNulled()
+		{
+			// Arrange
+			var indicatorView = new IndicatorView() { ItemsSource = new List<string> { "item1", "item2" } };
+			indicatorView.IndicatorTemplate = new DataTemplate();
+			Assert.NotNull(indicatorView.IndicatorLayout);
+
+			// Act
+			indicatorView.IndicatorTemplate = null;
+
+			//Assert
+			Assert.Null(indicatorView.IndicatorLayout);
+		}
 	}
 }

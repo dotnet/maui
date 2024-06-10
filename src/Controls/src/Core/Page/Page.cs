@@ -47,19 +47,19 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public const string ActionSheetSignalName = "Microsoft.Maui.Controls.ShowActionSheet";
 
-		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
+		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create(nameof(IgnoresContainerArea), typeof(bool), typeof(Page), false);
 
 		/// <summary>Bindable property for <see cref="BackgroundImageSource"/>.</summary>
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
-		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create("IsBusy", typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
+		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create(nameof(IsBusy), typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
-		public static readonly BindableProperty TitleProperty = BindableProperty.Create("Title", typeof(string), typeof(Page), null);
+		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(Page), null);
 
 		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls
 		bool _hasAppeared;
 		private protected bool HasAppeared => _hasAppeared;
 
-		View _titleView;
+		internal View TitleView;
 
 		List<Action> _pendingActions = new List<Action>();
 
@@ -494,8 +494,8 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(menubarItem, BindingContext);
 			}
 
-			if (_titleView != null)
-				SetInheritedBindingContext(_titleView, BindingContext);
+			if (TitleView != null)
+				SetInheritedBindingContext(TitleView, BindingContext);
 		}
 
 		/// <summary>
@@ -798,7 +798,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void SetTitleView(View oldTitleView, View newTitleView)
 		{
-			_titleView = newTitleView;
+			TitleView = newTitleView;
 		}
 
 		internal bool HasNavigatedTo { get; private set; }

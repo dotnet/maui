@@ -7,6 +7,8 @@
     <AssemblyName>Microsoft.Maui.DeviceTests.Shared</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
     <NoWarn>$(NoWarn),CA1416</NoWarn>
+    <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
