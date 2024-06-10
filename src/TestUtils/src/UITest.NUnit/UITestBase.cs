@@ -6,35 +6,39 @@ using UITest.Core;
 
 namespace UITest.Appium.NUnit
 {
-	//#if ANDROID
-	//	[TestFixture(TestDevice.Android)]
-	//#elif IOSUITEST
-	//	[TestFixture(TestDevice.iOS)]
-	//#elif MACUITEST
-	//	[TestFixture(TestDevice.Mac)]
-	//#elif WINTEST
-	//	[TestFixture(TestDevice.Windows)]
-	//#else
-	//    [TestFixture(TestDevice.iOS)]
-	//    [TestFixture(TestDevice.Mac)]
-	//    [TestFixture(TestDevice.Windows)]
-	//    [TestFixture(TestDevice.Android)]
-	//#endif
 	public abstract class UITestBase : UITestContextBase
 	{
+		protected virtual bool ResetAfterEachTest => false;
+
 		public UITestBase(TestDevice testDevice)
 			: base(testDevice)
 		{
 		}
 
-		[SetUp]
 		public void RecordTestSetup()
 		{
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Start");
 		}
 
+		[SetUp]
+		public virtual void TestSetup()
+		{
+			RecordTestSetup();
+		}
+
 		[TearDown]
+		public virtual void TestTearDown()
+		{
+			RecordTestTeardown();
+			UITestBaseTearDown();
+			if (ResetAfterEachTest)
+			{
+				Reset();
+				FixtureSetup();
+			}
+		}
+
 		public void RecordTestTeardown()
 		{
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
@@ -51,7 +55,8 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				Reset();
+				if (!ResetAfterEachTest)
+					Reset();
 			}
 			catch (Exception e)
 			{
@@ -60,7 +65,6 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		[TearDown]
 		public void UITestBaseTearDown()
 		{
 			try
@@ -69,8 +73,11 @@ namespace UITest.Appium.NUnit
 				{
 					SaveDeviceDiagnosticInfo();
 
-					Reset();
-					FixtureSetup();
+					if (!ResetAfterEachTest)
+					{
+						Reset();
+						FixtureSetup();
+					}
 
 					// Assert.Fail will immediately exit the test which is desirable as the app is not
 					// running anymore so we can't capture any UI structures or any screenshots
