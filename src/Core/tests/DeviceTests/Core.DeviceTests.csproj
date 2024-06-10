@@ -13,6 +13,10 @@
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(CI)' == 'true' or '$(TF_BUILD)' == 'true' ">
+    <DefineConstants>$(DefineConstants);CI</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup>
     <ApplicationTitle>Core Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.core.devicetests</ApplicationId>

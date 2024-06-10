@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (day == 0)
 					Control.DayVisible = false;
 				else if (day == 3)
-					Control.DayFormat = "day dayofweek.abbreviated";
+					Control.DayFormat = "dayofweek.abbreviated";
 				else if (day == 4)
 					Control.DayFormat = "dayofweek.full";
 				else

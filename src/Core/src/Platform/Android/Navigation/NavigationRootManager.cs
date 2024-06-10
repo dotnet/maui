@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Platform
 		// this is called after the Window.Content is created by
 		// the fragment. We can't just create views on demand
 		// need to let the fragments fall
-		internal void OnWindowContentPlatformViewCreated()
+		void OnWindowContentPlatformViewCreated()
 		{
 			RootViewChanged?.Invoke(this, EventArgs.Empty);
 
@@ -155,6 +155,8 @@ namespace Microsoft.Maui.Platform
 
 				if (FragmentManager.IsDestroyed(context))
 					_viewFragment = null;
+				
+				RootViewChanged?.Invoke(this, EventArgs.Empty);
 			}
 			else
 			{

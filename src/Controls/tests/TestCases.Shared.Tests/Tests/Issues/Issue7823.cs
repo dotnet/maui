@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "In a ToolbarItems, if an item has no icon but just text, MAUI uses the icon from the previous page in the Navigation";
 
 		[Test]
+		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
 		public void UpdateToolbarItemAfterNavigate()
 		{
 			// 1. Navigate from Page with a ToolbarItem using an Icon. 

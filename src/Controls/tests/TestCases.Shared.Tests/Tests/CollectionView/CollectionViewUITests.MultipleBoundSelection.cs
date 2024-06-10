@@ -14,12 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ItemsFromViewModelShouldBeSelected (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundMultiSelection.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Ignore("Click does not find CollectionView elements.")]
+		[FailsOnAllPlatforms("Click does not find CollectionView elements.")]
 		public void ItemsFromViewModelShouldBeSelected()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },		
-				"Click does not find CollectionView elements.");
-
 			// Navigate to the selection galleries
 			VisitInitialGallery("Selection");
 			

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Google.Android.Material.ImageView;
 using Google.Android.Material.Shape;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {
@@ -76,7 +77,9 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
 		{
-			platformView.UpdateMauiRippleDrawableBackground(button,
+			platformView.UpdateMauiRippleDrawableBackground(
+				button.Background ?? new SolidPaint(Colors.Transparent), // transparent to force some background
+				button,
 				beforeSet: () =>
 				{
 					// We have a background, so we need to remove the things that were set on the

@@ -321,5 +321,23 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 			var toggleHtmlPlainTextLabelContainer = new ViewContainer<Label>(Test.Label.TextTypeToggle, toggleLabel);
 			Add(toggleHtmlPlainTextLabelContainer);
 		}
+
+		{
+			var label = new Label
+			{
+				FontFamily = "FA",
+				FontSize = 48,
+				Text = "\xf133",
+				WidthRequest = 48,
+				HeightRequest = 48,
+			};
+			var familyContainer = new StateViewContainer<Label>(Test.Label.FontFamily, label);
+			familyContainer.StateChangeButton.Clicked += (s, a) =>
+			{
+				label.FontFamily = label.FontFamily == "FA" ? "Ion" : "FA";
+				label.Text = label.FontFamily == "FA" ? "\xf133" : "\xf30c";
+			};
+			Add(familyContainer);
+		}
 	}
 }

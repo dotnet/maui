@@ -24,10 +24,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("Resize");
 			var smallSize = App.WaitForElement("Item1").GetRect();
 
-            ClassicAssert.Greater(largestSize.Width, mediumSize.Width);
+			ClassicAssert.Greater(largestSize.Width, mediumSize.Width);
 			ClassicAssert.Greater(mediumSize.Width, smallSize.Width);
 		}
-        
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewFirstItemCorrectlySetsTheMeasure()
@@ -35,13 +35,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var itemSize = App.WaitForElement("Item1").GetRect();
 			ClassicAssert.Greater(200, itemSize.Height);
 		}
-        
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnMac("This test is failing, likely due to product issue")]
+		[FailsOnWindows("This test is failing, likely due to product issue")]
 		public void CollectionViewWorksWhenRotatingDevice()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
-
 			try
 			{
 				App.WaitForElement("FullSize");

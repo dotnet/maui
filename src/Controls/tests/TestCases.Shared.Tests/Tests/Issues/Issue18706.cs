@@ -12,6 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
+		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
 		public void EditorBackgroundWorks()
 		{
 			App.WaitForElement("WaitForStubControl");

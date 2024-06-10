@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -16,8 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         [Test]
         public void PushViewControllerWithNullWindow()
         {
-            this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
             App.WaitForElement("AddVC");
             App.Click("AddVC");
             App.WaitForElement("TextField1").Click();
@@ -27,3 +26,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         }
     }
 }
+#endif

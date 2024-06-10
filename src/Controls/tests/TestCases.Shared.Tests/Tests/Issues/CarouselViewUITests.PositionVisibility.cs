@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -19,9 +20,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void Issue12848Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
-				"Android specific Test");
-
 			App.WaitForElement("TestCarouselView");
 			App.SwipeRightToLeft("TestCarouselView");
 			var position1 = App.FindElement("CarouselPosition").GetText();
@@ -36,3 +34,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

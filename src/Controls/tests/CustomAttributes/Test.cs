@@ -392,6 +392,7 @@ public static class Test
 	public enum Image
 	{
 		Source,
+		Source_FontImageSource,
 		Aspect,
 		IsOpaque,
 		IsLoading,
@@ -463,7 +464,7 @@ public static class Test
 		Text,
 		Padding,
 		FormattedText,
-		FontAttibutesBold,
+		FontAttributesBold,
 		FontAttributesItalic,
 		TextDecorationUnderline,
 		TextDecorationStrike,
@@ -489,6 +490,7 @@ public static class Test
 		HtmlTextTypeMultipleLines,
 		HtmlTextLabelProperties,
 		TextTypeToggle,
+		FontFamily,
 	}
 
 	public enum ProgressBar
