@@ -24,10 +24,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
+		[FailsOnIOS("This test is failing, likely due to product issue")]
+		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyEnabled()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac }, "This test is failing, likely due to product issue");
-
 			// 1. Enable the ScrollView.
 			App.WaitForElement(InitiallyEnabled);
 			App.Tap(InitiallyEnabled);
@@ -46,10 +46,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// ScrollViewInitiallyEnabledThenDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
+		[FailsOnIOS("This test is failing, likely due to product issue")]
+		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyEnabledThenDisabled()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac }, "This test is failing, likely due to product issue");
-
 			// 1. Enable the ScrollView.
 			App.WaitForElement(InitiallyEnabled);
 			App.Tap(InitiallyEnabled);
@@ -74,10 +74,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// ScrollViewInitiallyNotEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
+		[FailsOnIOS("This test is failing, likely due to product issue")]
+		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyNotEnabled()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac }, "This test is failing, likely due to product issue");
-
 			// 1. Disable the ScrollView.
 			App.WaitForElement(InitiallyNotEnabled);
 			App.Tap(InitiallyNotEnabled);
@@ -94,10 +94,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// ScrollViewInitiallyNotEnabledThenEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
+		[FailsOnIOS("This test is failing, likely due to product issue")]
+		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyNotEnabledThenEnabled()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac }, "This test is failing, likely due to product issue");
-
 			// 1. Disable the ScrollView.
 			App.WaitForElement(InitiallyNotEnabled);
 			App.Tap(InitiallyNotEnabled);

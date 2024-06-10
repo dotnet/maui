@@ -1276,7 +1276,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 
 				var args = new ScrolledEventArgs(scrollView.ContentOffset.X, scrollView.ContentOffset.Y);
-				if (!_list.TryGetTarget(out var list))
+				if (_list.TryGetTarget(out var list))
 					list.SendScrolled(args);
 
 				if (_isDragging && scrollView.ContentOffset.Y < 0)

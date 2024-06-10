@@ -29,8 +29,8 @@ namespace Maui.Controls.Sample.Issues
 
 		void Button_Clicked(System.Object sender, System.EventArgs e)
 		{
-			Text = "Updated text on button click";
 			button.IsVisible = false;
+			Text = "Updated text on button click";
 		}
 	}
 }

@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls
 
 		Guid? _id;
 
-		Element _parentOverride;
+		WeakReference<Element> _parentOverride;
 
 		string _styleId;
 
@@ -282,10 +282,29 @@ namespace Microsoft.Maui.Controls
 
 		internal Element ParentOverride
 		{
-			get { return _parentOverride; }
+			get 
+			{
+				if (_parentOverride is null)
+				{
+					return null;
+				}
+				if (_parentOverride.TryGetTarget(out var parent))
+				{
+					return parent;
+				}
+				else
+				{
+					Application.Current?
+						.FindMauiContext()?
+						.CreateLogger<Element>()?
+						.LogWarning($"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+				}
+
+				return null;
+			}
 			set
 			{
-				if (_parentOverride == value)
+				if (ParentOverride == value)
 					return;
 
 				bool emitChange = Parent != value;
@@ -300,7 +319,10 @@ namespace Microsoft.Maui.Controls
 						OnParentChangingCore(Parent, RealParent);
 				}
 
-				_parentOverride = value;
+				if (value == null)
+					_parentOverride = null;
+				else
+					_parentOverride = new WeakReference<Element>(value);
 
 				if (emitChange)
 				{
@@ -310,9 +332,39 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		WeakReference<Element> _realParent;
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Element RealParent { get; private set; }
+		public Element RealParent 
+		{ 
+			get
+			{
+				if (_realParent is null)
+				{
+					return null;
+				}
+				if (_realParent.TryGetTarget(out var parent))
+				{
+					return parent;
+				}
+				else
+				{
+					Application.Current?
+						.FindMauiContext()?
+						.CreateLogger<Element>()?
+						.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+				}
+
+				return null;
+			} 
+			private set
+			{
+				if (value is null)
+					_realParent = null;
+				else
+					_realParent = new WeakReference<Element>(value);
+			}
+		}
 
 		Dictionary<BindableProperty, (string, SetterSpecificity)> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, (string, SetterSpecificity)>());
 
@@ -328,7 +380,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>Most application authors will not need to set the parent element by hand.</remarks>
 		public Element Parent
 		{
-			get { return _parentOverride ?? RealParent; }
+			get { return ParentOverride ?? RealParent; }
 			set => SetParent(value);
 		}
 

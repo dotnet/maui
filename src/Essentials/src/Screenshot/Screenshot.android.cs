@@ -13,10 +13,8 @@ namespace Microsoft.Maui.Media
 {
 	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
 	{
-		static IWindowManager windowManager;
-
 		static IWindowManager WindowManager =>
-			windowManager ??= Application.Context.GetSystemService(Context.WindowService) as IWindowManager;
+			Application.Context.GetSystemService(Context.WindowService) as IWindowManager;
 
 		public bool IsCaptureSupported => true;
 

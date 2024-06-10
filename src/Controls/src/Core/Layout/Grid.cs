@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
 		/// <summary>Bindable property for <see cref="ColumnDefinitions"/>.</summary>
-		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions",
+		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create(nameof(ColumnDefinitions),
 			typeof(ColumnDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 			});
 
 		/// <summary>Bindable property for <see cref="RowDefinitions"/>.</summary>
-		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions",
+		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create(nameof(RowDefinitions),
 			typeof(RowDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
@@ -32,11 +32,11 @@ namespace Microsoft.Maui.Controls
 			});
 
 		/// <summary>Bindable property for <see cref="RowSpacing"/>.</summary>
-		public static readonly BindableProperty RowSpacingProperty = BindableProperty.Create("RowSpacing", typeof(double),
+		public static readonly BindableProperty RowSpacingProperty = BindableProperty.Create(nameof(RowSpacing), typeof(double),
 			typeof(Grid), 0d, propertyChanged: Invalidate);
 
 		/// <summary>Bindable property for <see cref="ColumnSpacing"/>.</summary>
-		public static readonly BindableProperty ColumnSpacingProperty = BindableProperty.Create("ColumnSpacing", typeof(double),
+		public static readonly BindableProperty ColumnSpacingProperty = BindableProperty.Create(nameof(ColumnSpacing), typeof(double),
 			typeof(Grid), 0d, propertyChanged: Invalidate);
 
 		#region Row/Column/Span Attached Properties

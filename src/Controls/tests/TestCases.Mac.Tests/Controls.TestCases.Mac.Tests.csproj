@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
+    <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
   </ItemGroup>
 
 </Project>

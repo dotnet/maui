@@ -17,13 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[TestCase("Entry", true)]
 		[TestCase("Editor", true)]
 		[TestCase("SearchBar", true)]
+		[FailsOnWindows("Test ignored on Windows")]
 		public void HideSoftInputOnTappedPageTest(string control, bool hideOnTapped)
-		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Windows
-			});
-   
+		{   
 			App.WaitForElement("HideSoftInputOnTappedTrue");
 
 			if (this.Device == TestDevice.Mac)
@@ -87,13 +83,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[FailsOnWindows("Test ignored on Windows")]
 		public void TogglingHideSoftInputOnTapped()
-		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Windows
-			});
-   
+		{   
 			App.WaitForElement("HideSoftInputOnTappedFalse");
 
 			if (this.Device == TestDevice.Mac)

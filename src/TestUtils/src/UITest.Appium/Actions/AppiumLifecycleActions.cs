@@ -127,26 +127,41 @@ namespace UITest.Appium
 			}
 			catch (Exception)
 			{
+				// TODO Pass in logger so we can log these exceptions
+				
 				// Occasionally the app seems to get so locked up it can't 
 				// even report back the appstate. In that case, we'll just
 				// try to trigger a reset.
 			}
 
-			if (_app.GetTestDevice() == TestDevice.Mac)
+			try
 			{
-				_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
+				if (_app.GetTestDevice() == TestDevice.Mac)
 				{
-					{ "bundleId", _app.GetAppId() },
-				});
+					_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
+					{
+						{ "bundleId", _app.GetAppId() },
+					});
+				}
+				else if (_app.GetTestDevice() == TestDevice.Windows)
+				{
+	#pragma warning disable CS0618 // Type or member is obsolete
+					_app.Driver.CloseApp();
+	#pragma warning restore CS0618 // Type or member is obsolete
+				}
+				else
+				{
+					_app.Driver.TerminateApp(_app.GetAppId());
+				}
 			}
-			else if (_app.GetTestDevice() == TestDevice.Windows)
+			catch (Exception)
 			{
-#pragma warning disable CS0618 // Type or member is obsolete
-				_app.Driver.CloseApp();
-#pragma warning restore CS0618 // Type or member is obsolete
+				// TODO Pass in logger so we can log these exceptions
+
+				// Occasionally the app seems like it's already closed before we get here
+				// and then this throws an exception.
+				return CommandResponse.FailedEmptyResponse;
 			}
-			else
-				_app.Driver.TerminateApp(_app.GetAppId());
 
 			return CommandResponse.SuccessEmptyResponse;
 		}

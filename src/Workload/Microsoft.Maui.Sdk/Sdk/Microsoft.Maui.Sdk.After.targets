@@ -25,4 +25,9 @@
     <ProjectCapability Include="SingleTargetBuildForStartupProjects" Condition=" '$(EnableSingleTargetBuildForStartupProjects)' != 'false' " />
   </ItemGroup>
 
+  <!-- Fix Android design-time builds prior to NuGet restore -->
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' and !Exists('$(AndroidManifest)') ">
+    <AndroidManifest Condition=" Exists('Platforms\Android\AndroidManifest.xml') ">Platforms\Android\AndroidManifest.xml</AndroidManifest>
+  </PropertyGroup>
+
 </Project>

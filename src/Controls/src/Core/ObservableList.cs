@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		public void AddRange(IEnumerable<T> range)
 		{
 			if (range == null)
-				throw new ArgumentNullException("range");
+				throw new ArgumentNullException(nameof(range));
 
 			List<T> items = range.ToList();
 			int index = Items.Count;
@@ -28,9 +28,9 @@ namespace Microsoft.Maui.Controls
 		public void InsertRange(int index, IEnumerable<T> range)
 		{
 			if (index < 0 || index > Count)
-				throw new ArgumentOutOfRangeException("index");
+				throw new ArgumentOutOfRangeException(nameof(index));
 			if (range == null)
-				throw new ArgumentNullException("range");
+				throw new ArgumentNullException(nameof(range));
 
 			int originalIndex = index;
 
@@ -44,9 +44,9 @@ namespace Microsoft.Maui.Controls
 		public void Move(int oldIndex, int newIndex, int count)
 		{
 			if (oldIndex < 0 || oldIndex + count > Count)
-				throw new ArgumentOutOfRangeException("oldIndex");
+				throw new ArgumentOutOfRangeException(nameof(oldIndex));
 			if (newIndex < 0 || newIndex + count > Count)
-				throw new ArgumentOutOfRangeException("newIndex");
+				throw new ArgumentOutOfRangeException(nameof(newIndex));
 
 			var items = new List<T>(count);
 			for (var i = 0; i < count; i++)
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls
 		public void RemoveAt(int index, int count)
 		{
 			if (index < 0 || index + count > Count)
-				throw new ArgumentOutOfRangeException("index");
+				throw new ArgumentOutOfRangeException(nameof(index));
 
 			T[] items = Items.Skip(index).Take(count).ToArray();
 			for (int i = index; i < count; i++)
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 		public void RemoveRange(IEnumerable<T> range)
 		{
 			if (range == null)
-				throw new ArgumentNullException("range");
+				throw new ArgumentNullException(nameof(range));
 
 			List<T> items = range.ToList();
 			foreach (T item in items)
@@ -93,12 +93,12 @@ namespace Microsoft.Maui.Controls
 		public void ReplaceRange(int startIndex, IEnumerable<T> items)
 		{
 			if (items == null)
-				throw new ArgumentNullException("items");
+				throw new ArgumentNullException(nameof(items));
 
 			T[] ritems = items.ToArray();
 
 			if (startIndex < 0 || startIndex + ritems.Length > Count)
-				throw new ArgumentOutOfRangeException("startIndex");
+				throw new ArgumentOutOfRangeException(nameof(startIndex));
 
 			var oldItems = new T[ritems.Length];
 			for (var i = 0; i < ritems.Length; i++)

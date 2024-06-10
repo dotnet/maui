@@ -1,5 +1,4 @@
-﻿using Maui.Controls.Sample;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;

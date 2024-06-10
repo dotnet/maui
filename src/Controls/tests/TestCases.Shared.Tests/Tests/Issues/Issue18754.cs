@@ -13,11 +13,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
+		[FailsOnMac("Currently IsKeyboardShown is not implemented.")]
+		[FailsOnWindows("Currently IsKeyboardShown is not implemented.")]
 		public void Issue18754Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows },
-				"Currently IsKeyboardShown is not implemented.");
-
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Attempt to enter any text into the editor below.

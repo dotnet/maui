@@ -56,8 +56,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("TargetViewContainer");
 			App.Tap("TargetViewContainer");
-			App.EnterText("TargetViewContainer", callerMemberName.Replace("_", "", StringComparison.OrdinalIgnoreCase) + "VisualElement");
+			App.EnterText("TargetViewContainer", callerMemberName + "VisualElement");
 			App.Tap("GoButton");
+			App.WaitForElement(ViewQuery);
 		}
 
 		public void TapView()

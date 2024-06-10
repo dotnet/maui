@@ -131,7 +131,7 @@ steps:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
 
-  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="${{ parameters.buildConfiguration }}" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
+  - pwsh: ./build.ps1 --target=dotnet-pack --configuration="${{ parameters.buildConfiguration }}" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}" --officialbuildid="${{ parameters.officialBuildId }}"
     displayName: 'Pack .NET Maui'
     name: PackMaui
     workingDirectory: ${{ parameters.checkoutDirectory }}
