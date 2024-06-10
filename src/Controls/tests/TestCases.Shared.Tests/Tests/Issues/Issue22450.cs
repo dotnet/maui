@@ -12,6 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue22450(TestDevice device) : base(device) { }
 
 		[Test]
+		[FailsOnWindows("The golden tests cut the title bar where the back button appears.")]
 		public void BackButtonIconShouldBeBlue()
 		{
 			App.WaitForElement("label");
