@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Handlers
 				   [nameof(IToolbar.Title)] = MapTitle,
 #if IOS || MACCATALYST
 					[nameof(IToolbar.IsVisible)] = MapIsVisible,
+					[nameof(IToolbar.BackButtonVisible)] = MapBackButtonVisible,
 #endif
 			   };
 

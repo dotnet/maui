@@ -8,12 +8,27 @@ namespace Microsoft.Maui.Platform
 		{
 			if (navigationController.NavigationBarHidden == isNavigationbarVisible)
 			{
-				// TODO: the view underneath this jumps up when the toolbar is hidden and down when it's shown
-				// rather than smoothly animating the transition. It's not clear how to fix this
-				// Also, when the toolbar is hidden and another page is pushed, the toolbar for the page that's about to hide
+				// TODO: when the toolbar is hidden and another page is pushed, the toolbar for the page that's about to hide
 				// gets its toolbar back right before the animation of the push of the new page
 				navigationController.SetNavigationBarHidden(!isNavigationbarVisible, animated);
 			}
+		}
+
+		public static void UpdateBackButtonVisibility(this UINavigationController navigationController, bool backButtonVisible)
+		{
+			var navigationItem = navigationController.TopViewController?.NavigationItem;
+
+			if (navigationItem == null)
+			{
+				return;
+			}
+
+			if (navigationItem.HidesBackButton == !backButtonVisible)
+			{
+				return;
+			}
+
+			navigationItem.HidesBackButton = !backButtonVisible;
 		}
 	}
 }

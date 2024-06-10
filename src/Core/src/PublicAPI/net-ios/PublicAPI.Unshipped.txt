@@ -77,6 +77,9 @@ Microsoft.Maui.Platform.MauiHybridWebView
 Microsoft.Maui.Platform.MauiHybridWebView.MauiHybridWebView(Microsoft.Maui.Handlers.HybridWebViewHandler! handler, CoreGraphics.CGRect frame, WebKit.WKWebViewConfiguration! configuration) -> void
 Microsoft.Maui.Platform.MauiHybridWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.Platform.MauiImageView.MauiImageView(Microsoft.Maui.Handlers.IImageHandler! handler) -> void
+Microsoft.Maui.Platform.MauiNavigationBar
+Microsoft.Maui.Platform.MauiNavigationBar.MauiNavigationBar(Microsoft.Maui.Platform.PlatformNavigationController! navigationController) -> void
+Microsoft.Maui.Platform.MauiNavigationBar.NavigationController.get -> System.WeakReference<Microsoft.Maui.Platform.PlatformNavigationController!>!
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.NavigationManager
@@ -85,8 +88,23 @@ Microsoft.Maui.Platform.NavigationManager.NavigationManager(Microsoft.Maui.IMaui
 Microsoft.Maui.Platform.NavigationManager.SetNavigationController(UIKit.UINavigationController! navigationController) -> void
 Microsoft.Maui.Platform.NavigationManager.SetToolbarElement(Microsoft.Maui.IToolbarElement! toolbarElement) -> void
 Microsoft.Maui.Platform.NavigationManager.ToolbarElement.get -> Microsoft.Maui.IToolbarElement?
+Microsoft.Maui.Platform.ParentViewController
+Microsoft.Maui.Platform.ParentViewController.ParentViewController(Microsoft.Maui.Handlers.NavigationViewHandler! handler, Microsoft.Maui.Platform.PlatformNavigationController! navController, Microsoft.Maui.IView! page, Microsoft.Maui.IMauiContext! mauiContext) -> void
+Microsoft.Maui.Platform.ParentViewController.UpdateSafeArea() -> void
+Microsoft.Maui.Platform.PlatformNavigationController
+Microsoft.Maui.Platform.PlatformNavigationController.IsDisposed.get -> bool
+Microsoft.Maui.Platform.PlatformNavigationController.NavigationHandler.get -> System.WeakReference<Microsoft.Maui.Handlers.NavigationViewHandler!>!
+Microsoft.Maui.Platform.PlatformNavigationController.PlatformNavigationController(Microsoft.Maui.Handlers.NavigationViewHandler! handler, System.Type? navigationBarType = null, System.Type? toolbarType = null) -> void
+Microsoft.Maui.Platform.PlatformNavigationController.SecondaryToolbar.get -> System.WeakReference<UIKit.UIToolbar!>!
+Microsoft.Maui.Platform.PlatformNavigationController.SecondaryToolbar.set -> void
+Microsoft.Maui.Platform.PlatformNavigationController.UpdateHideNavigationBarSeparator(bool shouldHideNavigationBarSeparator) -> void
+Microsoft.Maui.Platform.PlatformNavigationController.UpdateHomeIndicatorAutoHidden() -> void
+Microsoft.Maui.Platform.PlatformNavigationController.UpdateSecondaryToolBarVisible() -> void
+Microsoft.Maui.Platform.PlatformNavigationController.UpdateStatusBarHidden() -> void
+Microsoft.Maui.Platform.PlatformNavigationController.ValidateNavBarExists(bool newNavigationPageHasNavBar) -> void
 Microsoft.Maui.Platform.StackNavigationManager
 Microsoft.Maui.Platform.StackNavigationManager.StackNavigationManager(Microsoft.Maui.IMauiContext! mauiContext) -> void
+Microsoft.Maui.Platform.UINavigationBarExtensions
 Microsoft.Maui.Platform.UINavigationControllerExtensions
 Microsoft.Maui.Platform.UIViewControllerExtensions
 Microsoft.Maui.Platform.MauiWKWebView.ContentProcessDidTerminate(WebKit.WKWebView! webView) -> void
@@ -136,6 +154,13 @@ override Microsoft.Maui.Platform.NoCaretField.MovedToWindow() -> void
 override Microsoft.Maui.Platform.PageViewController.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
 override Microsoft.Maui.Platform.PageViewController.PrefersHomeIndicatorAutoHidden.get -> bool
 override Microsoft.Maui.Platform.PageViewController.PrefersStatusBarHidden() -> bool
+override Microsoft.Maui.Platform.ParentViewController.Dispose(bool disposing) -> void
+override Microsoft.Maui.Platform.ParentViewController.ViewDidDisappear(bool animated) -> void
+override Microsoft.Maui.Platform.ParentViewController.ViewDidLayoutSubviews() -> void
+override Microsoft.Maui.Platform.ParentViewController.ViewWillAppear(bool animated) -> void
+override Microsoft.Maui.Platform.PlatformNavigationController.Dispose(bool disposing) -> void
+override Microsoft.Maui.Platform.PlatformNavigationController.ViewDidLoad() -> void
+override Microsoft.Maui.Platform.PlatformNavigationController.ViewWillLayoutSubviews() -> void
 override Microsoft.Maui.Platform.WrapperView.MovedToWindow() -> void
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.SizeRequest.GetHashCode() -> int
@@ -160,6 +185,7 @@ static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Ma
 static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapBackground(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.ToolbarHandler.MapBackButtonVisible(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.IToolbar! toolbar) -> void
 static Microsoft.Maui.Handlers.ToolbarHandler.MapIsVisible(Microsoft.Maui.Handlers.IToolbarHandler! handler, Microsoft.Maui.IToolbar! toolbar) -> void
 static Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler<TType>(this Microsoft.Maui.Hosting.IMauiHandlersCollection! handlersCollection, System.Func<System.IServiceProvider!, Microsoft.Maui.IElementHandler!>! handlerImplementationFactory) -> Microsoft.Maui.Hosting.IMauiHandlersCollection!
 static Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler<TType>(this Microsoft.Maui.Hosting.IMauiHandlersCollection! handlersCollection, System.Func<System.IServiceProvider!, Microsoft.Maui.IElementHandler!>! handlerImplementationFactory) -> Microsoft.Maui.Hosting.IMauiHandlersCollection!
@@ -187,7 +213,11 @@ static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handle
 static Microsoft.Maui.Platform.ApplicationExtensions.UpdateUserInterfaceStyle(this Microsoft.Maui.IApplication! application) -> void
 static Microsoft.Maui.Platform.TextFieldExtensions.UpdateIsSpellCheckEnabled(this UIKit.UITextField! textField, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.TextViewExtensions.UpdateIsSpellCheckEnabled(this UIKit.UITextView! textView, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Platform.UINavigationBarExtensions.GetEmptyBackIndicatorImage() -> UIKit.UIImage!
+static Microsoft.Maui.Platform.UINavigationBarExtensions.SetupDefaultNavigationBarAppearance(this UIKit.UINavigationBar! navBar) -> void
+static Microsoft.Maui.Platform.UINavigationControllerExtensions.UpdateBackButtonVisibility(this UIKit.UINavigationController! navigationController, bool backButtonVisible) -> void
 static Microsoft.Maui.Platform.UINavigationControllerExtensions.UpdateNavigationBarVisibility(this UIKit.UINavigationController! navigationController, bool isNavigationbarVisible, bool animated) -> void
+static Microsoft.Maui.Platform.UIViewControllerExtensions.InvalidateMeasure(this UIKit.UIViewController! viewController) -> void
 static Microsoft.Maui.Platform.UIViewControllerExtensions.UpdateBackButtonTitle(this UIKit.UIViewController! viewController, string! backButtonTitle) -> void
 static Microsoft.Maui.Platform.UIViewControllerExtensions.UpdateNavigationBarTitle(this UIKit.UIViewController! viewController, string! title) -> void
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindow? platformWindow) -> Microsoft.Maui.IWindow?
@@ -239,7 +269,9 @@ Microsoft.Maui.Platform.UIWindowExtensions
 Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
 *REMOVED*override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
-virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IStackNavigationView! virtualView, UIKit.UINavigationController! navigationController) -> void
+virtual Microsoft.Maui.Platform.PlatformNavigationController.BackButtonClicked() -> void
+virtual Microsoft.Maui.Platform.PlatformNavigationController.ShouldPopItem(UIKit.UINavigationBar! _, UIKit.UINavigationItem! __) -> bool
+virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IStackNavigationView! virtualView, Microsoft.Maui.Platform.PlatformNavigationController! navigationController, Microsoft.Maui.Handlers.NavigationViewHandler! navigationViewHandler) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.Disconnect(Microsoft.Maui.IStackNavigationView! virtualView, UIKit.UINavigationController! navigationController) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.RequestNavigation(Microsoft.Maui.NavigationRequest! request) -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiLabel.InvalidateIntrinsicContentSize() -> void

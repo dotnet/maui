@@ -6,11 +6,7 @@ namespace Microsoft.Maui.Handlers;
 
 public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, UIView>, IPlatformViewHandler
 {
-		public IStackNavigationView NavigationView => ((IStackNavigationView)VirtualView);
-	/*
-	   [PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName] = NavigationPage.MapPrefersLargeTitles,
-	   [PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName] = NavigationPage.MapIsNavigationBarTranslucent,
-	 */
+	public IStackNavigationView NavigationView => ((IStackNavigationView)VirtualView);
 
 	public StackNavigationManager? StackNavigationManager { get; private set; }
 
@@ -23,7 +19,8 @@ public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, U
 
 	protected override UIView CreatePlatformView()
 	{
-		_platformNavigationController ??= new PlatformNavigationController(this);
+		_platformNavigationController ??= new PlatformNavigationController(this, navigationBarType: typeof(MauiNavigationBar));
+		
 		StackNavigationManager = CreateStackNavigationManager();
 
 		if (_platformNavigationController.View is null)
@@ -43,7 +40,7 @@ public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, U
 			throw new NullReferenceException("PlatformNavigationController is null.");
 		}
 
-		StackNavigationManager?.Connect(VirtualView, _platformNavigationController);
+		StackNavigationManager?.Connect(VirtualView, _platformNavigationController, this);
 		base.ConnectHandler(platformView);
 	}
 

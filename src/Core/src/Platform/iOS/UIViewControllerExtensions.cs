@@ -19,5 +19,14 @@ namespace Microsoft.Maui.Platform
 				viewController.NavigationItem.BackBarButtonItem = new UIBarButtonItem { Title = backButtonTitle, Style = UIBarButtonItemStyle.Plain };
 			}
 		}
-    }
+
+		public static void InvalidateMeasure(this UIViewController viewController)
+		{
+			if (viewController != null)
+			{
+				viewController.View?.SetNeedsLayout();
+				viewController.View?.Superview?.SetNeedsLayout();
+			}
+		}
+	}
 }

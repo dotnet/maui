@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using CoreGraphics;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal static class ToolbarExtensions
+	public static class ToolbarExtensions
 	{
-		internal static void UpdateTitleArea(this UINavigationBar navigationBar, Toolbar toolbar)
+		public static void UpdateTitleArea(this UINavigationController navigationController, Toolbar toolbar)
 		{
 			ImageSource titleIcon = toolbar.TitleIcon;
 			var titleView = toolbar.TitleView;
 
-			// UpdateLeftBarButtonItem() ?
-			//navigationBar.UpdateBackButtonTitle(toolbar);
+			// ? UpdateLeftBarButtonItem() ?
 
-			ClearTitleViewContainer(toolbar);
+			ClearTitleViewContainer(navigationController);
 			if (titleIcon == null || titleIcon.IsEmpty && titleView == null)
 			{
 				return;
@@ -29,13 +25,13 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				throw new InvalidOperationException("NavigationController is null.");
 			}
-			NavigationTitleAreaContainer titleViewContainer = new NavigationTitleAreaContainer((View)titleView, toolbar.NavigationController.NavigationBar);
+			NavigationTitleAreaContainer titleViewContainer = new NavigationTitleAreaContainer((View)titleView, navigationController.NavigationBar);
 
 			UpdateTitleImage(titleViewContainer, titleIcon);
-			toolbar.NavigationController.NavigationItem.TitleView = titleViewContainer;
+			navigationController.NavigationItem.TitleView = titleViewContainer;
 		}
 
-		internal static void UpdateBarBackground(this UINavigationBar navigationBar, Toolbar toolbar)
+		public static void UpdateBarBackground(this UINavigationBar navigationBar, Toolbar toolbar)
 		{
 			var barBackgroundBrush = toolbar.BarBackground;
 			Graphics.Color? barBackgroundColor = null;
@@ -100,22 +96,16 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void UpdateBackButtonTitle(this UINavigationBar navigationBar, Toolbar toolbar)
+		public static void UpdateBackButtonTitle(this UINavigationController navigationController, Toolbar toolbar)
 		{
-			var viewController = toolbar.NavigationController?.TopViewController;
+			var viewController = navigationController?.TopViewController;
 			if (viewController == null)
 			{
 				return;
 			}
 
-			if (!string.IsNullOrWhiteSpace(toolbar.Title))
-			{
-				viewController.NavigationItem.Title = toolbar.Title;
-				return;
-			}
-
 			var backButtonText = toolbar.BackButtonTitle;
-			if (string.IsNullOrWhiteSpace(backButtonText))
+			if (backButtonText is null)
 			{
 				viewController.NavigationItem.BackBarButtonItem = null;
 				return;
@@ -124,132 +114,7 @@ namespace Microsoft.Maui.Controls.Platform
 			viewController.NavigationItem.BackBarButtonItem = new UIBarButtonItem { Title = backButtonText, Style = UIBarButtonItemStyle.Plain };
 		}
 
-		internal static void SetupDefaultNavigationBarAppearance(this UINavigationBar navBar)
-		{
-			if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13)))
-			{
-				return;
-			}
-
-			// We will use UINavigationBar.Appearance to infer settings that
-			// were already set to the navigation bar in older versions of
-			// iOS.
-			UINavigationBarAppearance navAppearance = navBar.StandardAppearance;
-
-			if (navAppearance.BackgroundColor == null)
-			{
-				UIColor? backgroundColor = navBar.BarTintColor;
-
-				navBar.StandardAppearance.BackgroundColor = backgroundColor;
-
-				if (navBar.ScrollEdgeAppearance != null)
-				{
-					navBar.ScrollEdgeAppearance.BackgroundColor = backgroundColor;
-				}
-
-				if (navBar.CompactAppearance != null)
-				{
-					navBar.CompactAppearance.BackgroundColor = backgroundColor;
-				}
-			}
-
-			if (navAppearance.BackgroundImage == null)
-			{
-				UIImage backgroundImage = navBar.GetBackgroundImage(UIBarMetrics.Default);
-
-				navBar.StandardAppearance.BackgroundImage = backgroundImage;
-
-				if (navBar.ScrollEdgeAppearance != null)
-				{
-					navBar.ScrollEdgeAppearance.BackgroundImage = backgroundImage;
-				}
-
-				if (navBar.CompactAppearance != null)
-				{
-					navBar.CompactAppearance.BackgroundImage = backgroundImage;
-				}
-			}
-
-			if (navAppearance.ShadowImage == null)
-			{
-				UIImage? shadowImage = navBar.ShadowImage;
-				UIColor clearColor = UIColor.Clear;
-
-				navBar.StandardAppearance.ShadowImage = shadowImage;
-
-				if (navBar.ScrollEdgeAppearance != null)
-				{
-					navBar.ScrollEdgeAppearance.ShadowImage = shadowImage;
-				}
-
-				if (navBar.CompactAppearance != null)
-				{
-					navBar.CompactAppearance.ShadowImage = shadowImage;
-				}
-
-				if (shadowImage != null && shadowImage.Size == SizeF.Empty)
-				{
-					navBar.StandardAppearance.ShadowColor = clearColor;
-
-					if (navBar.ScrollEdgeAppearance != null)
-					{
-						navBar.ScrollEdgeAppearance.ShadowColor = clearColor;
-					}
-
-					if (navBar.CompactAppearance != null)
-					{
-						navBar.CompactAppearance.ShadowColor = clearColor;
-					}
-				}
-			}
-
-			UIImage? backIndicatorImage = navBar.BackIndicatorImage;
-			UIImage? backIndicatorTransitionMaskImage = navBar.BackIndicatorTransitionMaskImage;
-
-			if (backIndicatorImage != null && backIndicatorImage.Size == SizeF.Empty)
-			{
-				backIndicatorImage = GetEmptyBackIndicatorImage();
-			}
-
-			if (backIndicatorTransitionMaskImage != null && backIndicatorTransitionMaskImage.Size == SizeF.Empty)
-			{
-				backIndicatorTransitionMaskImage = GetEmptyBackIndicatorImage();
-			}
-
-			navBar.CompactAppearance?.SetBackIndicatorImage(backIndicatorImage, backIndicatorTransitionMaskImage);
-			navBar.StandardAppearance.SetBackIndicatorImage(backIndicatorImage, backIndicatorTransitionMaskImage);
-			navBar.ScrollEdgeAppearance?.SetBackIndicatorImage(backIndicatorImage, backIndicatorTransitionMaskImage);
-		}
-
-		internal static UIImage GetEmptyBackIndicatorImage()
-		{
-			var rect = RectangleF.Empty;
-			SizeF size = rect.Size;
-
-			UIGraphics.BeginImageContext(size);
-			CGContext? context = UIGraphics.GetCurrentContext();
-			context?.SetFillColor(1, 1, 1, 0);
-			context?.FillRect(rect);
-
-			UIImage? empty = UIGraphics.GetImageFromCurrentImageContext();
-			context?.Dispose();
-
-			return empty;
-		}
-
-		internal static ParentViewController? GetParentViewController(this UINavigationBar navigationBar)
-		{
-			var viewControllers = navigationBar.GetNavigationController()?.ViewControllers;
-			if (!viewControllers?.Any() ?? true)
-			{
-				return null;
-			}
-
-			var parentViewController = viewControllers!.Last() as ParentViewController;
-			return parentViewController;
-		}
-
-		internal static void UpdateBarTextColor(this UINavigationBar navigationBar, Toolbar toolbar)
+		public static void UpdateBarTextColor(this UINavigationBar navigationBar, Toolbar toolbar)
 		{
 			var barTextColor = toolbar.BarTextColor;
 
@@ -314,14 +179,14 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void UpdateToolbarItems(this UINavigationBar navigationBar, Toolbar toolbar)
+		public static void UpdateToolbarItems(this UINavigationController navigationController, Toolbar toolbar)
 		{
-			if (toolbar.NavigationController == null || toolbar.NavigationController.TopViewController == null)
+			if (navigationController.TopViewController == null)
 			{
 				return;
 			}
 
-			var navigationItem = toolbar.NavigationController.TopViewController.NavigationItem;
+			var navigationItem = navigationController.TopViewController.NavigationItem;
 
 			if (navigationItem.RightBarButtonItems != null)
 			{
@@ -331,7 +196,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			var toolbarItems = toolbar.NavigationController.TopViewController.ToolbarItems;
+			var toolbarItems = navigationController.TopViewController.ToolbarItems;
 			if (toolbarItems != null)
 			{
 				for (var i = 0; i < toolbarItems.Length; i++)
@@ -354,27 +219,21 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			if (primaries != null)
-			{
-				primaries.Reverse();
-			}
+			primaries?.Reverse();
 
-			toolbar.NavigationController!.TopViewController.NavigationItem.SetRightBarButtonItems(primaries == null ? [] : primaries.ToArray(),
+			navigationController!.TopViewController.NavigationItem.SetRightBarButtonItems(primaries == null ? [] : primaries.ToArray(),
 				false);
-			toolbar.NavigationController
-				.TopViewController.ToolbarItems = secondaries == null ? [] : secondaries.ToArray();
-
-			toolbar.NavigationController.UpdateNavigationBarVisibility(toolbar.IsVisible, true); // TODO: check that we need this call at all 
+			navigationController.TopViewController.ToolbarItems = secondaries == null ? [] : secondaries.ToArray();
 		}
 
-		internal static void UpdateBackButtonVisibility(this UINavigationBar navigationBar, Toolbar toolbar)
+		public static void UpdateBackButtonVisibility(this UINavigationController navigationController, Toolbar toolbar)
 		{
-			if (toolbar.NavigationController == null)
+			if (navigationController == null)
 			{
 				throw new NullReferenceException("NavigationController is null.");
 			}
 
-			var navigationItem = toolbar.NavigationController.TopViewController?.NavigationItem;
+			var navigationItem = navigationController.TopViewController?.NavigationItem;
 
 			if (navigationItem == null)
 			{
@@ -389,36 +248,9 @@ namespace Microsoft.Maui.Controls.Platform
 			navigationItem.HidesBackButton = !toolbar.BackButtonVisible;
 		}
 
-		// TODO: StatusBarTextColorModeProperty is on NavigationPage, look at NavigationRenderer and how it uses this
-//		static void SetStatusBarStyle()
-//		{
-//			var barTextColor = NavPage.BarTextColor;
-//			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
-
-//#pragma warning disable CA1416, CA1422 // TODO:   'UIApplication.StatusBarStyle' is unsupported on: 'ios' 9.0 and later
-//			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
-//			{
-//				// Use dark text color for status bar
-//				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
-//				{
-//					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.DarkContent;
-//				}
-//				else
-//				{
-//					UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.Default;
-//				}
-//			}
-//			else
-//			{
-//				// Use light text color for status bar
-//				UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.LightContent;
-//			}
-//#pragma warning restore CA1416, CA1422
-//		}
-
-		static void ClearTitleViewContainer(Toolbar toolbar)
+		static void ClearTitleViewContainer(UINavigationController navigationController)
 		{
-			var navigationItem = toolbar.NavigationController?.TopViewController?.NavigationItem;
+			var navigationItem = navigationController?.TopViewController?.NavigationItem;
 			if (navigationItem == null)
 			{
 				return;

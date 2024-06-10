@@ -11,22 +11,34 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UINavigationBar CreatePlatformElement()
 		{
-			return NavigationManager?.NavigationController?.NavigationBar ?? throw new NullReferenceException("Could not obtain NavigationBar.");
+			return NavigationManager?.NavigationController?.NavigationBar ?? throw new NullReferenceException("Could not obtain Navigation bar.");
 		}
 
+		// TODO: Check if this happens for all toolbars, not just NavigationPageToolbar
 		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
 		{
-			if (arg1 is ToolbarHandler toolbarHandler)
+			if (arg1.PlatformView is MauiNavigationBar navigationBar
+				&& navigationBar.NavigationController.GetTargetOrDefault() is UINavigationController navigationController)
 			{
-				toolbarHandler.NavigationController.TopViewController?.UpdateNavigationBarTitle(arg2.Title);
+				navigationController.TopViewController?.UpdateNavigationBarTitle(arg2.Title);
 			}
 		}
 
 		public static void MapIsVisible(IToolbarHandler handler, IToolbar toolbar)
 		{
-			if (handler is ToolbarHandler toolbarHandler)
+			if (handler.PlatformView is MauiNavigationBar navigationBar
+				&& navigationBar.NavigationController.GetTargetOrDefault() is UINavigationController navigationController)
 			{
-				toolbarHandler.NavigationController.UpdateNavigationBarVisibility(toolbar.IsVisible, true); // TODO: maybe this needs to go through the ViewController (top one?)
+				navigationController.UpdateNavigationBarVisibility(toolbar.IsVisible, true);
+			}
+		}
+
+		public static void MapBackButtonVisible(IToolbarHandler handler, IToolbar toolbar)
+		{
+			if (handler.PlatformView is MauiNavigationBar navigationBar
+				&& navigationBar.NavigationController.GetTargetOrDefault() is UINavigationController navigationController)
+			{
+				navigationController.UpdateBackButtonVisibility(toolbar.BackButtonVisible);
 			}
 		}
 	}

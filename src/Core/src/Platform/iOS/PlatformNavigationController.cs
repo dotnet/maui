@@ -9,18 +9,32 @@ using PointF = CoreGraphics.CGPoint;
 
 namespace Microsoft.Maui.Platform;
 
-internal class PlatformNavigationController : UINavigationController
+public class PlatformNavigationController : UINavigationController
 {
 	bool _disposed;
 
-	internal WeakReference<NavigationViewHandler> Handler { get; }
+	public WeakReference<NavigationViewHandler> NavigationHandler { get; }
 	
-	WeakReference<UIToolbar> SecondaryToolbar { get; set; } = new WeakReference<UIToolbar>(new SecondaryToolbar());
+	public WeakReference<UIToolbar> SecondaryToolbar { get; set; } = new WeakReference<UIToolbar>(new SecondaryToolbar());
 
-	public PlatformNavigationController(NavigationViewHandler handler)
+	UIImage? DefaultNavBarShadowImage { get; set; }
+
+	bool HasNavigationBar { get; set; }
+
+	public bool IsDisposed { get => _disposed; }
+
+	public PlatformNavigationController(
+		NavigationViewHandler handler, 
+		Type? navigationBarType = null, 
+		Type? toolbarType = null) : base(navigationBarType ?? typeof(UINavigationBar), toolbarType ?? typeof(UIToolbar))
 	{
-		Handler = new WeakReference<NavigationViewHandler>(handler);
+		NavigationHandler = new WeakReference<NavigationViewHandler>(handler);
 		Delegate = new NavigationDelegate(this, handler);
+		if (navigationBarType == typeof(MauiNavigationBar))
+		{
+			var navigationBar = new MauiNavigationBar(this);
+			SetValueForKey(navigationBar, new NSString("navigationBar"));
+		}
 	}
 
 	/// <summary>
@@ -36,7 +50,7 @@ internal class PlatformNavigationController : UINavigationController
 
 	protected virtual void BackButtonClicked()
 	{
-		if (!Handler.TryGetTarget(out NavigationViewHandler? handler))
+		if (!NavigationHandler.TryGetTarget(out NavigationViewHandler? handler))
 		{
 			throw new InvalidOperationException("Could not obtain NavigationViewHandler.");
 		}
@@ -44,29 +58,10 @@ internal class PlatformNavigationController : UINavigationController
 		window.BackButtonClicked();
 	}
 
-	public override void PushViewController(UIViewController viewController, bool animated)
-	{
-		var containerViewController = new ParentViewController(
-			Handler.TryGetTarget(out NavigationViewHandler? handler) ? handler : throw new InvalidOperationException("Could not obtain NavigationViewHandler."));
-
-		if (TopViewController?.Title != null)
-		{
-			containerViewController.UpdateBackButtonTitle(TopViewController.Title);
-		}
-
-		containerViewController.View!.AddSubview(viewController.View!);
-		containerViewController.AddChildViewController(viewController);
-		viewController.DidMoveToParentViewController(containerViewController);
-
-		base.PushViewController(containerViewController, animated);
-	}
-
 	public override void ViewDidLoad()
 	{
 		base.ViewDidLoad();
 
-		// TODO: update translucent property?
-		
 		SecondaryToolbar.SetTarget(new SecondaryToolbar { Frame = new RectangleF(0, 0, 320, 44) });
 		if (SecondaryToolbar.TryGetTarget(out var secondaryToolbar))
 		{
@@ -74,33 +69,35 @@ internal class PlatformNavigationController : UINavigationController
 			secondaryToolbar.Hidden = true;
 		}
 		
+		UpdateSecondaryToolBarVisible();
 	}
 
 	public override void ViewWillLayoutSubviews()
 	{
 		base.ViewWillLayoutSubviews();
-		if (!Handler.TryGetTarget(out NavigationViewHandler? handler))
+		if (!NavigationHandler.TryGetTarget(out NavigationViewHandler? handler))
 		{
 			throw new InvalidOperationException("Could not obtain NavigationViewHandler.");
 		}
 
 		if (SecondaryToolbar.TryGetTarget(out var secondaryToolbar))
 		{
-			UpdateToolBarVisible();
+			UpdateSecondaryToolBarVisible();
 
 			var navBarFrameBottom = Math.Min(NavigationBar.Frame.Bottom, 140);
 			var toolbar = (handler.NavigationManager?.ToolbarElement?.Toolbar) ?? throw new InvalidOperationException("Could not obtain Toolbar.");
-			var hasNavigationBar = toolbar.IsVisible;
+			// Save the state of the current page we are calculating, this will fire before CurrentPage is updated
+			HasNavigationBar = toolbar.IsVisible;
 
 			// Use 0 if the NavBar is hidden or will be hidden
-			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !hasNavigationBar ? 0 : navBarFrameBottom;
+			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !HasNavigationBar ? 0 : navBarFrameBottom;
 			secondaryToolbar.Frame = new RectangleF(0, (nfloat)toolbarY, View!.Frame.Width, secondaryToolbar.Frame.Height);
 
 			handler.VirtualView.Arrange(View.Bounds.ToRectangle());
 		}
 	}
 
-	void UpdateToolBarVisible()
+	public void UpdateSecondaryToolBarVisible()
 	{
 		if (!SecondaryToolbar.TryGetTarget(out var secondaryToolbar))
 		{
@@ -120,16 +117,92 @@ internal class PlatformNavigationController : UINavigationController
 
 		if (currentHidden != secondaryToolbar.Hidden)
 		{
+			TopViewController?.InvalidateMeasure();
 
-		// 	if (Current?.Handler != null)
-		// 		Current.ToPlatform().InvalidateMeasure(Current);
-
-		// 	if (VisibleViewController is ParentViewController pvc)
-		// 		pvc.UpdateFrames();
+			if (VisibleViewController is ParentViewController pvc)
+			{
+				pvc.UpdateSafeArea();
+			}
 		}
 
 		TopViewController?.NavigationItem?.TitleView?.SizeToFit();
 		TopViewController?.NavigationItem?.TitleView?.LayoutSubviews();
+	}
+
+	// TODO: SetFlyoutLeftBarButton(UIViewController containerController, FlyoutPage FlyoutPage)?
+
+	public void UpdateHideNavigationBarSeparator(bool shouldHideNavigationBarSeparator)
+	{
+		// Just setting the ShadowImage is good for iOS 11
+		DefaultNavBarShadowImage ??= NavigationBar.ShadowImage;
+
+		if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
+		{
+			if (shouldHideNavigationBarSeparator)
+			{
+				if (NavigationBar.CompactAppearance != null)
+				{
+					NavigationBar.CompactAppearance.ShadowColor = UIColor.Clear;
+				}
+
+				NavigationBar.StandardAppearance.ShadowColor = UIColor.Clear;
+
+				if (NavigationBar.ScrollEdgeAppearance != null)
+				{
+					NavigationBar.ScrollEdgeAppearance.ShadowColor = UIColor.Clear;
+				}
+			}
+			else
+			{
+				if (NavigationBar.CompactAppearance != null)
+				{
+					NavigationBar.CompactAppearance.ShadowColor = UIColor.FromRGBA(0, 0, 0, 76);
+				}
+				
+				NavigationBar.StandardAppearance.ShadowColor = UIColor.FromRGBA(0, 0, 0, 76);
+				
+				if (NavigationBar.ScrollEdgeAppearance != null)
+				{
+					NavigationBar.ScrollEdgeAppearance.ShadowColor = UIColor.FromRGBA(0, 0, 0, 76);
+				}
+			}
+		}
+		else
+		{
+			if (shouldHideNavigationBarSeparator)
+			{
+				NavigationBar.ShadowImage = new UIImage();
+			}
+			else
+			{
+				NavigationBar.ShadowImage = DefaultNavBarShadowImage;
+			}
+		}
+	}
+
+	public void UpdateHomeIndicatorAutoHidden()
+	{
+		SetNeedsUpdateOfHomeIndicatorAutoHidden();
+	}
+
+	public void UpdateStatusBarHidden()
+	{
+		SetNeedsStatusBarAppearanceUpdate();
+	}
+
+	public void ValidateNavBarExists(bool newNavigationPageHasNavBar)
+	{
+		if (!NavigationHandler.TryGetTarget(out NavigationViewHandler? handler))
+		{
+			throw new InvalidOperationException("Could not obtain NavigationViewHandler.");
+		}
+
+		// if the last time we did ViewDidLayoutSubviews we had another value for HasNavigationBar,
+		// we will need to re-layout. This is because CurrentPage is updated async of the layout happening
+		if (HasNavigationBar != newNavigationPageHasNavBar)
+		{
+			View!.InvalidateMeasure(handler.VirtualView);
+		}
 	}
 
 	protected override void Dispose(bool disposing)
@@ -163,36 +236,136 @@ internal class PlatformNavigationController : UINavigationController
 	}
 }
 
-internal class ParentViewController : UIViewController
+public class ParentViewController : PageViewController
 {
 	WeakReference<NavigationViewHandler> Handler { get; }
 
-	public ParentViewController(NavigationViewHandler handler)
+	WeakReference<PlatformNavigationController> NavController { get; }
+
+	bool _disposed;
+
+	public ParentViewController(NavigationViewHandler handler, PlatformNavigationController navController, IView page, IMauiContext mauiContext) : base(page, mauiContext)
 	{
-		Handler = new WeakReference<NavigationViewHandler>(handler);
+		Handler = new(handler);
+		NavController = new(navController);
 	}
 
-	///////////////////// TODO: See UpdateFrames() in NavigationRenderer
+	public void UpdateSafeArea()
+	{
+		if (NavController.TryGetTarget(out var navigationController) &&
+			ChildViewControllers.Length > 0 &&
+			!navigationController.IsDisposed &&
+			navigationController.SecondaryToolbar.TryGetTarget(out var secondaryToolbar))
+		{	
+			var lastChildViewController = ChildViewControllers[^1];
+
+			if (lastChildViewController is null)
+			{
+				return;
+			}
+
+			var newAdditionalSafeArea = lastChildViewController.AdditionalSafeAreaInsets;
+			var offset = secondaryToolbar.Hidden ? 0 : secondaryToolbar.Frame.Height;
+
+			if (newAdditionalSafeArea.Top != offset)
+			{
+				newAdditionalSafeArea.Top = offset;
+				lastChildViewController.AdditionalSafeAreaInsets = newAdditionalSafeArea;
+			}
+		}
+	}
 
 	public override void ViewWillAppear(bool animated)
 	{
-		if (!Handler.TryGetTarget(out NavigationViewHandler? handler))
+		if (!NavController.TryGetTarget(out var navigationController))
 		{
-			throw new InvalidOperationException("Could not obtain NavigationViewHandler.");
+			throw new InvalidOperationException("Could not obtain NavigationController.");
 		}
-		// TODO: not sure if we need this now that IsVisible is mapped in ToolbarHandler.iOS?
-		// var toolbar = (handler.NavigationManager?.ToolbarElement?.Toolbar) ?? throw new InvalidOperationException("Could not obtain Toolbar.");
-		// NavigationController?.UpdateNavigationBarVisibility(toolbar.IsVisible, animated);
+
+		navigationController.NavigationBar.SetupDefaultNavigationBarAppearance();
 
 		var isTranslucent = NavigationController?.NavigationBar.Translucent ?? false;
 		EdgesForExtendedLayout = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
 
-		// var toolbarElement = handler.NavigationManager?.ToolbarElement;
-		// var toolbarHandler = toolbarElement?.Toolbar?.Handler as ToolbarHandler;
-		// toolbarHandler?._mapper.UpdateProperties(toolbarHandler, toolbarHandler.VirtualView);
-		//ToolbarHandler.Mapper.UpdateProperties(toolbarHandler!, toolbarHandler!.VirtualView);
-
 		base.ViewWillAppear(animated);
+	}
+
+	public override void ViewDidDisappear(bool animated)
+	{
+		base.ViewDidDisappear(animated);
+
+		if (NavigationItem?.RightBarButtonItems == null)
+		{
+			return;
+		}
+
+		// force a redraw for right toolbar items by resetting TintColor to prevent
+		// toolbar items being grayed out when canceling swipe to a previous page
+		foreach (var item in NavigationItem?.RightBarButtonItems!)
+		{
+			if (item.Image != null)
+			{
+				continue;
+			}
+
+			var tintColor = item.TintColor;
+			item.TintColor = tintColor == null ? UIColor.Clear : null;
+			item.TintColor = tintColor;
+		}
+	}
+
+	// TODO: do this?
+	// public override void ViewWillTransitionToSize(SizeF toSize, IUIViewControllerTransitionCoordinator coordinator)
+	// {
+	// 	base.ViewWillTransitionToSize(toSize, coordinator);
+
+	// 	if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+	// 		UpdateLeftBarButtonItem();
+	// }
+
+	public override void ViewDidLayoutSubviews()
+	{
+		base.ViewDidLayoutSubviews();
+		UpdateSafeArea();
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (_disposed)
+		{
+			return;
+		}
+
+		_disposed = true;
+
+		if (disposing)
+		{
+			if (ChildViewControllers != null)
+			{
+				foreach (var childViewController in ChildViewControllers)
+				{
+					childViewController.Dispose();
+				}
+			}
+
+			if (NavigationItem.RightBarButtonItems != null)
+			{
+				for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
+				{
+					NavigationItem.RightBarButtonItems[i].Dispose();
+				}
+			}
+
+			if (ToolbarItems != null)
+			{
+				for (var i = 0; i < ToolbarItems.Length; i++)
+				{
+					ToolbarItems[i].Dispose();
+				}
+			}
+		}
+
+		base.Dispose(disposing);
 	}
 }
 
@@ -290,25 +463,35 @@ internal class NavigationDelegate : UINavigationControllerDelegate
 			throw new InvalidOperationException("Could not obtain NavigationViewHandler.");
 		}
 
+		if (NavigationController.TryGetTarget(out var navController) && navController.VisibleViewController is ParentViewController pvc)
+		{
+			pvc.UpdateSafeArea();
+		}
+
 		handler.VirtualView.NavigationFinished(handler.NavigationStack);
 	}
 
-	//public override void WillShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
-	//{
-	//	if (!Handler.TryGetTarget(out NavigationViewHandler? handler))
-	//	{
-	//		throw new InvalidOperationException("Could not obtain NavigationViewHandler.");
-	//	}
+	public override void WillShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
+	{
+		if (!Handler.TryGetTarget(out NavigationViewHandler? handler))
+		{
+			throw new InvalidOperationException("Could not obtain NavigationViewHandler.");
+		}
 
-	//	var toolbar = (handler.NavigationManager?.ToolbarElement?.Toolbar) ?? throw new InvalidOperationException("Could not obtain Toolbar.");
+		// Update the toolbar properties after the native navigation, since it doesn't happen automatically in the NavigationPage
+		// That will clean up the toolbar settings mapped to the currently visible view controller
+		var toolbarElement = handler.NavigationManager?.ToolbarElement;
+		var toolbarHandler = toolbarElement?.Toolbar?.Handler as ToolbarHandler;
+		toolbarHandler?._mapper.UpdateProperties(toolbarHandler, toolbarHandler.VirtualView);
+	}
+}
 
-	//	//if (!NavigationController.TryGetTarget(out var navController))
-	//	//{
-	//	//	throw new InvalidOperationException("Could not obtain NavigationController.");
-	//	//}
-	//	viewController.NavigationController?.UpdateNavigationBarVisibility(toolbar.IsVisible, animated);
+public class MauiNavigationBar : UINavigationBar
+{
+	public WeakReference<PlatformNavigationController> NavigationController { get; }
 
-	//	var isTranslucent = navigationController.NavigationBar.Translucent;
-	//	viewController.EdgesForExtendedLayout = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
-	//}
+	public MauiNavigationBar(PlatformNavigationController navigationController)
+	{
+		NavigationController = new WeakReference<PlatformNavigationController>(navigationController);
+	}
 }

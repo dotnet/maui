@@ -16,6 +16,11 @@ namespace Microsoft.Maui.Controls
 #if IOS || MACCATALYST
 			// Only map the Toolbar when it is on the NavigationPage, for now
 			WindowHandler.Mapper.ReplaceMapping<Window, IWindowHandler>(nameof(IToolbarElement.Toolbar), MapToolbar);
+			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.HideNavigationBarSeparatorProperty.PropertyName, MapHideNavigationBarSeparator);
+			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName, MapPreferredStatusBarUpdateAnimation);
+			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHidden);
+			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.StatusBarTextColorModeProperty.PropertyName, MapStatusBarTextColorMode);
+			NavigationViewHandler.Mapper.AppendToMapping<NavigationPage, NavigationViewHandler>(NavigationPage.CurrentPageProperty.PropertyName, MapCurrentPage);
 #endif
 		}
 	}
