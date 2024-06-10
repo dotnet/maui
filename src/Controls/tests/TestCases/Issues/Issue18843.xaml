@@ -14,4 +14,9 @@
                    HeightRequest="20"/>
         </HorizontalStackLayout>
     </NavigationPage.TitleView>
+  <Label 
+    AutomationId="WaitForStubControl"
+    Text="Issue 18843"
+    HorizontalOptions="Center"
+    VerticalOptions="Center"/>
 </ContentPage>

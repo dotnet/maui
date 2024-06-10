@@ -1,8 +1,9 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue18843 : _IssuesUITest
 {
@@ -15,10 +16,10 @@ public class Issue18843 : _IssuesUITest
     [Test]
 	public void NoLeftMarginShouldBeShown()
 	{
-		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-		_ = App.WaitForElement("title");
+		_ = App.WaitForElement("WaitForStubControl");
 
 		//Test passes if no the whole navigation bar is red
 		VerifyScreenshot();
 	}
 }
+#endif
