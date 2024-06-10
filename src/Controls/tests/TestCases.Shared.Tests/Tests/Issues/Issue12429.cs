@@ -2,7 +2,7 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue12429 : _IssuesUITest
 {
@@ -11,7 +11,7 @@ public class Issue12429 : _IssuesUITest
 	public Issue12429(TestDevice device) : base(device)
 	{ }
 
-    [Test]
+	[Test]
 	public async Task HeaderShouldNotCollapseWithItems()
 	{
 		App.WaitForElement("button");
