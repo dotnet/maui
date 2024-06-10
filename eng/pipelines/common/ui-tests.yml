@@ -48,6 +48,7 @@ stages:
                 pool: ${{ parameters.androidPool }}
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -78,6 +79,7 @@ stages:
                 pool: ${{ parameters.iosPool }}
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -107,6 +109,8 @@ stages:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
                 pool: ${{ parameters.windowsPool }}
+                variables:
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)\.appium\
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -132,6 +136,7 @@ stages:
                 pool: ${{ parameters.macosPool }}
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -229,6 +234,7 @@ stages:
                   pool: ${{ parameters.androidLegacyPool }}
                   variables:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                    APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                   steps:
                     - template: ui-tests-legacy-steps.yml
                       parameters:
@@ -260,6 +266,7 @@ stages:
                   pool: ${{ parameters.iosLegacyPool }}
                   variables:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                    APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                   steps:
                     - template: ui-tests-legacy-steps.yml
                       parameters:

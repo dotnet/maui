@@ -1,12 +1,7 @@
 <Project>
  <PropertyGroup>
     <NightlyTag>nightly</NightlyTag>
-    <RegexTag>[a-z]+\.[0-9]</RegexTag>
  </PropertyGroup>
- <PropertyGroup>
-    <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</GitBranch>
-    <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' == '' and '$(BUILD_SOURCEBRANCHNAME)' != ''">$(BUILD_SOURCEBRANCHNAME)</GitBranch>
-  </PropertyGroup>
 
   <PropertyGroup>
     <CoreCompileDependsOn>
@@ -30,15 +25,17 @@
     </SetVersionsDependsOn>
   </PropertyGroup>
 
-  <Target Name="SetVersions" BeforeTargets="$(SetVersionsBefore)" DependsOnTargets="$(SetVersionsDependsOn)" Returns="$(Version)">
+  <Target Name="SetVersions"
+          BeforeTargets="$(SetVersionsBefore)"
+          DependsOnTargets="$(SetVersionsDependsOn)"
+          Returns="$(Version)">
+
     <PropertyGroup>
-      <SemVerLabel>$([System.Text.RegularExpressions.Regex]::Match($(GitTag), $(RegexTag)))</SemVerLabel>
-      <GitSemVerLabel Condition=" '$(GitTag)' != '' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(GitTag)', $(RegexTag))) ">$(SemVerLabel)</GitSemVerLabel> 
-      <GitSemVerLabel  Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</GitSemVerLabel>
-      <GitSemVerDashLabel Condition="'$(PreReleaseVersionLabel)' != ''" >-$(PreReleaseVersionLabel)</GitSemVerDashLabel>
+      <PreReleaseVersionLabel Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</PreReleaseVersionLabel>
     </PropertyGroup>
+
     <ItemGroup>
-     
+
       <VersionMetadata Condition="$(CI) and '$(BUILD_REASON)' == 'PullRequest'"
                        Include="pr.$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)"/>
 
@@ -49,25 +46,25 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <VersionMetadataLabel>@(VersionMetadata -> '%(Identity)', '-')</VersionMetadataLabel>
-      <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
-      <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion)</Version>
-      <PackageReferenceVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(GitSemVerDashLabel)</PackageReferenceVersion>
-      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(MajorVersion).$(MinorVersion).$(PatchVersion)$(GitSemVerDashLabel).$(BUILDVERSION)</PackageReferenceVersion>
-      <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageReferenceVersion>
-      <VSComponentVersion>$(MajorVersion).$(MinorVersion).$(GitBaseVersionPatch)</VSComponentVersion>
-      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).$(BUILDVERSION)</VSComponentVersion>
-      <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).0</VSComponentVersion>
-      <PackageVersion>$(PackageReferenceVersion)$(VersionMetadataPlusLabel)</PackageVersion>
+      <PackageReferenceVersion>$(PackageVersion)</PackageReferenceVersion>
+      <VSComponentVersion Condition="'$(PreReleaseVersionLabel)' != ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).$(BUILDVERSION)</VSComponentVersion>
+      <VSComponentVersion Condition="'$(PreReleaseVersionLabel)' == ''">$(MajorVersion).$(MinorVersion).$(PatchVersion).0</VSComponentVersion>
     </PropertyGroup>
 
     <PropertyGroup>
-      <InformationalVersion>$(PackageVersion)</InformationalVersion>
-      <FileVersion>$(Version).0</FileVersion>
+      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true' or '$(IsTestProject)' == 'true' or '$(IsPackable)' == 'false'">true</_SkipUpdateBuildNumber>
+      <_UpdateBuildNumber Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)' AND '$(_SkipUpdateBuildNumber)' != 'true'">$(PackageVersion)</_UpdateBuildNumber>
+    </PropertyGroup>
+
+    <Error Condition="'$(_UpdateBuildNumber)' == '1.0.0'" Text="Unexpected _UpdateBuildNumber: '$(_UpdateBuildNumber)'" />
+
+    <PropertyGroup Condition="'$(_UpdateBuildNumber)' != ''">
+      <_UpdateBuildNumber Condition="'@(VersionMetadata)' != ''">$(_UpdateBuildNumber)+@(VersionMetadata -> '%(Identity)', '.')</_UpdateBuildNumber>
     </PropertyGroup>
 
     <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
-    <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
+    <Message Condition="'$(_UpdateBuildNumber)' != ''" Importance="high" Text="##vso[build.updatebuildnumber]$(_UpdateBuildNumber)"/>
+
   </Target>
 
 </Project>

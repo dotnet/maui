@@ -64,13 +64,10 @@ namespace Microsoft.Maui.Controls
 
 			if (strokeShape is VisualElement visualElement)
 			{
-				SetInheritedBindingContext(visualElement, BindingContext);
+				AddLogicalChild(visualElement);
 				_strokeShapeChanged ??= (sender, e) => OnPropertyChanged(nameof(StrokeShape));
 				_strokeShapeProxy ??= new();
 				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
-
-				OnParentResourcesChanged(this.GetMergedResources());
-				((IElementDefinition)this).AddResourcesChangedListener(visualElement.OnParentResourcesChanged);
 			}
 		}
 
@@ -80,9 +77,7 @@ namespace Microsoft.Maui.Controls
 
 			if (strokeShape is VisualElement visualElement)
 			{
-				((IElementDefinition)this).RemoveResourcesChangedListener(visualElement.OnParentResourcesChanged);
-
-				SetInheritedBindingContext(visualElement, null);
+				RemoveLogicalChild(visualElement);
 				_strokeShapeProxy?.Unsubscribe();
 			}
 		}
@@ -308,11 +303,13 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanged(propertyName);
 
 			if (propertyName == HeightProperty.PropertyName ||
-				propertyName == WidthProperty.PropertyName ||
-				propertyName == StrokeShapeProperty.PropertyName)
+				propertyName == StrokeThicknessProperty.PropertyName ||
+				propertyName == StrokeShapeProperty.PropertyName ||
+				propertyName == WidthProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
-			else if (propertyName == StrokeThicknessProperty.PropertyName)
 				UpdateStrokeShape();
+			}
 			else if (propertyName == StrokeDashArrayProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
 		}

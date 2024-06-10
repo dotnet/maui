@@ -262,6 +262,71 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, firstModalPage.AppearingCount);
 		}
 
+		[Fact]
+		public async Task LoadedUnLoadedEvents()
+		{
+			var previousPage = new LCPage();
+			var lcPage = new LCPage();
+			var navigationPage =
+				new TestNavigationPage(true, previousPage)
+					.AddToTestWindow();
+
+			await navigationPage.PushAsync(lcPage);
+
+			int loadedCnt = 0;
+			int unLoadedCnt = 0;
+			lcPage.Loaded += (_, _) => loadedCnt++;
+			lcPage.Unloaded += (_, _) => unLoadedCnt++;
+
+			Assert.Equal(1, loadedCnt);
+			Assert.Equal(0, unLoadedCnt);
+			
+			await navigationPage.PopAsync();
+
+			Assert.Equal(1, loadedCnt);
+			Assert.Equal(1, unLoadedCnt);
+		}
+
+		[Fact]
+		public async Task LoadedFiresOnInitialSubscription()
+		{
+			var previousPage = new LCPage();
+			var lcPage = new LCPage();
+			var navigationPage =
+				new TestNavigationPage(true, previousPage)
+					.AddToTestWindow();
+
+			await navigationPage.PushAsync(lcPage);
+
+			int loadedCnt = 0;
+			int unLoadedCnt = 0;
+
+			Assert.True(lcPage.IsLoaded);
+
+			// Wire up to loaded event to setup wiring
+			lcPage.Loaded += (_, _) => 
+			{
+				loadedCnt++;
+			};
+
+			// Subscribing to loaded should fire the loaded
+			// event if the page is already loaded
+			lcPage.Loaded += (_, _) => 
+			{
+				loadedCnt++;
+			};
+
+			lcPage.Unloaded += (_, _) => unLoadedCnt++;
+
+			Assert.Equal(2, loadedCnt);
+			Assert.Equal(0, unLoadedCnt);
+			
+			await navigationPage.PopAsync();
+
+			Assert.Equal(2, loadedCnt);
+			Assert.Equal(1, unLoadedCnt);
+		}
+
 		public class LCPage : ContentPage
 		{
 			public NavigatedFromEventArgs NavigatedFromArgs { get; private set; }

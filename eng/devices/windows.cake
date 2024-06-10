@@ -9,7 +9,8 @@ const string defaultVersion = "10.0.19041.0";
 const string dotnetVersion = "net8.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_PROJECT);
+string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";
+FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_WINDOWS_PROJECT);
 // Used for Windows to differentiate between packaged and unpackaged
 string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE") ?? $"");
 // Package ID of the WinUI Application
@@ -437,9 +438,9 @@ Task("SetupTestPaths")
 		if (apps.Count() == 0) 
 		{
 			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
-			if(TEST_APP_PROJECT.FullPath.Contains("Controls.Sample.UITests"))
+			if(TEST_APP_PROJECT.FullPath.Contains("Controls.TestCases.App"))
 			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.Sample.UITests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.TestCases.App/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
 			}
 
 			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))

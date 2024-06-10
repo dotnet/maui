@@ -11,14 +11,14 @@ namespace Microsoft.Maui.Controls
 	public class NavigableElement : Element, INavigationProxy, IStyleSelectable
 	{
 		static readonly BindablePropertyKey NavigationPropertyKey =
-			BindableProperty.CreateReadOnly("Navigation", typeof(INavigation), typeof(VisualElement), default(INavigation));
+			BindableProperty.CreateReadOnly(nameof(Navigation), typeof(INavigation), typeof(VisualElement), default(INavigation));
 
 		/// <summary>Bindable property for <see cref="Navigation"/>.</summary>
 		public static readonly BindableProperty NavigationProperty = NavigationPropertyKey.BindableProperty;
 
 		/// <summary>Bindable property for <see cref="Style"/>.</summary>
 		public static readonly BindableProperty StyleProperty =
-			BindableProperty.Create("Style", typeof(Style), typeof(VisualElement), default(Style),
+			BindableProperty.Create(nameof(Style), typeof(Style), typeof(VisualElement), default(Style),
 				propertyChanged: (bindable, oldvalue, newvalue) => ((NavigableElement)bindable)._mergedStyle.Style = (Style)newvalue);
 
 		internal readonly MergedStyle _mergedStyle;
